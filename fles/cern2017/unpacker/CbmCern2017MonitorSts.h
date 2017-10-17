@@ -107,9 +107,12 @@ private:
    CbmHistManager* fHM;                 //! Histogram manager
    TH1* fhStsMessType;
    TH1* fhStsSysMessType;
+   TH2* fhStsMessTypePerDpb;
+   TH2* fhStsSysMessTypePerDpb;
 
    std::vector<TH1*> fhStsChanCounts;
    std::vector<TH2*> fhStsChanRawAdc;
+   std::vector<TProfile*> fhStsChanRawAdcProf;
    std::vector<TH2*> fhStsChanRawTs;
    std::vector<TH2*> fhStsChanMissEvt;
    std::vector<TH2*> fhStsChanOverDiff;

@@ -136,7 +136,7 @@ UInt_t CbmCern2017UnpackParSts::GetDpbId( UInt_t uDpbIdx )
 }
 UInt_t CbmCern2017UnpackParSts::GetElinkToAsicIdx( UInt_t uElinkIdx )
 {
-   if( uElinkIdx < fuNbElinksPerDpb )
+   if( uElinkIdx < fuNrOfDpbs * fuNbElinksPerDpb )
       return fiElinkToAsicMap[ uElinkIdx ];
       else
       {

@@ -4,16 +4,18 @@
 ##############################################################################
 [CbmCern2017UnpackParSts]
 //----------------------------------------------------------------------------
-NrOfDpbs: Int_t 1
+NrOfDpbs: Int_t 2
 // Array size has to match NrOfDpbs
 DbpIdArray: Int_t \
-  0x6161
+  0x18ef 0x0b5c
+//   0x6161
 NbElinksPerDpb: Int_t 8
-NbStsXyters: Int_t 1
+NbStsXyters: Int_t 2
 NbChanPerAsic: Int_t 128
 // Array size has to match NrOfDpbs * NbElinksPerDpb
 // Fields have to be smaller than NbStsXyters (index)
 // Unused eLinks should be indicated by 0xFFFF
 ElinkToAsicMap: Int_t \
- 0x0000 0x0000 0x0000 0x0000 0x0000 0xFFFF 0xFFFF 0xFFFF
+ 0x0000 0x0000 0x0000 0x0000 0x0000 0xFFFF 0xFFFF 0xFFFF \
+ 0x0001 0x0001 0x0001 0x0001 0x0001 0xFFFF 0xFFFF 0xFFFF
 ######################

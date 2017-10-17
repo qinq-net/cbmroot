@@ -66,8 +66,11 @@ CbmCern2017MonitorSts::CbmCern2017MonitorSts() :
    fHM(new CbmHistManager()),
    fhStsMessType(NULL),
    fhStsSysMessType(NULL),
+   fhStsMessTypePerDpb(NULL),
+   fhStsSysMessTypePerDpb(NULL),
    fhStsChanCounts(),
    fhStsChanRawAdc(),
+   fhStsChanRawAdcProf(),
    fhStsChanRawTs(),
    fhStsChanMissEvt(),
    fhStsChanOverDiff(),
@@ -142,6 +145,7 @@ Bool_t CbmCern2017MonitorSts::ReInitContainers()
       LOG(INFO) << "Eq. ID for DPB #" << std::setw(2) << uDpb << " = "
                 << std::setw(4) << std::hex << fUnpackPar->GetDpbId( uDpb )
                 << std::dec
+                << " => " << fDpbIdIndexMap[ fUnpackPar->GetDpbId( uDpb )  ]
                 << FairLogger::endl;
 
       fvuElinkToAsic[uDpb].resize( fuNbElinksPerDpb );
@@ -228,21 +232,6 @@ void CbmCern2017MonitorSts::CreateHistograms()
    fhStsMessType->GetXaxis()->SetBinLabel(1 + stsxyter::MessType::ReadDataAck, "ReadDataAck");
    fhStsMessType->GetXaxis()->SetBinLabel(1 + stsxyter::MessType::Ack,         "Ack");
 */
-
-/*
-   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_HIT,      "HIT");
-   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_EPOCH,    "EPOCH");
-   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_SYNC,     "SYNC");
-   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_AUX,      "AUX");
-   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_EPOCH2,   "EPOCH2");
-   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4,     "GET4");
-   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_SYS,      "SYS");
-   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4_SLC, "MSG_GET4_SLC");
-   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4_32B, "MSG_GET4_32B");
-   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_GET4_SYS, "MSG_GET4_SYS");
-   hMessageType->GetXaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
-   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP,      "NOP");
-*/
    fHM->Add(sHistName.Data(), fhStsMessType);
 #ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsMessType );
@@ -254,23 +243,44 @@ void CbmCern2017MonitorSts::CreateHistograms()
 /*
    hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_START,       "DAQ START");
    hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_FINISH,      "DAQ FINISH");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_NX_PARITY,       "NX PARITY");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_SYNC_PARITY,     "SYNC PARITY");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_RESUME,      "DAQ RESUME");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_FIFO_RESET,      "FIFO RESET");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_USER,            "USER");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_PCTIME,          "PCTIME");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_ADC,             "ADC");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_PACKETLOST,      "PACKET LOST");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_GET4_EVENT,      "GET4 ERROR");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_CLOSYSYNC_ERROR, "CLOSYSYNC ERROR");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_TS156_SYNC,        "TS156 SYNC");
-   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_GDPB_UNKWN,        "UNKW GET4 MSG");
    hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
 */
    fHM->Add(sHistName.Data(), fhStsSysMessType);
 #ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsSysMessType );
+#endif
+
+   sHistName = "hStsMessageTypePerDpb";
+   title = "Nb of message of each type for each DPB; DPB; Type";
+   fhStsMessTypePerDpb = new TH2I(sHistName, title, fuNrOfDpbs, 0, fuNrOfDpbs, 5, 0., 5.);
+   fhStsMessTypePerDpb->GetYaxis()->SetBinLabel( 1,       "Dummy");
+   fhStsMessTypePerDpb->GetYaxis()->SetBinLabel( 2,         "Hit");
+   fhStsMessTypePerDpb->GetYaxis()->SetBinLabel( 3,       "TsMsb");
+   fhStsMessTypePerDpb->GetYaxis()->SetBinLabel( 4, "ReadDataAck");
+   fhStsMessTypePerDpb->GetYaxis()->SetBinLabel( 5,         "Ack");
+/* *** Missing int + MessType OP!!!! ****
+   fhStsMessType->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::Dummy,       "Dummy");
+   fhStsMessType->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::Hit,         "Hit");
+   fhStsMessType->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::TsMsb,       "TsMsb");
+   fhStsMessType->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::ReadDataAck, "ReadDataAck");
+   fhStsMessType->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::Ack,         "Ack");
+*/
+   fHM->Add(sHistName.Data(), fhStsMessTypePerDpb);
+#ifdef USE_HTTP_SERVER
+   if( server ) server->Register("/StsRaw", fhStsMessTypePerDpb );
+#endif
+
+   sHistName = "hStsSysMessTypePerDpb";
+   title = "Nb of system message of each type for each DPB; DPB; System Type";
+   fhStsSysMessTypePerDpb = new TH2I(sHistName, title, fuNrOfDpbs, 0, fuNrOfDpbs, 17, 0., 17.);
+/*
+   hSysMessType->GetYaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_START,       "DAQ START");
+   hSysMessType->GetYaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_FINISH,      "DAQ FINISH");
+   hSysMessType->GetYaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
+*/
+   fHM->Add(sHistName.Data(), fhStsSysMessTypePerDpb);
+#ifdef USE_HTTP_SERVER
+   if( server ) server->Register("/StsRaw", fhStsSysMessTypePerDpb );
 #endif
 
    // Number of rate bins =
@@ -328,6 +338,16 @@ void CbmCern2017MonitorSts::CreateHistograms()
       fHM->Add(sHistName.Data(), fhStsChanRawAdc[ uXyterIdx ] );
 #ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanRawAdc[ uXyterIdx ] );
+#endif
+
+      // Raw Adc Distribution profile
+      sHistName = Form( "hStsChanRawAdcProfc_%03u", uXyterIdx );
+      title = Form( "Raw Adc prodile per channel, StsXyter #%03u; Channel []; Adc []", uXyterIdx );
+      fhStsChanRawAdcProf.push_back( new TProfile(sHistName, title,
+                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+      fHM->Add(sHistName.Data(), fhStsChanRawAdcProf[ uXyterIdx ] );
+#ifdef USE_HTTP_SERVER
+      if( server ) server->Register("/StsRaw", fhStsChanRawAdcProf[ uXyterIdx ] );
 #endif
 
       // Raw Ts Distribution
@@ -491,9 +511,34 @@ void CbmCern2017MonitorSts::CreateHistograms()
    } // if( server )
 #endif
 
-  /** Create summary Canvases for CERN 2017 **/
-  Double_t w = 10;
-  Double_t h = 10;
+   /** Create summary Canvases for CERN 2017 **/
+   Double_t w = 10;
+   Double_t h = 10;
+
+      // Summary per StsXyter
+   for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+   {
+      TCanvas* cStsSumm = new TCanvas( Form("cStsSum_%03u", uXyterIdx ),
+                                       Form("Summary plots fo StsXyter %03u", uXyterIdx ),
+                                       w, h);
+      cStsSumm->Divide( 2, 2 );
+
+      cStsSumm->cd(1);
+      gPad->SetLogy();
+      fhStsChanCounts[ uXyterIdx ]->Draw();
+
+      cStsSumm->cd(2);
+      gPad->SetLogz();
+      fhStsChanRawAdc[ uXyterIdx ]->Draw( "colz" );
+
+      cStsSumm->cd(3);
+      gPad->SetLogz();
+      fhStsChanRawTs[ uXyterIdx ]->Draw( "colz" );
+
+      cStsSumm->cd(4);
+      gPad->SetLogy();
+      fhStsXyterRateEvo[ uXyterIdx ]->Draw();
+   } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 /*
   Int_t iNbPadsPerDpb = fuNbElinksPerDpb/2 + fuNbElinksPerDpb%2;
   TCanvas* cMuchChCounts = new TCanvas("cMuchChCounts", "MUCH Channels counts", w, h);
@@ -659,8 +704,18 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
          // The ID is the same in all messages, so no need to do it for each
          if( 0 == uIdx )
          {
-            fuCurrDpbId  = static_cast< uint32_t >( (ulData >> 32) & 0xFFFFFFFF );
+//            fuCurrDpbId  = static_cast< uint32_t >( (ulData >> 32) & 0xFFFFFFFF );
+            fuCurrDpbId  = static_cast< uint32_t >( (ulData >> 48) & 0xFFFF );
             fuCurrDpbIdx = fDpbIdIndexMap[ fuCurrDpbId ];
+/*
+            LOG(INFO) << "CbmCern2017MonitorSts::DoUnpack => "
+                       << "Data in DPB " << fuCurrDpbIdx
+                       << " With ID " << std::setw(8) << std::hex << fuCurrDpbId << std::dec
+                       << " VS " << std::setw(8) << std::hex << fUnpackPar->GetDpbId( 0 ) << std::dec
+                       << " or " << std::setw(8) << std::hex << fUnpackPar->GetDpbId( 1 ) << std::dec
+                       << " " << ( fUnpackPar->GetDpbId( 1 ) - fuCurrDpbId )
+                       << FairLogger::endl;
+*/
          } // if( 0 == uIdx )
 
          stsxyter::Message mess( static_cast< uint32_t >( ulData & 0xFFFFFFFF ) );
@@ -682,6 +737,7 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
          stsxyter::MessType typeMess = mess.GetMessType();
          fmMsgCounter[ typeMess ] ++;
          fhStsMessType->Fill( static_cast< uint16_t > (typeMess) );
+         fhStsMessTypePerDpb->Fill( fuCurrDpbIdx, static_cast< uint16_t > (typeMess) );
 
          switch( typeMess )
          {
@@ -725,6 +781,7 @@ void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
 
    fhStsChanCounts[  uAsicIdx ]->Fill( usChan );
    fhStsChanRawAdc[  uAsicIdx ]->Fill( usChan, usRawAdc );
+   fhStsChanRawAdcProf[  uAsicIdx ]->Fill( usChan, usRawAdc );
    fhStsChanRawTs[   uAsicIdx ]->Fill( usChan, usRawTs );
    fhStsChanMissEvt[ uAsicIdx ]->Fill( usChan, mess.IsHitMissedEvts() );
 
@@ -960,13 +1017,16 @@ void CbmCern2017MonitorSts::SaveAllHistos( TString sFileName )
    gDirectory->mkdir("Sts_Raw");
    gDirectory->cd("Sts_Raw");
 
-   fhStsMessType->Reset();
-   fhStsSysMessType->Reset();
+   fhStsMessType->Write();
+   fhStsSysMessType->Write();
+   fhStsMessTypePerDpb->Write();
+   fhStsSysMessTypePerDpb->Write();
 
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
       fhStsChanCounts[ uXyterIdx ]->Write();
       fhStsChanRawAdc[ uXyterIdx ]->Write();
+      fhStsChanRawAdcProf[ uXyterIdx ]->Write();
       fhStsChanRawTs[ uXyterIdx ]->Write();
       fhStsChanMissEvt[ uXyterIdx ]->Write();
       fhStsChanOverDiff[ uXyterIdx ]->Write();
@@ -1021,11 +1081,14 @@ void CbmCern2017MonitorSts::ResetAllHistos()
 
    fhStsMessType->Reset();
    fhStsSysMessType->Reset();
+   fhStsMessTypePerDpb->Reset();
+   fhStsSysMessTypePerDpb->Reset();
 
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
       fhStsChanCounts[ uXyterIdx ]->Reset();
       fhStsChanRawAdc[ uXyterIdx ]->Reset();
+      fhStsChanRawAdcProf[ uXyterIdx ]->Reset();
       fhStsChanRawTs[ uXyterIdx ]->Reset();
       fhStsChanMissEvt[ uXyterIdx ]->Reset();
       fhStsChanOverDiff[ uXyterIdx ]->Reset();

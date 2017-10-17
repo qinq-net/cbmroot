@@ -54,6 +54,8 @@ void Cern2017Monitor(TString inFile = "")
 
   // Sts Monitor
   CbmCern2017MonitorSts* monitorSts = new CbmCern2017MonitorSts();
+//  monitorSts->SetPrintMessage();
+  monitorSts->EnableChanHitDtPlot();
 
   // --- Source task
   CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
