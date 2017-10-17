@@ -50,10 +50,10 @@ void setup_sis18_mcbm_20deg()
   setup->SetModule(kPlatform, platGeoTag);
   //  setup->SetModule(kMvd, mvdGeoTag);  // skip mvd in the initial setup
   setup->SetModule(kSts, stsGeoTag);
-  setup->SetModule(kMuch, muchGeoTag);
+  // disable, reco missing  setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
-  //  setup->SetModule(kRich, richGeoTag);
+  // disable, reco missing  setup->SetModule(kRich, richGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
