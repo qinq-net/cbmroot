@@ -1,0 +1,15 @@
+#
+##   tof_v16c_1m information file
+#
+
+# created 20171018
+
+# TOF setup
+
+# envelope
+ 680.00 cm   start of TOF (z)
+ 780.00 cm   end   of TOF (z)
+
+# central tower position
+ 765.00 cm   center of staggered, front RPC cell at x=0
+

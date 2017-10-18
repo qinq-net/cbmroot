@@ -27,7 +27,7 @@ using std::pair;
 using std::cout;
 using std::endl;
 
-CbmTofGeoHandler::CbmTofGeoHandler() 
+CbmTofGeoHandler::CbmTofGeoHandler()
   : TObject(),
     fTofId(NULL),
     fGeoVersion(-1),
@@ -36,8 +36,8 @@ CbmTofGeoHandler::CbmTofGeoHandler()
     fDetectorInfoArray(),
     fGeoPathHash(0),
     fCurrentVolume(NULL),
-    fVolumeShape(NULL),    
-    fGlobal(),    
+    fVolumeShape(NULL),
+    fGlobal(),
     fGlobalMatrix(NULL)
 {
 }
@@ -51,15 +51,15 @@ Int_t CbmTofGeoHandler::Init(Bool_t isSimulation)
   return geoVersion;
 }
 
-Int_t CbmTofGeoHandler::CheckGeometryVersion() 
+Int_t CbmTofGeoHandler::CheckGeometryVersion()
 {
   // Check which geometry version is used. In the moment there are 3
-  // possible geometry versions. 
+  // possible geometry versions.
   // v07a:
-  //     Old TOF geometry at 10 m from target 
+  //     Old TOF geometry at 10 m from target
   // v12a:
   //     Old TOF geometry at 6 m from target. Beside the z position
-  //     the geometry is the same as v07a, so it is handled in the same way 
+  //     the geometry is the same as v07a, so it is handled in the same way
   // v12b:
   //     New version of the tof geometrie developed by Norbert Herrmann
   //     including also a support structure
@@ -75,7 +75,7 @@ Int_t CbmTofGeoHandler::CheckGeometryVersion()
       // In new geometries the node name is tof_v<year><version> eg. tof_v12b
       // With this naming scheme the geometry version is completely qualified
       LOG(INFO)<< "Found TOF geometry " <<TString(node->GetName())<< FairLogger::endl;
-      if (TString(node->GetName()).EqualTo("tof1_0")) { 
+      if (TString(node->GetName()).EqualTo("tof1_0")) {
         LOG(INFO)<< "Found TOF geometry v07a" << FairLogger::endl;
         fTofId = new CbmTofDetectorId_v07a();
         fGeoVersion = k07a;
@@ -92,8 +92,9 @@ Int_t CbmTofGeoHandler::CheckGeometryVersion()
         fTofId = new CbmTofDetectorId_v12b();
         fGeoVersion = k12b;
         return fGeoVersion;
-      } else if ( (TString(node->GetName()).Contains("v14")) || 
+      } else if ( (TString(node->GetName()).Contains("v14")) ||
                   (TString(node->GetName()).Contains("v16a")) ||
+                  (TString(node->GetName()).Contains("v16c")) ||
                   (TString(node->GetName()).Contains("v17a")) ){
         LOG(INFO)<< "CbmTofGeoHandler::CheckGeometryVersion: Found TOF geometry "<<TString(node->GetName())
                  <<", treat as Id 14a   "<< FairLogger::endl;
@@ -146,14 +147,14 @@ Int_t CbmTofGeoHandler::GetUniqueDetectorId()
     CurrentVolOffID(2, counter);
     CurrentVolOffID(1, gap);
     CurrentVolID(cell);
-  } else if (fGeoVersion == k14a) { // test beam  
+  } else if (fGeoVersion == k14a) { // test beam
     Volname = CurrentNodeOffName(4);
     smtype = Volname[7]-'0';
     CurrentVolOffID(4, smodule);
     CurrentVolOffID(2, counter);
     CurrentVolOffID(1, gap);
     CurrentVolID(cell);
-    //    counter=smodule;  // necessary for plastics 
+    //    counter=smodule;  // necessary for plastics
     //    smodule=smtype;   // for test beam setup
     gap=0;
     cell--;
@@ -201,14 +202,14 @@ Int_t CbmTofGeoHandler::GetUniqueCounterId()
     CurrentVolOffID(2, counter);
     CurrentVolOffID(1, gap);
     CurrentVolID(cell);
-  } else if (fGeoVersion == k14a) { // test beam  
+  } else if (fGeoVersion == k14a) { // test beam
     Volname = CurrentNodeOffName(4);
     smtype = Volname[7]-'0';
     CurrentVolOffID(4, smodule);
     CurrentVolOffID(2, counter);
     CurrentVolOffID(1, gap);
     CurrentVolID(cell);
-    //    counter=smodule;  // necessary for plastics 
+    //    counter=smodule;  // necessary for plastics
     //    smodule=smtype;   // for test beam setup
   }
 
@@ -247,12 +248,12 @@ void CbmTofGeoHandler::FillInternalStructures()
   char volumeName[10];
   Bool_t result;
   Int_t MCid;
-  
+
   fStationMap.clear();
   fModuleTypeMap.clear();
 
   if (fGeoVersion == kNewMonolithic) {
-    
+
     do {
       sprintf(volumeName, "trd%dgas", stationNr);
       MCid = VolId(volumeName);
@@ -260,7 +261,7 @@ void CbmTofGeoHandler::FillInternalStructures()
 	fStationMap.insert(pair<Int_t,Int_t>(MCid,stationNr));
       }
       stationNr++;
-    } while ( 0 != MCid); 
+    } while ( 0 != MCid);
 
   } else {
 
@@ -272,12 +273,12 @@ void CbmTofGeoHandler::FillInternalStructures()
       }
       stationNr++;
     }
-    while ( 0 != MCid); 
+    while ( 0 != MCid);
 
-    Int_t maxStationNr = --stationNr; 
+    Int_t maxStationNr = --stationNr;
 
     Int_t maxModuleTypes;
-    if (fGeoVersion == kSegmentedSquaredOneKeepingVolume) { 
+    if (fGeoVersion == kSegmentedSquaredOneKeepingVolume) {
       maxModuleTypes = 8;
     } else {
       maxModuleTypes = 3;
@@ -287,12 +288,12 @@ void CbmTofGeoHandler::FillInternalStructures()
       for (Int_t iModule = 1; iModule <= maxModuleTypes; iModule++) {
 	sprintf(volumeName, "trd%dmod%d", iStation, iModule);
 	MCid = VolId(volumeName);
-        if ( 0 != MCid ) { 
+        if ( 0 != MCid ) {
 	  fModuleTypeMap.insert(pair<Int_t,Int_t>(MCid,iModule));
 	}
       }
     }
-  } 
+  }
 }
 */
 
@@ -419,7 +420,7 @@ const char* CbmTofGeoHandler::CurrentNodeOffName(Int_t off) const
   return node->GetName();
 }
 
-void CbmTofGeoHandler::FillDetectorInfoArray(Int_t uniqueId) 
+void CbmTofGeoHandler::FillDetectorInfoArray(Int_t uniqueId)
 {
   fDetectorInfoArray = fTofId->GetDetectorInfo(uniqueId);
   fLastUsedDetectorID = uniqueId;
@@ -488,7 +489,7 @@ Int_t CbmTofGeoHandler::GetCellId(Int_t uniqueId)
   return fTofId->GetCellId(uniqueId);
 }
 
-Float_t CbmTofGeoHandler::GetSizeX(TString volName) 
+Float_t CbmTofGeoHandler::GetSizeX(TString volName)
 {
   if (fGeoPathHash != volName.Hash()) {
     NavigateTo(volName);
@@ -497,7 +498,7 @@ Float_t CbmTofGeoHandler::GetSizeX(TString volName)
   return sizex;
 }
 
-Float_t CbmTofGeoHandler::GetSizeY(TString volName) 
+Float_t CbmTofGeoHandler::GetSizeY(TString volName)
 {
   if (fGeoPathHash != volName.Hash()) {
     NavigateTo(volName);
@@ -506,7 +507,7 @@ Float_t CbmTofGeoHandler::GetSizeY(TString volName)
   return sizey;
 }
 
-Float_t CbmTofGeoHandler::GetSizeZ(TString volName) 
+Float_t CbmTofGeoHandler::GetSizeZ(TString volName)
 {
   if (fGeoPathHash != volName.Hash()) {
     NavigateTo(volName);
@@ -515,7 +516,7 @@ Float_t CbmTofGeoHandler::GetSizeZ(TString volName)
   return sizez;
 }
 
-Float_t CbmTofGeoHandler::GetZ(TString volName) 
+Float_t CbmTofGeoHandler::GetZ(TString volName)
 {
   if (fGeoPathHash != volName.Hash()) {
     NavigateTo(volName);
@@ -523,7 +524,7 @@ Float_t CbmTofGeoHandler::GetZ(TString volName)
   return fGlobal[2];
 }
 
-Float_t CbmTofGeoHandler::GetY(TString volName) 
+Float_t CbmTofGeoHandler::GetY(TString volName)
 {
   if (fGeoPathHash != volName.Hash()) {
     NavigateTo(volName);
@@ -531,7 +532,7 @@ Float_t CbmTofGeoHandler::GetY(TString volName)
   return fGlobal[1];
 }
 
-Float_t CbmTofGeoHandler::GetX(TString volName) 
+Float_t CbmTofGeoHandler::GetX(TString volName)
 {
   if (fGeoPathHash != volName.Hash()) {
     NavigateTo(volName);
@@ -539,7 +540,7 @@ Float_t CbmTofGeoHandler::GetX(TString volName)
   return fGlobal[0];
 }
 
-void CbmTofGeoHandler::NavigateTo(TString volName) 
+void CbmTofGeoHandler::NavigateTo(TString volName)
 {
   if (fIsSimulation) {
     LOG(FATAL)<<"This methode is not supported in simulation mode"<<FairLogger::endl;
@@ -547,13 +548,13 @@ void CbmTofGeoHandler::NavigateTo(TString volName)
     gGeoManager->cd(volName.Data());
     fGeoPathHash = volName.Hash();
     fCurrentVolume = gGeoManager->GetCurrentVolume();
-    fVolumeShape = (TGeoBBox*)fCurrentVolume->GetShape(); 
+    fVolumeShape = (TGeoBBox*)fCurrentVolume->GetShape();
     Double_t local[3] = {0., 0., 0.};  // Local centre of volume
     gGeoManager->LocalToMaster(local, fGlobal);
     LOG(DEBUG2)<<"GeoNav: Pos: "<<fGlobal[0]<<" , "<<fGlobal[1]<<" , "<<fGlobal[2]<<FairLogger::endl;
 //    fGlobalMatrix = gGeoManager->GetCurrentMatrix();
-  }	      
+  }
 }
 
- 
+
 ClassImp(CbmTofGeoHandler)
