@@ -663,7 +663,7 @@ Double_t sideDz = fSupportLz[iStation]/2. + fActiveLzSector/2.;
   if(modName.Contains("active")){
     
     gGeoManager->cd(modulePath.Data());
-    TGeoNode* moduleNode = gGeoManager->GetMother(0);
+    moduleNode = gGeoManager->GetMother(0);
     Int_t nModule=moduleNode->GetNumber();
 
     Bool_t iSide;

@@ -127,9 +127,9 @@ Double_t GetSizeX(const TString& path);
  
 
    // for backward compatibility
-   Int_t GetStation(const TString& path);
-   Int_t GetLayer(const TString& path);
-   Int_t GetActive(const TString& path);
+   //Int_t GetStation(const TString& path);
+   //Int_t GetLayer(const TString& path);
+   //Int_t GetActive(const TString& path);
 
 
 
@@ -168,16 +168,16 @@ Double_t GetSizeX(const TString& path);
 
 
   private:
-    CbmMuchGeoScheme();
-void NavigateTo(const TString& path);
-void NavigateModule(const TString& path);
+   CbmMuchGeoScheme();
+   void NavigateTo(const TString& path);
+   void NavigateModule(const TString& path);
  
-UInt_t       fGeoPathHash;   //!
+   UInt_t       fGeoPathHash;   //!
    TGeoVolume*  fCurrentVolume; //!
    TGeoBBox*    fVolumeBoxShape;   //!
-    TGeoTrap*    fVolumeTrapShape;
+   TGeoTrap*    fVolumeTrapShape;
    Double_t     fGlobal[3];  
-Double_t     fGlobalTrap[3];    //! Global center of volume
+   Double_t     fGlobalTrap[3];    //! Global center of volume
    TGeoHMatrix* fGlobalMatrix;  //!
    
 
