@@ -6,6 +6,7 @@
  **
  **/
 
+// 2017-10-18 - DE - use mTOF v18h with vertical orientation
 // 2017-10-16 - DE - use 25 degree beampipe
 // 2017-06-03 - DE - add RICH v18a_mcbm
 // 2017-05-02 - DE - switch back to 5x5 RPC TOF
@@ -25,7 +26,7 @@ void setup_sis18_mcbm_25deg()
   TString stsGeoTag       = "v18f_mcbm";    // "v18e_mcbm"; // "v18d_mcbm";
   TString muchGeoTag      = "v18a_mcbm";
   TString trdGeoTag       = "v18e_1e_mcbm"; // "v18i_1e_mcbm";
-  TString tofGeoTag       = "v18f_mcbm";    // "v18g_mcbm";
+  TString tofGeoTag       = "v18h_mcbm";    // "v18f_mcbm"; // "v18g_mcbm";
   TString richGeoTag      = "v18b_mcbm";
   TString platGeoTag      = "v18a_mcbm";
   // ------------------------------------------------------------------------
