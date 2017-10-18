@@ -16,7 +16,7 @@
 // 2015-12-11 - DE - use STS v15c as new default
 // 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
 // 2015-07-20 - FU - add material budget files
-// 2015-03-13 - DE - use STS v13y with correct ladder orientation as new default 
+// 2015-03-13 - DE - use STS v13y with correct ladder orientation as new default
 // 2015-01-28 - DE - use STS v13x fitting with with PIPE v14l
 // 2015-01-22 - DE - use MVD v14b with PIPE v14l as default
 // 2015-01-19 - DE - use TRD v15a as new default
@@ -44,7 +44,7 @@ void setup_sis100_electron()
   TString stsGeoTag       = "v16x";
   TString richGeoTag      = "v16a_1e";
   TString trdGeoTag       = "v17c_1e";
-  TString tofGeoTag       = "v16a_1e";
+  TString tofGeoTag       = "v16c_1e";
   TString psdGeoTag       = "v17a";
   TString platGeoTag      = "v13a";
   // ------------------------------------------------------------------------

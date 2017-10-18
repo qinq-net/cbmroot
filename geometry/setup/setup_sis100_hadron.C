@@ -37,7 +37,7 @@ void setup_sis100_hadron()
   TString mvdGeoTag       = "v15a";
   TString stsGeoTag       = "v16x";
   TString trdGeoTag       = "v17c_1h";
-  TString tofGeoTag       = "v16a_1h";
+  TString tofGeoTag       = "v16c_1h";
   TString psdGeoTag       = "psd_geo_xy.txt";
   TString platGeoTag      = "v13a";
   // ------------------------------------------------------------------------

@@ -43,7 +43,7 @@ void setup_sis300_electron()
   TString stsGeoTag       = "v16x";
   TString richGeoTag      = "v16a_3e";
   TString trdGeoTag       = "v17c_3e";
-  TString tofGeoTag       = "v16a_3e";
+  TString tofGeoTag       = "v16c_3e";
   TString platGeoTag      = "v13b";
   // ------------------------------------------------------------------------
 

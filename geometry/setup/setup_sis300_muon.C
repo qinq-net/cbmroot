@@ -36,7 +36,7 @@ void setup_sis300_muon()
   TString stsGeoTag       = "v16x";
   TString muchGeoTag      = "v13f";
   TString trdGeoTag       = "v17c_3m";
-  TString tofGeoTag       = "v16a_3m";
+  TString tofGeoTag       = "v16c_3m";
   TString platGeoTag      = "v13b";
   // ------------------------------------------------------------------------
 

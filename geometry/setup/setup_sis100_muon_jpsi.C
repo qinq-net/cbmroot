@@ -41,7 +41,7 @@ void setup_sis100_muon_jpsi()
   TString muchGeoTag      = "v15c_SIS100-C_gemtrd";
   TString shieldGeoTag    = "v15c_SIS100C_149_3part_125cm";
   TString trdGeoTag       = "v17c_1m";
-  TString tofGeoTag       = "v16a_1m";
+  TString tofGeoTag       = "v16c_1m";
   TString platGeoTag      = "v13a";
   // ------------------------------------------------------------------------
 
