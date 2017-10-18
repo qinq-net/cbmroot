@@ -5,7 +5,7 @@
  * @since   21.03.07
  *
  *  Class for MUon CHambers detector
- *
+ *Modified 18/10/2017 by Omveer Singh
  */
 
 #ifndef CBMMUCH_H
@@ -14,7 +14,8 @@
 
 #include "TLorentzVector.h"
 #include "FairDetector.h"
-
+#include "TVector3.h"
+#include <string>
 
 class TClonesArray;
 class CbmMuchPoint;
@@ -22,6 +23,8 @@ class FairVolume;
 class CbmGeoMuchPar;
 class TGeoMedium;
 class TGeoCombiTrans;
+//class CbmMuchGeoHandler;
+//class CbmMuchGeoScheme;
 
 class CbmMuch : public FairDetector
 {
@@ -37,7 +40,11 @@ class CbmMuch : public FairDetector
    *@param active  sensitivity flag
    **/
   CbmMuch(const char* name, Bool_t active);
+   void ExpandMuchNodes(TGeoNode* fN);
+//void   UseGlobalPhysicsProcesses(Bool_t use) { fUseGlobalPhysicsProcesses=use; }
 
+
+// Bool_t fIsSimulation;
 
   /** Destructor **/
   virtual ~CbmMuch();
@@ -86,7 +93,7 @@ class CbmMuch : public FairDetector
    **
    ** Screen output of hit collection.
    **/
-  virtual void Print(Option_t* ="") const;
+  virtual void Print() const;
 
 
   /** Virtual method Reset
@@ -107,19 +114,26 @@ class CbmMuch : public FairDetector
 			  Int_t offset);
 
 
-  /** Virtual method Construct geometry
+  /** Virtaul method Construct geometry
    **
    ** Constructs the Much geometry
    **/
-  virtual void ConstructGeometry();
+ // virtual void ConstructNewGeometry();
 
-
+// Construct AsciiGeometry
+virtual void ConstructGeometry();
+virtual void ConstructRootGeometry();
+//virtual void ConstructAsciiGeometry();
+Bool_t CheckIfSensitive(std::string name);
 
   //  void SaveGeoParams();
 
  private:
-
-
+//virtual void Initialize();
+ //CbmMuchGeoScheme* fGeoScheme;
+//CbmMuchGeoHandler* fGeoHandler;
+//virtual void SetSpecialPhysicsCuts();
+//Bool_t         fUseGlobalPhysicsProcesses;
   /** Track information to be stored until the track leaves the
       active volume. **/
   Int_t          fTrackID;           //!  track index
@@ -135,16 +149,16 @@ class CbmMuch : public FairDetector
   Bool_t         kGeoSaved;          //!
   TList *flGeoPar; //!
   CbmGeoMuchPar* fPar;               //!  parameter container
+ std::string fVolumeName;
+//TClonesArray* fMuchPoints;
 
-  TGeoCombiTrans*   fCombiTrans;  //! Transformation matrix for geometry positioning
-
-  std::string fVolumeName; //! Volume name to be placed
-   
-
+  //TGeoCombiTrans*   fCombiTrans;
   /** Private method AddHit
    **
    ** Adds a MuchPoint to the HitCollection
    **/
+Bool_t IsNewGeometryFile(TString filename);
+
   CbmMuchPoint* AddHit(Int_t trackID, Int_t detID,
 		       TVector3 posIn, TVector3 posOut,
 		       TVector3 momIn, TVector3 momOut,
@@ -156,32 +170,15 @@ class CbmMuch : public FairDetector
    ** Resets the private members for the track parameters
    **/
   void ResetParameters();
+// virtual void        ConstructRootGeometry();
   Int_t GetDetId(FairVolume* vol);
-
-  /** Construct old geometry
-   **
-   ** Constructs the Much geometry from old ascii parameter file
-   **/
-  void ConstructOldGeometry();
-
-  /** Construct geometry from ROOT file
-   **
-   ** Constructs the Much geometry from ROOT file
-   **/
-  virtual void ConstructRootGeometry();
-
-  void ExpandMuchNodes(TGeoNode* fN);
-  Bool_t IsNewGeometryFile(TString);
-
-  Bool_t CheckIfSensitive(std::string name);
-
 private:
   Int_t Intersect(Float_t x, Float_t y, Float_t lx, Float_t ly, Float_t r);
   TGeoMedium* CreateMedium(const char* matName);
 
   CbmMuch(const CbmMuch&);
   CbmMuch& operator=(const CbmMuch&);
-
+TGeoCombiTrans*   fCombiTrans;
   ClassDef(CbmMuch,1);
 
 };

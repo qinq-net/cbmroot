@@ -1,20 +1,24 @@
+//----------------------------------------------------------------------------------------
+//--------------                                  CbmMuch                      -----------
+//---------------                   Modified 18/10/2017 by Omveer Singh        -----------
+//----------------------------------------------------------------------------------------
+
+
 #include "CbmMuch.h"
 
 #include "CbmMuchPoint.h"
 #include "CbmGeoMuchPar.h"
 #include "CbmGeoMuch.h"
 
-#include "CbmStack.h"
-
 #include "FairGeoInterface.h"
 #include "FairGeoLoader.h"
 #include "FairGeoNode.h"
 #include "FairGeoRootBuilder.h"
 #include "FairRootManager.h"
+#include "CbmStack.h"
 #include "FairRuntimeDb.h"
 #include "FairRun.h"
 #include "FairVolume.h"
-#include "FairVolumeList.h"
 
 #include "TObjArray.h"
 #include "TClonesArray.h"
@@ -32,7 +36,6 @@
 #include "FairGeoMedia.h"
 #include "FairGeoMedium.h"
 #include "TGeoBoolNode.h"
-#include "TGeoMatrix.h"
 
 #include "CbmMuchAddress.h"
 #include "CbmMuchStation.h"
@@ -54,7 +57,7 @@ using std::endl;
 
 ClassImp(CbmMuch)
 
-  // -----   Default constructor   -------------------------------------------
+// -----   Default constructor   -------------------------------------------
 CbmMuch::CbmMuch() 
 : FairDetector(),
   fTrackID(-1),
@@ -69,14 +72,14 @@ CbmMuch::CbmMuch()
   fPosIndex(0),
   fMuchCollection(new TClonesArray("CbmMuchPoint")),
   kGeoSaved(kFALSE),
-  flGeoPar(new TList()),
-  fPar(NULL),
   fCombiTrans(),
-  fVolumeName("")
+  flGeoPar(new TList()),
+  fPar(NULL)
 {
   ResetParameters();
   flGeoPar->SetName( GetName());
   fVerboseLevel = 1;
+  
 }
 // -------------------------------------------------------------------------
 
@@ -96,36 +99,36 @@ CbmMuch::CbmMuch(const char* name, Bool_t active)
     fELoss(0.),
     fPosIndex(0),
     fMuchCollection(new TClonesArray("CbmMuchPoint")),
+    fCombiTrans(),
     kGeoSaved(kFALSE),
     flGeoPar(new TList()),
-    fPar(NULL),
-    fCombiTrans(),
-    fVolumeName("")
-
+    
+    fPar(NULL)
 {
+  
   ResetParameters();
   flGeoPar->SetName( GetName());
   fVerboseLevel = 1;
 }
-// -------------------------------------------------------------------------
 
 
 
 // -----   Destructor   ----------------------------------------------------
 CbmMuch::~CbmMuch() {
-
+  
   if ( flGeoPar ) delete flGeoPar;
   if (fMuchCollection) {
     fMuchCollection->Delete();
     delete fMuchCollection;
   }
 }
-// -------------------------------------------------------------------------
 
 
 // -----   Public method ProcessHits  --------------------------------------
-Bool_t CbmMuch::ProcessHits(FairVolume* vol) {
 
+
+Bool_t CbmMuch::ProcessHits(FairVolume* vol) {
+  
   if ( gMC->IsTrackEntering() ) {
     fELoss  = 0.;
     fTime   = gMC->TrackTime() * 1.0e09;
@@ -133,7 +136,7 @@ Bool_t CbmMuch::ProcessHits(FairVolume* vol) {
     gMC->TrackPosition(fPosIn);
     gMC->TrackMomentum(fMomIn);
   }
-
+  
   // Sum energy loss for all steps in the active volume
   fELoss += gMC->Edep();
 
@@ -144,6 +147,7 @@ Bool_t CbmMuch::ProcessHits(FairVolume* vol) {
     fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
     fVolumeID = vol->getMCid();
     Int_t fDetectorId = GetDetId(vol);
+    
     if (fVerboseLevel>2){
       printf(" TrackId: %i",fTrackID);
       printf(" System: %i" , CbmMuchAddress::GetSystemIndex(fDetectorId));
@@ -156,38 +160,60 @@ Bool_t CbmMuch::ProcessHits(FairVolume* vol) {
     Int_t iStation = CbmMuchAddress::GetStationIndex(fDetectorId);
     gMC->TrackPosition(fPosOut);
     gMC->TrackMomentum(fMomOut);
+    
     assert(iStation >=0 && iStation < fPar->GetNStations());
     CbmMuchStation* station= (CbmMuchStation*) fPar->GetStations()->At(iStation);
+    
     if (fPosIn.Perp() >station->GetRmax()) {return kFALSE; }
     if (fPosOut.Perp()>station->GetRmax()) {return kFALSE; }
     if (fPosIn.Perp() <station->GetRmin()) {return kFALSE; }
     if (fPosOut.Perp()<station->GetRmin()) {return kFALSE; }
-
+    
     if (fELoss == 0. ) return kFALSE;
     AddHit(fTrackID, fDetectorId,
-      TVector3(fPosIn.X(),   fPosIn.Y(),   fPosIn.Z()),
-      TVector3(fPosOut.X(),  fPosOut.Y(),  fPosOut.Z()),
-      TVector3(fMomIn.Px(),  fMomIn.Py(),  fMomIn.Pz()),
-      TVector3(fMomOut.Px(), fMomOut.Py(), fMomOut.Pz()),
-      fTime, fLength, fELoss);
-
+	   TVector3(fPosIn.X(),   fPosIn.Y(),   fPosIn.Z()),
+	   TVector3(fPosOut.X(),  fPosOut.Y(),  fPosOut.Z()),
+	   TVector3(fMomIn.Px(),  fMomIn.Py(),  fMomIn.Pz()),
+	   TVector3(fMomOut.Px(), fMomOut.Py(), fMomOut.Pz()),
+	   fTime, fLength, fELoss);
+    
     //if (fPosOut.Z()>250) printf("%f\n",fPosOut.Z());
-
+    
     // Increment number of MuchPoints for this track
     CbmStack* stack = (CbmStack*) gMC->GetStack();
     stack->AddPoint(kMuch);
-
+    
     ResetParameters();
   }
   return kTRUE;
 }
-// -------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------
+
+Int_t CbmMuch::GetDetId(FairVolume* vol) {
+  TString name = vol->GetName();
+  Char_t cStationNr[3]= {name[11],name[12],' '};
+  Int_t  iStation     = atoi(cStationNr)-1;
+  Int_t  iLayer       = TString(name[18]).Atoi()-1;
+  Int_t  iSide        = (name[19]=='b') ? 1 : 0;
+  Char_t cModuleNr[4] = {name[26],name[27],name[28],' '};
+  Int_t  iModule      = atoi(cModuleNr)-1;
+  if(iSide!=1 && iSide !=0) printf("side = %i", iSide);
+  Int_t detectorId = CbmMuchAddress::GetAddress(iStation,iLayer,iSide,iModule);
+  assert(CbmMuchAddress::GetStationIndex(detectorId) == iStation);
+  assert(CbmMuchAddress::GetLayerIndex(detectorId) == iLayer);
+  assert(CbmMuchAddress::GetLayerSideIndex(detectorId) == iSide);
+  assert(CbmMuchAddress::GetModuleIndex(detectorId) == iModule);
+  assert(detectorId > 0);
+  return detectorId;
+
+}
 
 // -------------------------------------------------------------------------
 void CbmMuch::BeginEvent() {
 }
-// -------------------------------------------------------------------------
+
 
 
 // -------------------------------------------------------------------------
@@ -196,16 +222,11 @@ void CbmMuch::EndOfEvent() {
   fMuchCollection->Delete();
   ResetParameters();
 }
-// -------------------------------------------------------------------------
-
 
 // -------------------------------------------------------------------------
 void CbmMuch::Register() {
   FairRootManager::Instance()->Register("MuchPoint", GetName(), fMuchCollection, kTRUE);
 }
-// -------------------------------------------------------------------------
-
-
 
 // -------------------------------------------------------------------------
 TClonesArray* CbmMuch::GetCollection(Int_t iColl) const {
@@ -217,22 +238,16 @@ TClonesArray* CbmMuch::GetCollection(Int_t iColl) const {
 
 
 // -------------------------------------------------------------------------
-void CbmMuch::Print(Option_t*) const {
+void CbmMuch::Print() const {
   Int_t nHits = fMuchCollection->GetEntriesFast();
   LOG(INFO) << fName << ": " << nHits << " points registered in this event." << FairLogger::endl;
 }
-// -------------------------------------------------------------------------
-
-
 
 // -------------------------------------------------------------------------
 void CbmMuch::Reset() {
   fMuchCollection->Delete();
   ResetParameters();
 }
-// -------------------------------------------------------------------------
-
-
 
 // -------------------------------------------------------------------------
 void CbmMuch::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset) {
@@ -258,51 +273,60 @@ CbmMuchPoint* CbmMuch::AddHit(Int_t trackID, Int_t detID, TVector3 posIn,
 			      TVector3 posOut, TVector3 momIn,
 			      TVector3 momOut, Double_t time,
 			      Double_t length, Double_t eLoss) {
+  
   TClonesArray& clref = *fMuchCollection;
   Int_t size = clref.GetEntriesFast();
   if (fVerboseLevel>1)
     LOG(INFO) << fName << ": Adding Point at (" << posIn.X() << ", " << posIn.Y()
-	 << ", " << posIn.Z() << ") cm,  detector " << detID << ", track "
-         << trackID << ", energy loss " << eLoss*1e06 << " keV" << FairLogger::endl;
-
+	      << ", " << posIn.Z() << ") cm,  detector " << detID << ", track "
+	      << trackID << ", energy loss " << eLoss*1e06 << " keV" << FairLogger::endl;
+  
   return new(clref[size]) CbmMuchPoint(trackID, detID, posIn, posOut,
 				       momIn, momOut, time, length, eLoss);
 }
-// ----------------------------------------------------------------------------
 
+// -----  ConstructGeometry  -----------------------------------------------
+void CbmMuch::ConstructGeometry() {
+  
+  TString fileName = GetGeometryFileName();
 
-void CbmMuch::ConstructGeometry()
-{
-  TString fileName=GetGeometryFileName();
-  if (fileName.EndsWith(".geo")) {
-    LOG(INFO) << "Constructing MUCH geometry from ASCII file "
-              << fileName << FairLogger::endl;
-    ConstructOldGeometry();
-  } else if (fileName.EndsWith(".root")) {
-    LOG(INFO) << "Constructing MUCH geometry from ROOT file "
-              << fileName << FairLogger::endl;
-    ConstructRootGeometry();
-  } else {
-    LOG(FATAL) << "Geometry format not supported. ASCII and ROOT format are supported" 
-               << FairLogger::endl;
+  // --- Only ROOT geometries are supported
+  if (  ! fileName.EndsWith(".root") ) {
+    LOG(FATAL) <<  GetName() << ": Geometry format of file "
+	       << fileName.Data() << " not supported." << FairLogger::endl;
   }
+  
+  LOG(INFO) << "Constructing " << GetName() << "  geometry from ROOT  file "
+	    << fileName.Data() << FairLogger::endl;
+  ConstructRootGeometry();
 }
+// -------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-void CbmMuch::ConstructOldGeometry() {
+void CbmMuch::ConstructRootGeometry()
+{   
+
   FairGeoLoader*    geoLoad = FairGeoLoader::Instance();
   FairGeoInterface* geoFace = geoLoad->getGeoInterface();
   geoFace->addGeoModule(new CbmGeoMuch());
   FairGeoMedia*     media    = geoFace->getMedia();
   FairGeoBuilder*   geobuild = geoLoad->getGeoBuilder();
-
+  
+  
+  
+  
+  
+  
+  
+  
   FairRun*        fRun = FairRun::Instance();
   if (!fRun) {Fatal("CreateGeometry","No FairRun found"); return;}
   FairRuntimeDb*  rtdb = FairRuntimeDb::instance();
   fPar  = (CbmGeoMuchPar*)(rtdb->getContainer("CbmGeoMuchPar"));
   TObjArray* stations = fPar->GetStations();
 
+  
+  
   // Create media
   TGeoMedium* mat = NULL;
   TGeoMedium* air          = CreateMedium("air");
@@ -314,282 +338,92 @@ void CbmMuch::ConstructOldGeometry() {
   TGeoMedium* supportMat   = CreateMedium("MUCHsupport");
   TGeoMedium* noryl        = CreateMedium("MUCHnoryl");
   TGeoMedium* polyethylene = CreateMedium("MUCHpolyethylene");
-
+  
   Double_t* buf = NULL;
 
+  //-------------------------------------------------------
+  
   CbmMuchGeoScheme* fGeoScheme = CbmMuchGeoScheme::Instance();
+  
   fGeoScheme->Init(stations);
-  fGeoScheme->ReadGeoFile(fgeoName);
-  fGeoScheme->Print();
-  fGeoScheme->CreateMuchCave();
+  
+  if( IsNewGeometryFile(fgeoName) ) {
 
-  // Create much cave
-  Double_t muchZ0 = fGeoScheme->GetMuchCaveZ0();
-  //  TGeoCone*   shMuch = fGeoScheme->GetMuchCave();
-  //  TGeoVolume* voMuch = new TGeoVolume("much",shMuch,air);
-  TGeoVolume* voMuch = new TGeoVolumeAssembly("much");
-  gGeoManager->Node("much",0,"cave",0.,0.,muchZ0,0,kTRUE,buf,0);
-
-
-  // Create absorbers
-  TObjArray* absorbers = fGeoScheme->GetAbsorbers();
-  for (Int_t iAbsorber=0;iAbsorber<absorbers->GetEntriesFast();iAbsorber++){
-    switch (fGeoScheme->GetAbsorberMat(iAbsorber)) {
-      case 'C': mat = carbon;       break;
-      case 'I': mat = iron;         break;
-      case 'L': mat = lead;         break;
-      case 'W': mat = wolfram;      break;
-      case 'P': mat = polyethylene; break;
-      default :
-        mat = iron;
-        Warning("CreateGeometry","Absorber material not defined");
+    TGeoVolume *module1 = TGeoVolume::Import(fgeoName, fVolumeName.c_str());
+    
+    gGeoManager->GetTopVolume()->AddNode(module1, 0, fCombiTrans);
+    TObjArray* fNodes = module1->GetNodes();
+    for(Int_t fNdN=0; fNdN<fNodes->GetEntriesFast(); fNdN++){
+      TGeoNode* node = static_cast<TGeoNode*>(fNodes->At(fNdN));
+      
+      if(!TString(node->GetName()).Contains("Station"))continue;
+      
+      ExpandMuchNodes(node);
+      
     }
-    Double_t z0 = fGeoScheme->GetAbsorberZ0(iAbsorber)-muchZ0;
-    TGeoCone* shAbs = (TGeoCone*) absorbers->At(iAbsorber);
-    TString absorberName = Form("muchabsorber%02i",iAbsorber+1);
-    TGeoVolume* voAbs = new TGeoVolume(absorberName,shAbs,mat);
-    voAbs->SetLineColor(kRed);
-    gGeoManager->Node(absorberName,0,"much",0.,0.,z0,0,kTRUE,buf,0);
+    
   }
-
-  // Create rotation matrices
-  Int_t krotZ=0;
-  Int_t krotY=0;
-  gMC->Matrix(krotY,90,180,90,90,180,0);  // 180 degrees around y axis
-  gMC->Matrix(krotZ,90,180,90,270,0,0);   // 180 degrees around z axis
-
-  // Create GEM module shape which common for all module volumes
-  Double_t activeLx = fGeoScheme->GetActiveLx();
-  Double_t activeLy = fGeoScheme->GetActiveLy();
-  Double_t activeLz = fGeoScheme->GetActiveLz();
-  Double_t spacerLx = fGeoScheme->GetSpacerLx();
-  Double_t spacerLy = fGeoScheme->GetSpacerLy();
-  Double_t mDx  = (activeLx+2*spacerLx)/2.;
-  Double_t mDy  = (activeLy+2*spacerLy)/2.;
-  Double_t mDz  = (activeLz-0.001)/2.;
-  TGeoBBox* shModuleFull = new TGeoBBox("shModule", mDx, mDy, mDz);
-  TGeoBBox* shActiveFull = new TGeoBBox("shActive", activeLx/2, activeLy/2, activeLz/2);
-  TGeoCompositeShape* shSpacerFull = new TGeoCompositeShape("shSpacer","shModule-shActive");
-
-  // Create stations
-  for (Int_t iStation=0;iStation<fGeoScheme->GetNStations();iStation++){
-    const CbmMuchStation* station = fGeoScheme->GetStation(iStation);
-
-    // Check if
-    Int_t nLayers = station->GetNLayers();
-    if (nLayers<=0) {
-      Warning("CbmMuch","Station layers are not defined for station %02i",iStation);
-      continue;
-    }
-
-    // Create station volume
-    Double_t stRmin = station->GetTubeRmin();
-    Double_t stRmax = station->GetTubeRmax();
-    Double_t stDz   = station->GetTubeDz();
-    TString stationName = Form("muchstation%02i",iStation+1);
-    //  TGeoTube*   shStation = new TGeoTube(stRmin,shMuch->GetRmax2()-0.001,stDz);
-    //  TGeoVolume* voSt = new TGeoVolume(stationName,shStation,air);
-    TGeoVolume* voSt = new TGeoVolumeAssembly(stationName);
-    gGeoManager->Node(stationName,0,"much",0.,0.,station->GetZ()-muchZ0,0,kTRUE,buf,0);
-
-    // Create support shape
-    CbmMuchLayer* layerFirst = station->GetLayer(0);
-    Double_t supportDx  = layerFirst->GetSupportDx();
-    Double_t supportDy  = layerFirst->GetSupportDy();
-    Double_t supportDz  = layerFirst->GetSupportDz();
-    TString supportBoxName   = Form("shStation%02iSupportBox",iStation+1);
-    TString supportHoleName  = Form("shStation%02iSupportHole",iStation+1);
-    TString translationName  = Form("trSt%02i",iStation+1);
-    TString supportShapeName = Form("shSt%02iSupport",iStation+1);
-    TGeoTube* shSupportHole = new TGeoTube(supportHoleName,0.,stRmin,supportDz+0.001);
-    TGeoBBox* shSupportBox  = new TGeoBBox(supportBoxName,supportDx/2.,supportDy,supportDz);
-    TGeoTranslation* translation = new TGeoTranslation(translationName,-supportDx/2.,0.,0.);
-    translation->RegisterYourself();
-    TString expression = supportBoxName+"-"+supportHoleName+":"+translationName;
-    TGeoCompositeShape* shSupport = new TGeoCompositeShape(supportShapeName,expression);
-
-    // Create layers
-    for (Int_t iLayer=0;iLayer<station->GetNLayers();iLayer++){
-      CbmMuchLayer* layer = station->GetLayer(iLayer);
-      Double_t layerZ  = layer->GetZtoStationCenter();
-      Double_t layerDz = layer->GetDz();
-      TString layerName   = Form("muchstation%02ilayer%i",iStation+1,iLayer+1);
-      //  TGeoTube*   shLayer = new TGeoTube(stRmin,stRmax+50,layerDz);
-      //  TGeoVolume* voLayer = new TGeoVolume(layerName,shLayer,air);
-      TGeoVolume* voLayer = new TGeoVolumeAssembly(layerName);
-      gGeoManager->Node(layerName,0,stationName,0.,0.,layerZ,0,kTRUE,buf,0);
-
-      // Create support
-      TString  supportName1  = Form("muchstation%02ilayer%isupport1",iStation+1,iLayer+1);
-      TString  supportName2  = Form("muchstation%02ilayer%isupport2",iStation+1,iLayer+1);
-      TGeoVolume* voSupport1 = new TGeoVolume(supportName1,shSupport,supportMat);
-      TGeoVolume* voSupport2 = new TGeoVolume(supportName2,shSupport,supportMat);
-      voSupport1->SetLineColor(kYellow);
-      voSupport2->SetLineColor(kYellow);
-      if(TMath::Abs(supportDz) > 1e-5) { // Do not create support if it does not exist
-        gGeoManager->Node(supportName1,0,layerName,+supportDx/2.,0.,0.,    0,kTRUE,buf,0);
-        gGeoManager->Node(supportName2,0,layerName,-supportDx/2.,0.,0.,krotZ,kTRUE,buf,0);
-      }
-
-      // Create layer sides
-      for (Int_t iSide=0;iSide<2;iSide++){
-        const CbmMuchLayerSide* side = layer->GetSide(iSide);
-        Char_t cside = (iSide==1) ? 'b' : 'f';
-
-        // Create modules
-        for (Int_t iModule=0;iModule<side->GetNModules();iModule++){
-          CbmMuchModule* module = side->GetModule(iModule);
-          TVector3 pos = module->GetPosition();
-          TVector3 size = module->GetSize();
-          TString moduleHoleName = Form("shStation%02iModuleHole", iStation);
-          TGeoTube* shModuleHole = new TGeoTube(moduleHoleName, 0., stRmin, size[2] / 2. + 0.001);
-
-          if (!station->IsModuleDesign()){ // simple design
-            TString moduleBoxName = Form("shStation%02iModuleBox", iStation);
-            TString moduleActiveName = Form("shStation%02iModuleActive", iStation);
-            expression = moduleBoxName+"-"+moduleHoleName;
-            TGeoBBox* shActiveBox = new TGeoBBox(moduleBoxName, size[0] / 2., size[1] / 2., size[2] / 2.);
-            TGeoShape* shActive = new TGeoCompositeShape(moduleActiveName, expression);
-            TString activeName = Form("muchstation%02ilayer%i%cactive%03i",iStation+1,iLayer+1,cside,iModule+1);
-            TGeoVolume* voActive = new TGeoVolume(activeName,shActive,argon);
-            gGeoManager->Node(activeName,0,layerName,pos[0],pos[1],pos[2]-layer->GetZ(),0,kTRUE,buf,0);
-            AddSensitiveVolume(voActive);
-            continue;
-          }
-
-          if (module->GetDetectorType()==2) {
-            Fatal("CbmMuch","Station %02i - detailed module design not implemented for straws",iStation);
-          }
-
-          if (module->GetDetectorType()==3) {
-            Double_t dx1 = ((CbmMuchModuleGemRadial*)module)->GetDx1(); 
-            Double_t dx2 = ((CbmMuchModuleGemRadial*)module)->GetDx2(); 
-            Double_t dy  = ((CbmMuchModuleGemRadial*)module)->GetDy();
-            Double_t dz  = ((CbmMuchModuleGemRadial*)module)->GetDz();
-            TGeoTrap* shape = new TGeoTrap(dz,0,0,dy,dx1,dx2,0,dy,dx1,dx2,0);
-            shape->SetName(Form("shStation%02iLayer%i%cModule%03iActiveNoHole", iStation, iLayer, cside, iModule));
-
-            translationName = Form("tr%02il%i%cm%03i",iStation+1,iLayer+1,cside,iModule+1);
-            translation = new TGeoTranslation(translationName,0,-pos.Perp(),0.);
-            translation->RegisterYourself();
-            expression = Form("shStation%02iLayer%i%cModule%03iActiveNoHole-", iStation, iLayer, cside, iModule)+moduleHoleName+":"+translationName;
-            TString moduleActiveName = Form("shStation%02iLayer%i%cModule%03iActive", iStation, iLayer, cside, iModule);
-            TGeoCompositeShape* shActive = new TGeoCompositeShape(moduleActiveName,expression);
-            Double_t tg = (dx2-dx1)/2/dy;
-            Double_t dd1 = fGeoScheme->GetSpacerPhi()*tg;
-            Double_t dd2 = fGeoScheme->GetSpacerPhi()*sqrt(1+tg*tg);
-            Double_t sdx1 = dx1+dd2-dd1;
-            Double_t sdx2 = dx2+dd2+dd1; 
-            Double_t sdy  = dy+fGeoScheme->GetSpacerR();
-            Double_t sdz  = dz-0.1;
-            TGeoTrap* shapeSpacer = new TGeoTrap(sdz,0,0,sdy,sdx1,sdx2,0,sdy,sdx1,sdx2,0);
-            shapeSpacer->SetName(Form("shStation%02iLayer%i%cModule%03iFullSpacerNoHole", iStation, iLayer, cside, iModule));
-            TGeoCompositeShape* shSpacerFull1 = new TGeoCompositeShape(Form("shStation%02iLayer%i%cModule%03iSpacerNoHole", iStation, iLayer, cside, iModule),
-                Form("shStation%02iLayer%i%cModule%03iFullSpacerNoHole-shStation%02iLayer%i%cModule%03iActiveNoHole", iStation, iLayer, cside, iModule, iStation, iLayer, cside, iModule));
-            
-            expression = Form("shStation%02iLayer%i%cModule%03iSpacerNoHole-", iStation, iLayer, cside, iModule)+moduleHoleName+":"+translationName;
-            TGeoCompositeShape* shSpacer = new TGeoCompositeShape(Form("shStation%02iLayer%i%cModule%03iSpacer", iStation, iLayer, cside, iModule),expression);
-
-            TString activeName = Form("muchstation%02ilayer%i%cactive%03i",iStation+1,iLayer+1,cside,iModule+1);
-            TString spacerName = Form("muchstation%02ilayer%i%cspacer%03i",iStation+1,iLayer+1,cside,iModule+1);
-            TGeoVolume* voActive = new TGeoVolume(activeName,shActive,argon);
-            TGeoVolume* voSpacer = new TGeoVolume(spacerName,shSpacer,noryl);
-            Double_t phi0 = 360./(layer->GetSide(0)->GetNModules()+layer->GetSide(1)->GetNModules());
-            Double_t angle =  phi0*(2*iModule+iSide);
-            Int_t krot;
-            gMC->Matrix(krot,90,angle-90,90,angle,0,0);
-            gGeoManager->Node(activeName,0,layerName,pos[0],pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
-            gGeoManager->Node(spacerName,0,layerName,pos[0],pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
-            AddSensitiveVolume(voActive);
-            continue;
-          }
-          
-          TGeoShape* shActive = shActiveFull;
-          TGeoShape* shSpacer = shSpacerFull;
-          Double_t cutRadius = module->GetCutRadius();
-          if (cutRadius>0) { // Create composite shape with a hole
-            translationName = Form("tr%02il%i%cm%03i",iStation+1,iLayer+1,cside,iModule+1);
-            translation = new TGeoTranslation(translationName,-pos[0],-pos[1],0.);
-            translation->RegisterYourself();
-            expression = "shActive-"+moduleHoleName+":"+translationName;
-            TString moduleActiveName = Form("shStation%02iLayer%i%cModule%03iActive", iStation, iLayer, cside, iModule);
-            shActive = new TGeoCompositeShape(moduleActiveName,expression);
-            expression = "shSpacer-"+moduleHoleName+":"+translationName;
-            TString moduleSpacerName = Form("shStation%02iLayer%i%cModule%03iSpacer", iStation, iLayer, cside, iModule);
-            shSpacer = new TGeoCompositeShape(moduleSpacerName,expression);
-          }
-
-          TString activeName = Form("muchstation%02ilayer%i%cactive%03i",iStation+1,iLayer+1,cside,iModule+1);
-          TString spacerName = Form("muchstation%02ilayer%i%cspacer%03i",iStation+1,iLayer+1,cside,iModule+1);
-          TGeoVolume* voActive = new TGeoVolume(activeName,shActive,argon);
-          TGeoVolume* voSpacer = new TGeoVolume(spacerName,shSpacer,noryl);
-          voActive->SetLineColor(kCyan);
-          voSpacer->SetLineColor(kMagenta);
-          gGeoManager->Node(activeName,0,layerName,pos[0],pos[1],pos[2]-layer->GetZ(),0,kTRUE,buf,0);
-          gGeoManager->Node(spacerName,0,layerName,pos[0],pos[1],pos[2]-layer->GetZ(),0,kTRUE,buf,0);
-          AddSensitiveVolume(voActive);
-        } // modules
-      } // sides
-    } // layers
-  } // stations
-
+  
+  else {
+    
+    FairModule::ConstructRootGeometry();
+    
+  }
+  
   TObjArray* fSensNodes = fPar->GetGeoSensitiveNodes();
   TObjArray* fPassNodes = fPar->GetGeoPassiveNodes();
   TGeoNode* ncave = gGeoManager->GetTopNode();
-  TGeoNode* nmuch =(TGeoNode*) ncave->GetNodes()->FindObject("much_0");
+  
+  fGeoScheme->ExtractGeoParameter(ncave,fVolumeName.c_str());
+  
+TString objName = fVolumeName+"_0";
+  TGeoNode* nmuch =(TGeoNode*) ncave->GetNodes()->FindObject(objName);
   fPassNodes->Add(nmuch);
-  //printf("much =%p\n",nmuch);
+  
+  
   TObjArray* nodes = nmuch->GetNodes();
+  
   for (Int_t i=0;i<nodes->GetEntriesFast();i++){
     TGeoNode* node = (TGeoNode*) nodes->At(i);
     TString nodeName = node->GetName();
-    //printf("nodeName=%s\n",nodeName.Data());
-    if (nodeName.Contains("absorber")) fPassNodes->Add(node);
-    if (nodeName.Contains("station")) {
-      TObjArray* layers = node->GetNodes();
-      for (Int_t l=0;l<layers->GetEntriesFast();l++){
-        TGeoNode* layer = (TGeoNode*) layers->At(l);
-        if (!TString(layer->GetName()).Contains("layer")) continue;
-        TObjArray* layerNodes = layer->GetNodes();
-        for (Int_t m=0;m<layerNodes->GetEntriesFast();m++){
-          TGeoNode* layerNode = (TGeoNode*)layerNodes->At(m);
-          TString layerNodeName = layerNode->GetName();
-          if (layerNodeName.Contains("active"))  fSensNodes->Add(layerNode);
+    
+    
+    TObjArray* nodes1= node->GetNodes();
+    
+    for(Int_t j=0; j<nodes1->GetEntriesFast();j++){ 
+      TGeoNode* node1 = (TGeoNode*) nodes1->At(j);
+      TString node1Name = node1->GetName();
+      
+      if (node1Name.Contains("absblock")) fPassNodes->Add(node);
+      if (node1Name.Contains("muchstation")) { 
+	
+	TObjArray* layers = node1->GetNodes();
+	for (Int_t l=0;l<layers->GetEntriesFast();l++){
+	  TGeoNode* layer = (TGeoNode*) layers->At(l);
+ 
+	  if (!TString(layer->GetName()).Contains("layer")) continue;
+	  TObjArray* layerNodes = layer->GetNodes();
+	  for (Int_t m=0;m<layerNodes->GetEntriesFast();m++){
+	    TGeoNode* layerNode = (TGeoNode*)layerNodes->At(m);
+	    TString layerNodeName = layerNode->GetName();
 
-          if (layerNodeName.Contains("support")) fPassNodes->Add(layerNode);
-        }
+	    if (layerNodeName.Contains("active"))  fSensNodes->Add(layerNode);
+	    
+	    if (layerNodeName.Contains("support")) fPassNodes->Add(layerNode);
+            
+            if (layerNodeName.Contains("cool")) fPassNodes->Add(layerNode);
+	    
+	  }
+	}
       }
     }
   }
-
+  
   fPar->setChanged();
   fPar->setInputVersion(fRun->GetRunId(),1);
 }
-// -------------------------------------------------------------------------
+    
 
-
-Int_t CbmMuch::GetDetId(FairVolume* vol) {
-  TString name = vol->GetName();
-  Char_t cStationNr[3]= {name[11],name[12],' '};
-  Int_t  iStation     = atoi(cStationNr)-1;
-  Int_t  iLayer       = TString(name[18]).Atoi()-1;
-  Int_t  iSide        = (name[19]=='b') ? 1 : 0;
-  Char_t cModuleNr[4] = {name[26],name[27],name[28],' '};
-  Int_t  iModule      = atoi(cModuleNr)-1;
-  if(iSide!=1 && iSide !=0) printf("side = %i", iSide);
-  Int_t detectorId = CbmMuchAddress::GetAddress(iStation,iLayer,iSide,iModule);
-  assert(CbmMuchAddress::GetStationIndex(detectorId) == iStation);
-  assert(CbmMuchAddress::GetLayerIndex(detectorId) == iLayer);
-  assert(CbmMuchAddress::GetLayerSideIndex(detectorId) == iSide);
-  assert(CbmMuchAddress::GetModuleIndex(detectorId) == iModule);
-  assert(detectorId > 0);
-  return detectorId;
-
-}
-// -------------------------------------------------------------------------
-
-
-// -------------------------------------------------------------------------
 TGeoMedium* CbmMuch::CreateMedium(const char* matName){
   FairGeoLoader*    geoLoad   = FairGeoLoader::Instance();
   FairGeoBuilder*   geobuild  = geoLoad->getGeoBuilder();
@@ -600,52 +434,70 @@ TGeoMedium* CbmMuch::CreateMedium(const char* matName){
   Int_t kMat = geobuild->createMedium(medium);
   return gGeoManager->GetMedium(kMat);
 }
-// -------------------------------------------------------------------------
 
-//__________________________________________________________________________
-void CbmMuch::ConstructRootGeometry()
-{   
-  if( IsNewGeometryFile(fgeoName) ) {
-    TGeoVolume *module1 = TGeoVolume::Import(fgeoName, fVolumeName.c_str());
-    gGeoManager->GetTopVolume()->AddNode(module1, 0, fCombiTrans);
-    TObjArray* _nodes= gGeoManager->GetTopVolume()->GetNodes();
-    TIter iObj(_nodes);
-    while (TObject* obj = iObj()) {
-      TString nodename = obj->GetName();
-      if(nodename.Contains("much")) {
-        LOG(INFO) << "Expanding much nodes" << FairLogger::endl;
-        ExpandMuchNodes(static_cast<TGeoNode*>(obj));
-      } 
-    } 
-  } else {
-    FairModule::ConstructRootGeometry();
-  } 
-}   
+
+
+
+
 
 void CbmMuch::ExpandMuchNodes(TGeoNode* fN)
 {   
+  
+  
   TGeoVolume* v1=fN->GetVolume();
+ 
+  
   TObjArray* NodeList=v1->GetNodes();
+  TString sName= v1->GetName();
+  
   for (Int_t Nod=0; Nod<NodeList->GetEntriesFast(); Nod++) {
     TGeoNode* fNode =(TGeoNode*)NodeList->At(Nod);
+    
     if(fNode->GetNdaughters()>0) { ExpandMuchNodes(fNode); }
     TGeoVolume* v= fNode->GetVolume();
+ 
+    TString fNodeName = v->GetName();
+   
+    
+    
+
+    
     if ( (this->InheritsFrom("FairDetector")) && CheckIfSensitive(v->GetName())) {
       AddSensitiveVolume(v);
+      
     }
   } 
-
+  
 }   
 
+
+// -----   CheckIfSensitive   -------------------------------------------------
+Bool_t CbmMuch::CheckIfSensitive(
+				 std::string name)
+{
+  TString tsname = name;
+  
+  
+  if (tsname.Contains("active")){
+  cout<<tsname<<endl;
+      LOG(DEBUG) << "CbmMuch::CheckIfSensitive: Register active volume: " << tsname << FairLogger::endl;
+      return kTRUE;
+  }
+  return kFALSE;
+}
+
+
+//-----------------------------------------------------
 Bool_t CbmMuch::IsNewGeometryFile(TString /*filename*/)
 {
-
+  
   TFile* f=new TFile(fgeoName);
   TList* l = f->GetListOfKeys();
   Int_t numKeys = l->GetSize();
+
   if ( 2 != numKeys) {
     LOG(INFO) << "Not exactly two keys in the file. File is not of new type."
-              << FairLogger::endl;
+	      << FairLogger::endl;
     return kFALSE;
   }
   TKey* key;
@@ -655,13 +507,16 @@ Bool_t CbmMuch::IsNewGeometryFile(TString /*filename*/)
   TGeoTranslation* trans = NULL;
   TGeoRotation* rot = NULL;
   while ((key = (TKey*)next())) {
+    
     if (strcmp(key->GetClassName(),"TGeoVolume") == 0) {
-      LOG(INFO) << "Found TGeoVolume in geometry file." << FairLogger::endl;
-      LOG(INFO) << "Name: " << key->GetName() << FairLogger::endl;
+      LOG(DEBUG) << "Found TGeoVolume in geometry file." << FairLogger::endl;
+      LOG(INFO) << "Name: " << key->GetName() << FairLogger::endl; 
       foundGeoVolume =  kTRUE;
       fVolumeName = key->GetName();
       continue;
     }
+    
+    
     if (strcmp(key->GetClassName(),"TGeoVolumeAssembly") == 0) {
       LOG(INFO) << "Found TGeoVolumeAssembly in geometry file." << FairLogger::endl;
       LOG(INFO) << "Name: " << key->GetName() << FairLogger::endl;
@@ -669,10 +524,11 @@ Bool_t CbmMuch::IsNewGeometryFile(TString /*filename*/)
       fVolumeName = key->GetName();
       continue;
     }
+    
     if (strcmp(key->GetClassName(),"TGeoTranslation") == 0) {
       LOG(DEBUG) << "Found TGeoTranslation in geometry file." << FairLogger::endl;
       foundGeoMatrix =  kTRUE;
-      trans = static_cast<TGeoTranslation*>(key->ReadObj());
+      trans = static_cast<TGeoTranslation*>(key->ReadObj());      
       rot = new TGeoRotation();
       fCombiTrans = new TGeoCombiTrans(*trans, *rot);
       continue;
@@ -681,14 +537,14 @@ Bool_t CbmMuch::IsNewGeometryFile(TString /*filename*/)
       LOG(DEBUG) << "Found TGeoRotation in geometry file." << FairLogger::endl;
       foundGeoMatrix =  kTRUE;
       trans = new TGeoTranslation();
-      rot = static_cast<TGeoRotation*>(key->ReadObj());
+      rot = static_cast<TGeoRotation*>(key->ReadObj());      
       fCombiTrans = new TGeoCombiTrans(*trans, *rot);
       continue;
     }
     if (strcmp(key->GetClassName(),"TGeoCombiTrans") == 0) {
       LOG(DEBUG) << "Found TGeoCombiTrans in geometry file." << FairLogger::endl;
       foundGeoMatrix =  kTRUE;
-      fCombiTrans = static_cast<TGeoCombiTrans*>(key->ReadObj());
+      fCombiTrans = static_cast<TGeoCombiTrans*>(key->ReadObj());      
       continue;
     }
   }
@@ -696,27 +552,16 @@ Bool_t CbmMuch::IsNewGeometryFile(TString /*filename*/)
     LOG(INFO) << "Geometry file is of new type." << FairLogger::endl;
     return kTRUE;
   } else {
+    
     if ( !foundGeoVolume) {
       LOG(INFO) << "No TGeoVolume found in geometry file. File is not of new type."
-              << FairLogger::endl;
+		<< FairLogger::endl;
     }
-    if ( !foundGeoMatrix) {
+    if ( !foundGeoVolume) {
       LOG(INFO) << "Not TGeoMatrix derived object found in geometry file. File is not of new type."
-                << FairLogger::endl;
+		<< FairLogger::endl;
     }
     return kFALSE;
   }
-}
+} //-------------------------------------------------------------------------
 
-// -----   CheckIfSensitive   -------------------------------------------------
-Bool_t CbmMuch::CheckIfSensitive(
-                                std::string name)
-{
-   TString tsname = name;
-   if (tsname.Contains("active")){
-      LOG(DEBUG) << "CbmMuch::CheckIfSensitive: Register active volume: " << tsname << FairLogger::endl;
-      return kTRUE;
-   }
-   return kFALSE;
-}
-// ----------------------------------------------------------------------------

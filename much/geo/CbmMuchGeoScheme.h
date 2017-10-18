@@ -1,6 +1,7 @@
 // -------------------------------------------------------------------------
 // -----                   CbmMuchGeoScheme header file                -----
-// -----                  Created 18/02/08  by E. Kryshen              -----
+// -----                  Created 18/02/08  by E. Kryshen 
+// -----                  Modified 18/10/2017 by Omveer Singh          -----
 // -------------------------------------------------------------------------
 
 /** CbmMuchGeoScheme
@@ -23,6 +24,21 @@
 #include <vector>
 #include <map>
 
+
+#include "TGeoBBox.h"
+
+#include "TGeoVolume.h"
+#include "TGeoManager.h"
+#include "TGeoCompositeShape.h"
+#include "TGeoTube.h"
+#include "TGeoCone.h"
+#include "FairGeoMedia.h"
+#include "FairGeoMedium.h"
+#include "TGeoBoolNode.h"
+#include "TGeoArb8.h"
+
+
+
 class CbmMuchStation;
 class CbmMuchLayer;
 class CbmMuchLayerSide;
@@ -30,19 +46,29 @@ class CbmMuchModule;
 class CbmMuchModuleGem;
 class CbmMuchPad;
 
+class TGeoBBox;
+class TGeoVolume;
+class TGeoHMatrix;
+
+using std::vector;
+using std::map;
+
 class CbmMuchGeoScheme: public TObject {
 
   public:
-
     /** Destructor.     */
     ~CbmMuchGeoScheme();
-
+//void Init(Bool_t isSimulation = kFALSE);
     static CbmMuchGeoScheme* Instance();
     /** Gets whether the geometry scheme is initialized. */
     Bool_t IsInitialized() { return fInitialized; }
 
     // Get geometry objects by indices
+    CbmMuchStation* muchSt;
+    CbmMuchLayer* muchLy;
+    CbmMuchLayerSide* muchLySd;
     CbmMuchStation* GetStation(Int_t iStation) const;
+//Int_t GetStation(const TString& path);
     CbmMuchLayer* GetLayer(Int_t iStation, Int_t iLayer) const;
     CbmMuchLayerSide* GetLayerSide(Int_t iStation, Int_t iLayer, Bool_t iSide) const;
     CbmMuchModule* GetModule(Int_t iStation, Int_t iLayer, Bool_t iSide, Int_t iModule) const;
@@ -76,6 +102,38 @@ class CbmMuchGeoScheme: public TObject {
     return fMuchZ1+fAbsorberZ1[i]+((TGeoBBox*) fAbsorbers->At(i))->GetDZ();  
   }
 
+Double_t Rmin;
+Double_t Rmax;
+Double_t Dx2;  
+
+
+
+Double_t GetSizeX(const TString& path);
+   Double_t GetSizeY(const TString& path);
+   Double_t GetSizeZ(const TString& path);
+   Double_t GetX(const TString& path);
+   Double_t GetY(const TString& path);
+   Double_t GetZ(const TString& path);
+   
+
+   Double_t GetModuleDZ(const TString& path);
+   Double_t GetModuleX(const TString& path);
+   Double_t GetModuleY(const TString& path);
+   Double_t GetModuleZ(const TString& path);
+   Double_t GetModulePhi(const TString& path);
+   Double_t GetModuleH1(const TString& path);
+   Double_t GetModuleBl1(const TString& path);
+   Double_t GetModuleTl1(const TString& path);
+ 
+
+   // for backward compatibility
+   Int_t GetStation(const TString& path);
+   Int_t GetLayer(const TString& path);
+   Int_t GetActive(const TString& path);
+
+
+
+
     Double_t GetActiveLx() const {return fActiveLx;}
     Double_t GetActiveLy() const {return fActiveLy;}
     Double_t GetActiveLz() const {return fActiveLz;}
@@ -93,19 +151,42 @@ class CbmMuchGeoScheme: public TObject {
     void ClearPointArrays();
     void ClearHitArrays();
     void ClearClusterArrays();
-    std::vector<CbmMuchModule*>    GetModules() const;
-    std::vector<CbmMuchModuleGem*>    GetGemModules() const;
-    std::vector<CbmMuchModule*>    GetModules(Int_t iStation) const;
-    std::vector<CbmMuchLayerSide*> GetLayerSides(Int_t iStation) const;
+    vector<CbmMuchModule*>    GetModules() const;
+    vector<CbmMuchModuleGem*>    GetGemModules() const;
+    vector<CbmMuchModule*>    GetModules(Int_t iStation) const;
+    vector<CbmMuchLayerSide*> GetLayerSides(Int_t iStation) const;
     Int_t GetLayerSideNr(Int_t detId) const;
 
     void ReadGeoFile(const char* geoName);
-    void Print(Option_t* = "") const;
+    void Print();
     void CreateMuchCave();
+    void ExtractGeoParameter(TGeoNode* muchNode, const char* volumeName);
+    void StationNode(TGeoNode* MuchObjNode, TString MuchObjPath);
+    void LayerNode(TGeoNode* StNode,Int_t iStation, TString StPath);
+    void ModuleNode(TGeoNode* layerNode, Int_t iStation, Int_t iLayer, TString layerPath);
+    void ActiveModuleNode(TGeoNode* moduleNode, Int_t iStation, Int_t iLayer, Int_t iModule, TString modulePath);
 
 
   private:
     CbmMuchGeoScheme();
+void NavigateTo(const TString& path);
+void NavigateModule(const TString& path);
+ 
+UInt_t       fGeoPathHash;   //!
+   TGeoVolume*  fCurrentVolume; //!
+   TGeoBBox*    fVolumeBoxShape;   //!
+    TGeoTrap*    fVolumeTrapShape;
+   Double_t     fGlobal[3];  
+Double_t     fGlobalTrap[3];    //! Global center of volume
+   TGeoHMatrix* fGlobalMatrix;  //!
+   
+
+   // for backward compatibility
+   Int_t        fStation;       //! StationTypeID, 1..3
+   Int_t        fLayer;         //! LayerID within station, 1..4
+   Int_t        fActive;    //! ModuleCopyID with module type
+
+
     void InitModules();
     void CreateAbsorbers();
     void CreateStations();
@@ -117,9 +198,12 @@ class CbmMuchGeoScheme: public TObject {
     static Bool_t fInitialized;        // Defines whether the instance was initialized
     static Bool_t fModulesInitialized; // Defines whether grid of the instance was initialized
 
-    std::vector<std::vector<CbmMuchModule*> > fModules;      //!
-    std::vector<std::vector<CbmMuchLayerSide*> > fSides;     //!
-    std::map<Int_t,Int_t> fMapSides;
+    vector<vector<CbmMuchModule*> > fModules;      //!
+    vector<vector<CbmMuchLayerSide*> > fSides;     //!
+    map<Int_t,Int_t> fMapSides;
+
+
+ 
 
     TObjArray* fStations; //!
     TObjArray* fAbsorbers;//!
