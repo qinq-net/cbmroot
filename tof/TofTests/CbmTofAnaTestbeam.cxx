@@ -1771,7 +1771,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      Double_t dDTSpill=dTAv-StartSpillTime;
      StartSpillTime=dTAv;
      iNspills++;
-     LOG(INFO) << "StartSpillTime for "<<iNspills
+     LOG(DEBUG)<< "StartSpillTime for "<<iNspills
 	       <<Form(". spill set to %f ns after %7.4f s, MulD %2.0f, MulDet %d ",StartSpillTime,
 		      dDTSpill/1.E9,dMulD,(Int_t)fDetIdMap.size())<<FairLogger::endl;
    }
