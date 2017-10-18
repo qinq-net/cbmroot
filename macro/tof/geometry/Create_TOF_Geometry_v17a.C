@@ -1,7 +1,7 @@
-///                                             
+///
 /// \file Create_TOF_Geometry_v13_4x.C
 /// \brief Generates TOF geometry in Root format.
-///  
+///
 
 // Changelog
 //
@@ -10,7 +10,7 @@
 //                   with YY = year, v = version (a, b, ...) and ss = setup (1h for SIS100 hadron, ...)
 //                   => Prepare tof_v16a_1h to tof_v16a_3m
 // 2015-11-09 - PAL- Modify to easily prepare tof_v14_0a to tof_v14_0e on model of 13_5a to 13_5e
-// 2014-06-30 - NH - prepare tof_v14_0  geometry - SIS 300 hadron  : TOF_Z_Front =  880 cm //Bucharest 
+// 2014-06-30 - NH - prepare tof_v14_0  geometry - SIS 300 hadron  : TOF_Z_Front =  880 cm //Bucharest
 // 2014-06-27 - NH - prepare tof_v13_6b geometry - SIS 300 hadron  : TOF_Z_Front =  880 cm //external input
 // 2013-10-16 - DE - prepare tof_v13_5a geometry - SIS 100 hadron  : TOF_Z_Front =  450 cm
 // 2013-10-16 - DE - prepare tof_v13_5b geometry - SIS 100 electron: TOF_Z_Front =  600 cm
@@ -25,10 +25,10 @@
 // 2013-09-04 - DE - prepare tof_v13_4e geometry - SIS 300 muon    : TOF_Z_Front = 1020 cm
 // 2013-09-04 - DE - dump z-positions to .geo.info file
 // 2013-09-04 - DE - define front z-position of TOF wall (TOF_Z_Front)
-// 2013-09-04 - DE - fix arrangement of glass plates in RPC cells 
+// 2013-09-04 - DE - fix arrangement of glass plates in RPC cells
 
 // in root all sizes are given in cm
-// read positions of modules from dat - file 
+// read positions of modules from dat - file
 
 #include "TSystem.h"
 #include "TGeoManager.h"
@@ -64,7 +64,7 @@ const Float_t TOF_Z_Front =  (     "tof_v17a_1h" == geoVersion  ?  450 : // SIS 
                                (   "tof_v17a_1m" == geoVersion  ?  680 : // SIS 100 muon
                                 (  "tof_v17a_3e" == geoVersion  ?  880 : // SIS 300 electron
                                  ( "tof_v17a_3m" == geoVersion  ? 1020 : // SIS 300 muon
-                                   600 // Set default to SIS 100 electron 
+                                   600 // Set default to SIS 100 electron
                                  )
                                 )
                                )
@@ -79,7 +79,7 @@ const Float_t Wall_Z_PositionShift      = InnerWall_Z_PositionShift - 405; // in
 const Float_t  = -600.;  // inner wall placed at 600
 const Float_t       = -998.;  // outer wall placed at 1000
 */
-// for 6m 
+// for 6m
 /*
 const Float_t InnerWall_Z_PositionShift = 0.;    // -600.;  // inner wall placed at 600
 const Float_t Wall_Z_PositionShift      = -425.; // -998.;  // outer wall placed at 1000
@@ -91,7 +91,7 @@ const Float_t Wall_Z_PositionShift      = -25.; // -998.;  // outer wall placed 
 */
 
 // Names of the different used materials which are used to build the modules
-// The materials are defined in the global media.geo file 
+// The materials are defined in the global media.geo file
 const TString KeepingVolumeMedium     = "air";
 const TString BoxVolumeMedium         = "aluminium";
 const TString PoleVolumeMedium        = "tof_pole_aluminium";
@@ -131,12 +131,12 @@ Float_t FlipMod[NofModuleTypes][MaxNofModules];
 
 const Int_t NMm=4;
 const Int_t NMTm=3;
-// modules are placed in master reference frame (0,0,0) is the target position 
+// modules are placed in master reference frame (0,0,0) is the target position
 // x - horizontal, y vertical, z along beam
-// all number for the 6m position  
+// all number for the 6m position
 
 Float_t xPosModm[NMTm][NMm] = {{0.,0.,0.,0.},             //x - coordinates of center of M1 modules
-			       {129.5,-129.5,0.,0.},      //x - coordinates of center of M2 modules 
+			       {129.5,-129.5,0.,0.},      //x - coordinates of center of M2 modules
 			       {146.,-146.,146.,-146.}};  //x - coordinates of center of M3 modules
 Float_t yPosModm[NMTm][NMm] = {{-92.1,92.1,0.,0.},        //y - coordinates of center of M1 modules
 			       {0.,0.,0.,0.},             //y - coordinates of center of M2 modules
@@ -172,28 +172,28 @@ Float_t FlipModm[NMTm][NMm] = {{0.,180.,0.,0.},           //M1 angle
 			       {0.,180.,0.,0.},           //M2 angle
 			       {0.,0.,180.,180.}};        //M3 angle
 
-const Float_t CounterXstart1[NMTm] = {-44.,-27.,-64.}; 
-const Float_t CounterYstart1[NMTm] = {-37.,-19.,-55.}; 
+const Float_t CounterXstart1[NMTm] = {-44.,-27.,-64.};
+const Float_t CounterYstart1[NMTm] = {-37.,-19.,-55.};
 const Float_t CounterDyoff1[NMTm][2] = {{3.,-3.},
 					{-3.,3.},
-					{3.,-3.}}; 
+					{3.,-3.}};
 const Float_t CounterDzoff1[NMTm][2] = {{5.,-5.},
 					{-5.,5.},
-					{5.,-5.}}; 
-const Float_t CounterDxpos1[NMTm] = {30.,32.,31.}; 
-const Float_t CounterDypos1[NMTm] = {18.,18.,18.}; 
+					{5.,-5.}};
+const Float_t CounterDxpos1[NMTm] = {30.,32.,31.};
+const Float_t CounterDypos1[NMTm] = {18.,18.,18.};
 
-const Int_t NCounter2Y[NMTm]       = {2,6,0}; 
-const Float_t CounterXstart2[NMTm] = {-44.,-85.,-62.}; 
-const Float_t CounterYstart2[NMTm] = {-59.,-23.,-55.}; 
+const Int_t NCounter2Y[NMTm]       = {2,6,0};
+const Float_t CounterXstart2[NMTm] = {-44.,-85.,-62.};
+const Float_t CounterYstart2[NMTm] = {-59.,-23.,-55.};
 const Float_t CounterDyoff2[NMTm][2] = {{ 3.,-3.},
 					{-3.,3.},
-					{3.,-3.}}; 
+					{3.,-3.}};
 const Float_t CounterDzoff2[NMTm][2] = {{-5.,5.},
 					{-5.,5.},
-					{5.,-5.}}; 
-const Float_t CounterDxpos2[NMTm] = {30.,30.,30.}; 
-const Float_t CounterDypos2[NMTm] = { 8.,9.,8.}; 
+					{5.,-5.}};
+const Float_t CounterDxpos2[NMTm] = {30.,30.,30.};
+const Float_t CounterDypos2[NMTm] = { 8.,9.,8.};
 */
 
 //*************************************************************
@@ -211,7 +211,7 @@ const Float_t yPosCounter2[27] = {-19.,-19.,-19.,-19.,-19.,-24.,-24.,-14.4,-14.4
 const Float_t zPosCounter2[27] = {-7.55,-3.01,-7.55,-3.01,-7.55,-3.01,-7.55,6.07,1.53,1.53,6.07,1.53,6.07,1.53,
 -3.01,-7.55,6.07,1.53,-7.55,-3.01,-7.55,-3.01,-7.55,-3.01,-7.55,6.07,1.53};
 */
-// rearranged: first all large, than the small counters 
+// rearranged: first all large, than the small counters
 const Float_t xPosCounter2[27] = {87.,58.,29.,0.,-29.,87.,58.,29.,0.,-29.,87.,58.,29.,0.,-29.,
 -58.,-87.,-58.,-87.,-58.,-87.,-58.,-87.,-58.,-87.,-58.,-87.};
 const Float_t yPosCounter2[27] = {-19.,-19.,-19.,-19.,-19.,0.,0.,0.,0.,0.,19.,19.,19.,19.,19.,
@@ -227,30 +227,30 @@ const Float_t zPosCounter3[42] = {-7.55,-3.01,-7.55,-3.01,-7.55,-3.01,1.53,6.07,
 1.53,6.07,1.53,6.07,1.53,6.07,-7.55,-3.01,-7.55,-3.01,-7.55,-3.01,1.53,6.07,1.53,6.07,1.53,6.07,-7.55,-3.01,-7.55,-3.01,-7.55,-3.01};
 
 //  trebuie recalculat pt a da centrul detectorului, nu coltul lui
-const Int_t NCounter1Y[NMTm]       = {6,3,7}; 
+const Int_t NCounter1Y[NMTm]       = {6,3,7};
 const Float_t CounterXstart1[NMTm] = {-43.5,87.,72.5};  // position of left most counter in x - direction (for un-rotated modules)
 const Float_t CounterYstart1[NMTm] = {-54.6,-19.,-54.6};  // position of lowest counter in y direction (for un-rotated modules)
-const Float_t CounterDyoff1[NMTm][2] = {{-4.54,4.54},       // staggering in z direction due to row number  
+const Float_t CounterDyoff1[NMTm][2] = {{-4.54,4.54},       // staggering in z direction due to row number
 		    			{4.54,-4.54},
-					{4.54,-4.54}}; 
-const Float_t CounterDzoff1[NMTm][2] = {{4.54,-4.54},       // staggering in z direction due to column number 
+					{4.54,-4.54}};
+const Float_t CounterDzoff1[NMTm][2] = {{4.54,-4.54},       // staggering in z direction due to column number
 					{4.54,-4.54},
-					{4.54,-4.54}}; 
-const Float_t CounterDxpos1[NMTm] = {29.,29.,29.};      // distance of counters in x - direction 
+					{4.54,-4.54}};
+const Float_t CounterDxpos1[NMTm] = {29.,29.,29.};      // distance of counters in x - direction
 const Float_t CounterDypos1[NMTm] = {18.2,19.,18.2};      // distance of counters in y - direction
 
 const Int_t NCounter2Y[NMTm]       = {2,6,0}; //number of counters of 100 mm strip length in a column within each module type
 
-const Float_t CounterXstart2[NMTm] = {-43.5,-58.,0.}; 
-const Float_t CounterYstart2[NMTm] = {50.5,-24.,0.}; 
+const Float_t CounterXstart2[NMTm] = {-43.5,-58.,0.};
+const Float_t CounterYstart2[NMTm] = {50.5,-24.,0.};
 const Float_t CounterDyoff2[NMTm][2] = {{-4.54,4.54},
 					{-4.54,4.54},
-				      	{0.,0.}}; 
+				      	{0.,0.}};
 const Float_t CounterDzoff2[NMTm][2] = {{4.54,-4.54},
-				      	{4.54,-4.54},		    
-					{0.,0.}}; 
-const Float_t CounterDxpos2[NMTm] = {29.,29.,29.}; 
-const Float_t CounterDypos2[NMTm] = { 9.1,9.6,0.}; 
+				      	{4.54,-4.54},
+					{0.,0.}};
+const Float_t CounterDxpos2[NMTm] = {29.,29.,29.};
+const Float_t CounterDypos2[NMTm] = { 9.1,9.6,0.};
 
 // Aluminum box for all module types
 //m,s,b,m1,m2,m3
@@ -266,13 +266,13 @@ const Float_t Module_Thick_Alu_Z = 0.1;
 const Float_t shift_gas_box = (Module_Thick_Alu_X_right - Module_Thick_Alu_X_left)/2;
 
 // Distance to the center of the TOF wall [cm];
-// for 0m 
+// for 0m
 /*
 const Float_t InnerWall_Z_PositionShift = -600.;  // inner wall placed at 600
 const Float_t Wall_Z_PositionShift      = -998.;  // outer wall placed at 1000
 */
 
-// for 6m 
+// for 6m
 /*
 const Float_t InnerWall_Z_PositionShift = 0.;    // -600.;  // inner wall placed at 600
 const Float_t Wall_Z_PositionShift      = -425.; // -998.;  // outer wall placed at 1000
@@ -287,15 +287,15 @@ const Float_t Wall_Z_Position = TOF_Z_Front + 0.5 * Module_Size_Z[0] + 3.5 * Mod
 //const Float_t Wall_Z_Position = TOF_Z_Front + 98.5;  // corresponds to center of front module in the inner tower
 //const Float_t Wall_Z_Position = 1050;  // corresponds to center of front module in the inner tower
                                        //
-                                       // TOF z front = Wall_Z_Position - 0.5 * Module_Size_Z[0] 
+                                       // TOF z front = Wall_Z_Position - 0.5 * Module_Size_Z[0]
                                        //                               - 3.5 * Module_Size_Z[1]
-                                       //                               - 4.5 * Module_Size_Z[2] 
+                                       //                               - 4.5 * Module_Size_Z[2]
                                        //             = 1050 - 4.0 * 10 - 4.5 * 13 = 951.5 cm
                                        //
                                        // TOF z back  = Wall_Z_Position + 1.5 * Module_Size_Z[0]
                                        //             = 1050 + 1.5 * 10 = 1065
 
-//Type of Counter for module 
+//Type of Counter for module
 const Int_t CounterTypeInModule[NofModuleTypes] = {0,0,1,23,23,23};
 const Int_t NCounterInModule[NofModuleTypes]    = {5,5,5,2408,1512,4200};
 
@@ -400,7 +400,7 @@ void dump_info_file();
 void read_module_positions();
 
 void Create_TOF_Geometry_v17a() {
-  // Load the necessary FairRoot libraries 
+  // Load the necessary FairRoot libraries
 //  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
 //  basiclibs();
 //  gSystem->Load("libGeoBase");
@@ -408,7 +408,7 @@ void Create_TOF_Geometry_v17a() {
 //  gSystem->Load("libBase");
 
    // Printout what we are generating
-   std::cout << "Generating geometry "<< geoVersion 
+   std::cout << "Generating geometry "<< geoVersion
              << " at " << TOF_Z_Front << " cm from target."
              << std::endl
              << "Inner wall need to be shifted by "
@@ -424,10 +424,10 @@ void Create_TOF_Geometry_v17a() {
 
   // Get the GeoManager for later usage
   gGeoMan = (TGeoManager*) gROOT->FindObject("FAIRGeom");
-  gGeoMan->SetVisLevel(7);  // 2 = super modules   
-  gGeoMan->SetVisOption(1);  
+  gGeoMan->SetVisLevel(7);  // 2 = super modules
+  gGeoMan->SetVisOption(1);
 
-  // Create the top volume 
+  // Create the top volume
   /*
   TGeoBBox* topbox= new TGeoBBox("", 1000., 1000., 1000.);
   TGeoVolume* top = new TGeoVolume("top", topbox, gGeoMan->GetMedium("air"));
@@ -436,25 +436,25 @@ void Create_TOF_Geometry_v17a() {
 
   TGeoVolume* top = new TGeoVolumeAssembly("TOP");
   gGeoMan->SetTopVolume(top);
- 
+
   TGeoVolume* tof = new TGeoVolumeAssembly(geoVersion);
   top->AddNode(tof, 1);
-  
-  for(Int_t counterType = 0; counterType < NumberOfDifferentCounterTypes; counterType++) { 
+
+  for(Int_t counterType = 0; counterType < NumberOfDifferentCounterTypes; counterType++) {
     gCounter[counterType] = create_new_counter(counterType);
   }
 
-  for(Int_t moduleType = 0; moduleType < NofModuleTypes; moduleType++) { 
+  for(Int_t moduleType = 0; moduleType < NofModuleTypes; moduleType++) {
     gModules[moduleType] = create_new_tof_module(moduleType);
-    gModules[moduleType]->SetVisContainers(1); 
-  }  
+    gModules[moduleType]->SetVisContainers(1);
+  }
 
   gPole = create_tof_pole();
   gPoleShort = create_tof_poleshort();
 
   position_tof_modules(2);
-  position_tof_modules_m(3,5); // Bucharest modules 
-  //position_tof_modules_m(3,3); // Bucharest modules 
+  position_tof_modules_m(3,5); // Bucharest modules
+  //position_tof_modules_m(3,3); // Bucharest modules
   /*
   position_side_tof_modules(1);  // keep order !!
   position_inner_tof_modules(3);
@@ -470,7 +470,7 @@ void Create_TOF_Geometry_v17a() {
   position_tof_poles(0);
   if (IncludeSupports)
   position_tof_bars(0);
-  
+
   gGeoMan->CloseGeometry();
   gGeoMan->CheckOverlaps(0.00001);
   gGeoMan->CheckOverlaps(0.00001, "s");
@@ -479,7 +479,7 @@ void Create_TOF_Geometry_v17a() {
   gGeoMan->Test();
 
   tof->Export(FileNameSim);   // an alternative way of writing the tof volume
-  
+
   TFile* outfile = new TFile(FileNameSim,"UPDATE");
   TGeoTranslation* tof_placement = new TGeoTranslation("tof_trans", 0., 0., 0.);
   tof_placement->Write();
@@ -491,20 +491,20 @@ void Create_TOF_Geometry_v17a() {
 
   dump_info_file();
 
-  top->SetVisContainers(1); 
-  gGeoMan->SetVisLevel(5); 
+  top->SetVisContainers(1);
+  gGeoMan->SetVisLevel(5);
   top->Draw("ogl");
   //top->Draw();
   //gModules[0]->Draw("ogl");
   //  gModules[0]->Draw("");
-  gModules[0]->SetVisContainers(1); 
+  gModules[0]->SetVisContainers(1);
   //  gModules[1]->Draw("");
-  gModules[1]->SetVisContainers(1); 
+  gModules[1]->SetVisContainers(1);
   //gModules[5]->Draw("");
   //  top->Raytrace();
 
    // Printout what we are generating
-   std::cout << "Done generating geometry "<< geoVersion 
+   std::cout << "Done generating geometry "<< geoVersion
              << " at " << TOF_Z_Front << " cm from target."
              << std::endl;
 }
@@ -515,7 +515,7 @@ void read_module_positions()
 ifstream inFile;
 inFile.open ("TOF_10M.dat");
 if(!inFile.is_open()){
-  cout<<"<E> cannot open input file "<<endl; 
+  cout<<"<E> cannot open input file "<<endl;
   return;
 }
 
@@ -572,7 +572,7 @@ if(!inFile.is_open()){
   }else{
    FlipMod[iModType][iMod]=0.;
   }
-  //  if (iModType==1 && iMod==1) return; 
+  //  if (iModType==1 && iMod==1) return;
   /*
   cout<<" ModType "<<iModType<<", Mod "<<iMod<<", x "<<xPosMod[iModType][iMod]<<", y "
       <<yPosMod[iModType][iMod]<<", z "<<zPosMod[iModType][iMod]<<endl;
@@ -617,7 +617,7 @@ TGeoVolume* create_counter(Int_t modType)
 {
 
   //glass
-  Float_t gdx=Glass_X[modType]; 
+  Float_t gdx=Glass_X[modType];
   Float_t gdy=Glass_Y[modType];
   Float_t gdz=Glass_Z[modType];
 
@@ -626,7 +626,7 @@ TGeoVolume* create_counter(Int_t modType)
   Int_t  ngaps=NumberOfGaps[modType];
 
 
-  Float_t ggdx=GasGap_X[modType];  
+  Float_t ggdx=GasGap_X[modType];
   Float_t ggdy=GasGap_Y[modType];
   Float_t ggdz=GasGap_Z[modType];
   Float_t gsdx=ggdx/float(nstrips);
@@ -636,12 +636,12 @@ TGeoVolume* create_counter(Int_t modType)
   Float_t startzpos=SingleStackStartPosition_Z[modType];
 
   // electronics
-  //pcb dimensions 
-  Float_t dxe=Electronics_X[modType]; 
+  //pcb dimensions
+  Float_t dxe=Electronics_X[modType];
   Float_t dye=Electronics_Y[modType];
   Float_t dze=Electronics_Z[modType];
   Float_t yele=(gdy+0.1)/2.+dye/2.;
- 
+
   // needed materials
   TGeoMedium* glassPlateVolMed   = gGeoMan->GetMedium(GlasMedium);
   TGeoMedium* noActiveGasVolMed  = gGeoMan->GetMedium(NoActivGasMedium);
@@ -650,31 +650,31 @@ TGeoVolume* create_counter(Int_t modType)
 
   // Single glass plate
   TGeoBBox* glass_plate = new TGeoBBox("", gdx/2., gdy/2., gdz/2.);
-  TGeoVolume* glass_plate_vol = 
+  TGeoVolume* glass_plate_vol =
     new TGeoVolume("tof_glass", glass_plate, glassPlateVolMed);
   glass_plate_vol->SetLineColor(kMagenta); // set line color for the glass plate
   glass_plate_vol->SetTransparency(20); // set transparency for the TOF
-  TGeoTranslation* glass_plate_trans 
+  TGeoTranslation* glass_plate_trans
     = new TGeoTranslation("", 0., 0., 0.);
 
   // Single gas gap
   TGeoBBox* gas_gap = new TGeoBBox("", ggdx/2., ggdy/2., ggdz/2.);
-  //TGeoVolume* gas_gap_vol = 
+  //TGeoVolume* gas_gap_vol =
   //new TGeoVolume("tof_gas_gap", gas_gap, noActiveGasVolMed);
-  TGeoVolume* gas_gap_vol = 
+  TGeoVolume* gas_gap_vol =
     new TGeoVolume("tof_gas_active", gas_gap, activeGasVolMed);
   gas_gap_vol->Divide("Strip",1,nstrips,-ggdx/2.,0);
 
   gas_gap_vol->SetLineColor(kRed); // set line color for the gas gap
   gas_gap_vol->SetTransparency(70); // set transparency for the TOF
-  TGeoTranslation* gas_gap_trans 
+  TGeoTranslation* gas_gap_trans
     = new TGeoTranslation("", 0., 0., (gdz+ggdz)/2.);
 
- 
-  // Single subdivided active gas gap 
+
+  // Single subdivided active gas gap
   /*
     TGeoBBox* gas_active = new TGeoBBox("", gsdx/2., ggdy/2., ggdz/2.);
-    TGeoVolume* gas_active_vol = 
+    TGeoVolume* gas_active_vol =
     new TGeoVolume("tof_gas_active", gas_active, activeGasVolMed);
   gas_active_vol->SetLineColor(kBlack); // set line color for the gas gap
   gas_active_vol->SetTransparency(70); // set transparency for the TOF
@@ -687,39 +687,39 @@ TGeoVolume* create_counter(Int_t modType)
 
   /*
   for (Int_t l=0; l<nstrips; l++){
-    TGeoTranslation* gas_active_trans 
+    TGeoTranslation* gas_active_trans
       = new TGeoTranslation("", -ggdx/2+(l+0.5)*gsdx, 0., 0.);
     gas_gap_vol->AddNode(gas_active_vol, l, gas_active_trans);
     //    single_stack->AddNode(gas_active_vol, l, gas_active_trans);
   }
-  */  
+  */
 
   // Add 8 single stacks + one glass plate at the e09.750nd to a multi stack
   TGeoVolume* multi_stack = new TGeoVolumeAssembly("multi_stack");
   Int_t l=0;
   for (l=0; l<ngaps; l++){
-    TGeoTranslation* single_stack_trans 
+    TGeoTranslation* single_stack_trans
       = new TGeoTranslation("", 0., 0., startzpos + l*dzpos);
     multi_stack->AddNode(single_stack, l, single_stack_trans);
   }
-  TGeoTranslation* single_glass_back_trans 
+  TGeoTranslation* single_glass_back_trans
     = new TGeoTranslation("", 0., 0., startzpos + ngaps*dzpos);
   multi_stack->AddNode(glass_plate_vol, l, single_glass_back_trans);
-  
+
   // Add electronics above and below the glass stack to build a complete counter
   TGeoVolume* counter = new TGeoVolumeAssembly("counter");
-  TGeoTranslation* multi_stack_trans 
+  TGeoTranslation* multi_stack_trans
       = new TGeoTranslation("", 0., 0., 0.);
   counter->AddNode(multi_stack, l, multi_stack_trans);
 
   TGeoBBox* pcb = new TGeoBBox("", dxe/2., dye/2., dze/2.);
-  TGeoVolume* pcb_vol = 
+  TGeoVolume* pcb_vol =
     new TGeoVolume("pcb", pcb, electronicsVolMed);
   pcb_vol->SetLineColor(kCyan); // set line color for the gas gap
   pcb_vol->SetTransparency(10); // set transparency for the TOF
   for (Int_t l=0; l<2; l++){
     yele *= -1.;
-    TGeoTranslation* pcb_trans 
+    TGeoTranslation* pcb_trans
       = new TGeoTranslation("", 0., yele, 0.);
     counter->AddNode(pcb_vol, l, pcb_trans);
   }
@@ -732,7 +732,7 @@ TGeoVolume* create_new_counter(Int_t modType)
 {
 
   //glass
-  Float_t gdx=Glass_X[modType]; 
+  Float_t gdx=Glass_X[modType];
   Float_t gdy=Glass_Y[modType];
   Float_t gdz=Glass_Z[modType];
 
@@ -741,18 +741,18 @@ TGeoVolume* create_new_counter(Int_t modType)
   Int_t  ngaps=NumberOfGaps[modType];
 
 
-  Float_t ggdx=GasGap_X[modType];  
+  Float_t ggdx=GasGap_X[modType];
   Float_t ggdy=GasGap_Y[modType];
   Float_t ggdz=GasGap_Z[modType];
   Float_t gsdx=ggdx/(Float_t)(nstrips);
 
   // electronics
-  //pcb dimensions 
-  Float_t dxe=Electronics_X[modType]; 
+  //pcb dimensions
+  Float_t dxe=Electronics_X[modType];
   Float_t dye=Electronics_Y[modType];
   Float_t dze=Electronics_Z[modType];
   Float_t yele=gdy/2.+dye/2.;
- 
+
   // counter size (calculate from glas, gap and electronics sizes)
   Float_t cdx = TMath::Max(gdx, ggdx);
   cdx = TMath::Max(cdx, dxe)+ 0.2;
@@ -774,57 +774,57 @@ TGeoVolume* create_new_counter(Int_t modType)
 
   // define counter volume
   TGeoBBox* counter_box = new TGeoBBox("", cdx/2., cdy/2., cdz/2.);
-  TGeoVolume* counter = 
+  TGeoVolume* counter =
     new TGeoVolume("counter", counter_box, noActiveGasVolMed);
   counter->SetLineColor(kCyan); // set line color for the counter
   counter->SetTransparency(70); // set transparency for the TOF
 
   // define single glass plate volume
   TGeoBBox* glass_plate = new TGeoBBox("", gdx/2., gdy/2., gdz/2.);
-  TGeoVolume* glass_plate_vol = 
+  TGeoVolume* glass_plate_vol =
     new TGeoVolume("tof_glass", glass_plate, glassPlateVolMed);
   glass_plate_vol->SetLineColor(kMagenta); // set line color for the glass plate
   glass_plate_vol->SetTransparency(20); // set transparency for the TOF
   // define single gas gap volume
   TGeoBBox* gas_gap = new TGeoBBox("", ggdx/2., ggdy/2., ggdz/2.);
-  TGeoVolume* gas_gap_vol = 
+  TGeoVolume* gas_gap_vol =
     new TGeoVolume("Gap", gas_gap, activeGasVolMed);
   gas_gap_vol->Divide("Cell",1,nstrips,-ggdx/2.,0);
   gas_gap_vol->SetLineColor(kRed); // set line color for the gas gap
   gas_gap_vol->SetTransparency(99); // set transparency for the TOF
- 
+
   // place 8 gas gaps and 9 glas plates in the counter
   for( Int_t igap = 0; igap <= ngaps; igap++) {
     // place (ngaps+1) glass plates
     Float_t zpos_glas = startzposglas + igap*dzpos;
-    TGeoTranslation* glass_plate_trans 
+    TGeoTranslation* glass_plate_trans
       = new TGeoTranslation("", 0., 0., zpos_glas);
     counter->AddNode(glass_plate_vol, igap, glass_plate_trans);
     // place ngaps gas gaps
-    if (igap < ngaps) 
+    if (igap < ngaps)
     {
       Float_t zpos_gas  = startzposgas  + igap*dzpos;
-      TGeoTranslation* gas_gap_trans 
+      TGeoTranslation* gas_gap_trans
         = new TGeoTranslation("", 0., 0., zpos_gas);
       counter->AddNode(gas_gap_vol, igap, gas_gap_trans);
     }
 //    cout <<"Zpos(Glas): "<< zpos_glas << endl;
 //    cout <<"Zpos(Gas): "<< zpos_gas << endl;
   }
-  
+
   // create and place the electronics above and below the glas stack
   TGeoBBox* pcb = new TGeoBBox("", dxe/2., dye/2., dze/2.);
-  TGeoVolume* pcb_vol = 
+  TGeoVolume* pcb_vol =
     new TGeoVolume("pcb", pcb, electronicsVolMed);
   pcb_vol->SetLineColor(kYellow);  // kCyan); // set line color for electronics
   pcb_vol->SetTransparency(10); // set transparency for the TOF
   for (Int_t l=0; l<2; l++){
     yele *= -1.;
-    TGeoTranslation* pcb_trans 
+    TGeoTranslation* pcb_trans
       = new TGeoTranslation("", 0., yele, 0.);
     counter->AddNode(pcb_vol, l, pcb_trans);
   }
- 
+
 
   return counter;
 
@@ -854,23 +854,23 @@ TGeoVolume* create_tof_module(Int_t modType)
   TGeoVolume* module = new TGeoVolumeAssembly(moduleName);
 
   TGeoBBox* alu_box = new TGeoBBox("", dx/2., dy/2., dz/2.);
-  TGeoVolume* alu_box_vol = 
+  TGeoVolume* alu_box_vol =
     new TGeoVolume("alu_box", alu_box, boxVolMed);
   alu_box_vol->SetLineColor(kGreen); // set line color for the alu box
   alu_box_vol->SetTransparency(20); // set transparency for the TOF
-  TGeoTranslation* alu_box_trans 
+  TGeoTranslation* alu_box_trans
     = new TGeoTranslation("", 0., 0., 0.);
   module->AddNode(alu_box_vol, 0, alu_box_trans);
 
   TGeoBBox* gas_box = new TGeoBBox("", (dx-(width_aluxl+width_aluxr))/2., (dy-2*width_aluy)/2., (dz-2*width_aluz)/2.);
-  TGeoVolume* gas_box_vol = 
+  TGeoVolume* gas_box_vol =
     new TGeoVolume("gas_box", gas_box, noActiveGasVolMed);
   gas_box_vol->SetLineColor(kYellow); // set line color for the gas box
   gas_box_vol->SetTransparency(70); // set transparency for the TOF
-  TGeoTranslation* gas_box_trans 
+  TGeoTranslation* gas_box_trans
     = new TGeoTranslation("", shift_gas_box, 0., 0.);
   alu_box_vol->AddNode(gas_box_vol, 0, gas_box_trans);
-  
+
   for (Int_t j=0; j<5; j++){ //loop over counters (modules)
     Float_t zpos;
     if (0 == modType) {
@@ -878,7 +878,7 @@ TGeoVolume* create_tof_module(Int_t modType)
     } else {
       zpos = 0.;
     }
-    TGeoTranslation* counter_trans 
+    TGeoTranslation* counter_trans
       = new TGeoTranslation("", startxpos+ j*dxpos , 0.0 , zpos);
 
     TGeoRotation* counter_rot = new TGeoRotation();
@@ -892,7 +892,7 @@ TGeoVolume* create_tof_module(Int_t modType)
 
 TGeoVolume* create_new_tof_module(Int_t modType)
 {
-  if(modType>2) return create_new_tof_module_m(modType); // Bucharest modules 
+  if(modType>2) return create_new_tof_module_m(modType); // Bucharest modules
 
   Int_t cType = CounterTypeInModule[modType];
   Float_t dx=Module_Size_X[modType];
@@ -914,20 +914,20 @@ TGeoVolume* create_new_tof_module(Int_t modType)
   TString moduleName = Form("module_%d", modType);
 
   TGeoBBox* module_box = new TGeoBBox("", dx/2., dy/2., dz/2.);
-  TGeoVolume* module = 
+  TGeoVolume* module =
   new TGeoVolume(moduleName, module_box, boxVolMed);
   module->SetLineColor(kGreen); // set line color for the alu box
   module->SetTransparency(20); // set transparency for the TOF
 
   TGeoBBox* gas_box = new TGeoBBox("", (dx-(width_aluxl+width_aluxr))/2., (dy-2*width_aluy)/2., (dz-2*width_aluz)/2.);
-  TGeoVolume* gas_box_vol = 
+  TGeoVolume* gas_box_vol =
     new TGeoVolume("gas_box", gas_box, noActiveGasVolMed);
   gas_box_vol->SetLineColor(kBlue); // set line color for the alu box
   gas_box_vol->SetTransparency(50); // set transparency for the TOF
-  TGeoTranslation* gas_box_trans 
+  TGeoTranslation* gas_box_trans
     = new TGeoTranslation("", shift_gas_box, 0., 0.);
   module->AddNode(gas_box_vol, 0, gas_box_trans);
-  
+
   for (Int_t j=0; j< NCounterInModule[modType]; j++){ //loop over counters (modules)
     Float_t zpos;
     if (0 == modType || 3 == modType || 4 == modType || 5 == modType) {
@@ -935,7 +935,7 @@ TGeoVolume* create_new_tof_module(Int_t modType)
     } else {
       zpos = 0.;
     }
-    TGeoTranslation* counter_trans 
+    TGeoTranslation* counter_trans
       = new TGeoTranslation("", startxpos+ j*dxpos , 0.0 , zpos);
 
     TGeoRotation* counter_rot = new TGeoRotation();
@@ -961,7 +961,7 @@ TGeoVolume* create_new_tof_module_m(Int_t modType)
 
   cout << " module_m: " <<modType<<", "<<jm<<": "<< iNum1 << " counters type " << cType1
        << ", " << iNum2 << " type " << cType2 << endl;
- 
+
   Float_t dx=Module_Size_X[modType];
   Float_t dy=Module_Size_Y[modType];
   Float_t dz=Module_Size_Z[modType];
@@ -981,17 +981,17 @@ TGeoVolume* create_new_tof_module_m(Int_t modType)
   TString moduleName = Form("module_%d", modType);
 
   TGeoBBox* module_box = new TGeoBBox("", dx/2., dy/2., dz/2.);
-  TGeoVolume* module = 
+  TGeoVolume* module =
   new TGeoVolume(moduleName, module_box, boxVolMed);
   module->SetLineColor(kGreen); // set line color for the alu box
   module->SetTransparency(20); // set transparency for the TOF
 
   TGeoBBox* gas_box = new TGeoBBox("", (dx-(width_aluxl+width_aluxr))/2., (dy-2*width_aluy)/2., (dz-2*width_aluz)/2.);
-  TGeoVolume* gas_box_vol = 
+  TGeoVolume* gas_box_vol =
     new TGeoVolume("gas_box", gas_box, noActiveGasVolMed);
   gas_box_vol->SetLineColor(kBlue); // set line color for the alu box
   gas_box_vol->SetTransparency(50); // set transparency for the TOF
-  TGeoTranslation* gas_box_trans 
+  TGeoTranslation* gas_box_trans
     = new TGeoTranslation("", shift_gas_box, 0., 0.);
   module->AddNode(gas_box_vol, 0, gas_box_trans);
   Float_t xpos;
@@ -1030,7 +1030,7 @@ TGeoVolume* create_new_tof_module_m(Int_t modType)
 
     cout << "Place counter "<<j<<" "<<ii<<", iX "<<iX<<", iY "<<iY<<" at "<<xpos<<", "<<ypos<<", "<<zpos<<endl;
 
-    TGeoTranslation* counter_trans 
+    TGeoTranslation* counter_trans
       = new TGeoTranslation("", xpos , ypos, zpos);
     TGeoRotation* counter_rot = new TGeoRotation();
     counter_rot->RotateY(rotangle);
@@ -1071,7 +1071,7 @@ TGeoVolume* create_new_tof_module_m(Int_t modType)
 
 
     cout << "Place counter "<<j<<", iX "<<iX<<", iY "<<iY<<" at "<<xpos<<", "<<ypos<<", "<<zpos<<endl;
-    TGeoTranslation* counter_trans 
+    TGeoTranslation* counter_trans
       = new TGeoTranslation("", xpos , ypos, zpos);
     TGeoRotation* counter_rot = new TGeoRotation();
     counter_rot->RotateY(rotangle);
@@ -1089,26 +1089,26 @@ TGeoVolume* create_tof_pole()
   // needed materials
   TGeoMedium* boxVolMed   = gGeoMan->GetMedium(PoleVolumeMedium);
   TGeoMedium* airVolMed   = gGeoMan->GetMedium(KeepingVolumeMedium);
-   
+
   Float_t dx=Pole_Size_X;
   Float_t dy=Pole_Size_Y;
   Float_t dz=Pole_Size_Z;
   Float_t width_alux=Pole_Thick_X;
   Float_t width_aluy=Pole_Thick_Y;
   Float_t width_aluz=Pole_Thick_Z;
-  
+
   TGeoVolume* pole = new TGeoVolumeAssembly("Pole");
   TGeoBBox*   pole_alu_box = new TGeoBBox("", dx/2., dy/2., dz/2.);
-  TGeoVolume* pole_alu_vol = 
+  TGeoVolume* pole_alu_vol =
     new TGeoVolume("pole_alu", pole_alu_box, boxVolMed);
   pole_alu_vol->SetLineColor(kGreen); // set line color for the alu box
   //  pole_alu_vol->SetTransparency(20); // set transparency for the TOF
-  TGeoTranslation* pole_alu_trans 
+  TGeoTranslation* pole_alu_trans
     = new TGeoTranslation("", 0., 0., 0.);
   pole->AddNode(pole_alu_vol, 0, pole_alu_trans);
 
   Float_t air_dx = dx/2. - width_alux;
-  Float_t air_dy = dy/2. - width_aluy; 
+  Float_t air_dy = dy/2. - width_aluy;
   Float_t air_dz = dz/2. - width_aluz;
 
   //  cout << "My pole." << endl;
@@ -1123,11 +1123,11 @@ TGeoVolume* create_tof_pole()
   {
     TGeoBBox* pole_air_box = new TGeoBBox("", air_dx, air_dy, air_dz);
     //  TGeoBBox* pole_air_box = new TGeoBBox("", dx/2.-width_alux, dy/2.-width_aluy, dz/2.-width_aluz);
-    TGeoVolume* pole_air_vol = 
+    TGeoVolume* pole_air_vol =
       new TGeoVolume("pole_air", pole_air_box, airVolMed);
     pole_air_vol->SetLineColor(kYellow); // set line color for the alu box
     pole_air_vol->SetTransparency(70); // set transparency for the TOF
-    TGeoTranslation* pole_air_trans 
+    TGeoTranslation* pole_air_trans
       = new TGeoTranslation("", 0., 0., 0.);
     pole_alu_vol->AddNode(pole_air_vol, 0, pole_air_trans);
   }
@@ -1142,26 +1142,26 @@ TGeoVolume* create_tof_poleshort()
   // needed materials
   TGeoMedium* boxVolMed   = gGeoMan->GetMedium(PoleVolumeMedium);
   TGeoMedium* airVolMed   = gGeoMan->GetMedium(KeepingVolumeMedium);
-   
+
   Float_t dx=Pole_Size_X;
   Float_t dy=PoleShort_Size_Y;
   Float_t dz=Pole_Size_Z;
   Float_t width_alux=Pole_Thick_X;
   Float_t width_aluy=Pole_Thick_Y;
   Float_t width_aluz=Pole_Thick_Z;
-  
+
   TGeoVolume* pole = new TGeoVolumeAssembly("PoleShort");
   TGeoBBox*   pole_alu_box = new TGeoBBox("", dx/2., dy/2., dz/2.);
-  TGeoVolume* pole_alu_vol = 
+  TGeoVolume* pole_alu_vol =
     new TGeoVolume("poleshort_alu", pole_alu_box, boxVolMed);
   pole_alu_vol->SetLineColor(kGreen); // set line color for the alu box
   //  pole_alu_vol->SetTransparency(20); // set transparency for the TOF
-  TGeoTranslation* pole_alu_trans 
+  TGeoTranslation* pole_alu_trans
     = new TGeoTranslation("", 0., 0., 0.);
   pole->AddNode(pole_alu_vol, 0, pole_alu_trans);
 
   Float_t air_dx = dx/2. - width_alux;
-  Float_t air_dy = dy/2. - width_aluy; 
+  Float_t air_dy = dy/2. - width_aluy;
   Float_t air_dz = dz/2. - width_aluz;
   //  cout << "My pole." << endl;
   if (air_dx <= 0.)
@@ -1175,11 +1175,11 @@ TGeoVolume* create_tof_poleshort()
   {
     TGeoBBox* pole_air_box = new TGeoBBox("", air_dx, air_dy, air_dz);
     //  TGeoBBox* pole_air_box = new TGeoBBox("", dx/2.-width_alux, dy/2.-width_aluy, dz/2.-width_aluz);
-    TGeoVolume* pole_air_vol = 
+    TGeoVolume* pole_air_vol =
       new TGeoVolume("poleshort_air", pole_air_box, airVolMed);
     pole_air_vol->SetLineColor(kYellow); // set line color for the alu box
     pole_air_vol->SetTransparency(70); // set transparency for the TOF
-    TGeoTranslation* pole_air_trans 
+    TGeoTranslation* pole_air_trans
       = new TGeoTranslation("", 0., 0., 0.);
     pole_alu_vol->AddNode(pole_air_vol, 0, pole_air_trans);
   }
@@ -1195,27 +1195,27 @@ TGeoVolume* create_tof_bar(Float_t dx, Float_t dy, Float_t dz)
   // needed materials
   TGeoMedium* boxVolMed = gGeoMan->GetMedium(PoleVolumeMedium);
   TGeoMedium* airVolMed = gGeoMan->GetMedium(KeepingVolumeMedium);
-   
+
   Float_t width_alux=Pole_Thick_X;
   Float_t width_aluy=Pole_Thick_Y;
   Float_t width_aluz=Pole_Thick_Z;
-  
+
   TGeoVolume* bar = new TGeoVolumeAssembly("Bar");
   TGeoBBox*   bar_alu_box = new TGeoBBox("", dx/2., dy/2., dz/2.);
-  TGeoVolume* bar_alu_vol = 
+  TGeoVolume* bar_alu_vol =
     new TGeoVolume("bar_alu", bar_alu_box, boxVolMed);
   bar_alu_vol->SetLineColor(kGreen); // set line color for the alu box
   //  bar_alu_vol->SetTransparency(20); // set transparency for the TOF
-  TGeoTranslation* bar_alu_trans 
+  TGeoTranslation* bar_alu_trans
     = new TGeoTranslation("", 0., 0., 0.);
   bar->AddNode(bar_alu_vol, 0, bar_alu_trans);
 
   TGeoBBox* bar_air_box = new TGeoBBox("", dx/2.-width_alux, dy/2.-width_aluy, dz/2.-width_aluz);
-  TGeoVolume* bar_air_vol = 
+  TGeoVolume* bar_air_vol =
     new TGeoVolume("bar_air", bar_air_box, airVolMed);
   bar_air_vol->SetLineColor(kYellow); // set line color for the alu box
   bar_air_vol->SetTransparency(70);   // set transparency for the TOF
-  TGeoTranslation* bar_air_trans 
+  TGeoTranslation* bar_air_trans
     = new TGeoTranslation("", 0., 0., 0.);
   bar_alu_vol->AddNode(bar_air_vol, 0, bar_air_trans);
 
@@ -1235,20 +1235,20 @@ void position_tof_poles(Int_t modType)
      Float_t zPos=Pole_ZPos[i];
      if(TMath::Abs(xPos)>XLimInner)
      {
-       pole_trans 
+       pole_trans
 	 = new TGeoTranslation("", xPos, 0., zPos);
        gGeoMan->GetVolume(geoVersion)->AddNode(gPole, numPoles, pole_trans);
        numPoles++;
-     }else{ // position 2 short poles 
+     }else{ // position 2 short poles
 
        // upper short poles
-       pole_trans 
+       pole_trans
 	 = new TGeoTranslation("", xPos, Pole_Size_Y/2.-PoleShort_Size_Y/2., zPos);
        gGeoMan->GetVolume(geoVersion)->AddNode(gPoleShort, numPolesShort, pole_trans);
        numPolesShort++;
 
        // lower short poles
-       pole_trans 
+       pole_trans
 	 = new TGeoTranslation("", xPos, PoleShort_Size_Y/2.-Pole_Size_Y/2., zPos);
        gGeoMan->GetVolume(geoVersion)->AddNode(gPoleShort, numPolesShort, pole_trans);
        numPolesShort++;
@@ -1290,7 +1290,7 @@ void position_tof_bars(Int_t modType)
    }
    cout << " Position Bar "<< numBars<<" at z="<< Bar_ZPos[i] << endl;
 
-   // outer horizontal and vertical frame bars 
+   // outer horizontal and vertical frame bars
 
     NumberOfBars++;
     i = NumberOfBars;
@@ -1335,7 +1335,7 @@ void position_inner_tof_modules(Int_t modNType)
 
  //  Int_t numModules=(Int_t)( (Inner_Module_Last_Y_Position-Inner_Module_First_Y_Position)/Module_Size_Y[modType])+1;
  Float_t yPos=Inner_Module_First_Y_Position;
- Int_t ii=0; 
+ Int_t ii=0;
  Float_t xPos  = Inner_Module_X_Offset;
  Float_t zPos  = Wall_Z_Position;
 
@@ -1356,8 +1356,8 @@ void position_inner_tof_modules(Int_t modNType)
  for (Int_t j=0; j<modNType; j++){
   Int_t modType= Inner_Module_Types[j];
   Int_t modNum = 0;
-  for(Int_t i=0; i<Inner_Module_Number[j]; i++) { 
-    ii++; 
+  for(Int_t i=0; i<Inner_Module_Number[j]; i++) {
+    ii++;
     cout << "Inner ii "<<ii<<" Last "<<Last_Size_Y<<","<<Last_Over_Y<<endl;
     Float_t DeltaY=Module_Size_Y[modType]+Last_Size_Y-2.*(Module_Over_Y[modType]+Last_Over_Y);
     yPos += DeltaY;
@@ -1367,20 +1367,20 @@ void position_inner_tof_modules(Int_t modNType)
          <<" at Y = "<<yPos<<" Ysize = "<<Module_Size_Y[modType]
 	 <<" DeltaY = "<<DeltaY<<endl;
 
-    module_trans 
+    module_trans
       = new TGeoTranslation("", xPos, yPos, zPos);
     gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_trans);
     modNum++;
-    module_trans 
+    module_trans
       = new TGeoTranslation("", xPos, -yPos, zPos);
     gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_trans);
     modNum++;
     if (ii>0) {
-      module_trans 
+      module_trans
 	= new TGeoTranslation("", xPos, yPos-DeltaY/2, zPos+Module_Size_Z[modType]);
       gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_trans);
     modNum++;
-      module_trans 
+      module_trans
 	= new TGeoTranslation("", xPos, -(yPos-DeltaY/2), zPos+Module_Size_Z[modType]);
       gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_trans);
     modNum++;
@@ -1394,7 +1394,7 @@ void position_tof_modules_m(Int_t ModType1, Int_t ModType2)
 
  TGeoTranslation* module_trans=NULL;
  TGeoRotation* module_rot0 = new TGeoRotation();
- module_rot0->RotateZ(0.); 
+ module_rot0->RotateZ(0.);
  TGeoRotation* module_rot1 = new TGeoRotation();
  module_rot1->RotateZ(180.);
  TGeoCombiTrans* module_combi_trans = NULL;
@@ -1403,16 +1403,16 @@ void position_tof_modules_m(Int_t ModType1, Int_t ModType2)
  NModules[4]=2; //M2
  NModules[5]=4; //M3
 
- Int_t ii=0; 
+ Int_t ii=0;
  for (Int_t j=ModType1; j<ModType2+1; j++){
   Int_t modType= j;
   Int_t jm=j-3;
   Int_t modNum = 0;
   Float_t SignZ;
-  //  if(modType != 0) continue; // debugging  
-  for(Int_t i=0; i<NModules[j]; i++) { 
-    //if(i != 0) continue; // debugging  
-    ii++; 
+  //  if(modType != 0) continue; // debugging
+  for(Int_t i=0; i<NModules[j]; i++) {
+    //if(i != 0) continue; // debugging
+    ii++;
     Float_t xPos  = xPosModm[jm][i];
     Float_t yPos  = yPosModm[jm][i];
     Float_t zPos  = zPosModm[jm][i] + InnerWall_Z_PositionShift;
@@ -1434,7 +1434,7 @@ void position_tof_modules(Int_t NModTypes)
 {
  TGeoTranslation* module_trans=NULL;
  TGeoRotation* module_rot0 = new TGeoRotation();
- module_rot0->RotateZ(0.); 
+ module_rot0->RotateZ(0.);
  TGeoRotation* module_rot1 = new TGeoRotation();
  module_rot1->RotateZ(180.);
  TGeoCombiTrans* module_combi_trans = NULL;
@@ -1447,16 +1447,16 @@ void position_tof_modules(Int_t NModTypes)
  const Float_t zAcc=0.1;
  const Float_t xAcc=2.;
 
- Int_t ii=0; 
+ Int_t ii=0;
  Int_t modNum = 0;
  for (Int_t j=0; j<NModTypes+1; j++){
   Int_t modType= j;
   modNum = 0;
   Float_t SignZ;
-  //  if(modType != 0) continue; // debugging  
-  for(Int_t i=0; i<NModules[j]; i++) { 
-    //if(i != 0) continue; // debugging  
-    ii++; 
+  //  if(modType != 0) continue; // debugging
+  for(Int_t i=0; i<NModules[j]; i++) {
+    //if(i != 0) continue; // debugging
+    ii++;
     Float_t xPos  = xPosMod[j][i]-shift_gas_box;
     Float_t yPos  = yPosMod[j][i];
     Float_t zPos  = zPosMod[j][i];
@@ -1471,7 +1471,7 @@ void position_tof_modules(Int_t NModTypes)
     gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_combi_trans);
     modNum++;
 
-    // add structural material 
+    // add structural material
 
     Bool_t BPexist=kFALSE;
     Float_t SignX;
@@ -1479,7 +1479,7 @@ void position_tof_modules(Int_t NModTypes)
 	SignX=xPos/TMath::Abs(xPos);
     }else{
 	SignX=1.;
-    } 
+    }
 
     Int_t iLz=-1;
     for (Int_t iL=0; iL<NLayer; iL++){
@@ -1537,7 +1537,7 @@ void position_tof_modules(Int_t NModTypes)
     for (iP=0; iP<NumberOfPoles; iP++){
       if(TMath::Abs(zPosPole - Pole_ZPos[iP])< Pole_Size_Z && TMath::Abs(xPosPole - Pole_XPos[iP])< Pole_Size_X) {
        	BPexist=kTRUE;
-	break; 
+	break;
       }
     }
 
@@ -1557,13 +1557,13 @@ void position_tof_modules(Int_t NModTypes)
 	for(iP=0; iP<2; iP++){
 	Int_t iLast=NumberOfPoles-2;
 	Pole_ZPos[NumberOfPoles] =   Pole_ZPos[iLast];
-	Pole_XPos[NumberOfPoles] = - Pole_XPos[iLast]; 
+	Pole_XPos[NumberOfPoles] = - Pole_XPos[iLast];
 	Pole_Col[NumberOfPoles]  = 0;
 	NumberOfPoles++;
 	}
       }
       /*
-      cout << " Add pole "<< NumberOfPoles <<" at z = "<<zPos<<", "<<zPos<<", x = "<< Pole_XPos[NumberOfPoles-1] 
+      cout << " Add pole "<< NumberOfPoles <<" at z = "<<zPos<<", "<<zPos<<", x = "<< Pole_XPos[NumberOfPoles-1]
 	   <<", xsiz = "<<Module_Size_X[j]<<endl;
       */
     }
@@ -1581,6 +1581,7 @@ void position_tof_modules(Int_t NModTypes)
  }
 
  Bar_Size_Z = BZMax - BZMin;
+ Frame_Pos_Z = (BZMax+BZMin)/2.;
  Bar_Pos_Z  = (BZMax+BZMin)/2.;
 
  //cout << "Place "<< NCol << " bars of z-length "<< Bar_Size_Z <<" at z = "<<Bar_Pos_Z<< endl;
@@ -1595,35 +1596,35 @@ void position_tof_modules(Int_t NModTypes)
    {
      if( (TMath::Abs(xPosCol[iC] - Bar_XPos[iBar]) < Bar_Size_X ) ) // Original bar
      {
-       cout << Form( "Rejected bar for col %03d at X= %7.2f due to bar %03d at X= %7.2f", 
+       cout << Form( "Rejected bar for col %03d at X= %7.2f due to bar %03d at X= %7.2f",
                     iC, xPosCol[iC], iBar, Bar_XPos[iBar])
            << endl;
-       
+
        cout << Form( " ==> Replaced bar %03d at X= %7.2f by a bar at ", iBar, Bar_XPos[iBar]);
        Bar_XPos[iBar] = (xPosCol[iC] + Bar_XPos[iBar]) / 2.0; // take mean of the 2 positions!!
        cout << Form( " X= %7.2f (middle of colliding X positions)", Bar_XPos[iBar])
            << endl;
-       
+
        bBarExist=kTRUE;
-	    break; 
+	    break;
      }
-     
-     if( (TMath::Abs(xPosCol[iC] + Bar_XPos[iBar]) < Bar_Size_X ) )  // Mirrored bar VS original  
+
+     if( (TMath::Abs(xPosCol[iC] + Bar_XPos[iBar]) < Bar_Size_X ) )  // Mirrored bar VS original
      {
-       cout << Form( "Rejected bar for col %03d at X= %7.2f due to bar %03d at X= %7.2f", 
+       cout << Form( "Rejected bar for col %03d at X= %7.2f due to bar %03d at X= %7.2f",
                     iC, xPosCol[iC], iBar, Bar_XPos[iBar])
            << endl;
-       
+
        cout << Form( " ==> Replaced bar %03d at X= %7.2f by a bar at ", iBar, Bar_XPos[iBar]);
        Bar_XPos[iBar] = (Bar_XPos[iBar] - xPosCol[iC]) / 2.0; // take mean of the 2 positions!!
        cout << Form( " X= %7.2f (middle of colliding X positions)", Bar_XPos[iBar])
            << endl;
-           
+
        bBarExist=kTRUE;
-	    break; 
+	    break;
      }
    } //  for (Int_t iP=0; iP<NumberOfPoles; iP++)
-   
+
    if(!bBarExist)
    {
       gBar[NumberOfBars] = create_tof_bar(Bar_Size_X, Bar_Size_Y, Bar_Size_Z);
@@ -1646,12 +1647,12 @@ void position_side_tof_modules(Int_t modNType)
 
  //  Int_t numModules=(Int_t)( (Inner_Module_Last_Y_Position-Inner_Module_First_Y_Position)/Module_Size_Y[modType])+1;
  Float_t yPos=0.; //Inner_Module_First_Y_Position;
- Int_t ii=0; 
+ Int_t ii=0;
  for (Int_t j=0; j<modNType; j++){
   Int_t modType= InnerSide_Module_Types[j];
   Int_t modNum = 0;
-  for(Int_t i=0; i<InnerSide_Module_Number[j]; i++) { 
-    ii++; 
+  for(Int_t i=0; i<InnerSide_Module_Number[j]; i++) {
+    ii++;
     cout << "InnerSide ii "<<ii<<" Last "<<Last_Size_Y<<","<<Last_Over_Y<<endl;
     Float_t DeltaY=Module_Size_Y[modType]+Last_Size_Y-2.*(Module_Over_Y[modType]+Last_Over_Y);
     if (ii>1){yPos += DeltaY;}
@@ -1663,46 +1664,46 @@ void position_side_tof_modules(Int_t modNType)
          <<" at Y = "<<yPos<<" Ysize = "<<Module_Size_Y[modType]
 	 <<" DeltaY = "<<DeltaY<<endl;
 
-    module_trans 
+    module_trans
       = new TGeoTranslation("", xPos, yPos, zPos);
     gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_trans);
     modNum++;
 
-    module_trans 
+    module_trans
       = new TGeoTranslation("", -xPos, yPos, zPos);
     module_combi_trans = new TGeoCombiTrans(*module_trans, *module_rot);
     gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_combi_trans);
     modNum++;
 
     if (ii>1) {
-    module_trans 
+    module_trans
       = new TGeoTranslation("", xPos, -yPos, zPos);
      gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_trans);
     modNum++;
 
-    module_trans 
+    module_trans
       = new TGeoTranslation("", -xPos, -yPos, zPos);
     module_combi_trans = new TGeoCombiTrans(*module_trans, *module_rot);
     gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_combi_trans);
     modNum++;
 
-    module_trans 
+    module_trans
       = new TGeoTranslation("", xPos, yPos-DeltaY/2, zPos+Module_Size_Z[modType]);
     gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_trans);
     modNum++;
 
-    module_trans 
+    module_trans
       = new TGeoTranslation("", -xPos, yPos-DeltaY/2, zPos+Module_Size_Z[modType]);
     module_combi_trans = new TGeoCombiTrans(*module_trans, *module_rot);
     gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_combi_trans);
     modNum++;
 
-    module_trans 
+    module_trans
       = new TGeoTranslation("", xPos, -(yPos-DeltaY/2), zPos+Module_Size_Z[modType]);
     gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_trans);
     modNum++;
 
-    module_trans 
+    module_trans
      = new TGeoTranslation("", -xPos,-(yPos-DeltaY/2), zPos+Module_Size_Z[modType]);
     module_combi_trans = new TGeoCombiTrans(*module_trans, *module_rot);
     gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_combi_trans);
@@ -1721,19 +1722,19 @@ void position_outer_tof_modules(Int_t nCol) //modType, Int_t col1, Int_t col2)
   TGeoCombiTrans* module_combi_trans = NULL;
 
   //  Int_t numModules=(Int_t)( (Outer_Module_Last_Y_Position-Outer_Module_First_Y_Position)/Module_Size_Y[modType])+1;
-  
+
   Int_t modNum[NofModuleTypes];
   for (Int_t k=0; k<NofModuleTypes; k++){
      modNum[k]=0;
   }
 
   Float_t zPos = Wall_Z_Position;
-  for(Int_t j=0; j<nCol; j++){ 
+  for(Int_t j=0; j<nCol; j++){
    Float_t xPos = Outer_Module_X_Offset + ((j+1)*DxColl);
    Last_Size_Y=0.;
    Last_Over_Y=0.;
    Float_t yPos = 0.;
-   Int_t   ii=0; 
+   Int_t   ii=0;
    Float_t DzPos =0.;
    for(Int_t k=0; k<Outer_Module_NTypes; k++){
     Int_t modType= Outer_Module_Types[k][j];
@@ -1742,7 +1743,7 @@ void position_outer_tof_modules(Int_t nCol) //modType, Int_t col1, Int_t col2)
        DzPos = Module_Size_Z[modType];
       }
      }
-   }   
+   }
 
    zPos -= 2.*DzPos; //((j+1)*2*Module_Size_Z[modType]);
 
@@ -1770,11 +1771,11 @@ void position_outer_tof_modules(Int_t nCol) //modType, Int_t col1, Int_t col2)
     Int_t numModules = Outer_Module_Number[k][j];
 
     cout <<" Outer: position "<<numModules<<" of type "<<modType<<" in col "<<j
-         <<" at z = "<<zPos<<", DzPos = "<<DzPos<<endl;    
-    for(Int_t i=0; i<numModules; i++) {  
-      ii++; 
+         <<" at z = "<<zPos<<", DzPos = "<<DzPos<<endl;
+    for(Int_t i=0; i<numModules; i++) {
+      ii++;
       cout << "Outer ii "<<ii<<" Last "<<Last_Size_Y<<","<<Last_Over_Y<<endl;
-      Float_t DeltaY=Module_Size_Y[modType]+Last_Size_Y-2.*(Module_Over_Y[modType]+Last_Over_Y);      
+      Float_t DeltaY=Module_Size_Y[modType]+Last_Size_Y-2.*(Module_Over_Y[modType]+Last_Over_Y);
       if (ii>1){yPos += DeltaY;}
       Last_Size_Y=Module_Size_Y[modType];
       Last_Over_Y=Module_Over_Y[modType];
@@ -1785,39 +1786,39 @@ void position_outer_tof_modules(Int_t nCol) //modType, Int_t col1, Int_t col2)
       module_trans = new TGeoTranslation("", xPos, yPos, zPos);
       gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_trans);
       modNum[modType]++;
-       
+
       module_trans = new TGeoTranslation("", -xPos, yPos, zPos);
       module_combi_trans = new TGeoCombiTrans(*module_trans, *module_rot);
       gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_combi_trans);
       modNum[modType]++;
 
       if (ii>1) {
-	module_trans 
+	module_trans
 	  = new TGeoTranslation("", xPos, -yPos, zPos);
 	gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_trans);
 	modNum[modType]++;
-	module_trans 
+	module_trans
 	  = new TGeoTranslation("", -xPos, -yPos, zPos);
 	module_combi_trans = new TGeoCombiTrans(*module_trans, *module_rot);
 	gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_combi_trans);
 	modNum[modType]++;
 
 	// second layer
-	module_trans 
+	module_trans
 	  = new TGeoTranslation("", xPos, yPos-DeltaY/2., zPos+DzPos);
 	gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_trans);
 	modNum[modType]++;
-	module_trans 
+	module_trans
 	  = new TGeoTranslation("", -xPos, yPos-DeltaY/2., zPos+DzPos);
 	module_combi_trans = new TGeoCombiTrans(*module_trans, *module_rot);
 	gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_combi_trans);
 	modNum[modType]++;
 
-	module_trans 
+	module_trans
 	  = new TGeoTranslation("", xPos, -(yPos-DeltaY/2.), zPos+DzPos);
 	gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_trans);
 	modNum[modType]++;
-	module_trans 
+	module_trans
 	  = new TGeoTranslation("", -xPos, -(yPos-DeltaY/2.), zPos+DzPos);
 	module_combi_trans = new TGeoCombiTrans(*module_trans, *module_rot);
 	gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum[modType], module_combi_trans);
@@ -1852,13 +1853,13 @@ void dump_info_file()
   fprintf(ifile,"# TOF setup\n");
   if (TOF_Z_Front ==  450)
     fprintf(ifile,"SIS 100 hadron setup\n");
-  if (TOF_Z_Front ==  600) 
+  if (TOF_Z_Front ==  600)
     fprintf(ifile,"SIS 100 electron\n");
-  if (TOF_Z_Front ==  650) 
+  if (TOF_Z_Front ==  650)
     fprintf(ifile,"SIS 100 muon\n");
-  if (TOF_Z_Front ==  880) 
+  if (TOF_Z_Front ==  880)
     fprintf(ifile,"SIS 300 electron\n");
-  if (TOF_Z_Front == 1020) 
+  if (TOF_Z_Front == 1020)
     fprintf(ifile,"SIS 300 muon\n");
   fprintf(ifile,"\n");
 
