@@ -8,6 +8,7 @@
  **
  **/
 
+// 2017-05-22 - PAL- use TOF v17c as new default, see issue #852
 // 2017-05-22 - DE - use TRD v17c as new default
 // 2016-06-27 - DE - use STS v16x as new default, see issue #647
 // 2016-05-19 - VF - Add platform module
@@ -37,7 +38,7 @@ void setup_sis100_debug()
   TString mvdGeoTag       = "v15a";
   TString stsGeoTag       = "v17a";     // exported
   TString trdGeoTag       = "v17c_1h";  // exported
-  TString tofGeoTag       = "v17a_1h";  // exported
+  TString tofGeoTag       = "v17c_1h";  // exported
 //  TString tofGeoTag       = "v14-0a";   // bug
 //  TString tofGeoTag       = "v13-5a";   // no bug
   TString psdGeoTag       = "psd_geo_xy.txt";
