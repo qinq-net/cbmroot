@@ -46,7 +46,6 @@ CbmBinnedTrackerTask::CbmBinnedTrackerTask(bool useAllDetectors, Double_t beamWi
    fill_n(fUseModules, int(kLastModule), fUseAllDetectors);
    fUseModules[kMuch] = false;// Temporary hack
    fUseModules[kRich] = false;// Temporary hack
-   fSettings = CbmBinnedSettings::Instance();
 }
 
 CbmBinnedTrackerTask::~CbmBinnedTrackerTask()
@@ -56,6 +55,8 @@ CbmBinnedTrackerTask::~CbmBinnedTrackerTask()
 
 InitStatus CbmBinnedTrackerTask::Init()
 {
+   fSettings = CbmBinnedSettings::Instance();
+   fSettings->SetConfiguring(false);
    fSettings->SetUse(fUseModules);
    fSettings->SetNofStsStations(0);
    fSettings->SetNofMuchStations(0);
@@ -68,6 +69,7 @@ InitStatus CbmBinnedTrackerTask::Init()
    geoReader->Read();
    fTracker = CbmBinnedTracker::Instance();
    fTracker->SetChiSqCut(200);
+   fTracker->Init();
    
    FairRootManager* ioman = FairRootManager::Instance();
     

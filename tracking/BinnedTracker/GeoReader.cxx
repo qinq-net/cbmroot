@@ -146,75 +146,6 @@ static const int gNofYbins = 20;
 static const int gNofXbins = 20;
 static const int gNofTbins = 1;
 
-static Double_t gStationErrors[][3] =
-{
-   //{ 0.014601, 0.156848, 3.535534 },// Sts 0
-   //{ 0.013942, 0.108157, 3.535534 },// Sts 1
-   
-   //{ 0.006435, 0.04970, 3.535534 },// Sts 0
-   //{ 0.001184, 0.03174, 3.535534 },// Sts 1
-   { 0.1, 0.1, 3.535534 },// Sts 0
-   { 0.5, 0.5, 3.535534 },// Sts 1
-   
-   /*{ 0.359375, 7.75, 4 },// Trd 0
-   { 7.75, 0.359375, 4 },// Trd 1
-   { 0.359375, 7.75, 4 },// Trd 2
-   { 7.75, 0.359375, 4 },// Trd 3*/
-   
-   /*{ 15.561394, 13.351225, 4 },// Trd 0
-   { 19.133749, 13.522626, 4 },// Trd 1
-   { 13.901512, 17.753521, 4 },// Trd 2
-   { 16.093639, 13.522626, 4 },// Trd 3*/
-   
-   /*{ 13.561394, 13.351225, 4 },// Trd 0
-   { 13.133749, 13.522626, 4 },// Trd 1
-   { 13.901512, 13.753521, 4 },// Trd 2
-   { 13.093639, 13.522626, 4 },// Trd 3*/
-   
-   { 20, 20, 4 },// Trd 0
-   { 20, 20, 4 },// Trd 1
-   { 20, 20, 4 },// Trd 2
-   { 20, 20, 4 },// Trd 3
-   
-   /*{ 0.487468, 0.487468, 4 },// Much 0
-   { 0.487468, 0.487468, 4 },// Much 1
-   { 0.487468, 0.487468, 4 },// Much 2*/
-   
-   { 0.288675, 0.72, 4 },// Tof
-   
-   { 0.175, 0.175, 4 }// Rich
-};
-
-static Double_t gStationScats[][2] =
-{
-   { 0, 0 },
-   { 0.1023, 0.1045 },
-   { 0.105, 0.1413 },
-   { 0.05997, 0.04868 },
-   { 0.1208, 0.1384 },
-   { 0.08453, 0.05496 },
-   /*{ 0, 0 },
-   { 0.2007, 0.2076 },
-   { 10.28159, 10.28765 },
-   { 10.2465, 10.2414 },
-   { 10.2417, 10.24789 },
-   { 10.23505, 10.24026 }*/
-   { 0, 0 }
-};
-
-/*static Double_t gStationNofSigmas[][2] =
-{
-   { 4, 4 },
-   { 4, 4 },
-   { 41, 4 },
-   { 4, 36 },
-   { 33, 4 },
-   { 4, 25 }
-};*/
-
-static Double_t gTofStationTxError = 0.001277;
-static Double_t gTofStationTyError = 0.003186;
-
 void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitReader, list<const char*>::const_iterator stationPath,
    list<const char*>::const_iterator stationPathEnd, const std::list<const char*>& geoPath, bool is4d)
 {
@@ -238,8 +169,6 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       if (is4d)
       {
          CbmBinned4DStation* station4d = new CbmBinned4DStation(front, back, gNofZbins, gNofYbins, gNofXbins, gNofTbins);
-         station4d->SetDtx(gTofStationTxError);
-         station4d->SetDty(gTofStationTyError);
          station = station4d;
       }
       else
@@ -252,6 +181,15 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       station->SetMaxY(top);
       station->SetMinX(left);
       station->SetMaxX(right);
+      CbmBinnedSettings* settings = CbmBinnedSettings::Instance();
+      
+      if (!settings->IsConfiguring())
+      {
+         Double_t xScat = settings->GetXScat(fLastStationNumber);
+         station->SetScatX(xScat);
+         Double_t yScat = settings->GetYScat(fLastStationNumber);
+         station->SetScatY(yScat);
+      }
       
       /*if (!CbmBinnedSettings::Instance()->IsConfiguring())
       {

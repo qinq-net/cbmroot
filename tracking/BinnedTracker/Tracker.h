@@ -55,8 +55,9 @@ public:
     static CbmBinnedTracker* Instance();
     
 public:
-    CbmBinnedTracker(Double_t beamDx, Double_t beamDy) : fNofTrueSegments(0), fNofWrongSegments(0), fStations(), fNofStations(0), fBeforeLastLevel(0), fChiSqCut(0), fTracks(),
-            fBeamDx(beamDx), fBeamDxSq(beamDx * beamDx), fBeamDy(beamDy), fBeamDySq(beamDy * beamDy), fVertex()
+    CbmBinnedTracker(Double_t beamDx, Double_t beamDy) : fNofTrueSegments(0), fNofWrongSegments(0), fStations(), fStationArray(),
+            fNofStations(0), fBeforeLastLevel(0), fChiSqCut(0), fTracks(), fBeamDx(beamDx), fBeamDxSq(beamDx * beamDx), fBeamDy(beamDy), fBeamDySq(beamDy * beamDy),
+            fVertex()
 #ifdef CBM_BINNED_DEBUG
     , fDebug()
 #endif//CBM_BINNED_DEBUG
@@ -74,6 +75,12 @@ public:
     
     CbmBinnedTracker(const CbmBinnedTracker&) = delete;
     CbmBinnedTracker& operator=(const CbmBinnedTracker&) = delete;
+    
+    void Init()
+    {
+        for (std::map<Double_t, CbmBinnedStation*>::const_iterator i = fStations.begin(); i != fStations.end(); ++i)
+            fStationArray.push_back(i->second);
+    }
     
     Double_t GetBeamDxSq() const { return fBeamDxSq; }
     Double_t GetBeamDySq() const { return fBeamDySq; }
@@ -483,10 +490,11 @@ private:
     
     //KFStation fKFStations[6];
 
-    void KFAddPointCoord(KFParamsCoord& param, const KFParamsCoord& prevParam, Double_t m, Double_t V, Double_t& chi2, Double_t z, Double_t prevZ, int coordNumber)
+    void KFAddPointCoord(int stationNumber, KFParamsCoord& param, const KFParamsCoord& prevParam, Double_t m, Double_t V, Double_t& chi2, Double_t z, Double_t prevZ, int coordNumber)
     {
         //const KFStation& station = fKFStations[stationNumber];
-        //const KFStation::Q& Q = station.qs[coordNumber];
+        const CbmBinnedStation* station = fStationArray[stationNumber];
+        KFStation::Q Q = { 0 == coordNumber ? station->GetScatXSq() : station->GetScatYSq(), 0, 0, 0 };
         Double_t deltaZ = z - prevZ;
         Double_t deltaZSq = deltaZ * deltaZ;
 
@@ -494,10 +502,10 @@ private:
         param.coord += prevParam.tg * deltaZ; // params[k].tg is unchanged.
 
         // Filter.
-        param.C11 += prevParam.C12 * deltaZ + prevParam.C21 * deltaZ + prevParam.C22 * deltaZSq;// + Q.Q11;
-        param.C12 += prevParam.C22 * deltaZ;// + Q.Q12;
-        param.C21 += prevParam.C22 * deltaZ;// + Q.Q21;
-        //param.C22 += Q.Q22;
+        param.C11 += prevParam.C12 * deltaZ + prevParam.C21 * deltaZ + prevParam.C22 * deltaZSq + Q.Q11;
+        param.C12 += prevParam.C22 * deltaZ + Q.Q12;
+        param.C21 += prevParam.C22 * deltaZ + Q.Q21;
+        param.C22 += Q.Q22;
 
         Double_t S = 1.0 / (V + param.C11);
         Double_t Kcoord = param.C11 * S;
@@ -512,21 +520,20 @@ private:
         chi2 += dzeta * S * dzeta;
     }
 
-    void KFAddPoint(KFParams& param, const KFParams& prevParam, Double_t m[2], Double_t V[2], Double_t z, Double_t prevZ)
+    void KFAddPoint(int stationNumber, KFParams& param, const KFParams& prevParam, Double_t m[2], Double_t V[2], Double_t z, Double_t prevZ)
     {
-        KFAddPointCoord(param.xParams, prevParam.xParams, m[0], V[0], param.chi2, z, prevZ, 0);
-        KFAddPointCoord(param.yParams, prevParam.yParams, m[1], V[1], param.chi2, z, prevZ, 1);
+        KFAddPointCoord(stationNumber, param.xParams, prevParam.xParams, m[0], V[0], param.chi2, z, prevZ, 0);
+        KFAddPointCoord(stationNumber, param.yParams, prevParam.yParams, m[1], V[1], param.chi2, z, prevZ, 1);
     }
     
-    void TraverseTrackCandidates(int level, CbmBinnedStation::Segment** trackStart, CbmTBin::HitHolder** hhs, std::list<Track*>& candidates,
-        Double_t scatXSqs[6], Double_t scatYSqs[6], KFParams kfParamsPrev)
+    void TraverseTrackCandidates(int level, CbmBinnedStation::Segment** trackStart, CbmTBin::HitHolder** hhs, std::list<Track*>& candidates, KFParams kfParamsPrev)
     {              
         CbmBinnedStation::Segment* segment = trackStart[level];
         const CbmPixelHit* hit = segment->end->hit;
         KFParams kfParams = kfParamsPrev;
         Double_t m[2] = { hit->GetX(), hit->GetY() };
         Double_t V[2] = { hit->GetDx() * hit->GetDx(), hit->GetDy() * hit->GetDy() };
-        KFAddPoint(kfParams, kfParamsPrev, m, V, hit->GetZ(), 0 == level ? 0 : hhs[level - 1]->hit->GetZ());
+        KFAddPoint(level, kfParams, kfParamsPrev, m, V, hit->GetZ(), 0 == level ? 0 : hhs[level - 1]->hit->GetZ());
         
         CbmBinnedSettings* settings = CbmBinnedSettings::Instance();
         int nofStations = settings->GetNofStsStations() + settings->GetNofMuchStations() + settings->GetNofTrdStations() + (settings->Use(kTof) ? 1 : 0);
@@ -543,23 +550,12 @@ private:
             CbmBinnedStation::Segment* childSegment = *i;         
             trackStart[level + 1] = childSegment;
             hhs[level + 1] = childSegment->end;
-            TraverseTrackCandidates(level + 1, trackStart, hhs, candidates, scatXSqs, scatYSqs, kfParams);
+            TraverseTrackCandidates(level + 1, trackStart, hhs, candidates, kfParams);
         }
     }
 
     void ReconstructGlobal()
-    {
-        Double_t scatXSqs[7];
-        Double_t scatYSqs[7];
-        int stN = 0;
-                
-        for (std::map<Double_t, CbmBinnedStation*>::const_iterator i = fStations.begin(); i != fStations.end(); ++i)
-        {
-            scatXSqs[stN] = i->second->GetScatXSq();
-            scatYSqs[stN] = i->second->GetScatYSq();
-            ++stN;
-        }
-        
+    {        
         CbmBinnedStation* startStation = fStations.begin()->second;
         startStation->IterateSegments(
             [&](CbmBinnedStation::Segment& segment)->void
@@ -580,7 +576,7 @@ private:
                     { p1->GetY(), 0, p1->GetDy() * p1->GetDy(), 0, 0, 1.0 },
                     0
                 };
-                TraverseTrackCandidates(0, segments, trackHolders, candidates, scatXSqs, scatYSqs, kfParams);
+                TraverseTrackCandidates(0, segments, trackHolders, candidates, kfParams);
                 
                 Track* bestCandidate = 0;
 
@@ -652,6 +648,7 @@ private:
     //std::list<CbmBinnedStation*> fStations;
     //std::vector<CbmBinnedStation*> fStations;
     std::map<Double_t, CbmBinnedStation*> fStations;
+    std::vector<CbmBinnedStation*> fStationArray;
     int fNofStations;
     int fBeforeLastLevel;
     Double_t fChiSqCut;

@@ -35,7 +35,7 @@ public:
     
 public:
     CbmBinnedSettings() : FairParGenericSet("CbmBinnedSettings", "Binned tracker reconstruction parameters", "Default"),
-            fIsConfiguring(false), fNofStsStations(0), fNofMuchStations(0), fNofTrdStations(0), fStationErrors()
+            fIsConfiguring(false), fNofStsStations(0), fNofMuchStations(0), fNofTrdStations(0)/*, fStationErrors()*/, fNofStations(0), fXScats(), fYScats()
     {
         std::fill_n(fUseModules, int(kLastModule), true);
     }
@@ -65,7 +65,7 @@ public:
         l->add("NofMuchStations", fNofMuchStations);
         l->add("NofTrdStations", fNofTrdStations);
         
-        Int_t nofStations = fStationErrors.size();
+        /*Int_t nofStations = fStationErrors.size();
         l->add("NofStations", nofStations);
         TArrayD stationErrorArray(3 * nofStations);
         
@@ -76,7 +76,20 @@ public:
             stationErrorArray[3 * i + 2] = std::get<2> (fStationErrors[i]);
         }
         
-        l->add("StationErrors", stationErrorArray);
+        l->add("StationErrors", stationErrorArray);*/
+        
+        l->add("NofStations", fNofStations);
+        TArrayD stationXScatArray(fNofStations);
+        TArrayD stationYScatArray(fNofStations);
+        
+        for (int i = 0; i < fNofStations; ++i)
+        {
+            stationXScatArray[i] = fXScats[i];
+            stationYScatArray[i] = fYScats[i];
+        }
+        
+        l->add("StationXScats", stationXScatArray);
+        l->add("StationYScats", stationYScatArray);
     }
     
     Bool_t getParams(FairParamList* l)
@@ -101,12 +114,10 @@ public:
         if (!l->fill("NofTrdStations", &fNofTrdStations))
             return kFALSE;
         
-        Int_t nofStations;
-        
-        if (!l->fill("NofStations", &nofStations))
+        if (!l->fill("NofStations", &fNofStations))
             return kFALSE;
         
-        TArrayD stationErrorArray(3 * nofStations);
+        /*TArrayD stationErrorArray(3 * nofStations);
         
         if (!l->fill("StationErrors", &stationErrorArray))
             return kFALSE;
@@ -118,6 +129,22 @@ public:
             std::get<0> (fStationErrors[i]) = stationErrorArray[3 * i];
             std::get<1> (fStationErrors[i]) = stationErrorArray[3 * i + 1];
             std::get<2> (fStationErrors[i]) = stationErrorArray[3 * i + 2];
+        }*/
+        
+        TArrayD stationXScats(fNofStations);
+        
+        if (!l->fill("StationXScats", &stationXScats))
+            return kFALSE;
+        
+        TArrayD stationYScats(fNofStations);
+        
+        if (!l->fill("StationYScats", &stationYScats))
+            return kFALSE;
+        
+        for (int i = 0; i < fNofStations; ++i)
+        {
+            fXScats[i] = stationXScats[i];
+            fYScats[i] = stationYScats[i];
         }
         
         return kTRUE;
@@ -125,7 +152,7 @@ public:
     // ~Overridded virtual methods
     
     bool IsConfiguring() const { return fIsConfiguring; }
-    void SetConfiguring() { fIsConfiguring = true; }
+    void SetConfiguring(bool v) { fIsConfiguring = v; }
     bool Use(ECbmModuleId m) const { return fUseModules[m]; }
     void SetUse(ECbmModuleId m, bool v) { fUseModules[m] = v; }
     void SetUse(bool v) { std::fill_n(fUseModules, int(kLastModule), v); }
@@ -136,12 +163,21 @@ public:
     void SetNofMuchStations(Int_t v) { fNofMuchStations = v; }
     Int_t GetNofTrdStations() const { return fNofTrdStations; }
     void SetNofTrdStations(Int_t v) { fNofTrdStations = v; }
-    void AddStationErrors(Double_t xErr, Double_t yErr, Double_t tErr) { fStationErrors.push_back(std::make_tuple(xErr, yErr, tErr)); }
+    /*void AddStationErrors(Double_t xErr, Double_t yErr, Double_t tErr) { fStationErrors.push_back(std::make_tuple(xErr, yErr, tErr)); }
     Int_t GetNofStations() const { return fStationErrors.size(); }
     Double_t GetXError(int stationNumber) const { return std::get<0> (fStationErrors[stationNumber]); }
     Double_t GetYError(int stationNumber) const { return std::get<1> (fStationErrors[stationNumber]); }
-    Double_t GetTError(int stationNumber) const { return std::get<2> (fStationErrors[stationNumber]); }
+    Double_t GetTError(int stationNumber) const { return std::get<2> (fStationErrors[stationNumber]); }*/
     
+    void AddStationScats(Double_t x, Double_t y)
+    {
+        fXScats.push_back(x);
+        fYScats.push_back(y);
+        ++fNofStations;
+    }
+    
+    Double_t GetXScat(int stationNumber) const { return fXScats[stationNumber]; }
+    Double_t GetYScat(int stationNumber) const { return fYScats[stationNumber]; }
     
 private:
     bool fIsConfiguring;// Not persistent flag. Used to know if we are in configuration mode.
@@ -149,9 +185,12 @@ private:
     Int_t fNofStsStations;
     Int_t fNofMuchStations;
     Int_t fNofTrdStations;
-    std::vector<std::tuple<Double_t, Double_t, Double_t> > fStationErrors;
+    //std::vector<std::tuple<Double_t, Double_t, Double_t> > fStationErrors;
+    Int_t fNofStations;
+    std::vector<Double_t> fXScats;
+    std::vector<Double_t> fYScats;
     
-    ClassDef(CbmBinnedSettings, 2)
+    ClassDef(CbmBinnedSettings, 6)
 };
 
 #endif /* CBM_BINNED_SETTINGS_H */

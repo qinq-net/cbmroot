@@ -178,7 +178,7 @@ public:
    }
    
 public:
-   CbmBinnedMCTrackReader() : CbmBinnedHitReader(), fStationZs(), fTracks(), fXScats(), fYScats(), fNofEvents(0)
+   CbmBinnedMCTrackReader() : CbmBinnedHitReader(), fStationZs(), fTracks(), fXScats(), fYScats()
    {
       FairRootManager* ioman = FairRootManager::Instance();
       fHitArray = static_cast<TClonesArray*> (ioman->GetObject("MCTrack"));
@@ -187,8 +187,8 @@ public:
    void AddStation(CbmBinnedStation* station)
    {
       fStationZs.insert(station->GetMinZ());
-      fXScats.push_back(0);
-      fYScats.push_back(0);
+      fXScats.push_back(list<Double_t> ());
+      fYScats.push_back(list<Double_t> ());
    }
    
    void Read()
@@ -209,9 +209,7 @@ public:
    }
    
    void Handle()
-   {
-      ++fNofEvents;
-      
+   {      
       for (vector<Track>::const_iterator i = fTracks.begin(); i != fTracks.end(); ++i)
       {
          const Track& track = *i;
@@ -237,6 +235,10 @@ public:
          list<Point> vertexList;
          vertexList.push_back(vertexPoint);
          map<Double_t, list<Point> >::const_iterator jPrev = track.points.end();
+         vector<list<Double_t> >::iterator xScIter = fXScats.begin();
+         ++xScIter;
+         vector<list<Double_t> >::iterator yScIter = fYScats.begin();
+         ++yScIter;
          
          for (map<Double_t, list<Point> >::const_iterator j = track.points.begin(); j != track.points.end(); ++j)
          {
@@ -249,6 +251,8 @@ public:
             const list<Point>& points0 = (j == track.points.begin()) ? vertexList : jPrev->second;
             const list<Point>& points1 = j->second;
             const list<Point>& points2 = jNext->second;
+            list<Double_t>& xScats = *xScIter;
+            list<Double_t>& yScats = *yScIter;
             
             for (list<Point>::const_iterator k = points0.begin(); k != points0.end(); ++k)
             {
@@ -257,22 +261,73 @@ public:
                for (list<Point>::const_iterator l = points1.begin(); l != points1.end(); ++l)
                {
                   const Point& p1 = *l;
+                  Double_t deltaZ01 = p1.z - p0.z;
+                  Double_t tx = (p1.x - p0.x) / deltaZ01;
+                  Double_t ty = (p1.y - p0.y) / deltaZ01;
                   
                   for (list<Point>::const_iterator m = points2.begin(); m != points2.end(); ++m)
                   {
                      const Point& p2 = *m;
+                     Double_t deltaZ12 = p2.z - p1.z;
+                     Double_t x = p1.x + tx * deltaZ12;
+                     Double_t y = p1.y + ty * deltaZ12;
+                     xScats.push_back(p2.x - x);
+                     yScats.push_back(p2.y - y);
                   }
                }
             }
             
             jPrev = j;
+            ++xScIter;
+            ++yScIter;
          }
       }
    }
    
+   Double_t Sigma(const list<Double_t>& values)
+   {
+      if (values.empty())
+         return 0;
+      
+      Double_t mean = 0;
+      
+      for (list<Double_t>::const_iterator i = values.begin(); i != values.end(); ++i)
+      {
+         Double_t v = *i;
+         mean += v;
+      }
+      
+      mean /= values.size();
+      Double_t var = 0;
+      
+      for (list<Double_t>::const_iterator i = values.begin(); i != values.end(); ++i)
+      {
+         Double_t v = *i;
+         Double_t delta = v - mean;
+         var += delta * delta;
+      }
+      
+      var /= values.size();
+      
+      return TMath::Sqrt(var);
+   }
+   
    void Finish()
    {
+      vector<list<Double_t> >::const_iterator i2 = fYScats.begin();
       
+      for (vector<list<Double_t> >::const_iterator i = fXScats.begin(); i != fXScats.end(); ++i)
+      {
+         const list<Double_t>& xScats = *i;
+         const list<Double_t>& yScats = *i2;
+         Double_t xSigma = Sigma(xScats);
+         Double_t ySigma = Sigma(yScats);
+         fSettings->AddStationScats(xSigma, ySigma);
+         ++i2;
+      }
+      
+      fSettings->setChanged();
+      fSettings->setInputVersion(-2, 1);
    }
    
    void AddPoint(Int_t trackInd, Double_t stationZ, Double_t x, Double_t y, Double_t z)
@@ -285,9 +340,8 @@ public:
 private:
    set<Double_t> fStationZs;
    vector<Track> fTracks;
-   vector<Double_t> fXScats;
-   vector<Double_t> fYScats;
-   int fNofEvents;
+   vector<list<Double_t> > fXScats;
+   vector<list<Double_t> > fYScats;
 };
 
 class CbmBinnedMCPointReader : public CbmBinnedHitReader

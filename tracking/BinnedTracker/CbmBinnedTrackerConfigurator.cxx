@@ -17,7 +17,6 @@ CbmBinnedTrackerConfigurator::CbmBinnedTrackerConfigurator(bool useAllDetectors)
    fill_n(fUseModules, int(kLastModule), fUseAllDetectors);
    fUseModules[kMuch] = false;// Temporary hack
    fUseModules[kRich] = false;// Temporary hack
-   fSettings = CbmBinnedSettings::Instance();
 }
 
 CbmBinnedTrackerConfigurator::~CbmBinnedTrackerConfigurator()
@@ -27,7 +26,7 @@ CbmBinnedTrackerConfigurator::~CbmBinnedTrackerConfigurator()
 
 InitStatus CbmBinnedTrackerConfigurator::Init()
 {
-   fSettings->SetConfiguring();
+   fSettings->SetConfiguring(true);
    fSettings->SetUse(fUseModules);
    fSettings->SetNofStsStations(0);
    fSettings->SetNofMuchStations(0);
