@@ -6,7 +6,7 @@
 # and PANDAROOT.
 
 # Check if cmake has the required version
-CMAKE_MINIMUM_REQUIRED(VERSION 2.4.3 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.3.2 FATAL_ERROR)
 
 # Set name of our project to "CBMROOT". Has to be done
 # after check of cmake version                        
