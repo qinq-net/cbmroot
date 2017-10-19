@@ -44,6 +44,7 @@ Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
   ${Boost_LIBRARY_DIRS}
+  ${Vc_LIB_DIR}
 )
 
 Link_Directories(
