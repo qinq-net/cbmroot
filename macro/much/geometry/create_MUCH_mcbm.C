@@ -61,7 +61,7 @@ const TString C= "MUCHcarbon";
 const TString I= "MUCHiron";
 const TString activemedium="MUCHargon";
 const TString spacermedium="MUCHnoryl";
-const TString coolmedium="MUCHsupport"; //Al cooling plates
+const TString coolmedium="aluminium"; //Al cooling plates
 
 
 // Universal input parameters
@@ -168,7 +168,7 @@ void create_MUCH_mcbm() {
   gGeoMan->Write();  // use this if you want GeoManager format in the output
   outfile->Close();
 
-  //top->Draw("ogl");
+  top->Draw("ogl");
  
 }
 
