@@ -3,7 +3,7 @@
 /// \brief Generates MUCH geometry in Root format.
 ///                                             
 
-//2017 - 09 -4 PPB mcbm - preliminary version of mini much geometry
+// 2017-09-04 - PPB - mcbm - preliminary version of mini much geometry
 // 2017-05-16 - DE  - v17b - position the modules in a way to split layers left-right along y axis
 // 2017-05-16 - DE  - v17b - attribute name to module frames
 // 2017-05-16 - DE  - v17b - remove rim from support CompositeShape
@@ -97,8 +97,8 @@ Double_t fOverlapR = 0.0;        // Overlap in R direction [cm]
 
 Double_t fStationZ0=80;
 Int_t fNlayers=3; // Number of layers
-Double_t fLayersDz=10; // distnace between teh layers
-Double_t fCoolLz=1.0;  // thicknees of the cooling plate also used as support
+Double_t fLayersDz=10; // distance between the layers
+Double_t fCoolLz=1.0;  // thickness of the cooling plate also used as support
 
 /* 
    1 - detailed design (modules at two sides)
@@ -367,9 +367,9 @@ TGeoVolume * CreateLayers(int istn, int ily){
       // Calculate the phi angle of the sector where it has to be placed 
       Double_t angle = 180. / TMath::Pi() * phi;  // convert angle phi from rad to deg
      
-      TGeoTranslation*trans2=new TGeoTranslation("",pos[0],pos[1],pos[2]); //for moudle and frame
+      TGeoTranslation*trans2=new TGeoTranslation("",pos[0],pos[1],pos[2]); //for module and frame
 
-      TGeoTranslation*trans3=new TGeoTranslation("",pos[0],pos[1],pos[2]+0.65); //for moudle and frame
+      TGeoTranslation*trans3=new TGeoTranslation("",pos[0],pos[1],pos[2]+0.65); //for module and frame
 
 
     
