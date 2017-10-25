@@ -861,6 +861,9 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
 					      new TGeoRotation("rot1",0,90,0));
   TGeoCombiTrans *combi1 = new TGeoCombiTrans(-20,-1*dim_y/2.+30,0.,
 					      new TGeoRotation("rot2",0,-90,0));
+
+  TGeoVolume *mmvd  =  gGeoMan->MakeBox("mmvd",   polyp, 25/2., 25/2., 10/2.);
+
   TGeoVolume *btop  =  gGeoMan->MakeBox("btop",   polyp, dim_x/2., dim_z/2., .3);
   TGeoVolume *front =  gGeoMan->MakeBox("front",  polyp, dim_x/2., dim_y/2., .3);
   TGeoVolume *side  =  gGeoMan->MakeBox("side",   polyp, .3, dim_y/2., dim_z/2.);
@@ -904,17 +907,21 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   TGeoTranslation *tr_c3 = new TGeoTranslation(0., 0., z0+14);
   TGeoTranslation *tr_c4 = new TGeoTranslation(0., 0., z0+23);
 
-  ppbox->AddNode(front, 1, tr1);
-  ppbox->AddNode(front, 2, tr2);
-  ppbox->AddNode(btop, 3, combi2);
-  ppbox->AddNode(btop, 4, combi1);
-  ppbox->AddNode(side, 5, tr5);
-  ppbox->AddNode(side, 6, tr6);
-  ppbox->AddNode(cFrame1,7,  tr_c1);
-  ppbox->AddNode(cFrame1,8,  tr_c2);
-  ppbox->AddNode(cFrame2,9,  tr_c3);
+  ppbox->AddNode(front,   1, tr1);
+  ppbox->AddNode(front,   2, tr2);
+  ppbox->AddNode(btop,    3, combi2);
+  ppbox->AddNode(btop,    4, combi1);
+  ppbox->AddNode(side,    5, tr5);
+  ppbox->AddNode(side,    6, tr6);
+  ppbox->AddNode(cFrame1, 7,  tr_c1);
+  ppbox->AddNode(cFrame1, 8,  tr_c2);
+  ppbox->AddNode(cFrame2, 9,  tr_c3);
   ppbox->AddNode(cFrame2,10, tr_c4);
 
+  TGeoTranslation *tr11 = new TGeoTranslation(0., 0., -(36+10)/2.);
+  ppbox->AddNode(mmvd, 11, tr11);
+  mmvd->SetLineColor(kOrange);
+  
   cooling1->SetLineColor(kBlue);
   cooling1->SetTransparency(40);
 
@@ -930,7 +937,8 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   cFrame1->SetLineColor(kGreen);
   cFrame2->SetLineColor(kGreen);
 
-  front->SetTransparency(80);
+  //  front->SetTransparency(80);
+  front->SetTransparency(40);
 
   ppbox->GetShape()->ComputeBBox();
   CheckVolume(ppbox);
