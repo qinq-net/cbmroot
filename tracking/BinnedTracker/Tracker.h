@@ -57,7 +57,7 @@ public:
 public:
     CbmBinnedTracker(Double_t beamDx, Double_t beamDy) : fNofTrueSegments(0), fNofWrongSegments(0), fStations(), fStationArray(),
             fNofStations(0), fBeforeLastLevel(0), fChiSqCut(0), fTracks(), fBeamDx(beamDx), fBeamDxSq(beamDx * beamDx), fBeamDy(beamDy), fBeamDySq(beamDy * beamDy),
-            fVertex()
+            fVertex(), fVertexPseudoStation(-0.1, 0.1, 1, 1, 1)
 #ifdef CBM_BINNED_DEBUG
     , fDebug()
 #endif//CBM_BINNED_DEBUG
@@ -71,6 +71,12 @@ public:
         fVertex.SetZ(0);
         fVertex.SetTime(0);
         fVertex.SetTimeError(0);
+        fVertexPseudoStation.SetMinY(-0.1);
+        fVertexPseudoStation.SetMaxY(0.1);
+        fVertexPseudoStation.SetMinX(-0.1);
+        fVertexPseudoStation.SetMaxX(0.1);
+        fVertexPseudoStation.Init();
+        fVertexPseudoStation.AddHit(&fVertex, -1);
     }
     
     CbmBinnedTracker(const CbmBinnedTracker&) = delete;
@@ -466,36 +472,15 @@ private:
                 TraverseTrackCandidates(level + 1, trackStart, hhs, chiSq2, candidates, scatXSqs, scatYSqs);
         }
     }*/
-
-    struct KFParamsCoord
-    {
-        Double_t coord, tg, C11, C12, C21, C22;
-    };
-
-    struct KFParams
-    {
-        KFParamsCoord xParams;
-        KFParamsCoord yParams;
-        Double_t chi2;
-    };
-    
-    struct KFStation
-    {
-        struct Q
-        {
-            Double_t Q11, Q12, Q21, Q22;
-        };
-        
-        Q qs[2];
-    };
     
     //KFStation fKFStations[6];
 
-    void KFAddPointCoord(int stationNumber, KFParamsCoord& param, const KFParamsCoord& prevParam, Double_t m, Double_t V, Double_t& chi2, Double_t z, Double_t prevZ, int coordNumber)
+    void KFAddPointCoord(int stationNumber, CbmBinnedStation::KFParamsCoord& param, const CbmBinnedStation::KFParamsCoord& prevParam,
+        Double_t m, Double_t V, Double_t& chi2, Double_t z, Double_t prevZ, int coordNumber)
     {
         //const KFStation& station = fKFStations[stationNumber];
         const CbmBinnedStation* station = fStationArray[stationNumber];
-        KFStation::Q Q = { 0 == coordNumber ? station->GetScatXSq() : station->GetScatYSq(), 0, 0, 0 };
+        CbmBinnedStation::KFStation::Q Q = { 0 == coordNumber ? station->GetScatXSq() : station->GetScatYSq(), 0, 0, 0 };
         Double_t deltaZ = z - prevZ;
         Double_t deltaZSq = deltaZ * deltaZ;
 
@@ -521,17 +506,17 @@ private:
         chi2 += dzeta * S * dzeta;
     }
 
-    void KFAddPoint(int stationNumber, KFParams& param, const KFParams& prevParam, Double_t m[2], Double_t V[2], Double_t z, Double_t prevZ)
+    void KFAddPoint(int stationNumber, CbmBinnedStation::KFParams& param, const CbmBinnedStation::KFParams& prevParam, Double_t m[2], Double_t V[2], Double_t z, Double_t prevZ)
     {
         KFAddPointCoord(stationNumber, param.xParams, prevParam.xParams, m[0], V[0], param.chi2, z, prevZ, 0);
         KFAddPointCoord(stationNumber, param.yParams, prevParam.yParams, m[1], V[1], param.chi2, z, prevZ, 1);
     }
     
-    void TraverseTrackCandidates(int level, CbmBinnedStation::Segment** trackStart, CbmTBin::HitHolder** hhs, std::list<Track*>& candidates, KFParams kfParamsPrev)
+    void TraverseTrackCandidates(int level, CbmBinnedStation::Segment** trackStart, CbmTBin::HitHolder** hhs, std::list<Track*>& candidates, CbmBinnedStation::KFParams kfParamsPrev)
     {              
         CbmBinnedStation::Segment* segment = trackStart[level];
         const CbmPixelHit* hit = segment->end->hit;
-        KFParams kfParams = kfParamsPrev;
+        CbmBinnedStation::KFParams kfParams = kfParamsPrev;
         Double_t m[2] = { hit->GetX(), hit->GetY() };
         Double_t V[2] = { hit->GetDx() * hit->GetDx(), hit->GetDy() * hit->GetDy() };
         KFAddPoint(level, kfParams, kfParamsPrev, m, V, hit->GetZ(), 0 == level ? 0 : hhs[level - 1]->hit->GetZ());
@@ -570,7 +555,7 @@ private:
                 //TraverseTrackCandidates(0, segments, trackHolders, 0, candidates, scatXSqs, scatYSqs);
                 const CbmPixelHit* p1 = segment.begin->hit;
                 const CbmPixelHit* p2 = segment.end->hit;
-                KFParams kfParams =
+                CbmBinnedStation::KFParams kfParams =
                 {
                     { p1->GetX(), 0, p1->GetDx() * p1->GetDx(), 0, 0, 1.0 },
                     { p1->GetY(), 0, p1->GetDy() * p1->GetDy(), 0, 0, 1.0 },
@@ -642,9 +627,36 @@ private:
 #endif//CBM_BINNED_DEBUG
     }
 
-    void FollowTracks()
+    void FollowTracks(int startStationNo)
     {
-        
+        CbmBinnedStation* leftStation = 0 > startStationNo ? &fVertexPseudoStation : fStationArray[startStationNo];
+        CbmBinnedStation* rightStation = fStationArray[startStationNo + 1];
+        leftStation->IterateHits(
+            [this, &startStationNo, &rightStation](CbmTBin::HitHolder& leftHitHolder)->void
+            {
+                const CbmPixelHit* leftHit = leftHitHolder.hit;
+                CbmBinnedStation::KFParams kfParams =
+                {
+                    { leftHit->GetX(), 0, leftHit->GetDx() * leftHit->GetDx(), 0, 0, 1.0 },
+                    { leftHit->GetY(), 0, leftHit->GetDy() * leftHit->GetDy(), 0, 0, 1.0 },
+                    0
+                };
+                rightStation->IterateHits(
+                    [this, &startStationNo, &leftHitHolder, &kfParams](CbmTBin::HitHolder& rightHitHolder)->void
+                    {
+                        for (int stationNo = startStationNo + 2; stationNo < fNofStations; ++stationNo)
+                        {
+                            CbmBinnedStation* aStation = fStationArray[stationNo];
+                            aStation->SearchHits(kfParams, rightHitHolder.hit->GetZ(),
+                                [](CbmTBin::HitHolder& hitHolder)->void
+                                {                                                        
+                                }
+                            );
+                        }
+                    }
+                );
+            }
+        );
     }
     
 private:
@@ -661,6 +673,7 @@ private:
     Double_t fBeamDy;
     Double_t fBeamDySq;
     CbmPixelHit fVertex;
+    CbmBinned3DStation fVertexPseudoStation;
 #ifdef CBM_BINNED_DEBUG
     CbmBinnedDebug fDebug;
 #endif

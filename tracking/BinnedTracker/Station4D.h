@@ -217,6 +217,175 @@ public:
         CbmBinnedStation::Init();
     }
     
+    void SearchHits(const KFParams& stateVec, Double_t stateZ, std::function<void(CbmTBin::HitHolder&)> handleHit)
+    {
+        Double_t deltaZmin = stateZ - fMinZ;
+        Double_t tx = stateVec.xParams.tg;
+        Double_t ty = stateVec.yParams.tg;
+        Double_t wTx = cbmBinnedSigma * std::sqrt(stateVec.xParams.C22 + fDtxSq);
+        Double_t minTx = tx - wTx;
+        Double_t maxTx = tx + wTx;
+        Double_t wTy = cbmBinnedSigma * std::sqrt(stateVec.yParams.C22 + fDtySq);
+        Double_t minTy = ty - wTy;
+        Double_t maxTy = ty + wTy;
+        
+        if (minTy > 0 && stateVec.yParams.coord + minTy * deltaZmin >= fMaxY)
+            return;
+        else if (maxTy < 0 && stateVec.yParams.coord + maxTy * deltaZmin < fMinY)
+            return;
+        
+        if (minTx > 0 && stateVec.xParams.coord + minTx * deltaZmin >= fMaxX)
+            return;
+        else if (maxTx < 0 && stateVec.xParams.coord + minTx * deltaZmin < fMinX)
+            return;
+        
+        Double_t minZ = fMinZ;
+        Double_t maxZ = fMaxZ;
+        
+        Double_t searchZ = stateZ;
+        Double_t searchX = stateVec.xParams.coord;
+        Double_t searchY = stateVec.yParams.coord;
+        
+        if (minTy > 0)
+        {
+            if ((fMaxY - searchY) / minTy + searchZ < maxZ)
+                maxZ = (fMaxY - searchY) / minTy + searchZ;
+        }
+        else if (maxTy < 0)
+        {
+            if ((fMinY - searchY) / maxTy + searchZ < maxZ)
+                maxZ = (fMinY - searchY) / maxTy + searchZ;
+        }
+        
+        if (minTx > 0)
+        {
+            if ((fMaxX - searchX) / minTx + searchZ < maxZ)
+                maxZ = (fMaxX - searchX) / minTx + searchZ;
+        }
+        else if (maxTx < 0)
+        {
+            if ((fMinX - searchX) / maxTx + searchZ < maxZ)
+                maxZ = (fMinX - searchX) / maxTx + searchZ;
+        }
+        
+        int maxZind = GetZInd(maxZ);
+        
+        for (int i = 0; i <= maxZind; ++i)
+        {
+            CbmZBin& zBin = fZBins[i];
+            Double_t minZi = minZ + i * fZBinSize;
+            Double_t maxZi = minZ + (i + 1) * fZBinSize;
+            Double_t minY = minTy > 0 ? minTy * (minZi - searchZ) + searchY : minTy * (maxZi - searchZ) + searchY;
+            int minYind = GetYInd(minY);
+            Double_t maxY = maxTy > 0 ? maxTy * (maxZi - searchZ) + searchY : maxTy * (minZi - searchZ) + searchY;
+            int maxYind = GetYInd(maxY);
+            
+            for (int j = minYind; j <= maxYind; ++j)
+            {
+                CbmYBin& yBin = zBin[j];
+                Double_t minZj = maxZi;
+                Double_t maxZj = minZi;
+                Double_t tmp = GetYEnterZ(j, minTy);
+                
+                if (tmp < minZj && tmp > minZi)
+                    minZj = tmp;
+                
+                tmp = GetYEnterZ(j, maxTy);
+                
+                if (tmp < minZj && tmp > minZi)
+                    minZj = tmp;
+                
+                if (minZj == maxZi)
+                    minZj = minZi;
+                
+                tmp = GetYExitZ(j, minTy);
+                
+                if (tmp > maxZj && tmp < maxZi)
+                    maxZj = tmp;
+                
+                tmp = GetYExitZ(j, maxTy);
+                
+                if (tmp > maxZj && tmp < maxZi)
+                    maxZj = tmp;
+                
+                if (maxZj == minZi)
+                    maxZj = maxZi;
+                
+                Double_t minX = minTx > 0 ? minTx * (minZj - searchZ) + searchX : minTx * (maxZj - searchZ) + searchX;
+                Double_t maxX = maxTx > 0 ? maxTx * (maxZj - searchZ) + searchX : maxTx * (minZj - searchZ) + searchX;
+                int minXind = GetXInd(minX);
+                int maxXind = GetXInd(maxX);
+                
+                for (int k = minXind; k <= maxXind; ++k)
+                {
+                    CbmXBin& xBin = yBin[k];
+                    Double_t minZk = maxZj;
+                    Double_t maxZk = minZj;
+                    Double_t tmp2 = GetXEnterZ(k, minTx);
+
+                    if (tmp2 < minZk && tmp2 > minZj)
+                        minZk = tmp2;
+
+                    tmp2 = GetXEnterZ(k, maxTx);
+
+                    if (tmp2 < minZk && tmp2 > minZj)
+                        minZk = tmp2;
+
+                    if (minZk == maxZj)
+                        minZk = minZj;
+
+                    tmp2 = GetXExitZ(k, minTx);
+
+                    if (tmp2 > maxZk && tmp2 < maxZj)
+                        maxZk = tmp2;
+
+                    tmp2 = GetXExitZ(k, maxTx);
+
+                    if (tmp2 > maxZk && tmp2 < maxZj)
+                        maxZk = tmp2;
+
+                    if (maxZk == minZj)
+                        maxZk = maxZj;
+
+                    //Double_t minT = searchT + (minZk - searchZ) * timeCoeff - wT;
+                    //Double_t maxT = searchT + (maxZk - searchZ) * timeCoeff + wT;
+                    int minTind = 0;//GetTInd(minT);
+                    int maxTind = fNofTBins - 1;//GetTInd(maxT);
+                    
+                    for (int l = minTind; l <= maxTind; ++l)
+                    {
+                        CbmTBin& tBin = xBin[l];
+                        std::list<CbmTBin::HitHolder>::iterator hitIter = tBin.HitsBegin();
+                        std::list<CbmTBin::HitHolder>::iterator hitIterEnd = tBin.HitsEnd();
+
+                        for (; hitIter != hitIterEnd; ++hitIter)
+                        {
+                            /*const CbmPixelHit* hit = hitIter->hit;
+                            Double_t z = hit->GetZ();
+                            Double_t zSq = z * z;
+                            Double_t deltaY = hit->GetY() - ty * z;
+
+                            if (deltaY * deltaY > cbmBinnedSigmaSq * (dTySq * zSq + hit->GetDy() * hit->GetDy()))
+                                continue;
+
+                            Double_t deltaX = hit->GetX() - tx * z;
+
+                            if (deltaX * deltaX > cbmBinnedSigmaSq * (dTxSq * zSq + hit->GetDx() * hit->GetDx()))
+                                continue;*/
+
+                            /*Double_t deltaT = hit->GetTime() - searchT - (z - searchZ) * timeCoeff;
+
+                            if (deltaT * deltaT > cbmBinnedSigmaSq * (dtSq + hit->GetTimeError() * hit->GetTimeError()))
+                                continue;*/
+
+                            handleHit(*hitIter);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     void SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit)
     {
         const CbmPixelHit* hit1 = segment.begin->hit;

@@ -54,6 +54,44 @@ public:
         }
     };
     
+    struct KFParamsCoord
+    {
+        Double_t coord, tg, C11, C12, C21, C22;
+    };
+
+    struct KFParams
+    {
+        KFParamsCoord xParams;
+        KFParamsCoord yParams;
+        Double_t chi2;
+    };
+    
+    struct KFStation
+    {
+        struct Q
+        {
+            Double_t Q11, Q12, Q21, Q22;
+        };
+        
+        Q qs[2];
+    };
+    
+public:
+    KFParams Extrapolate(const KFParams& params, Double_t deltaZ)
+    {
+        KFParams result = params;
+        
+        result.xParams.coord += params.xParams.tg * deltaZ;
+        result.xParams.C12 += params.xParams.C22 * deltaZ;
+        result.xParams.C11 += params.xParams.C12 * deltaZ + result.xParams.C12 * deltaZ;
+        
+        result.yParams.coord += params.yParams.tg * deltaZ;
+        result.yParams.C12 += params.yParams.C22 * deltaZ;
+        result.yParams.C11 += params.yParams.C12 * deltaZ + result.yParams.C12 * deltaZ;
+        
+        return result;
+    }
+    
 public:
     CbmBinnedStation(Double_t minZ, Double_t maxZ, int nofYBins, int nofXBins, int nofTBins);
     CbmBinnedStation(const CbmBinnedStation&) = delete;
@@ -203,6 +241,7 @@ public:
     
     virtual void AddHit(const CbmPixelHit* hit, Int_t index) = 0;
     virtual void IterateHits(std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
+    virtual void SearchHits(const KFParams& stateVec, Double_t stateZ, std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
     virtual void SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
     virtual void SearchHits(Double_t minZ, Double_t maxZ, Double_t minY, Double_t maxY, Double_t minX, Double_t maxX, Double_t minT, Double_t maxT,
         std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;

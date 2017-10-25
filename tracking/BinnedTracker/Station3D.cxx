@@ -9,6 +9,51 @@
 #include "Station3D.h"
 #include "Tracker.h"
 
+void CbmBinned3DStation::SearchHits(const KFParams& stateVec, Double_t stateZ, std::function<void(CbmTBin::HitHolder&)> handleHit)
+{
+   Double_t deltaZmin = fMinZ - stateZ;
+   Double_t deltaZmax = fMaxZ - stateZ;
+   KFParams minParams = Extrapolate(stateVec, deltaZmin);
+   KFParams maxParams = Extrapolate(stateVec, deltaZmax);
+   Double_t wXmin = fNofSigmasX * std::sqrt(minParams.xParams.C11 + fDxSq + fScatXSq);
+   Double_t wXmax = fNofSigmasX * std::sqrt(maxParams.xParams.C11 + fDxSq + fScatXSq);
+   Double_t wYmin = fNofSigmasY * std::sqrt(minParams.yParams.C11 + fDySq + fScatYSq);
+   Double_t wYmax = fNofSigmasY * std::sqrt(maxParams.yParams.C11 + fDySq + fScatYSq);
+
+   Double_t xMin = stateVec.xParams.tg > 0 ? minParams.xParams.coord - wXmin : maxParams.xParams.coord - wXmax;
+   Double_t xMax = stateVec.xParams.tg > 0 ? maxParams.xParams.coord + wXmax : minParams.xParams.coord + wXmin;
+
+   Double_t yMin = stateVec.yParams.tg > 0 ? minParams.yParams.coord - wYmin : maxParams.yParams.coord - wYmax;
+   Double_t yMax = stateVec.yParams.tg > 0 ? maxParams.yParams.coord + wYmax : minParams.yParams.coord + wYmin;
+
+   int lowerXind = GetXInd(xMin);
+   int upperXind = GetXInd(xMax);
+   int lowerYind = GetYInd(yMin);
+   int upperYind = GetYInd(yMax);
+   int lowerTind = GetTInd(0);
+   int upperTind = GetTInd(0);
+
+   for (int i = lowerYind; i <= upperYind; ++i)
+   {
+      CbmYBin& yBin = fYBins[i];
+
+      for (int j = lowerXind; j <= upperXind; ++j)
+      {
+         CbmXBin& xBin = yBin[j];
+
+         for (int k = lowerTind; k <= upperTind; ++k)
+         {
+            CbmTBin& tBin = xBin[k];
+            std::list<CbmTBin::HitHolder>::iterator hitIter = tBin.HitsBegin();
+            std::list<CbmTBin::HitHolder>::iterator hitIterEnd = tBin.HitsEnd();
+
+            for (; hitIter != hitIterEnd; ++hitIter)
+               handleHit(*hitIter);
+         }
+      }
+   }
+}
+
 void CbmBinned3DStation::SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit)
 {
    const CbmPixelHit* hit1 = segment.begin->hit;
