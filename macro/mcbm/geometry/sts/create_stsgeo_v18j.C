@@ -1,7 +1,7 @@
 /******************************************************************************
  ** Creation of STS geometry in ROOT format (TGeo).
  **
- ** @file create_stsgeo_v18f.C
+ ** @file create_stsgeo_v18j.C
  ** @author Volker Friese <v.friese@gsi.de>
  ** @since 15 June 2012
  ** @date 09.05.2014
@@ -231,7 +231,7 @@ TGeoVolume* ConstructStation(Int_t iStation,
 // ======                         Main function                           =====
 // ============================================================================
 
-void create_stsgeo_v18f(const char* geoTag="v18f_mcbm")
+void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
 {
 
   // -------   Geometry file name (output)   ----------------------------------
@@ -245,7 +245,7 @@ void create_stsgeo_v18f(const char* geoTag="v18f_mcbm")
   infoFileName.ReplaceAll("root", "info");
   fstream infoFile;
   infoFile.open(infoFileName.Data(), fstream::out);
-  infoFile << "STS geometry created with create_stsgeo_v18f.C" << endl << endl;
+  infoFile << "STS geometry created with create_stsgeo_v18j.C" << endl << endl;
   infoFile << "Global variables: " << endl;
   infoFile << "Sensor thickness = " << gkSensorThickness << " cm" << endl;
   infoFile << "Vertical gap in sensor chain = " 
