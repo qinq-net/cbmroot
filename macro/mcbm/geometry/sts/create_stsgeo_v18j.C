@@ -846,24 +846,27 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
 
   //----------------- Create hostin box and  simple vertion of c-frame -------------------------
   //calculated from preliminary drawing of O.Vasylyev
-  dim_x = 80.;
-  dim_y = 110.;
-  dim_z = 35;
-  
+  dim_x    =  80.0;
+  dim_y    = 110.0;
+  dim_z    =  35.0;
+  dim_wall =   0.3;
+
   TGeoBBox* ppBox = new TGeoBBox("ppBox",dim_x, dim_y, dim_z );
   TGeoVolume* ppbox = new TGeoVolume("ppbox", ppBox, gStsMedium);
-  TGeoTranslation *tr1 = new TGeoTranslation(-20., 30, -dim_z/2.);
-  TGeoTranslation *tr2 = new TGeoTranslation(-20., 30, dim_z/2.);
-  TGeoTranslation *tr5 = new TGeoTranslation(-dim_x/2. -20., 30., 0.);
-  TGeoTranslation *tr6 = new TGeoTranslation( dim_x/2. -20 , 30., 0.);
+  TGeoTranslation *tr1 = new TGeoTranslation( -20., 30, -(dim_z/2.-dim_wall/2.) );
+  TGeoTranslation *tr2 = new TGeoTranslation( -20., 30,   dim_z/2.-dim_wall/2.  );
 
-  TGeoCombiTrans *combi2 = new TGeoCombiTrans(-20, dim_y/2.+30,0.,
-					      new TGeoRotation("rot1",0,90,0));
-  TGeoCombiTrans *combi1 = new TGeoCombiTrans(-20,-1*dim_y/2.+30,0.,
-					      new TGeoRotation("rot2",0,-90,0));
-  TGeoVolume *btop  =  gGeoMan->MakeBox("btop",   polyp, dim_x/2., dim_z/2., .3);
-  TGeoVolume *front =  gGeoMan->MakeBox("front",  polyp, dim_x/2., dim_y/2., .3);
-  TGeoVolume *side  =  gGeoMan->MakeBox("side",   polyp, .3, dim_y/2., dim_z/2.);
+  TGeoTranslation *tr3 = new TGeoTranslation(-20,   dim_y/2.-dim_wall/2. +30, 0.);
+  TGeoTranslation *tr4 = new TGeoTranslation(-20, -(dim_y/2.-dim_wall/2.)+30, 0.);
+
+  TGeoTranslation *tr5 = new TGeoTranslation(-(dim_x/2.-dim_wall/2.) -20., 30., 0.);
+  TGeoTranslation *tr6 = new TGeoTranslation(  dim_x/2.-dim_wall/2.  -20 , 30., 0.);
+
+  TGeoVolume *front =  gGeoMan->MakeBox("front",  polyp, dim_x/2., dim_y/2., dim_wall/2.);
+  //  TGeoVolume *btop  =  gGeoMan->MakeBox("btop",   polyp, dim_x/2., dim_z/2., dim_wall/2.);
+  TGeoVolume *btop  =  gGeoMan->MakeBox("btop",   polyp, dim_x/2., dim_wall/2., dim_z/2.-dim_wall);
+  TGeoVolume *side  =  gGeoMan->MakeBox("side",   polyp, dim_wall/2., dim_y/2.-dim_wall, dim_z/2.-dim_wall);
+
 
   TGeoVolume *cFrame1  =   new TGeoVolume("cFrame01", ppBox, gStsMedium);
   TGeoVolume *cooling1  =  gGeoMan->MakeBox("cooling", alum, 39./2., 17.2/2., 1.5/2.);
@@ -877,12 +880,12 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   double shiftX2 = -34.7;
   double shiftX3 = -10.2;
   
-  TGeoTranslation *tr3 = new TGeoTranslation(shiftX1, shiftY1, 0.);
-  TGeoTranslation *tr4 = new TGeoTranslation(shiftX2, shiftY2, 0.);
-  TGeoTranslation *tr7 = new TGeoTranslation(shiftX3, shiftY3, 0.);
-  cFrame1->AddNode(cooling1, 7, tr3);
-  cFrame1->AddNode(cooling1, 8, tr4);
-  cFrame1->AddNode(support1, 9, tr7);
+  TGeoTranslation *tr70 = new TGeoTranslation(shiftX1, shiftY1, 0.);
+  TGeoTranslation *tr80 = new TGeoTranslation(shiftX2, shiftY2, 0.);
+  TGeoTranslation *tr90 = new TGeoTranslation(shiftX3, shiftY3, 0.);
+  cFrame1->AddNode(cooling1, 7, tr70);
+  cFrame1->AddNode(cooling1, 8, tr80);
+  cFrame1->AddNode(support1, 9, tr90);
 
   double z0 = -dim_z/2.+ 6.5; // shift of first cFrame
   TGeoTranslation *tr_c1 = new TGeoTranslation(0., 0, z0);
@@ -904,16 +907,16 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   TGeoTranslation *tr_c3 = new TGeoTranslation(0., 0., z0+14);
   TGeoTranslation *tr_c4 = new TGeoTranslation(0., 0., z0+23);
 
-  ppbox->AddNode(front, 1, tr1);
-  ppbox->AddNode(front, 2, tr2);
-  ppbox->AddNode(btop, 3, combi2);
-  ppbox->AddNode(btop, 4, combi1);
-  ppbox->AddNode(side, 5, tr5);
-  ppbox->AddNode(side, 6, tr6);
-  ppbox->AddNode(cFrame1,7,  tr_c1);
-  ppbox->AddNode(cFrame1,8,  tr_c2);
-  ppbox->AddNode(cFrame2,9,  tr_c3);
-  ppbox->AddNode(cFrame2,10, tr_c4);
+  ppbox->AddNode(front,   1, tr1   );
+  ppbox->AddNode(front,   2, tr2   );
+  ppbox->AddNode(btop,    3, tr3   );
+  ppbox->AddNode(btop,    4, tr4   );
+  ppbox->AddNode(side,    5, tr5   );
+  ppbox->AddNode(side,    6, tr6   );
+  ppbox->AddNode(cFrame1, 7, tr_c1 );
+  ppbox->AddNode(cFrame1, 8, tr_c2 );
+  ppbox->AddNode(cFrame2, 9, tr_c3 );
+  ppbox->AddNode(cFrame2,10, tr_c4 );
 
   cooling1->SetLineColor(kBlue);
   cooling1->SetTransparency(40);
@@ -924,13 +927,13 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   support2->SetLineColor(kOrange);
   support2->SetTransparency(20);
 
-  front->SetLineColor(kGreen);
-  btop->SetLineColor(kGreen);
-  side->SetLineColor(kGreen);
-  cFrame1->SetLineColor(kGreen);
-  cFrame2->SetLineColor(kGreen);
+  front->SetLineColor(kYellow);
+  btop->SetLineColor(kYellow);
+  side->SetLineColor(kYellow);
+  cFrame1->SetLineColor(kYellow);
+  cFrame2->SetLineColor(kYellow);
 
-  front->SetTransparency(80);
+  front->SetTransparency(30);
 
   ppbox->GetShape()->ComputeBBox();
   CheckVolume(ppbox);
