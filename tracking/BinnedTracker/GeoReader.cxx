@@ -208,6 +208,7 @@ void CbmBinnedGeoReader::SearchStation(TGeoNode* node, CbmBinnedHitReader* hitRe
       fTracker->AddStation(station);
       hitReader->AddStation(station);
       ++fLastStationNumber;
+      settings->SetNofStations(fLastStationNumber);
    }
    else
    {

@@ -36,15 +36,17 @@ public:
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
     void SetParContainers();
+    void SetOnlyPrimary(bool v) { fIsOnlyPrimary = v; }
     
 private:
-    void HandleSts(Int_t stsTrackIndex);
-    void HandleMuch(Int_t muchTrackIndex);
-    void HandleTrd(Int_t trdTrackIndex);
-    void HandleTof(Int_t tofHitIndex);
+    void HandleSts(Int_t stsTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds);
+    void HandleMuch(Int_t muchTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds);
+    void HandleTrd(Int_t trdTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds);
+    void HandleTof(Int_t tofHitIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds);
     void IterateTrdHits(std::function<void(const CbmTrdHit*, const CbmTrdPoint*)> handleData);
     
 private:
+    bool fIsOnlyPrimary;
     CbmBinnedSettings* fSettings;
     TClonesArray* fGlobalTracks;
     TClonesArray* fStsTracks;

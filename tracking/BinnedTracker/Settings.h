@@ -34,8 +34,8 @@ public:
     }
     
 public:
-    CbmBinnedSettings() : FairParGenericSet("CbmBinnedSettings", "Binned tracker reconstruction parameters", "Default"),
-            fIsConfiguring(false), fNofStsStations(0), fNofMuchStations(0), fNofTrdStations(0)/*, fStationErrors()*/, fNofStations(0), fXScats(), fYScats()
+    CbmBinnedSettings() : FairParGenericSet("CbmBinnedSettings", "Binned tracker reconstruction parameters", "Default"), fIsConfiguring(false), fIsOnlyPrimary(true),
+            fNofStsStations(0), fNofMuchStations(0), fNofTrdStations(0)/*, fStationErrors()*/, fNofStations(0), fXScats(), fYScats()
     {
         std::fill_n(fUseModules, int(kLastModule), true);
     }
@@ -54,6 +54,8 @@ public:
     {
         if (0 == l)
             return;
+        
+        l->add("OnlyPrimary", fIsOnlyPrimary);
         
         TArrayC detFlags(kLastModule);
         
@@ -95,6 +97,9 @@ public:
     Bool_t getParams(FairParamList* l)
     {
         if (0 == l)
+            return kFALSE;
+        
+        if (!l->fill("OnlyPrimary", &fIsOnlyPrimary))
             return kFALSE;
 
         TArrayC detFlags(kLastModule);
@@ -153,6 +158,8 @@ public:
     
     bool IsConfiguring() const { return fIsConfiguring; }
     void SetConfiguring(bool v) { fIsConfiguring = v; }
+    bool IsOnlyPrimary() const { return fIsOnlyPrimary; }
+    void SetOnlyPrimary(bool v) { fIsOnlyPrimary = v; }
     bool Use(ECbmModuleId m) const { return fUseModules[m]; }
     void SetUse(ECbmModuleId m, bool v) { fUseModules[m] = v; }
     void SetUse(bool v) { std::fill_n(fUseModules, int(kLastModule), v); }
@@ -163,6 +170,8 @@ public:
     void SetNofMuchStations(Int_t v) { fNofMuchStations = v; }
     Int_t GetNofTrdStations() const { return fNofTrdStations; }
     void SetNofTrdStations(Int_t v) { fNofTrdStations = v; }
+    Int_t GetNofStations() const { return fNofStations; }
+    void SetNofStations(Int_t v) { fNofStations = v; }
     /*void AddStationErrors(Double_t xErr, Double_t yErr, Double_t tErr) { fStationErrors.push_back(std::make_tuple(xErr, yErr, tErr)); }
     Int_t GetNofStations() const { return fStationErrors.size(); }
     Double_t GetXError(int stationNumber) const { return std::get<0> (fStationErrors[stationNumber]); }
@@ -180,7 +189,8 @@ public:
     Double_t GetYScat(int stationNumber) const { return fYScats[stationNumber]; }
     
 private:
-    bool fIsConfiguring;// Not persistent flag. Used to know if we are in configuration mode.
+    bool fIsConfiguring;
+    bool fIsOnlyPrimary;
     bool fUseModules[kLastModule];
     Int_t fNofStsStations;
     Int_t fNofMuchStations;
@@ -190,7 +200,7 @@ private:
     std::vector<Double_t> fXScats;
     std::vector<Double_t> fYScats;
     
-    ClassDef(CbmBinnedSettings, 6)
+    ClassDef(CbmBinnedSettings, 7)
 };
 
 #endif /* CBM_BINNED_SETTINGS_H */

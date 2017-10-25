@@ -34,6 +34,8 @@ public:
     void Finish();// Overridden from FairTask
     void SetParContainers();
     
+    bool IsOnlyPrimary() const { return fIsOnlyPrimary; }
+    void SetOnlyPrimary(bool v) { fIsOnlyPrimary = v; }
     Double_t GetBeamDx() const { return fBeamDx; }
     Double_t GetBeamDy() const { return fBeamDy; }
     bool Use(ECbmModuleId m) const { return fUseModules[m]; }
@@ -44,6 +46,7 @@ private:
     
 private:
     bool fUseAllDetectors;
+    bool fIsOnlyPrimary;
     bool fUseModules[kLastModule];
     CbmBinnedSettings* fSettings;
     Double_t fBeamDx;

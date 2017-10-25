@@ -144,10 +144,11 @@ private:
     }
     
     void ReconstructLocal()
-    {        
-        fStations.begin()->second->CreateSegmentsFromHits();
+    {
+        std::map<Double_t, CbmBinnedStation*>::iterator i = fStations.begin();
+        i->second->CreateSegmentsFromHits();
         
-        for (std::map<Double_t, CbmBinnedStation*>::iterator i = fStations.begin(); true;)
+        for (; true;)
         {
             CbmBinnedStation* curStation = i->second;
             ++i;
@@ -536,11 +537,10 @@ private:
         KFAddPoint(level, kfParams, kfParamsPrev, m, V, hit->GetZ(), 0 == level ? 0 : hhs[level - 1]->hit->GetZ());
         
         CbmBinnedSettings* settings = CbmBinnedSettings::Instance();
-        int nofStations = settings->GetNofStsStations() + settings->GetNofMuchStations() + settings->GetNofTrdStations() + (settings->Use(kTof) ? 1 : 0);
         
-        if (level == nofStations - 1)
+        if (level == fNofStations - 1)
         {
-            Track* aCandidate = new Track(hhs, nofStations, kfParams.chi2);
+            Track* aCandidate = new Track(hhs, fNofStations, kfParams.chi2);
             candidates.push_back(aCandidate);
             return;
         }
@@ -555,17 +555,17 @@ private:
     }
 
     void ReconstructGlobal()
-    {        
-        CbmBinnedStation* startStation = fStations.begin()->second;
+    {
+        std::map<Double_t, CbmBinnedStation*>::iterator startStationIter = fStations.begin();        
+        CbmBinnedStation* startStation = startStationIter->second;
         startStation->IterateSegments(
             [&](CbmBinnedStation::Segment& segment)->void
             {
                 CbmBinnedStation::Segment* segments[fNofStations];
                 segments[0] = &segment;
                 CbmTBin::HitHolder* trackHolders[fNofStations];
-                trackHolders[0] = segment.end;
+                trackHolders[0] = segment.end;                
                 std::list<Track*> candidates;
-                
                 
                 //TraverseTrackCandidates(0, segments, trackHolders, 0, candidates, scatXSqs, scatYSqs);
                 const CbmPixelHit* p1 = segment.begin->hit;
@@ -577,7 +577,6 @@ private:
                     0
                 };
                 TraverseTrackCandidates(0, segments, trackHolders, candidates, kfParams);
-                
                 Track* bestCandidate = 0;
 
                 for (std::list<Track*>::iterator i = candidates.begin(); i != candidates.end(); ++i)
@@ -643,6 +642,10 @@ private:
 #endif//CBM_BINNED_DEBUG
     }
 
+    void FollowTracks()
+    {
+        
+    }
     
 private:
     //std::list<CbmBinnedStation*> fStations;

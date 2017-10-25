@@ -39,7 +39,7 @@ using std::copy;
 
 CbmBinnedTrackerTask* CbmBinnedTrackerTask::fInstance = 0;
    
-CbmBinnedTrackerTask::CbmBinnedTrackerTask(bool useAllDetectors, Double_t beamWidthX, Double_t beamWidthY) : fUseAllDetectors(useAllDetectors),
+CbmBinnedTrackerTask::CbmBinnedTrackerTask(bool useAllDetectors, Double_t beamWidthX, Double_t beamWidthY) : fUseAllDetectors(useAllDetectors), fIsOnlyPrimary(true),
    fSettings(0), fBeamDx(beamWidthX), fBeamDy(beamWidthY), fTracker(0), fGlobalTracks(0), fStsTracks(0), fMuchTracks(0), fTrdTracks(0)
 {
    fInstance = this;
@@ -57,10 +57,12 @@ InitStatus CbmBinnedTrackerTask::Init()
 {
    fSettings = CbmBinnedSettings::Instance();
    fSettings->SetConfiguring(false);
+   fSettings->SetOnlyPrimary(fIsOnlyPrimary);
    fSettings->SetUse(fUseModules);
    fSettings->SetNofStsStations(0);
    fSettings->SetNofMuchStations(0);
    fSettings->SetNofTrdStations(0);
+   fSettings->SetNofStations(0);
    CbmBinnedGeoReader* geoReader = CbmBinnedGeoReader::Instance();
    
    if (0 == geoReader)
