@@ -883,6 +883,7 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   cFrame1->AddNode(cooling1, 7, tr3);
   cFrame1->AddNode(cooling1, 8, tr4);
   cFrame1->AddNode(support1, 9, tr7);
+
   double z0 = -dim_z/2.+ 6.5; // shift of first cFrame
   TGeoTranslation *tr_c1 = new TGeoTranslation(0., 0, z0);
   TGeoTranslation *tr_c2 = new TGeoTranslation(0., 0, z0+9);
@@ -899,6 +900,7 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   cFrame2->AddNode(cooling1, 7, tr8);
   cFrame2->AddNode(cooling1, 8, tr9);
   cFrame2->AddNode(support2, 9, tr10);
+
   TGeoTranslation *tr_c3 = new TGeoTranslation(0., 0., z0+14);
   TGeoTranslation *tr_c4 = new TGeoTranslation(0., 0., z0+23);
 
@@ -912,6 +914,24 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   ppbox->AddNode(cFrame1,8,  tr_c2);
   ppbox->AddNode(cFrame2,9,  tr_c3);
   ppbox->AddNode(cFrame2,10, tr_c4);
+
+  cooling1->SetLineColor(kBlue);
+  cooling1->SetTransparency(40);
+
+  support1->SetLineColor(kRed);
+  support1->SetTransparency(20);
+
+  support2->SetLineColor(kOrange);
+  support2->SetTransparency(20);
+
+  front->SetLineColor(kGreen);
+  btop->SetLineColor(kGreen);
+  side->SetLineColor(kGreen);
+  cFrame1->SetLineColor(kGreen);
+  cFrame2->SetLineColor(kGreen);
+
+  front->SetTransparency(80);
+
   ppbox->GetShape()->ComputeBBox();
   CheckVolume(ppbox);
 
