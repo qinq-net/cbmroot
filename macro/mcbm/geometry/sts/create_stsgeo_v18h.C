@@ -1,12 +1,14 @@
 /******************************************************************************
  ** Creation of STS geometry in ROOT format (TGeo).
  **
- ** @file create_stsgeo_v18j.C
+ ** @file create_stsgeo_v18h.C
  ** @author Volker Friese <v.friese@gsi.de>
  ** @since 15 June 2012
  ** @date 09.05.2014
  ** @author Tomas Balog <T.Balog@gsi.de>
  **
+ ** v18h: implement Sensors as VolumeAssembly of active and inactive parts
+ ** v18g: add inactive guard ring around active silicon sensor
  ** v18f: flip orientation of carbon ladders for primary beam left of mSTS, change z-positions to 30 and 45 cm
  ** v18e: 2 stations, derived from v15b, 1st 2x2, 2nd of 3x3 sensor array, sensor size 6x6 cm2 with carbon ladder supports
  ** v18d: 2 stations of 3x3 sensor array, sensor size 6x6 cm2 with carbon ladder supports
@@ -231,7 +233,7 @@ TGeoVolume* ConstructStation(Int_t iStation,
 // ======                         Main function                           =====
 // ============================================================================
 
-void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
+void create_stsgeo_v18h(const char* geoTag="v18h_mcbm")
 {
 
   // -------   Geometry file name (output)   ----------------------------------
@@ -245,7 +247,7 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   infoFileName.ReplaceAll("root", "info");
   fstream infoFile;
   infoFile.open(infoFileName.Data(), fstream::out);
-  infoFile << "STS geometry created with create_stsgeo_v18j.C" << endl << endl;
+  infoFile << "STS geometry created with create_stsgeo_v18h.C" << endl << endl;
   infoFile << "Global variables: " << endl;
   infoFile << "Sensor thickness = " << gkSensorThickness << " cm" << endl;
   infoFile << "Vertical gap in sensor chain = " 
@@ -294,12 +296,19 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   TGeoMedium* air = gGeoMan->GetMedium("air");
   if ( ! air ) Fatal("Main", "Medium air not found");
 
-  // ---> silicon
+  // ---> silicon (active)
   FairGeoMedium* mSilicon  = geoMedia->getMedium("silicon");
   if ( ! mSilicon ) Fatal("Main", "FairMedium silicon not found");
   geoBuild->createMedium(mSilicon);
   TGeoMedium* silicon = gGeoMan->GetMedium("silicon");
   if ( ! silicon ) Fatal("Main", "Medium silicon not found");
+
+  // ---> silicon (inactive)
+  FairGeoMedium* mSilicon_inactive  = geoMedia->getMedium("silicon_inactive");
+  if ( ! mSilicon_inactive ) Fatal("Main", "FairMedium silicon_inactive not found");
+  geoBuild->createMedium(mSilicon_inactive);
+  TGeoMedium* silicon_inactive = gGeoMan->GetMedium("silicon_inactive");
+  if ( ! silicon_inactive ) Fatal("Main", "Medium silicon_inactive not found");
 
   // ---> carbon
   FairGeoMedium* mCarbon  = geoMedia->getMedium("carbon");
@@ -316,22 +325,6 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   if ( ! STScable ) Fatal("Main", "Medium STScable not found");
 
 
-  //---> STS box 
-  FairGeoMedium* mPP  = geoMedia->getMedium("polypropylene");
-  if ( ! mPP ) Fatal("Main", "FairMedium polypropylene not found");
-  geoBuild->createMedium(mPP);
-  TGeoMedium* polyp = gGeoMan->GetMedium("polypropylene");
-  if ( ! polyp ) Fatal("Main", "Medium polyp not found");
-
-  FairGeoMedium* mAl  = geoMedia->getMedium("aluminium");
-  if ( ! mPP ) Fatal("Main", "FairMedium aluminium not found");
-  geoBuild->createMedium(mAl);
-  TGeoMedium* alum = gGeoMan->GetMedium("aluminium");
-  if ( ! alum ) Fatal("Main", "Medium alum not found");
-
-  //  TGeoMaterial *matAl = new TGeoMaterial("Al", 26.98,13,2.7);
-  //  TGeoMedium *medAl = new TGeoMedium("aluminium",
-  //				  nMedia++, matAl);
   // ---
   gStsMedium = air;
   // --------------------------------------------------------------------------
@@ -811,7 +804,9 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
 //  infoFile << "Position z = " << statPos[7] << endl;
   // --------------------------------------------------------------------------
 
- 
+
+
+
   // ---------------   Create STS volume   ------------------------------------
   cout << endl << endl;
   cout << "===> Creating STS...." << endl;
@@ -842,106 +837,6 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   // --- Create box  around the stations
   TGeoBBox* stsBox = new TGeoBBox("stsBox", stsX/2., stsY/2., stsZ/2.);
   cout << "size of STS box: x " <<  stsX << " - y " << stsY << " - z " << stsZ << endl;
-
-
-  //----------------- Create hostin box and  simple vertion of c-frame -------------------------
-  //calculated from preliminary drawing of O.Vasylyev
-  dim_x = 80.;
-  dim_y = 110.;
-  dim_z = 35;
-  
-  TGeoBBox* ppBox = new TGeoBBox("ppBox",dim_x, dim_y, dim_z );
-  TGeoVolume* ppbox = new TGeoVolume("ppbox", ppBox, gStsMedium);
-  TGeoTranslation *tr1 = new TGeoTranslation(-20., 30, -dim_z/2.);
-  TGeoTranslation *tr2 = new TGeoTranslation(-20., 30, dim_z/2.);
-  TGeoTranslation *tr5 = new TGeoTranslation(-dim_x/2. -20., 30., 0.);
-  TGeoTranslation *tr6 = new TGeoTranslation( dim_x/2. -20 , 30., 0.);
-
-  TGeoCombiTrans *combi2 = new TGeoCombiTrans(-20, dim_y/2.+30,0.,
-					      new TGeoRotation("rot1",0,90,0));
-  TGeoCombiTrans *combi1 = new TGeoCombiTrans(-20,-1*dim_y/2.+30,0.,
-					      new TGeoRotation("rot2",0,-90,0));
-
-  TGeoVolume *mmvd  =  gGeoMan->MakeBox("mmvd",   polyp, 25/2., 25/2., 10/2.);
-
-  TGeoVolume *btop  =  gGeoMan->MakeBox("btop",   polyp, dim_x/2., dim_z/2., .3);
-  TGeoVolume *front =  gGeoMan->MakeBox("front",  polyp, dim_x/2., dim_y/2., .3);
-  TGeoVolume *side  =  gGeoMan->MakeBox("side",   polyp, .3, dim_y/2., dim_z/2.);
-
-  TGeoVolume *cFrame1  =   new TGeoVolume("cFrame01", ppBox, gStsMedium);
-  TGeoVolume *cooling1  =  gGeoMan->MakeBox("cooling", alum, 39./2., 17.2/2., 1.5/2.);
-  TGeoVolume *support1  =  gGeoMan->MakeBox("support1", alum, 47./2., 7.1/2., 1.5/2.);
-  
-  //calculated from preliminary drawing of O.Vasylyev
-  double shiftY1 = 53.2;
-  double shiftY2 = 67.5;
-  double shiftY3 = -16.5;
-  double shiftX1 = -6.2;
-  double shiftX2 = -34.7;
-  double shiftX3 = -10.2;
-  
-  TGeoTranslation *tr3 = new TGeoTranslation(shiftX1, shiftY1, 0.);
-  TGeoTranslation *tr4 = new TGeoTranslation(shiftX2, shiftY2, 0.);
-  TGeoTranslation *tr7 = new TGeoTranslation(shiftX3, shiftY3, 0.);
-  cFrame1->AddNode(cooling1, 7, tr3);
-  cFrame1->AddNode(cooling1, 8, tr4);
-  cFrame1->AddNode(support1, 9, tr7);
-
-  double z0 = -dim_z/2.+ 6.5; // shift of first cFrame
-  TGeoTranslation *tr_c1 = new TGeoTranslation(0., 0, z0);
-  TGeoTranslation *tr_c2 = new TGeoTranslation(0., 0, z0+9);
-
-  TGeoVolume *cFrame2  =   new TGeoVolume("cFrame02", ppBox, gStsMedium);
-  TGeoVolume *support2  =  gGeoMan->MakeBox("support2", alum, 47./2., 4./2., 1.5/2.);
-  //calculated from preliminary drawing of O.Vasylyev
-  shiftY1 = 49.8;
-  shiftY2 = 64.1;
-  shiftY3 = -17.9;
-  TGeoTranslation *tr8 =  new TGeoTranslation(shiftX1, shiftY1, 0.);
-  TGeoTranslation *tr9 =  new TGeoTranslation(shiftX2, shiftY2, 0.);
-  TGeoTranslation *tr10 = new TGeoTranslation(shiftX3, shiftY3, 0.);
-  cFrame2->AddNode(cooling1, 7, tr8);
-  cFrame2->AddNode(cooling1, 8, tr9);
-  cFrame2->AddNode(support2, 9, tr10);
-
-  TGeoTranslation *tr_c3 = new TGeoTranslation(0., 0., z0+14);
-  TGeoTranslation *tr_c4 = new TGeoTranslation(0., 0., z0+23);
-
-  ppbox->AddNode(front,   1, tr1);
-  ppbox->AddNode(front,   2, tr2);
-  ppbox->AddNode(btop,    3, combi2);
-  ppbox->AddNode(btop,    4, combi1);
-  ppbox->AddNode(side,    5, tr5);
-  ppbox->AddNode(side,    6, tr6);
-  ppbox->AddNode(cFrame1, 7,  tr_c1);
-  ppbox->AddNode(cFrame1, 8,  tr_c2);
-  ppbox->AddNode(cFrame2, 9,  tr_c3);
-  ppbox->AddNode(cFrame2,10, tr_c4);
-
-  TGeoTranslation *tr11 = new TGeoTranslation(0., 0., -(36+10)/2.);
-  ppbox->AddNode(mmvd, 11, tr11);
-  mmvd->SetLineColor(kOrange);
-  
-  cooling1->SetLineColor(kBlue);
-  cooling1->SetTransparency(40);
-
-  support1->SetLineColor(kRed);
-  support1->SetTransparency(20);
-
-  support2->SetLineColor(kOrange);
-  support2->SetTransparency(20);
-
-  front->SetLineColor(kGreen);
-  btop->SetLineColor(kGreen);
-  side->SetLineColor(kGreen);
-  cFrame1->SetLineColor(kGreen);
-  cFrame2->SetLineColor(kGreen);
-
-  //  front->SetTransparency(80);
-  front->SetTransparency(40);
-
-  ppbox->GetShape()->ComputeBBox();
-  CheckVolume(ppbox);
 
 //  // --- Create cone hosting the beam pipe
 //  // --- One straight section with constant radius followed by a cone
@@ -1008,15 +903,15 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
     sts->AddNode(station, iStation, trans);
     sts->GetShape()->ComputeBBox();
   }
-  sts->AddNode(ppbox, 3); 
   cout << endl;
   CheckVolume(sts);
   // --------------------------------------------------------------------------
- 
+
+
+
 
   // ---------------   Finish   -----------------------------------------------
   TGeoTranslation* stsTrans = new TGeoTranslation(0., 0., stsPosZ);
- 
   top->AddNode(sts, 1, stsTrans);
   top->GetShape()->ComputeBBox();
   cout << endl << endl;
@@ -1050,7 +945,8 @@ void create_stsgeo_v18j(const char* geoTag="v18j_mcbm")
   geoFile->Close();
 
   top->Draw("ogl");
-  gGeoManager->SetVisLevel(6);
+  //  gGeoManager->SetVisLevel(6);
+  gGeoManager->SetVisLevel(7);
   
   infoFile.close();
 
@@ -1094,13 +990,8 @@ Int_t CreateMedia() {
   TGeoElement* elSi   = gGeoMan->GetElementTable()->GetElement(14);
   TGeoMaterial* matSi = new TGeoMaterial("matSi", elSi, density);
 
-  // --- Material polypropylene
-  density    = 0.90;     // [g/cm^3]
-  TGeoMixture* matPP = new TGeoMixture("polypropylene", 2, density);
-  matPP->AddElement(12.01, 6, 0.856);      // C
-  matPP->AddElement(1.01,  1, 0.144);     // H
 
-   // --- Air (passive)
+  // --- Air (passive)
   TGeoMedium* medAir = new TGeoMedium("air", nMedia++, matAir);
   medAir->SetParam(0, 0.);       // is passive
   medAir->SetParam(1, 1.);       // is in magnetic field
@@ -1124,18 +1015,6 @@ Int_t CreateMedia() {
   medSiPas->SetParam(2, 20.);    // max. field [kG]
   medSiPas->SetParam(6, 0.001);  // boundary crossing precisison [cm]
 
-
- // --- Passive PP box
-  TGeoMedium* medPP = new TGeoMedium("polypropylene", 
-				     nMedia++, matPP);
-  medPP->SetParam(0, 0.);     // is passive
-  medPP->SetParam(1, 1.);     // is in magnetic field
-  medPP->SetParam(2, 20.);    // max. field [kG]
-  medPP->SetParam(6, 0.001);  // boundary crossing precisison [cm]
-
-  TGeoMaterial *matAl = new TGeoMaterial("Al", 26.98,13,2.7);
-  TGeoMedium *medAl = new TGeoMedium("aluminium",
-				  nMedia++, matAl);
   return nMedia;
 }
 /** ======================================================================= **/
@@ -1153,11 +1032,17 @@ Int_t CreateSensors() {
 
   Int_t nSensors = 0;
 
+  // sizes provided from DXF file by Johann
+  Double_t inactive_ring_xWidth = 0.125;  // width of surrounding ring in cm = 1.25 mm
+  Double_t inactive_ring_yWidth = 0.132;  // width of surrounding ring in cm = 1.32 mm
+
   Double_t xSize      = 0.;
   Double_t ySize      = 0.;
   Double_t zSize      = gkSensorThickness;
-  TGeoMedium* silicon = gGeoMan->GetMedium("silicon");
 
+  TGeoMedium* silicon = gGeoMan->GetMedium("silicon");
+  TGeoMedium* inactive_silicon = gGeoMan->GetMedium("silicon_inactive");  // AKA "inactive silicon"
+  //  TGeoMedium* inactive_silicon = gGeoMan->GetMedium("STScable");  // AKA "inactive silicon"
 
   // --- Sensor Type 01: Half small sensor (4 cm x 2.5 cm)
   xSize = 4.0;
@@ -1189,9 +1074,52 @@ Int_t CreateSensors() {
   // ---  Sensor type 04: Big sensor (6.2 cm x 6.2 cm)
   xSize = 6.2092;
   ySize = 6.2;
-  TGeoBBox* shape_sensor04 = new TGeoBBox("sensor04", 
-					  xSize/2., ySize/2., zSize/2.);
-  new TGeoVolume("Sensor04", shape_sensor04, silicon);
+
+  TGeoVolumeAssembly* sts_sens04 = new TGeoVolumeAssembly("Sensor04");
+
+  // active sensor area inside inactive rings
+  TGeoBBox* shape_active_sensor04 = 
+    new TGeoBBox("active_sensor04", xSize/2.-inactive_ring_xWidth, ySize/2.-inactive_ring_yWidth, zSize/2.);
+  TGeoVolume* sts_active_sens04 = new TGeoVolume("ActiveSensor04", shape_active_sensor04, silicon);
+  sts_sens04->AddNode(sts_active_sens04, 1);
+
+  //  sts_active_sens04->SetLineColor(kRed);
+  sts_active_sens04->SetLineColor(kBlue);
+
+  // entire sensor including inactive rings
+  TGeoBBox* shape_inactive1_sensor04;
+  TGeoVolume* sts_inactive1_sens04;
+  TGeoTranslation* sts_ina_trans1;
+  shape_inactive1_sensor04 = new TGeoBBox("inactive1_sensor04", xSize/2., inactive_ring_yWidth/2., zSize/2.);
+  sts_inactive1_sens04 = new TGeoVolume("Inactive1Sensor04", shape_inactive1_sensor04, inactive_silicon);
+
+  // translations 
+  sts_ina_trans1 = new TGeoTranslation("", 0., (ySize-inactive_ring_yWidth)/2., 0.);
+  sts_sens04->AddNode(sts_inactive1_sens04, 1, sts_ina_trans1);
+
+  sts_ina_trans1 = new TGeoTranslation("", 0.,-(ySize-inactive_ring_yWidth)/2., 0.);
+  sts_sens04->AddNode(sts_inactive1_sens04, 2, sts_ina_trans1);
+
+  //  sts_inactive1_sens04->SetLineColor(kGreen);
+  //  sts_inactive1_sens04->SetLineColor(kBlue);
+  sts_inactive1_sens04->SetLineColor(kRed);
+
+  TGeoBBox* shape_inactive2_sensor04;
+  TGeoVolume* sts_inactive2_sens04;
+  TGeoTranslation* sts_ina_trans2;
+  shape_inactive2_sensor04 = new TGeoBBox("inactive2_sensor04", inactive_ring_xWidth/2., ySize/2.-inactive_ring_yWidth, zSize/2.);
+  sts_inactive2_sens04 = new TGeoVolume("Inactive2Sensor04", shape_inactive2_sensor04, inactive_silicon);
+
+  // translations 
+  sts_ina_trans2 = new TGeoTranslation("", (xSize-inactive_ring_xWidth)/2., 0., 0.);
+  sts_sens04->AddNode(sts_inactive2_sens04, 1, sts_ina_trans2);
+
+  sts_ina_trans2 = new TGeoTranslation("",-(xSize-inactive_ring_xWidth)/2., 0., 0.);
+  sts_sens04->AddNode(sts_inactive2_sens04, 2, sts_ina_trans2);
+
+  //  sts_inactive2_sens04->SetLineColor(kBlue);
+  sts_inactive2_sens04->SetLineColor(kRed);
+
   nSensors++;
 
   // ---  Sensor type 05: Additional "in hole" sensor (3.1 cm x 4.2 cm)
