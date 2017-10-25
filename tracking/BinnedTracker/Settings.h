@@ -99,8 +99,12 @@ public:
         if (0 == l)
             return kFALSE;
         
-        if (!l->fill("OnlyPrimary", &fIsOnlyPrimary))
+        Int_t op = 0;
+        
+        if (!l->fill("OnlyPrimary", &op))
             return kFALSE;
+        
+        fIsOnlyPrimary = op != 0;
 
         TArrayC detFlags(kLastModule);
         
