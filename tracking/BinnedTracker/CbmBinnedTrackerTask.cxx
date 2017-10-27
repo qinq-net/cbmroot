@@ -70,7 +70,7 @@ InitStatus CbmBinnedTrackerTask::Init()
    
    geoReader->Read();
    fTracker = CbmBinnedTracker::Instance();
-   fTracker->SetChiSqCut(200);
+   fTracker->SetChiSqCut(224);
    fTracker->Init();
    
    FairRootManager* ioman = FairRootManager::Instance();

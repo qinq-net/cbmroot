@@ -48,7 +48,14 @@ void CbmBinned3DStation::SearchHits(const KFParams& stateVec, Double_t stateZ, s
             std::list<CbmTBin::HitHolder>::iterator hitIterEnd = tBin.HitsEnd();
 
             for (; hitIter != hitIterEnd; ++hitIter)
-               handleHit(*hitIter);
+            {
+               CbmTBin::HitHolder& hitHolder = *hitIter;
+               
+               if (fCheckUsed && hitHolder.used)
+                  continue;
+                  
+               handleHit(hitHolder);
+            }
          }
       }
    }

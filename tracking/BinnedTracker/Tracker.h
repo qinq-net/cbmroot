@@ -57,7 +57,7 @@ public:
 public:
     CbmBinnedTracker(Double_t beamDx, Double_t beamDy) : fNofTrueSegments(0), fNofWrongSegments(0), fStations(), fStationArray(),
             fNofStations(0), fBeforeLastLevel(0), fChiSqCut(0), fTracks(), fBeamDx(beamDx), fBeamDxSq(beamDx * beamDx), fBeamDy(beamDy), fBeamDySq(beamDy * beamDy),
-            fVertex(), fVertexPseudoStation(-0.1, 0.1, 1, 1, 1)
+            fVertex(), fVertexPseudoStation(0)
 #ifdef CBM_BINNED_DEBUG
     , fDebug()
 #endif//CBM_BINNED_DEBUG
@@ -71,12 +71,11 @@ public:
         fVertex.SetZ(0);
         fVertex.SetTime(0);
         fVertex.SetTimeError(0);
-        fVertexPseudoStation.SetMinY(-0.1);
-        fVertexPseudoStation.SetMaxY(0.1);
-        fVertexPseudoStation.SetMinX(-0.1);
-        fVertexPseudoStation.SetMaxX(0.1);
-        fVertexPseudoStation.Init();
-        fVertexPseudoStation.AddHit(&fVertex, -1);
+    }
+    
+    ~CbmBinnedTracker()
+    {
+        delete fVertexPseudoStation;
     }
     
     CbmBinnedTracker(const CbmBinnedTracker&) = delete;
@@ -84,6 +83,14 @@ public:
     
     void Init()
     {
+        fVertexPseudoStation = new CbmBinned3DStation(-0.1, 0.1, 1, 1, 1);
+        fVertexPseudoStation->SetMinY(-0.1);
+        fVertexPseudoStation->SetMaxY(0.1);
+        fVertexPseudoStation->SetMinX(-0.1);
+        fVertexPseudoStation->SetMaxX(0.1);
+        fVertexPseudoStation->Init();
+        fVertexPseudoStation->AddHit(&fVertex, -1);
+        
         for (std::map<Double_t, CbmBinnedStation*>::const_iterator i = fStations.begin(); i != fStations.end(); ++i)
             fStationArray.push_back(i->second);
     }
@@ -104,6 +111,15 @@ public:
     
     void SetChiSqCut(Double_t v) { fChiSqCut = v; }
     
+    void SetCheckUsed(bool v)
+    {        
+        for (std::vector<CbmBinnedStation*>::iterator i = fStationArray.begin(); i != fStationArray.end(); ++i)
+        {
+            CbmBinnedStation* aStation = *i;
+            aStation->SetCheckUsed(v);
+        }
+    }
+    
     void Reconstruct(Double_t startTime)
     {
         Clear();
@@ -115,8 +131,11 @@ public:
         }
         
         CbmBinnedHitReader::Instance()->Read();        
-        ReconstructLocal();
-        ReconstructGlobal();
+        //ReconstructLocal();
+        //ReconstructGlobal();
+        FollowTracks(-1);
+        SetCheckUsed(true);
+        FollowTracks(0);
         
         std::cout << "Segments on stations: ";
         
@@ -626,14 +645,54 @@ private:
         std::cout << std::endl << std::endl << std::endl;
 #endif//CBM_BINNED_DEBUG
     }
+    
+    bool FindBestPath(int stationNo, CbmBinnedStation::KFParams kfParams, CbmTBin::HitHolder** trackHolders, CbmTBin::HitHolder** bestTrackHolders, Double_t& bestChiSq)
+    {
+        bool pathResult = false;
+        Double_t previousZ = trackHolders[stationNo - 1]->hit->GetZ();
+        CbmBinnedStation* aStation = fStationArray[stationNo];
+        aStation->SearchHits(kfParams, previousZ,
+            [this, &stationNo, &kfParams, &trackHolders, &bestTrackHolders, &previousZ, &bestChiSq, &pathResult](CbmTBin::HitHolder& hitHolder)->void
+            {
+                trackHolders[stationNo] = &hitHolder;
+                const CbmPixelHit* hit = hitHolder.hit;
+                CbmBinnedStation::KFParams updKFParams = kfParams;
+                Double_t m[2] = { hit->GetX(), hit->GetY() };
+                Double_t V[2] = { hit->GetDx() * hit->GetDx(), hit->GetDy() * hit->GetDy() };
+                KFAddPoint(stationNo, updKFParams, kfParams, m, V, hit->GetZ(), previousZ);
+                
+                if (updKFParams.chi2 > fChiSqCut || updKFParams.chi2 > bestChiSq)
+                    return;
+                
+                bool result = false;
+                
+                if (stationNo < fNofStations - 1)
+                    result = FindBestPath(stationNo + 1, updKFParams, trackHolders, bestTrackHolders, bestChiSq);
+                else
+                {
+                    bestChiSq = updKFParams.chi2;
+                    result = true;
+                }
+                
+                if (result)
+                {
+                    bestTrackHolders[stationNo] = &hitHolder;
+                    pathResult = true;
+                }
+            }
+        );
+        return pathResult;
+    }
 
     void FollowTracks(int startStationNo)
     {
-        CbmBinnedStation* leftStation = 0 > startStationNo ? &fVertexPseudoStation : fStationArray[startStationNo];
+        CbmBinnedStation* leftStation = 0 > startStationNo ? fVertexPseudoStation : fStationArray[startStationNo];
         CbmBinnedStation* rightStation = fStationArray[startStationNo + 1];
         leftStation->IterateHits(
             [this, &startStationNo, &rightStation](CbmTBin::HitHolder& leftHitHolder)->void
             {
+                CbmTBin::HitHolder* trackHolders[fNofStations];
+                CbmTBin::HitHolder* tmpTrackHolders[fNofStations];
                 const CbmPixelHit* leftHit = leftHitHolder.hit;
                 CbmBinnedStation::KFParams kfParams =
                 {
@@ -641,20 +700,68 @@ private:
                     { leftHit->GetY(), 0, leftHit->GetDy() * leftHit->GetDy(), 0, 0, 1.0 },
                     0
                 };
+                
+                CbmTBin::HitHolder* startHitHolder = 0;
+                Double_t bestChiSq = cbmBinnedCrazyChiSq;
+                bool hasFoundPathLeft = false;
+                
+                if (startStationNo >= 0)
+                {
+                    startHitHolder = &leftHitHolder;
+                    tmpTrackHolders[0] = &leftHitHolder;
+                }
+                
                 rightStation->IterateHits(
-                    [this, &startStationNo, &leftHitHolder, &kfParams](CbmTBin::HitHolder& rightHitHolder)->void
-                    {
-                        for (int stationNo = startStationNo + 2; stationNo < fNofStations; ++stationNo)
+                    [this, &startStationNo, &leftHitHolder, &trackHolders, &tmpTrackHolders, &leftHit, &kfParams, &startHitHolder,
+                        &bestChiSq, &hasFoundPathLeft](CbmTBin::HitHolder& rightHitHolder)->void
+                    {                        
+                        if (startStationNo < 0)
                         {
-                            CbmBinnedStation* aStation = fStationArray[stationNo];
-                            aStation->SearchHits(kfParams, rightHitHolder.hit->GetZ(),
-                                [](CbmTBin::HitHolder& hitHolder)->void
-                                {                                                        
-                                }
-                            );
+                            startHitHolder = &rightHitHolder;
+                            tmpTrackHolders[0] = &rightHitHolder;
+                            bestChiSq = cbmBinnedCrazyChiSq;
+                        }
+                        else
+                            tmpTrackHolders[1] = &rightHitHolder;
+                        
+                        const CbmPixelHit* rightHit = rightHitHolder.hit;
+                        CbmBinnedStation::KFParams updKFParams = kfParams;
+                        Double_t m[2] = {rightHit->GetX(), rightHit->GetY()};
+                        Double_t V[2] = {rightHit->GetDx() * rightHit->GetDx(), rightHit->GetDy() * rightHit->GetDy()};
+                        KFAddPoint(startStationNo + 1, updKFParams, kfParams, m, V, rightHit->GetZ(), leftHit->GetZ());
+
+                        if (updKFParams.chi2 > fChiSqCut)
+                            return;
+                        
+                        bool hasFoundPathRight = FindBestPath(startStationNo + 2, updKFParams, tmpTrackHolders, trackHolders, bestChiSq);
+                        
+                        if (hasFoundPathRight)
+                        {
+                            trackHolders[0] = tmpTrackHolders[0];
+                            
+                            if (startStationNo >=0 )
+                            {
+                                trackHolders[1] = tmpTrackHolders[1];
+                                hasFoundPathLeft = true;
+                            }
+                            
+                            if (startStationNo < 0)
+                            {
+                                Track* aTrack = new Track(trackHolders, fNofStations, bestChiSq);
+                                fTracks.push_back(aTrack);
+                                
+                                for (int i = 0; i < fNofStations; ++i)
+                                    trackHolders[i]->used = true;
+                            }
                         }
                     }
                 );
+                
+                if (startStationNo >= 0 && hasFoundPathLeft)
+                {
+                    Track* aTrack = new Track(trackHolders, fNofStations, bestChiSq);
+                    fTracks.push_back(aTrack);
+                }
             }
         );
     }
@@ -673,7 +780,7 @@ private:
     Double_t fBeamDy;
     Double_t fBeamDySq;
     CbmPixelHit fVertex;
-    CbmBinned3DStation fVertexPseudoStation;
+    CbmBinnedStation* fVertexPseudoStation;
 #ifdef CBM_BINNED_DEBUG
     CbmBinnedDebug fDebug;
 #endif

@@ -158,8 +158,12 @@ public:
                         
                         for (std::list<CbmTBin::HitHolder>::iterator hi = tBin.HitsBegin(); hi != tBin.HitsEnd(); ++hi)
                         {
-                            if (hi->use)
-                                handleHit(*hi);
+                            CbmTBin::HitHolder& hitHolder = *hi;
+               
+                            if (fCheckUsed && hitHolder.used)
+                                continue;
+                  
+                            handleHit(hitHolder);
                         }
                     }
                 }
@@ -350,7 +354,7 @@ public:
                     //Double_t minT = searchT + (minZk - searchZ) * timeCoeff - wT;
                     //Double_t maxT = searchT + (maxZk - searchZ) * timeCoeff + wT;
                     int minTind = 0;//GetTInd(minT);
-                    int maxTind = fNofTBins - 1;//GetTInd(maxT);
+                    int maxTind = 0;//fNofTBins - 1;//GetTInd(maxT);
                     
                     for (int l = minTind; l <= maxTind; ++l)
                     {
@@ -378,7 +382,12 @@ public:
                             if (deltaT * deltaT > cbmBinnedSigmaSq * (dtSq + hit->GetTimeError() * hit->GetTimeError()))
                                 continue;*/
 
-                            handleHit(*hitIter);
+                            CbmTBin::HitHolder& hitHolder = *hitIter;
+               
+                            if (fCheckUsed && hitHolder.used)
+                                continue;
+                  
+                            handleHit(hitHolder);
                         }
                     }
                 }

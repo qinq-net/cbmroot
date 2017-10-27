@@ -119,8 +119,12 @@ public:
                     
                     for (std::list<CbmTBin::HitHolder>::iterator hi = tBin.HitsBegin(); hi != tBin.HitsEnd(); ++hi)
                     {
-                        //if (hi->use)
-                            handleHit(*hi);
+                        CbmTBin::HitHolder& hitHolder = *hi;
+               
+                        if (fCheckUsed && hitHolder.used)
+                            continue;
+                  
+                        handleHit(hitHolder);
                     }
                 }
             }

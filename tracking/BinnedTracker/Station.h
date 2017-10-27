@@ -23,7 +23,7 @@
 const Double_t cbmBinnedSigma = 4;
 const Double_t cbmBinnedSigmaSq = cbmBinnedSigma * cbmBinnedSigma;
 extern Double_t cbmBinnedSOL;
-const Double_t cbmBinnedCrazyChiSq = 100000;
+const Double_t cbmBinnedCrazyChiSq = 1000000;
 
 class CbmBinnedStation
 {
@@ -77,7 +77,7 @@ public:
     };
     
 public:
-    KFParams Extrapolate(const KFParams& params, Double_t deltaZ)
+    static KFParams Extrapolate(const KFParams& params, Double_t deltaZ)
     {
         KFParams result = params;
         
@@ -222,6 +222,8 @@ public:
         return ind;
     }
     
+    void SetCheckUsed(bool v) { fCheckUsed = v; }
+    
     virtual void Init()
     {
         fYBinSize = (fMaxY - fMinY) / fNofYBins;
@@ -236,6 +238,7 @@ public:
         fDySq = 0;
         fDt = 0;
         fDtSq = 0;
+        fCheckUsed = false;
         fSegments.clear();
     }
     
@@ -309,6 +312,7 @@ protected:
     Double_t fNofSigmasXSq;
     Double_t fNofSigmasY;
     Double_t fNofSigmasYSq;
+    bool fCheckUsed;
 };
 
 #endif /* STATION_H */
