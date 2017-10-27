@@ -383,11 +383,13 @@ Int_t CbmStsSensorDssdStereo::IntersectClusters(CbmStsCluster* clusterF,
     LOG(FATAL) << GetName() << ": Inconsistent side qualifier " << side
     << " for front side cluster! " << FairLogger::endl;
   Double_t exF = clusterF->GetPositionError() * fPitch;
+  Double_t du = exF * TMath::Cos(TMath::DegToRad() * fStereoF);
   GetClusterPosition(clusterB->GetPosition(), xB, side);
   if ( side != 1 )
     LOG(FATAL) << GetName() << ": Inconsistent side qualifier " << side
     << " for back side cluster! " << FairLogger::endl;
   Double_t exB = clusterB->GetPositionError() * fPitch;
+  Double_t dv = exB * TMath::Cos(TMath::DegToRad() * fStereoB);
 
   // --- Should be inside active area
   if ( ! ( xF >= 0. || xF <= fDx) ) return 0;
@@ -437,7 +439,7 @@ Int_t CbmStsSensorDssdStereo::IntersectClusters(CbmStsCluster* clusterF,
         xC -= 0.5 * fDx;
         yC -= 0.5 * fDy;
         // --- Create the hit
-        CreateHit(xC, yC, varX, varY, varXY, clusterF, clusterB);
+        CreateHit(xC, yC, varX, varY, varXY, clusterF, clusterB, du, dv);
         nHits++;
 
       }  //? Intersection of lines

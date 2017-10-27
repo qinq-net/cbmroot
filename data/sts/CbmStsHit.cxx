@@ -29,10 +29,13 @@ CbmStsHit::CbmStsHit()
 // -----   Constructor with parameters
 CbmStsHit::CbmStsHit(Int_t address, const TVector3& pos, const TVector3& dpos,
 		                 Double_t dxy, Int_t frontClusterId, Int_t backClusterId,
-		                 Double_t time, Double_t timeError)
+		                 Double_t time, Double_t timeError, Double_t du,
+		                 Double_t dv)
     : CbmPixelHit(address, pos, dpos, dxy, -1)
     , fFrontClusterId(frontClusterId)
     , fBackClusterId(backClusterId)
+    , fDu(du)
+    , fDv(dv)
 {
 	SetTime(time);
 	SetTimeError(timeError);

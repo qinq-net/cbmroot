@@ -62,15 +62,21 @@ class CbmStsSensor : public CbmStsElement
     virtual ~CbmStsSensor() { };
 
 
-    /** Create a new hit in the output array form two clusters
-     ** @param xLocal   hit x coordinate in sensor system
-     ** @param yLocal   hit y coordinate in sensor system
+    /** Create a new hit in the output array from two clusters
+     ** @param xLocal   hit x coordinate in sensor system [cm]
+     ** @param yLocal   hit y coordinate in sensor system [cm]
+     ** @param varX     Variance in x [cm^2]
+     ** @param varY     Variance in y [cm^2]
+     ** @param varXY    Covariance of x and y [cm^2]
      ** @param clusterF pointer to front side cluster
      ** @param clusterB pointer to back side cluster
+     ** @param du       Error in u coordinate (across strips front side) [cm]
+     ** @param dv       Error in v coordinate (across strips back side) [cm]
      **/
     void CreateHit(Double_t xLocal, Double_t yLocal,
     		       Double_t varX, Double_t varY, Double_t varXY,
-    		       CbmStsCluster* clusterF, CbmStsCluster* clusterB);
+    		       CbmStsCluster* clusterF, CbmStsCluster* clusterB,
+    		       Double_t du = 0., Double_t dv = 0.);
 
 
     /** Find hits in sensor

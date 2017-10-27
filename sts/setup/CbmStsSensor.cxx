@@ -53,7 +53,8 @@ CbmStsSensor::CbmStsSensor(UInt_t address, TGeoPhysicalNode* node,
 // -----   Create a new hit   ----------------------------------------------
 void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal, Double_t varX,
 		                     Double_t varY, Double_t varXY,
-		                     CbmStsCluster* clusterF, CbmStsCluster* clusterB) {
+		                     CbmStsCluster* clusterF, CbmStsCluster* clusterB,
+		                     Double_t du, Double_t dv) {
 
   // ---  Check clusters and output array
 	if ( ! fHits ) {
@@ -102,7 +103,8 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal, Double_t varX,
 					      clusterF->GetIndex(),  // front cluster index
 					      clusterB->GetIndex(),  // back cluster index
 					      hitTime,               // hit time
-					      hitTimeError);         // hit time error
+					      hitTimeError,          // hit time error
+					      du, dv);               // errors in u and v
 	if ( fEvent) fEvent->AddData(kStsHit, index);
 
 	LOG(DEBUG2) << GetName() << ": Creating hit at (" << global[0] << ", "
