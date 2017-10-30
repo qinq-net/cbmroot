@@ -691,8 +691,15 @@ private:
         leftStation->IterateHits(
             [this, &startStationNo, &rightStation](CbmTBin::HitHolder& leftHitHolder)->void
             {
+#ifdef __MACH__
+                CbmTBin::HitHolder* trackHoldersBuf[fNofStations];
+                CbmTBin::HitHolder** trackHolders = trackHoldersBuf;
+                CbmTBin::HitHolder* tmpTrackHoldersBuf[fNofStations];
+                CbmTBin::HitHolder** tmpTrackHolders = tmpTrackHoldersBuf;
+#else //__MACH__
                 CbmTBin::HitHolder* trackHolders[fNofStations];
                 CbmTBin::HitHolder* tmpTrackHolders[fNofStations];
+#endif//__MACH__
                 const CbmPixelHit* leftHit = leftHitHolder.hit;
                 CbmBinnedStation::KFParams kfParams =
                 {
