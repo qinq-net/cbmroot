@@ -278,12 +278,19 @@ void CbmTrdHitProducerCluster::CenterOfGravity(Int_t clusterId)
     local_pad_posV[iDim] = 0.0;
     local_pad_dposV[iDim] = 0.0;
   }
+  Double_t xVar = 0;
+  Double_t yVar = 0;
   Double_t totalCharge = 0;
   Double_t totalChargeTR = 0;
   Int_t moduleAddress = 0;
   Int_t nofDigis = cluster->GetNofDigis();
   for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
     const CbmTrdDigi* digi = static_cast<const CbmTrdDigi*>(fDigis->At(cluster->GetDigi(iDigi)));
+    
+    Double_t digiCharge = digi->GetCharge();
+    
+    if (digiCharge <= 0)
+       continue;
 
     moduleAddress = CbmTrdAddress::GetModuleAddress(digi->GetAddress());
     CbmTrdModule* moduleInfo = fDigiPar->GetModule(moduleAddress);
@@ -321,25 +328,53 @@ void CbmTrdHitProducerCluster::CenterOfGravity(Int_t clusterId)
 				     (local_pad_pos[1] - 0.5 * moduleInfo->GetPadSizeX(moduleInfo->GetSector(rowId-1, secId))));
       }
     }
-    moduleInfo->TransformHitError(local_pad_dposV);
+    
+    Double_t xMin = local_pad_posV[0] - local_pad_dposV[0];
+    Double_t xMax = local_pad_posV[0] + local_pad_dposV[0];
+    xVar += (xMax * xMax + xMax * xMin + xMin * xMin) * digiCharge;
+    
+    Double_t yMin = local_pad_posV[1] - local_pad_dposV[1];
+    Double_t yMax = local_pad_posV[1] + local_pad_dposV[1];
+    yVar += (yMax * yMax + yMax * yMin + yMin * yMin) * digiCharge;
+    
+    //moduleInfo->TransformHitError(local_pad_dposV);
 
     for (Int_t iDim = 0; iDim < 3; iDim++) {
-      hit_posV[iDim] += local_pad_posV[iDim] * digi->GetCharge();
+       hit_posV[iDim] += local_pad_posV[iDim] * digiCharge;
     }
+    
+    
   }
+  
+  if (totalCharge <= 0)
+     return;
+  
   Double_t hit_pos[3];
   for (Int_t iDim = 0; iDim < 3; iDim++) {
     hit_posV[iDim] /= totalCharge;
     hit_pos[iDim] = hit_posV[iDim];
   }
+  
+  xVar /= totalCharge;
+  xVar /= 3;
+  xVar -= hit_pos[0] * hit_pos[0];  
+  yVar /= totalCharge;
+  yVar /= 3;
+  yVar -= hit_pos[1] * hit_pos[1];
+  
   Double_t global_hit[3];
   gGeoManager->LocalToMaster(hit_pos, global_hit);
 
   for (Int_t iDim = 0; iDim < 3; iDim++){
     hit_posV[iDim] = global_hit[iDim];
   }
+  
+  TVector3 cluster_pad_dposV(sqrt(xVar), sqrt(yVar), 0);
+  CbmTrdModule* moduleInfo = fDigiPar->GetModule(moduleAddress);
+  moduleInfo->TransformHitError(cluster_pad_dposV);
+
   Int_t nofHits = fHits->GetEntriesFast();
-  new ((*fHits)[nofHits]) CbmTrdHit(moduleAddress, hit_posV, local_pad_dposV, 0, clusterId,
+  new ((*fHits)[nofHits]) CbmTrdHit(moduleAddress, hit_posV, cluster_pad_dposV, 0, clusterId,
 				    totalChargeTR, totalCharge-totalChargeTR, totalCharge);
 }
     ClassImp(CbmTrdHitProducerCluster)
