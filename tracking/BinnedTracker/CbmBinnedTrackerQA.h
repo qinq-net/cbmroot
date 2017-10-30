@@ -36,7 +36,6 @@ public:
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
     void SetParContainers();
-    void SetOnlyPrimary(bool v) { fIsOnlyPrimary = v; }
     
 private:
     void HandleSts(Int_t stsTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds);

@@ -39,7 +39,7 @@ using std::copy;
 
 CbmBinnedTrackerTask* CbmBinnedTrackerTask::fInstance = 0;
    
-CbmBinnedTrackerTask::CbmBinnedTrackerTask(bool useAllDetectors, Double_t beamWidthX, Double_t beamWidthY) : fUseAllDetectors(useAllDetectors), fIsOnlyPrimary(true),
+CbmBinnedTrackerTask::CbmBinnedTrackerTask(bool useAllDetectors, Double_t beamWidthX, Double_t beamWidthY) : fUseAllDetectors(useAllDetectors), fIsOnlyPrimary(false),
    fSettings(0), fBeamDx(beamWidthX), fBeamDy(beamWidthY), fTracker(0), fGlobalTracks(0), fStsTracks(0), fMuchTracks(0), fTrdTracks(0)
 {
    fInstance = this;

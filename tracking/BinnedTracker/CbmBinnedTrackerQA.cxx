@@ -27,13 +27,12 @@
 #include "CbmTrdDigi.h"
 #include "CbmTofDigiExp.h"
 #include "CbmMCDataManager.h"
-#ifdef CBM_BINNED_QA_FILL_HISTOS
 #include "TH1.h"
-#endif//CBM_BINNED_QA_FILL_HISTOS
 #include "GeoReader.h"
 #include "FairRun.h"
 #include "FairRuntimeDb.h"
 #include "geo/CbmMuchStation.h"
+#include "TProfile.h"
 
 using namespace std;
 
@@ -70,6 +69,10 @@ struct TrackDesc
    Double_t* pullXtrd;
    Double_t* pullYtrd;
    
+   list<TrackDesc*> children;
+   bool isReference;
+   bool isReconstructed;
+   
    TrackDesc() : sts(nofStsStations > 0 ? new pair<set<Int_t>, set<Int_t> >[nofStsStations] : 0),
       much(nofMuchStations > 0 ? new pair<set<Int_t>, set<Int_t> >[nofMuchStations] : 0),
       trd(nofTrdStations > 0 ? new pair<set<Int_t>, set<Int_t> >[nofTrdStations] : 0),
@@ -89,7 +92,8 @@ struct TrackDesc
       pullXmuch(nofMuchStations > 0 ? new Double_t[nofMuchStations] : 0),
       pullYmuch(nofMuchStations > 0 ? new Double_t[nofMuchStations] : 0),
       pullXtrd(nofTrdStations > 0 ? new Double_t[nofTrdStations] : 0),
-      pullYtrd(nofTrdStations > 0 ? new Double_t[nofTrdStations] : 0)
+      pullYtrd(nofTrdStations > 0 ? new Double_t[nofTrdStations] : 0),
+      children(), isReference(false), isReconstructed(false)
    {
       fill_n(nearestHitDistSts, nofStsStations, -1);
       fill_n(nearestHitDistMuch, nofMuchStations, -1);
@@ -139,6 +143,8 @@ bool TrackDesc::hasTof = false;
 
 static vector<vector<TrackDesc> > gTracks;
 
+static TProfile* effByMom = 0;
+
 #ifdef CBM_BINNED_QA_FILL_HISTOS
 static TH1F* stsXResHisto = 0;
 static TH1F* stsYResHisto = 0;
@@ -174,7 +180,9 @@ static TH1F* trdNearestHitDistHistos[] = { 0, 0, 0, 0 };
 
 //static int trdNofStrangerHits[] = { 0, 0, 0, 0 };
 
-CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fIsOnlyPrimary(true), fSettings(0), fGlobalTracks(0), fStsTracks(0), fMuchTracks(0), fTrdTracks(0),
+static list<TrackDesc*> lambdaList;
+
+CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fIsOnlyPrimary(false), fSettings(0), fGlobalTracks(0), fStsTracks(0), fMuchTracks(0), fTrdTracks(0),
    fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
    fStsClusters(0), fMuchClusters(0), fTrdClusters(0), fTrdDigiMatches(0), fTofHitDigiMatches(0), fTofDigiPointMatches(0),
    fStsDigis(0), fMuchDigis(0), fTrdDigis(0), fTofDigis(0), fMCTracks(0), fStsPoints(0), fMuchPoints(0), fTrdPoints(0), fTofPoints(0)
@@ -188,17 +196,20 @@ InitStatus CbmBinnedTrackerQA::Init()
    if (!stsSetup->IsInit())
       stsSetup->Init();
    
-   CbmBinnedSettings* settings = CbmBinnedSettings::Instance();
-   TrackDesc::nofStsStations = settings->Use(kSts) ? settings->GetNofStsStations() : 0;
-   TrackDesc::nofMuchStations = settings->Use(kMuch) ? settings->GetNofMuchStations() : 0;
-   TrackDesc::nofTrdStations = settings->Use(kTrd) ? settings->GetNofTrdStations() : 0;
-   TrackDesc::hasTof = settings->Use(kTof);
+   fSettings = CbmBinnedSettings::Instance();
+   fIsOnlyPrimary = fSettings->IsOnlyPrimary();
+   TrackDesc::nofStsStations = fSettings->Use(kSts) ? fSettings->GetNofStsStations() : 0;
+   TrackDesc::nofMuchStations = fSettings->Use(kMuch) ? fSettings->GetNofMuchStations() : 0;
+   TrackDesc::nofTrdStations = fSettings->Use(kTrd) ? fSettings->GetNofTrdStations() : 0;
+   TrackDesc::hasTof = fSettings->Use(kTof);
    
    if (TrackDesc::nofMuchStations > 0)
    {
       const CbmMuchStation* muchStation = CbmMuchGeoScheme::Instance()->GetStation(0);
       TrackDesc::nofMuchLayers = muchStation->GetNLayers();
    }
+   
+   effByMom = new TProfile("effByMom", "Track reconstruction efficiency by momentum distribution %", 400, 0., 10.);
    
 #ifdef CBM_BINNED_QA_FILL_HISTOS
    stsXResHisto = new TH1F("stsXResHisto", "stsXResHisto", 200, -0.1, 0.1);
@@ -288,6 +299,16 @@ InitStatus CbmBinnedTrackerQA::Init()
             vtxZHisto->Fill(mcTrack->GetStartZ());
 #endif//CBM_BINNED_QA_FILL_HISTOS
          }
+         else
+         {
+            TrackDesc& motherTrack = eventTracks[mcTrack->GetMotherId()];
+            
+            if (motherTrack.ptr->GetPdgCode() == 3122)// Mother particle is a Lambda baryon
+               motherTrack.children.push_back(&track);
+         }
+         
+         if (mcTrack->GetPdgCode() == 3122)// Lambda baryon
+            lambdaList.push_back(&track);
       }
    }
    
@@ -1004,7 +1025,6 @@ void CbmBinnedTrackerQA::HandleTof(Int_t tofHitIndex, map<Int_t, set<Int_t> >& m
    }
 }
 
-#ifdef CBM_BINNED_QA_FILL_HISTOS
 static void SaveHisto(TH1* histo)
 {
    TFile* curFile = TFile::CurrentFile();
@@ -1016,7 +1036,6 @@ static void SaveHisto(TH1* histo)
    delete histo;
    TFile::CurrentFile() = curFile;
 }
-#endif//CBM_BINNED_QA_FILL_HISTOS
 
 void CbmBinnedTrackerQA::Finish()
 {
@@ -1028,14 +1047,14 @@ void CbmBinnedTrackerQA::Finish()
    //int nofMuch[3] = { 0, 0, 0 };
    //int nofTof = 0;
    
-   for (vector<vector<TrackDesc> >::const_iterator i = gTracks.begin(); i != gTracks.end(); ++i)
+   for (vector<vector<TrackDesc> >::iterator i = gTracks.begin(); i != gTracks.end(); ++i)
    {
-      const vector<TrackDesc>& evTracks = *i;
+      vector<TrackDesc>& evTracks = *i;
       
-      for (vector<TrackDesc>::const_iterator j = evTracks.begin(); j != evTracks.end(); ++j)
+      for (vector<TrackDesc>::iterator j = evTracks.begin(); j != evTracks.end(); ++j)
       {
          ++nofAllTracks;
-         const TrackDesc& trackDesc = *j;
+         TrackDesc& trackDesc = *j;
          
          if (fIsOnlyPrimary && !trackDesc.isPrimary)
             continue;
@@ -1222,6 +1241,7 @@ void CbmBinnedTrackerQA::Finish()
          if (TrackDesc::hasTof && trackDesc.tof.first.empty())
             continue;
          
+         trackDesc.isReference = true;
          ++nofRefTracks;
          
          map<Int_t, Int_t> matchedReco;
@@ -1316,7 +1336,10 @@ void CbmBinnedTrackerQA::Finish()
             ++nofTof;*/
          
          if (matchedReco.empty())
+         {
+            effByMom->Fill(trackDesc.ptr->GetP(), 0.);
             continue;
+         }
          
          map<Int_t, Int_t>::const_iterator maxIter = max_element(matchedReco.begin(), matchedReco.end(),
             [](const pair<Int_t, Int_t>& p1, const pair<Int_t, Int_t>& p2)
@@ -1325,19 +1348,13 @@ void CbmBinnedTrackerQA::Finish()
             });
             
          if (maxIter->second < 0.7 * fSettings->GetNofStations())
-            continue;
-         
-         /*int maxMatch = 0;
-         
-         for (map<Int_t, Int_t>::const_iterator k = matchedReco.begin(); k != matchedReco.end(); ++k)
          {
-            if (maxMatch < k->second)
-               maxMatch = k->second;
+            effByMom->Fill(trackDesc.ptr->GetP(), 0.);
+            continue;
          }
-         
-         if (maxMatch < 5)
-            continue;*/
             
+         effByMom->Fill(trackDesc.ptr->GetP(), 100.);
+         trackDesc.isReconstructed = true;
          ++nofMatchedRefTracks;
       }
    }
@@ -1367,6 +1384,49 @@ void CbmBinnedTrackerQA::Finish()
       //cout << "[" << trdNofStrangerHits[i] << "]";
    
    //cout << endl;
+   
+   SaveHisto(effByMom);
+   
+   int nofLambdas = lambdaList.size();
+   int nofLambdasInAcc = 0;
+   int nofRecoLambdas = 0;
+   cout << "The number of Lambda baryons: " << nofLambdas << endl;
+   
+   for (list<TrackDesc*>::const_iterator i = lambdaList.begin(); i != lambdaList.end(); ++i)
+   {
+      const TrackDesc* lambdaTrack = *i;
+      bool isInAcc = !lambdaTrack->children.empty();
+      bool isReco = isInAcc;
+      
+      for (list<TrackDesc*>::const_iterator j = lambdaTrack->children.begin(); j != lambdaTrack->children.end(); ++j)
+      {
+         const TrackDesc* childTrack = *j;
+         
+         if (!childTrack->isReference)
+            isInAcc = false;
+         
+         if (!childTrack->isReconstructed)
+            isReco = false;
+      }
+      
+      if (isInAcc)
+         ++nofLambdasInAcc;
+      
+      if (isReco)
+         ++nofRecoLambdas;
+   }
+   
+   eff = 100 * nofLambdasInAcc;
+   eff /= nofLambdas;
+   cout << "Lambda baryons in the acceptance: " << eff << "% " << nofLambdasInAcc << "/" << nofLambdas << endl;
+   
+   eff = 100 * nofRecoLambdas;
+   eff /= nofLambdas;
+   cout << "Reconstructed of all the Lambda baryons: " << eff << "% " << nofRecoLambdas << "/" << nofLambdas << endl;
+   
+   eff = 100 * nofRecoLambdas;
+   eff /= nofLambdasInAcc;
+   cout << "Reconstructed of the Lambda baryons in the acceptance: " << eff << "% " << nofRecoLambdas << "/" << nofLambdasInAcc << endl;
    
 #ifdef CBM_BINNED_QA_FILL_HISTOS
    SaveHisto(stsXResHisto);

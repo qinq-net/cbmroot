@@ -134,10 +134,14 @@ public:
         //ReconstructLocal();
         //ReconstructGlobal();
         FollowTracks(-1);
-        SetCheckUsed(true);
-        FollowTracks(0);
         
-        std::cout << "Segments on stations: ";
+        if (!CbmBinnedSettings::Instance()->IsOnlyPrimary())
+        {
+            SetCheckUsed(true);
+            FollowTracks(0);
+        }
+        
+        /*std::cout << "Segments on stations: ";
         
         for (std::map<Double_t, CbmBinnedStation*>::const_iterator i = fStations.begin(); i != fStations.end(); ++i)
         {
@@ -145,7 +149,7 @@ public:
             std::cout << "[" << station->fSegments.size() << "]";
         }
         
-        std::cout << std::endl;
+        std::cout << std::endl;*/
         
         std::cout << "Reconstructed " << fTracks.size() << " tracks" << std::endl;
     }
