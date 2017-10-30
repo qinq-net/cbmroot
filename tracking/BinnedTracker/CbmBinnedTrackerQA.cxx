@@ -144,6 +144,10 @@ bool TrackDesc::hasTof = false;
 static vector<vector<TrackDesc> > gTracks;
 
 static TProfile* effByMom = 0;
+static TProfile* effByMomPrimary = 0;
+static TProfile* effByMomNonPrimary = 0;
+static TH1F* lambdaChildrenMoms = 0;
+static TProfile* lambdaChildrenEffByMom = 0;
 
 #ifdef CBM_BINNED_QA_FILL_HISTOS
 static TH1F* stsXResHisto = 0;
@@ -210,6 +214,10 @@ InitStatus CbmBinnedTrackerQA::Init()
    }
    
    effByMom = new TProfile("effByMom", "Track reconstruction efficiency by momentum distribution %", 400, 0., 10.);
+   effByMomPrimary = new TProfile("effByMomPrimary", "Track reconstruction efficiency by momentum distribution for primary tracks %", 400, 0., 10.);
+   effByMomNonPrimary = new TProfile("effByMomNonPrimary", "Track reconstruction efficiency by momentum distribution for non primary tracks %", 200, 0., 10.);
+   lambdaChildrenMoms = new TH1F("lambdaChildrenMoms", "Lambda children momenta distribution", 100, 0., 10.);
+   lambdaChildrenEffByMom = new TProfile("lambdaChildrenEffByMom", "Track reconstruction for Lambda children efficiency by momentum distribution %", 200, 0., 10.);
    
 #ifdef CBM_BINNED_QA_FILL_HISTOS
    stsXResHisto = new TH1F("stsXResHisto", "stsXResHisto", 200, -0.1, 0.1);
@@ -1042,6 +1050,10 @@ void CbmBinnedTrackerQA::Finish()
    int nofAllTracks = 0;
    int nofRefTracks = 0;
    int nofMatchedRefTracks = 0;
+   int nofRefPrimTracks = 0;
+   int nofMatchedRefPrimTracks = 0;
+   int nofRefNonPrimTracks = 0;
+   int nofMatchedRefNonPrimTracks = 0;
    //int nofSts[2] = { 0, 0 };
    //int nofTrd[4] = { 0, 0, 0, 0 };
    //int nofMuch[3] = { 0, 0, 0 };
@@ -1244,6 +1256,11 @@ void CbmBinnedTrackerQA::Finish()
          trackDesc.isReference = true;
          ++nofRefTracks;
          
+         if (trackDesc.isPrimary)
+            ++nofRefPrimTracks;
+         else
+            ++nofRefNonPrimTracks;
+         
          map<Int_t, Int_t> matchedReco;
          
          for (int k = 0; k < TrackDesc::nofStsStations; ++k)
@@ -1337,6 +1354,11 @@ void CbmBinnedTrackerQA::Finish()
          
          if (matchedReco.empty())
          {
+            if (trackDesc.isPrimary)
+               effByMomPrimary->Fill(trackDesc.ptr->GetP(), 0.);
+            else
+               effByMomNonPrimary->Fill(trackDesc.ptr->GetP(), 0.);
+            
             effByMom->Fill(trackDesc.ptr->GetP(), 0.);
             continue;
          }
@@ -1349,6 +1371,11 @@ void CbmBinnedTrackerQA::Finish()
             
          if (maxIter->second < 0.7 * fSettings->GetNofStations())
          {
+            if (trackDesc.isPrimary)
+               effByMomPrimary->Fill(trackDesc.ptr->GetP(), 0.);
+            else
+               effByMomNonPrimary->Fill(trackDesc.ptr->GetP(), 0.);
+            
             effByMom->Fill(trackDesc.ptr->GetP(), 0.);
             continue;
          }
@@ -1356,13 +1383,33 @@ void CbmBinnedTrackerQA::Finish()
          effByMom->Fill(trackDesc.ptr->GetP(), 100.);
          trackDesc.isReconstructed = true;
          ++nofMatchedRefTracks;
+         
+         if (trackDesc.isPrimary)
+         {
+            effByMomPrimary->Fill(trackDesc.ptr->GetP(), 100.);
+            ++nofMatchedRefPrimTracks;
+         }
+         else
+         {
+            effByMomNonPrimary->Fill(trackDesc.ptr->GetP(), 100.);
+            ++nofMatchedRefNonPrimTracks;
+         }
       }
    }
+   
+   cout << "Total tracks: " << nofAllTracks << endl;
    
    double eff = 100 * nofMatchedRefTracks;
    eff /= nofRefTracks;
    cout << "The track reconstruction efficiency: " << eff << "%: " << nofMatchedRefTracks << "/" << nofRefTracks << endl;
-   cout << "Total tracks: " << nofAllTracks << endl;
+   
+   eff = 100 * nofMatchedRefPrimTracks;
+   eff /= nofRefPrimTracks;
+   cout << "The track reconstruction efficiency for primary tracks: " << eff << "%: " << nofMatchedRefPrimTracks << "/" << nofRefPrimTracks << endl;
+   
+   eff = 100 * nofMatchedRefNonPrimTracks;
+   eff /= nofRefNonPrimTracks;
+   cout << "The track reconstruction efficiency for non primary tracks: " << eff << "%: " << nofMatchedRefNonPrimTracks << "/" << nofRefNonPrimTracks << endl;
    
    eff = 100 * gNofNonGhosts;
    eff /= gNofRecoTracks;
@@ -1385,8 +1432,6 @@ void CbmBinnedTrackerQA::Finish()
    
    //cout << endl;
    
-   SaveHisto(effByMom);
-   
    int nofLambdas = lambdaList.size();
    int nofLambdasInAcc = 0;
    int nofRecoLambdas = 0;
@@ -1401,19 +1446,30 @@ void CbmBinnedTrackerQA::Finish()
       for (list<TrackDesc*>::const_iterator j = lambdaTrack->children.begin(); j != lambdaTrack->children.end(); ++j)
       {
          const TrackDesc* childTrack = *j;
+         Double_t p = childTrack->ptr->GetP();
+         lambdaChildrenMoms->Fill(p);
          
          if (!childTrack->isReference)
             isInAcc = false;
+         else
+         {
+            if (childTrack->isReconstructed)
+               lambdaChildrenEffByMom->Fill(p, 100.);
+            else
+               lambdaChildrenEffByMom->Fill(p, 0.);
+         }
          
          if (!childTrack->isReconstructed)
             isReco = false;
       }
       
       if (isInAcc)
+      {
          ++nofLambdasInAcc;
       
-      if (isReco)
-         ++nofRecoLambdas;
+         if (isReco)
+            ++nofRecoLambdas;
+      }
    }
    
    eff = 100 * nofLambdasInAcc;
@@ -1427,6 +1483,12 @@ void CbmBinnedTrackerQA::Finish()
    eff = 100 * nofRecoLambdas;
    eff /= nofLambdasInAcc;
    cout << "Reconstructed of the Lambda baryons in the acceptance: " << eff << "% " << nofRecoLambdas << "/" << nofLambdasInAcc << endl;
+   
+   SaveHisto(effByMom);
+   SaveHisto(effByMomPrimary);
+   SaveHisto(effByMomNonPrimary);
+   SaveHisto(lambdaChildrenMoms);
+   SaveHisto(lambdaChildrenEffByMom);
    
 #ifdef CBM_BINNED_QA_FILL_HISTOS
    SaveHisto(stsXResHisto);
