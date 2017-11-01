@@ -15,7 +15,11 @@ Macro(CreateGTestExeAndAddTest _testname _includeDirs _linkDirs _sources _depend
 
   Add_Executable(${_testname} ${_sources})
   Target_Link_Libraries(${_testname} "${_dependencies}")
-  Add_Test(${_testname} ${PROJECT_BINARY_DIR}/bin/${_testname})
+  Gen_Exe_Script(${_testname})
+  string(REPLACE ${PROJECT_SOURCE_DIR}
+         ${PROJECT_BINARY_DIR} new_path ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+  Add_Test(${_testname} ${new_path}/${_testname}.sh)
   If(NOT ${_testdepend} STREQUAL "")
     Set_Tests_Properties(${_testname} PROPERTIES DEPENDS ${_testdepend})
   EndIf()  

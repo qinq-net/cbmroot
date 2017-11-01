@@ -43,3 +43,23 @@ Macro(FairRootVersion)
       ${FairRoot_VERSION_MAJOR}.${FairRoot_VERSION_MINOR}.${FairRoot_VERSION_PATCH}
      ) 
 EndMacro()
+
+Macro(Gen_Exe_Script _ExeName) 
+
+  set(shell_script_name "${_ExeName}.sh")
+
+  string(REPLACE ${PROJECT_SOURCE_DIR}
+         ${PROJECT_BINARY_DIR} new_path ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+
+  set(my_exe_name ${EXECUTABLE_OUTPUT_PATH}/${_ExeName})
+
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/scripts/run_binary.sh.in
+                   ${new_path}/${shell_script_name}
+                  )
+
+  Execute_Process(COMMAND /bin/chmod u+x  ${new_path}/${shell_script_name}
+                  OUTPUT_QUIET
+                 )
+
+EndMacro(Generate_Exe_Script)
