@@ -62,4 +62,4 @@ Macro(Gen_Exe_Script _ExeName)
                   OUTPUT_QUIET
                  )
 
-EndMacro(Generate_Exe_Script)
+EndMacro(Gen_Exe_Script)
