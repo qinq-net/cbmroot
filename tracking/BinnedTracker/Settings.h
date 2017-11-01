@@ -189,8 +189,8 @@ public:
         ++fNofStations;
     }
     
-    Double_t GetXScat(int stationNumber) const { return fXScats[stationNumber]; }
-    Double_t GetYScat(int stationNumber) const { return fYScats[stationNumber]; }
+    Double_t GetXScat(int stationNumber) const { return stationNumber < fXScats.size() ? fXScats[stationNumber] : 0; }
+    Double_t GetYScat(int stationNumber) const { return stationNumber < fYScats.size() ? fYScats[stationNumber] : 0; }
     
 private:
     bool fIsConfiguring;
