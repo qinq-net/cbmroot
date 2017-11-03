@@ -7,6 +7,7 @@
  ** @date 19.07.2016
  **
  ** mCBM
+ ** pipe v18f    - increase pipe length from 3.00 m to 4.00 m
  ** pipe v18f    - reduce diameter of first 50 cm of beampipe to avoid collision with mSTS
  ** pipe v18e    - rotate cylindrical pipe around the vertical (y) axis by 20 degrees
  ** pipe v18d    - rotate cylindrical pipe around the vertical (y) axis by 25 degrees
@@ -67,12 +68,12 @@ void create_bpipe_geometry_v18f()
   /** For v18f:   **/
   TString pipe1name = "pipe1 - straight miniCBM beampipe";
   const Int_t nSects1 = 4;
-  Double_t z1[nSects1]      = {    0., 480., 520., 3000. }; // mm
+  Double_t z1[nSects1]      = {    0., 480., 520., 4000. }; // mm 3000. };
   Double_t rin1[nSects1]    = {   30.,  30.,  50.,   50. };
   Double_t rout1[nSects1]   = {   28.,  28.,  48.,   48. };
 
   const Int_t nSects01 = 4;
-  Double_t z01[nSects01]    = {    0., 480., 520., 3000. }; // mm
+  Double_t z01[nSects01]    = {    0., 480., 520., 4000. }; // mm 3000. };
   Double_t rin01[nSects01]  = {    0.,   0.,   0.,    0. };
   Double_t rout01[nSects01] = {   28.,  28.,  48.,   48. };
 
