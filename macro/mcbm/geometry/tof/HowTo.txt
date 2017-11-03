@@ -1,7 +1,0 @@
-1) Create the geo root file vXXX_mcbm
-2) Place it in the geometry/tof folder
-3) Create the digi.par file
-cd ../..tof/geometry/
-root -l -q 'make_geofile.C("tof_vXXi_mcbm")'
-root -l 'create_digipar.C("tof_vXXi_mcbm")'
-4) Copy the digi.par in parameters/tof
