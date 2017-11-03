@@ -21,14 +21,17 @@ void setup_sis18_mcbm_25deg()
 {
   
   // -----  Geometry Tags  --------------------------------------------------
+//  TString platGeoTag      = "v18a_mcbm";    // concrete wall
+  TString platGeoTag      = "v18c_mcbm";    // support table
   TString pipeGeoTag      = "v18d_mcbm";    // 25 degreee beampipe 
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";						  
-  TString stsGeoTag       = "v18f_mcbm";    // "v18e_mcbm"; // "v18d_mcbm";
-  TString muchGeoTag      = "v18a_mcbm";
-  TString trdGeoTag       = "v18e_1e_mcbm"; // "v18i_1e_mcbm";
-  TString tofGeoTag       = "v18h_mcbm";    // "v18f_mcbm"; // "v18g_mcbm";
-  TString richGeoTag      = "v18b_mcbm";
-  TString platGeoTag      = "v18a_mcbm";
+  TString stsGeoTag       = "v18f_mcbm";    // 1-1-1-2 ladder configuration
+//  TString muchGeoTag      = "v18c_mcbm";    // 12 o'clock
+  TString muchGeoTag      = "v18d_mcbm";    // 11 o'clock
+  TString trdGeoTag       = "v18e_1e_mcbm"; // short, without mBUCH
+//  TString trdGeoTag       = "v18k_1e_mcbm"; // short, with mBUCH
+  TString tofGeoTag       = "v18h_mcbm";    // short distance
+  TString richGeoTag      = "v18b_mcbm";    // short distance
   // ------------------------------------------------------------------------
 
 
@@ -51,10 +54,12 @@ void setup_sis18_mcbm_25deg()
   setup->SetModule(kPlatform, platGeoTag);
   //  setup->SetModule(kMvd, mvdGeoTag);  // skip mvd in the initial setup
   setup->SetModule(kSts, stsGeoTag);
-  // disable, reco missing  setup->SetModule(kMuch, muchGeoTag);
+  // disable, reco missing
+  //  setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
-  // disable, reco missing  setup->SetModule(kRich, richGeoTag);
+  // disable, reco missing
+  //  setup->SetModule(kRich, richGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
