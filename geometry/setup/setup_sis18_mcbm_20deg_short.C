@@ -20,7 +20,7 @@
 
 
 
-void setup_sis18_mcbm_20deg()
+void setup_sis18_mcbm_20deg_short()
 {
   
   // -----  Geometry Tags  --------------------------------------------------
@@ -29,7 +29,7 @@ void setup_sis18_mcbm_20deg()
   TString stsGeoTag       = "v18f_mcbm";    // "v18e_mcbm"; // "v18d_mcbm";
   TString muchGeoTag      = "v18d_mcbm";    // "v18c_mcbm";
   TString trdGeoTag       = "v18j_1e_mcbm"; // "v18e_1e_mcbm";
-  TString tofGeoTag       = "v18h_mcbm";    // "v18f_mcbm"; // "v18g_mcbm";
+  TString tofGeoTag       = "v18i_mcbm";    // "v18h_mcbm";
   TString richGeoTag      = "v18b_mcbm";
   TString platGeoTag      = "v18c_mcbm";    // "v18a_mcbm";
   // ------------------------------------------------------------------------
