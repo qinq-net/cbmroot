@@ -213,11 +213,11 @@ Float_t CbmTrdTestBeamTools::GetIntegratedCharge(const Float_t* Samples,Int_t Nr
   }
   Double_t CorrectionFactor;
   Double_t Shape=GetShapingTime(),Sample=GetSamplingTime();
-  for (Int_t i=0;i<NrSamples-1;i++)
+  for (Int_t i=0;i<NrSamples-2;i++)
   {
       //Calculate integral of the impulse response of the spadic.
       //std::cout << (TMath::Exp(-(i+0.25)*Sample/Shape)*((NrSamples+0.25)*Sample*Sample)/(Shape*Shape))<< std::endl;
-      CorrectionFactor+=(TMath::Exp(-(i+0.25)*Sample/Shape)*((NrSamples+0.25)*Sample*Sample)/(Shape*Shape));
+      CorrectionFactor+=(TMath::Exp(-(i)*Sample/Shape)*((i)*Sample)/(Shape*Shape));
   }
   //std::cout << "ClusterCharge: "<<Integral << " " << CorrectionFactor << " "<< NrSamples<<std::endl;
   return static_cast<Float_t>(Integral/CorrectionFactor);
