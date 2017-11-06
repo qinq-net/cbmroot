@@ -38,7 +38,7 @@ void setup_sis100_hadron()
   TString stsGeoTag       = "v16x";
   TString trdGeoTag       = "v17c_1h";
   TString tofGeoTag       = "v16c_1h";
-  TString psdGeoTag       = "psd_geo_xy.txt";
+  TString psdGeoTag       = "v17a";
   TString platGeoTag      = "v13a";
   // ------------------------------------------------------------------------
 
@@ -48,14 +48,6 @@ void setup_sis100_hadron()
   Double_t fieldZ       = 40.;            // field centre z position
   Double_t fieldScale   =  1.;            // field scaling factor
   // ------------------------------------------------------------------------
-
-
-  // -----  PSD  ------------------------------------------------------------
-  TString  psdGeoFile = "psd_geo_xy.txt";
-  Double_t psdZpos = 800.;
-  Double_t psdXpos = 11.;
-  // ------------------------------------------------------------------------
-
 
   // -----  Create setup  ---------------------------------------------------
   CbmSetup* setup = CbmSetup::Instance();
@@ -71,8 +63,8 @@ void setup_sis100_hadron()
   setup->SetModule(kSts, stsGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
+  setup->SetModule(kPsd, psdGeoTag);
   setup->SetModule(kPlatform, platGeoTag);
-  setup->SetPsd(psdGeoFile, psdZpos, psdXpos);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
