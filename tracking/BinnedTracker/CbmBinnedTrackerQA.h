@@ -38,10 +38,10 @@ public:
     void SetParContainers();
     
 private:
-    void HandleSts(Int_t stsTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds);
-    void HandleMuch(Int_t muchTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds);
-    void HandleTrd(Int_t trdTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds);
-    void HandleTof(Int_t tofHitIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds);
+    void HandleSts(Int_t stsTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds, std::set<Int_t>* globalTrackMCRefs);
+    void HandleMuch(Int_t muchTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds, std::set<Int_t>* globalTrackMCRefs);
+    void HandleTrd(Int_t trdTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds, std::set<Int_t>* globalTrackMCRefs);
+    void HandleTof(Int_t globalTrackIndex, Int_t tofHitIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds, std::set<Int_t>* globalTrackMCRefs);
     void IterateTrdHits(std::function<void(const CbmTrdHit*, const CbmTrdPoint*)> handleData);
     
 private:

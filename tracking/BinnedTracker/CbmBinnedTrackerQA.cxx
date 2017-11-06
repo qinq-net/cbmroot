@@ -46,6 +46,11 @@ struct TrackDesc
    static Int_t nofTrdStations;
    static bool hasTof;
    
+   static Int_t firstStsStationNo;
+   static Int_t firstMuchStationNo;
+   static Int_t firstTrdStationNo;
+   static Int_t tofStationNo;
+   
    // In the pairs below 
    pair<set<Int_t>, set<Int_t> >* sts;
    pair<set<Int_t>, set<Int_t> >* much;
@@ -141,6 +146,11 @@ Int_t TrackDesc::nofMuchLayers = 0;
 Int_t TrackDesc::nofTrdStations = 0;
 bool TrackDesc::hasTof = false;
 
+Int_t TrackDesc::firstStsStationNo = 0;
+Int_t TrackDesc::firstMuchStationNo = 0;
+Int_t TrackDesc::firstTrdStationNo = 0;
+Int_t TrackDesc::tofStationNo = 0;
+
 static vector<vector<TrackDesc> > gTracks;
 
 static TProfile* effByMom = 0;
@@ -212,6 +222,10 @@ InitStatus CbmBinnedTrackerQA::Init()
       const CbmMuchStation* muchStation = CbmMuchGeoScheme::Instance()->GetStation(0);
       TrackDesc::nofMuchLayers = muchStation->GetNLayers();
    }
+   
+   TrackDesc::firstMuchStationNo = TrackDesc::nofStsStations;
+   TrackDesc::firstTrdStationNo = TrackDesc::firstMuchStationNo + TrackDesc::nofMuchStations * TrackDesc::nofMuchLayers;
+   TrackDesc::tofStationNo = TrackDesc::firstTrdStationNo + TrackDesc::nofTrdStations;
    
    effByMom = new TProfile("effByMom", "Track reconstruction efficiency by momentum distribution %", 400, 0., 10.);
    effByMomPrimary = new TProfile("effByMomPrimary", "Track reconstruction efficiency by momentum distribution for primary tracks %", 400, 0., 10.);
@@ -541,6 +555,7 @@ void CbmBinnedTrackerQA::IterateTrdHits(std::function<void(const CbmTrdHit*, con
 static Int_t gEventNumber = 0;
 static Int_t gNofRecoTracks = 0;
 static Int_t gNofNonGhosts = 0;
+static Int_t gNofClones = 0;
 
 void CbmBinnedTrackerQA::Exec(Option_t* opt)
 {
@@ -797,7 +812,9 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       }// TOF hits
    }
    
+   Int_t nofStations = fSettings->GetNofStations();
    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
+   set<Int_t> globalTrackMCRefs[nofGlobalTracks][nofStations];
    
    for (Int_t i = 0; i < nofGlobalTracks; ++i)
    {
@@ -823,16 +840,16 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       map<Int_t, set<Int_t> > mcTrackIds;
       
       if (TrackDesc::nofStsStations > 0)
-         HandleSts(stsIndex, mcTrackIds);
+         HandleSts(stsIndex, mcTrackIds, reinterpret_cast<set<Int_t>*> (globalTrackMCRefs));
       
       if (TrackDesc::nofMuchStations > 0)
-         HandleMuch(muchIndex, mcTrackIds);
+         HandleMuch(muchIndex, mcTrackIds, reinterpret_cast<set<Int_t>*> (globalTrackMCRefs));
       
       if (TrackDesc::nofTrdStations > 0)
-         HandleTrd(trdIndex, mcTrackIds);
+         HandleTrd(trdIndex, mcTrackIds, reinterpret_cast<set<Int_t>*> (globalTrackMCRefs));
       
       if (TrackDesc::hasTof)
-         HandleTof(tofIndex, mcTrackIds);
+         HandleTof(i, tofIndex, mcTrackIds, reinterpret_cast<set<Int_t>*> (globalTrackMCRefs));
       
       map<Int_t, set<Int_t> >::const_iterator maxIter = max_element(mcTrackIds.begin(), mcTrackIds.end(),
          [](const pair<Int_t, set<Int_t> >& p1, const pair<Int_t, set<Int_t> >& p2)
@@ -840,10 +857,68 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             return p1.second.size() < p2.second.size();
          });
             
-      if (maxIter->second.size() < 0.7 * fSettings->GetNofStations())
+      if (maxIter->second.size() < 0.7 * nofStations)
          continue;
          
       ++gNofNonGhosts;
+   }
+   
+   map<Int_t, set<Int_t> > mcToGlobalRefs[nofStations];
+   
+   for (Int_t i = 0; i < nofGlobalTracks; ++i)
+   {
+      map<Int_t, Int_t> matches;
+      
+      for (Int_t j = 0; j < nofStations; ++j)
+      {
+         set<Int_t> globals;
+         const set<Int_t>& mcs = globalTrackMCRefs[i][j];
+         
+         for (set<Int_t>::const_iterator k = mcs.begin(); k != mcs.end(); ++k)
+         {
+            Int_t mc = *k;
+            map<Int_t, set<Int_t> >::const_iterator mctogIter = mcToGlobalRefs[j].find(mc);
+            
+            if (mctogIter == mcToGlobalRefs[j].end())
+               continue;
+            
+            globals.insert(mctogIter->second.begin(), mctogIter->second.end());
+         }
+         
+         for (set<Int_t>::const_iterator k = globals.begin(); k != globals.end(); ++k)
+         {
+            Int_t gl = *k;
+            map<Int_t, Int_t>::iterator mIter = matches.find(gl);
+            
+            if (mIter == matches.end())
+               matches[gl] = 1;
+            else
+               ++mIter->second;
+         }
+      }
+      
+      map<Int_t, Int_t>::const_iterator maxIter = max_element(matches.begin(), matches.end(),
+         [](const pair<Int_t, Int_t>& p1, const pair<Int_t, Int_t>& p2)
+         {
+            return p1.second < p2.second;
+         });
+            
+      if (maxIter->second >= 0.7 * nofStations)
+      {
+         ++gNofClones;
+         continue;
+      }
+         
+      for (Int_t j = 0; j < nofStations; ++j)
+      {
+         const set<Int_t>& mcs = globalTrackMCRefs[i][j];
+         
+         for (set<Int_t>::const_iterator k = mcs.begin(); k != mcs.end(); ++k)
+         {
+            Int_t mc = *k;
+            mcToGlobalRefs[j][mc].insert(i);
+         }
+      }
    }
    
    ++gEventNumber;
@@ -854,8 +929,9 @@ static inline void IncrementForId(map<Int_t, set<Int_t> >& ids, Int_t id, Int_t 
    ids[id].insert(stId);
 }
 
-void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds)
+void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs)
 {
+   int nofStations = fSettings->GetNofStations();
    const CbmStsTrack* stsTrack = static_cast<const CbmStsTrack*> (fStsTracks->At(stsTrackIndex));
    Int_t nofStsHits = stsTrack->GetNofHits();
    
@@ -885,6 +961,7 @@ void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex, map<Int_t, set<Int_t> >&
             const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, eventId, mcPointId));
             Int_t trackId = stsPoint->GetTrackID();
             IncrementForId(mcTrackIds, trackId, stationNumber);
+            globalTrackMCRefs[stsTrackIndex * nofStations + stationNumber].insert(trackId);
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             
             if (trackDesk.sts[stationNumber].first.find(stsHitInd) != trackDesk.sts[stationNumber].first.end())
@@ -910,6 +987,7 @@ void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex, map<Int_t, set<Int_t> >&
             const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, eventId, mcPointId));
             Int_t trackId = stsPoint->GetTrackID();
             IncrementForId(mcTrackIds, trackId, stationNumber);
+            globalTrackMCRefs[stsTrackIndex * nofStations + stationNumber].insert(trackId);
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             
             if (trackDesk.sts[stationNumber].first.find(stsHitInd) != trackDesk.sts[stationNumber].first.end())
@@ -919,8 +997,9 @@ void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex, map<Int_t, set<Int_t> >&
    }
 }
 
-void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds)
+void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs)
 {
+   int nofStations = fSettings->GetNofStations();
    const CbmMuchTrack* muchTrack = static_cast<const CbmMuchTrack*> (fMuchTracks->At(muchTrackIndex));
    Int_t nofMuchHits = muchTrack->GetNofHits();
    
@@ -950,6 +1029,7 @@ void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> 
             const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->Get(0, eventId, mcPointId));
             Int_t trackId = muchPoint->GetTrackID();
             IncrementForId(mcTrackIds, trackId, 100 + stationNumber);
+            globalTrackMCRefs[muchTrackIndex * nofStations + TrackDesc::firstMuchStationNo + stationNumber].insert(trackId);
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             
             //if (trackDesk.much[stationNumber].first.find(muchHitInd) != trackDesk.much[stationNumber].first.end())
@@ -959,8 +1039,9 @@ void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> 
    }
 }
 
-void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds)
+void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs)
 {
+   int nofStations = fSettings->GetNofStations();
    const CbmTrdTrack* trdTrack = static_cast<const CbmTrdTrack*> (fTrdTracks->At(trdTrackIndex));
    Int_t nofTrdHits = trdTrack->GetNofHits();
    
@@ -988,6 +1069,7 @@ void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex, map<Int_t, set<Int_t> >&
             const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, eventId, mcPointId));
             Int_t trackId = trdPoint->GetTrackID();
             IncrementForId(mcTrackIds, trackId, 200 + stationNumber);
+            globalTrackMCRefs[trdTrackIndex * nofStations + TrackDesc::firstTrdStationNo + stationNumber].insert(trackId);
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             
             if (trackDesk.trd[stationNumber].first.find(trdHitInd) != trackDesk.trd[stationNumber].first.end())
@@ -1005,8 +1087,9 @@ void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex, map<Int_t, set<Int_t> >&
    }
 }
 
-void CbmBinnedTrackerQA::HandleTof(Int_t tofHitIndex, map<Int_t, set<Int_t> >& mcTrackIds)
+void CbmBinnedTrackerQA::HandleTof(Int_t globalTrackIndex, Int_t tofHitIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs)
 {
+   int nofStations = fSettings->GetNofStations();
    const CbmMatch* tofHitMatch = static_cast<const CbmMatch*> (fTofHitDigiMatches->At(tofHitIndex));
    Int_t nofTofDigis = tofHitMatch->GetNofLinks();
    
@@ -1025,6 +1108,7 @@ void CbmBinnedTrackerQA::HandleTof(Int_t tofHitIndex, map<Int_t, set<Int_t> >& m
          const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*> (fTofPoints->Get(0, eventId, pointId));
          Int_t trackId = tofPoint->GetTrackID();
          IncrementForId(mcTrackIds, trackId, 300);
+         globalTrackMCRefs[globalTrackIndex * nofStations + TrackDesc::tofStationNo].insert(trackId);
          TrackDesc& trackDesk = gTracks[eventId][trackId];
             
          if (trackDesk.tof.first.find(tofHitIndex) != trackDesk.tof.first.end())
@@ -1414,6 +1498,10 @@ void CbmBinnedTrackerQA::Finish()
    eff = 100 * gNofNonGhosts;
    eff /= gNofRecoTracks;
    cout << "The number of non ghosts: " << eff << "%: " << gNofNonGhosts << "/" << gNofRecoTracks << endl;
+   
+   eff = 100 * gNofClones;
+   eff /= gNofRecoTracks;
+   cout << "The number of clones: " << eff << "%: " << gNofClones << "/" << gNofRecoTracks << endl;
    //cout << "Nof STS[0]: " << nofSts[0] << endl;
    //cout << "Nof STS[1]: " << nofSts[1] << endl;
    //cout << "Nof TRD[0]: " << nofTrd[0] << endl;
