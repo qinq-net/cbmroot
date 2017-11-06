@@ -38,8 +38,7 @@ void setup_sis100_muon_jpsi()
   TString magnetGeoTag    = "v15b_much";
   TString pipeGeoTag      = "v16b_1m";
   TString stsGeoTag       = "v16x";
-  TString muchGeoTag      = "v15c_SIS100-C_gemtrd";
-  TString shieldGeoTag    = "v15c_SIS100C_149_3part_125cm";
+  TString muchGeoTag      = "v17b";
   TString trdGeoTag       = "v17c_1m";
   TString tofGeoTag       = "v16c_1m";
   TString platGeoTag      = "v13a";
@@ -65,7 +64,6 @@ void setup_sis100_muon_jpsi()
   setup->SetModule(kPipe, pipeGeoTag);
   setup->SetModule(kSts, stsGeoTag);
   setup->SetModule(kMuch, muchGeoTag);
-  setup->SetModule(kShield, shieldGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
   setup->SetModule(kPlatform, platGeoTag);
