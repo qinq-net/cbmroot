@@ -32,6 +32,7 @@ InitStatus CbmBinnedTrackerConfigurator::Init()
    fSettings->SetNofMuchStations(0);
    fSettings->SetNofTrdStations(0);
    fSettings->SetNofStations(0);
+   fSettings->ResetScats();
    CbmBinnedGeoReader* geoReader = CbmBinnedGeoReader::Instance();
    
    if (0 == geoReader)

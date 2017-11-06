@@ -192,6 +192,12 @@ public:
     Double_t GetXScat(int stationNumber) const { return stationNumber < fXScats.size() ? fXScats[stationNumber] : 0; }
     Double_t GetYScat(int stationNumber) const { return stationNumber < fYScats.size() ? fYScats[stationNumber] : 0; }
     
+    void ResetScats()
+    {
+        fXScats.clear();
+        fYScats.clear();
+    }
+    
 private:
     bool fIsConfiguring;
     bool fIsOnlyPrimary;
@@ -204,7 +210,7 @@ private:
     std::vector<Double_t> fXScats;
     std::vector<Double_t> fYScats;
     
-    ClassDef(CbmBinnedSettings, 7)
+    ClassDef(CbmBinnedSettings, 8)
 };
 
 #endif /* CBM_BINNED_SETTINGS_H */
