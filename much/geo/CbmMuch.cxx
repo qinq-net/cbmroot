@@ -356,7 +356,7 @@ void CbmMuch::ConstructRootGeometry()
     for(Int_t fNdN=0; fNdN<fNodes->GetEntriesFast(); fNdN++){
       TGeoNode* node = static_cast<TGeoNode*>(fNodes->At(fNdN));
       
-      if(!TString(node->GetName()).Contains("Station"))continue;
+      if(!TString(node->GetName()).Contains("station"))continue;
       
       ExpandMuchNodes(node);
       

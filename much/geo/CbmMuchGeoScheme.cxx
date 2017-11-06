@@ -489,7 +489,7 @@ void CbmMuchGeoScheme::ExtractGeoParameter(TGeoNode* ncave, const char* volumeNa
       
       TGeoNode* MuchObjNode = static_cast<TGeoNode*>(MuchObj->At(iMuchObj));
   	
-      if (!TString(MuchObjNode->GetName()).Contains("Station")) continue; 
+      if (!TString(MuchObjNode->GetName()).Contains("station")) continue; 
       TString MuchObjPath = TString("/")  + ncave->GetName()  + "/"+ SystemNode->GetName()+ "/" +MuchObjNode->GetName();
       
       StationNode(MuchObjNode, MuchObjPath);//StationNode
