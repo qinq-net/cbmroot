@@ -12,9 +12,9 @@ Set(NumEvents 2)
 
 # Define the different setups to be tested
 If($ENV{ctest_model} MATCHES Nightly)
-  List(APPEND cbm_setup setup_sis18_mcbm_20deg_long setup_sis18_mcbm_20deg_short setup_sis18_mcbm_25deg)
+  List(APPEND cbm_setup sis18_mcbm_20deg_long sis18_mcbm_20deg_short sis18_mcbm_25deg)
 Else()
-  List(APPEND cbm_setup setup_sis18_mcbm_20deg_long)
+  List(APPEND cbm_setup sis18_mcbm_20deg_long)
 EndIf()
 
 ForEach(setup IN LISTS cbm_setup)
