@@ -5,56 +5,7 @@
 #include "gtest/gtest.h"
 #include "gtest/gtest-spi.h"
 
-// Since some functions in CbmHit are protected we have
-// to create a derived class without any data members
-// which simply forwards the function
-// calls to the base class
-
-void comparePixelHitDataMembers(CbmPixelHit& test, HitType type, Double_t z, Double_t dz,
-    Int_t refid, Int_t address, CbmMatch* match, Double_t time, Double_t errortime,
-    Double_t x, Double_t dx, Double_t y, Double_t dy, Double_t dxy)
-{
-  Int_t retValInt{-111};
-  Float_t retValFloat{-111.};
-
-  EXPECT_EQ(type, test.GetType());
-
-  retValFloat = test.GetZ();
-  EXPECT_FLOAT_EQ(z, retValFloat);
-
-  retValFloat = test.GetDz();
-  EXPECT_FLOAT_EQ(dz, retValFloat);
-
-  retValInt = test.GetRefId();
-  EXPECT_EQ(refid, retValInt);
-
-  retValInt = test.GetAddress();
-  EXPECT_EQ(address, retValInt);
-
-  EXPECT_EQ(match, test.GetMatch());
-
-  retValFloat =  test.GetTime();
-  EXPECT_FLOAT_EQ(time, retValFloat );
-
-  retValFloat = test.GetTimeError();
-  EXPECT_FLOAT_EQ(errortime, retValFloat);
-
-  retValFloat = test.GetX();
-  EXPECT_FLOAT_EQ(x, retValFloat);
-
-  retValFloat = test.GetDx();
-  EXPECT_FLOAT_EQ(dx, retValFloat);
-
-  retValFloat = test.GetY();
-  EXPECT_FLOAT_EQ(y, retValFloat);
-
-  retValFloat = test.GetDy();
-  EXPECT_FLOAT_EQ(dy, retValFloat);
-
-  retValFloat = test.GetDxy();
-  EXPECT_FLOAT_EQ(dxy, retValFloat);
-}
-
+#include "comparePixelHit.h"
 
 TEST(_GTestCbmPixelHit, CheckDefaultConstructor)
 {

@@ -56,38 +56,7 @@ class CbmTestDigi : public CbmDigi
     Double_t GetTime() const {return CbmDigi::GetTime();}
 };
 
-void compareDigiDataMembers(CbmTestDigi& test, Int_t address, Double_t charge, CbmMatch* match,
-    Int_t systemid, Double_t time)
-{
-  Int_t retValInt{-222};
-  Double_t retValDouble{-222.};
-
-  retValInt = test.GetAddress();
-  EXPECT_EQ(address, retValInt);
-
-  retValDouble = test.GetCharge();
-  EXPECT_FLOAT_EQ(charge, retValDouble);
-
-  EXPECT_EQ(match, test.GetMatch());
-
-  retValInt = test.GetSystemId();
-  EXPECT_EQ(systemid, retValInt);
-
-  retValDouble = test.GetTime();
-  EXPECT_FLOAT_EQ(time, retValDouble);
-}
-
-void compareMatchDataMembers(CbmMatch* testMatch, Int_t noflinks, Double_t weight)
-{
-  Int_t linkLength{-111};
-  Double_t totalWeight{-111.};
-
-  linkLength = testMatch->GetNofLinks();
-  EXPECT_EQ(noflinks, linkLength);
-
-  totalWeight = testMatch->GetTotalWeight();
-  EXPECT_FLOAT_EQ(weight, totalWeight);
-}
+#include "compareDigi.h"
 
 TEST(_GTestCbmDigi , CheckDefaultConstructor)
 {
@@ -108,7 +77,7 @@ TEST(_GTestCbmDigi , CheckSetMatch)
   // the expected values
   CbmMatch* testMatch = new CbmMatch();
 
-  compareMatchDataMembers(testMatch, 0, 0.);
+  compareMatchDataMembers(*testMatch, 0, 0.);
 
   test.SetMatch(testMatch);
 
@@ -116,7 +85,7 @@ TEST(_GTestCbmDigi , CheckSetMatch)
 
   EXPECT_NE(nullptr, testMatch1);
   if (testMatch1) {
-    compareMatchDataMembers(testMatch1, 0, 0.);
+    compareMatchDataMembers(*testMatch1, 0, 0.);
   }
 
 }
@@ -129,7 +98,7 @@ TEST(_GTestCbmDigi , CheckCopyConstructor)
 
   CbmMatch* testMatch = new CbmMatch();
 
-  compareMatchDataMembers(testMatch, 0, 0.);
+  compareMatchDataMembers(*testMatch, 0, 0.);
 
   test.SetMatch(testMatch);
 
@@ -145,7 +114,7 @@ TEST(_GTestCbmDigi , CheckCopyConstructor)
 
   EXPECT_NE(nullptr, testMatch1);
   if (testMatch1) {
-    compareMatchDataMembers(testMatch1, 0, 0.);
+    compareMatchDataMembers(*testMatch1, 0, 0.);
   }
 
   compareDigiDataMembers(test2, -111, 0., testMatch1, -111, -111.);
@@ -173,7 +142,7 @@ TEST(_GTestCbmDigi , CheckAssignmentOperator)
 
   CbmMatch* testMatch = new CbmMatch();
 
-  compareMatchDataMembers(testMatch, 0, 0.);
+  compareMatchDataMembers(*testMatch, 0, 0.);
 
   test.SetMatch(testMatch);
 
@@ -190,7 +159,7 @@ TEST(_GTestCbmDigi , CheckAssignmentOperator)
 
   EXPECT_NE(nullptr, testMatch1);
   if (testMatch1) {
-    compareMatchDataMembers(testMatch1, 0, 0.);
+    compareMatchDataMembers(*testMatch1, 0, 0.);
   }
 
   compareDigiDataMembers(test3, -111, 0., testMatch1, -111, -111.);
@@ -211,7 +180,7 @@ TEST(_GTestCbmDigi , CheckMoveConstructor)
   // the GetMatch returns the pointer to the object
   CbmMatch* testMatch = new CbmMatch();
 
-  compareMatchDataMembers(testMatch, 0, 0.);
+  compareMatchDataMembers(*testMatch, 0, 0.);
 
   test.SetMatch(testMatch);
 
@@ -226,7 +195,7 @@ TEST(_GTestCbmDigi , CheckMoveConstructor)
 
   EXPECT_NE(nullptr, testMatch1);
   if (testMatch1) {
-    compareMatchDataMembers(testMatch1, 0, 0.);
+    compareMatchDataMembers(*testMatch1, 0, 0.);
   }
 
   compareDigiDataMembers(test2, -111, 0., testMatch1, -111, -111.);
@@ -247,7 +216,7 @@ TEST(_GTestCbmDigi , CheckAssignmentMoveConstructor)
   // the GetMatch returns the pointer to the object
   CbmMatch* testMatch = new CbmMatch();
 
-  compareMatchDataMembers(testMatch, 0, 0.);
+  compareMatchDataMembers(*testMatch, 0, 0.);
 
   test.SetMatch(testMatch);
 
@@ -263,7 +232,7 @@ TEST(_GTestCbmDigi , CheckAssignmentMoveConstructor)
 
   EXPECT_NE(nullptr, testMatch1);
   if (testMatch1) {
-    compareMatchDataMembers(testMatch1, 0, 0.);
+    compareMatchDataMembers(*testMatch1, 0, 0.);
   }
 
   compareDigiDataMembers(test2, -111, 0., testMatch1, -111, -111.);

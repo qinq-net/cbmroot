@@ -5,12 +5,13 @@
 #include "gtest/gtest.h"
 #include "gtest/gtest-spi.h"
 
+#include "compareMatch.h"
+#include "compareHit.h"
+
 // Since some functions in CbmHit are protected we have
 // to create a derived class without any data members
 // which simply forwards the function
 // calls to the base class
-
-
 class CbmTestHit : public CbmHit
 {
   public:
@@ -31,52 +32,6 @@ class CbmTestHit : public CbmHit
       return *this;
     }
 };
-
-void compareMatchDataMembers(CbmMatch* testMatch, Int_t noflinks, Double_t weight)
-{
-  Int_t linkLength{-111};
-  Double_t totalWeight{-111.};
-
-  linkLength = testMatch->GetNofLinks();
-  EXPECT_EQ(noflinks, linkLength);
-
-  totalWeight = testMatch->GetTotalWeight();
-  EXPECT_FLOAT_EQ(weight, totalWeight);
-}
-
-
-void compareHitDataMembers(CbmHit& test, HitType type, Double_t z, Double_t dz,
-    Int_t refid, Int_t address, CbmMatch* match, Double_t time, Double_t errortime)
-{
-  Int_t retValInt{-111};
-  Float_t retValFloat{-111.};
-
-  EXPECT_EQ(type, test.GetType());
-
-  retValFloat = test.GetZ();
-  EXPECT_FLOAT_EQ(z, retValFloat);
-
-  retValFloat = test.GetDz();
-  EXPECT_FLOAT_EQ(dz, retValFloat);
-
-  retValInt = test.GetRefId();
-  EXPECT_EQ(refid, retValInt);
-
-  retValInt = test.GetAddress();
-  EXPECT_EQ(address, retValInt);
-
-  if (match !=nullptr) {
-    compareMatchDataMembers(test.GetMatch(), match->GetNofLinks(), match->GetTotalWeight());
-  } else {
-    EXPECT_EQ(match, test.GetMatch());
-  }
-
-  retValFloat =  test.GetTime();
-  EXPECT_FLOAT_EQ(time, retValFloat );
-
-  retValFloat = test.GetTimeError();
-  EXPECT_FLOAT_EQ(errortime, retValFloat);
-}
 
 TEST(_GTestCbmHit, CheckDefaultConstructor)
 {
@@ -106,7 +61,7 @@ TEST(_GTestCbmHit, CheckCopyConstructor)
 
   CbmMatch* testMatch = new CbmMatch();
 
-  compareMatchDataMembers(testMatch, 0, 0.);
+  compareMatchDataMembers(*testMatch, 0, 0.);
 
   test.SetMatch(testMatch);
   {
@@ -122,7 +77,7 @@ TEST(_GTestCbmHit, CheckCopyConstructor)
 
   EXPECT_EQ(nullptr, testMatch1);
   if (testMatch1) {
-    compareMatchDataMembers(testMatch1, 0, 0.);
+    compareMatchDataMembers(*testMatch1, 0, 0.);
   }
 
   {
@@ -147,7 +102,7 @@ TEST(_GTestCbmHit, CheckAssignmentOperator)
 
   CbmMatch* testMatch = new CbmMatch();
 
-  compareMatchDataMembers(testMatch, 0, 0.);
+  compareMatchDataMembers(*testMatch, 0, 0.);
 
   test.SetMatch(testMatch);
   {
@@ -164,7 +119,7 @@ TEST(_GTestCbmHit, CheckAssignmentOperator)
 
   EXPECT_EQ(nullptr, testMatch1);
   if (testMatch1) {
-    compareMatchDataMembers(testMatch1, 0, 0.);
+    compareMatchDataMembers(*testMatch1, 0, 0.);
   }
 
   {
@@ -211,12 +166,12 @@ TEST(_GTestCbmHit, TestSettersAndGetters)
   // the expected values
   CbmMatch* testMatch = new CbmMatch();
 
-  compareMatchDataMembers(testMatch, 0, 0.);
+  compareMatchDataMembers(*testMatch, 0, 0.);
 
   test.SetMatch(testMatch);
   CbmMatch* testMatch1 = test.GetMatch();
 
-  compareMatchDataMembers(testMatch1, 0, 0.);
+  compareMatchDataMembers(*testMatch1, 0, 0.);
 }
 
 TEST(_GTestCbmHit , ToString)

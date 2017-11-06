@@ -5,53 +5,7 @@
 #include "gtest/gtest.h"
 #include "gtest/gtest-spi.h"
 
-// Since some functions in CbmHit are protected we have
-// to create a derived class without any data members
-// which simply forwards the function
-// calls to the base class
-
-void compareStripHitDataMembers(CbmStripHit& test, HitType type, Double_t z, Double_t dz,
-    Int_t refid, Int_t address, CbmMatch* match, Double_t time, Double_t errortime,
-    Double_t u, Double_t du, Double_t phi, Double_t dphi)
-{
-  Int_t retValInt{-111};
-  Float_t retValFloat{-111.};
-
-  EXPECT_EQ(type, test.GetType());
-
-  retValFloat = test.GetZ();
-  EXPECT_FLOAT_EQ(z, retValFloat);
-
-  retValFloat = test.GetDz();
-  EXPECT_FLOAT_EQ(dz, retValFloat);
-
-  retValInt = test.GetRefId();
-  EXPECT_EQ(refid, retValInt);
-
-  retValInt = test.GetAddress();
-  EXPECT_EQ(address, retValInt);
-
-  EXPECT_EQ(match, test.GetMatch());
-
-  retValFloat =  test.GetTime();
-  EXPECT_FLOAT_EQ(time, retValFloat );
-
-  retValFloat = test.GetTimeError();
-  EXPECT_FLOAT_EQ(errortime, retValFloat);
-
-  retValFloat = test.GetU();
-  EXPECT_FLOAT_EQ(u, retValFloat);
-
-  retValFloat = test.GetDu();
-  EXPECT_FLOAT_EQ(du, retValFloat);
-
-  retValFloat = test.GetPhi();
-  EXPECT_FLOAT_EQ(phi, retValFloat);
-
-  retValFloat = test.GetDphi();
-  EXPECT_FLOAT_EQ(dphi, retValFloat);
-}
-
+#include "compareStripHit.h"
 
 TEST(_GTestCbmStripHit, CheckDefaultConstructor)
 {
