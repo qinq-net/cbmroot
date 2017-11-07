@@ -814,7 +814,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
    
    Int_t nofStations = fSettings->GetNofStations();
    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
-   set<Int_t> globalTrackMCRefs[nofGlobalTracks][nofStations];
+   set<Int_t>* globalTrackMCRefs = new set<Int_t> [nofGlobalTracks * nofStations];
    
    for (Int_t i = 0; i < nofGlobalTracks; ++i)
    {
@@ -840,16 +840,16 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       map<Int_t, set<Int_t> > mcTrackIds;
       
       if (TrackDesc::nofStsStations > 0)
-         HandleSts(stsIndex, mcTrackIds, reinterpret_cast<set<Int_t>*> (globalTrackMCRefs));
+         HandleSts(stsIndex, mcTrackIds, globalTrackMCRefs);
       
       if (TrackDesc::nofMuchStations > 0)
-         HandleMuch(muchIndex, mcTrackIds, reinterpret_cast<set<Int_t>*> (globalTrackMCRefs));
+         HandleMuch(muchIndex, mcTrackIds, globalTrackMCRefs);
       
       if (TrackDesc::nofTrdStations > 0)
-         HandleTrd(trdIndex, mcTrackIds, reinterpret_cast<set<Int_t>*> (globalTrackMCRefs));
+         HandleTrd(trdIndex, mcTrackIds, globalTrackMCRefs);
       
       if (TrackDesc::hasTof)
-         HandleTof(i, tofIndex, mcTrackIds, reinterpret_cast<set<Int_t>*> (globalTrackMCRefs));
+         HandleTof(i, tofIndex, mcTrackIds, globalTrackMCRefs);
       
       map<Int_t, set<Int_t> >::const_iterator maxIter = max_element(mcTrackIds.begin(), mcTrackIds.end(),
          [](const pair<Int_t, set<Int_t> >& p1, const pair<Int_t, set<Int_t> >& p2)
@@ -863,7 +863,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       ++gNofNonGhosts;
    }
    
-   map<Int_t, set<Int_t> > mcToGlobalRefs[nofStations];
+   map<Int_t, set<Int_t> >* mcToGlobalRefs = new map<Int_t, set<Int_t> > [nofStations];
    
    for (Int_t i = 0; i < nofGlobalTracks; ++i)
    {
@@ -872,7 +872,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       for (Int_t j = 0; j < nofStations; ++j)
       {
          set<Int_t> globals;
-         const set<Int_t>& mcs = globalTrackMCRefs[i][j];
+         const set<Int_t>& mcs = globalTrackMCRefs[i * nofStations + j];
          
          for (set<Int_t>::const_iterator k = mcs.begin(); k != mcs.end(); ++k)
          {
@@ -911,7 +911,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
          
       for (Int_t j = 0; j < nofStations; ++j)
       {
-         const set<Int_t>& mcs = globalTrackMCRefs[i][j];
+         const set<Int_t>& mcs = globalTrackMCRefs[i * nofStations + j];
          
          for (set<Int_t>::const_iterator k = mcs.begin(); k != mcs.end(); ++k)
          {
@@ -920,6 +920,9 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
          }
       }
    }
+   
+   delete[] mcToGlobalRefs;
+   delete[] globalTrackMCRefs;
    
    ++gEventNumber;
 }
