@@ -111,6 +111,12 @@ InitStatus CbmLitClusteringQa::Init()
 
    fDet.DetermineSetup();
    ReadDataBranches();
+   
+   // --- Get STS setup
+   CbmStsSetup* stsSetup = CbmStsSetup::Instance();
+   
+   if (!stsSetup->IsInit())
+      stsSetup->Init();
 
    InitMuchGeoScheme(fMuchDigiFileName);
 
