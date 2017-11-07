@@ -158,6 +158,7 @@ static TProfile* effByMomPrimary = 0;
 static TProfile* effByMomNonPrimary = 0;
 static TH1F* lambdaChildrenMoms = 0;
 static TProfile* lambdaChildrenEffByMom = 0;
+static TH1F* clonesNofSameHits = 0;
 
 #ifdef CBM_BINNED_QA_FILL_HISTOS
 static TH1F* stsXResHisto = 0;
@@ -232,6 +233,7 @@ InitStatus CbmBinnedTrackerQA::Init()
    effByMomNonPrimary = new TProfile("effByMomNonPrimary", "Track reconstruction efficiency by momentum distribution for non primary tracks %", 200, 0., 10.);
    lambdaChildrenMoms = new TH1F("lambdaChildrenMoms", "Lambda children momenta distribution", 100, 0., 10.);
    lambdaChildrenEffByMom = new TProfile("lambdaChildrenEffByMom", "Track reconstruction for Lambda children efficiency by momentum distribution %", 200, 0., 10.);
+   clonesNofSameHits = new TH1F("clonesNofSameHits", "The number of hits which are the same for a clone track", 10, 0., 10.);
    
 #ifdef CBM_BINNED_QA_FILL_HISTOS
    stsXResHisto = new TH1F("stsXResHisto", "stsXResHisto", 200, -0.1, 0.1);
@@ -815,6 +817,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
    Int_t nofStations = fSettings->GetNofStations();
    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
    set<Int_t>* globalTrackMCRefs = new set<Int_t> [nofGlobalTracks * nofStations];
+   Int_t* globalTracksHitInds = new Int_t[nofGlobalTracks * nofStations];
    
    for (Int_t i = 0; i < nofGlobalTracks; ++i)
    {
@@ -840,16 +843,16 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       map<Int_t, set<Int_t> > mcTrackIds;
       
       if (TrackDesc::nofStsStations > 0)
-         HandleSts(stsIndex, mcTrackIds, globalTrackMCRefs);
+         HandleSts(stsIndex, mcTrackIds, globalTrackMCRefs, globalTracksHitInds);
       
       if (TrackDesc::nofMuchStations > 0)
-         HandleMuch(muchIndex, mcTrackIds, globalTrackMCRefs);
+         HandleMuch(muchIndex, mcTrackIds, globalTrackMCRefs, globalTracksHitInds);
       
       if (TrackDesc::nofTrdStations > 0)
-         HandleTrd(trdIndex, mcTrackIds, globalTrackMCRefs);
+         HandleTrd(trdIndex, mcTrackIds, globalTrackMCRefs, globalTracksHitInds);
       
       if (TrackDesc::hasTof)
-         HandleTof(i, tofIndex, mcTrackIds, globalTrackMCRefs);
+         HandleTof(i, tofIndex, mcTrackIds, globalTrackMCRefs, globalTracksHitInds);
       
       map<Int_t, set<Int_t> >::const_iterator maxIter = max_element(mcTrackIds.begin(), mcTrackIds.end(),
          [](const pair<Int_t, set<Int_t> >& p1, const pair<Int_t, set<Int_t> >& p2)
@@ -867,11 +870,11 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
    
    for (Int_t i = 0; i < nofGlobalTracks; ++i)
    {
-      map<Int_t, Int_t> matches;
+      map<Int_t, Int_t> matches;// The map from global track IDs, different from the current (i-th) global track ID, to the number of stations, where their hits originate from the MC tracks.
       
       for (Int_t j = 0; j < nofStations; ++j)
       {
-         set<Int_t> globals;
+         set<Int_t> globals;// Global track IDs, which reference the same Monte Carlo track IDs on this station as the i-th (global) track.
          const set<Int_t>& mcs = globalTrackMCRefs[i * nofStations + j];
          
          for (set<Int_t>::const_iterator k = mcs.begin(); k != mcs.end(); ++k)
@@ -906,6 +909,19 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       if (maxIter->second >= 0.7 * nofStations)
       {
          ++gNofClones;
+         Int_t origTrackInd = maxIter->first;
+         int nofSameHits = 0;
+         
+         for (Int_t j = 0; j < nofStations; ++j)
+         {
+            Int_t hitInd = globalTracksHitInds[i * nofStations + j];
+            Int_t origHitInd = globalTracksHitInds[origTrackInd * nofStations + j];
+            
+            if (hitInd == origHitInd)
+               ++nofSameHits;
+         }
+         
+         clonesNofSameHits->Fill(nofSameHits);
          continue;
       }
          
@@ -923,6 +939,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
    
    delete[] mcToGlobalRefs;
    delete[] globalTrackMCRefs;
+   delete[] globalTracksHitInds;
    
    ++gEventNumber;
 }
@@ -932,7 +949,7 @@ static inline void IncrementForId(map<Int_t, set<Int_t> >& ids, Int_t id, Int_t 
    ids[id].insert(stId);
 }
 
-void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs)
+void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs, Int_t* globalTracksHitInds)
 {
    int nofStations = fSettings->GetNofStations();
    const CbmStsTrack* stsTrack = static_cast<const CbmStsTrack*> (fStsTracks->At(stsTrackIndex));
@@ -943,6 +960,7 @@ void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex, map<Int_t, set<Int_t> >&
       Int_t stsHitInd = stsTrack->GetStsHitIndex(i);
       const CbmStsHit* stsHit = static_cast<const CbmStsHit*> (fStsHits->At(stsHitInd));
       Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(stsHit->GetAddress());
+      globalTracksHitInds[stsTrackIndex * nofStations + TrackDesc::firstStsStationNo + stationNumber] = stsHitInd;
       //Int_t stationNumber = CbmStsAddress::GetElementId(stsHit->GetAddress(), kSts);
       Int_t frontClusterInd = stsHit->GetFrontClusterId();
       Int_t backClusterInd = stsHit->GetBackClusterId();
@@ -1000,7 +1018,7 @@ void CbmBinnedTrackerQA::HandleSts(Int_t stsTrackIndex, map<Int_t, set<Int_t> >&
    }
 }
 
-void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs)
+void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs, Int_t* globalTracksHitInds)
 {
    int nofStations = fSettings->GetNofStations();
    const CbmMuchTrack* muchTrack = static_cast<const CbmMuchTrack*> (fMuchTracks->At(muchTrackIndex));
@@ -1013,6 +1031,7 @@ void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> 
       Int_t muchStationNumber = CbmMuchGeoScheme::GetStationIndex(muchHit->GetAddress());
       Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(muchHit->GetAddress());
       Int_t stationNumber = muchStationNumber * TrackDesc::nofMuchLayers + layerNumber;
+      globalTracksHitInds[muchTrackIndex * nofStations + TrackDesc::firstMuchStationNo + stationNumber] = muchHitInd;
       Int_t clusterId = muchHit->GetRefId();
       const CbmMuchCluster* cluster = static_cast<const CbmMuchCluster*> (fMuchClusters->At(clusterId));
       Int_t nofDigis = cluster->GetNofDigis();
@@ -1042,7 +1061,7 @@ void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> 
    }
 }
 
-void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs)
+void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs, Int_t* globalTracksHitInds)
 {
    int nofStations = fSettings->GetNofStations();
    const CbmTrdTrack* trdTrack = static_cast<const CbmTrdTrack*> (fTrdTracks->At(trdTrackIndex));
@@ -1053,6 +1072,7 @@ void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex, map<Int_t, set<Int_t> >&
       Int_t trdHitInd = trdTrack->GetHitIndex(i);
       const CbmTrdHit* trdHit = static_cast<const CbmTrdHit*> (fTrdHits->At(trdHitInd));
       Int_t stationNumber = trdHit->GetPlaneId();
+      globalTracksHitInds[trdTrackIndex * nofStations + TrackDesc::firstTrdStationNo + stationNumber] = trdHitInd;
       Int_t clusterId = trdHit->GetRefId();
 #ifndef TRD_IDEAL
       const CbmTrdCluster* cluster = static_cast<const CbmTrdCluster*> (fTrdClusters->At(clusterId));
@@ -1090,9 +1110,10 @@ void CbmBinnedTrackerQA::HandleTrd(Int_t trdTrackIndex, map<Int_t, set<Int_t> >&
    }
 }
 
-void CbmBinnedTrackerQA::HandleTof(Int_t globalTrackIndex, Int_t tofHitIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs)
+void CbmBinnedTrackerQA::HandleTof(Int_t globalTrackIndex, Int_t tofHitIndex, map<Int_t, set<Int_t> >& mcTrackIds, set<Int_t>* globalTrackMCRefs, Int_t* globalTracksHitInds)
 {
    int nofStations = fSettings->GetNofStations();
+   globalTracksHitInds[globalTrackIndex * nofStations + TrackDesc::tofStationNo] = tofHitIndex;
    const CbmMatch* tofHitMatch = static_cast<const CbmMatch*> (fTofHitDigiMatches->At(tofHitIndex));
    Int_t nofTofDigis = tofHitMatch->GetNofLinks();
    
@@ -1580,6 +1601,7 @@ void CbmBinnedTrackerQA::Finish()
    SaveHisto(effByMomNonPrimary);
    SaveHisto(lambdaChildrenMoms);
    SaveHisto(lambdaChildrenEffByMom);
+   SaveHisto(clonesNofSameHits);
    
 #ifdef CBM_BINNED_QA_FILL_HISTOS
    SaveHisto(stsXResHisto);
