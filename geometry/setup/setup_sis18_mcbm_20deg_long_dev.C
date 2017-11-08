@@ -32,10 +32,13 @@ void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 999)
   TString stsGeoTag       = "v18f_mcbm";    // 1-1-1-2 ladder configuration 
 //  TString muchGeoTag      = "v18c_mcbm";    // 12 o'clock
   TString muchGeoTag      = "v18d_mcbm";    // 11 o'clock
+
+  TString buchGeoTag      = "v18l_1e_mcbm"; // long, with mBUCH
   TString trdGeoTag       = "v18g_1e_mcbm"; // long, without mBUCH
-//  TString trdGeoTag       = "v18l_1e_mcbm"; // long, with mBUCH
+
   TString tofGeoTag       = "v18i_mcbm";    // long distance
   TString richGeoTag      = "v18c_mcbm";    // long distance
+  TString psdGeoTag       = "";             // not yet available
   // ------------------------------------------------------------------------
 
 
@@ -49,6 +52,8 @@ void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 999)
   Int_t mMvd  = 0;
   Int_t mSts  = 0;
   Int_t mMuch = 0;
+  Int_t mBuch = 0;
+
   Int_t mTrd  = 0;
   Int_t mTof  = 0;
   Int_t mRich = 0;
@@ -61,7 +66,7 @@ void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 999)
 //  cout << nSetup /1000000000   %10 << endl; 
 //  cout << nSetup /100000000    %10 << endl; 
 
-//  cout << nSetup /10000000     %10 << endl; 
+  cout << nSetup /10000000     %10 << endl; 
   cout << nSetup /1000000      %10 << endl; 
   cout << nSetup /100000       %10 << endl; 
   cout << nSetup /10000        %10 << endl; 
@@ -71,9 +76,10 @@ void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 999)
   cout << nSetup /10           %10 << endl; 
   cout << nSetup               %10 << endl; 
 
-  if (nSetup /1000000      %10) { mMvd  = 1; cout << "mMVD  enabled" << endl; }
-  if (nSetup /100000       %10) { mSts  = 1; cout << "mSTS  enabled" << endl; }
-  if (nSetup /10000        %10) { mMuch = 1; cout << "mMUCH enabled" << endl; }
+  if (nSetup /10000000     %10) { mMvd  = 1; cout << "mMVD  enabled" << endl; }
+  if (nSetup /1000000      %10) { mSts  = 1; cout << "mSTS  enabled" << endl; }
+  if (nSetup /100000       %10) { mMuch = 1; cout << "mMUCH enabled" << endl; }
+  if (nSetup /10000        %10) { mBuch = 1; cout << "mBUCH enabled" << endl; }
 
   if (nSetup /1000         %10) { mTrd  = 1; cout << "mTRD  enabled" << endl; }
   if (nSetup /100          %10) { mTof  = 1; cout << "mTOF  enabled" << endl; }
@@ -93,7 +99,9 @@ void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 999)
   if (mMvd  == 1) setup->SetModule(kMvd,  mvdGeoTag);   // skip mvd in the initial setup
   if (mSts  == 1) setup->SetModule(kSts,  stsGeoTag);
   if (mMuch == 1) setup->SetModule(kMuch, muchGeoTag);  // disable, reco missing
-  if (mTrd  == 1) setup->SetModule(kTrd,  trdGeoTag);
+  if (mBuch == 1) setup->SetModule(kTrd,  buchGeoTag);
+  else if (mTrd  == 1) setup->SetModule(kTrd,  trdGeoTag);
+
   if (mTof  == 1) setup->SetModule(kTof,  tofGeoTag);
   if (mRich == 1) setup->SetModule(kRich, richGeoTag);  // disable, reco missing
   if (mPsd  == 1) setup->SetModule(kPsd,  psdGeoTag);   // disable, reco missing
