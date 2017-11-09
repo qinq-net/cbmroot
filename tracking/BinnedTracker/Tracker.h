@@ -33,22 +33,34 @@ public:
     int fNofWrongSegments;
     struct Track
     {
-        Track(CbmTBin::HitHolder** hits, int length, Double_t chiSq) : fHits(new CbmTBin::HitHolder*[length]), fLength(length), fChiSq(chiSq)
+        Track(CbmTBin::HitHolder** hits, int length, const CbmBinnedStation::KFParams& lastParam) :
+            fHits(new CbmTBin::HitHolder*[length]), fLength(length), fParams(new CbmBinnedStation::KFParams[length])
         {
             for (int i = 0; i < fLength; ++i)
                 fHits[i] = hits[i];
+            
+            fParams[fLength - 1] = lastParam;
+                                
+            for (int i = fLength - 2; i >= 0; --i)
+            {
+                fParams[i] = fParams[i + 1];
+                Double_t m[2] = { hits[i]->hit->GetX(), hits[i]->hit->GetY() };
+                Double_t V[2] = { hits[i]->hit->GetDx() * hits[i]->hit->GetDx(), hits[i]->hit->GetDy() * hits[i]->hit->GetDy() };
+                CbmBinnedTracker::Instance()->KFAddPoint(i, fParams[i], fParams[i + 1], m, V, hits[i]->hit->GetZ(), hits[i + 1]->hit->GetZ());
+            }
         }
         
         ~Track()
         {
             delete[] fHits;
+            delete[] fParams;
         }
         
         Track(const Track&) = delete;
         Track& operator=(const Track&) = delete;        
         CbmTBin::HitHolder** fHits;
         int fLength;
-        Double_t fChiSq;
+        CbmBinnedStation::KFParams* fParams;
     };
     
 public:
@@ -548,7 +560,7 @@ private:
         
         if (level == fNofStations - 1)
         {
-            Track* aCandidate = new Track(hhs, fNofStations, kfParams.chi2);
+            Track* aCandidate = new Track(hhs, fNofStations, kfParams);
             candidates.push_back(aCandidate);
             return;
         }
@@ -591,7 +603,7 @@ private:
                 {
                     Track* aCandidate = *i;
 
-                    if (0 == bestCandidate || aCandidate->fChiSq < bestCandidate->fChiSq)
+                    if (0 == bestCandidate || aCandidate->fParams[aCandidate->fLength - 1].chi2 < bestCandidate->fParams[bestCandidate->fLength - 1].chi2)
                     {
                         delete bestCandidate;
                         bestCandidate = aCandidate;
@@ -650,13 +662,13 @@ private:
 #endif//CBM_BINNED_DEBUG
     }
     
-    bool FindBestPath(int stationNo, CbmBinnedStation::KFParams kfParams, CbmTBin::HitHolder** trackHolders, CbmTBin::HitHolder** bestTrackHolders, Double_t& bestChiSq)
+    bool FindBestPath(int stationNo, CbmBinnedStation::KFParams kfParams, CbmTBin::HitHolder** trackHolders, CbmTBin::HitHolder** bestTrackHolders, CbmBinnedStation::KFParams& bestEndParams)
     {
         bool pathResult = false;
         Double_t previousZ = trackHolders[stationNo - 1]->hit->GetZ();
         CbmBinnedStation* aStation = fStationArray[stationNo];
         aStation->SearchHits(kfParams, previousZ,
-            [this, &stationNo, &kfParams, &trackHolders, &bestTrackHolders, &previousZ, &bestChiSq, &pathResult](CbmTBin::HitHolder& hitHolder)->void
+            [this, &stationNo, &kfParams, &trackHolders, &bestTrackHolders, &previousZ, &bestEndParams, &pathResult](CbmTBin::HitHolder& hitHolder)->void
             {
                 trackHolders[stationNo] = &hitHolder;
                 const CbmPixelHit* hit = hitHolder.hit;
@@ -665,16 +677,16 @@ private:
                 Double_t V[2] = { hit->GetDx() * hit->GetDx(), hit->GetDy() * hit->GetDy() };
                 KFAddPoint(stationNo, updKFParams, kfParams, m, V, hit->GetZ(), previousZ);
                 
-                if (updKFParams.chi2 > fChiSqCut || updKFParams.chi2 > bestChiSq)
+                if (updKFParams.chi2 > fChiSqCut || updKFParams.chi2 > bestEndParams.chi2)
                     return;
                 
                 bool result = false;
                 
                 if (stationNo < fNofStations - 1)
-                    result = FindBestPath(stationNo + 1, updKFParams, trackHolders, bestTrackHolders, bestChiSq);
+                    result = FindBestPath(stationNo + 1, updKFParams, trackHolders, bestTrackHolders, bestEndParams);
                 else
                 {
-                    bestChiSq = updKFParams.chi2;
+                    bestEndParams = updKFParams;
                     result = true;
                 }
                 
@@ -713,7 +725,12 @@ private:
                 };
                 
                 CbmTBin::HitHolder* startHitHolder = 0;
-                Double_t bestChiSq = cbmBinnedCrazyChiSq;
+                CbmBinnedStation::KFParams bestEndParams =
+                {
+                    { leftHit->GetX(), 0, leftHit->GetDx() * leftHit->GetDx(), 0, 0, 1.0 },
+                    { leftHit->GetY(), 0, leftHit->GetDy() * leftHit->GetDy(), 0, 0, 1.0 },
+                    cbmBinnedCrazyChiSq
+                };
                 bool hasFoundPathLeft = false;
                 
                 if (startStationNo >= 0)
@@ -724,13 +741,13 @@ private:
                 
                 rightStation->IterateHits(
                     [this, &startStationNo, &leftHitHolder, &trackHolders, &tmpTrackHolders, &leftHit, &kfParams, &startHitHolder,
-                        &bestChiSq, &hasFoundPathLeft](CbmTBin::HitHolder& rightHitHolder)->void
+                        &bestEndParams, &hasFoundPathLeft](CbmTBin::HitHolder& rightHitHolder)->void
                     {                        
                         if (startStationNo < 0)
                         {
                             startHitHolder = &rightHitHolder;
                             tmpTrackHolders[0] = &rightHitHolder;
-                            bestChiSq = cbmBinnedCrazyChiSq;
+                            bestEndParams.chi2 = cbmBinnedCrazyChiSq;
                         }
                         else
                             tmpTrackHolders[1] = &rightHitHolder;
@@ -744,7 +761,7 @@ private:
                         if (updKFParams.chi2 > fChiSqCut)
                             return;
                         
-                        bool hasFoundPathRight = FindBestPath(startStationNo + 2, updKFParams, tmpTrackHolders, trackHolders, bestChiSq);
+                        bool hasFoundPathRight = FindBestPath(startStationNo + 2, updKFParams, tmpTrackHolders, trackHolders, bestEndParams);
                         
                         if (hasFoundPathRight)
                         {
@@ -757,8 +774,8 @@ private:
                             }
                             
                             if (startStationNo < 0)
-                            {
-                                Track* aTrack = new Track(trackHolders, fNofStations, bestChiSq);
+                            {                                
+                                Track* aTrack = new Track(trackHolders, fNofStations, bestEndParams);
                                 fTracks.push_back(aTrack);
                                 
                                 for (int i = 0; i < fNofStations; ++i)
@@ -769,8 +786,8 @@ private:
                 );
                 
                 if (startStationNo >= 0 && hasFoundPathLeft)
-                {
-                    Track* aTrack = new Track(trackHolders, fNofStations, bestChiSq);
+                {                                
+                    Track* aTrack = new Track(trackHolders, fNofStations, bestEndParams);
                     fTracks.push_back(aTrack);
                 }
             }
