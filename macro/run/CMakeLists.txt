@@ -71,7 +71,7 @@ ForEach(setup IN LISTS cbm_setup)
 
   Set(testname run_overlap_${setup})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/check_overlaps.sh \"${setup}\")
-  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "900")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_qa})
   Set(_FileName_Dependency data/run_mc_${setup}_ok)
