@@ -6,6 +6,7 @@
  **
  **/
 
+// 2017-11-10 - DE - switch to mMUCH v18e with Mv2 dimensions
 // 2017-11-03 - DE - add long setup, (acceptance matching +-12 degrees from mSTS)
 // 2017-11-02 - DE - add common support table v18c
 // 2017-11-02 - DE - include mBUCH with mTRD v18j
@@ -31,7 +32,8 @@ void setup_sis18_mcbm_20deg_long()
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";
   TString stsGeoTag       = "v18f_mcbm";    // 1-1-1-2 ladder configuration 
 //  TString muchGeoTag      = "v18c_mcbm";    // 12 o'clock
-  TString muchGeoTag      = "v18d_mcbm";    // 11 o'clock
+//  TString muchGeoTag      = "v18d_mcbm";    // 11 o'clock
+  TString muchGeoTag      = "v18e_mcbm";    // 11 o'clock, Mv2 size
   TString trdGeoTag       = "v18g_1e_mcbm"; // long, without mBUCH
 //  TString trdGeoTag       = "v18l_1e_mcbm"; // long, with mBUCH
   TString tofGeoTag       = "v18i_mcbm";    // long distance
@@ -58,8 +60,7 @@ void setup_sis18_mcbm_20deg_long()
   setup->SetModule(kPipe, pipeGeoTag);
   //  setup->SetModule(kMvd, mvdGeoTag);  // skip mvd in the initial setup
   setup->SetModule(kSts, stsGeoTag);
-  // disable, reco missing
-  //  setup->SetModule(kMuch, muchGeoTag);
+  setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
   // disable, reco missing
