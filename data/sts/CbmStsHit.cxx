@@ -19,6 +19,8 @@ CbmStsHit::CbmStsHit()
     : CbmPixelHit()
     , fFrontClusterId(-1)
     , fBackClusterId(-1)
+    , fDu(-1.)
+    , fDv(-1.)
 {
 	SetTime(-1.);
 	SetTimeError(-1.);
