@@ -30,6 +30,7 @@
 #include <iostream>
 #include "TGeoManager.h"
 
+#include "TGeoPcon.h"
 
 using namespace std;
 
@@ -49,6 +50,11 @@ TString rootFileName = "pipe_v14m.root";
 TString pipeName = "pipe_v14m";
 // ----------------------------------------------------------------------------
 
+TGeoVolume* MakePipe(Int_t iPart, Int_t nSects, Double_t* z, Double_t* rin,
+		     Double_t* rout, TGeoMedium* medium, fstream* infoFile);
+
+TGeoVolume* MakeVacuum(Int_t iPart, Int_t nSects, Double_t* z, Double_t* rin,
+		       Double_t* rout, TGeoMedium* medium, fstream* infoFile);
 
 // ============================================================================
 // ======                         Main function                           =====
@@ -116,14 +122,6 @@ void create_bpipe_geometry_v14m()
   Double_t rout6[nSects6]  = {    0.,      3.42,   70.,    140.,    210.,    253.27,  253.27 };
 
 
-  // --------------------------------------------------------------------------
-
-  // -------------  Load the necessary FairRoot libraries   -------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
   // --------------------------------------------------------------------------
 
 
