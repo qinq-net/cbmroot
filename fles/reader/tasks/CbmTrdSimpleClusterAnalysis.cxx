@@ -11,7 +11,7 @@
 ClassImp(CbmTrdSimpleClusterAnalysis)
 
 CbmTrdSimpleClusterAnalysis::CbmTrdSimpleClusterAnalysis ():
-CbmTrdQABase("CbmTrdSimpleClusterAnalysis")
+  CbmTrdQABase("CbmTrdSimpleClusterAnalysis"), fSpectra() 
 {
   // TODO Auto-generated constructor stub
 

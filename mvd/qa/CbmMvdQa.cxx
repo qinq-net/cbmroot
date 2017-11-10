@@ -67,6 +67,7 @@ CbmMvdQa::CbmMvdQa(const char* name, Int_t iMode, Int_t iVerbose)
   fBadTrack(0),
   fUsedTracks(0),
   fnrOfMergedHits(0),
+  fFirstMvdPos(0),
   fnrTrackslowP(0),
   fnrTracksHighP(0),
   flow(0),

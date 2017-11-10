@@ -34,6 +34,9 @@ public:
   ;
   TH2* fTemporalAlign,*fSpatialAlign;
 
+  CbmTrdDESYAlignment(const CbmTrdDESYAlignment&) = delete;
+  CbmTrdDESYAlignment& operator=(const CbmTrdDESYAlignment&) = delete;
+
 ClassDef(CbmTrdDESYAlignment,1)
   ;
 };

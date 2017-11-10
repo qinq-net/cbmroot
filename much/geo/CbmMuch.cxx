@@ -74,7 +74,8 @@ CbmMuch::CbmMuch()
   kGeoSaved(kFALSE),
   fCombiTrans(),
   flGeoPar(new TList()),
-  fPar(NULL)
+  fPar(NULL),
+  fVolumeName("")
 {
   ResetParameters();
   flGeoPar->SetName( GetName());
@@ -101,9 +102,9 @@ CbmMuch::CbmMuch(const char* name, Bool_t active)
     fMuchCollection(new TClonesArray("CbmMuchPoint")),
     fCombiTrans(),
     kGeoSaved(kFALSE),
-    flGeoPar(new TList()),
-    
-    fPar(NULL)
+    flGeoPar(new TList()),    
+    fPar(NULL),
+    fVolumeName("")
 {
   
   ResetParameters();

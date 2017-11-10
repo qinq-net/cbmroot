@@ -44,8 +44,9 @@ CbmStsSetup* CbmStsSetup::fgInstance = NULL;
 // -----   Constructor   ---------------------------------------------------
 CbmStsSetup::CbmStsSetup() : CbmStsElement(kSts, kStsSystem),
 			     fDigitizer(NULL), fSettings(NULL),fIsInitialised(kFALSE),
-			     fNofSensorsDefault(0),
-			     fIsOld(kFALSE), fModules(),
+			     fNofSensorsDefault(0), fSensorDinact(0.), fSensorPitch(0.),
+                             fSensorStereoF(0.), fSensorStereoB(0.),
+			     fIsOld(kFALSE), fModules(), fModuleVector(),
 			     fSensors(), fStations() {
 }
 // -------------------------------------------------------------------------

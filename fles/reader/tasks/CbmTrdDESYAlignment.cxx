@@ -14,7 +14,7 @@
 ClassImp(CbmTrdDESYAlignment)
 
 CbmTrdDESYAlignment::CbmTrdDESYAlignment (TString _ClassName) :
-    fTemporalAlign (), CbmTrdQABase ("CbmTrdDESYAlignment")
+  CbmTrdQABase ("CbmTrdDESYAlignment"), fTemporalAlign(NULL), fSpatialAlign(NULL)
 {
 }
 
