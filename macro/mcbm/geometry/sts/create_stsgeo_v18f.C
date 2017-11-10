@@ -880,7 +880,8 @@ void create_stsgeo_v18f(const char* geoTag="v18f_mcbm")
 //  TGeoShape* stsShape = new TGeoCompositeShape("stsShape", 
 //                                               "stsBox-stsCone1:trans1-stsCone2:trans2");
 //  TGeoVolume* sts = new TGeoVolume(stsName.Data(), stsShape, gStsMedium);
-  TGeoVolume* sts = new TGeoVolume(stsName.Data(), stsBox, gStsMedium);
+//  TGeoVolume* sts = new TGeoVolume(stsName.Data(), stsBox, gStsMedium);
+  TGeoVolumeAssembly* sts = new TGeoVolumeAssembly(stsName.Data());   // do not produce keeping volumes
 
   // --- Place stations in the STS
   //  for (Int_t iStation = 1; iStation <=8; iStation++) {
@@ -2086,8 +2087,9 @@ TGeoVolume* ConstructStation(Int_t iStation,
 //  
 //  statShape = new TGeoCompositeShape(name, expression.Data());
 //  TGeoVolume* station = new TGeoVolume(name, statShape, gStsMedium);
-  TGeoVolume* station = new TGeoVolume(name, statBox, gStsMedium);
-  
+//  TGeoVolume* station = new TGeoVolume(name, statBox, gStsMedium);
+  TGeoVolumeAssembly* station = new TGeoVolumeAssembly(name);   // do not produce keeping volumes
+
   Double_t subtractedVal;
   
   // --- Place ladders in station
