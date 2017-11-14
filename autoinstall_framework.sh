@@ -189,6 +189,9 @@ if [ $SETUP_CBMROOT -ge 1 ]; then
   export FAIRROOTPATH=`pwd`
   echo "FAIRROOTPATH: $FAIRROOTPATH"
   cd $CBMSRCDIR
+
+  echo PATH=$SIMPATH/bin:$PATH
+  export PATH=$SIMPATH/bin:$PATH
   
   cd ..
   if [ -d fieldmaps ]; then
