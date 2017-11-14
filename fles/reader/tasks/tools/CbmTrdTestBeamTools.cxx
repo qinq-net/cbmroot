@@ -163,7 +163,7 @@ Int_t CbmTrdTestBeamTools::GetBaseline(CbmSpadicRawMessage* raw)
   /*
    * Estimate the signal baseline. Returns the lowest ADC value in the first two samples.
    */
-  Int_t Base =*std::min_element(raw->GetSamples(),raw->GetSamples()+1);
+  Int_t Base =*std::min_element(raw->GetSamples(),raw->GetSamples());
   //Int_t Basecand=*std::min_element(raw->GetSamples()+raw->GetNrSamples()-3,raw->GetSamples()+raw->GetNrSamples());
   return Base;//(Base<Basecand)?Base:Basecand;
 };
@@ -178,7 +178,7 @@ Int_t CbmTrdTestBeamTools::GetMaximumAdc(CbmSpadicRawMessage* raw,Double_t Base)
     if (raw->GetSamples()[i]>MaxADC)
       MaxADC=raw->GetSamples()[i];
   }
-  return MaxADC;
+  return MaxADC-Base;
 };
 Float_t CbmTrdTestBeamTools::GetIntegratedCharge(CbmSpadicRawMessage* raw,Double_t Base)
 {
@@ -186,7 +186,7 @@ Float_t CbmTrdTestBeamTools::GetIntegratedCharge(CbmSpadicRawMessage* raw,Double
    * Get the integrated charge of raw, with Base subtracted.
    * Includes correction for unequal message lengths.
    */
-  Double_t Integral=0;
+
   Float_t* ProcessedSamples=new Float_t[32];
   Int_t* Samples=raw->GetSamples();
   Int_t NrSamples=raw->GetNrSamples();
@@ -195,9 +195,13 @@ Float_t CbmTrdTestBeamTools::GetIntegratedCharge(CbmSpadicRawMessage* raw,Double
     Baseline = Base;
   for (int i=0;i<NrSamples;i++){
       ProcessedSamples[i]=Samples[i]-Baseline;
+  //    std::cout << ProcessedSamples[i] << " ";
   }
-  return GetIntegratedCharge(ProcessedSamples,NrSamples);
-};
+  //std::cout << std::endl;
+  Double_t Integral=GetIntegratedCharge(ProcessedSamples,NrSamples);
+  delete ProcessedSamples;
+  return Integral;
+}
 
 Float_t CbmTrdTestBeamTools::GetIntegratedCharge(const Float_t* Samples,Int_t NrSamples)
 {
@@ -206,12 +210,12 @@ Float_t CbmTrdTestBeamTools::GetIntegratedCharge(const Float_t* Samples,Int_t Nr
    * Includes correction for unequal message lengths.
    */
   Double_t Integral=0;
-  if(NrSamples<3)
+  if(NrSamples<=3)
     return 0;
-  for (int i=1;i<NrSamples;i++){
+  for (int i=2;i<NrSamples;i++){
     Integral+=Samples[i];
   }
-  Double_t CorrectionFactor;
+  Double_t CorrectionFactor=0;
   Double_t Shape=GetShapingTime(),Sample=GetSamplingTime();
   for (Int_t i=0;i<NrSamples-2;i++)
   {
@@ -219,9 +223,10 @@ Float_t CbmTrdTestBeamTools::GetIntegratedCharge(const Float_t* Samples,Int_t Nr
       //std::cout << (TMath::Exp(-(i+0.25)*Sample/Shape)*((NrSamples+0.25)*Sample*Sample)/(Shape*Shape))<< std::endl;
       CorrectionFactor+=(TMath::Exp(-(i)*Sample/Shape)*((i)*Sample)/(Shape*Shape));
   }
-  //std::cout << "ClusterCharge: "<<Integral << " " << CorrectionFactor << " "<< NrSamples<<std::endl;
-  return static_cast<Float_t>(Integral/CorrectionFactor);
-}Int_t
+  //std::cout << "ClusterCharge: "<<Integral << " " << CorrectionFactor << " "<< NrSamples << " " << Integral*1.5/(CorrectionFactor*1E3)<<std::endl;
+  return static_cast<Float_t>(Integral*1.5/(CorrectionFactor*1E3));
+}
+Int_t
 CbmTrdTestBeamTools::GetModuleID (CbmTrdCluster* Clust)
 {
   //Returns ModuleID of the first Digi in the cluster.
