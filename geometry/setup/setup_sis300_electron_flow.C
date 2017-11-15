@@ -39,7 +39,7 @@ void setup_sis300_electron_flow()
   TString pipeGeoTag      = "v14c";
   TString mvdGeoTag       = "v15a";
   TString stsGeoTag       = "v16x";
-  TString richGeoTag      = "v16a_3e";
+  TString richGeoTag      = "v17a_3e";
   TString trdGeoTag       = "v15a_3e";
   TString tofGeoTag       = "v16a_3e";
   // ------------------------------------------------------------------------
