@@ -156,6 +156,19 @@ static vector<vector<TrackDesc> > gTracks;
 static TProfile* effByMom = 0;
 static TProfile* effByMomPrimary = 0;
 static TProfile* effByMomNonPrimary = 0;
+
+static TProfile* effByPolarAngle = 0;
+static TProfile* effByPolarAnglePrimary = 0;
+static TProfile* effByPolarAngleNonPrimary = 0;
+
+static TProfile* effByXAngle = 0;
+static TProfile* effByXAnglePrimary = 0;
+static TProfile* effByXAngleNonPrimary = 0;
+
+static TProfile* effByYAngle = 0;
+static TProfile* effByYAnglePrimary = 0;
+static TProfile* effByYAngleNonPrimary = 0;
+
 static TH1F* lambdaChildrenMoms = 0;
 static TProfile* lambdaChildrenEffByMom = 0;
 static TH1F* clonesNofSameHits = 0;
@@ -258,6 +271,19 @@ InitStatus CbmBinnedTrackerQA::Init()
    effByMom = new TProfile("effByMom", "Track reconstruction efficiency by momentum distribution %", 400, 0., 10.);
    effByMomPrimary = new TProfile("effByMomPrimary", "Track reconstruction efficiency by momentum distribution for primary tracks %", 400, 0., 10.);
    effByMomNonPrimary = new TProfile("effByMomNonPrimary", "Track reconstruction efficiency by momentum distribution for non primary tracks %", 200, 0., 10.);
+   
+   effByPolarAngle = new TProfile("effByPolarAngle", "Track reconstruction efficiency by polar angle distribution %", 300, 0., 30.);
+   effByPolarAnglePrimary = new TProfile("effByPolarAnglePrimary", "Track reconstruction efficiency by polar angle distribution for primary tracks %", 300, 0., 30.);
+   effByPolarAngleNonPrimary = new TProfile("effByPolarAngleNonPrimary", "Track reconstruction efficiency by polar angle distribution for non primary tracks %", 300, 0., 30.);
+   
+   effByXAngle = new TProfile("effByXAngle", "Track reconstruction efficiency by XZ angle distribution %", 300, 0., 30.);
+   effByXAnglePrimary = new TProfile("effByXAnglePrimary", "Track reconstruction efficiency by XZ angle distribution for primary tracks %", 300, 0., 30.);
+   effByXAngleNonPrimary = new TProfile("effByXAngleNonPrimary", "Track reconstruction efficiency by XZ angle distribution for non primary tracks %", 300, 0., 30.);
+   
+   effByYAngle = new TProfile("effByYAngle", "Track reconstruction efficiency by YZ angle distribution %", 300, 0., 30.);
+   effByYAnglePrimary = new TProfile("effByYAnglePrimary", "Track reconstruction efficiency by YZ angle distribution for primary tracks %", 300, 0., 30.);
+   effByYAngleNonPrimary = new TProfile("effByYAngleNonPrimary", "Track reconstruction efficiency by YZ angle distribution for non primary tracks %", 300, 0., 30.);
+   
    lambdaChildrenMoms = new TH1F("lambdaChildrenMoms", "Lambda children momenta distribution", 100, 0., 10.);
    lambdaChildrenEffByMom = new TProfile("lambdaChildrenEffByMom", "Track reconstruction for Lambda children efficiency by momentum distribution %", 200, 0., 10.);
    clonesNofSameHits = new TH1F("clonesNofSameHits", "The number of hits which are the same for a clone track", 10, 0., 10.);
@@ -1612,14 +1638,37 @@ void CbmBinnedTrackerQA::Finish()
          if (!trackDesc.tof.second.empty())
             ++nofTof;*/
          
+         TVector3 mom;
+         trackDesc.ptr->GetMomentum(mom);
+         Double_t momV = trackDesc.ptr->GetP();
+         Double_t momX = mom.X();
+         Double_t momY = mom.Y();
+         Double_t momZ = mom.Z();
+         Double_t polarAng = 180 * TMath::ACos(momZ / momV) / TMath::Pi();
+         Double_t xAng = 180 * TMath::ASin(momX / momV) / TMath::Pi();
+         Double_t yAng = 180 * TMath::ASin(momY / momV) / TMath::Pi();
+         
          if (matchedReco.empty())
-         {
+         {            
             if (trackDesc.isPrimary)
-               effByMomPrimary->Fill(trackDesc.ptr->GetP(), 0.);
+            {
+               effByMomPrimary->Fill(momV, 0.);
+               effByPolarAnglePrimary->Fill(polarAng, 0.);
+               effByXAnglePrimary->Fill(xAng, 0.);
+               effByYAnglePrimary->Fill(yAng, 0.);
+            }
             else
-               effByMomNonPrimary->Fill(trackDesc.ptr->GetP(), 0.);
+            {
+               effByMomNonPrimary->Fill(momV, 0.);
+               effByPolarAngleNonPrimary->Fill(polarAng, 0.);
+               effByXAngleNonPrimary->Fill(xAng, 0.);
+               effByYAngleNonPrimary->Fill(yAng, 0.);
+            }
             
-            effByMom->Fill(trackDesc.ptr->GetP(), 0.);
+            effByMom->Fill(momV, 0.);
+            effByPolarAngle->Fill(polarAng, 0.);
+            effByXAngle->Fill(xAng, 0.);
+            effByYAngle->Fill(yAng, 0.);
             continue;
          }
          
@@ -1632,26 +1681,48 @@ void CbmBinnedTrackerQA::Finish()
          if (maxIter->second < 0.7 * fSettings->GetNofStations())
          {
             if (trackDesc.isPrimary)
-               effByMomPrimary->Fill(trackDesc.ptr->GetP(), 0.);
+            {
+               effByMomPrimary->Fill(momV, 0.);
+               effByPolarAnglePrimary->Fill(polarAng, 0.);
+               effByXAnglePrimary->Fill(xAng, 0.);
+               effByYAnglePrimary->Fill(yAng, 0.);
+            }
             else
-               effByMomNonPrimary->Fill(trackDesc.ptr->GetP(), 0.);
+            {
+               effByMomNonPrimary->Fill(momV, 0.);
+               effByPolarAngleNonPrimary->Fill(polarAng, 0.);
+               effByXAngleNonPrimary->Fill(xAng, 0.);
+               effByYAngleNonPrimary->Fill(yAng, 0.);
+            }
             
-            effByMom->Fill(trackDesc.ptr->GetP(), 0.);
+            effByMom->Fill(momV, 0.);
+            effByPolarAngle->Fill(polarAng, 0.);
+            effByXAngle->Fill(xAng, 0.);
+            effByYAngle->Fill(yAng, 0.);
             continue;
          }
             
-         effByMom->Fill(trackDesc.ptr->GetP(), 100.);
+         effByMom->Fill(momV, 100.);
+         effByPolarAngle->Fill(polarAng, 100.);
+         effByXAngle->Fill(xAng, 100.);
+         effByYAngle->Fill(yAng, 100.);
          trackDesc.isReconstructed = true;
          ++nofMatchedRefTracks;
          
          if (trackDesc.isPrimary)
          {
-            effByMomPrimary->Fill(trackDesc.ptr->GetP(), 100.);
+            effByMomPrimary->Fill(momV, 100.);
+            effByPolarAnglePrimary->Fill(polarAng, 100.);
+            effByXAnglePrimary->Fill(xAng, 100.);
+            effByYAnglePrimary->Fill(yAng, 100.);
             ++nofMatchedRefPrimTracks;
          }
          else
          {
-            effByMomNonPrimary->Fill(trackDesc.ptr->GetP(), 100.);
+            effByMomNonPrimary->Fill(momV, 100.);
+            effByPolarAngleNonPrimary->Fill(polarAng, 100.);
+            effByXAngleNonPrimary->Fill(xAng, 100.);
+            effByYAngleNonPrimary->Fill(yAng, 100.);
             ++nofMatchedRefNonPrimTracks;
          }
       }
@@ -1751,6 +1822,19 @@ void CbmBinnedTrackerQA::Finish()
    SaveHisto(effByMom);
    SaveHisto(effByMomPrimary);
    SaveHisto(effByMomNonPrimary);
+   
+   SaveHisto(effByPolarAngle);
+   SaveHisto(effByPolarAnglePrimary);
+   SaveHisto(effByPolarAngleNonPrimary);
+   
+   SaveHisto(effByXAngle);
+   SaveHisto(effByXAnglePrimary);
+   SaveHisto(effByXAngleNonPrimary);
+   
+   SaveHisto(effByYAngle);
+   SaveHisto(effByYAnglePrimary);
+   SaveHisto(effByYAngleNonPrimary);
+   
    SaveHisto(lambdaChildrenMoms);
    SaveHisto(lambdaChildrenEffByMom);
    SaveHisto(clonesNofSameHits);
