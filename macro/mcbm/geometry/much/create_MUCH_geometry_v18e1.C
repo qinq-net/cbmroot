@@ -1,11 +1,8 @@
 //                                             
 /// \file create_MUCH_geometry_v18e.C
 /// \brief Generates MUCH geometry in Root format.
-///    
-
-//2017-11-10 -- PPB -- corerct the y position of the moduels to genertae much points             
-//2017-11-07 - PPB - change the shape of cooling plates from rectangular to sector                           
-//2017-11-06 - PPB, VS and AM - mcbm version with actual Mv2 dimesions of the module
+///                                             
+// 2017-11-06 - PPB, VS and AM - v18e - mMUCH version with actual Mv2 dimesions of the module
 // 2017-10-23 - DE  - mcbm - put mMUCH in 6 o'clock position on z axis, shift 15 cm up and to z = 60, 70 and 80 cm
 // 2017-09-04 - PPB - mcbm - preliminary version of mini much geometry
 // 2017-05-16 - DE  - v17b - position the modules in a way to split layers left-right along y axis
@@ -51,9 +48,11 @@
 // Name of output file with geometry
 const TString tagVersion   = "_v18e";
 const TString geoVersion   = "much";
-const TString FileNameSim  = geoVersion + tagVersion+"_mcbm.geo.root";
-const TString FileNameGeo  = geoVersion + tagVersion+"_mcbm_geo.root";
-const TString FileNameInfo = geoVersion + tagVersion+"_mcbm.geo.info";
+//const TString subVersion   = "_3oclock";
+//const TString geoVersion   = "much_" + tagVersion + subVersion;
+const TString FileNameSim  = geoVersion + tagVersion + "_mcbm.geo.root";
+const TString FileNameGeo  = geoVersion + tagVersion + "_mcbm_geo.root";
+const TString FileNameInfo = geoVersion + tagVersion + "_mcbm.geo.info";
 
 // Names of the different used materials which are used to build the modules
 // The materials are defined in the global media.geo file 
@@ -157,7 +156,11 @@ void create_MUCH_geometry_v18e() {
   gGeoMan->PrintOverlaps();
   //  gGeoMan->Test();
 
-
+//  const TString tagVersion  = "mcbm";
+//  const TString subVersion  = "_3oclock";
+//  const TString geoVersion  = "much_" + tagVersion + subVersion;
+//  const TString FileNameSim = geoVersion + ".geo.root";
+//  const TString FileNameGeo  = geoVersion + "_geo.root";
   
   much->Export(FileNameSim);   // an alternative way of writing the much
 
@@ -291,9 +294,9 @@ TGeoVolume * CreateLayers(int istn, int ily){
 
   
   // Define the (cooling plate) diemnsions (hardcoded for mcbm)
-  Double_t dy_s= sdy2;//46.5;//dy+2.0;
-  Double_t dx1_s  = sdx1;//27.0;  //dx1+2.0 ;// large x
-  Double_t dx2_s= sdx2;//27.0;  //dx2+2.0;// x 
+  Double_t dy_s= 46.5;//dy+2.0;
+  Double_t dx1_s  = 27.0;  //dx1+2.0 ;// large x
+  Double_t dx2_s= 27.0;  //dx2+2.0;// x 
   Double_t dz_s=fCoolLz/2.;//
 
 
@@ -323,7 +326,7 @@ TGeoVolume * CreateLayers(int istn, int ily){
 //      pos[0] = -(ymin+dy)*sin(phi);
 //      pos[1] =  (ymin+dy)*cos(phi);
       pos[0] =  0;  // DE - do not displace mMUCH in x
-      pos[1] = 0;//15;  // DE - move upwards in y [cm]
+      pos[1] = 15;  // DE - move upwards in y [cm]
 
       // different z positions for odd/even modules
       //  pos[2] = (isBack ? 1 : -1)*moduleZ + layerGlobalZ0; 
@@ -389,10 +392,8 @@ TGeoVolume * CreateLayers(int istn, int ily){
 // DE       cout << "DE " << phi0 << endl;
 // DE       cout << "DE " << 180. / TMath::Pi() * phi0 << endl;
 
-      // r2->RotateZ(180.0);  // DE - 6 o'clock position
+      //      r2->RotateZ(180.0);  // DE - 6 o'clock position
       r2->RotateZ(180.0-(180. / TMath::Pi() * phi0));  // DE - 6 o'clock position, left side vertical
-
-      // r2->RotateZ(180.0-11.25);  // DE - 6 o'clock position, left side vertical
       
       // give rotation to set them in horizontal plane
       //r2->RotateZ(90.0);//TMath::Pi());
