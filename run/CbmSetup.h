@@ -8,6 +8,7 @@
 
 
 #include <map>
+#include "FairLogger.h"
 #include "TNamed.h"
 #include "TString.h"
 #include "TVector3.h"
@@ -153,18 +154,19 @@ class CbmSetup : public TNamed
     void SetModule(Int_t moduleId, const char* geoTag, Bool_t active = kTRUE);
 
 
-    /** Set the PSD
+    /** Set the PSD (deprecated)
      ** @param geoFile  Setup file name for PSD
      ** @param zPos     z position of PSD [cm]
      ** @param xPos     x position of PSD [cm]
      ** @param active    Activity tag for module (only in case of detectors)
      **
-     ** The construction of the PSD does not follow the same convention
+     ** The old construction of the PSD does not follow the same convention
      ** (with geometry tag) as that of the other modules. It thus necessitates
      ** special treatment.
      **/
     void SetPsd(TString geoFile, Double_t zPos, Double_t xPos,
     		        Bool_t active = kTRUE) {
+      LOG(FATAL) << GetName() << ": Method SetPsd is deprecated!" << FairLogger::endl;
     	fGeoTags[kPsd]      = "NDEF";
     	fGeoFileNames[kPsd] = geoFile;
     	fActive[kPsd]       = active;

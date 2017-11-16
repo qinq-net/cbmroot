@@ -37,6 +37,7 @@ void setup_sis300_muon()
   TString muchGeoTag      = "v13f";
   TString trdGeoTag       = "v17c_3m";
   TString tofGeoTag       = "v16c_3m";
+  TString psdGeoTag       = "v17b";
   TString platGeoTag      = "v13b";
   // ------------------------------------------------------------------------
 
@@ -70,7 +71,7 @@ void setup_sis300_muon()
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
   setup->SetModule(kPlatform, platGeoTag);
-  setup->SetPsd(psdGeoFile, psdZpos, psdXpos);
+  setup->SetModule(kPsd, psdGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
