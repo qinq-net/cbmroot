@@ -119,7 +119,7 @@ void CbmEcalParam::AddVariable(const char* key, const char* value)
   if (skey!=NULL)
   {
     /** Value for this key already exists **/
-    skey->GetString()=value;
+    skey->SetString(value);
     return;
   }
   skey=new TObjString(key);
