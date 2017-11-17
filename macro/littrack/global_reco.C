@@ -34,7 +34,7 @@ void global_reco(Int_t nEvents = 10, // number of events
   TList* parFileList = new TList();
   TObjString stsDigiFile(parDir + "/sts/sts_v13d_std.digi.par"); // STS digi file
   TObjString trdDigiFile(parDir + "/trd/trd_v14a_3e.digi.par"); // TRD digi file
-  TString muchDigiFile = parDir + "/much/much_v13f.digi.root"; // MUCH digi file
+  TString muchDigiFile = parDir + "/much/much_v17b_digi_sector.root"; // MUCH digi file
   TString stsMatBudgetFile = parDir + "/sts/sts_matbudget_v13y.root";
   TObjString tofDigiFile(parDir + "/tof/tof_v13b.digi.par");// TOF digi file
   TObjString tofDigiBdfFile(parDir + "/tof/tof_v13b.digi.par");// TOF digi file
