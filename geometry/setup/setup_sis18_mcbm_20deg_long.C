@@ -6,6 +6,7 @@
  **
  **/
 
+// 2017-11-17 - DE - set aerogel mRICH v18d as default
 // 2017-11-10 - DE - switch to mMUCH v18e with Mv2 dimensions
 // 2017-11-03 - DE - add long setup, (acceptance matching +-12 degrees from mSTS)
 // 2017-11-02 - DE - add common support table v18c
@@ -37,7 +38,7 @@ void setup_sis18_mcbm_20deg_long()
   TString trdGeoTag       = "v18g_1e_mcbm"; // long, without mBUCH
 //  TString trdGeoTag       = "v18l_1e_mcbm"; // long, with mBUCH
   TString tofGeoTag       = "v18i_mcbm";    // long distance
-  TString richGeoTag      = "v18c_mcbm";    // long distance
+  TString richGeoTag      = "v18d_mcbm";    // long distance
   // ------------------------------------------------------------------------
 
 
