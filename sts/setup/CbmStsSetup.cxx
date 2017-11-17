@@ -10,6 +10,7 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 
 // Includes from ROOT
 #include "TFile.h"

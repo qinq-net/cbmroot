@@ -10,6 +10,7 @@
 #include "FairParIo.h"
 
 #include <sstream>
+#include <iomanip>
 
 using std::fixed;
 using std::setprecision;

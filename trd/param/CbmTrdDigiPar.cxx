@@ -13,6 +13,8 @@
 
 #include "TString.h"
 
+#include <iomanip>
+
 // -----   Standard constructor   ------------------------------------------
 CbmTrdDigiPar::CbmTrdDigiPar(const char* name, 
 			     const char* title,

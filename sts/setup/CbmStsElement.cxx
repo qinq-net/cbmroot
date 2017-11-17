@@ -12,6 +12,8 @@
 #include "CbmStsSetup.h"
 #include "CbmStsStation.h"
 
+#include <iomanip>
+
 using std::left;
 using std::right;
 using std::setw;
