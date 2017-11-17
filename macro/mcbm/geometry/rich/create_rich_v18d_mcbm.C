@@ -3,6 +3,7 @@ using namespace std;
 
 // Changelog
 //
+// 2017-11-17 - v18d - DE - add aerogel as radiator to the mRICH module
 // 2017-11-12 - v18c - DE - push mRICH downstream to z=355 cm for long setup
 // 2017-07-19 - v18b - DE - add one level to the geometry hierarchy
 // 2017-07-15 - v18b - DE - arrange 4x mRICH detectors in the setup and tilt towards target
@@ -89,11 +90,11 @@ void create_rich_v18d_mcbm()
 	TGeoMedium* medElectronic = gGeoMan->GetMedium("air");
 	if (medElectronic == NULL) Fatal("Main", "Medium air not found");
 
-//	FairGeoMedium* mAerogel = geoMedia->getMedium("aerogel");
-//	if (mAerogel == NULL) Fatal("Main", "FairMedium aerogel not found");
-//	geoBuild->createMedium(mAerogel);
-//	TGeoMedium* medAerogel = gGeoMan->GetMedium("aerogel");
-//	if (medAerogel == NULL) Fatal("Main", "Medium aerogel  not found");
+  	FairGeoMedium* mAerogel = geoMedia->getMedium("aerogel");
+  	if (mAerogel == NULL) Fatal("Main", "FairMedium aerogel not found");
+  	geoBuild->createMedium(mAerogel);
+  	TGeoMedium* medAerogel = gGeoMan->GetMedium("aerogel");
+  	if (medAerogel == NULL) Fatal("Main", "Medium aerogel  not found");
 
 	//Dimensions of the RICH prototype [cm]
 	// Box
@@ -258,8 +259,7 @@ void create_rich_v18d_mcbm()
 	TGeoVolume *QuarzVol = gGeoMan->MakeBox("QuarzPlate", medQuarz , QuarzWidth / 2., QuarzHeight / 2., QuarzThickness / 2.);
 
 	//Aerogel box
-	// DEDE waiting for media.geo - TGeoVolume *aerogelVol = gGeoMan->MakeBox("AerogelBox", medAerogel, aerogelWidth/2., aerogelHeight/2., aerogelLength/2.);
-	TGeoVolume *aerogelVol = gGeoMan->MakeBox("AerogelBox", medAir, aerogelWidth/2., aerogelHeight/2., aerogelLength/2.);
+        TGeoVolume *aerogelVol = gGeoMan->MakeBox("AerogelBox", medAerogel, aerogelWidth/2., aerogelHeight/2., aerogelLength/2.);
 
 	//Positioning
 	rich->AddNode(caveVol, 1, trCave[0]);
@@ -319,6 +319,8 @@ void create_rich_v18d_mcbm()
 	gasVol->SetLineColor(kBlue);
 	pmtVol->SetLineColor(kOrange);
 	pmtPixelVol->SetLineColor(kYellow+4);
+	aerogelVol->SetLineColor(kCyan);
+	aerogelVol->SetTransparency(70);
 	//gGeoMan->SetTopVisible();
 	//boxVol->SetVisibility(false);
 
