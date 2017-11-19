@@ -58,13 +58,13 @@ function set_default_file_names() {
 function set_default_muon_geometry() {
     export LIT_CAVE_GEOM=cave.geo
     export LIT_PIPE_GEOM=pipe/pipe_much_v15b_125cm_no.geo
-    export LIT_SHIELD_GEOM=much/shield_v15b_SIS100B_149_3part_125cm.geo
+    export LIT_SHIELD_GEOM=
     export LIT_MVD_GEOM=
     export LIT_STS_GEOM=sts/sts_v15c.geo.root
     export LIT_STS_DIGI=${VMCWORKDIR}/parameters/sts/sts_v13d_std.digi.par
     export LIT_STS_MAT_BUDGET_FILE=${VMCWORKDIR}/parameters/sts/sts_matbudget_v15c.root
-    export LIT_MUCH_GEOM=much/much_v15b_STS100-B_125cm_no.geo
-    export LIT_MUCH_DIGI=${VMCWORKDIR}/parameters/much/much_v15b_digi_sector.root
+    export LIT_MUCH_GEOM=much/much_v17b.geo.root
+    export LIT_MUCH_DIGI=${VMCWORKDIR}/parameters/much/much_v17b_digi_sector.root
     export LIT_RICH_GEOM=
     export LIT_TRD_GEOM=
     export LIT_TRD_DIGI=
