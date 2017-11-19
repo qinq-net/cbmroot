@@ -61,6 +61,8 @@ void pl_pull_trk(Int_t NSt=8, Int_t iVar=0, Int_t iFit=0){
 	Double_t dFMean=h1->GetMean();
 	Double_t dFLim=2.0*h1->GetRMS();
 	TFitResultPtr fRes=h1->Fit("gaus","S","",dFMean-dFLim,dFMean+dFLim);
+	//cout << " fRes = "<< fRes <<endl;
+	if( -1 == fRes) return;
 	vSt[iSt]=iSt;
 	vMean[iSt]=fRes->Parameter(1);
 	vSig[iSt]=fRes->Parameter(2);
@@ -77,6 +79,7 @@ void pl_pull_trk(Int_t NSt=8, Int_t iVar=0, Int_t iFit=0){
  grm->SetTitle("Mean");
  grm->GetXaxis()->SetTitle("Station number");
  grm->GetYaxis()->SetTitle("Mean deviation");
+ grm->GetYaxis()->SetTitleOffset(1.3);
  grm->Draw("APL");
  grm->SetMarkerStyle(24);
 
@@ -85,6 +88,7 @@ void pl_pull_trk(Int_t NSt=8, Int_t iVar=0, Int_t iFit=0){
  grs->SetTitle("Gaussian width");
  grs->GetXaxis()->SetTitle("Station number");
  grs->GetYaxis()->SetTitle("Gaussian Sigma");
+ grs->GetYaxis()->SetTitleOffset(1.3);
  grs->Draw("APL");
  grs->SetMarkerStyle(24);
 
@@ -125,9 +129,11 @@ void pl_pull_trk(Int_t NSt=8, Int_t iVar=0, Int_t iFit=0){
  case 1:
  case 2:
  grr->GetYaxis()->SetTitle("resolution (cm)");
+ grr->GetYaxis()->SetTitleOffset(1.3);
    break;
  default:
  grr->GetYaxis()->SetTitle("resolution (ns)");
+ grr->GetYaxis()->SetTitleOffset(1.3);
  }
  grr->Draw("APL");
  grr->SetMarkerStyle(20);

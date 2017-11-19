@@ -157,7 +157,7 @@ can->cd(8);
 
 can->cd(9);
  gROOT->cd();
- hname=Form("hTrklZ0xHMul");
+ hname=Form("hTrklXY0_0");
  h2=(TH2 *)gROOT->FindObjectAny(hname);
  if (h2!=NULL) {
   h2->Draw("colz");
@@ -169,7 +169,7 @@ can->cd(9);
 
 can->cd(10);
  gROOT->cd();
- hname=Form("hTrklZ0yHMul");
+ hname=Form("hTrklXY0_1");
  h2=(TH2 *)gROOT->FindObjectAny(hname);
  if (h2!=NULL) {
   h2->Draw("colz");

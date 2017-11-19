@@ -134,8 +134,8 @@ can->cd(9);
  h1=(TH1 *)gROOT->FindObjectAny(hname);
  if (h1!=NULL) {
   h1->Draw();
-  h1->SetMaximum(1.);
-  h1->SetMinimum(-1.);
+  h1->SetMaximum(2.);
+  h1->SetMinimum(-2.);
  }else 
    {
      cout << hname << " not found" << endl;
@@ -147,7 +147,8 @@ can->cd(10);
  h1=(TH1 *)gROOT->FindObjectAny(hname);
  if (h1!=NULL) {
   h1->Draw();
-  gPad->SetLogz();
+  h1->SetMinimum(0.);
+  //gPad->SetLogz();
  }else 
    {
      cout << hname << " not found" << endl;
@@ -159,7 +160,8 @@ can->cd(11);
  h1=(TH1 *)gROOT->FindObjectAny(hname);
  if (h1!=NULL) {
   h1->Draw();
-  h1->SetMaximum(5.);
+  h1->SetMaximum(2.);
+  h1->SetMinimum(0.);
   gPad->SetLogz();
  }else 
    {
