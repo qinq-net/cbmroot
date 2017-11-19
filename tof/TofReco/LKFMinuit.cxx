@@ -48,7 +48,7 @@ int LKFMinuit::DoFit(TGraph2DErrors * gr){
    min->GetStats(amin,edm,errdef,nvpar,nparx);
    fChi2=amin;
    fChi2DoF=amin/(double)nvpar;
-   //min->PrintResults(1,amin);
+   // min->PrintResults(1,amin);
    // get fit parameters
    //double parFit[4];
    for (int i = 0; i <4; ++i)  fparFit[i] = min->GetParameter(i);

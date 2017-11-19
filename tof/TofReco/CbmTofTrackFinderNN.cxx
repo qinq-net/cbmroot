@@ -446,7 +446,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	    LOG(DEBUG1) <<Form("    -D- Add hit %d at %p, Addr 0x%08x, Chi2 %6.2f",iHit,pHit,iAddr,dChi2[0])<< FairLogger::endl;
 	    pTrk->AddTofHitIndex(iHit,iAddr,pHit,dChi2[0]); // store next Hit index with matching chi2
 	    fvTrkVec[iHit].push_back(pTrk);
-	    Line3Dfit(pTrk);                   // full MINUIT fit for debugging overwrites ParamLast!
+	    Line3Dfit(pTrk);                   // full MINUIT fit overwrites ParamLast!
 	    if(pTrk->GetChiSq() > fChiMaxAccept) {
 	      LOG(DEBUG) <<Form("Add hit %d invalidates tracklet with Chi %6.2f > %6.2f -> undo ",
 				iHit,pTrk->GetChiSq(),fChiMaxAccept)
@@ -550,6 +550,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
   for(Int_t iTr=0; iTr<fTracks.size(); iTr++){
     if(fTracks[iTr]==NULL) continue;
     fTracks[iTr]->Delete();
+    //delete    fTracks[iTr];
     LOG(DEBUG) << Form("<I> TofTracklet %d, %p deleted",
 			    iTr,fTracks[iTr] )
 	       <<FairLogger::endl;
@@ -895,7 +896,9 @@ void CbmTofTrackFinderNN::Line3Dfit(CbmTofTracklet*  pTrk)
    gr->Delete();
    Double_t* dRes;
    dRes=fMinuit.GetParFit();
-   LOG(DEBUG) << "Line3Dfit result: "<<dRes[0]<<", "<<dRes[1]<<", "<<dRes[2]<<", "<<dRes[3]
+   LOG(DEBUG) << "Line3Dfit result: "
+	      <<gMinuit->fCstatu<<" : "
+	      <<dRes[0]<<", "<<dRes[1]<<", "<<dRes[2]<<", "<<dRes[3]
 	      << ", Chi2DoF: "<< fMinuit.GetChi2DoF()
 	      <<FairLogger::endl;
    (pTrk->GetTrackParameter())->SetX( dRes[0] );

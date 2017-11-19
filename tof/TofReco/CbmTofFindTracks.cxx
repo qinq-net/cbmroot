@@ -97,6 +97,11 @@ CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
     vhPullTB(),
     vhXY_AllStations(),
     vhXY_MissedStation(),
+    vhXY_DX(),
+    vhXY_DY(),
+    vhXY_DT(),
+    vhXY_TOT(),
+    vhXY_CSZ(),
     fhVTXNorm(NULL),
     fhVTX_XY0(NULL),
     fhVTX_DT0_Norm(NULL),
@@ -197,6 +202,11 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     vhPullTB(),
     vhXY_AllStations(),
     vhXY_MissedStation(),
+    vhXY_DX(),
+    vhXY_DY(),
+    vhXY_DT(),
+    vhXY_TOT(),
+    vhXY_CSZ(),
     fhVTXNorm(NULL),
     fhVTX_XY0(NULL),
     fhVTX_DT0_Norm(NULL),
@@ -1148,6 +1158,11 @@ void CbmTofFindTracks::CreateHistograms(){
   vhPullTB.resize(fNTofStations );
   vhXY_AllStations.resize(fNTofStations );
   vhXY_MissedStation.resize(fNTofStations );
+  vhXY_DX.resize(fNTofStations );
+  vhXY_DY.resize(fNTofStations );
+  vhXY_DT.resize(fNTofStations );
+  vhXY_TOT.resize(fNTofStations );
+  vhXY_CSZ.resize(fNTofStations );
 
   for (Int_t iSt=0; iSt<fNTofStations; iSt++){
     vhPullX[iSt]=new TH1F(  Form("hPullX_Station_%d",iSt),
@@ -1173,6 +1188,21 @@ void CbmTofFindTracks::CreateHistograms(){
     vhXY_MissedStation[iSt] = new TH2F( Form("hXY_MissedStation_%d",iSt),
 			    Form("hXY_MissedStation_%d;  x(cm); y (cm)",iSt),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
+    vhXY_DX[iSt] = new TH3F( Form("hXY_DX_%d",iSt),
+			     Form("hXY_DX_%d;  x(cm); y (cm); #DeltaX (cm)",iSt),
+			     Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -2., 2.); 
+    vhXY_DY[iSt] = new TH3F( Form("hXY_DY_%d",iSt),
+			     Form("hXY_DY_%d;  x(cm); y (cm); #DeltaY (cm)",iSt),
+			     Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -2., 2.); 
+    vhXY_DT[iSt] = new TH3F( Form("hXY_DT_%d",iSt),
+			     Form("hXY_DT_%d;  x(cm); y (cm); #DeltaT (ns)",iSt),
+			     Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -0.5, 0.5);
+    vhXY_TOT[iSt] = new TH3F(Form("hXY_TOT_%d",iSt),
+			     Form("hXY_TOT_%d;  x(cm); y (cm); TOT (a.u.)",iSt),
+			     Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, 0., 10.);
+    vhXY_CSZ[iSt] = new TH3F(Form("hXY_CSZ_%d",iSt),
+			     Form("hXY_CSZ_%d;  x(cm); y (cm); CSZ ()",iSt),
+			     Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, 6, 1., 7.); 
   }
 
 
@@ -1388,7 +1418,18 @@ void CbmTofFindTracks::FillHistograms(){
 /*	 TGeoNode* cNode= gGeoManager->GetCurrentNode();*/
 	 gGeoManager->MasterToLocal(hitpos, hitpos_local);
        }      
-       vhXY_AllStations[iSt]->Fill(hitpos_local[0],hitpos_local[1]);  
+       vhXY_AllStations[iSt]->Fill(hitpos_local[0],hitpos_local[1]);
+       Double_t dDX = pHit->GetX() - pTrk->GetFitX(pHit->GetZ());    // - tPar->GetX() - tPar->GetTx()*dDZ;
+       Double_t dDY = pHit->GetY() - pTrk->GetFitY(pHit->GetZ());    // - tPar->GetTy()*dDZ;
+       //Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetR()); //pTrk->GetTdif(fMapStationRpcId[iSt]);
+       Double_t dDTB= pTrk->GetTdif(fMapStationRpcId[iSt], pHit);  // ignore pHit in calc of reference
+       vhXY_DX[iSt]->Fill(hitpos_local[0],hitpos_local[1],dDX);  
+       vhXY_DY[iSt]->Fill(hitpos_local[0],hitpos_local[1],dDY);  
+       vhXY_DT[iSt]->Fill(hitpos_local[0],hitpos_local[1],dDTB);
+       Double_t dCSZ=((Double_t)pHit->GetFlag())*0.5;
+       Double_t dTOT=((Double_t)pHit->GetCh())*0.1/dCSZ;
+       vhXY_TOT[iSt]->Fill(hitpos_local[0],hitpos_local[1],dTOT);  
+       vhXY_CSZ[iSt]->Fill(hitpos_local[0],hitpos_local[1],dCSZ);  
      }
    }else{
      if( pTrk->GetNofHits() == fNTofStations-1 ) { // one hit missing

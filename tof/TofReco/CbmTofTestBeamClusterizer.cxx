@@ -2171,7 +2171,8 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 						 pHit->GetY()-dzscal*pTrig[iSel]->GetY());
            }
 	   //// look for geometrical match  with selector hit
-           if(  iSmType==fiBeamRefType      // to get entries in diamond/BeamRef histos  
+           //if(  iSmType==fiBeamRefType      // to get entries in diamond/BeamRef histos  
+           if(  iSmType == 5                  // FIXME, to get entries in diamond histos  
              || TMath::Sqrt(TMath::Power(pHit->GetX()-dzscal*pTrig[iSel]->GetX(),2.)
                            +TMath::Power(pHit->GetY()-dzscal*pTrig[iSel]->GetY(),2.))<fdCaldXdYMax)
            {
@@ -4383,9 +4384,10 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                                        hitPos, hitPosErr,  //local detector coordinates
                                                        fiNbHits,  // this number is used as reference!!
                                                        dWeightedTime,
-                                                       vPtsRef.size(), // flag  = number of TofPoints generating the cluster
-                                                       0) ; //channel
-                                    //                vDigiIndRef);
+						       vDigiIndRef.size(), // number of linked digis =  2*CluSize
+						       //vPtsRef.size(), // flag  = number of TofPoints generating the cluster
+						       Int_t(dWeightsSum*10.)) ; //channel -> Tot
+				    //0) ; //channel
 				    // output hit
 				    new((*fTofHitsColl)[fiNbHits]) CbmTofHit(*pHit);
 				    // memorize hit 
@@ -4614,8 +4616,10 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                                        hitPos, hitPosErr,  //local detector coordinates
                                                        fiNbHits,  // this number is used as reference!!
                                                        dWeightedTime,
-                                                       vPtsRef.size(), // flag  = number of TofPoints generating the cluster
-                                                       0) ; //channel
+						       vDigiIndRef.size(), // number of linked digis =  2*CluSize
+						       //vPtsRef.size(), // flag  = number of TofPoints generating the cluster
+ 						       Int_t(dWeightsSum*10.)) ; //channel -> Tot
+		     //                0) ; //channel
                      //                vDigiIndRef);
 		     // output hit
 		     new((*fTofHitsColl)[fiNbHits]) CbmTofHit(*pHit);
@@ -5056,8 +5060,9 @@ Bool_t CbmTofTestBeamClusterizer::AddNextChan(Int_t iSmType, Int_t iSm, Int_t iR
                      hitPos, hitPosErr,  //local detector coordinates
                      fiNbHits,  // this number is used as reference!!
                      dLastTime,
-                     vPtsRef.size(), // flag  = number of TofPoints generating the cluster
-                     0) ; //channel
+		     vDigiIndRef.size(), // number of linked digis =  2*CluSize
+		     //vPtsRef.size(), // flag  = number of TofPoints generating the cluster
+		     Int_t(dLastTotS*10.)) ; //channel -> Tot
   // output hit
   new((*fTofHitsColl)[fiNbHits]) CbmTofHit(*pHit);
   if(fdMemoryTime > 0.) { // memorize hit
