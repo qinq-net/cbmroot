@@ -292,6 +292,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhDutDTLH_DDH_Found(NULL),     
     fhDutDTLH_DD_Found(NULL),     
     fhDutDTLH_DD_Missed(NULL), 
+    fhDutXYDX(NULL),
+    fhDutXYDY(NULL),
     fhDutXYDT(NULL),
     fhTrklNofHitsRate(NULL),
     fhTrklDetHitRate(NULL),
@@ -1225,6 +1227,12 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhDutDTLH_DD_Missed =new TH2F(  Form("hDutDTLH_DD_Missed_%d",iDutId),
 			    Form("hDutDTLH_DD_Missed_%d;  log(#DeltaT); distance to LH (cm)",iDutId),
 				50, 0., 12.,  40, 0., 4.);  
+     fhDutXYDX      = new TH3F( Form("hDutXYDX_%d",iDutId), 
+			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltax (cm)",iDutId),
+			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -2., 2.);
+     fhDutXYDY      = new TH3F( Form("hDutXYDY_%d",iDutId), 
+			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltay (cm)",iDutId),
+			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -2., 2.);
      fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",iDutId), 
 			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ns)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -DTSIZ, DTSIZ); 
@@ -1391,6 +1399,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	continue;
       }
       */
+      LOG(DEBUG) << Form(" BRef 0x%08x == 0x%08x ? ",iDetId,fiBeamRefAddr)
+		 <<FairLogger::endl;
+
       if(iDetId == fiBeamRefAddr){ // diamond hit (or other reference counter)
 	  dMulD++;
 	  vDiaHit.resize(dMulD);
@@ -1767,8 +1778,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      Double_t dDTSpill=dTDia-StartSpillTime;
      StartSpillTime=dTDia;
    */
-   if( fDetIdMap.size() > 2 && dTAv - StartSpillTime > SpillDuration*1.E9 ) { // FIXME - hardwired constant 
-     Double_t dDTSpill=dTAv-StartSpillTime;
+   Double_t dDTSpill=dTAv-StartSpillTime;
+   if (dDTSpill < 0) StartSpillTime=dTAv;
+   if( fDetIdMap.size() > 2 && dDTSpill > SpillDuration*1.E9 ) { // FIXME - hardwired constant 
      StartSpillTime=dTAv;
      iNspills++;
      LOG(DEBUG)<< "StartSpillTime for "<<iNspills
@@ -2689,6 +2701,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   fhDutDTLH_Found->Fill( TMath::Log10( pHit->GetTime()-dTLH) ); 
 	   fhDutMul_Found->Fill( dMul4 );  
 	   fhDutTIS_Found->Fill( (dTAv-StartSpillTime)/1.E9 ); 
+	   fhDutXYDX->Fill(hitpos_local[0],hitpos_local[1],dDX);
+	   fhDutXYDY->Fill(hitpos_local[0],hitpos_local[1],dDY);
 	   fhDutXYDT->Fill(hitpos_local[0],hitpos_local[1],dDTB);
 	   //CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit));
 	   Int_t iHit = pTrk->HitIndexOfAddr(fiDutAddr);

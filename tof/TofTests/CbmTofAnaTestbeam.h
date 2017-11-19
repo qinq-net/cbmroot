@@ -420,6 +420,8 @@ class CbmTofAnaTestbeam : public FairTask {
       TH2 * fhDutDTLH_DDH_Found;     
       TH2 * fhDutDTLH_DD_Found;     
       TH2 * fhDutDTLH_DD_Missed;     
+      TH3 * fhDutXYDX;     
+      TH3 * fhDutXYDY;     
       TH3 * fhDutXYDT;     
 
       // Test class performance
