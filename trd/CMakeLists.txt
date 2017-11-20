@@ -115,6 +115,7 @@ reco/CbmTrdHitProducerCluster.cxx
 tools/CbmTrdUtils.cxx
 tools/CbmTrdElectronsTrainAnn.cxx
 tools/CbmTrdGeoHandler.cxx
+tools/CbmTrdTriangle.cxx
 
 data/CbmTrdRadiator.cxx  
 data/CbmTrdGas.cxx
