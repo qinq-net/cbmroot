@@ -8,6 +8,7 @@
  **
  **/
 
+// 2017-11-20 - DE - use TRD v17n as new default
 // 2017-05-22 - DE - use TRD v17c as new default
 // 2016-06-27 - DE - use STS v16x as new default, see issue #647
 // 2016-05-19 - VF - Add platform module
@@ -36,7 +37,7 @@ void setup_sis100_hadron()
   TString pipeGeoTag      = "v16b_1e";
   TString mvdGeoTag       = "v15a";
   TString stsGeoTag       = "v16x";
-  TString trdGeoTag       = "v17c_1h";
+  TString trdGeoTag       = "v17n_1h";
   TString tofGeoTag       = "v16c_1h";
   TString psdGeoTag       = "v17a";
   TString platGeoTag      = "v13a";

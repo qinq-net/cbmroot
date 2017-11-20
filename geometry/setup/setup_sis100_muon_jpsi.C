@@ -8,6 +8,7 @@
  **
  **/
 
+// 2017-11-20 - DE - use TRD v17n as new default
 // 2017-05-22 - DE - use TRD v17c as new default
 // 2016-06-27 - DE - use STS v16x as new default, see issue #647
 // 2016-06-21 - DE - switch to shortened root pipe v16b_1m geometry ref #721
@@ -39,7 +40,7 @@ void setup_sis100_muon_jpsi()
   TString pipeGeoTag      = "v16b_1m";
   TString stsGeoTag       = "v16x";
   TString muchGeoTag      = "v17b";
-  TString trdGeoTag       = "v17c_1m";
+  TString trdGeoTag       = "v17n_1m";
   TString tofGeoTag       = "v16c_1m";
   TString platGeoTag      = "v13a";
   // ------------------------------------------------------------------------
