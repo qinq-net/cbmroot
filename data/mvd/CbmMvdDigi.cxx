@@ -5,6 +5,7 @@
 
 #include "CbmMvdDigi.h"
 
+
 #include "FairLogger.h"
 
 #include "TMath.h"
@@ -159,12 +160,7 @@ Int_t CbmMvdDigi::GetPixelY(){
  return  0;
 
 }
-// -------------------------------------------------------------------------
-  /** System (enum DetectorId) **/
-  Int_t   CbmMvdDigi:: GetSystemId() const{
- return  0;
 
-}
 // -------------------------------------------------------------------------
 
   /** Absolute time [ns]  **/

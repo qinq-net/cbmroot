@@ -46,6 +46,7 @@ CbmMvdCluster& operator=(const CbmMvdCluster&){return *this;};
   void SetStationNr(Int_t stationNr){fStation = stationNr;};
   void SetRefId(Int_t RefId){fRefId = RefId;}; //* stores the index to the global TClonesArray	
   void SetDetectorId(Int_t detId)      { fDetectorId = detId;};
+  void SetSensorNr(Int_t SensorNr){fSensorNr = SensorNr;};
  
 
  /** Accessors **/
@@ -55,10 +56,11 @@ CbmMvdCluster& operator=(const CbmMvdCluster&){return *this;};
   Short_t GetTotalDigisInCluster(){return fPixelMap.size();};
   Short_t GetMaxDigisInThisObject(){return fMaxDigisInObject;};
   std::map <std::pair<Int_t, Int_t>, Int_t > GetPixelMap(){return fPixelMap;};
-  Int_t    GetStationNr() {return fStation;};
-  Int_t* GetDigiList(){return fDigiArray;};
-  Int_t GetRefId(){return fRefId;};
-  Int_t    GetDetectorId() {return fDetectorId;};
+  Int_t   GetStationNr() {return fStation;};
+  Int_t*  GetDigiList(){return fDigiArray;};
+  Int_t   GetRefId(){return fRefId;};
+  Int_t   GetDetectorId() {return fDetectorId;};
+  Int_t   GetSensorNr(){return fSensorNr;};
 
   Float_t GetClusterCharge(){return fClusterCharge;};
    
@@ -73,34 +75,11 @@ CbmMvdCluster& operator=(const CbmMvdCluster&){return *this;};
      Int_t fStation;
      Int_t fRefId;
      Int_t fDetectorId;
+     Int_t fSensorNr;
      Float_t fClusterCharge;
 
-  ClassDef(CbmMvdCluster,2);
+  ClassDef(CbmMvdCluster,3);
 
 };
-
-
-
- /* CbmMvdCluster(Int_t dummyInt1, TVector3 dummyVect1, TVector3 dummyVect2, Int_t dummyInt2, Short_t* dummyShort1, Float_t dummyFloat1, Float_t dummyFloat2)
-    :fDigiArray(),
-   fPixelMap(),
-   fNeighbourDown(-1),
-   fNeighbourUp(-1),
-   fDigisInThisObject(0),
-   fTotalDigisInCluster(-1),
-   fStation(-1),
-   fRefId(-1),
-   fDetectorId(-1),
-   fClusterCharge(0)
-  {LOG(FATAL) << "usage of invalid constructor, please check CbmMvdCluster.h" << FairLogger::endl;};
-    Int_t GetDominatorX(){return 0;};
-    Int_t GetDominatorY(){return 0;};
-    Int_t GetTrackID(){return 0;};
-    Int_t GetContributors(){return 0;};
-     
-    void SetDebuggingInfo(Short_t* foo1, Float_t foo2[5], Float_t foo3[5]){;};
-    void SetContributors(Short_t short1){;};
-    void PrintCluster(){;}; 
-*/
 
 #endif

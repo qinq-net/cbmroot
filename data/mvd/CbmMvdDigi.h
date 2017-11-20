@@ -9,6 +9,7 @@
 #define CBMMVDDIGI_H 1
 
 #include "CbmDigi.h"
+#include "CbmDefs.h"
 #include "CbmMvdDetectorId.h"
 
 #include "TObject.h"
@@ -47,7 +48,7 @@ public:
     Int_t    GetStationNr() { return StationNr(fDetectorId); };
     Int_t    GetDetectorId() {return fDetectorId;};
     Int_t    GetAddress() const; /** Unique channel address  **/
-    Int_t    GetSystemId() const; /** System (enum DetectorId) **/
+    virtual Int_t GetSystemId() const { return kMvd; }
     Double_t GetTime() const;/** Absolute time [ns]  **/
     Int_t    GetFrameNumber() {return fFrameNumber;};
     
