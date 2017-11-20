@@ -32,9 +32,7 @@ void setup_sis18_mcbm_20deg_long()
   TString pipeGeoTag      = "v18f_mcbm";    // 20 degree beampipe
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";
   TString stsGeoTag       = "v18f_mcbm";    // 1-1-1-2 ladder configuration 
-//  TString muchGeoTag      = "v18c_mcbm";    // 12 o'clock
-//  TString muchGeoTag      = "v18d_mcbm";    // 11 o'clock
-  TString muchGeoTag      = "v18e_mcbm";    // 11 o'clock, Mv2 size
+  TString muchGeoTag      = "v18g_mcbm";    // 11 o'clock, Mv2 size
   TString trdGeoTag       = "v18g_1e_mcbm"; // long, without mBUCH
 //  TString trdGeoTag       = "v18l_1e_mcbm"; // long, with mBUCH
   TString tofGeoTag       = "v18i_mcbm";    // long distance
