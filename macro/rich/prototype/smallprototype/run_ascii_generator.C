@@ -6,10 +6,10 @@ using namespace std;
 void run_ascii_generator(Int_t nEvents = 100000)
 {
 	
-   	//string asciiFile = "/data/cbm/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
-    string asciiFile = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
-   	double minMomentum = 1.8;
-   	double maxMomentum = 1.8;
+   	string asciiFile = "/home/aghoehne/Documents/CbmRoot/trunk/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
+    	//string asciiFile = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
+   	double minMomentum = 0.3;
+   	double maxMomentum = 5.;
 
    	// Open output file
    	ofstream file(asciiFile.c_str());
@@ -27,7 +27,9 @@ void run_ascii_generator(Int_t nEvents = 100000)
      		 // Write out event header
       		file << 1 << " " << (iev+1) << " " << vx << " " << vy << " " << vz << endl;
 
-      		int pdg = 2212;
+      		int pdgProton = 2212;
+		int pdgPionPlus = 211;
+		int pdgKaonPlus = 321;
 
      		 // Generate momentum
       		double p = gRandom->Uniform(minMomentum, maxMomentum);
@@ -44,12 +46,21 @@ void run_ascii_generator(Int_t nEvents = 100000)
       		double pz = p*TMath::Cos(theta);
 
      		 // Write out particles information
-      		file << pdg << " " << px << " " << py << " " << pz << endl;
 
+		int random = gRandom->Uniform(0,3);
+		
+		
+		if (random == 0){
+      			file << pdgProton << " " << px << " " << py << " " << pz << endl;
+		}else if(random ==1){
+			file << pdgPionPlus << " " << px << " " << py << " " << pz << endl;
+		}else{	
+			file << pdgKaonPlus << " " << px << " " << py << " " << pz << endl;
+		}
      		 // Status output
   			if(0 == (iev%10000)) 
 				{	
-					cout << iev << "   " << pdg << endl;
+					cout << iev << "   " << pdgProton << endl;
 				}  
  		}	 // events
 
