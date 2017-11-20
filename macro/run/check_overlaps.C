@@ -1,4 +1,4 @@
-void check_overlaps(const char* setup = "sis100_electron")
+void check_overlaps(const char* setup = "sis300_electron")
 {
   // 2014-07-04 - DE - test CBM setups for collisions in nightly tests
   // 2014-07-04 - DE - currently there are 2 overlaps between the PIPE and STS layer 8
@@ -23,6 +23,8 @@ void check_overlaps(const char* setup = "sis100_electron")
 
   gGeoManager = (TGeoManager*) f->Get("FAIRGeom"); 
   gGeoManager->CheckOverlaps(0.0001);
+  gGeoManager->PrintOverlaps();
+
   gGeoManager->CheckOverlaps(0.0001, "s");
 
   TObjArray *overlapArray = gGeoManager->GetListOfOverlaps();
