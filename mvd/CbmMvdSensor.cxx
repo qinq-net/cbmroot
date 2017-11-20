@@ -10,6 +10,7 @@
 #include "plugins/buffers/CbmMvdSensorTrackingBuffer.h"
 #include "plugins/tasks/CbmMvdSensorDigitizerTask.h"
 #include "plugins/tasks/CbmMvdSensorClusterfinderTask.h"
+#include "plugins/tasks/CbmMvdSensorDigitizerTBTask.h"
 #include "plugins/tasks/CbmMvdSensorFindHitTask.h"
 #include "plugins/tasks/CbmMvdSensorHitfinderTask.h"
 //---Plugins
@@ -137,24 +138,26 @@ void CbmMvdSensor::SetAlignment(TGeoHMatrix* alignmentMatrix) {
 // -------Initialization tools  -----------------------------------------------------
 void CbmMvdSensor::ReadSensorGeometry(TString nodeName) {
    
-  //cout << "-I- " << GetName() << " : Searching for station: " << volName << endl;
-    //cout << "-I- nodeName is " << nodeName << endl;
+  LOG(DEBUG) << "-I- nodeName is " << nodeName <<  FairLogger::endl;
 
   if(fMCMatrix) {delete fMCMatrix;}; //delete local copy of the position information
 
   TGeoVolume* volume;
   gGeoManager->cd(nodeName);
-  fMCMatrix=(TGeoHMatrix*)(gGeoManager->GetCurrentMatrix())->Clone(nodeName+"_MC_Matrix");
-
-  //TGeoNode* node = gGeoManager->GetCurrentNode();
   volume = gGeoManager->GetCurrentVolume();
-  Double_t* tempCoordinate;
+  LOG(DEBUG) << "At volume: " << volume->GetName() << FairLogger::endl;
   fShape = (TGeoBBox*) volume->GetShape();
+  fMCMatrix=(TGeoHMatrix*)(gGeoManager->GetCurrentMatrix())->Clone(nodeName+"_MC_Matrix");
+  fMCMatrix->SetName(nodeName+"_MC_Matrix");
 
-    //fMCMatrix->Print();
-    
-    fMCMatrix->SetName(nodeName+"_MC_Matrix");
-   
+    Double_t first[3], last[3];
+    PixelToLocal(0,0,first);
+    PixelToLocal(fSensorData->GetNPixelsX(), fSensorData->GetNPixelsY(),last);
+    LOG(DEBUG)<< "pixel 0,0 at: "<< first[0] << ", " << first[1] << " Local"<< FairLogger::endl;
+    LOG(DEBUG)<< "pixel " << fSensorData->GetNPixelsX() << " " << fSensorData->GetNPixelsY() <<" at: "<< last[0] << ", " << last[1]<< " Local" << FairLogger::endl;
+
+     Double_t* tempCoordinate;
+
     if (!fRecoMatrix) {
 	Double_t pre[3], past[3], global[3];
 	Double_t local[3]={0,0,0};
@@ -304,36 +307,29 @@ else if(pluginFirst->GetPluginType() == task)
 void CbmMvdSensor::SendInput(CbmMvdPoint* point){
   
       CbmMvdSensorPlugin* pluginFirst;
-      
-     // CbmMvdSensorFrameBuffer* framebuffer;
+
       CbmMvdSensorDigitizerTask* digitask;
+      CbmMvdSensorDigitizerTBTask* tbDigiTask;
 
     pluginFirst=(CbmMvdSensorPlugin*)fPluginArray->At(0);
-      if( pluginFirst->GetPluginType() == buffer)
-          {
-           TString framename = "CbmMvdSensorFrameBuffer";
-           if ( pluginFirst->ClassName() == framename)
-	       {
-		
-               // framebuffer = (CbmMvdSensorFrameBuffer*)fPluginArray->At(0);
-               // framebuffer->SetInput(point);
-               }
-               
-               else
-		{
-		LOG(FATAL) << "Invalid input typ" << FairLogger::endl;
-		}
-	  }
-    else if(pluginFirst->GetPluginType() == task)
+
+    if(pluginFirst->GetPluginType() == task)
       {
       TString digitizername = "CbmMvdSensorDigitizerTask";
-        
+      TString digitizerTBname = "CbmMvdSensorDigitizerTBTask";
+
       if (pluginFirst->ClassName()  == digitizername)
 	  {
 	  digitask = (CbmMvdSensorDigitizerTask*)fPluginArray->At(0);
           digitask->SetInput(point);
 	  } 
-	
+
+      if (pluginFirst->ClassName()  == digitizerTBname)
+	  {
+	  tbDigiTask = (CbmMvdSensorDigitizerTBTask*)fPluginArray->At(0);
+          tbDigiTask->SetInput(point);
+	  }
+
 	   else 
 	       {
 		LOG(FATAL) << "Invalid input typ" << FairLogger::endl;
@@ -519,8 +515,8 @@ else if (nPlugin == fDigiPlugin)
 	  Int_t ArrayLength = digiplugin->GetOutputArray()->GetEntriesFast()-1;
 	  if(ArrayLength >= 0)
 		{
-	  	foutputDigis->AbsorbObjects(digiplugin->GetOutputArray(),0,ArrayLength);
-	  	foutputDigiMatch->AbsorbObjects(digiplugin->GetMatchArray(),0,ArrayLength);
+	  	foutputDigis->AbsorbObjects(digiplugin->GetOutputArray());
+	  	foutputDigiMatch->AbsorbObjects(digiplugin->GetMatchArray());
 		//cout << endl << "got digis " << foutputDigis->GetEntriesFast() << " and matches " << foutputDigiMatch->GetEntriesFast() << endl;
 		}
 	  return(foutputDigis);
@@ -664,7 +660,7 @@ void CbmMvdSensor::TopToPixel (Double_t* lab, Int_t &pixelNumberX, Int_t &pixelN
 
 
 // -------------------------------------------------------------------------
-Int_t CbmMvdSensor::GetFrameNumber  (Int_t pixelNumberY, Double_t absoluteTime) const{
+Int_t CbmMvdSensor::GetFrameNumber(Int_t pixelNumberY, Double_t absoluteTime) const{
   
 
   Double_t timeSinceStart= absoluteTime - fSensorStartTime;
@@ -683,6 +679,22 @@ Int_t CbmMvdSensor::GetFrameNumber  (Int_t pixelNumberY, Double_t absoluteTime) 
   if (pixelNumberY<rowUnderReadout) {return timeInUnitsOfFrames;}
   else				    {return timeInUnitsOfFrames+1;}
   */
+}
+// -------------------------------------------------------------------------  
+
+// -------------------------------------------------------------------------
+Double_t CbmMvdSensor::GetReadoutTime(Double_t absoluteTime) const{
+  
+
+  Double_t timeSinceStart= absoluteTime - fSensorStartTime;
+  
+  Double_t timeInUnitsOfFrames= timeSinceStart/fSensorData->GetIntegrationTime();
+
+  Int_t nextFrame = (Int_t)(timeInUnitsOfFrames + 1);
+
+  Double_t roTime = nextFrame * fSensorData->GetIntegrationTime();
+
+  return roTime;
 }
 // -------------------------------------------------------------------------  
 

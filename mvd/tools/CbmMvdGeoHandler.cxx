@@ -79,11 +79,18 @@ CbmMvdGeoHandler::~CbmMvdGeoHandler()
 //--------------------------------------------------------------------------
 void CbmMvdGeoHandler::Init(Bool_t isSimulation)
 {
+
+
    fIsSimulation = isSimulation;
    GetPipe();
    GetGeometryTyp();
+
+
+
    if(!isSimulation)
-	{
+   {
+          if(fSensorTyp == CbmMvdSensorTyp::MIMOSIS) LOG(INFO)<<"Using Mimosis style sensor" <<FairLogger::endl;
+	  else  LOG(INFO)<<"Using Mimosa style sensor" <<FairLogger::endl;
 	    fStationPar = new CbmMvdStationPar();
             fDetector = CbmMvdDetector::Instance();
             fDetector->SetParameterFile(fStationPar);
@@ -647,7 +654,6 @@ Int_t iStation = 0;
 		      if(nodeFound)
 		        {
 			gGeoManager->cd(fnodeName);
-                        TGeoNode* node = gGeoManager->GetCurrentNode();
 			fVolId = GetIDfromPath(fnodeName);
 			LOG(DEBUG) << "found " << fnodeName << " number: " << iStation << " ID: " << fVolId << " and added to station map" << FairLogger::endl;
 		          fStationMap[fVolId] = iStation;

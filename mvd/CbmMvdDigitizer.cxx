@@ -39,7 +39,6 @@ CbmMvdDigitizer::CbmMvdDigitizer()
     fShowDebugHistos(kFALSE),
     fNoiseSensors(kFALSE),
     fDetector(NULL),
-    fSensorTyp(CbmMvdSensorTyp::MIMOSA26),
     fInputPoints(NULL),
     fDigis(NULL),
     fDigiMatch(NULL),
@@ -70,7 +69,6 @@ CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose)
     fShowDebugHistos(kFALSE),
     fNoiseSensors(kFALSE),
     fDetector(NULL),
-    fSensorTyp(CbmMvdSensorTyp::MIMOSA26),
     fInputPoints(NULL),
     fDigis(NULL),
     fDigiMatch(NULL),
@@ -174,7 +172,6 @@ InitStatus CbmMvdDigitizer::Init() {
     fMcPileUp = new TClonesArray("CbmMvdPoint", 10000);
     ioman->Register("MvdPileUpMC", "Mvd MC Points after Pile Up", fMcPileUp, IsOutputBranchPersistent("MvdPileUpMC"));
 
-    CbmMvdDetector::SetSensorTyp(fSensorTyp);
     fDetector = CbmMvdDetector::Instance();
 
        // **********  Create pileup manager if necessary

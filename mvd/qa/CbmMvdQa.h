@@ -101,6 +101,9 @@ private:
 
   TClonesArray* fInfoArray;
 
+  static const Int_t f1FSize = 34;
+  static const Int_t f2FSize = 12;
+
   TH1F* fMC1F[30];
   TH2F* fMC2F[30];
 
@@ -110,8 +113,8 @@ private:
   TH1F* fHits1F[30];
   TH2F* fHits2F[30];
 
-  TH1F* fTracks1F[40];
-  TH2F* fTracks2F[30];
+  TH1F* fTracks1F[f1FSize];
+  TH2F* fTracks2F[f2FSize];
 
   CbmVertex* fPrimVtx;
   CbmVertex* fSecVtx;

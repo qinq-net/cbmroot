@@ -17,6 +17,8 @@ ${CBMROOT_SOURCE_DIR}/mvd/SensorDataSheets
 
 ${CBMROOT_SOURCE_DIR}/base 
 
+${CBMROOT_SOURCE_DIR}/run
+
 ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/data/sts
 
@@ -55,7 +57,7 @@ link_directories( ${LINK_DIRECTORIES})
 set(SRCS
 plugins/tasks/CbmMvdSensorTask.cxx 
 plugins/tasks/CbmMvdSensorDigitizerTask.cxx
-#plugins/tasks/CbmMvdSensorDigiTBTask.cxx
+plugins/tasks/CbmMvdSensorDigitizerTBTask.cxx
 plugins/tasks/CbmMvdSensorFindHitTask.cxx
 plugins/tasks/CbmMvdSensorHitfinderTask.cxx
 plugins/tasks/CbmMvdSensorClusterfinderTask.cxx
@@ -76,6 +78,7 @@ SensorDataSheets/CbmMvdSensorDataSheet.cxx
 tools/CbmMvdGeoHandler.cxx
 tools/CbmMvdHelper.h
 tools/readout/CbmMvdReadoutSimple.cxx
+tools/readout/CbmMvdReadoutCluster.cxx
 
 qa/CbmMvdQa.cxx 
 qa/CbmMvdClusterAna.cxx
@@ -83,14 +86,15 @@ qa/CbmMvdClusterAna.cxx
 CbmMvd.cxx 
  
 CbmMvdDigitizer.cxx
+CbmMvdDigitizerTB.cxx
 CbmMvdPileupManager.cxx  
 CbmMvdPixelCharge.cxx
-CbmMvdHitfinder.cxx
-CbmMvdStationPar.cxx
+CbmMvdHitfinder.cxx 
+CbmMvdStationPar.cxx 
 CbmMvdDetector.cxx
-CbmMvdSensor.cxx
+CbmMvdSensor.cxx 
 CbmMvdClusterfinder.cxx
-
+CbmMvdClusterfinderTB.cxx 
 CbmMvdReadout.cxx
 
 

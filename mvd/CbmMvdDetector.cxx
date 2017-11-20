@@ -10,6 +10,7 @@
 #include "plugins/CbmMvdSensorPlugin.h"
 #include "plugins/tasks/CbmMvdSensorTask.h"
 #include "plugins/tasks/CbmMvdSensorDigitizerTask.h"
+#include "plugins/tasks/CbmMvdSensorDigitizerTBTask.h"
 #include "plugins/tasks/CbmMvdSensorFindHitTask.h"
 #include "plugins/tasks/CbmMvdSensorClusterfinderTask.h"
 #include "plugins/tasks/CbmMvdSensorHitfinderTask.h"
@@ -47,7 +48,8 @@ CbmMvdDetector* CbmMvdDetector::Instance()
   else
 	{
         fInstance = new CbmMvdDetector("A");
-  	CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
+	CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
+        mvdHandler->SetSensorTyp(fSensorTyp);
 	mvdHandler->Init();
 	mvdHandler->Fill();
 	mvdHandler->PrintGeoParameter();
@@ -179,6 +181,7 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
   CbmMvdSensor* sensor;
   Int_t nSensors=fSensorArray->GetEntriesFast();
   const TString digitizername = "CbmMvdSensorDigitizerTask";
+  const TString digitizerTBname = "CbmMvdSensorDigitizerTBTask";
   const TString findername = "CbmMvdSensorFindHitTask";
   //const TString framename = "CbmMvdSensorFrameBuffer";
   //  const TString trackingname = "CbmMvdSensorTrackingBuffer";
@@ -196,6 +199,15 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
       if (plugin->ClassName() == digitizername)
 	  {
 	  CbmMvdSensorDigitizerTask* digiTask = new CbmMvdSensorDigitizerTask();
+	  sensor=(CbmMvdSensor*)fSensorArray->At(i);
+	  sensor->AddPlugin(digiTask);
+	  sensor->SetDigiPlugin(fPluginCount);
+	
+	  //cout <<  "Adding Task CbmMvdSensorDigitizerTask at Sensor " << sensor->GetName() << endl;
+	  }
+      else if (plugin->ClassName() == digitizerTBname)
+	  {
+	  CbmMvdSensorDigitizerTBTask* digiTask = new CbmMvdSensorDigitizerTBTask();
 	  sensor=(CbmMvdSensor*)fSensorArray->At(i);
 	  sensor->AddPlugin(digiTask);
 	  sensor->SetDigiPlugin(fPluginCount);
@@ -236,37 +248,7 @@ void CbmMvdDetector::AddPlugin(CbmMvdSensorPlugin* plugin) {
       //data parallelizm requires that each sensor get its own task object
     
     }
-    
-    else if( plugin->GetPluginType() == buffer)
-    {
-     // cout << endl << "Type is Buffer" << endl;
-     // cout << endl <<  plugin->ClassName() << endl;
-      
-  /*
-      if ( plugin->ClassName() == framename)
-	  {
-	  CbmMvdSensorFrameBuffer* frameBuffer = new CbmMvdSensorFrameBuffer();
-	  sensor=(CbmMvdSensor*)fSensorArray->At(i);
-	  sensor->AddPlugin(frameBuffer);
-         // cout << "Adding Buffer CbmMvdSensorFrameBuffer at Sensor " << sensor->GetName() << endl;
-	  }
-      else if ( plugin->ClassName() == trackingname)
-	  {
-	  CbmMvdSensorTrackingBuffer* trackingBuffer = new CbmMvdSensorTrackingBuffer();
-	  sensor=(CbmMvdSensor*)fSensorArray->At(i);
-	  sensor->AddPlugin(trackingBuffer);
-         // cout << "Adding Buffer CbmMvdSensorTrackingBuffer at Sensor " << sensor->GetName() << endl;
-	  }
-	else  
-	  {
-	   cout << endl << "buffer not included yet, adding standart buffer." << endl;
-	   CbmMvdSensorBuffer* buffer = new CbmMvdSensorBuffer();
-	   sensor=(CbmMvdSensor*)fSensorArray->At(i);
-	   sensor->AddPlugin(buffer);
-	  }
-      //data parallelizm requires that each sensor get its own buffer object    */
-    
-    }   
+  
     else {cout << "Invalide" << endl;}
   };
   fPluginCount++;  
@@ -587,8 +569,7 @@ TClonesArray* CbmMvdDetector::GetOutputDigis(){
     Int_t length = sensor->GetOutputArrayLen(fDigiPlugin);
     if(length >= 0)
 	{
-    	foutputDigis->AbsorbObjects(sensor->GetOutputArray(fDigiPlugin),0,length);
-        foutputDigiMatchs->AbsorbObjects(sensor->GetOutputMatch(),0,length);
+    	foutputDigis->AbsorbObjects(sensor->GetOutputArray(fDigiPlugin));
 	}
   }
 
@@ -602,7 +583,18 @@ TClonesArray* CbmMvdDetector::GetOutputDigiMatchs(){
    /**
    * method used to write digiMatches to hd
    */
-
+  Int_t nSensors = fSensorArray->GetEntriesFast();
+  CbmMvdSensor* sensor;
+  for(Int_t i=0; i<nSensors; i++){
+    sensor=(CbmMvdSensor*)fSensorArray->At(i);
+    fDigiPlugin = sensor->GetDigiPlugin();
+    Int_t length = sensor->GetOutputArrayLen(fDigiPlugin);
+    if(length >= 0)
+	{
+       
+        foutputDigiMatchs->AbsorbObjects(sensor->GetOutputMatch(),0,length);
+	}
+  }
 return(foutputDigiMatchs);
 }
 //-----------------------------------------------------------------------  

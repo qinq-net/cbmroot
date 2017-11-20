@@ -69,8 +69,8 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   Double_t GetZ() const {return fSensorPosition[2];}; // returns z position
   Double_t GetIntegrationtime() const {return fSensorData->GetIntegrationTime();};
   Double_t GetCurrentEventTime() const {return fcurrentEventTime;};
-  
-  
+  Double_t GetReadoutTime(Double_t absoluteTime) const;
+
   TString  GetNodeName() {return fNodeName;};
   CbmMvdSensorDataSheet* GetDataSheet(){return fSensorData;}
   void     SetDataSheet(CbmMvdSensorDataSheet* sheet){fSensorData = sheet;}

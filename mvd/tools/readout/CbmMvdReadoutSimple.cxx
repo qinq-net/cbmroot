@@ -33,28 +33,6 @@ using std::endl;
 // -----   Default constructor   -------------------------------------------
 CbmMvdReadoutSimple::CbmMvdReadoutSimple()
     : CbmMvdReadoutSimple::CbmMvdReadoutSimple("MvdReadoutSimple", 0)
-/*
-    : FairTask("MvdReadoutSimple"),
-    foutFile(nullptr),
-    fshow(kFALSE),
-    fMvdMCBank(),
-    fMvdMCHitsStations(),
-    fWordsPerRegion(nullptr),
-    fWordsPerRegion2(nullptr),
-    fWordsPerWorstRegion(nullptr),
-    fWordsPerSuperRegion(nullptr),
-    fWorstSuperPerEvent(nullptr),
-    fMvdBankDist(nullptr),
-    fMvdMCWorst(nullptr),
-    fMvdMCWorstDelta(nullptr),
-    fMvdDataLoadPerSensor(nullptr),
-    fMvdDataLoadHotSensor(nullptr),
-    fMvdDataPerRegion(),
-    fMvdDataPerSuperRegion(),
-    fMcPoints(),
-    fListMCTracks(),
-    fEventNumber(0)
-*/
 {
 }
 // -------------------------------------------------------------------------
@@ -107,6 +85,7 @@ InitStatus CbmMvdReadoutSimple::Init()
 
     SetupHistograms();
 
+    return kSUCCESS;
 }
 // -------------------------------------------------------------------------
 

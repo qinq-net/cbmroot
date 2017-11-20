@@ -11,8 +11,10 @@
 //#pragma link C++ class CbmMvdGeoPar;
 
 #pragma link C++ class CbmMvdDigitizer+;
+#pragma link C++ class CbmMvdDigitizerTB+;
 #pragma link C++ class CbmMvdHitfinder+;
 #pragma link C++ class CbmMvdClusterfinder+;
+#pragma link C++ class CbmMvdClusterfinderTB+;
 #pragma link C++ class CbmMvdReadout+;
 
 #pragma link C++ class CbmMvdPileupManager+;
@@ -38,7 +40,7 @@
 #pragma link C++ class CbmMvdSensorHitfinderTask+;
 #pragma link C++ class CbmMvdSensorDigitizerTask+;
 #pragma link C++ class CbmMvdSensorReadoutTask+;
-//#pragma link C++ class CbmMvdSensorDigiTBTask+;
+#pragma link C++ class CbmMvdSensorDigitizerTBTask+;
 #pragma link C++ class CbmMvdSensorClusterfinderTask+;
 //#pragma link C++ class CbmMvdReadoutBuffer+;
 
@@ -50,6 +52,7 @@
 #pragma link C++ class CbmMvdClusterAna+;
 
 #pragma link C++ class CbmMvdReadoutSimple+;
+#pragma link C++ class CbmMvdReadoutCluster+;
 
 
 //#pragma link C++ class MyG4UniversalFluctuationForSi+;

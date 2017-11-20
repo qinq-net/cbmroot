@@ -334,7 +334,7 @@ void CbmMvdQa::SetupTrackHistograms()
    fTracks1F[4]->GetYaxis()->SetTitle("Entries");
 
    fTracks1F[5] = new TH1F("fTracks1F[5]","Resolution in x at z = z Mc Vertex", 1000,-0.02, 0.02);
-   fTracks1F[5]->GetXaxis()->SetTitle("x [xm]");
+   fTracks1F[5]->GetXaxis()->SetTitle("x [cm]");
    fTracks1F[5]->GetYaxis()->SetTitle("Entries");
 
    fTracks1F[6] = new TH1F("fTracks1F[6]","Resolution in y at z = z Mc Vertex", 1000,-0.02, 0.02);
@@ -440,6 +440,16 @@ void CbmMvdQa::SetupTrackHistograms()
    fTracks1F[31] = new TH1F("fTracks1F[31]","mc y position of correct hit - y pos of wrongly attached hit", 100,-0.01, 0.01);
      fTracks1F[31]->GetXaxis()->SetTitle("y [mu m]");
      fTracks1F[31]->GetYaxis()->SetTitle("Entries");
+
+   fTracks1F[32] = new TH1F("fTracks1F[32]","Resolution in x at z = z Mc Vertex, 4 mvd hits, trueOverAll == 1", 1000,-0.02, 0.02);
+   fTracks1F[32]->GetXaxis()->SetTitle("x [cm]");
+   fTracks1F[32]->GetYaxis()->SetTitle("Entries");
+
+   fTracks1F[33] = new TH1F("fTracks1F[33]","Resolution in y at z = z Mc Vertex, 4 mvd hits, trueOverAll == 1", 1000,-0.02, 0.02);
+   fTracks1F[33]->GetXaxis()->SetTitle("y [cm]");
+   fTracks1F[33]->GetYaxis()->SetTitle("Entries");
+
+   
 
 
    fTracks2F[0] = new TH2F("fTracks2F[0]", "Momentumresolution all Tracks", 200,0,15,100,-0.2,0.2);
@@ -589,7 +599,6 @@ void CbmMvdQa::ExecHitQa()
     Int_t nrHits = fMvdHits->GetEntriesFast();
     Int_t nrDigis = fMvdDigis->GetEntriesFast();
 
-    Int_t HitsPerDigi[nrDigis];
     Int_t DigisPerHit[nrHits];
 
     Float_t xRes = 3.8;
@@ -627,18 +636,20 @@ for(Int_t i = 0; i < nrHits; i ++)
 // -------------------------------------------------------------------------
 void CbmMvdQa::ExecTrackQa(){
 
-Int_t usedTracks=0;
 CbmStsTrack* stsTrack;
+
 Int_t nTracks = fStsTrackArray->GetEntriesFast();
-Int_t nTrackMatches = fStsTrackMatches->GetEntriesFast();
 Int_t nMcTracks = fListMCTracks->GetEntriesFast();
 Int_t nGlobalTracks = fGlobalTrackArray->GetEntriesFast();
 Int_t mcMatchId;
+Int_t nHitsMvd;
+
 CbmTrackMatchNew* trackMatch;
-CbmMatch* Match;
 CbmMCTrack* mcTrack;
 CbmGlobalTrack* glTrack;
+
 Bool_t hasHitFirst, hasHitFirstTrue;
+
 Float_t glX, glY, ChiSqOverNDF, glP, mcP, trueOverAll, glQP;
 Float_t mcPosFirst[3] = {0};
 Float_t hitFirst[2];
@@ -671,7 +682,8 @@ for ( Int_t itr=0; itr<nGlobalTracks; itr++ )
 	GetFirstMCPos(mcMatchId, stsTrack, mcPosFirst);
         GetFirstMvdHitPos(stsTrack, hitFirst);
 
-        trueOverAll = trackMatch->GetTrueOverAllHitsRatio();
+	trueOverAll = trackMatch->GetTrueOverAllHitsRatio();
+        nHitsMvd = stsTrack->GetNofMvdHits();
 
 	if( hasHitFirst )
 	{
@@ -695,17 +707,22 @@ for ( Int_t itr=0; itr<nGlobalTracks; itr++ )
 	fTracks1F[0]->Fill(glP,1);
 	if(trueOverAll == 1.) fTracks1F[1]->Fill(glP,1);
 
-	if(stsTrack->GetNofMvdHits() == 4)
+	if(nHitsMvd == 4)
 	    {
 	    fTracks1F[2]->Fill(glP,1);
             if(fMvdRecoRatio == 1.) fTracks1F[3]->Fill(glP,1);
-	    if(trueOverAll == 1.) fTracks1F[4]->Fill(glP,1);
+	    if(trueOverAll == 1.)
+	      {
+		  fTracks1F[4]->Fill(glP,1);
+		  fTracks1F[32]->Fill(glX);
+                  fTracks1F[33]->Fill(glY);
+	      }
 	    }
 
         fTracks1F[5]->Fill(glX);
 	fTracks1F[6]->Fill(glY);
 
-	if(stsTrack->GetNofMvdHits() == 4)
+	if(nHitsMvd == 4)
 	  {
           fTracks1F[7]->Fill(glX);
 	  fTracks1F[8]->Fill(glY);
@@ -770,7 +787,7 @@ for ( Int_t itr=0; itr<nGlobalTracks; itr++ )
         fTracks2F[0]->Fill( mcP, mcP - glP );
 	if(trueOverAll == 1.) fTracks2F[1]->Fill( mcP, mcP - glP );
 
-	if(stsTrack->GetNofMvdHits() == 4)
+	if(nHitsMvd == 4)
 	    {
 	    fTracks2F[2]->Fill( mcP, mcP - glP);
             if(fMvdRecoRatio == 1.) fTracks2F[3]->Fill( mcP, mcP - glP );
@@ -858,16 +875,12 @@ Bool_t CbmMvdQa::HasHitFirstMvd(CbmStsTrack* stsTrack)
 Bool_t CbmMvdQa::HasHitFirstTrue(Int_t MCtrackID, CbmStsTrack* stsTrack)
 {
 Int_t nrOfMvdHits = stsTrack->GetNofMvdHits();
-Int_t mcTrackId = 0;
-Int_t trueCounter = 0;
-Float_t falseCounter = 0;
-Bool_t hasTrack;
 Int_t nrOfLinks = 0;
+Int_t mcTrackId = 0;
 Int_t mcPointId = 0;
 const CbmMvdPoint* point = NULL;
 for(Int_t iHit = 0; iHit < nrOfMvdHits; iHit++)	
 	{
-	hasTrack = kFALSE;
         CbmMatch* mvdMatch = (CbmMatch*)fMvdHitMatchArray->At(stsTrack->GetMvdHitIndex(iHit));
 	if(mvdMatch)
 		{
@@ -903,16 +916,11 @@ return kFALSE;
 void CbmMvdQa::GetFirstMCPos(Int_t MCtrackID, CbmStsTrack* stsTrack, Float_t* pos)
 {
 Int_t nrOfMvdHits = stsTrack->GetNofMvdHits();
-Int_t mcTrackId = 0;
-Int_t trueCounter = 0;
-Float_t falseCounter = 0;
-Bool_t hasTrack;
 Int_t nrOfLinks = 0;
 Int_t mcPointId = 0;
 const CbmMvdPoint* point = NULL;
 for(Int_t iHit = 0; iHit < nrOfMvdHits; iHit++)	
 	{
-	hasTrack = kFALSE;
         CbmMatch* mvdMatch = (CbmMatch*)fMvdHitMatchArray->At(stsTrack->GetMvdHitIndex(iHit));
 	if(mvdMatch)
 		{
@@ -1193,10 +1201,22 @@ void CbmMvdQa::FinishTrackQa()
     fTracks1F[31]->Draw();
     }
 
-    for(Int_t k = 0; k < 32; k++)
+    for(Int_t k = 0; k < f1FSize; k++)
     {
      fTracks1F[k]->Write();
     }
+
+    fTracks2F[9]->SetBinContent(1,1,100 * (fTracks2F[9]->GetBinContent(1,1)/fnrTrackslowP) );
+    fTracks2F[9]->SetBinContent(1,2,100 * (fTracks2F[9]->GetBinContent(1,2)/fnrTrackslowP) );
+    fTracks2F[9]->SetBinContent(2,1,100 * (fTracks2F[9]->GetBinContent(2,1)/fnrTracksHighP) );
+    fTracks2F[9]->SetBinContent(2,2,100 * (fTracks2F[9]->GetBinContent(2,2)/fnrTracksHighP) );
+
+    fTracks2F[11]->SetBinContent(1,1,100 * (fTracks2F[11]->GetBinContent(1,1)/flow) );
+    fTracks2F[11]->SetBinContent(1,2,100 * (fTracks2F[11]->GetBinContent(1,2)/flow) );
+    fTracks2F[11]->SetBinContent(2,1,100 * (fTracks2F[11]->GetBinContent(2,1)/fmid) );
+    fTracks2F[11]->SetBinContent(2,2,100 * (fTracks2F[11]->GetBinContent(2,2)/fmid) );
+    fTracks2F[11]->SetBinContent(3,1,100 * (fTracks2F[11]->GetBinContent(3,1)/fhigh) );
+    fTracks2F[11]->SetBinContent(3,2,100 * (fTracks2F[11]->GetBinContent(3,2)/fhigh) );
 
     if(fdraw)
     {
@@ -1233,19 +1253,6 @@ void CbmMvdQa::FinishTrackQa()
     BadTracks->cd(4);
     fTracks2F[10]->Draw("colz");
 
-    fTracks2F[9]->SetBinContent(1,1,100 * (fTracks2F[9]->GetBinContent(1,1)/fnrTrackslowP) );
-    fTracks2F[9]->SetBinContent(1,2,100 * (fTracks2F[9]->GetBinContent(1,2)/fnrTrackslowP) );
-    fTracks2F[9]->SetBinContent(2,1,100 * (fTracks2F[9]->GetBinContent(2,1)/fnrTracksHighP) );
-    fTracks2F[9]->SetBinContent(2,2,100 * (fTracks2F[9]->GetBinContent(2,2)/fnrTracksHighP) );
-
-    fTracks2F[11]->SetBinContent(1,1,100 * (fTracks2F[11]->GetBinContent(1,1)/flow) );
-    fTracks2F[11]->SetBinContent(1,2,100 * (fTracks2F[11]->GetBinContent(1,2)/flow) );
-    fTracks2F[11]->SetBinContent(2,1,100 * (fTracks2F[11]->GetBinContent(2,1)/fmid) );
-    fTracks2F[11]->SetBinContent(2,2,100 * (fTracks2F[11]->GetBinContent(2,2)/fmid) );
-    fTracks2F[11]->SetBinContent(3,1,100 * (fTracks2F[11]->GetBinContent(3,1)/fhigh) );
-    fTracks2F[11]->SetBinContent(3,2,100 * (fTracks2F[11]->GetBinContent(3,2)/fhigh) );
-
-
     fTracks2F[9]->SetContour(10);
     fTracks2F[11]->SetContour(10);
 
@@ -1262,7 +1269,7 @@ void CbmMvdQa::FinishTrackQa()
     }
 
 
-    for(Int_t i = 0; i < 12; i++)
+    for(Int_t i = 0; i < f2FSize; i++)
     {
      fTracks2F[i]->Write();
     }

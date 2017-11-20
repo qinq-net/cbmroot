@@ -9,8 +9,6 @@
 #define CBMMVDDIGITIZER_H 1
 
 #include "FairTask.h"
-#include "tools/CbmMvdHelper.h"
-
 
 #include "TString.h"
 #include "TStopwatch.h"
@@ -56,7 +54,6 @@ class CbmMvdDigitizer : public FairTask
   void ShowDebugHistograms() {fShowDebugHistos = kTRUE;}
 
   void SetProduceNoise(){fNoiseSensors = kTRUE;};
-  void SetSensorTyp(CbmMvdSensorTyp typ){fSensorTyp = typ;};
 
 private:
 /** Hit producer mode (0 = MAPS, 1 = Ideal) **/
@@ -66,7 +63,6 @@ private:
   Bool_t fNoiseSensors;
 
   CbmMvdDetector* fDetector;
-  CbmMvdSensorTyp fSensorTyp;
  
  TClonesArray* fInputPoints;
  TClonesArray* fDigis;
