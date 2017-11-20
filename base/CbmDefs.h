@@ -45,7 +45,8 @@ enum ECbmDataType {
   kMuchDigi, kMuchPixelHit, kMuchStrawHit, kMuchTrack,   // MUCH
   kTrdDigi, kTrdHit, kTrdTrack,                          // TRD
   kTofDigi, kTofHit, kTofTrack,                          // TOF
-  kGlobalTrack                                           // Global
+  kGlobalTrack,                                          // Global
+  kMvdPoint, kMvdDigi, kMvdCluster, kMvdHit              // MVD    //add last not to change the numbering scheme 
 };
 
 
