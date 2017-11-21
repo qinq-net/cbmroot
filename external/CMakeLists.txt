@@ -23,31 +23,18 @@ Set(ROOT_HAS_VC ${ROOT_HAS_VC} PARENT_SCOPE)
 If(NOT ${ROOT_HAS_VC})
   Message(STATUS "Root does not support VC. Compile the internal version.")
 
-#---Guess under which lib directory the external packages will install the libraires
-set(_LIBDIR_DEFAULT "lib")
-if(CMAKE_SYSTEM_NAME MATCHES "Linux" AND NOT CMAKE_CROSSCOMPILING AND NOT EXISTS "/etc/debian_version")
-  if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-    set(_LIBDIR_DEFAULT "lib64")
-  endif()
-endif()
+  set(_LIBDIR_DEFAULT "lib")
 
   set(Vc_VERSION "1.3.2")
   set(Vc_SRC_URL "https://github.com/VcDevel/Vc")
-  set(Vc_DESTDIR "${CMAKE_BINARY_DIR}/VC-prefix/install")
+  set(Vc_DESTDIR "${CMAKE_BINARY_DIR}/external/VC-prefix")
   set(Vc_ROOTDIR "${Vc_DESTDIR}/${CMAKE_BINARY_DIR}")
   set(Vc_LIBNAME "${CMAKE_STATIC_LIBRARY_PREFIX}Vc${CMAKE_STATIC_LIBRARY_SUFFIX}")
   set(Vc_LIBRARY "${Vc_ROOTDIR}/${_LIBDIR_DEFAULT}/${Vc_LIBNAME}")
-  Message("CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
-  Message("Vc_DESTDIR: ${Vc_DESTDIR}")
-  Message("Vc_ROOTDIR: ${Vc_ROOTDIR}")
-
-  Message("LIBDIR_DEFAULT: ${_LIBDIR_DEFAULT}")
 
   ExternalProject_Add(VC
     GIT_REPOSITORY ${Vc_SRC_URL}
     GIT_TAG ${Vc_VERSION}
-#    PREFIX vc
-#    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
     BUILD_IN_SOURCE 0   
     BUILD_BYPRODUCTS ${Vc_LIBRARY}
     LOG_DOWNLOAD 1 LOG_CONFIGURE 1 LOG_BUILD 1 LOG_INSTALL 1
@@ -60,9 +47,9 @@ endif()
                -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
     INSTALL_COMMAND env DESTDIR=${Vc_DESTDIR} ${CMAKE_COMMAND} --build . --target install
   )
-  set(VC_TARGET VC)
+
   add_library(Vc STATIC IMPORTED)
-  set_property(TARGET Vc PROPERTY IMPORTED_LOCATION ${Vc_LIBRARY})
+  set_target_properties(Vc PROPERTIES IMPORTED_LOCATION ${Vc_LIBRARY})
   add_dependencies(Vc VC)
 
   set(Vc_LIBRARIES Vc)
@@ -72,26 +59,15 @@ endif()
   find_package_handle_standard_args(Vc
     FOUND_VAR Vc_FOUND
     REQUIRED_VARS Vc_INCLUDE_DIR Vc_LIBRARIES Vc_CMAKE_MODULES_DIR
-    VERSION_VAR Vc_VERSION)
+    VERSION_VAR Vc_VERSION
+  )
 
-
-#  Add_Library(Vc STATIC IMPORTED GLOBAL)
-#  Set_Property(TARGET Vc PROPERTY IMPORTED_LOCATION ${Vc_LIBRARY})
-#  Set(VC_INCLUDE_DIRS
-#      ${CBMROOT_SOURCE_DIR}/external/vc 
-#      ${CBMROOT_SOURCE_DIR}/external/vc/include/
-#      PARENT_SCOPE
-#     )
   install(DIRECTORY ${Vc_ROOTDIR}/ DESTINATION ".")
-#  Install(FILES ${CMAKE_BINARY_DIR}/lib/libVc.a DESTINATION lib)
 
-if(Vc_FOUND)
-  Message("LIBDIR_DEFAULT: ${_LIBDIR_DEFAULT}")
-  # Missing from VcConfig.cmake
-  set(VC_INCLUDE_DIRS ${Vc_INCLUDE_DIR} PARENT_SCOPE)
-  set(Vc_LIB_DIR ${Vc_ROOTDIR}/${_LIBDIR_DEFAULT} PARENT_SCOPE)
-endif()
+  if(Vc_FOUND)
+    # Missing from VcConfig.cmake
+    set(VC_INCLUDE_DIRS ${Vc_INCLUDE_DIR} PARENT_SCOPE)
+    set(Vc_LIB_DIR ${Vc_ROOTDIR}/${_LIBDIR_DEFAULT} PARENT_SCOPE)
+  endif()
 
 EndIf()
-
-
