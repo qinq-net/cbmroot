@@ -1,4 +1,4 @@
-# Build all libraries which com from external sources like other subversion or git repositories
+# Build all libraries which come from external sources like other subversion or git repositories
 
 include(DownloadProject)
 download_project(PROJ            cppzmq
