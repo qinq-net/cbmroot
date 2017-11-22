@@ -58,7 +58,7 @@ set(SRCS
 plugins/tasks/CbmMvdSensorTask.cxx 
 plugins/tasks/CbmMvdSensorDigitizerTask.cxx
 plugins/tasks/CbmMvdSensorDigitizerTBTask.cxx
-plugins/tasks/CbmMvdSensorFindHitTask.cxx
+#plugins/tasks/CbmMvdSensorFindHitTask.cxx
 plugins/tasks/CbmMvdSensorHitfinderTask.cxx
 plugins/tasks/CbmMvdSensorClusterfinderTask.cxx
 plugins/tasks/CbmMvdSensorReadoutTask.cxx
@@ -81,7 +81,7 @@ tools/readout/CbmMvdReadoutSimple.cxx
 tools/readout/CbmMvdReadoutCluster.cxx
 
 qa/CbmMvdQa.cxx 
-qa/CbmMvdClusterAna.cxx
+#qa/CbmMvdClusterAna.cxx
 
 CbmMvd.cxx 
  

@@ -36,7 +36,7 @@
 //#pragma link C++ class CbmMvdSensorFrameBuffer+;
 
 #pragma link C++ class CbmMvdSensorTask+;
-#pragma link C++ class CbmMvdSensorFindHitTask+;
+//#pragma link C++ class CbmMvdSensorFindHitTask+;
 #pragma link C++ class CbmMvdSensorHitfinderTask+;
 #pragma link C++ class CbmMvdSensorDigitizerTask+;
 #pragma link C++ class CbmMvdSensorReadoutTask+;
@@ -49,7 +49,7 @@
 #pragma link C++ class CbmMvdGeoHandler+;
 
 #pragma link C++ class CbmMvdQa+;
-#pragma link C++ class CbmMvdClusterAna+;
+//#pragma link C++ class CbmMvdClusterAna+;
 
 #pragma link C++ class CbmMvdReadoutSimple+;
 #pragma link C++ class CbmMvdReadoutCluster+;

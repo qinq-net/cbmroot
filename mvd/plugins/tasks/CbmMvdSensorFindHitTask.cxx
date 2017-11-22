@@ -111,9 +111,7 @@ CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask()
   fDigisInCluster(-1),
   fAddNoise(kFALSE)
 {
-    CbmMvdCluster* clusterTemp= new CbmMvdCluster;
-    fDigisInCluster= clusterTemp->GetMaxDigisInThisObject(); // read the number of memory cells from the cluster object
-    delete clusterTemp;
+
 }
 // -------------------------------------------------------------------------
 
@@ -173,9 +171,7 @@ CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask(Int_t iMode)
   fDigisInCluster(-1),
   fAddNoise(kFALSE)
 {    
-    CbmMvdCluster* clusterTemp= new CbmMvdCluster;
-    fDigisInCluster= clusterTemp->GetMaxDigisInThisObject(); // read the number of memory cells from the cluster object
-    delete clusterTemp;
+
 }
 // -------------------------------------------------------------------------
 

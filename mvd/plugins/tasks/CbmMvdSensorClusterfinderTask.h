@@ -66,7 +66,7 @@ public:
     /** Intialisation **/
     void InitTask(CbmMvdSensor* mySensor);
 
-    void SetInputDigi(CbmMvdDigi* digi)
+    virtual void SetInputDigi(CbmMvdDigi* digi)
 	{ new((*fInputBuffer)[fInputBuffer->GetEntriesFast()]) CbmMvdDigi(*((CbmMvdDigi*)digi)); 
 		inputSet = kTRUE;
 	}

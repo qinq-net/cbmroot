@@ -62,8 +62,8 @@ class CbmMvdSensorDigitizerTBTask : public CbmMvdSensorTask
   
   /** fill buffer **/
   void SetInputArray (TClonesArray* inputStream);
-  void SetInput (CbmMvdPoint* point);
-  
+  virtual void SetInput (CbmMvdPoint* point);
+
   /** Execute **/
   void Exec();
   void ExecChain();

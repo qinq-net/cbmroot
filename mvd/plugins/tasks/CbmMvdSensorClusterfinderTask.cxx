@@ -333,9 +333,9 @@ Int_t refId;
 			Int_t nClusters = fOutputBuffer->GetEntriesFast();
 			//cout << endl << "new cluster: " << nClusters << endl;
 			CbmMvdCluster* clusterNew=new ((*fOutputBuffer)[nClusters]) CbmMvdCluster();
-	 		clusterNew->SetDetectorId(fSensor->GetDetectorID());
-			clusterNew->SetStationNr(fSensor->GetStationNr());
-                        clusterNew->SetSensorNr(fSensor->GetSensorNr());
+	 		//clusterNew->SetDetectorId(fSensor->GetDetectorID());
+			//clusterNew->SetStationNr(fSensor->GetStationNr());
+                        //clusterNew->SetSensorNr(fSensor->GetSensorNr());
    			for(i=0;i<clusterSize;i++) 
 			{
 	      		CbmMvdDigi* digiInCluster = (CbmMvdDigi*) fInputBuffer->At(clusterArray->at(i));

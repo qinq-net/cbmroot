@@ -160,17 +160,17 @@ InitStatus CbmMvdHitfinder::Init() {
 
     fDetector = CbmMvdDetector::Instance();
 
-    if(!useClusterfinder)
-	{
-    	CbmMvdSensorFindHitTask* HitfinderTask = new CbmMvdSensorFindHitTask();
-	fDetector->AddPlugin(HitfinderTask);
-	} 
-    else
-	{
+  //  if(!useClusterfinder)
+  //      {
+  //  	CbmMvdSensorFindHitTask* HitfinderTask = new CbmMvdSensorFindHitTask();
+  //      fDetector->AddPlugin(HitfinderTask);
+  //      }
+  //  else
+  //      {
     	CbmMvdSensorHitfinderTask* HitfinderTask = new CbmMvdSensorHitfinderTask();
 	fDetector->AddPlugin(HitfinderTask);
 	cout << endl << "running with external clusterfinder" << endl;
-	}
+ //       }
 
     fHitfinderPluginNr = (UInt_t) (fDetector->GetPluginArraySize());
     if(fShowDebugHistos) fDetector->ShowDebugHistos();

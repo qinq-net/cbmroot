@@ -308,8 +308,7 @@ void CbmMvdSensor::SendInput(CbmMvdPoint* point){
   
       CbmMvdSensorPlugin* pluginFirst;
 
-      CbmMvdSensorDigitizerTask* digitask;
-      CbmMvdSensorDigitizerTBTask* tbDigiTask;
+      CbmMvdSensorTask* digitask;
 
     pluginFirst=(CbmMvdSensorPlugin*)fPluginArray->At(0);
 
@@ -318,23 +317,16 @@ void CbmMvdSensor::SendInput(CbmMvdPoint* point){
       TString digitizername = "CbmMvdSensorDigitizerTask";
       TString digitizerTBname = "CbmMvdSensorDigitizerTBTask";
 
-      if (pluginFirst->ClassName()  == digitizername)
+      if (pluginFirst->ClassName()  == digitizername || pluginFirst->ClassName()  == digitizerTBname)
 	  {
-	  digitask = (CbmMvdSensorDigitizerTask*)fPluginArray->At(0);
+	  digitask = (CbmMvdSensorTask*)fPluginArray->At(0);
           digitask->SetInput(point);
-	  } 
-
-      if (pluginFirst->ClassName()  == digitizerTBname)
-	  {
-	  tbDigiTask = (CbmMvdSensorDigitizerTBTask*)fPluginArray->At(0);
-          tbDigiTask->SetInput(point);
 	  }
 
-	   else 
-	       {
-		LOG(FATAL) << "Invalid input typ" << FairLogger::endl;
-		 
-	       }
+     else
+          {
+      	LOG(FATAL) << "Invalid input typ" << FairLogger::endl;
+          }
 	
      }
      else
@@ -353,11 +345,6 @@ if(fClusterPlugin != -1)
 	{
 	CbmMvdSensorClusterfinderTask* clustertask = (CbmMvdSensorClusterfinderTask*)fPluginArray->At(fClusterPlugin);
 	clustertask->SetInputDigi(digi);
-	}
-else if(fHitPlugin != -1)
-	{
-	CbmMvdSensorFindHitTask* findertask = (CbmMvdSensorFindHitTask*)fPluginArray->At(fHitPlugin);
-	findertask->SetInputDigi(digi);
 	}
 else
 	{
