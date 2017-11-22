@@ -1331,6 +1331,14 @@ static void SaveHisto(TH1* histo)
    TFile::CurrentFile() = curFile;
 }
 
+template<typename T> void NumberToFile(const char* name, T number)
+{
+   char buf[256];
+   sprintf(buf, "%s.txt", name);
+   ofstream fileStream(buf, ios_base::out | ios_base::trunc);
+   fileStream << number;
+}
+
 void CbmBinnedTrackerQA::Finish()
 {
    int nofAllTracks = 0;
@@ -1733,22 +1741,29 @@ void CbmBinnedTrackerQA::Finish()
    double eff = 100 * nofMatchedRefTracks;
    eff /= nofRefTracks;
    cout << "The track reconstruction efficiency: " << eff << "%: " << nofMatchedRefTracks << "/" << nofRefTracks << endl;
+   NumberToFile("nofRefTracks", nofRefTracks);
+   NumberToFile("nofMatchedRefTracks", nofMatchedRefTracks);
    
    eff = 100 * nofMatchedRefPrimTracks;
    eff /= nofRefPrimTracks;
    cout << "The track reconstruction efficiency for primary tracks: " << eff << "%: " << nofMatchedRefPrimTracks << "/" << nofRefPrimTracks << endl;
+   NumberToFile("nofMatchedRefPrimTracks", nofMatchedRefPrimTracks);
    
    eff = 100 * nofMatchedRefNonPrimTracks;
    eff /= nofRefNonPrimTracks;
    cout << "The track reconstruction efficiency for non primary tracks: " << eff << "%: " << nofMatchedRefNonPrimTracks << "/" << nofRefNonPrimTracks << endl;
+   NumberToFile("nofMatchedRefNonPrimTracks", nofMatchedRefNonPrimTracks);
    
-   eff = 100 * gNofNonGhosts;
+   eff = 100 * (gNofRecoTracks - gNofNonGhosts);
    eff /= gNofRecoTracks;
-   cout << "The number of non ghosts: " << eff << "%: " << gNofNonGhosts << "/" << gNofRecoTracks << endl;
+   cout << "The number of ghosts: " << eff << "%: " << gNofRecoTracks - gNofNonGhosts << "/" << gNofRecoTracks << endl;
+   NumberToFile("nofRecoTracks", gNofRecoTracks);
+   NumberToFile("nofGhosts", gNofRecoTracks - gNofNonGhosts);
    
    eff = 100 * gNofClones;
    eff /= gNofRecoTracks;
    cout << "The number of clones: " << eff << "%: " << gNofClones << "/" << gNofRecoTracks << endl;
+   NumberToFile("nofClones", gNofClones);
    //cout << "Nof STS[0]: " << nofSts[0] << endl;
    //cout << "Nof STS[1]: " << nofSts[1] << endl;
    //cout << "Nof TRD[0]: " << nofTrd[0] << endl;
