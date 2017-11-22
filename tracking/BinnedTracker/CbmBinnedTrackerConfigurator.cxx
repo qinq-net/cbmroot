@@ -10,6 +10,7 @@
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 #include "GeoReader.h"
+#include "setup/CbmStsSetup.h"
 
 CbmBinnedTrackerConfigurator::CbmBinnedTrackerConfigurator(bool useAllDetectors) : fUseAllDetectors(useAllDetectors), fTracker(0), fSettings(0), fMCTracks(0),
    fStsPoints(0), fMuchPoints(0), fTrdPoints(0), fTofPoints(0)
@@ -26,6 +27,11 @@ CbmBinnedTrackerConfigurator::~CbmBinnedTrackerConfigurator()
 
 InitStatus CbmBinnedTrackerConfigurator::Init()
 {
+   CbmStsSetup* stsSetup = CbmStsSetup::Instance();
+   
+   if (!stsSetup->IsInit())
+      stsSetup->Init();
+   
    fSettings->SetConfiguring(true);
    fSettings->SetUse(fUseModules);
    fSettings->SetNofStsStations(0);
