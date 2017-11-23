@@ -8,7 +8,6 @@
 #include "CbmStsTrack.h"
 #include "CbmMvdHit.h"
 #include "CbmMvdPoint.h"
-#include "CbmMvdDigiMatch.h"
 #include "CbmMvdDigi.h"
 #include "CbmMvdStationPar.h"
 
@@ -552,8 +551,8 @@ Int_t McPointsPerDigi[nrDigis];// = {0};
 for(Int_t i = 0; i < nrDigis; i++)
    {
    CbmMvdDigi* curDigi = (CbmMvdDigi*)fMvdDigis->At(i);
-   CbmMvdDigiMatch* curMatch = (CbmMvdDigiMatch*)fMvdDigiMatchArray->At(i);
-   Int_t nrOfContributors = curMatch->GetNContributors();
+   CbmMatch* curMatch = (CbmMatch*)fMvdDigiMatchArray->At(i);
+   Int_t nrOfContributors = curMatch->GetNofLinks();
    for(Int_t j = 0; j < nrOfContributors; j++)
    {
        digisPerMcPoints[curMatch->GetLink(j).GetIndex()]++;
