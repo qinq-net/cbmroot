@@ -56,10 +56,11 @@ CbmMuchSegmentSector::CbmMuchSegmentSector()
 // -------------------------------------------------------------------------
 
 // -----   Standard constructor   ------------------------------------------
-CbmMuchSegmentSector::CbmMuchSegmentSector(TString inputFileName, TString digiFileName)
+CbmMuchSegmentSector::CbmMuchSegmentSector(TString inputFileName, TString digiFileName, Int_t flag)
   : FairTask(),
     fGeoPar(NULL),
     fNStations(0),
+    fFlag(flag),
     fStations(NULL),
     fInputFileName(inputFileName.Data()),
     fDigiFileName(digiFileName.Data()),
@@ -98,8 +99,9 @@ InitStatus CbmMuchSegmentSector::Init(){
 
   // Get MUCH geometry parameter container
   fStations = fGeoPar->GetStations();
+  cout<<" Stations = "<<fStations->GetEntries()<<"     "<<fNStations<<endl;
   if(!fStations) Fatal("Init", "No input array of MUCH stations.");
-  // if(fStations->GetEntries() != fNStations) Fatal("Init", "Incorrect number of stations.");
+  if(fStations->GetEntries() != fNStations) Fatal("Init", "Incorrect number of stations.");
 
   if(fDebug){
     for(Int_t iStation = 0; iStation < fNStations; ++iStation){
@@ -147,12 +149,13 @@ void CbmMuchSegmentSector::SegmentMuch(){
 Int_t CbmMuchSegmentSector::SegmentLayerSide(CbmMuchLayerSide* layerSide){
   if(!layerSide) Fatal("SegmentLayerSide", "Incomplete layer sides array.");
   Int_t nModules = layerSide->GetNModules();
+  cout<<" Total Modules "<< nModules<<endl;
   Int_t nSectors = 0;
   for(Int_t iModule = 0; iModule < nModules; iModule++){
     CbmMuchModule* module = layerSide->GetModule(iModule);
     if(module->GetDetectorType()!=3) continue;
     CbmMuchModuleGemRadial* mod = (CbmMuchModuleGemRadial*)module;
-    if(nModules > 1) nSectors+=SegmentModule(mod, true); // Module design
+    if(nModules > 0) nSectors+=SegmentModule(mod, true); // Module design
     else nSectors+=SegmentModule(mod, false);            // Monolithic design
   }
   return nSectors;
@@ -167,15 +170,36 @@ Int_t CbmMuchSegmentSector::SegmentModule(CbmMuchModuleGemRadial* module, Bool_t
   Int_t iLayer   = CbmMuchAddress::GetLayerIndex(detectorId);
   Int_t iSide    = CbmMuchAddress::GetLayerSideIndex(detectorId);
   CbmMuchStation* station = (CbmMuchStation*)fStations->At(iStation);
-  Double_t rMin = station->GetRmin();
-  Double_t rMax = station->GetRmax();
+  Double_t rMin=0.0,rMax=0.0;
+  if (fFlag==0){
+    rMin = station->GetRmin();
+    rMax = station->GetRmax();
+    //  Double_t phi0 = module->GetPosition().Phi();
+    // Double_t r0   = module->GetPosition().Perp();
+    //  Double_t dx1  = module->GetDx1();
+    //  Double_t dx2  = module->GetDx2();
+    //  Double_t dy   = module->GetDy();
+ 
+
+  }
+
+else {
+  //============For mini cbm=================================
+  rMin=18.89;
+  rMax=98.35;
+  // Double_t r0=59.62;
+   
+ }
+
+
   Double_t phi0 = module->GetPosition().Phi();
   Double_t r0   = module->GetPosition().Perp();
   Double_t dx1  = module->GetDx1();
   Double_t dx2  = module->GetDx2();
   Double_t dy   = module->GetDy();
-//  Double_t rMin = sqrt((r0-dy)*(r0-dy)+dx1*dx1);
-//  Double_t rMax = r0+dy;
+ 
+
+  cout<<" station # "<<iStation<<" Layer No. "<<iLayer<<" Side # "<<iSide<<" Module # "<<iModule<<" rmin "<<rMin<<" rmax "<<rMax<<" phi "<<phi0<<" r0 "<<r0<<" dx1 "<<dx1<<" dx2 "<<dx2<<" dy "<<dy<<endl;
 
   Double_t t  = 2*dy/(dx2-dx1);
   Double_t b= (r0-dy)-t*dx1;
@@ -195,6 +219,7 @@ Int_t CbmMuchSegmentSector::SegmentModule(CbmMuchModuleGemRadial* module, Bool_t
       Double_t dphi = TMath::ASin((-bt+sqrt(a*r2*r2-b2))/a/r2); 
 //      Int_t nPads = 2*Int_t(phiMax/angle)+2;
 //      if (iStation==0 && iLayer==0 && iSide==0 && iModule==0) printf("Sector: %f-%f %i phiMax=%f\n",r1,r2,nPads,phiMax);
+      cout<<" sector "<<iSector<< " pad size "<<r2-r1<<endl;
       module->AddSector(new CbmMuchSectorRadial(detectorId,iSector,r1,r2,phi0-dphi,phi0+dphi));
       r1 = r2;
       iSector++;
@@ -319,6 +344,7 @@ void CbmMuchSegmentSector::DrawSegmentation(){
 
     // Draw a hole
     TArc* holeArc = new TArc(0.,0.,station->GetRmin());
+    //  TArc* holeArc = new TArc(0.,0.,rMin);
     holeArc->Draw();
 
     for(Int_t iRegion=0; iRegion < fNRegions[iStation]; ++iRegion){

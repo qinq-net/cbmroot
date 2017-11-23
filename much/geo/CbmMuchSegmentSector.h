@@ -42,7 +42,7 @@ class CbmMuchSegmentSector : public FairTask {
      * @param digiFileName  Name of the output file with segmentation parameters
      * for C++11 compatible mode char* changed to TString.
      */
-    CbmMuchSegmentSector(TString inputFile, TString digiFileName);
+    CbmMuchSegmentSector(TString inputFile, TString digiFileName, Int_t flag);
 
     /** Initialization. */
     virtual InitStatus Init();
@@ -55,6 +55,7 @@ class CbmMuchSegmentSector : public FairTask {
   private:
     CbmGeoMuchPar*                fGeoPar;         // Geometry parameters container
     Int_t                         fNStations;      // Number of stations
+    Int_t                         fFlag; // falg for geometry
     TObjArray*                    fStations;       // Array of stations
     TString                       fInputFileName;  // Name of the file with input parameters
     TString                       fDigiFileName;   // Name of the file with segmentation parameters
