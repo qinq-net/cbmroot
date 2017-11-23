@@ -18,7 +18,7 @@ class CbmMuchHitProducerIdeal : public FairTask
 {
 public:
 
-   CbmMuchHitProducerIdeal(const char* digiFileName);
+  CbmMuchHitProducerIdeal(const char* digiFileName, Int_t Id);
 
    virtual ~CbmMuchHitProducerIdeal();
 
@@ -37,6 +37,8 @@ private:
    Double_t fSigmaX;
    Double_t fSigmaY;
    Double_t fSigmaZ;
+
+   Int_t fId;
 
    TString fDigiFile; // Digitization file
    CbmMuchGeoScheme* fGeoScheme; // Geometry scheme

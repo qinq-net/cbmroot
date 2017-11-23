@@ -68,12 +68,13 @@ using std::string;
 using std::map;
 
 // -------------------------------------------------------------------------
-CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName) 
+CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag) 
   : FairTask("MuchDigitizeGem",1),
     fgDeltaResponse(),
     fAlgorithm(1),
     fGeoScheme(CbmMuchGeoScheme::Instance()),
     fDigiFile(digiFileName),
+    fFlag(flag),
     fPoints(NULL),
     fMCTracks(NULL),
     fDigis(NULL),
@@ -193,7 +194,7 @@ InitStatus CbmMuchDigitizeGem::Init() {
   file->Close();
   file->Delete();
   gFile=oldfile;
-  fGeoScheme->Init(stations);
+  fGeoScheme->Init(stations,fFlag);
   // Determine drift volume width
   Double_t driftVolumeWidth = 0.4; // cm - default
   for (Int_t i=0;i<fGeoScheme->GetNStations();i++){
@@ -443,6 +444,7 @@ void CbmMuchDigitizeGem::Finish(){
 // ------- Private method ExecAdvanced -------------------------------------
 Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
   
+  //std::cout<<" start execution "<<iPoint<<std::endl;
   TVector3 v1,v2,dv;
   point->PositionIn(v1);
   point->PositionOut(v2);
@@ -537,6 +539,8 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
 	}
     Double_t rMin = sFirst->GetR1(); //Mimimum radius of the Sector
     Double_t rMax = sLast->GetR2();  //Maximum radius of the Sector
+
+    // std::cout<<"min Rad "<<rMin<<"   max Rad  "<<rMax<<std::endl;
     //Calculating drifttime once for one track or one MCPoint, not for all the Primary Electrons generated during DriftGap.
     Double_t aL   = gRandom->Rndm();
     Double_t driftTime = -1;
@@ -563,9 +567,15 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
 	if(!Status)LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint <<" in which Primary Electron : "<<i<< " not contributed charge. "<< FairLogger::endl;
 	  continue;
       }
-
+      if (r1 <rMin && r2 <rMin) continue;
+      if (r1 >rMax && r2 >rMax) continue;
+      
+      // std::cout<<" rad1  "<<r1<<"  rad2 "<<r2<<std::endl;
       CbmMuchSectorRadial* s1 = module3->GetSectorByRadius(r1);
       CbmMuchSectorRadial* s2 = module3->GetSectorByRadius(r2);
+
+      // std::cout<<"  sector 1 "<<s1<<"  sector 2  "<<s2<<std::endl;
+
       if (s1==s2) {Status = AddCharge(s1,ne,iPoint,time,driftTime,phi1,phi2); 
 			if(!Status)LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint <<" in which Primary Electron : "<<i<< " not contributed charge. "<< FairLogger::endl;
 		}
@@ -576,13 +586,15 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
 	if(!Status)LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint <<" in which Primary Electron : "<<i<< " not contributed charge. "<< FairLogger::endl;
       }
     }
+
+    // std::cout<<" now generate signal "<<std::endl;
     //Generate CbmMuchSignal for each entry of fAddressCharge and store in the CbmMuchReadoutBuffer
       if(!BufferSignals(iPoint,time,driftTime)) 
 	LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint <<" nothing is buffered. "<< FairLogger::endl;
     fAddressCharge.clear();
     LOG(DEBUG) << GetName() << ": fAddressCharge size is " << fAddressCharge.size() <<" Cleared fAddressCharge. "<< FairLogger::endl;
   }
-
+  // std::cout<<" Execution completed for point # "<<iPoint<<std::endl;
   return kTRUE;
 }
 // -------------------------------------------------------------------------

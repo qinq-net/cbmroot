@@ -23,9 +23,10 @@ using std::vector;
 using std::multimap;
 
 // -------------------------------------------------------------------------
-CbmMuchFindHitsGem::CbmMuchFindHitsGem(const char* digiFileName) 
+CbmMuchFindHitsGem::CbmMuchFindHitsGem(const char* digiFileName, Int_t flag) 
   : FairTask("MuchFindHitsGem", 1) ,
     fDigiFile(digiFileName),
+    fFlag(flag),
     fAlgorithm(3),
     fClusterSeparationTime(100.),
     fThresholdRatio(0.1),
@@ -63,7 +64,7 @@ InitStatus CbmMuchFindHitsGem::Init() {
   file->Close();
   file->Delete();
   gFile = oldfile;
-  fGeoScheme->Init(stations);
+  fGeoScheme->Init(stations, fFlag);
   return kSUCCESS;
 }
 // -------------------------------------------------------------------------

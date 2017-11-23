@@ -20,7 +20,7 @@
 
 using std::fabs;
 
-CbmMuchHitProducerIdeal::CbmMuchHitProducerIdeal(const char* digiFileName)
+CbmMuchHitProducerIdeal::CbmMuchHitProducerIdeal(const char* digiFileName, Int_t Id)
 : FairTask("CbmMuchHitProducerIdeal"),
   fMuchPoints(NULL),
   fMuchPixelHits(NULL),
@@ -28,6 +28,7 @@ CbmMuchHitProducerIdeal::CbmMuchHitProducerIdeal(const char* digiFileName)
   fSigmaY(0.01),
   fSigmaZ(0.),
   fDigiFile(digiFileName),
+  fId(Id),
   fGeoScheme(NULL)
 {
 }
@@ -51,7 +52,7 @@ InitStatus CbmMuchHitProducerIdeal::Init()
    file->Close();
    file->Delete();
    gFile = oldfile;
-   fGeoScheme->Init(stations);
+   fGeoScheme->Init(stations,fId);
    return kSUCCESS;
 }
 

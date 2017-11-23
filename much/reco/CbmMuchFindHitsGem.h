@@ -41,7 +41,7 @@ class CbmMuchGeoScheme;
 
 class CbmMuchFindHitsGem: public FairTask {
   public:
-    CbmMuchFindHitsGem(const char* digiFileName);
+  CbmMuchFindHitsGem(const char* digiFileName, Int_t flag);
     virtual ~CbmMuchFindHitsGem() {}
     virtual void Exec(Option_t* opt);
     void SetAlgorithm(Int_t iAlgorithm)             { fAlgorithm = iAlgorithm;}
@@ -58,6 +58,7 @@ class CbmMuchFindHitsGem: public FairTask {
     void ExecClusteringPeaks(CbmMuchCluster* cluster,Int_t iCluster);
     void CreateHits(CbmMuchCluster* cluster,Int_t iCluster);
     TString  fDigiFile;                     // Digitization file
+    Int_t    fFlag;
     Int_t    fAlgorithm;                    // Defines which algorithm to use
     Double_t fClusterSeparationTime;        // Minimum required time between two clusters
     Double_t fThresholdRatio;               // Charge threshold ratio relative to max cluster charge

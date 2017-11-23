@@ -31,6 +31,7 @@ public:
   virtual void SetParContainers();
   void SetGeoFileName        (TString fileName) { fGeoFileName = fileName; }
   void SetPerformanceFileName(TString fileName) { fFileName    = fileName; }
+  void SetGeometryID(Int_t flag) {fFlag = flag;}
 
   void SetPullsQa(Bool_t on) { fPullsQaOn = on; }
   void SetOccupancyQa(Bool_t on) { fOccupancyQaOn = on; }
@@ -73,6 +74,7 @@ private:
   Int_t fSignalHits;             // Number of signal hits
   Int_t fVerbose;
   Int_t fEvent;
+  Int_t fFlag;
   TClonesArray *fPoints;
   TClonesArray *fDigis;
   TClonesArray *fDigiMatches;

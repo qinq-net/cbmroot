@@ -61,7 +61,7 @@ static const Double_t gkResponsePeriod = 400.;
 class CbmMuchDigitizeGem : public FairTask{
   public:
     /** Constructor */
-    CbmMuchDigitizeGem(const char* digiFileName);
+  CbmMuchDigitizeGem(const char* digiFileName, Int_t flag);
 
     CbmMuchDigitizeGem(const CbmMuchDigitizeGem&) = delete;
     CbmMuchDigitizeGem& operator=(const CbmMuchDigitizeGem&) = delete;
@@ -166,6 +166,8 @@ class CbmMuchDigitizeGem : public FairTask{
     Int_t              fNFailed;       // Total number of points which digitization has failed
     Int_t              fNOutside;      // Total number of points which was found outside a detector
     Int_t              fNMulti;        // Total number of channels that was hitby several points
+    Int_t              fFlag;   // flag to distinguish geometry 
+    
     UInt_t             fNADCChannels;  // Number of ADC channels
     UInt_t             fQMax;          // Maximum charge that a pad can collect [electrons]
     UInt_t             fQThreshold;    // Charge threshold [electrons]

@@ -42,13 +42,15 @@
 
 using std::map;
 using std::vector;
-
+using std::cout;
+using std::endl;
 // -------------------------------------------------------------------------
 CbmMuchHitFinderQa::CbmMuchHitFinderQa(const char* name, Int_t verbose)
   :FairTask(name,verbose),
     fGeoScheme( CbmMuchGeoScheme::Instance()),
     fGeoFileName("much.digi.root"),
     fFileName("performance.root"),
+    fFlag(0),
     fSignalPoints(0),
     fSignalHits(0),
     fVerbose(verbose),
@@ -149,7 +151,7 @@ InitStatus CbmMuchHitFinderQa::Init()
   
   TFile* f = new TFile(fGeoFileName,"R");
   TObjArray* stations = (TObjArray*) f->Get("stations");
-  fGeoScheme->Init(stations);
+  fGeoScheme->Init(stations, fFlag);
   fNstations = fGeoScheme->GetNStations();
   printf("Init: fNstations = %i\n", fNstations);
 
@@ -995,12 +997,15 @@ void CbmMuchHitFinderQa::StatisticsQa(){
   TArrayI pointsInCluster;
   hitsInCluster.Set(nClusters);
   pointsInCluster.Set(nClusters);
-
+  cout<<" start Stat QA "<<endl;
   for (Int_t i=0;i<nClusters;i++) hitsInCluster[i]=0;
   for (Int_t i=0;i<nClusters;i++) pointsInCluster[i]=0;
 
   for (Int_t i=0;i<fHits->GetEntriesFast();i++){
     CbmMuchPixelHit* hit = (CbmMuchPixelHit*) fHits->At(i);
+    //cout<<" hit index "<<i<<" plane  id "<<hit->GetPlaneId()<<" x  "<<hit->GetX()<<"   y  "<<hit->GetY()<<"   z  "<<hit->GetZ()<<" cluster Id "<< hit->GetRefId()<<endl;
+
+    cout<<" hit index "<<i<<" plane  id "<<hit->GetPlaneId()<<endl;
     Int_t clusterId = hit->GetRefId();
     hitsInCluster[clusterId]++;
   }
