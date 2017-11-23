@@ -26,14 +26,14 @@ void run_sim(Int_t nEvents = 100000)
 	outDir = "/home/aghoehne/Documents/CbmRoot/Gregor/";
     }
 
-	TString asciiInput = "/home/aghoehne/Documents/CbmRoot/trunk/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
+	TString asciiInput = "/home/aghoehne/Documents/CbmRoot/trunkNew/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
     	TString parFile = outDir + "param.00001.root";
     	TString mcFile = outDir  + "mc.00001.root";
     	TString geoFile = outDir  + "geofilefull.00001.root";
     
 
     	TString geoSetupFile = "";
-    	geoSetupFile = "/home/aghoehne/Documents/CbmRoot/trunk/macro/rich/prototype/smallprototype/geo.C";
+    	geoSetupFile = "/home/aghoehne/Documents/CbmRoot/trunkNew/macro/rich/prototype/smallprototype/geo.C";
 
 
     // -----   Script initialization   ----------------------------------------
@@ -105,7 +105,7 @@ void run_sim(Int_t nEvents = 100000)
 */
 
     // -----   Create media   -------------------------------------------------
-    TString pathMedia = "../macro/rich/prototype/smallprototype/media.geo";
+    TString pathMedia = "media.geo";
     fRun->SetMaterials(pathMedia); // Materials
     // ------------------------------------------------------------------------
 
@@ -113,7 +113,7 @@ void run_sim(Int_t nEvents = 100000)
     cout << endl;
     //TString macroName = gSystem->Getenv("VMCWORKDIR");
     //macroName += "/macro/run/modules/registerSetup.C";
-    TString macroName = "/home/aghoehne/Documents/CbmRoot/trunk/macro/run/modules/registerSetup.C";
+    TString macroName = "/home/aghoehne/Documents/CbmRoot/trunkNew/macro/run/modules/registerSetup.C";
     std::cout << "Loading macro " << macroName << std::endl;
     gROOT->LoadMacro(macroName);
     gROOT->ProcessLine("registerSetup()");

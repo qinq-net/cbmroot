@@ -6,7 +6,7 @@ using namespace std;
 void run_ascii_generator(Int_t nEvents = 100000)
 {
 	
-   	string asciiFile = "/home/aghoehne/Documents/CbmRoot/trunk/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
+   	string asciiFile = "/home/aghoehne/Documents/CbmRoot/trunkNew/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
     	//string asciiFile = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/rich/prototype/smallprototype/beamdistribution.ascii.dat";
    	double minMomentum = 0.3;
    	double maxMomentum = 5.;
@@ -47,7 +47,7 @@ void run_ascii_generator(Int_t nEvents = 100000)
 
      		 // Write out particles information
 
-		int random = gRandom->Uniform(0,3);
+		int random = gRandom->Uniform(0,0);
 		
 		
 		if (random == 0){

@@ -13,12 +13,12 @@ void create_geo_smallprototype()
 
 	RichGeomType richGeomType = kAerogel;
 
-	TString geoFileName  = "/home/aghoehne/Documents/CbmRoot/trunk/geometry/rich/rich_vTestBox.geo.root";
+	TString geoFileName  = "/home/aghoehne/Documents/CbmRoot/trunkNew/geometry/rich/rich_vTestBox.geo.root";
 
 	FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
 	FairGeoInterface* geoFace = geoLoad->getGeoInterface();
 //	TString geoPath = gSystem->Getenv("VMCWORKDIR");
-	TString medFile = "/home/aghoehne/Documents/CbmRoot/trunk/macro/rich/prototype/smallprototype/media.geo";
+	TString medFile = "/home/aghoehne/Documents/CbmRoot/trunkNew/macro/rich/prototype/smallprototype/media.geo";
 
 	geoFace->setMediaFile(medFile);
 	geoFace->readMedia();
