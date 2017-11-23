@@ -77,7 +77,7 @@ void create_geo_smallprototype()
 	TGeoMedium* medElectronic = gGeoMan->GetMedium("air");
 	if (medElectronic == NULL) Fatal("Main", "Medium air not found");
 
-	FairGeoMedium* mAerogel = geoMedia->getMedium("aerogel");			//aerogel medium in ../smallprototype/media.geo not recent
+	FairGeoMedium* mAerogel = geoMedia->getMedium("aerogel");			//aerogel medium in ../smallprototype/media.geo not perfect
 	if (mAerogel == NULL) Fatal("Main", "FairMedium aerogel not found");
 	geoBuild->createMedium(mAerogel);
 	TGeoMedium* medAerogel = gGeoMan->GetMedium("aerogel");
