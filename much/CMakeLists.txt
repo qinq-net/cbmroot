@@ -43,7 +43,7 @@ set(SRCS
 geo/CbmGeoMuch.cxx  
 geo/CbmGeoMuchPar.cxx 
 geo/CbmMuch.cxx
-geo/CbmMuchMcbm.cxx
+#geo/CbmMuchMcbm.cxx
 geo/CbmMuchContFact.cxx  
 geo/CbmMuchGeoScheme.cxx
 geo/CbmMuchLayer.cxx
@@ -66,13 +66,13 @@ geo/CbmMuchStation.cxx
 reco/CbmMuchDigitizeGem.cxx
 reco/CbmMuchReadoutBuffer.cxx
 reco/CbmMuchSignal.cxx
-reco/CbmMuchDigitizeStraws.cxx
+#reco/CbmMuchDigitizeStraws.cxx
 reco/CbmMuchFindHitsGem.cxx
-reco/CbmMuchFindHitsStraws.cxx
+#reco/CbmMuchFindHitsStraws.cxx
 reco/CbmMuchHitFinderQa.cxx
 reco/CbmMuchHitProducerIdeal.cxx
 reco/CbmMuchPointInfo.cxx
-reco/CbmMuchStrawHitFinderQa.cxx
+#reco/CbmMuchStrawHitFinderQa.cxx
 #reco/CbmMuchClusterAnalysis.cxx
 
 tracking/CbmMuchFindTracks.cxx

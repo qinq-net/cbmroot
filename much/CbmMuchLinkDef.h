@@ -8,13 +8,13 @@
 #pragma link C++ class  CbmGeoMuch+;
 #pragma link C++ class  CbmGeoMuchPar;
 #pragma link C++ class  CbmMuch+;
-#pragma link C++ class  CbmMuchMcbm+;
+//#pragma link C++ class  CbmMuchMcbm+;
 #pragma link C++ class  CbmMuchContFact;
 #pragma link C++ class  CbmMuchGeoScheme+;
 #pragma link C++ class  CbmMuchDigitizeGem+;
 #pragma link C++ class  CbmMuchReadoutBuffer+;
 #pragma link C++ class  CbmMuchSignal+;
-#pragma link C++ class  CbmMuchDigitizeStraws+;
+//#pragma link C++ class  CbmMuchDigitizeStraws+;
 #pragma link C++ class  CbmMuchFindHitsGem+;
 #pragma link C++ class  CbmMuchFindHitsGem+;
 #pragma link C++ class  CbmMuchFindTracks+;
@@ -39,8 +39,8 @@
 #pragma link C++ class  CbmMuchSegmentSector+;
 #pragma link C++ class  CbmMuchStation+;
 #pragma link C++ class  CbmMuchTrackFinderIdeal+;
-#pragma link C++ class  CbmMuchFindHitsStraws+;
-#pragma link C++ class  CbmMuchStrawHitFinderQa+;
+//#pragma link C++ class  CbmMuchFindHitsStraws+;
+//#pragma link C++ class  CbmMuchStrawHitFinderQa+;
 //#pragma link C++ class  CbmMuchClusterAnalysis+;
 
 #endif
