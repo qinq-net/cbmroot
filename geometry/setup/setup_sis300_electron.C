@@ -39,7 +39,7 @@ void setup_sis300_electron()
   // -----  Geometry Tags  --------------------------------------------------
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v14n";
-  TString mvdGeoTag       = "v15a";
+  TString mvdGeoTag       = "v17a_tr";
   TString stsGeoTag       = "v16x";
   TString richGeoTag      = "v17a_3e";
   TString trdGeoTag       = "v17c_3e";

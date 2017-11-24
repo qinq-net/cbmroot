@@ -41,7 +41,7 @@ void setup_sis100_electron()
   // -----  Geometry Tags  --------------------------------------------------
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v16b_1e";
-  TString mvdGeoTag       = "v15a";
+  TString mvdGeoTag       = "v17a_tr";
   TString stsGeoTag       = "v16x";
   TString richGeoTag      = "v17a_1e";
   TString trdGeoTag       = "v17n_1e";

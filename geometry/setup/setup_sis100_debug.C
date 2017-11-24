@@ -36,7 +36,7 @@ void setup_sis100_debug()
   // -----  Geometry Tags  --------------------------------------------------
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v16b_1e";
-  TString mvdGeoTag       = "v15a";
+  TString mvdGeoTag       = "v17a_tr";
   TString stsGeoTag       = "v17a";     // exported
   TString trdGeoTag       = "v17n_1h";  // exported
   TString tofGeoTag       = "v17c_1h";  // exported
