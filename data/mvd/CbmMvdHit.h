@@ -60,7 +60,7 @@ class CbmMvdHit : public CbmPixelHit, public CbmMvdDetectorId
   Int_t GetClusterIndex() const { return fClusterIndex;};
   Int_t GetIndexCentralX() const { return fIndexCentralX;}; // returns index of center of gravity
   Int_t GetIndexCentralY() const { return fIndexCentralY;}; // returns index of center of gravity
-  void GetDigiIndexVector(TClonesArray* cbmMvdClusterArray, std::vector<Int_t>* digiIndexVector);
+//  void GetDigiIndexVector(TClonesArray* cbmMvdClusterArray, std::vector<Int_t>* digiIndexVector);
   Int_t GetRefIndex() { return fFlag; }
   
 

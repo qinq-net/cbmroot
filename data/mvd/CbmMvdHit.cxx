@@ -40,7 +40,7 @@ CbmMvdHit::CbmMvdHit(Int_t statNr, TVector3& pos, TVector3& dpos, Int_t indexCen
 	SetTimeError(0.);
 }
 // -------------------------------------------------------------------------
-
+/*
 void CbmMvdHit::GetDigiIndexVector(TClonesArray* cbmMvdClusterArray, std::vector<Int_t>* digiIndexVector)
 {
   CbmMvdCluster* cluster;
@@ -81,7 +81,7 @@ void CbmMvdHit::GetDigiIndexVector(TClonesArray* cbmMvdClusterArray, std::vector
   
   
 };
-
+*/
 // -----   Destructor   ----------------------------------------------------
 CbmMvdHit::~CbmMvdHit() {} 
 // -------------------------------------------------------------------------
