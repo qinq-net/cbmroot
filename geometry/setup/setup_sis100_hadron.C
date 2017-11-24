@@ -8,6 +8,7 @@
  **
  **/
 
+// 2017-11-24 - VF - New default v16g for STS (unit-based)
 // 2017-11-20 - DE - use TRD v17n as new default
 // 2017-05-22 - DE - use TRD v17c as new default
 // 2016-06-27 - DE - use STS v16x as new default, see issue #647
@@ -36,7 +37,7 @@ void setup_sis100_hadron()
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v16b_1e";
   TString mvdGeoTag       = "v17a_tr";
-  TString stsGeoTag       = "v16x";
+  TString stsGeoTag       = "v16g";
   TString trdGeoTag       = "v17n_1h";
   TString tofGeoTag       = "v16c_1h";
   TString psdGeoTag       = "v17a";

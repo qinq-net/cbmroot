@@ -8,6 +8,7 @@
  **
  **/
 
+// 2017-11-24 - VF - New default v16g for STS (unit-based)
 // 2017-05-22 - DE - use TRD v17c as new default
 // 2016-06-27 - DE - use STS v16x as new default, see issue #647
 // 2016-05-19 - VF - Add platform module
@@ -33,7 +34,7 @@ void setup_sis300_muon()
   // -----  Geometry Tags  --------------------------------------------------
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v13c";
-  TString stsGeoTag       = "v16x";
+  TString stsGeoTag       = "v16g";
   TString muchGeoTag      = "v13f";
   TString trdGeoTag       = "v17c_3m";
   TString tofGeoTag       = "v16c_3m";

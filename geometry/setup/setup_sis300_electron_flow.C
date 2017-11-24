@@ -8,6 +8,7 @@
  **
  **/
 
+// 2017-11-24 - VF - New default v16g for STS (unit-based)
 // 2016-06-27 - DE - use STS v16x as new default, see issue #647
 // 2016-02-25 - DE - use STS v16c as new default
 // 2016-02-05 - VF - Replaces former sis300_electron_setup.C,
@@ -38,7 +39,7 @@ void setup_sis300_electron_flow()
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v14c";
   TString mvdGeoTag       = "v17a_tr";
-  TString stsGeoTag       = "v16x";
+  TString stsGeoTag       = "v16g";
   TString richGeoTag      = "v17a_3e";
   TString trdGeoTag       = "v17c_3e";
   TString tofGeoTag       = "v16c_3e";
