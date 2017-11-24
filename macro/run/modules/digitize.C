@@ -70,13 +70,16 @@ void digitize()
 		TString geoTag;
 		setup->GetGeoTag(kMuch, geoTag);
 		std::cout << geoTag(0,4) << std::endl;
+                Int_t muchFlag=0;
+                if (geoTag.Contains("mcbm")) muchFlag=1; 
+
 		TString parFile = gSystem->Getenv("VMCWORKDIR");
 		parFile = parFile + "/parameters/much/much_" + geoTag(0,4)
 				    + "_digi_sector.root";
 		std::cout << "Using parameter file " << parFile << std::endl;
 
 		// --- Digitiser for GEM
-		FairTask* gemDigi = new CbmMuchDigitizeGem(parFile.Data(),0);
+		FairTask* gemDigi = new CbmMuchDigitizeGem(parFile.Data(),muchFlag);
 		run->AddTask(gemDigi);
 		std::cout << "-I- digitize: Added task " << gemDigi->GetName()
 				      << std::endl;
