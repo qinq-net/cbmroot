@@ -419,9 +419,9 @@ void CbmMvdDetector::SendInputCluster(TClonesArray* clusters){
       			{
      		 sensor=(CbmMvdSensor*)fSensorArray->At(k);
   	 
-	        if (cluster->GetDetectorId() == sensor->GetDetectorID())
+	        if (cluster->GetSensorNr() == sensor->GetSensorNr())
 	           {
-		 
+		   LOG(DEBUG2) << "Sending cluster to sensor: "<< sensor->GetSensorNr() << FairLogger::endl;
                    sensor->SendInputCluster(cluster);
  			
                    }
