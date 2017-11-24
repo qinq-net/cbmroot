@@ -134,7 +134,7 @@ InitStatus CbmAnaMuch::Init(){
   TObjArray* stations = (TObjArray*) f->Get("stations");
   if (!stations) Fatal("Init","No array of stations");
   // Init geo scheme
-  fGeoScheme->Init(stations);
+  fGeoScheme->Init(stations,0);
   
   // Get and check FairRootManager
   FairRootManager* fManager = FairRootManager::Instance();

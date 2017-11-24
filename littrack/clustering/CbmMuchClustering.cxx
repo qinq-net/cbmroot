@@ -85,7 +85,7 @@ InitStatus CbmMuchClustering::Init()
    file->Close();
    file->Delete();
    gFile=oldfile;
-   fScheme->Init(stations);
+   fScheme->Init(stations,0);
    // Initialize arrays of objects
    ReadDataBranches();
    // Create special geometry for every module

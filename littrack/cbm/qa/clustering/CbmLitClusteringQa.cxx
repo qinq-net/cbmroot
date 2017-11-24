@@ -180,7 +180,7 @@ void CbmLitClusteringQa::InitMuchGeoScheme(
       file->Close();
       file->Delete();
       gFile=oldfile;
-      CbmMuchGeoScheme::Instance()->Init(stations);
+      CbmMuchGeoScheme::Instance()->Init(stations,0);
    }
 }
 

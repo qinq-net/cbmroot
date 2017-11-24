@@ -137,7 +137,7 @@ InitStatus CbmAnaDimuonAnalysis::Init()
   fManager->Register("MuCandidates" ,"Much",fMuCandidates,IsOutputBranchPersistent("MuCandidates"));
   
   fGeoScheme = CbmMuchGeoScheme::Instance();
-  fGeoScheme->Init(fDigiFileName);
+  fGeoScheme->Init(fDigiFileName,0);
 //  fLastStationIndex = fGeoScheme->GetNStations()-1;
 //  fNLayers = 0;
 //  for (Int_t i=0;i<=fLastStationIndex;i++){
