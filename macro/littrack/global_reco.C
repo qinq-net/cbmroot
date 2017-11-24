@@ -184,16 +184,20 @@ void global_reco(Int_t nEvents = 10, // number of events
     
     if (IsMuch(parFile)) {
       // -------- MUCH digitization ------------
-      CbmMuchDigitizeGem* digitize = new CbmMuchDigitizeGem(muchDigiFile.Data());
+      //FIXME: Don't hrdcode the mch version (0=sis100) but get the info
+      // from the geometry file name
+
+      CbmMuchDigitizeGem* digitize = new CbmMuchDigitizeGem(muchDigiFile.Data(),0);
       if (muchHitProducerType == "simple") {
 	digitize->SetAlgorithm(0);
       } else if (muchHitProducerType == "advanced") {
 	digitize->SetAlgorithm(1);
       }
       run->AddTask(digitize);
-      CbmMuchFindHitsGem* findHits = new CbmMuchFindHitsGem(muchDigiFile.Data());
+      CbmMuchFindHitsGem* findHits = new CbmMuchFindHitsGem(muchDigiFile.Data(),0);
       run->AddTask(findHits);
       
+/*
       CbmMuchDigitizeStraws* strawDigitize = new CbmMuchDigitizeStraws(muchDigiFile.Data());
       strawDigitize->SetDimens(2);
       run->AddTask(strawDigitize);
@@ -201,6 +205,7 @@ void global_reco(Int_t nEvents = 10, // number of events
       //strawFindHits->SetMerge(1);
       strawFindHits->SetDimens(2);
       run->AddTask(strawFindHits);
+*/
       // -----------------------------------------------------------------
     }
     
