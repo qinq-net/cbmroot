@@ -8,9 +8,9 @@
 // --------------------------------------------------------------------------
 
 void trd_sim(Int_t nEvents = 1, 
-//             const char* setupName = "sis100_electron")
+             const char* setupName = "sis100_electron")
 //             const char* setupName = "sis100_hadron")
-               const char* setupName = "sis100_debug")
+//               const char* setupName = "sis100_debug")
 {
 
 
@@ -235,5 +235,6 @@ void trd_sim(Int_t nEvents = 1,
 
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
+  RemoveGeoManager();
 }
 
