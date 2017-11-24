@@ -18,9 +18,9 @@
 // 20130605 - checked by DE
 // --------------------------------------------------------------------------
 void trd_digi2(Int_t nEvents = 1,
-//             const char* setupName = "sis100_electron")
+             const char* setupName = "sis100_electron")
 //             const char* setupName = "sis100_hadron")
-               const char* setupName = "sis100_debug")
+//               const char* setupName = "sis100_debug")
 {
 
   gStyle->SetPalette(1,0);
