@@ -78,13 +78,13 @@ Bool_t reconstruct()
 		std::cout << "Using parameter file " << parFile << std::endl;
 
 		// --- Hit finder for GEMs
-		FairTask* muchHitGem = new CbmMuchFindHitsGem(parFile.Data());
+		FairTask* muchHitGem = new CbmMuchFindHitsGem(parFile.Data(),0);
 		run->AddTask(muchHitGem);
 
-		// --- Hit finder for Straws
-		CbmMuchFindHitsStraws* strawFindHits =
-				new CbmMuchFindHitsStraws(parFile.Data());
-		run->AddTask(strawFindHits);
+//		// --- Hit finder for Straws
+//		CbmMuchFindHitsStraws* strawFindHits =
+//				new CbmMuchFindHitsStraws(parFile.Data());
+//		run->AddTask(strawFindHits);
 
   }
 

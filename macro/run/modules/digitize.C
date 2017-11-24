@@ -76,16 +76,16 @@ void digitize()
 		std::cout << "Using parameter file " << parFile << std::endl;
 
 		// --- Digitiser for GEM
-		FairTask* gemDigi = new CbmMuchDigitizeGem(parFile.Data());
+		FairTask* gemDigi = new CbmMuchDigitizeGem(parFile.Data(),0);
 		run->AddTask(gemDigi);
 		std::cout << "-I- digitize: Added task " << gemDigi->GetName()
 				      << std::endl;
 
-		// --- Digitiser for Straws
-		FairTask* strawDigi = new CbmMuchDigitizeStraws(parFile.Data());
-		run->AddTask(strawDigi);
-		std::cout << "-I- digitize: Added task " << strawDigi->GetName()
-				      << std::endl;
+//		// --- Digitiser for Straws
+//		FairTask* strawDigi = new CbmMuchDigitizeStraws(parFile.Data());
+//		run->AddTask(strawDigi);
+//		std::cout << "-I- digitize: Added task " << strawDigi->GetName()
+//				      << std::endl;
 	}
   // -------------------------------------------------------------------------
 
