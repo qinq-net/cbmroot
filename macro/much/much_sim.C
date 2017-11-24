@@ -59,7 +59,8 @@ void much_sim(TString inputSignal = "",
 
 // LMVM setup using Rootified Geometry
   
-  TString muchGeom   = "much/much_v17b.geo.root";
+  TString muchGeom   = "much/much_v17b_sis100_1m_lmvm.geo.root";
+//  TString muchGeom   = "much/much_v17b.geo.root";
   TString pipeGeom   = "pipe/pipe_much_v15b_125cm_no.geo";
   TString shieldGeom = "";
 
@@ -270,5 +271,6 @@ void much_sim(TString inputSignal = "",
 
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
+  RemoveGeoManager();
 }
 

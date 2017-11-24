@@ -8,8 +8,13 @@
 #include <iostream>
 using namespace std;
 
+/*
+flag =0 for sis 100 geometry
+flag = 1 for mini-cbm geometry
+ */
+
 void much_reco(
-		Int_t nEvents = 100)
+		Int_t nEvents = 100, Int_t flag=0)
 {
    TString dir  = "data/"; // Output directory
    TString mcFile = dir + "mc.root"; // MC transport file
@@ -76,15 +81,15 @@ void much_reco(
    // --------------------------------------------------------------------------
 
    // ----- MUCH hits----------   ----------------------------------------------
-   CbmMuchDigitizeGem* muchDigitize = new CbmMuchDigitizeGem(muchDigiFile.Data());
+   CbmMuchDigitizeGem* muchDigitize = new CbmMuchDigitizeGem(muchDigiFile.Data(), flag);
    run->AddTask(muchDigitize);
-   CbmMuchDigitizeStraws* strawDigitize = new CbmMuchDigitizeStraws(muchDigiFile.Data());
-   run->AddTask(strawDigitize);
+//   CbmMuchDigitizeStraws* strawDigitize = new CbmMuchDigitizeStraws(muchDigiFile.Data());
+//   run->AddTask(strawDigitize);
 
-   CbmMuchFindHitsGem* muchFindHits = new CbmMuchFindHitsGem(muchDigiFile.Data());
+   CbmMuchFindHitsGem* muchFindHits = new CbmMuchFindHitsGem(muchDigiFile.Data(), flag);
    run->AddTask(muchFindHits);
-   CbmMuchFindHitsStraws* strawFindHits = new CbmMuchFindHitsStraws(muchDigiFile.Data());
-   run->AddTask(strawFindHits);
+//   CbmMuchFindHitsStraws* strawFindHits = new CbmMuchFindHitsStraws(muchDigiFile.Data());
+//   run->AddTask(strawFindHits);
    // --------------------------------------------------------------------------
 
    // --- Global tracking ------------------------------------------------------
@@ -151,4 +156,5 @@ void much_reco(
 
    cout << " Test passed" << endl;
    cout << " All ok " << endl;
+   RemoveGeoManager();
 }

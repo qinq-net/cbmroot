@@ -12,23 +12,24 @@ flag = 1 for mini-cbm geometry
  */
 void much_seg_sector(TString mcFile = "",
                      TString inDigiFile = "",
-                     TString outDigiFile = "", Int_t flag=1)
+                     TString outDigiFile = "", Int_t flag=0)
 {
   // ========================================================================
   //          Adjust this part according to your requirements
 
   
   if (mcFile == "") {
-    mcFile = "data/mc.test.mcbm.root";
+    mcFile = "data/mc.root";
   }
   //  if (inDigiFile == "") {
   if (inDigiFile == "") {
-    inDigiFile = "data/much_digi_sector_mcbm.seg";
-    // inDigiFile = "data/much_digi_sector_4station.seg";
+    //inDigiFile = "data/much_digi_sector_mcbm.seg";
+    inDigiFile = "data/much_digi_sector_4station.seg";
   }
  
   if (outDigiFile=="") {
-    outDigiFile = "data/much_digi_sector_mcbm.root";
+    //outDigiFile = "data/much_digi_sector_mcbm.root";
+    outDigiFile = "data/much_digi_sector.root";
   }
 
   // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
@@ -36,9 +37,15 @@ void much_seg_sector(TString mcFile = "",
 
   // Dummy ROOT file (needed as an output)
   TString outFile = "data/dummy.root";
-  TString parFile = "data/params.test.mcbm.root";
+//  TString parFile = "data/params.test.mcbm.root";
+  TString parFile = "data/params.root";
+
+  // Function needed for CTest runtime dependency
+
+  TString depFile = Remove_CTest_Dependency_File("data", "much_seg");
 
   
+
   // ------------------------------------------------------------------------
 
   // -----   Analysis run   -------------------------------------------------
@@ -68,6 +75,8 @@ void much_seg_sector(TString mcFile = "",
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
 
-  
+  // Function needed for CTest runtime dependency
 
+  Generate_CTest_Dependency_File(depFile);
+  RemoveGeoManager();
 }
