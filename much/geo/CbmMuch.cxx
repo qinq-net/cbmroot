@@ -62,6 +62,7 @@ CbmMuch::CbmMuch()
 : FairDetector(),
   fTrackID(-1),
   fVolumeID(-1),
+  fFlagID(0),
   fPosIn(),
   fPosOut(),
   fMomIn(),
@@ -74,8 +75,7 @@ CbmMuch::CbmMuch()
   kGeoSaved(kFALSE),
   fCombiTrans(),
   flGeoPar(new TList()),
-  fPar(NULL),
-  fVolumeName("")
+  fPar(NULL)
 {
   ResetParameters();
   flGeoPar->SetName( GetName());
@@ -91,6 +91,7 @@ CbmMuch::CbmMuch(const char* name, Bool_t active)
   : FairDetector(name, active),
     fTrackID(-1),
     fVolumeID(-1),
+    fFlagID(0),
     fPosIn(),
     fPosOut(),
     fMomIn(),
@@ -102,9 +103,9 @@ CbmMuch::CbmMuch(const char* name, Bool_t active)
     fMuchCollection(new TClonesArray("CbmMuchPoint")),
     fCombiTrans(),
     kGeoSaved(kFALSE),
-    flGeoPar(new TList()),    
-    fPar(NULL),
-    fVolumeName("")
+    flGeoPar(new TList()),
+    
+    fPar(NULL)
 {
   
   ResetParameters();
@@ -129,7 +130,7 @@ CbmMuch::~CbmMuch() {
 
 
 Bool_t CbmMuch::ProcessHits(FairVolume* vol) {
-  
+  // cout<<" called process Hit******************     "<<endl;
   if ( gMC->IsTrackEntering() ) {
     fELoss  = 0.;
     fTime   = gMC->TrackTime() * 1.0e09;
@@ -148,7 +149,7 @@ Bool_t CbmMuch::ProcessHits(FairVolume* vol) {
     fTrackID  = gMC->GetStack()->GetCurrentTrackNumber();
     fVolumeID = vol->getMCid();
     Int_t fDetectorId = GetDetId(vol);
-    
+    //  cout<<" check det ID 2 "<<fDetectorId<<endl;
     if (fVerboseLevel>2){
       printf(" TrackId: %i",fTrackID);
       printf(" System: %i" , CbmMuchAddress::GetSystemIndex(fDetectorId));
@@ -164,12 +165,15 @@ Bool_t CbmMuch::ProcessHits(FairVolume* vol) {
     
     assert(iStation >=0 && iStation < fPar->GetNStations());
     CbmMuchStation* station= (CbmMuchStation*) fPar->GetStations()->At(iStation);
-    
+    //cout<<" track # "<<fTrackID<<"   Rmin "<<station->GetRmin()<<"   Rmax  "<<station->GetRmax()<<" in perp "<<fPosIn.Perp()<<" out perp "<<fPosOut.Perp()<<"  eloss "<<fELoss<<endl;
     if (fPosIn.Perp() >station->GetRmax()) {return kFALSE; }
     if (fPosOut.Perp()>station->GetRmax()) {return kFALSE; }
     if (fPosIn.Perp() <station->GetRmin()) {return kFALSE; }
     if (fPosOut.Perp()<station->GetRmin()) {return kFALSE; }
-    
+  
+
+
+
     if (fELoss == 0. ) return kFALSE;
     AddHit(fTrackID, fDetectorId,
 	   TVector3(fPosIn.X(),   fPosIn.Y(),   fPosIn.Z()),
@@ -207,6 +211,7 @@ Int_t CbmMuch::GetDetId(FairVolume* vol) {
   assert(CbmMuchAddress::GetLayerSideIndex(detectorId) == iSide);
   assert(CbmMuchAddress::GetModuleIndex(detectorId) == iModule);
   assert(detectorId > 0);
+  
   return detectorId;
 
 }
@@ -299,6 +304,13 @@ void CbmMuch::ConstructGeometry() {
   
   LOG(INFO) << "Constructing " << GetName() << "  geometry from ROOT  file "
 	    << fileName.Data() << FairLogger::endl;
+
+
+  if (fileName.Contains("mcbm")) {
+
+    fFlagID=1;
+    LOG(INFO) << "mcbm geometry found " << FairLogger::endl;
+  }
   ConstructRootGeometry();
 }
 // -------------------------------------------------------------------------
@@ -313,20 +325,13 @@ void CbmMuch::ConstructRootGeometry()
   FairGeoMedia*     media    = geoFace->getMedia();
   FairGeoBuilder*   geobuild = geoLoad->getGeoBuilder();
   
-  
-  
-  
-  
-  
-  
-  
   FairRun*        fRun = FairRun::Instance();
   if (!fRun) {Fatal("CreateGeometry","No FairRun found"); return;}
   FairRuntimeDb*  rtdb = FairRuntimeDb::instance();
   fPar  = (CbmGeoMuchPar*)(rtdb->getContainer("CbmGeoMuchPar"));
   TObjArray* stations = fPar->GetStations();
 
-  
+  /*
   
   // Create media
   TGeoMedium* mat = NULL;
@@ -339,14 +344,15 @@ void CbmMuch::ConstructRootGeometry()
   TGeoMedium* supportMat   = CreateMedium("MUCHsupport");
   TGeoMedium* noryl        = CreateMedium("MUCHnoryl");
   TGeoMedium* polyethylene = CreateMedium("MUCHpolyethylene");
-  
+  */
+
   Double_t* buf = NULL;
 
   //-------------------------------------------------------
   
   CbmMuchGeoScheme* fGeoScheme = CbmMuchGeoScheme::Instance();
   
-  fGeoScheme->Init(stations);
+  fGeoScheme->Init(stations,fFlagID);
   
   if( IsNewGeometryFile(fgeoName) ) {
 
@@ -480,8 +486,8 @@ Bool_t CbmMuch::CheckIfSensitive(
   
   
   if (tsname.Contains("active")){
-  cout<<tsname<<endl;
-      LOG(DEBUG) << "CbmMuch::CheckIfSensitive: Register active volume: " << tsname << FairLogger::endl;
+    // cout<<tsname<<endl;
+      LOG(INFO) << "CbmMuch::CheckIfSensitive: Register active volume: " << tsname << FairLogger::endl;
       return kTRUE;
   }
   return kFALSE;

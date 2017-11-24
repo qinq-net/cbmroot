@@ -119,10 +119,12 @@ CbmMuchGeoScheme* CbmMuchGeoScheme::Instance() {
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmMuchGeoScheme::Init(TObjArray* stations) {
+void CbmMuchGeoScheme::Init(TObjArray* stations, Int_t flag) {
 
   if (!fInitialized) {
     fStations = stations;
+    //cout<<" enter ini loop  check"<<fStations->GetEntries()<<"    "<<stations->GetEntries()<<endl;
+    fGeoID=flag;
     fInitialized = kTRUE;
   }
   gLogger->Debug(MESSAGE_ORIGIN,"CbmMuchGeoScheme init successful");
@@ -132,7 +134,7 @@ void CbmMuchGeoScheme::Init(TObjArray* stations) {
 
 
 // -------------------------------------------------------------------------
-void CbmMuchGeoScheme::Init(TString digiFileName) {
+void CbmMuchGeoScheme::Init(TString digiFileName, Int_t flag) {
 
   TFile* oldfile=gFile;
   TFile* file=new TFile(digiFileName);
@@ -140,7 +142,7 @@ void CbmMuchGeoScheme::Init(TString digiFileName) {
   file->Close();
   file->Delete();
   gFile=oldfile;
-  Init(stations);
+  Init(stations,flag);
 }
 // -------------------------------------------------------------------------
 
@@ -157,7 +159,7 @@ void CbmMuchGeoScheme::InitModules() {
     fSides.clear();
     fModules.clear();
 
-cout<<"Total No. of Stations"<<"  "<<GetNStations()<<endl;
+    //cout<<"Total No. of Stations  "<<"  "<<GetNStations()<<" absorbers "<<GetNAbsorbers()<<endl;
     for (Int_t iStation = 0; iStation < GetNStations(); iStation++) {
 
       const CbmMuchStation* station = GetStation(iStation);
@@ -489,6 +491,7 @@ void CbmMuchGeoScheme::ExtractGeoParameter(TGeoNode* ncave, const char* volumeNa
       
       TGeoNode* MuchObjNode = static_cast<TGeoNode*>(MuchObj->At(iMuchObj));
   	
+      // if (!TString(MuchObjNode->GetName()).Contains("Station")) continue; 
       if (!TString(MuchObjNode->GetName()).Contains("station")) continue; 
       TString MuchObjPath = TString("/")  + ncave->GetName()  + "/"+ SystemNode->GetName()+ "/" +MuchObjNode->GetName();
       
@@ -502,9 +505,9 @@ void CbmMuchGeoScheme::ExtractGeoParameter(TGeoNode* ncave, const char* volumeNa
 void CbmMuchGeoScheme::StationNode(TGeoNode* fSNode, TString Path){
   
   TObjArray* stations =fSNode->GetNodes();
-  
+  //fStations=stations; // by PPB 1/11/2017
   fNst = stations->GetEntriesFast();
-cout<<"stations   "<<fNst<<endl;
+  //  cout<<"check stations   "<<fNst<<endl;
   fStationZ0.Set(fNst); // Station Zceneter [cm]
   fNlayers.Set(fNst); // Number of layers
   fDetType.Set(fNst); // Detector type
@@ -535,7 +538,8 @@ cout<<"stations   "<<fNst<<endl;
     TString Supportlayer2Path = Layer2Path + "/" + Supportlayer2Node->GetName();
 
    Double_t  fLayer2Z0;
-if(Supportlayer2Path.Contains("mcbm")) fLayer2Z0=GetModuleZ(Supportlayer2Path);
+   //if(Supportlayer2Path.Contains("mcbm")) fLayer2Z0=GetModuleZ(Supportlayer2Path);
+ if (fGeoID ==1)fLayer2Z0=GetModuleZ(Supportlayer2Path);
  else fLayer2Z0 = GetZ(Supportlayer2Path);
     fStationZ0[iStation] = fLayer2Z0;
 
@@ -549,11 +553,13 @@ if(Supportlayer2Path.Contains("mcbm")) fLayer2Z0=GetModuleZ(Supportlayer2Path);
     TString Supportlayer3Path = Layer3Path + "/" + Supportlayer3Node->GetName();
  
     Double_t  fLayer3Z0;
-if(Supportlayer3Path.Contains("mcbm"))  fLayer3Z0=GetModuleZ(Supportlayer3Path);
-    else fLayer3Z0 = GetZ(Supportlayer3Path);
+    //if(Supportlayer3Path.Contains("mcbm"))  fLayer3Z0=GetModuleZ(Supportlayer3Path);
+ if(fGeoID==1)  fLayer3Z0=GetModuleZ(Supportlayer3Path);
+   else fLayer3Z0 = GetZ(Supportlayer3Path);
     fLayersDz[iStation]=fLayer3Z0 - fLayer2Z0;
     
-if(Supportlayer3Path.Contains("mcbm")) fSupportLz[iStation]=2.0*GetModuleDZ(Supportlayer3Path);
+    //if(Supportlayer3Path.Contains("mcbm")) fSupportLz[iStation]=2.0*GetModuleDZ(Supportlayer3Path);
+ if (fGeoID==1) fSupportLz[iStation]=2.0*GetModuleDZ(Supportlayer3Path);
 else fSupportLz[iStation]=2.0*GetSizeZ(Supportlayer3Path);
 //cout<<fSupportLz[iStation]<<"  "<<fLayersDz[iStation]<<endl;
 
@@ -562,38 +568,44 @@ else fSupportLz[iStation]=2.0*GetSizeZ(Supportlayer3Path);
     TString Activelayer3Path = Layer3Path + "/" + Activelayer3Node->GetName();
     
     Double_t PosY=GetModuleY(Activelayer3Path);
+    // Double_t PosX=GetModuleX(Activelayer3Path);
     Double_t Phi = GetModulePhi(Activelayer3Path);
     Double_t Dy = GetModuleH1(Activelayer3Path);
     fActiveLzSector=2.0*GetModuleDZ(Activelayer3Path);
     
-    Double_t yMin = (PosY/TMath::Cos(Phi))-Dy;
-    Double_t yMax = 2*Dy + yMin;
-           Rmax = yMax;
-           Rmin = yMin-2.0; // Spacer width[cm] = 2.0
     
 
-
-
-     muchSt = new CbmMuchStation(iStation, fStationZ0[iStation]);
+    //chaned by PPB on 16.11.2017
+    //Double_t yMin = -(PosX/TMath::Sin(Phi))-Dy;
+    Double_t yMin = (PosY/TMath::Cos(Phi))-Dy;
+    Double_t yMax = 2*Dy + yMin;
+    cout<<" Geo Scheme "<<" posY  "<<PosY<<" phi "<<Phi<<"  Dy "<<Dy<<endl;
+    Rmax = yMax;
+    Rmin = yMin;//-2.0; // Spacer width[cm] = 2.0
+       
+   
+    muchSt = new CbmMuchStation(iStation, fStationZ0[iStation]);
     muchSt->SetRmin(Rmin);
     muchSt->SetRmax(Rmax);
+    
     if (Supportlayer3->GetEntriesFast()>0) fModuleDesign[iStation]=1;
     muchSt->SetModuleDesign(fModuleDesign[iStation]);
     
     
     LayerNode(station,iStation,StationPath);
-
     
-  
- muchLy = muchSt->GetLayer(0);
+    
+    
+    muchLy = muchSt->GetLayer(0);
     Double_t supDx  = muchLy->GetSupportDx();
     Double_t supDy  = muchLy->GetSupportDy();
     Double_t supDz  = muchLy->GetSupportDz();
     muchSt->SetTubeRmin(muchSt->GetRmin());
     muchSt->SetTubeRmax(TMath::Sqrt(supDx*supDx+supDy*supDy)+10);
-   fStations->Add(muchSt);  
-
-    }//Station
+    //cout<<" fill fStations array "<<iStation<<" z cent "<<fStationZ0[iStation]<<endl;
+    fStations->Add(muchSt);  
+    
+  }//Station
 }//StationNode
 //---------------------------------------------------------------------------------------------------------
 
@@ -645,17 +657,18 @@ if(modName.Contains("support")){
 
 
 Double_t layerGlobalZ0;
-if(modulePath.Contains("mcbm")) layerGlobalZ0=GetModuleZ(modulePath);
-else layerGlobalZ0 = GetZ(modulePath);
+// if(modulePath.Contains("mcbm")) layerGlobalZ0=GetModuleZ(modulePath);
+ if (fGeoID==1) layerGlobalZ0=GetModuleZ(modulePath);
+ else layerGlobalZ0 = GetZ(modulePath);
 
 Double_t layerZ0 = (iLayer - (fNlayers[iStation] - 1) / 2.) * fLayersDz[iStation];
 Double_t sideDz = fSupportLz[iStation]/2. + fActiveLzSector/2.;
 
         muchLy = new CbmMuchLayer(iStation, iLayer, layerGlobalZ0, layerZ0);  //CbmMuchLayer Class
-		muchLy->GetSideB()->SetZ(layerGlobalZ0 + sideDz);
-		muchLy->GetSideF()->SetZ(layerGlobalZ0 - sideDz);
+	muchLy->GetSideB()->SetZ(layerGlobalZ0 + sideDz);
+	muchLy->GetSideF()->SetZ(layerGlobalZ0 - sideDz);
 
-}
+ }
 
 
 
@@ -663,6 +676,7 @@ Double_t sideDz = fSupportLz[iStation]/2. + fActiveLzSector/2.;
   if(modName.Contains("active")){
     
     gGeoManager->cd(modulePath.Data());
+    //   TGeoNode* moduleNode = gGeoManager->GetMother(0);
     moduleNode = gGeoManager->GetMother(0);
     Int_t nModule=moduleNode->GetNumber();
 
@@ -673,22 +687,26 @@ Double_t sideDz = fSupportLz[iStation]/2. + fActiveLzSector/2.;
     pos[0]=GetModuleX(modulePath);
     pos[1]=GetModuleY(modulePath);
     pos[2]=GetModuleZ(modulePath);
+    //   cout<<" positions  "<<pos[0]<<"  "<<pos[1]<<"  "<<pos[2]<<endl;
     Double_t Dz = GetModuleDZ(modulePath);
     Double_t Phi = GetModulePhi(modulePath);
     Double_t Dy = GetModuleH1(modulePath);
     Double_t Dx1 = GetModuleBl1(modulePath);
-      Dx2 = GetModuleTl1(modulePath);
- 
+    Dx2 = GetModuleTl1(modulePath);
+    cout<<" positions  "<<pos[0]<<"  "<<pos[1]<<"  "<<pos[2]<<" phi "<<Phi<<endl;
+
+    // Is this formula correct? Check Omveer (PPB 16.11.2017)
     Double_t yMin = (pos[1]/TMath::Cos(Phi))-Dy;
     Double_t yMax = 2*Dy + yMin;
    // Double_t Rmin = yMin-2.0; // Spacer width[cm] = 2.0
+    // Why is R0 required?
     Double_t R0 = yMax-Dy;
    // Double_t Rmax = yMax;
 
 
   muchLySd = muchLy->GetSide(iSide);
 
-          muchLySd->AddModule(new CbmMuchModuleGemRadial(iStation,iLayer, iSide, muchLySd->GetNModules(), pos,Dx1,Dx2,Dy,Dz,Rmin));
+  muchLySd->AddModule(new CbmMuchModuleGemRadial(iStation,iLayer, iSide, muchLySd->GetNModules(), pos,Dx1,Dx2,Dy,Dz,Rmin));
 
 
   }//activeLayer

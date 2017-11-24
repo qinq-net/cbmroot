@@ -138,6 +138,7 @@ Bool_t CheckIfSensitive(std::string name);
       active volume. **/
   Int_t          fTrackID;           //!  track index
   Int_t          fVolumeID;          //!  volume id
+  Int_t          fFlagID;           // ! Flag to distinguish geometries
   TLorentzVector fPosIn, fPosOut;    //!  position
   TLorentzVector fMomIn, fMomOut;    //!  momentum
   Double32_t     fTime;              //!  time

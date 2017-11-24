@@ -37,8 +37,6 @@
 #include "TGeoBoolNode.h"
 #include "TGeoArb8.h"
 
-
-
 class CbmMuchStation;
 class CbmMuchLayer;
 class CbmMuchLayerSide;
@@ -83,7 +81,7 @@ class CbmMuchGeoScheme: public TObject {
     static Int_t GetLayerIndex(Int_t address)     { return CbmMuchAddress::GetElementId(address,kMuchLayer);     }
     static Int_t GetLayerSideIndex(Int_t address) { return CbmMuchAddress::GetElementId(address,kMuchLayerSide); }
 
-    
+    //  fStations->GetEntries();
     Int_t      GetNStations() const {return fStations->GetEntries();}
     Int_t      GetNAbsorbers() const {return fNabs;}
     TObjArray* GetStations() const {return fStations;}
@@ -126,13 +124,6 @@ Double_t GetSizeX(const TString& path);
    Double_t GetModuleTl1(const TString& path);
  
 
-   // for backward compatibility
-   //Int_t GetStation(const TString& path);
-   //Int_t GetLayer(const TString& path);
-   //Int_t GetActive(const TString& path);
-
-
-
 
     Double_t GetActiveLx() const {return fActiveLx;}
     Double_t GetActiveLy() const {return fActiveLy;}
@@ -143,8 +134,8 @@ Double_t GetSizeX(const TString& path);
     Double_t GetSpacerPhi() const {return fSpacerPhi;}
     Double_t GetLayersDz(Int_t st) const {return fLayersDz[st];}
 
-    void Init(TObjArray* stations);
-    void Init(TString digiFileName);
+    void Init(TObjArray* stations, Int_t flag);
+    void Init(TString digiFileName, Int_t flag);
     void CreatePointArrays();
     void CreateHitArrays();
     void CreateClusterArrays();
@@ -168,16 +159,16 @@ Double_t GetSizeX(const TString& path);
 
 
   private:
-   CbmMuchGeoScheme();
-   void NavigateTo(const TString& path);
-   void NavigateModule(const TString& path);
+    CbmMuchGeoScheme();
+void NavigateTo(const TString& path);
+void NavigateModule(const TString& path);
  
-   UInt_t       fGeoPathHash;   //!
+UInt_t       fGeoPathHash;   //!
    TGeoVolume*  fCurrentVolume; //!
    TGeoBBox*    fVolumeBoxShape;   //!
-   TGeoTrap*    fVolumeTrapShape;
+    TGeoTrap*    fVolumeTrapShape;
    Double_t     fGlobal[3];  
-   Double_t     fGlobalTrap[3];    //! Global center of volume
+Double_t     fGlobalTrap[3];    //! Global center of volume
    TGeoHMatrix* fGlobalMatrix;  //!
    
 
@@ -185,7 +176,7 @@ Double_t GetSizeX(const TString& path);
    Int_t        fStation;       //! StationTypeID, 1..3
    Int_t        fLayer;         //! LayerID within station, 1..4
    Int_t        fActive;    //! ModuleCopyID with module type
-
+   Int_t        fGeoID;    // Id to distinguish geometry (mcbm/cbm)
 
     void InitModules();
     void CreateAbsorbers();
