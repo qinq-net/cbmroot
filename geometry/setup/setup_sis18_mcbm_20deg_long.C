@@ -60,8 +60,7 @@ void setup_sis18_mcbm_20deg_long()
   setup->SetModule(kPipe, pipeGeoTag);
   //  setup->SetModule(kMvd, mvdGeoTag);  // skip mvd in the initial setup
   setup->SetModule(kSts, stsGeoTag);
-  // disable, reco fails
-  //  setup->SetModule(kMuch, muchGeoTag);
+  setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
   setup->SetModule(kRich, richGeoTag);
