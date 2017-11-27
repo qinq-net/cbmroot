@@ -43,18 +43,21 @@ class CbmTrdAsic : public TNamed
   Int_t GetnofChannels() const {return fnofChannels; }
   Int_t GetFebGrouping() const {return fFebGrouping; }
   std::vector<Int_t> GetChannelAddresses() const {return fChannelAddresses; }
+  
+  virtual void Print(Option_t *opt="") const;  // *MENU*
+
   void SetChannelAddresses( std::vector<Int_t> addresses );
   std::vector<Int_t> fChannelAddresses;
 
  private:
   void InitAsics();
-  Int_t fAsicAddress; // unique detector ID
-  Double_t fX; // center of asic in global c.s. [cm]
-  Double_t fY; // center of asic in global c.s. [cm]
-  Double_t fZ; // center of asic in global c.s. [cm]
-  Double_t fSizeX; // asic half size in x [cm]
-  Double_t fSizeY; // asic half size in y [cm]
-  Double_t fSizeZ; // asic half size in z [cm]
+  Int_t fAsicAddress; ///< unique detector ID
+  Double_t fX;        ///< center of asic in global c.s. [cm]
+  Double_t fY;        ///< center of asic in global c.s. [cm]
+  Double_t fZ;        ///< center of asic in global c.s. [cm]
+  Double_t fSizeX;    ///< asic half size in x [cm]
+  Double_t fSizeY;    ///< asic half size in y [cm]
+  Double_t fSizeZ;    ///< asic half size in z [cm]
   Int_t fnofChannels;
   Int_t fFebGrouping;
 
