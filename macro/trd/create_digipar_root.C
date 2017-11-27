@@ -10,7 +10,7 @@
 //
 // --------------------------------------------------------------------------
 
-void create_digipar_root(TString geoName = "trd_v13q")
+void create_digipar_root(TString geoName = "trd_v13q", Bool_t asicFASP=kTRUE)
 {
    TString inFile   = "data/test.mc." + geoName + ".root";
    TString geoFile  = "geofile_" + geoName + ".root";
@@ -28,7 +28,7 @@ void create_digipar_root(TString geoName = "trd_v13q")
    parIo2->open(digiFile, "out");
    rtdb->setOutput(parIo2);
 
-   CbmTrdCreateDigiPar* trdDigitizer = new CbmTrdCreateDigiPar();
+   CbmTrdCreateDigiPar* trdDigitizer = new CbmTrdCreateDigiPar(asicFASP);
    run->AddTask(trdDigitizer);
 
    rtdb->saveOutput();
