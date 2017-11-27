@@ -21,7 +21,6 @@ class TClonesArray;
 
 typedef struct MyDigi
 {
-  Char_t up;      ///< added to account for triangular pads. 0 for top base pad
   Int_t digiId;
   Int_t rowId;
   Int_t colId;
@@ -35,9 +34,8 @@ typedef std::vector<MyDigiList*> ClusterList;
 class RowCluster
 {
  public:
-  RowCluster(Bool_t tri=false)
+  RowCluster()
     : hasBeenVisited(false),
-    hasTrianglePads(tri),
     minCol(-1),
     maxCol(-1),
     row(-1),
@@ -55,7 +53,6 @@ class RowCluster
       }
     }
   Bool_t hasBeenVisited;
-  Bool_t hasTrianglePads;
   Int_t minCol;
   Int_t maxCol;
   Int_t row;

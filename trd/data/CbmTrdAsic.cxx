@@ -37,25 +37,6 @@ CbmTrdAsic::~CbmTrdAsic()
 {
 }
 
-void  CbmTrdAsic::Print(Option_t *opt) const
-{
-/** 
-  Dump formated parameters for this ASIC board
-*/
-  printf("        CbmTrdAsic @ %5d chs[%2d] FEBs[%d]\n"
-         "            center   [%7.2f %7.2f %7.2f]\n"
-         "            size     [%7.2f %7.2f %7.2f]\n",
-    fAsicAddress, fnofChannels, fFebGrouping,
-    fX, fY, fZ, fSizeX, fSizeY, fSizeZ);
-  
-  if(strcmp(opt, "addr")!=0) return;
-  printf("            address  ");
-  for(Int_t ia(0); ia<fChannelAddresses.size(); ia++){ 
-    if(ia%8==0) printf("\n%20s", "");
-    printf(" %10d", fChannelAddresses.at(ia));
-  } printf("\n");
-}
-
 void CbmTrdAsic::SetChannelAddresses(std::vector<Int_t> addresses){
   Int_t nofChannels = addresses.size();
   if (nofChannels != fnofChannels){

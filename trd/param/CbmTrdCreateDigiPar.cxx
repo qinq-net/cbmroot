@@ -19,10 +19,9 @@
 #include "FairBaseParSet.h"
 #include "FairLogger.h"
 
-CbmTrdCreateDigiPar::CbmTrdCreateDigiPar(Bool_t fasp)
+CbmTrdCreateDigiPar::CbmTrdCreateDigiPar()
   :FairTask("TrdCreateDigiPar"),
    fMaxSectors(0),
-   fFASP(fasp),
    fModuleMap(), 
    fDigiPar(NULL),
    fGeoHandler(new CbmTrdGeoHandler())
@@ -76,7 +75,6 @@ void CbmTrdCreateDigiPar::FillModuleMap()
    // and pads from the definitions in CbmTrdPads. This info
    // is then stored in a CbmTrdModule object for each of the
    // TRD modules.
-  printf("CbmTrdCreateDigiPar::FillModuleMap()\n");
 
    TGeoNode* topNode = gGeoManager->GetTopNode();
    TObjArray* nodes = topNode->GetNodes();
@@ -84,7 +82,6 @@ void CbmTrdCreateDigiPar::FillModuleMap()
       TGeoNode* node = static_cast<TGeoNode*>(nodes->At(iNode));
       if (!TString(node->GetName()).Contains("trd")) continue; // trd_vXXy top node, e.g. trd_v13a, trd_v14b
       TGeoNode* station = node;
-      Bool_t tripad(kFALSE);
 
       TObjArray* layers = station->GetNodes();
       for (Int_t iLayer = 0; iLayer < layers->GetEntriesFast(); iLayer++) {
@@ -94,11 +91,7 @@ void CbmTrdCreateDigiPar::FillModuleMap()
          TObjArray* modules = layer->GetNodes();
          for (Int_t iModule = 0; iModule < modules->GetEntriesFast(); iModule++) {
             TGeoNode* module = static_cast<TGeoNode*>(modules->At(iModule));
-            // AB : add triangular pad support 21.11.2017
-            tripad=kFALSE;
-            if(TString(module->GetName()).BeginsWith("moduleBu")) tripad=kTRUE;
-            //printf("ly[%d] module[%s/%s]\n", iLayer, module->GetName(), module->GetTitle());
-            
+
             TObjArray* parts = module->GetNodes();
             for (Int_t iPart = 0; iPart < parts->GetEntriesFast(); iPart++) {
                TGeoNode* part = static_cast<TGeoNode*>(parts->At(iPart));
@@ -111,7 +104,7 @@ void CbmTrdCreateDigiPar::FillModuleMap()
                TString path = TString("/") + topNode->GetName() + "/" + station->GetName() + "/"
                   + layer->GetName() + "/" + module->GetName() + "/" + part->GetName();
 
-               CreateModule(path, tripad);
+               CreateModule(path);
             }
          }
       }
@@ -119,13 +112,8 @@ void CbmTrdCreateDigiPar::FillModuleMap()
 }
 
 void CbmTrdCreateDigiPar::CreateModule(
-      const TString& path, Bool_t tripad)
+      const TString& path)
 {
-/**   
- * Create TRD module parameters. Add triangular support (Alex Bercuci/21.11.2017)
-*/   
-  printf("CbmTrdCreateDigiPar::CreateModule(%s, %d)\n", path.Data(), tripad);
- 
    Int_t moduleAddress = fGeoHandler->GetModuleAddress(path);
    Int_t orientation   = fGeoHandler->GetModuleOrientation(path);
 
@@ -141,8 +129,6 @@ void CbmTrdCreateDigiPar::CreateModule(
    TArrayD padSizeX(fMaxSectors);
    TArrayD padSizeY(fMaxSectors);
    Int_t moduleType = fGeoHandler->GetModuleType(path);
-  printf("CbmTrdCreateDigiPar::CreateModule(%s %c) type[%d]\n", path.Data(), (tripad?'y':'n'), moduleType);
-  if(moduleType<=0) moduleType=4;
    for (Int_t i = 0; i < fst1_sect_count; i++) {
       sectorSizeX.AddAt(fst1_pad_type[moduleType - 1][i][0], i);
       sectorSizeY.AddAt(fst1_pad_type[moduleType - 1][i][1], i);
@@ -170,18 +156,11 @@ void CbmTrdCreateDigiPar::CreateModule(
 
    // Create new CbmTrdModule and add it to the map
    fModuleMap[moduleAddress] = new CbmTrdModule(moduleAddress, orientation, x, y, z,
-         sizeX, sizeY, sizeZ, fMaxSectors, sectorSizeX, sectorSizeY, padSizeX, padSizeY, tripad, tripad&fFASP);
-  if(tripad){ // anode wire geometry for the Bucharest detector
-    fModuleMap[moduleAddress]->SetAnodeWireToPadPlaneDistance(0.4);
-    fModuleMap[moduleAddress]->SetAnodeWireOffset(0.15);
-    fModuleMap[moduleAddress]->SetAnodeWireSpacing(0.3);
-  }
-    fModuleMap[moduleAddress]->Print();//"asic");
+         sizeX, sizeY, sizeZ, fMaxSectors, sectorSizeX, sectorSizeY, padSizeX, padSizeY);
 }
 
 void CbmTrdCreateDigiPar::FillDigiPar()
 {
-  printf("CbmTrdCreateDigiPar::FillDigiPar()\n");
    Int_t nofModules = fModuleMap.size();
    fDigiPar->SetNrOfModules(nofModules);
    fDigiPar->SetMaxSectors(fMaxSectors);

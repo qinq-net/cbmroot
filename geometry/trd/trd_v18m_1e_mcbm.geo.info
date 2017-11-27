@@ -2,7 +2,7 @@
 ##   trd_v18m_1e information file
 #
 
-# created 20171127
+# created 20171122
 
 # envelope
 -24.000000 cm   start of TRD (z)
@@ -29,7 +29,7 @@
 -237.500000 cm to 237.500000 cm y-dimension of layer  2
 -237.500000 cm to 237.500000 cm y-dimension of layer  3
 -237.500000 cm to 237.500000 cm y-dimension of layer  4
--152.000000 cm to 152.000000 cm y-dimension of layer  5
+-147.000000 cm to 147.000000 cm y-dimension of layer  5
 
 # z-positions of layer front
 0.000000 cm   z-position of layer  1
@@ -112,7 +112,7 @@ v: 89.46 deg, h: 89.62 deg - vertical/horizontal - layer  1
 v: 84.18 deg, h: 85.83 deg - vertical/horizontal - layer  2
 v: 78.99 deg, h: 82.09 deg - vertical/horizontal - layer  3
 v: 73.97 deg, h: 78.41 deg - vertical/horizontal - layer  4
-v: -81.85 deg, h: -83.98 deg - vertical/horizontal - layer  5
+v: -81.57 deg, h: -83.98 deg - vertical/horizontal - layer  5
 
 # inner aperture
 v: 85.54 deg, h: 85.54 deg - vertical/horizontal - layer  1

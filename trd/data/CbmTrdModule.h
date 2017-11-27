@@ -34,7 +34,7 @@ class CbmTrdModule : public TNamed
 	       Double_t sizex, Double_t sizey, Double_t sizez, Int_t nofSectors,
 	       const TArrayD& sectorSizeX, const TArrayD& sectorSizeY,
 	       const TArrayD& padSizeX, const TArrayD& padSizeY,
-	       const Bool_t padGeoTriangular, const Bool_t FASP);
+	       const Bool_t padGeoTriangular);
 
   /**
    * \brief Destructor.
@@ -51,12 +51,8 @@ class CbmTrdModule : public TNamed
   Double_t GetSizeY() const { return fSizeY; }
   Double_t GetSizeZ() const { return fSizeZ; }
 
-  Bool_t  GetPadGeoTriangular() const                 { return fTriangularPads; }
-  Bool_t  GetAsicFASP() const                         { return fAsicFASP; }
-  void    SetPadGeoTriangular(Bool_t geoTriangular)   { fTriangularPads = geoTriangular; }
-  void    SetAnodeWireToPadPlaneDistance(Double_t d)  { fAnodeWireToPadPlaneDistance=d; }
-  void    SetAnodeWireOffset(Double_t off)            { fAnodeWireOffset=off; }
-  void    SetAnodeWireSpacing(Double_t dw)            { fAnodeWireSpacing=dw; }
+  Bool_t GetPadGeoTriangular() const { return fTriangularPads; }
+  void SetPadGeoTriangular(Bool_t geoTriangular) { fTriangularPads = geoTriangular; }
 
   Int_t GetNofColumns() const;
   Int_t GetNofRows() const;
@@ -81,17 +77,8 @@ class CbmTrdModule : public TNamed
   Int_t GetNofSectors() const { return fNofSectors; }
 
   Int_t GetModuleRow(
-         Int_t& sectorId,
-         Int_t& rowId) const;
-  /**
-   * \brief Find the sector wise row given the module row. Inverse of GetModuleRow()
-   * \param[in] growId Module wise row id. 
-   * \param[out] srowId On return sector wise row id.
-   * \return Sector id. 
-   **/
-  Int_t GetSectorRow(
-         Int_t  growId,
-         Int_t& srowId) const;
+		     Int_t& sectorId,
+		     Int_t& rowId) const;
 
   Bool_t GetPadInfo(
 		    const Double_t* local_point,
@@ -117,8 +104,6 @@ class CbmTrdModule : public TNamed
 		   Int_t rowId,
 		   TVector3& padPos,
 		   TVector3& padSize) const;
-       
-  virtual void Print(Option_t *opt="") const;  // *MENU*
 
   void TransformHitError(
 			 TVector3& hitErr) const;
@@ -159,40 +144,39 @@ class CbmTrdModule : public TNamed
 
   void InitAsics();
 
-  Int_t fModuleAddress; ///< unique detector ID
-  Int_t fOrientation;   ///< angle between long pad axis and y-axis in steps of 90 deg [0..3]
-  Double_t fX;          ///< center of module in global c.s. [cm]
-  Double_t fY;          ///< center of module in global c.s. [cm]
-  Double_t fZ;          ///< center of module in global c.s. [cm]
-  Double_t fSizeX;      ///< module half size in x [cm]
-  Double_t fSizeY;      ///< module half size in y [cm]
-  Double_t fSizeZ;      ///< module half size in z [cm]
+  Int_t fModuleAddress; // unique detector ID
+  Int_t fOrientation; // angle between long pad axis and y-axis in steps of 90 deg [0..3]
+  Double_t fX; // center of module in global c.s. [cm]
+  Double_t fY; // center of module in global c.s. [cm]
+  Double_t fZ; // center of module in global c.s. [cm]
+  Double_t fSizeX; // module half size in x [cm]
+  Double_t fSizeY; // module half size in y [cm]
+  Double_t fSizeZ; // module half size in z [cm]
 
-  Double_t fAnodeWireOffset;              ///< Anode Wire Offset [cm]
-  Double_t fAnodeWireSpacing;             ///< anode wire pitch [cm]
-  Double_t fAnodeWireToPadPlaneDistance;  ///< Anode Wire to PadPlane Distance [cm]
+  Double_t fAnodeWireOffset; // [cm]
+  Double_t fAnodeWireSpacing; // [cm]
+  Double_t fAnodeWireToPadPlaneDistance; // [cm]
 
-  Int_t fNofSectors;    ///< number sectors for this module
-  TArrayD fSectorX;     ///< center of sectors local c.s. [cm]
-  TArrayD fSectorY;     ///< center of sectors local c.s. [cm]
-  TArrayD fSectorZ;     ///< center of sectors local c.s. [cm]
-  TArrayD fSectorBeginX;///< begin of sector [cm]
-  TArrayD fSectorBeginY;///< begin of sector [cm]
-  TArrayD fSectorEndX;  ///< end of sector [cm]
-  TArrayD fSectorEndY;  ///< end of sector [cm]
-  TArrayD fSectorSizeX; ///< sector size in x [cm]
-  TArrayD fSectorSizeY; ///< sector size in y [cm]
+  Int_t fNofSectors; // number sectors for this module
+  TArrayD fSectorX; // center of sectors local c.s. [cm]
+  TArrayD fSectorY; // center of sectors local c.s. [cm]
+  TArrayD fSectorZ; // center of sectors local c.s. [cm]
+  TArrayD fSectorBeginX; // begin of sector [cm]
+  TArrayD fSectorBeginY; // begin of sector [cm]
+  TArrayD fSectorEndX; // end of sector [cm]
+  TArrayD fSectorEndY; // end of sector [cm]
+  TArrayD fSectorSizeX; // sector size in x [cm]
+  TArrayD fSectorSizeY; // sector size in y [cm]
 
-  TArrayD fPadSizeX;    ///< size of the readout pad in x [cm]
-  TArrayD fPadSizeY;    ///< size of the readout pad in y [cm]
+  TArrayD fPadSizeX; // size of the readout pad in x [cm]
+  TArrayD fPadSizeY; // size of the readout pad in y [cm]
 
-  Bool_t fTriangularPads;   ///< switch for pad shape. rectangular = false [default]
-  Bool_t fAsicFASP;         ///< switch for ASIC type. SPADIC = false [default]
+  Bool_t fTriangularPads;
 
-  std::map<Int_t, CbmTrdAsic*> fAsicMap;  ///< map of ASIC boards
-  Int_t fNofAsics;                        ///< size of the ASIC map
+  std::map<Int_t, CbmTrdAsic*> fAsicMap;
+  Int_t fNofAsics;
 
-  ClassDef(CbmTrdModule, 5);
+  ClassDef(CbmTrdModule, 4);
 };
 
 #endif

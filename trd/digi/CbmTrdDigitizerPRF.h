@@ -12,7 +12,6 @@ class CbmTrdModule;
 class CbmTrdRadiator;
 class CbmMatch;
 class TClonesArray;
-class CbmTrdTriangle;
 
 class CbmTrdDigitizerPRF : public FairTask {
  public:
@@ -59,30 +58,11 @@ class CbmTrdDigitizerPRF : public FairTask {
 
   void ScanPadPlaneTriangle(const Double_t* local_point, Double_t clusterELoss, Double_t clusterELossTR);
 
-  /**
-   * \brief Build digits for the triangular pad geometry
-   * \param point Position of hit on the anode wire in c.s.
-   * \param dx    Track projection length on the closest anode wire [cm]
-   * \param ELoss Fraction of energy due to ionisation [keV]
-   * \param ELossTR Fraction of energy due to TR. [keV]
-   * \sa CbmTrdTriangle CbmTrdRadiator AddDigi()
-   * \author A.Bercuci <abercuci@niham.nipne.ro>
-   **/
-  void ScanPadPlaneTriangleAB(const Double_t* point, Double_t dx, Double_t ELoss, Double_t ELossTR);
   Double_t TriangleIntegration(Bool_t even, Double_t displacement_x, Double_t W, Double_t displacement_y, Double_t H, Double_t h);
 
   Double_t TriangleIteration(Bool_t even, Int_t step, Double_t displacement_x, Double_t W, Double_t displacement_y, Double_t H, Double_t h);
 
   void SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss, Double_t ELossTR);
-  /**
-   * \brief Steer building of digits for triangular pad geometry
-   * \param point The TRD hit in global coordinates beeing processed
-   * \param ELoss Energy deposit due to ionisation
-   * \param ELossTR Energy deposit due to TR. (see Radiator parametrization)
-   * \sa ScanPadPlaneTriangleAB()
-   * \author A.Bercuci <abercuci@niham.nipne.ro>
-   **/
-  void SplitTrackPathTriang(const CbmTrdPoint* point, Double_t ELoss, Double_t ELossTR);
 
   void AddDigi(Int_t pointId, Int_t address, Double_t charge, Double_t chargeTR, Double_t time);
 
@@ -119,10 +99,9 @@ class CbmTrdDigitizerPRF : public FairTask {
   CbmTrdDigiPar* fDigiPar;    //!
   CbmTrdModule* fModuleInfo; //!
   CbmTrdRadiator* fRadiator;  //!
-  /// pointer to pad plane binning for triangular pad integration
-  CbmTrdTriangle  *fTriangleBinning;    //!
+
   std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*> > fDigiMap; // Temporary storage for digis.
 
-  ClassDef(CbmTrdDigitizerPRF, 4);
+  ClassDef(CbmTrdDigitizerPRF, 3);
 };
 #endif // CBMTRDDIGITIZER_PRF_H

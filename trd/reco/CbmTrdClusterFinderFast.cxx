@@ -107,7 +107,7 @@ void CbmTrdClusterFinderFast::Exec(Option_t*)
   TStopwatch timer;
   timer.Start();
   cout << "================CbmTrdClusterFinderFast===============" << endl;
-  //LOG(INFO) << "CbmTrdClusterFinderFast::Exec : Triangular Pads: " << (Bool_t)fTrianglePads << FairLogger::endl;
+  LOG(INFO) << "CbmTrdClusterFinderFast::Exec : Triangular Pads: " << (Bool_t)fTrianglePads << FairLogger::endl;
   Int_t counterI = 0;
   Int_t counterJ = 0;
   Float_t mRMax = 0;//7500;
@@ -282,7 +282,6 @@ void CbmTrdClusterFinderFast::Exec(Option_t*)
 
       globalRow = fModuleInfo->GetModuleRow(iSector,secRow);
 
-      d->up    = CbmTrdAddress::GetTriangleId(digi->GetAddress());
       d->colId = CbmTrdAddress::GetColumnId(digi->GetAddress());
       d->rowId = globalRow;
       d->combiId = d->rowId * (fModuleInfo->GetNofColumns() + 1) + d->colId;
@@ -319,35 +318,33 @@ void CbmTrdClusterFinderFast::Exec(Option_t*)
     std::map<Int_t, ClusterList*> fModClusterMap; //map of <moduleAddress, pointer of Vector of List of struct 'MyDigi' >
     for (std::map<Int_t, MyDigiList*>::iterator it = modules.begin(); it != modules.end(); ++it) {
       if (dynamic) {
-        fModuleInfo = fDigiPar->GetModule(it->first);
-          
-      //	Float_t mSizeX   = (fModuleInfo->GetSizeX()) * 2 * 10;
-      //	Float_t mSizeY   = (fModuleInfo->GetSizeY()) * 2 * 10;
-        Float_t mPosXC   = fModuleInfo->GetX() * 10;
-        Float_t mPosYC   = fModuleInfo->GetY() * 10;
-        Float_t mR = sqrt(pow(mPosXC,2) + pow(mPosYC,2));
-        counterJ++;
-        if (mR > mRMax) {
-          //fRowClusterMerger = true;
-          counterI++;
-          //cout << it->first << "   "<< mR << endl;
-        }
-        else {
-          //fRowClusterMerger = false;
-          //cout << "  " << it->first << "   " << mR <<endl;
-        }
+	fModuleInfo = fDigiPar->GetModule(it->first);
+	  
+//	Float_t mSizeX   = (fModuleInfo->GetSizeX()) * 2 * 10;
+//	Float_t mSizeY   = (fModuleInfo->GetSizeY()) * 2 * 10;
+	Float_t mPosXC   = fModuleInfo->GetX() * 10;
+	Float_t mPosYC   = fModuleInfo->GetY() * 10;
+	Float_t mR = sqrt(pow(mPosXC,2) + pow(mPosYC,2));
+	counterJ++;
+	if (mR > mRMax) {
+	  //fRowClusterMerger = true;
+	  counterI++;
+	  //cout << it->first << "   "<< mR << endl;
+	}
+	else {
+	  //fRowClusterMerger = false;
+	  //cout << "  " << it->first << "   " << mR <<endl;
+	}
       }
       //if (it->first==5)
-      //AB printf("module %d\n", it->first);
-      //AB link to current module definition
-      fModuleInfo = fDigiPar->GetModule(it->first);
       fModClusterMap[it->first] = clusterModule(it->second/*, ModuleNeighbourDigiMap[it->first]*/);
       //drawCluster(it->first, fModClusterMap[it->first]);
       if (fNeighbourReadout){
-        if (fModuleInfo->GetPadGeoTriangular())
-          addNeighbourDigisTriangular(fDigiPar->GetModule(it->first)->GetNofColumns(), fModClusterMap[it->first], ModuleNeighbourDigiMap[it->first]);
-        else
-          addNeighbourDigis(fDigiPar->GetModule(it->first)->GetNofColumns(), fModClusterMap[it->first], ModuleNeighbourDigiMap[it->first]);
+	if (fTrianglePads)
+	  addNeighbourDigisTriangular(fDigiPar->GetModule(it->first)->GetNofColumns(), fModClusterMap[it->first], ModuleNeighbourDigiMap[it->first]);
+	else
+	  addNeighbourDigis(fDigiPar->GetModule(it->first)->GetNofColumns(), fModClusterMap[it->first], ModuleNeighbourDigiMap[it->first]);
+
       }
     }
     //cout << "addCluster(fModClusterMap)" << endl;
@@ -599,29 +596,26 @@ ClusterList *CbmTrdClusterFinderFast::clusterModule(MyDigiList *digis/*, MyDigiL
   std::list<RowCluster*> closedList;
   std::list<RowCluster*> openList;
   std::list<RowCluster*> currentList;
+  RowCluster *currentCluster = new RowCluster;
+
   digis->sort(digiSorter);
-  MyDigiList::iterator it = digis->begin();
-  RowCluster *currentCluster = new RowCluster((*it)->up);
   /*
     neighbours->sort(digiSorter);
     MyDigiList::iterator left  = neighbours->begin();
     MyDigiList::iterator right = neighbours->end();
   */
-  for (; it != digis->end(); ++it) {
-    //if(currentCluster->hasTrianglePads) printf("  digi[%6d] r[%2d] c[%2d]\n", (*it)->digiId, (*it)->rowId, (*it)->colId); // AB
+  for (MyDigiList::iterator it = digis->begin(); it != digis->end(); ++it) {
 
     if (currentCluster->digis->empty() || 
-        currentCluster->digis->back()->combiId == (*it)->combiId ||  //happens only for triangular pads (AB)
 	currentCluster->digis->back()->combiId + 1 == (*it)->combiId) {
       /*
        * Digis within the same row are related to the 'currentCluster' if they are closed-by.
        */
-      //if(currentCluster->hasTrianglePads) printf("    push_back ->\n"); // AB
+
       currentCluster->digis->push_back(*it);
       
     } else {
-      //if(currentCluster->hasTrianglePads) printf("    finalize cluster ->\n"); // AB
-
+  
       /*
        * the currentCluster is stored to the currentList
        * (and merged to the clusters of the previous row) 
@@ -656,7 +650,7 @@ ClusterList *CbmTrdClusterFinderFast::clusterModule(MyDigiList *digis/*, MyDigiL
       /*
        * A new currentCluster is initialized if the activ digi is not closed-by the currentCluster.
        */
-      currentCluster = new RowCluster((*it)->up);
+      currentCluster = new RowCluster;
       currentCluster->digis->push_back(*it);
     }
   }
@@ -675,7 +669,8 @@ ClusterList *CbmTrdClusterFinderFast::clusterModule(MyDigiList *digis/*, MyDigiL
 void CbmTrdClusterFinderFast::mergeRowCluster(RowCluster *currentCluster,
 					      std::list<RowCluster*> *openList)
 {
-  /**
+  //cout << "----------mergeRowcluster----------" << endl;
+  /*
    *  finish up the current rowCluster
    *  Limitations of the currentCluster are compared to the limitations of the RowClusters of the openList.
    *  They are associated to be 'child' (currentList = activ row) and 'parent' (openList = previous row) 
@@ -691,7 +686,6 @@ void CbmTrdClusterFinderFast::mergeRowCluster(RowCluster *currentCluster,
   currentCluster->minCol = currentCluster->digis->front()->colId;
   currentCluster->maxCol = currentCluster->digis->back()->colId;
   currentCluster->centerOfGravity = CenterOfGravity(currentCluster);
-  //if(currentCluster->hasTrianglePads) printf("    @ :: r[%2d] col[%2i %2i] xCOG=%7.4f\n",currentCluster->row, currentCluster->minCol, currentCluster->maxCol, currentCluster->centerOfGravity); // AB 
   //printf("r:%4i minc:%4i maxc:%4i\n",currentCluster->row, currentCluster->minCol, currentCluster->maxCol);
   //printf("-------------------------------------------------\n");
   /*
@@ -721,8 +715,8 @@ void CbmTrdClusterFinderFast::mergeRowCluster(RowCluster *currentCluster,
   ClusterList *CbmTrdClusterFinderFast::findCluster(std::list<RowCluster*> *rowClusterList)
   {
     //cout << "----------findCluster----------" << endl;
-    /**
-     *  all found RowClusters are merged to clusters and copyied to the finale clusterList
+    /*
+     *  all found RowClusters are merged to clusters and copyed to the finale clusterList
      *  since the rowClusterList is empty
      */
     RowCluster *currentRowCluster;
@@ -742,7 +736,7 @@ void CbmTrdClusterFinderFast::mergeRowCluster(RowCluster *currentCluster,
 					    MyDigiList *cluster)
   {
     //cout << "----------walkCluster----------" << endl;
-    /**
+    /*
      * the rowClusters are sorted in the neighbour list if connected by a child oder parent pointer.
      * This pointer is removed and the rowCluster is marked as 'hasBeenVisited'. 
      * Therefor it can not be merged to any cluster.
@@ -786,32 +780,22 @@ void CbmTrdClusterFinderFast::mergeRowCluster(RowCluster *currentCluster,
     sprintf(title,"%s",name);
     Char_t Canfile[100];
     sprintf(Canfile,"Pics/ModuleAddress%s.png",name);
-    TH2F* Test(NULL);
+    TH2F* Test = new TH2F(title,name,200,0,200,30,0,30);
+    Test->SetContour(99);
  
     Int_t Row;
     Int_t Col;
     Int_t counter = 0;
     for (ClusterList::iterator iCluster = clusterList->begin(); 
-          iCluster != clusterList->end(); iCluster++, counter++){
-      for (MyDigiList::iterator iPad = (*iCluster)->begin(); iPad != (*iCluster)->end(); iPad++){
-        if((*iPad)->up){
-          if(!Test){ //late initialization to use the triangle switch
-            Test = new TH2F(title, Form("%s;pad;row", name), 144, -0.25, 71.75, 20,-0.5,19.5);
-            Test->GetYaxis()->SetNdivisions(20);
-          }
-          Test->Fill((*iPad)->colId, (*iPad)->rowId, (*iPad)->charge);
-          Test->Fill((*iPad)->colId-0.5*((*iPad)->up), (*iPad)->rowId, (*iPad)->charge);
-        } else {
-          if(!Test){ 
-            Test = new TH2F(title, Form("%s;pad;row", name), 200,0,200,30,0,30);
-            Test->SetContour(99);
-          }
-          Row = (*iPad)->rowId+1;
-          Col = (*iPad)->colId+1;
-          Test->SetBinContent( Col, Row, counter+1);
-        }
+	 iCluster != clusterList->end(); iCluster++, counter++)
+      {
+	for (MyDigiList::iterator iPad = (*iCluster)->begin(); iPad != (*iCluster)->end(); iPad++)
+	  {
+	    Row = (*iPad)->rowId+1;
+	    Col = (*iPad)->colId+1;
+	    Test->SetBinContent( Col, Row, counter+1);
+	  }
       }
-    }
     TCanvas* c = new TCanvas(title,name,900,900);
     c->Divide(1,1);
     c->cd(1);
@@ -826,20 +810,16 @@ void CbmTrdClusterFinderFast::mergeRowCluster(RowCluster *currentCluster,
 //--------------------------------------------------------------------
 void CbmTrdClusterFinderFast::addCluster(std::map<Int_t, ClusterList*> fModClusterMap)
 {
-  Int_t ClusterSumTri(0);
   ClusterSum = 0;
   Float_t deltaCharge;
   Float_t preDelta;
   Int_t modCounter = 0;
   for (std::map<Int_t, ClusterList*>::iterator iMod = fModClusterMap.begin(); iMod != fModClusterMap.end(); ++iMod) {
-    fModuleInfo=fDigiPar->GetModule(iMod->first);
-    fTrianglePads=(fModuleInfo->GetPadGeoTriangular()?kTRUE:kFALSE);
     modCounter++;
     Int_t cluCounter = 0;
     for (ClusterList::iterator iCluster = (iMod->second)->begin(); iCluster != (iMod->second)->end(); iCluster++) {
       cluCounter++;
-      if(fTrianglePads) ClusterSumTri++; 
-      else ClusterSum++;
+      ClusterSum++;
       std::vector<Int_t> digiIndices( (*iCluster)->size() );
       Int_t idigi = 0;
       Int_t i = 1;
@@ -848,62 +828,60 @@ void CbmTrdClusterFinderFast::addCluster(std::map<Int_t, ClusterList*> fModClust
       MyDigiList::iterator lastDigi = (*iCluster)->begin();
       MyDigiList::iterator nextDigi = (*iCluster)->begin();
       for (MyDigiList::iterator iDigi = (*iCluster)->begin(); iDigi != (*iCluster)->end(); iDigi++) {
-        if (fMultiHit) {
-          if (idigi < (*iCluster)->size()-1) {
-            nextDigi++;
-          }
-          if (nextDigi != (*iCluster)->end()) {
-            deltaCharge = (*nextDigi)->charge - (*iDigi)->charge;
-            if (preDelta >= 0 && deltaCharge <= 0) { // local maximum in charge distribution
-              i = 1;
-              if ((*lastDigi) != (*iDigi)) i++;
-              if ((*nextDigi) != (*iDigi)) i++;
+	if (fMultiHit) {
+	  if (idigi < (*iCluster)->size()-1) {
+	    nextDigi++;
+	  }
+	  if (nextDigi != (*iCluster)->end()) {
+	    deltaCharge = (*nextDigi)->charge - (*iDigi)->charge;
+	    if (preDelta >= 0 && deltaCharge <= 0) { // local maximum in charge distribution
+	      i = 1;
+	      if ((*lastDigi) != (*iDigi)) i++;
+	      if ((*nextDigi) != (*iDigi)) i++;
 
-              digiIndices.resize(i, 0.);
+	      digiIndices.resize(i, 0.);
 
-              i = 0;
-              if ((*lastDigi) != (*iDigi)){
-                digiIndices[i] = (*lastDigi)->digiId;
-                i++;
-              }
+	      i = 0;
+	      if ((*lastDigi) != (*iDigi)){
+		digiIndices[i] = (*lastDigi)->digiId;
+		i++;
+	      }
 
-              digiIndices[i] = (*iDigi)->digiId;
-              i++;
+	      digiIndices[i] = (*iDigi)->digiId;
+	      i++;
 
-              if ((*nextDigi) != (*iDigi)) {
-                digiIndices[i] = (*nextDigi)->digiId;
-              }
+	      if ((*nextDigi) != (*iDigi)) {
+		digiIndices[i] = (*nextDigi)->digiId;
+	      }
 
-              Int_t size = fClusters->GetEntriesFast();
-              const CbmDigi* digi = static_cast<const CbmDigi*>(fDigis->At(digiIndices.front()));
-              CbmTrdCluster* cluster = new ((*fClusters)[size]) CbmTrdCluster();
-              cluster->SetAddress(CbmTrdAddress::GetModuleAddress(digi->GetAddress()));
-              cluster->SetDigis(digiIndices);
-              cluster->SetTrianglePads(fTrianglePads);
-              digiIndices.clear();
-            }
-            preDelta = deltaCharge;
-            lastDigi = iDigi;
-          }
-        } else {
-          digiIndices[idigi] = (*iDigi)->digiId;
-        }
-        idigi++;
+	      Int_t size = fClusters->GetEntriesFast();
+	      const CbmDigi* digi = static_cast<const CbmDigi*>(fDigis->At(digiIndices.front()));
+	      CbmTrdCluster* cluster = new ((*fClusters)[size]) CbmTrdCluster();
+	      cluster->SetAddress(CbmTrdAddress::GetModuleAddress(digi->GetAddress()));
+	      cluster->SetDigis(digiIndices);
+	      digiIndices.clear();
+	    }
+	    preDelta = deltaCharge;
+	    lastDigi = iDigi;
+	  }
+	} else {
+	  digiIndices[idigi] = (*iDigi)->digiId;
+	}
+	idigi++;
       }
       if (!fMultiHit) {
-        Int_t size = fClusters->GetEntriesFast();
-        const CbmDigi* digi = static_cast<const CbmDigi*>(fDigis->At(digiIndices.front()));
-        CbmTrdCluster* cluster = new ((*fClusters)[size]) CbmTrdCluster();
-        cluster->SetAddress(CbmTrdAddress::GetModuleAddress(digi->GetAddress()));
-        //if (digi->GetAddress() < 0)
-        //printf("DigiAddress:%i ModuleAddress:%i tri[%d]\n",digi->GetAddress(), CbmTrdAddress::GetModuleAddress(digi->GetAddress()), CbmTrdAddress::GetTriangleId(digi->GetAddress()));
-        cluster->SetDigis(digiIndices);
-        cluster->SetTrianglePads(fTrianglePads);
-        BuildChannelMap(cluster);
+	Int_t size = fClusters->GetEntriesFast();
+	const CbmDigi* digi = static_cast<const CbmDigi*>(fDigis->At(digiIndices.front()));
+	CbmTrdCluster* cluster = new ((*fClusters)[size]) CbmTrdCluster();
+	cluster->SetAddress(CbmTrdAddress::GetModuleAddress(digi->GetAddress()));
+	//if (digi->GetAddress() < 0)
+	//printf("DigiAddress:%i ModuleAddress:%i\n",digi->GetAddress(), CbmTrdAddress::GetModuleAddress(digi->GetAddress()));
+	cluster->SetDigis(digiIndices);
+	BuildChannelMap(cluster);
       }
     } // for iCluster
   } // for iModule
-  LOG(INFO) << "CbmTrdClusterFinderFast::Exec : [R]clusters:" << ClusterSum <<" [T]clusters:" << ClusterSumTri << FairLogger::endl;
+  LOG(INFO) << "CbmTrdClusterFinderFast::Exec : Clusters:" << ClusterSum << FairLogger::endl;
 }
 //%%%%%%%%%%%%%%%%%%%%%
 Double_t CbmTrdClusterFinderFast::CenterOfGravity(RowCluster *rowCluster)
@@ -922,27 +900,45 @@ Double_t CbmTrdClusterFinderFast::CenterOfGravity(RowCluster *rowCluster)
   Int_t moduleAddress = 0;
 //  Int_t nofDigis = (Int_t)rowCluster->digis->size();//cluster->GetNofDigis();
   //for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
-
-  // Here one can use the fModuleInfo which should be set by the caller function (AB) !!!
-  CbmTrdModule* moduleInfo(NULL);
   for (MyDigiList::iterator iDigi = rowCluster->digis->begin(); iDigi != rowCluster->digis->end(); iDigi++) {
     const CbmTrdDigi* digi = static_cast<const CbmTrdDigi*>(fDigis->At((*iDigi)->digiId));//cluster->GetDigi(iDigi)));
-    if(!moduleInfo){
-      moduleAddress = CbmTrdAddress::GetModuleAddress(digi->GetAddress());
-      moduleInfo = fDigiPar->GetModule(moduleAddress);
-      //gGeoManager->FindNode(moduleInfo->GetX(), moduleInfo->GetY(), moduleInfo->GetZ());
-      if (moduleInfo == NULL) {
-        LOG(WARNING) << "CbmTrdHitProducerCluster::CenterOfCharge No CbmTrdModule found digiAddress="
-          << digi->GetAddress() << " moduleAddress=" << CbmTrdAddress::GetModuleAddress(digi->GetAddress()) << FairLogger::endl;
-        return -1.;
-      }
+
+    moduleAddress = CbmTrdAddress::GetModuleAddress(digi->GetAddress());
+    CbmTrdModule* moduleInfo = fDigiPar->GetModule(moduleAddress);
+    //gGeoManager->FindNode(moduleInfo->GetX(), moduleInfo->GetY(), moduleInfo->GetZ());
+
+    if (moduleInfo == NULL) {
+      LOG(WARNING) << "CbmTrdHitProducerCluster::CenterOfCharge No CbmTrdModule found digiAddress="
+		   << digi->GetAddress() << " moduleAddress=" << CbmTrdAddress::GetModuleAddress(digi->GetAddress()) << FairLogger::endl;
+      return -1.;
     }
     totalCharge += digi->GetCharge();
     //printf("DigiAddress:%i ModuleAddress:%i\n",digi->GetAddress(), CbmTrdAddress::GetModuleAddress(digi->GetAddress()));
     moduleInfo->GetPadPosition(digi->GetAddress(), local_pad_posV, local_pad_dposV);//local_pad_pos[0], local_pad_pos[1], local_pad_pos[2]);
-    if (rowCluster->hasTrianglePads){
-      //mimic rectangular/paralelogram coupling (AB)
-      hit_posV[0] += (local_pad_posV[0] - (*iDigi)->up*local_pad_dposV[0]) * digi->GetCharge();
+    if (fTrianglePads){
+      /*
+	Double_t local_pad_pos[3];
+	for (Int_t i = 0; i < 3; i++) {
+	local_pad_pos[i] = local_pad_posV[i];
+	}
+	Int_t secId(-1), colId(-1), rowId(-1);
+	moduleInfo->GetPadInfo(local_pad_pos, secId, colId, rowId);
+	if (rowId%2 == 0) { // Calculate center of gravity for triangular pads 
+	local_pad_posV[0] = 1./3. * ((local_pad_pos[0] - 0.5 * moduleInfo->GetPadSizeX(secId)) + 
+	(local_pad_pos[0] + 0.5 * moduleInfo->GetPadSizeX(secId)) + 
+	(local_pad_pos[0] + 0.5 * moduleInfo->GetPadSizeX(secId)));
+	local_pad_posV[1] = 1./3. * ((local_pad_pos[1] - 0.5 * moduleInfo->GetPadSizeX(secId)) + 
+	(local_pad_pos[1] - 0.5 * moduleInfo->GetPadSizeX(secId)) + 
+	(local_pad_pos[1] + 0.5 * moduleInfo->GetPadSizeX(moduleInfo->GetSector(rowId+1, secId))));
+	} else {
+	local_pad_posV[0] = 1./3. * ((local_pad_pos[0] - 0.5 * moduleInfo->GetPadSizeX(secId)) + 
+	(local_pad_pos[0] + 0.5 * moduleInfo->GetPadSizeX(secId)) + 
+	(local_pad_pos[0] - 0.5 * moduleInfo->GetPadSizeX(secId)));
+	local_pad_posV[1] = 1./3. * ((local_pad_pos[1] + 0.5 * moduleInfo->GetPadSizeX(secId)) + 
+	(local_pad_pos[1] + 0.5 * moduleInfo->GetPadSizeX(secId)) + 
+	(local_pad_pos[1] - 0.5 * moduleInfo->GetPadSizeX(moduleInfo->GetSector(rowId-1, secId))));
+	}
+      */
     }
     //moduleInfo->TransformHitError(local_pad_dposV);
 
@@ -953,7 +949,6 @@ Double_t CbmTrdClusterFinderFast::CenterOfGravity(RowCluster *rowCluster)
   Double_t hit_pos[3];
   for (Int_t iDim = 0; iDim < 3; iDim++) {
     hit_posV[iDim] /= totalCharge;
-    if (!iDim && rowCluster->hasTrianglePads) hit_posV[0]*=0.5;
     hit_pos[iDim] = hit_posV[iDim];
   }
   /*
