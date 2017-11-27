@@ -50,7 +50,7 @@ root -l -q 'create_digipar.C("tof_'${VGEO}'_1m")'
 root -l -q 'create_digipar.C("tof_'${VGEO}'_3e")'
 root -l -q 'create_digipar.C("tof_'${VGEO}'_3m")'
 
-cp tof_${VGEO}_*.digi.par ../../../geometry/tof/
+cp tof_${VGEO}_*.digi.par ../../../parameters/tof/
 
 # cleanup extra files
 rm auaumbias.tof_${VGEO}_*.mc.root auaumbias.tof_${VGEO}_*.params.root test.esd.tof_${VGEO}_*.root gphysi.dat
