@@ -315,7 +315,8 @@ TGeoVolume * CreateLayers(int istn, int ily){
     // Set Phi=180 degree 6 o'clock position
     // Set Phi=90 degree 3 o'clock position
 
-    Double_t phi=TMath::Pi()/2.0;
+    //    Double_t phi=TMath::Pi()/2.0;
+    Double_t phi=0;  // do not blow up yMin in CbmMuchGeoScheme to see points
 
     Bool_t isBack = iModule%2; 
     Char_t cside  = (isBack==1) ? 'b' : 'f'; 
