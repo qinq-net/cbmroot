@@ -22,7 +22,7 @@ void mcbm_reco_nh(Int_t nEvents = 1000,
 	       TString cEbeam="2.5gev",
 	       TString cCentr="-",
 	       Int_t   iRun=0,
-	       const char* setup = "sis18_mcbm")
+	       const char* setup = "sis18_mcbm_20deg_long")
 {
 
   // ========================================================================

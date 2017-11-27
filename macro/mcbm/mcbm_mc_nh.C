@@ -20,7 +20,7 @@ void mcbm_mc_nh(Int_t nEvents = 2,  Int_t iMode=3,
 	     TString cEbeam="2.5gev",
 	     TString cCentr="-",
 	     Int_t iRun=0, 
-	     const char* setupName = "sis18_mcbm",
+	     const char* setupName = "sis18_mcbm_20deg_long",
              const char* inputFile = "")
 
 // available input files

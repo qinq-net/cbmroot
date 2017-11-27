@@ -22,7 +22,7 @@ void mcbm_qa_nh(Int_t nEvents = 1000,
 	       TString cEbeam="1.93gev",
 	       TString cCentr="mbias",
 	       Int_t   iRun=986,
-	       const char* setup = "sis18_mcbm")
+	       const char* setup = "sis18_mcbm_20deg_long")
 {
 
   // ========================================================================
