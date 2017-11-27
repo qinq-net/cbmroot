@@ -34,8 +34,10 @@ public:
 
    /**
     * \brief Default constructor.
+    * \param[in] fasp switch between ASICs. Default SPADIC (fasp == kFALSE)
+    * \sa SetFASP(Bool_t) 
     **/
-   CbmTrdCreateDigiPar();
+   CbmTrdCreateDigiPar(Bool_t fasp=kFALSE);
 
    /**
     * \brief Destructor.
@@ -53,6 +55,11 @@ public:
    virtual void SetParContainers();
 
    /**
+    * \brief Change the default ASIC to FASP
+    **/
+   virtual void SetFASP(Bool_t set=kTRUE)  {fFASP = set;}
+
+   /**
     * \brief Inherited from FairTask.
     **/
    virtual void Exec(Option_t* option);
@@ -65,13 +72,14 @@ public:
 private:
 
    void CreateModule(
-         const TString& path);
+         const TString& path, Bool_t tripad=kFALSE);
 
    void FillModuleMap();
 
    void FillDigiPar();
 
    Int_t fMaxSectors; // Maximum number of sectors for all modules
+   Bool_t fFASP;      ///< Switch to FASP ASIC
 
    // Map of Unique TRD Module Id to corresponding CbmTrdModule
    std::map<Int_t, CbmTrdModule*> fModuleMap;
@@ -83,6 +91,6 @@ private:
    CbmTrdCreateDigiPar(const CbmTrdCreateDigiPar&);
    CbmTrdCreateDigiPar& operator=(const CbmTrdCreateDigiPar&);
 
-   ClassDef(CbmTrdCreateDigiPar, 4)
+   ClassDef(CbmTrdCreateDigiPar, 5)
 };
 #endif //CBMTRDCREATEDIGIPAR_H
