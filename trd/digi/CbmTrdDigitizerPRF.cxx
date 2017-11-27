@@ -5,6 +5,7 @@
 #include "CbmTrdDigi.h"
 #include "CbmTrdModule.h"
 #include "CbmTrdRadiator.h"
+#include "CbmTrdTriangle.h"
 #include "CbmTrdGeoHandler.h"
 
 #include "CbmMCTrack.h"
@@ -31,7 +32,7 @@
 #include <iomanip>
 #include <iostream>
 #include <cmath>
-
+#define VERBOSE_TRIANG 0
 using std::cout;
 using std::endl;
 using std::make_pair;
@@ -63,12 +64,14 @@ CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
    fDigiPar(NULL),
    fModuleInfo(NULL),
    fRadiator(radiator),
+   fTriangleBinning(NULL),
    fDigiMap()
 {
 }
 
 CbmTrdDigitizerPRF::~CbmTrdDigitizerPRF()
 {
+  if(fTriangleBinning) delete fTriangleBinning;
    fDigis->Delete();
    delete fDigis;
    fDigiMatches->Delete();
@@ -98,6 +101,8 @@ void CbmTrdDigitizerPRF::SetTriggerThreshold(Double_t minCharge){
 }
 InitStatus CbmTrdDigitizerPRF::Init()
 {
+  LOG(INFO) << "==========================================================" << FairLogger::endl;
+  LOG(INFO) << "TRD PRF Digitizer Initialisation" << FairLogger::endl;
   FairRootManager* ioman = FairRootManager::Instance();
   if (ioman == NULL) LOG(FATAL) << "CbmTrdDigitizerPRF::Init: No FairRootManager" << FairLogger::endl;
 
@@ -134,9 +139,8 @@ void CbmTrdDigitizerPRF::SetNoiseLevel(Double_t sigma_keV)
 
 void CbmTrdDigitizerPRF::Exec(Option_t*)
 {
-  cout << "================CbmTrdDigitizerPRF===============" << endl;
- LOG(INFO) << "CbmTrdDigitizerPRF::Exec : Triangular Pads: " << (Bool_t)fTrianglePads << FairLogger::endl;
- LOG(INFO) << "CbmTrdDigitizerPRF::Exec : Noise width:     " << fSigma_noise_keV << " keV"<< FairLogger::endl;
+  LOG(INFO) << "================ TRD PRF Digitizer ===============" << FairLogger::endl;
+  LOG(INFO) << " Noise width:     " << fSigma_noise_keV << " keV"<< FairLogger::endl;
   fDigis->Delete();
   fDigiMatches->Delete();
 
@@ -208,8 +212,12 @@ void CbmTrdDigitizerPRF::Exec(Option_t*)
     fModuleInfo = fDigiPar->GetModule(point->GetDetectorID());
     fnCol = fModuleInfo->GetNofColumns();
     fnRow = fModuleInfo->GetNofRows();
+    fTrianglePads=fModuleInfo->GetPadGeoTriangular();
 
-    SplitTrackPath(point, ELoss, ELossTR);
+    //if(VERBOSE_TRIANG) printf("\ni[%3d] point[%7.2f %7.2f %7.2f] ly[%d] ModuleId[%d] cols[%2d] rows[%2d]\n", iPoint, point->GetXIn(), point->GetYIn(), point->GetZIn(), fLayerId, fModuleId, fnCol, fnRow);
+    
+    if(fTrianglePads) SplitTrackPathTriang(point, ELoss, ELossTR);
+    else SplitTrackPath(point, ELoss, ELossTR);
   }
 
   // Fill data from internally used stl map into output TClonesArray
@@ -645,7 +653,8 @@ void CbmTrdDigitizerPRF::SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss
   }
   Double_t clusterELoss = ELoss / Double_t(nCluster);
   Double_t clusterELossTR = ELossTR / Double_t(nCluster);
-
+  if(fDebug) printf(" nIons[%d] length[%5.3f]\n", nCluster, trackLength);
+  
   for (Int_t iCluster = 0; iCluster < nCluster; iCluster++){
     for (Int_t i = 0; i < 3; i++){
       cluster_pos[i] = local_point_in[i] + (0.5 + iCluster) * cluster_delta[i];// move start position 0.5 step widths into track direction
@@ -663,6 +672,315 @@ void CbmTrdDigitizerPRF::SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss
       ScanPadPlane(cluster_pos, clusterELoss, clusterELossTR);
     else
       ScanPadPlaneTriangle(cluster_pos, clusterELoss, clusterELossTR);
+  }
+}
+
+//_______________________________________________________________________________________________
+void CbmTrdDigitizerPRF::SplitTrackPathTriang(const CbmTrdPoint* point, Double_t ELoss, Double_t ELossTR)
+{
+/**  
+  Steering routine for building digits out of the TRD hit for the triangular pad geometry. 
+  1. Scan the amplification cells span by the track\n
+  2. Build digits for each cell proportional with the projected energy on the cell\n
+    2.1 Continuous distribution for ionisation\n
+    2.2 Exponential decay for TR with constant \lambda
+*/
+
+  if(VERBOSE_TRIANG) printf("SplitTrackPathTriang ...\n");
+  Double_t  gin[3] = {point->GetXIn(), point->GetYIn(), point->GetZIn()},
+            gout[3]= {point->GetXOut(),point->GetYOut(),point->GetZOut()},
+            lin[3],     // entrace point coordinates in local module cs
+            lout[3],    // exit point coordinates in local module cs
+            ain[3],     // entrace anode wire position
+            aout[3],    // exit anode wire position
+            dd[3];      // vec(lout)-vec(lin)
+  gGeoManager->MasterToLocal(gin,  lin);
+  gGeoManager->MasterToLocal(gout, lout);
+
+  // compute track length in the gas volume
+  Double_t trackLength(0.), txy(0.);
+  for (Int_t i = 0; i < 3; i++) {
+    dd[i] = (lout[i] - lin[i]);
+    if(i==2) txy = trackLength;
+    trackLength += dd[i] * dd[i];
+  }
+  if(trackLength) trackLength = TMath::Sqrt(trackLength);
+  else{
+    LOG(WARNING) << "CbmTrdDigitizerPRF::SplitTrackPathTriang: NULL track length for"
+    " dEdx("<<std::setprecision(5)<<ELoss*1e6<<") keV " << FairLogger::endl;
+    return;
+  }
+  if(txy) txy = TMath::Sqrt(txy);
+  else{
+    LOG(WARNING) << "CbmTrdDigitizerPRF::SplitTrackPathTriang: NULL xy track length projection for"
+    " dEdx("<<std::setprecision(5)<<ELoss*1e6<<") keV " << FairLogger::endl;
+    return;
+  }
+
+  // get anode wire for the entrance point
+  memcpy(ain, lin, 3*sizeof(Double_t));
+  fModuleInfo->ProjectPositionToNextAnodeWire(ain);
+  // get anode wire for the exit point
+  memcpy(aout, lout, 3*sizeof(Double_t));
+  fModuleInfo->ProjectPositionToNextAnodeWire(aout);
+
+  // estimate no of anode wires hit by the track
+  Double_t dw(fModuleInfo->GetAnodeWireSpacing());
+  Int_t ncls=TMath::Nint(TMath::Abs(aout[1]-ain[1])/dw+1.);
+  if(VERBOSE_TRIANG) {
+    printf("  Ncls[%d]\n", ncls);
+    printf("  pin[%7.4f %7.4f %7.4f] pout[%7.4f %7.4f %7.4f]\n", lin[0], lin[1], lin[2], lout[0], lout[1], lout[2]);
+    printf("  ain[%7.4f %7.4f %7.4f] aout[%7.4f %7.4f %7.4f]\n", ain[0], ain[1], ain[2], aout[0], aout[1], aout[2]);
+  }
+  
+  // calculate track segmentation on the amplification cells distribution
+  Int_t sgnx(1), sgny(1); 
+  if(lout[0]<lin[0]) sgnx=-1;
+  if(lout[1]<lin[1]) sgny=-1;
+  Double_t  dy[] = {TMath::Min((ain[1]+0.5*sgny*dw-lin[1])*sgny, (lout[1]-lin[1])*sgny), 
+                    TMath::Min((lout[1]-(aout[1]-0.5*sgny*dw))*sgny, (lout[1]-lin[1])*sgny)},
+            dxw(TMath::Abs(dd[0]*dw/dd[1])),
+            dx[] = {TMath::Abs(dy[0]*dd[0]/dd[1]), TMath::Abs(dy[1]*dd[0]/dd[1])};
+  // check partition
+  Double_t DX(dx[0]), DY(dy[0]);
+  for(Int_t ic(1); ic<ncls-1; ic++){DX+=dxw; DY+=dw;}
+  if(ncls>1){DX+=dx[1]; DY+=dy[1];}
+  if(VERBOSE_TRIANG) {
+    printf("  tdx[%7.4f] dx[%7.4f %7.4f %7.4f] check[%7.4f]\n"
+         "  tdy[%7.4f] dy[%7.4f %7.4f %7.4f] check[%7.4f]\n", 
+         dd[0], dx[0], dx[1], dxw, sgnx*DX, 
+         dd[1], dy[0], dy[1], dw, sgny*DY);
+  }
+  
+  Double_t pos[3]={ain[0], ain[1], ain[2]},
+           ldx(0.), ldy(0.),
+           dxy(0.), e(0.), etr(0.);
+  for(Int_t icl(0); icl<ncls; icl++){
+    if(!icl){ldx=dx[0]; ldy=dy[0];}  
+    else if(icl==ncls-1){ldx=dx[1]; ldy=dy[1];}  
+    else{ldx=dxw; ldy=dw;}
+   
+    dxy=ldx*ldx+ldy*ldy;
+    if(dxy<=0){
+      LOG(ERROR) << "CbmTrdDigitizerPRF::SplitTrackPathTriang: NULL projected track length in cluster "<<icl
+        <<" for track length[cm] ("<<std::setprecision(5)<<ldx<<", "<<std::setprecision(2)<<ldy<<")."
+        " dEdx("<<std::setprecision(5)<<ELoss*1e6<<") keV " << FairLogger::endl;
+      continue;
+    }
+    dxy=TMath::Sqrt(dxy);
+    if(VERBOSE_TRIANG) printf("    %d ldx[%7.4f] ldy[%7.4f] xy[%7.4f] frac=%7.2f%%\n", icl, ldx, ldy, dxy, 1.e2*dxy/txy);
+
+    Double_t  dEdx(dxy/txy),
+              dEdxTR(dxy/txy),
+              cELoss(ELoss*dEdx),         // continuos energy deposit 
+              cELossTR(ELossTR*dEdxTR);   // TODO decay distribution of energy 
+    e+=cELoss; etr+=cELossTR;
+    pos[0]+=0.5*ldx*sgnx; 
+    ScanPadPlaneTriangleAB(pos, ldx, 1e6*cELoss, 1e6*cELossTR);
+    pos[0]+=0.5*ldx*sgnx; 
+    pos[1]+=dw*sgny;
+  }
+  if(TMath::Abs(lout[0]-pos[0])>1.e-9){
+    LOG(WARNING) << "CbmTrdDigitizerPRF::SplitTrackPathTriang: Along wire coordinate error : x_sim="
+      <<std::setprecision(5)<<lout[0]<<" x_calc="<<std::setprecision(5)<<pos[0] << FairLogger::endl;
+  }
+  if(TMath::Abs(ELoss-e)>1.e-9){
+    LOG(WARNING) << "CbmTrdDigitizerPRF::SplitTrackPathTriang: dEdx partition to anode wires error : E[keV] = "
+      <<std::setprecision(5)<<ELoss*1e6<<" Sum(Ei)[keV]="<<std::setprecision(5)<<e*1e6 << FairLogger::endl;
+  }
+  if(etr>ELossTR){
+    LOG(WARNING) << "CbmTrdDigitizerPRF::SplitTrackPathTriang: TR energy partition to anode wires error : Etr[keV] = "
+      <<std::setprecision(5)<<ELossTR*1e6<<" Sum(Ei)[keV]="<<std::setprecision(5)<<etr*1e6 << FairLogger::endl;
+  }
+}
+
+//_______________________________________________________________________________________________
+void CbmTrdDigitizerPRF::ScanPadPlaneTriangleAB(const Double_t* point, Double_t DX, Double_t ELoss, Double_t ELossTR)
+{
+/**  
+  The hit is expressed in local chamber coordinates, localized as follows:
+    - Along the wire in the middle of the track projection on the closest wire
+    - Across the wire on the closest anode.
+    
+  The physical uncertainty along wires is given by the projection span (dx) and the energy from ionisation is proportional to the track projection length in the local chamber x-y plane. For the TR energy the proportionality to the total TR is given by the integral over the amplification cell span of a decay law with decay constant ...
+  
+  The class CbmTrdTriangle is used to navigate the pad plane outward from the hit position until a threshold wrt to center is reached. The pad-row cross clusters are considered. Finally all digits are registered via AddDigi() function. 
+*/
+  if(VERBOSE_TRIANG) printf("      xy[%7.4f %7.4f] D[%7.4f] E[keV]=%7.4f\n", point[0], point[1], DX, ELoss);
+
+  Int_t sec(-1), col(-1), row(-1);
+  fModuleInfo->GetPadInfo(point, sec, col, row);
+  if (sec < 0 || col < 0 || row < 0) {
+    LOG(ERROR) << "CbmTrdDigitizerPRF::ScanPadPlaneTriangleAB: Hit to pad matching failed for ["
+      <<std::setprecision(5)<<point[0]<<", "
+      <<std::setprecision(5)<<point[1]<<", "
+      <<std::setprecision(5)<<point[2]<<"]." << FairLogger::endl;
+    return;
+  }
+  for (Int_t is(0); is < sec; is++) row += fModuleInfo->GetNofRowsInSector(is);
+  if(VERBOSE_TRIANG) printf("      Found pad @ col[%d] row[%d]\n", col, row);
+  
+  Double_t dx, dy;
+  fModuleInfo->TransformToLocalPad(point, dx, dy);
+  if(VERBOSE_TRIANG) printf("      pad x[%7.4f] y[%7.4f]\n", dx, dy);
+
+  // build binning if called for the first time. Don't care about sector information as Bucharest has only 1 type of pads
+  if(!fTriangleBinning) 
+    fTriangleBinning=new CbmTrdTriangle(fModuleInfo->GetPadSizeX(1), fModuleInfo->GetPadSizeY(1));
+  if(!fTriangleBinning->SetOrigin(dx, dy)){
+    LOG(WARNING) << "CbmTrdDigitizerPRF::ScanPadPlaneTriangleAB: Hit outside integration limits ["
+      <<std::setprecision(5)<<dx<<", "
+      <<std::setprecision(5)<<dy<<"]." << FairLogger::endl;
+    return;
+  }
+  
+  // set minimum threshold for all channels [keV]
+  // TODO should be stored/computed in CbmTrdModule via triangular/FASP digi param
+  Double_t epsilon=1.e-5; 
+
+  // local storage for digits on a maximum area of 5x3 columns for up[1]/down[0] pads
+  const Int_t nc=2*CbmTrdTriangle::NC+1;
+  const Int_t nr=2*CbmTrdTriangle::NR+1;
+  Double_t array[nc][nr][2] = {{{0.}}}, prf(0.);
+  Int_t colOff, rowOff, up, bx, by;
+  
+  // look right
+  do{
+    // check if there is any contribution on this bin column
+    if(fTriangleBinning->GetChargeFraction()<=epsilon) break;
+    
+    // look up
+    do{
+      prf = fTriangleBinning->GetChargeFraction();
+      fTriangleBinning->GetCurrentPad(colOff, rowOff, up);
+      if( colOff<0 || colOff>=nc ||
+          rowOff<0 || rowOff>=nr){
+        printf("CbmTrdDigitizerPRF::ScanPadPlaneTriangleAB: Bin outside mapped array : col[%d] row[%d]\n", colOff, rowOff);
+        break;
+      }
+      //fTriangleBinning->GetCurrentBin(bx, by);
+      //printf("      {ru} bin[%2d %2d] c[%d] r[%d] u[%2d] PRF[%f]\n", bx, by, colOff, rowOff, up, prf);
+      if(up) array[colOff][rowOff][(up>0?1:0)] += prf;
+      else{ 
+        array[colOff][rowOff][0] += 0.5*prf;
+        array[colOff][rowOff][1] += 0.5*prf;
+      }
+    } while(fTriangleBinning->NextBinY() && prf>=epsilon);
+    fTriangleBinning->GoToOriginY();
+      //printf("\n");
+    
+    // skip bin @ y0 which was calculated before
+    if(!fTriangleBinning->PrevBinY()) continue;
+    
+    // look down
+    do{
+      prf = fTriangleBinning->GetChargeFraction();
+      fTriangleBinning->GetCurrentPad(colOff, rowOff, up);
+      if( colOff<0 || colOff>=nc ||
+          rowOff<0 || rowOff>=nr){
+        printf("CbmTrdDigitizerPRF::ScanPadPlaneTriangleAB: Bin outside mapped array : col[%d] row[%d]\n", colOff, rowOff);
+        break;
+      }
+      //fTriangleBinning->GetCurrentBin(bx, by);
+      //printf("      {rd} bin[%2d %2d] c[%d] r[%d] u[%2d] PRF[%f]\n", bx, by, colOff, rowOff, up, prf);
+      if(up) array[colOff][rowOff][(up>0?1:0)] += prf;
+      else{ 
+        array[colOff][rowOff][0] += 0.5*prf;
+        array[colOff][rowOff][1] += 0.5*prf;
+      }
+    } while(fTriangleBinning->PrevBinY() && prf>=epsilon);
+    fTriangleBinning->GoToOriginY();
+      //printf("\n");
+    
+  } while(fTriangleBinning->NextBinX());    
+  fTriangleBinning->GoToOriginX();
+  
+
+  if(fTriangleBinning->PrevBinX()){ // skip bin @ x0 which was calculated before
+    // look left
+    do{
+      // check if there is any contribution on this bin column
+      if(fTriangleBinning->GetChargeFraction()<=epsilon) break;
+
+      // look up
+      do{
+        prf = fTriangleBinning->GetChargeFraction();
+        fTriangleBinning->GetCurrentPad(colOff, rowOff, up);
+        if( colOff<0 || colOff>=nc ||
+            rowOff<0 || rowOff>=nr){
+          printf("CbmTrdDigitizerPRF::ScanPadPlaneTriangleAB: Bin outside mapped array : col[%d] row[%d]\n", colOff, rowOff);
+          break;
+        }
+        //fTriangleBinning->GetCurrentBin(bx, by);
+        //printf("      {lu} bin[%2d %2d] c[%d] r[%d] u[%2d] PRF[%f]\n", bx, by, colOff, rowOff, up, prf);
+        if(up) array[colOff][rowOff][(up>0?1:0)] += prf;
+        else{ 
+          array[colOff][rowOff][0] += 0.5*prf;
+          array[colOff][rowOff][1] += 0.5*prf;
+        }
+      } while(fTriangleBinning->NextBinY() && prf>=epsilon);
+      fTriangleBinning->GoToOriginY();
+
+      // skip bin @ y0 which was calculated before
+      if(!fTriangleBinning->PrevBinY()) continue;
+      
+      // look down
+      do{
+        prf = fTriangleBinning->GetChargeFraction();
+        fTriangleBinning->GetCurrentPad(colOff, rowOff, up);
+        if( colOff<0 || colOff>=nc ||
+            rowOff<0 || rowOff>=nr){
+          printf("CbmTrdDigitizerPRF::ScanPadPlaneTriangleAB: Bin outside mapped array : col[%d] row[%d]\n", colOff, rowOff);
+          break;
+        }
+        //fTriangleBinning->GetCurrentBin(bx, by);
+        //printf("      {ld} bin[%2d %2d] c[%d] r[%d] u[%2d] PRF[%f]\n", bx, by, colOff, rowOff, up, prf);
+        if(up) array[colOff][rowOff][(up>0?1:0)] += prf;
+        else{ 
+          array[colOff][rowOff][0] += 0.5*prf;
+          array[colOff][rowOff][1] += 0.5*prf;
+        }
+      } while(fTriangleBinning->PrevBinY() && prf>=epsilon);
+      fTriangleBinning->GoToOriginY();
+      //printf("\n");
+      
+    } while(fTriangleBinning->PrevBinX());    
+  }
+  fTriangleBinning->GoToOriginX();
+      //printf("\n");
+  if(VERBOSE_TRIANG) {
+    printf("        "); for(Int_t ic(0); ic<5; ic++) printf("%10d    ", ic); printf("\n");
+    for(Int_t ir(nr); ir--; ){
+      printf("      r[%d] ", ir);
+      for(Int_t ic(0); ic<nc; ic++) printf("%6.4f/%6.4f ", array[ic][ir][1], array[ic][ir][0]);
+      printf("\n");
+    }
+  }
+  // register digitisation to container
+  Int_t address(0);
+  for(Int_t ir(0); ir<nr; ir++){
+    for(Int_t ic(0); ic<nc; ic++){  
+      for(Int_t iup(0); iup<2; iup++){
+        // check if there are data available
+        if(array[ic][ir][iup]<=epsilon) continue;
+
+        // check if column is inside pad-plane        
+        Int_t wcol(col+ic-CbmTrdTriangle::NC);
+        if( wcol<0 || wcol>=fnCol ) continue;
+
+        // check if row is inside pad-plane
+        Int_t wrow(row+ir-CbmTrdTriangle::NR);
+        if( wrow<0 || wrow>=fnRow) continue;
+
+        // move row id to sector wise schema
+        Int_t srow, isec=fModuleInfo->GetSectorRow(wrow, srow);
+        // compute pixel address
+        address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, isec, srow, wcol, iup?1:0);
+        AddDigi(fMCPointId, address, 
+              Double_t(array[ic][ir][iup] * ELoss),
+              Double_t(array[ic][ir][iup] * ELossTR), fTime);
+      }
+    }
   }
 }
 
