@@ -82,6 +82,7 @@ class CbmDaq : public FairTask
     TClonesArray* fStsDigis;
     TClonesArray* fRichDigis;
     TClonesArray* fMuchDigis;
+    TClonesArray* fTrdDigis;
     TClonesArray* fTofDigis;
 
 

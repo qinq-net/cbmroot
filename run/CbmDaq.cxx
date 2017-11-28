@@ -15,6 +15,7 @@
 #include "CbmDaq.h"
 #include "CbmDaqBuffer.h"
 #include "CbmRichDigi.h"
+#include "CbmTrdDigi.h"
 #include "CbmTimeSlice.h"
 
 
@@ -40,6 +41,7 @@ CbmDaq::CbmDaq(Double_t timeSliceSize) : FairTask("Daq"),
                    fStsDigis(NULL),
                    fRichDigis(nullptr),
                    fMuchDigis(NULL),
+                   fTrdDigis(NULL),
                    fTofDigis(NULL),
                    fTimeSlice(NULL),
                    fBuffer(NULL),
@@ -212,6 +214,12 @@ void CbmDaq::FillData(CbmDigi* data) {
       break;
     }
 
+    case kTrd: {
+      CbmTrdDigi* digi = static_cast<CbmTrdDigi*>(data);
+      Int_t nDigis = fTrdDigis->GetEntriesFast();
+
+    }
+
     case kTof: {
       CbmTofDigiExp* digi = static_cast<CbmTofDigiExp*>(data);
       Int_t nDigis = fTofDigis->GetEntriesFast();
@@ -362,7 +370,13 @@ InitStatus CbmDaq::Init() {
   FairRootManager::Instance()->Register("MuchDigi", "MUCH raw data",
                     fMuchDigis, IsOutputBranchPersistent("MuchDigi"));
 
-  // Register output array (CbmStsDigi)
+  // Register output array (CbmTrdDigi)
+  fTrdDigis = new TClonesArray("CbmTrdDigi", 1000);
+  FairRootManager::Instance()->Register("TrdDigi", "TRD raw data",
+                                        fTrdDigis,
+                                        IsOutputBranchPersistent("TrdDigi"));
+
+  // Register output array (CbmTofDigi)
   fTofDigis = new TClonesArray("CbmTofDigiExp",1000);
   FairRootManager::Instance()->Register("TofDigiExp", "TOF raw data",
                     fTofDigis, IsOutputBranchPersistent("TofDigiExp"));
