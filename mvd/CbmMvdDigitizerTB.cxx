@@ -38,10 +38,12 @@ CbmMvdDigitizerTB::CbmMvdDigitizerTB()
 CbmMvdDigitizerTB::CbmMvdDigitizerTB(const char* name, Int_t iMode, Int_t iVerbose)
   : FairTask(name, iVerbose),
     fMode(iMode),
+    eventNumber(0),
     fShowDebugHistos(kFALSE),
     fNoiseSensors(kFALSE),
     fDetector(NULL),
     fInputPoints(NULL),
+    fTracks(NULL),
     fDigis(NULL),
     fDigiMatch(NULL),
     fPerformanceDigi(),
