@@ -39,6 +39,7 @@ CbmMuchSegmentSector::CbmMuchSegmentSector()
   : FairTask(),
     fGeoPar(NULL),
     fNStations(0),
+    fFlag(0),
     fStations(NULL),
     fInputFileName("much.digi.root"),
     fDigiFileName(),

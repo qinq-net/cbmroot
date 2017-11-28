@@ -62,9 +62,6 @@ class CbmMuchGeoScheme: public TObject {
     Bool_t IsInitialized() { return fInitialized; }
 
     // Get geometry objects by indices
-    CbmMuchStation* muchSt;
-    CbmMuchLayer* muchLy;
-    CbmMuchLayerSide* muchLySd;
     CbmMuchStation* GetStation(Int_t iStation) const;
 //Int_t GetStation(const TString& path);
     CbmMuchLayer* GetLayer(Int_t iStation, Int_t iLayer) const;
@@ -100,9 +97,6 @@ class CbmMuchGeoScheme: public TObject {
     return fMuchZ1+fAbsorberZ1[i]+((TGeoBBox*) fAbsorbers->At(i))->GetDZ();  
   }
 
-Double_t Rmin;
-Double_t Rmax;
-Double_t Dx2;  
 
 
 
@@ -160,31 +154,29 @@ Double_t GetSizeX(const TString& path);
 
   private:
     CbmMuchGeoScheme();
-void NavigateTo(const TString& path);
-void NavigateModule(const TString& path);
- 
-UInt_t       fGeoPathHash;   //!
-   TGeoVolume*  fCurrentVolume; //!
-   TGeoBBox*    fVolumeBoxShape;   //!
-    TGeoTrap*    fVolumeTrapShape;
-   Double_t     fGlobal[3];  
-Double_t     fGlobalTrap[3];    //! Global center of volume
-   TGeoHMatrix* fGlobalMatrix;  //!
-   
-
-   // for backward compatibility
-   Int_t        fStation;       //! StationTypeID, 1..3
-   Int_t        fLayer;         //! LayerID within station, 1..4
-   Int_t        fActive;    //! ModuleCopyID with module type
-   Int_t        fGeoID;    // Id to distinguish geometry (mcbm/cbm)
-
+    void NavigateTo(const TString& path);
+    void NavigateModule(const TString& path);
     void InitModules();
     void CreateAbsorbers();
     void CreateStations();
     CbmMuchStation* CreateStationGem(Int_t st);
     CbmMuchStation* CreateStationStraw(Int_t st);
-
     Int_t Intersect(Float_t x, Float_t y, Float_t dx, Float_t dy, Float_t r);
+ 
+    UInt_t       fGeoPathHash;   //!
+    TGeoVolume*  fCurrentVolume; //!
+    TGeoBBox*    fVolumeBoxShape;   //!
+    TGeoTrap*    fVolumeTrapShape;
+    Double_t     fGlobal[3];  
+    Double_t     fGlobalTrap[3];    //! Global center of volume
+    TGeoHMatrix* fGlobalMatrix;  //!
+   
+    // for backward compatibility
+    Int_t        fStation;       //! StationTypeID, 1..3
+    Int_t        fLayer;         //! LayerID within station, 1..4
+    Int_t        fActive;    //! ModuleCopyID with module type
+    Int_t        fGeoID;    // Id to distinguish geometry (mcbm/cbm)
+
     static CbmMuchGeoScheme* fInstance;
     static Bool_t fInitialized;        // Defines whether the instance was initialized
     static Bool_t fModulesInitialized; // Defines whether grid of the instance was initialized
@@ -192,9 +184,6 @@ Double_t     fGlobalTrap[3];    //! Global center of volume
     vector<vector<CbmMuchModule*> > fModules;      //!
     vector<vector<CbmMuchLayerSide*> > fSides;     //!
     map<Int_t,Int_t> fMapSides;
-
-
- 
 
     TObjArray* fStations; //!
     TObjArray* fAbsorbers;//!
@@ -235,6 +224,13 @@ Double_t     fGlobalTrap[3];    //! Global center of volume
     TArrayD fSupportLz; // Support thickness [cm]
     TArrayI fModuleDesign; /* 1 - detailed design (modules at two sides)
      * 0 - simple design (1 module per layer)     */
+
+    CbmMuchStation* muchSt;
+    CbmMuchLayer* muchLy;
+    CbmMuchLayerSide* muchLySd;
+    Double_t Rmin;
+    Double_t Rmax;
+    Double_t Dx2;  
 
     CbmMuchGeoScheme(const CbmMuchGeoScheme&);
     CbmMuchGeoScheme& operator=(const CbmMuchGeoScheme&);

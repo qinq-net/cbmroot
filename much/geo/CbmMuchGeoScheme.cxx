@@ -51,6 +51,17 @@ Bool_t CbmMuchGeoScheme::fModulesInitialized = kFALSE;
 // -------------------------------------------------------------------------
 CbmMuchGeoScheme::CbmMuchGeoScheme() 
   : TObject(),
+    fGeoPathHash(0),
+    fCurrentVolume(NULL),
+    fVolumeBoxShape(NULL),
+    fVolumeTrapShape(NULL),    
+    fGlobal(),    
+    fGlobalTrap(),    
+    fGlobalMatrix(NULL),
+    fStation(0),
+    fLayer(0),
+    fActive(0),
+    fGeoID(0),
     //fIsSimulation(kFALSE),
     fModules(),
     fSides(),
@@ -84,16 +95,12 @@ CbmMuchGeoScheme::CbmMuchGeoScheme()
     fLayersDz(0),
     fSupportLz(0),
     fModuleDesign(0),
-    fGeoPathHash(0),
-    fCurrentVolume(NULL),
-    fVolumeBoxShape(NULL),
-    fVolumeTrapShape(NULL),    
-    fGlobal(),    
-    fGlobalMatrix(NULL),
-    fStation(0),
-    fLayer(0),
-    fActive(0)
-
+    muchSt(NULL),
+    muchLy(NULL),
+    muchLySd(NULL),
+    Rmin(-1.),
+    Rmax(-1.),
+    Dx2(-1.)
 {
 
   Info("CbmMuchGeoScheme", "CbmMuchGeoScheme created");
@@ -399,7 +406,7 @@ void CbmMuchGeoScheme::NavigateTo(
 {
   
     gGeoManager->cd(path.Data());
-    fGeoPathHash;
+//    fGeoPathHash;
     fGeoPathHash = path.Hash();
     fCurrentVolume = gGeoManager->GetCurrentVolume();
     fVolumeBoxShape = (TGeoBBox*)fCurrentVolume->GetShape();
@@ -720,7 +727,7 @@ void CbmMuchGeoScheme::NavigateModule(
 				      const TString& path)
 {
     gGeoManager->cd(path.Data());
-    fGeoPathHash;
+//    fGeoPathHash;
     fGeoPathHash = path.Hash();
     fCurrentVolume = gGeoManager->GetCurrentVolume();
     fVolumeTrapShape = (TGeoTrap*)fCurrentVolume->GetShape();
