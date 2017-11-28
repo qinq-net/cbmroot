@@ -4,6 +4,8 @@
 #include "FairTask.h"
 #include "TRandom3.h"
 #include <map>
+#include <vector>
+#include <tuple>
 
 class CbmTrdPoint;
 class CbmTrdDigi;
@@ -65,25 +67,40 @@ class CbmTrdDigitizerPRF : public FairTask {
   void SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss, Double_t ELossTR);
 
   void AddDigi(Int_t pointId, Int_t address, Double_t charge, Double_t chargeTR, Double_t time);
+  void AddDigitoBuffer(Int_t pointId, Int_t address, Double_t charge, Double_t chargeTR, Double_t time);
+  void ProcessBuffer(Int_t address,Double_t weighting);
+  Double_t AddNoise(Double_t charge);
+  Double_t CheckTime(Int_t address);
+  Double_t NoiseTime();
+  Double_t AddDrifttime(Double_t x);
 
   void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
 
   Bool_t fDebug;
+  Bool_t fStream;
+  Bool_t fNoiseDigis;
   Bool_t fTrianglePads;
   Bool_t fCbmLinkWeightDistance;
 
   Double_t fSigma_noise_keV;
   TRandom3 *fNoise;
   Double_t fMinimumChargeTH;
-  Double_t fTime;
+  Double_t fCurrentTime;
+  Double_t fAddress;
+  Double_t fLastEventTime;
+  Double_t fCollectTime;
 
   Int_t fnClusterConst;
   Int_t fnScanRowConst;
   Int_t fnScanColConst;
   Int_t fnRow;
   Int_t fnCol;
+  Int_t fdtlow;
+  Int_t fdthigh;
+  Int_t fpoints;
   Int_t fLayerId;
   Int_t fModuleId;
+  Int_t fBufferAddress;
   Int_t fMCPointId;
 
   // event info
@@ -100,7 +117,10 @@ class CbmTrdDigitizerPRF : public FairTask {
   CbmTrdModule* fModuleInfo; //!
   CbmTrdRadiator* fRadiator;  //!
 
-  std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*> > fDigiMap; // Temporary storage for digis.
+  std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>>                      fDigiMap; // Temporary storage for digis.
+  std::map<Int_t, std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>>         fAnalogBuffer;
+  std::map<Int_t, std::vector<std::pair<Double_t,Double_t>>>              fChargeBuffer;
+  std::map<Int_t, Double_t>                                               fTimeBuffer;
 
   ClassDef(CbmTrdDigitizerPRF, 3);
 };
