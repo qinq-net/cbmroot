@@ -85,8 +85,10 @@ CbmStsFindClusters::~CbmStsFindClusters() {
 Int_t CbmStsFindClusters::CreateModules() {
 
   assert( fSetup );
-  fSetup->ListSensors();
-  fSetup->ListModules();
+  if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG1) ) {
+    fSetup->ListSensors();
+    fSetup->ListModules();
+  }
 
   Int_t nModules = fSetup->GetNofModules();
   for (Int_t iModule = 0; iModule < nModules; iModule++) {
