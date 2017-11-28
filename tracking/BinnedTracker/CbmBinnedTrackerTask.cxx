@@ -133,6 +133,10 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
    for (std::list<CbmBinnedTracker::Track*>::const_iterator trackIter = fTracker->GetTracksBegin(); trackIter != tracksEnd; ++trackIter)
    {
       const CbmBinnedTracker::Track* recoTrack = *trackIter;
+      
+      if (recoTrack->fIsClone)
+         continue;
+      
       int previousTrackId = -1;
       int stationNumber = 0;
       int nofStations = 0;
@@ -275,7 +279,7 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
       globalTrack->SetParamLast(&trackParam);
       
       globalTrack->SetNDF(nofStations * 2);
-      globalTrack->SetChi2(recoTrack->fParams[nofStations - 1].chi2);
+      globalTrack->SetChi2(recoTrack->fChiSq);
       
       ++trackNumber;
    }

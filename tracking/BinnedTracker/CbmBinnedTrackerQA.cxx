@@ -638,9 +638,12 @@ static Int_t gEventNumber = 0;
 static Int_t gNofRecoTracks = 0;
 static Int_t gNofNonGhosts = 0;
 static Int_t gNofClones = 0;
+static vector<bool> gIsRecoClone;
 
 void CbmBinnedTrackerQA::Exec(Option_t* opt)
 {
+   gIsRecoClone.clear();
+   
    if (TrackDesc::nofStsStations > 0)
    {
       Int_t nofStsHits = fStsHits->GetEntriesFast();
@@ -898,6 +901,8 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
    set<Int_t>* globalTrackMCRefs = new set<Int_t> [nofGlobalTracks * nofStations];
    Int_t* globalTracksHitInds = new Int_t[nofGlobalTracks * nofStations];
+   gIsRecoClone.resize(nofGlobalTracks);
+   fill(gIsRecoClone.begin(), gIsRecoClone.end(), false);
    
    for (Int_t i = 0; i < nofGlobalTracks; ++i)
    {
@@ -950,6 +955,84 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
    
    for (Int_t i = 0; i < nofGlobalTracks; ++i)
    {
+      //map<Int_t, Int_t> matches;// The map from global track IDs, different from the current (i-th) global track ID, to the number of stations, where their hits originate from the MC tracks.
+      
+      for (Int_t j = 0; j < nofStations; ++j)
+      {
+         //set<Int_t> globals;// Global track IDs, which reference the same Monte Carlo track IDs on this station as the i-th (global) track.
+         const set<Int_t>& mcs = globalTrackMCRefs[i * nofStations + j];
+         
+         for (set<Int_t>::const_iterator k = mcs.begin(); k != mcs.end(); ++k)
+         {
+            Int_t mc = *k;
+            /*map<Int_t, set<Int_t> >::const_iterator mctogIter = mcToGlobalRefs[j].find(mc);
+            
+            if (mctogIter == mcToGlobalRefs[j].end())
+               continue;
+            
+            globals.insert(mctogIter->second.begin(), mctogIter->second.end());*/
+            mcToGlobalRefs[j][mc].insert(i);
+         }
+         
+         /*for (set<Int_t>::const_iterator k = globals.begin(); k != globals.end(); ++k)
+         {
+            Int_t gl = *k;
+            map<Int_t, Int_t>::iterator mIter = matches.find(gl);
+            
+            if (mIter == matches.end())
+               matches[gl] = 1;
+            else
+               ++mIter->second;
+         }*/
+      }
+      
+      //map<Int_t, Int_t>::const_iterator maxIter = max_element(matches.begin(), matches.end(),
+        // [](const pair<Int_t, Int_t>& p1, const pair<Int_t, Int_t>& p2)
+         //{
+            //return p1.second < p2.second;
+         //});
+
+      /*for (map<Int_t, Int_t>::const_iterator maxIter = matches.begin(); maxIter != matches.end(); ++maxIter)
+      {
+         if (maxIter->second >= 0.7 * nofStations)
+         {
+            ++gNofClones;
+            Int_t origTrackInd = maxIter->first;
+            int nofSameHits = 0;
+         
+            for (Int_t j = 0; j < nofStations; ++j)
+            {
+               Int_t hitInd = globalTracksHitInds[i * nofStations + j];
+               Int_t origHitInd = globalTracksHitInds[origTrackInd * nofStations + j];
+            
+               if (hitInd == origHitInd)
+                  ++nofSameHits;
+            }
+         
+            clonesNofSameHits->Fill(nofSameHits);
+            continue;
+         }
+      }
+         
+      for (Int_t j = 0; j < nofStations; ++j)
+      {
+         const set<Int_t>& mcs = globalTrackMCRefs[i * nofStations + j];
+         
+         for (set<Int_t>::const_iterator k = mcs.begin(); k != mcs.end(); ++k)
+         {
+            Int_t mc = *k;
+            mcToGlobalRefs[j][mc].insert(i);
+         }
+      }*/
+   }// Filling global tracks to mc maps for furhter clones searches
+   
+   for (Int_t i = 0; i < nofGlobalTracks; ++i)
+   {
+      const CbmGlobalTrack* thisTrack = static_cast<const CbmGlobalTrack*> (fGlobalTracks->At(i));
+      
+      //if (gIsRecoClone[i])
+         //continue;
+      
       map<Int_t, Int_t> matches;// The map from global track IDs, different from the current (i-th) global track ID, to the number of stations, where their hits originate from the MC tracks.
       
       for (Int_t j = 0; j < nofStations; ++j)
@@ -971,6 +1054,10 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
          for (set<Int_t>::const_iterator k = globals.begin(); k != globals.end(); ++k)
          {
             Int_t gl = *k;
+            
+            if (gl == i)
+               continue;
+            
             map<Int_t, Int_t>::iterator mIter = matches.find(gl);
             
             if (mIter == matches.end())
@@ -980,41 +1067,27 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
          }
       }
       
-      map<Int_t, Int_t>::const_iterator maxIter = max_element(matches.begin(), matches.end(),
-         [](const pair<Int_t, Int_t>& p1, const pair<Int_t, Int_t>& p2)
-         {
-            return p1.second < p2.second;
-         });
-            
-      if (maxIter->second >= 0.7 * nofStations)
+      for (map<Int_t, Int_t>::const_iterator j = matches.begin(); j != matches.end(); ++j)
       {
+         if (j->second >= 0.7 * nofStations)
+         {
+            const CbmGlobalTrack* anotherTrack = static_cast<const CbmGlobalTrack*> (fGlobalTracks->At(j->first));
+            
+            //if (gIsRecoClone[j->first])
+               //continue;
+            
+            if (thisTrack->GetChi2() < anotherTrack->GetChi2())
+               gIsRecoClone[j->first] = true;
+            else
+               gIsRecoClone[i] = true;
+         }
+      }
+   }
+   
+   for (Int_t i = 0; i < nofGlobalTracks; ++i)
+   {
+      if (gIsRecoClone[i])
          ++gNofClones;
-         Int_t origTrackInd = maxIter->first;
-         int nofSameHits = 0;
-         
-         for (Int_t j = 0; j < nofStations; ++j)
-         {
-            Int_t hitInd = globalTracksHitInds[i * nofStations + j];
-            Int_t origHitInd = globalTracksHitInds[origTrackInd * nofStations + j];
-            
-            if (hitInd == origHitInd)
-               ++nofSameHits;
-         }
-         
-         clonesNofSameHits->Fill(nofSameHits);
-         continue;
-      }
-         
-      for (Int_t j = 0; j < nofStations; ++j)
-      {
-         const set<Int_t>& mcs = globalTrackMCRefs[i * nofStations + j];
-         
-         for (set<Int_t>::const_iterator k = mcs.begin(); k != mcs.end(); ++k)
-         {
-            Int_t mc = *k;
-            mcToGlobalRefs[j][mc].insert(i);
-         }
-      }
    }
    
    delete[] mcToGlobalRefs;

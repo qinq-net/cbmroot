@@ -34,10 +34,13 @@ public:
     struct Track
     {
         Track(CbmTBin::HitHolder** hits, int length, const CbmBinnedStation::KFParams& lastParam) :
-            fHits(new CbmTBin::HitHolder*[length]), fLength(length), fParams(new CbmBinnedStation::KFParams[length])
+            fHits(new CbmTBin::HitHolder*[length]), fLength(length), fParams(new CbmBinnedStation::KFParams[length]), fIsClone(false), fChiSq(lastParam.chi2)
         {
             for (int i = 0; i < fLength; ++i)
+            {
                 fHits[i] = hits[i];
+                fHits[i]->tracks.push_back(this);
+            }
             
             fParams[fLength - 1] = lastParam;
                                 
@@ -61,6 +64,8 @@ public:
         CbmTBin::HitHolder** fHits;
         int fLength;
         CbmBinnedStation::KFParams* fParams;
+        bool fIsClone;
+        Double_t fChiSq;
     };
     
 public:
@@ -152,6 +157,8 @@ public:
             SetCheckUsed(true);
             FollowTracks(0);
         }
+        
+        FindClones();
         
         /*std::cout << "Segments on stations: ";
         
@@ -792,6 +799,107 @@ private:
                 }
             }
         );
+    }
+    
+    void FindClones()
+    {
+        for (std::list<Track*>::iterator i = fTracks.begin(); i != fTracks.end(); ++i)
+        {
+            Track* track = *i;
+            
+            if (track->fIsClone)
+                continue;
+            
+            std::map<Track*, int> cloneNofs;
+            
+            for (int j = 0; j < track->fLength; ++j)
+            {
+                Double_t x = track->fParams[j].xParams.coord;
+                Double_t dxSq = track->fParams[j].xParams.C11;
+                Double_t y = track->fParams[j].yParams.coord;
+                Double_t dySq = track->fParams[j].yParams.C11;
+                Double_t t = 0;// TODO!
+                CbmTBin::HitHolder* hit = track->fHits[j];
+                std::set<Track*> neighbourTracks;
+                
+                for (std::list<void*>::iterator k = hit->tracks.begin(); k != hit->tracks.end(); ++k)
+                {
+                    Track* track2 = static_cast<Track*> (*k);
+                    
+                    if (track2 == track || track2->fIsClone)
+                        continue;
+                    
+                    neighbourTracks.insert(track2);
+                }
+                
+                CbmBinnedStation* aStation = fStationArray[j];
+                aStation->SearchHits(track->fParams[j], hit->hit->GetZ(),
+                    [&track, &cloneNofs, j, x, dxSq, y, dySq, t, &neighbourTracks](CbmTBin::HitHolder& hitHolder)->void
+                    {
+                        for (std::list<void*>::iterator k = hitHolder.tracks.begin(); k != hitHolder.tracks.end(); ++k)
+                        {
+                            Track* track2 = static_cast<Track*> (*k);
+                    
+                            if (track2 == track || track2->fIsClone)
+                                continue;
+                            
+                            Double_t x2 = track2->fParams[j].xParams.coord;
+                            Double_t dx2Sq = track2->fParams[j].xParams.C11;
+                            Double_t y2 = track2->fParams[j].yParams.coord;
+                            Double_t dy2Sq = track2->fParams[j].yParams.C11;
+                            Double_t t2 = 0;// TODO!
+                            
+                            if ((x2 - x) * (x2 - x) > cbmBinnedSigmaSq * (dxSq + dx2Sq) || (y2 - y) * (y2 - y) > cbmBinnedSigmaSq * (dySq + dy2Sq))// TODO: add check for the time
+                                continue;
+                            
+                            neighbourTracks.insert(track2);
+                        }
+                    }
+                );
+                
+                for (std::set<Track*>::iterator k = neighbourTracks.begin(); k != neighbourTracks.end(); ++k)
+                {
+                    Track* track2 = *k;
+                    std::map<Track*, int>::iterator cni = cloneNofs.find(track2);
+                    
+                    if (cni == cloneNofs.end())
+                        cloneNofs[track2] = 1;
+                    else
+                        ++cni->second;
+                }
+                
+                /*for (std::list<void*>::iterator k = hit->tracks.begin(); k != hit->tracks.end(); ++k)
+                {
+                    Track* track2 = static_cast<Track*> (*k);
+                    
+                    if (track2 == track || track2->fIsClone)
+                        continue;
+                    
+                    std::map<Track*, int>::iterator cni = cloneNofs.find(track2);
+                    
+                    if (cni == cloneNofs.end())
+                        cloneNofs[track2] = 1;
+                    else
+                        ++cni->second;
+                }*/
+            }
+            
+            for (std::map<Track*, int>::iterator j = cloneNofs.begin(); j != cloneNofs.end(); ++j)
+            {
+                if (j->second < 0.7 * track->fLength)
+                    continue;
+                
+                Track* track2 = j->first;
+                
+                if (track2->fChiSq < track->fChiSq)
+                {
+                    track->fIsClone = true;
+                    break;
+                }
+                else
+                    track2->fIsClone = true;
+            }
+        }
     }
     
 private:
