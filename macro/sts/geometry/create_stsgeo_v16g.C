@@ -181,16 +181,16 @@ const Double_t gkChainGapY       = 0.00;
 const Double_t gkCableThickness  = 0.02;
 
 // ---> Vertical overlap of neighbouring sectors in a ladder [cm]
-const Double_t gkSectorOverlapY  = 0.27;
+const Double_t gkSectorOverlapY  = 0.27; // DEJH -> 0.3345 / 0.4600
 
 // ---> Gap in z between neighbouring sectors in a ladder [cm]
-const Double_t gkSectorGapZ      = 0.02;
+const Double_t gkSectorGapZ      = 0.02; // DEJH -> 0.07 / 0.07
 
 // ---> Horizontal overlap of neighbouring ladders [cm]
-const Double_t gkLadderOverlapX  = 0.30;
+const Double_t gkLadderOverlapX  = 0.30; // DEJH -> 0.25 / 0.25
 
 // ---> Gap in z between neighbouring ladders [cm]
-const Double_t gkLadderGapZ      = 1.00;  // 0.00;
+const Double_t gkLadderGapZ      = 1.00; // DEJH -> 0.90 / 0.50
 
 // ---> Gap in z between lowest sector to carbon support structure [cm]
 const Double_t gkSectorGapZFrame = 0.10;
@@ -1576,7 +1576,7 @@ void AddCarbonLadder(Int_t LadderIndex,
   TGeoVolume* unit = gGeoMan->GetVolume(unitName[iUnit]);
   if ( ! unit )  // if it does not yet exist, create a new one
   {
-    TGeoVolume* unit = new TGeoVolumeAssembly(unitName[iUnit]);
+    unit = new TGeoVolumeAssembly(unitName[iUnit]);
     isFirstPartOfHalfUnit = kTRUE;
   }
 
