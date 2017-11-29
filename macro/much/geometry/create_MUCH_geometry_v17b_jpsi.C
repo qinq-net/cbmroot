@@ -197,7 +197,9 @@ void create_MUCH_geometry_v17b_jpsi() {
   }
 
   gGeoMan->CloseGeometry();
-  gGeoMan->CheckOverlaps(0.0000001);
+  gGeoMan->CheckOverlaps(0.00001);
+  gGeoMan->CheckOverlaps(0.0001, "s");
+  
   gGeoMan->PrintOverlaps();
   //  gGeoMan->Test();
 
@@ -361,7 +363,7 @@ TGeoVolume* CreateAbsorbers(int i) {
    if (!(i==0 || i ==1))
     {
       TGeoBBox * box = new TGeoBBox(BoxName,rmax2,rmax2,dz);
-      TGeoCone * tube = new TGeoCone(pipename,dz+0.01,0.,rmin1,0.,rmin2);   
+      TGeoCone * tube = new TGeoCone(pipename,dz+0.001,0.,rmin1,0.,rmin2);   
       TString expression = BoxName +"-"+pipename;
       TGeoCompositeShape* shSupport = new TGeoCompositeShape(supportShapeName,expression);
       
@@ -442,7 +444,7 @@ TGeoVolume * CreateLayers(int istn, int ily){
   Double_t tg = (dx2-dx1)/2/dy;
   Double_t dd1 = fSpacerPhi*tg;
   Double_t dd2 = fSpacerPhi*sqrt(1+tg*tg);
-  Double_t sdx1 = dx1+dd2-dd1;
+  Double_t sdx1 = dx1+dd2-dd1-0.1; // 0.1 cm extra to avoid overlaps 
   Double_t sdx2 = dx2+dd2+dd1; 
   Double_t sdy  = dy+fSpacerR;
   Double_t sdz  = dz-0.1;
@@ -488,7 +490,7 @@ for (Int_t iSide=0;iSide<2;iSide++){
   // Now start adding the GEM modules  
   for (Int_t iModule=0; iModule<fNSectorsPerLayer[istn]; iModule++){ 
 
-      Double_t phi  = 2 * phi0 * (iModule + 0.5);  // add 0.5 to not overlap with y-axis for left-right layer separation
+      Double_t phi  = 2 * phi0 * (iModule + 0.2);  // add 0.5 to not overlap with y-axis for left-right layer separation
       Bool_t isBack = iModule%2; 
       Char_t cside  = (isBack==1) ? 'b' : 'f'; 
      
