@@ -40,7 +40,7 @@ void setup_sis100_muon_lmvm()
   TString magnetGeoTag    = "v15b_much";
   TString pipeGeoTag      = "v16b_1m";
   TString stsGeoTag       = "v16g";
-  TString muchGeoTag      = "v17b";
+  TString muchGeoTag      = "v17b_sis100_1m_lmvm";
   TString trdGeoTag       = "v17n_1m";
   TString tofGeoTag       = "v16c_1m";
   TString platGeoTag      = "v13a";
