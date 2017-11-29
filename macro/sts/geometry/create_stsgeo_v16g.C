@@ -7,6 +7,7 @@
  ** @date 09.05.2014
  ** @author Tomas Balog <T.Balog@gsi.de>
  **
+ ** v16g: v16g is the new standard geometry from November 2017
  ** v16g: switch from stations to units - left / right ("Unit01L", "Unit01R")
  ** v16f: switch from stations to units
  **     - split in upstream / downstream and left / right parts
