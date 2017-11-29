@@ -337,8 +337,19 @@ Int_t CbmLitTrackingGeometryConstructor::GetNofMuchStations()
       for (Int_t iMuchNode = 0; iMuchNode < muchNodes->GetEntriesFast(); iMuchNode++) {
          const TGeoNode* muchNode = static_cast<const TGeoNode*>(muchNodes->At(iMuchNode));
          if (TString(muchNode->GetName()).Contains("station")) {
-            TObjArray* layerNodes = muchNode->GetNodes();
-            fNofMuchStations += layerNodes->GetEntriesFast();
+           // old structure defined in ASCII geometry
+           if (TString(muchNode->GetName()).Contains("muchstation")) {
+             TObjArray* layerNodes = muchNode->GetNodes();
+             fNofMuchStations += layerNodes->GetEntriesFast();
+           } else {
+             // New structure defined in ROOT geometry files
+             TObjArray* muchSubNodes = muchNode->GetNodes();
+             for (Int_t iMuchSubNode = 0; iMuchSubNode < muchSubNodes->GetEntriesFast(); iMuchSubNode++) {
+               const TGeoNode* muchSubNode = static_cast<const TGeoNode*>(muchSubNodes->At(iMuchSubNode));
+               TObjArray* layerNodes = muchSubNode->GetNodes();
+               fNofMuchStations += layerNodes->GetEntriesFast();
+             }
+           }
          }
       }
       firstTime = false;
@@ -359,7 +370,16 @@ Int_t CbmLitTrackingGeometryConstructor::GetNofMuchAbsorbers()
       TObjArray* muchNodes = much->GetNodes();
       for (Int_t iMuchNode = 0; iMuchNode < muchNodes->GetEntriesFast(); iMuchNode++) {
          const TGeoNode* muchNode = static_cast<const TGeoNode*>(muchNodes->At(iMuchNode));
-         if (TString(muchNode->GetName()).Contains("absorber")) fNofMuchAbsorbers++;
+         if (TString(muchNode->GetName()).Contains("absorber")) {
+           // old structure defined in ASCII geometry
+           if (TString(muchNode->GetName()).Contains("muchabsorber")) {
+             fNofMuchAbsorbers++;
+           } else {
+             // New structure defined in ROOT geometry files
+             TObjArray* muchSubNodes = muchNode->GetNodes();
+             fNofMuchAbsorbers += muchSubNodes->GetEntriesFast();
+           }
+         }
       }
       firstTime = false;
    }
@@ -469,9 +489,21 @@ Int_t CbmLitTrackingGeometryConstructor::ConvertMuchToAbsoluteStationNr(
       for (Int_t iMuchNode = 0; iMuchNode < muchNodes->GetEntriesFast(); iMuchNode++) {
          const TGeoNode* muchNode = static_cast<const TGeoNode*>(muchNodes->At(iMuchNode));
          if (TString(muchNode->GetName()).Contains("station")) {
-            Int_t station = std::atoi(string(muchNode->GetName() + 11, 2).c_str()) - 1;
-            TObjArray* layerNodes = muchNode->GetNodes();
-            nofLayersPerStation[station] = layerNodes->GetEntriesFast();
+           // old structure defined in ASCII geometry
+           if (TString(muchNode->GetName()).Contains("muchstation")) {
+             Int_t station = std::atoi(string(muchNode->GetName() + 11, 2).c_str()) - 1;
+             TObjArray* layerNodes = muchNode->GetNodes();
+             nofLayersPerStation[station] = layerNodes->GetEntriesFast();
+           } else {
+             // New structure defined in ROOT geometry files
+             TObjArray* muchSubNodes = muchNode->GetNodes();
+             for (Int_t iMuchSubNode = 0; iMuchSubNode < muchSubNodes->GetEntriesFast(); iMuchSubNode++) {
+               const TGeoNode* muchSubNode = static_cast<const TGeoNode*>(muchSubNodes->At(iMuchSubNode));
+               Int_t station = std::atoi(string(muchSubNode->GetName() + 11, 2).c_str()) - 1;               
+               TObjArray* layerNodes = muchSubNode->GetNodes();
+               nofLayersPerStation[station] += layerNodes->GetEntriesFast();
+             }
+           }
          }
       }
       map<Int_t, Int_t>::const_iterator it;
@@ -484,4 +516,5 @@ Int_t CbmLitTrackingGeometryConstructor::ConvertMuchToAbsoluteStationNr(
       firstTime = false;
    }
    return sumOfLayers[station] + layer;
+
 }
