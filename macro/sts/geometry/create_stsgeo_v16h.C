@@ -1605,7 +1605,7 @@ void AddCarbonLadder(Int_t LadderIndex,
   TGeoVolume* unit = gGeoMan->GetVolume(unitName[iUnit]);
   if ( ! unit )  // if it does not yet exist, create a new one
   {
-    TGeoVolume* unit = new TGeoVolumeAssembly(unitName[iUnit]);
+    unit = new TGeoVolumeAssembly(unitName[iUnit]);
     isFirstPartOfHalfUnit = kTRUE;
   }
 
