@@ -29,6 +29,7 @@
 #include "TStyle.h"
 #include "TPaveStats.h"
 #include "TDatime.h"
+#include "TMath.h"
 
 #include <algorithm>
 #include <iostream>
@@ -42,6 +43,7 @@ Bool_t bResetTofStarHistos = kFALSE;
 Bool_t bSaveTofStarHistos  = kFALSE;
 Bool_t bTofCyclePulserFee  = kFALSE;
 Bool_t bTofUpdateNormedFt  = kFALSE;
+Bool_t bTofUpdateZoomedFit = kFALSE;
 
 // Default value for nb bins in Pulser time difference histos
 //const UInt_t kuNbBinsDt    = 5000;
@@ -54,6 +56,7 @@ Double_t dMaxDt     =  1.*(kuNbBinsDt*get4v1x::kdBinSize/2.) + get4v1x::kdBinSiz
 
 // Default number of FEET per channels histograms
 UInt_t uNbFeetPlot = 2;
+UInt_t uNbFeetPlotsPerGdpb = 0;
 
 CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     CbmTSUnpack(),
@@ -94,24 +97,39 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fcMsSizeAll(NULL),
     fTsLastHit(),
     fEquipmentId(0),
+    fdMsIndex(0.0),
     fUnpackPar(NULL),
     fHistMessType(NULL),
     fHistSysMessType(NULL),
     fHistGet4MessType(NULL),
+    fHistGet4ChanScm(NULL),
     fHistGet4ChanErrors(NULL),
     fHistGet4EpochFlags(NULL),
     fHistSpill(NULL),
     fHistSpillLength(NULL),
     fHistSpillCount(NULL),
     fHistSpillQA(NULL),
+    fhScmScalerCounters(NULL),
+    fhScmDeadtimeCounters(NULL),
+    fhScmSeuCounters(NULL),
+    fhScmSeuCountersEvo(NULL),
+    fdTimeLastStartMessage(0.),
+    fhScmStartMessDist(NULL),
+    fhScmStartMessEvo(NULL),
     fRaw_Tot_gDPB(),
     fChCount_gDPB(),
     fChannelRate_gDPB(),
     fFeetRate_gDPB(),
     fFeetErrorRate_gDPB(),
+    fuHistoryHistoSize( 1800 ),
     fFeetRateDate_gDPB(),
     fiRunStartDateTimeSec( -1 ),
     fiBinSizeDatePlots( -1 ),
+    fdFirstMsIndex( -1 ),
+    fbFirstEpochInMsFound(),
+    fRealMsFineQa_gDPB(),
+    fRealMsMidQa_gDPB(),
+    fRealMsCoarseQa_gDPB(),
 /*
     fulLastMsIdx(0),
     fbHitsInLastTs(kFALSE),
@@ -142,6 +160,11 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fhTimeRmsPulserChosenFee(NULL),
     fhTimeRmsPulserChosenChPairs(NULL),
     fdLastRmsUpdateTime(-1),
+    fdFitZoomWidthPs(0.0),
+    fhTimeRmsZoomPulsChosenFee(NULL),
+    fhTimeRmsZoomFitPulsChosenChPairs(NULL),
+    fhTimeResFitPulsChosenFee(NULL),
+    fhTimeResFitPulsChosenChPairs(NULL),
     fhFtDistribPerCh(),
     fChCountFall_gDPB(),
     fhFtDistribPerChFall(),
@@ -433,6 +456,17 @@ void CbmTSMonitorTofStar::CreateHistograms()
     server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
 
+  name = "hGet4ChanScm";
+  title = "SC messages per GET4 channel; GET4 channel # ; SC type";
+  TH2I* hGet4ChanScm =  new TH2I(name, title,
+      2 * fNrOfGet4 * fNrOfChannelsPerGet4, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
+      4, 0., 4.);
+    fHM->Add(name.Data(), hGet4ChanScm);
+#ifdef USE_HTTP_SERVER
+  if (server)
+    server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+
   name = "hGet4ChanErrors";
   title = "Error messages per GET4 channel; GET4 channel # ; Error";
   TH2I* hGet4ChanErrors = NULL;
@@ -508,6 +542,65 @@ void CbmTSMonitorTofStar::CreateHistograms()
 #ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
+#endif
+
+   // Slow control messages analysis
+   name = "hScmScalerCounters";
+   title = "Content of Scaler counter SC messages; Scaler counter [hit]; Channel []";
+   fhScmScalerCounters = new TH2I(name, title, fNrOfGet4 * fNrOfChannelsPerGet4 * 2, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
+                                               8192, 0., 8192.);
+   fHM->Add(name.Data(), fhScmScalerCounters);
+#ifdef USE_HTTP_SERVER
+   if (server)
+      server->Register("/TofRaw", fhScmScalerCounters );
+#endif
+
+   name = "hScmDeadtimeCounters";
+   title = "Content of Deadtime counter SC messages; Deadtime [Clk Cycles]; Channel []";
+   fhScmDeadtimeCounters = new TH2I(name, title, fNrOfGet4 * fNrOfChannelsPerGet4 * 2, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
+                                               8192, 0., 8192.);
+   fHM->Add(name.Data(), fhScmDeadtimeCounters);
+#ifdef USE_HTTP_SERVER
+   if (server)
+      server->Register("/TofRaw", fhScmDeadtimeCounters );
+#endif
+
+   name = "hScmSeuCounters";
+   title = "Content of SEU counter SC messages; SEU []; Channel []";
+   fhScmSeuCounters = new TH2I(name, title, fNrOfGet4 * fNrOfChannelsPerGet4 * 2, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
+                                               8192, 0., 8192.);
+   fHM->Add(name.Data(), fhScmSeuCounters);
+#ifdef USE_HTTP_SERVER
+   if (server)
+      server->Register("/TofRaw", fhScmSeuCounters );
+#endif
+
+   name = "hScmSeuCountersEvo";
+   title = "SEU counter rate from SC messages; Time in Run [s]; Channel []; SEU []";
+   fhScmSeuCountersEvo = new TH2I(name, title, fNrOfGet4 * fNrOfChannelsPerGet4 * 2, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
+                                               fuHistoryHistoSize, 0., fuHistoryHistoSize);
+   fHM->Add(name.Data(), fhScmSeuCountersEvo);
+#ifdef USE_HTTP_SERVER
+   if (server)
+      server->Register("/TofRaw", fhScmSeuCountersEvo );
+#endif
+
+   name = "hScmStartMessDist";
+   title = "Start message time interval distribution for GET4 #0; Time interval [s]; Counts []";
+   fhScmStartMessDist = new TH1I(name, title, 10000, 0., 10.);
+   fHM->Add(name.Data(), fhScmStartMessDist);
+#ifdef USE_HTTP_SERVER
+   if (server)
+      server->Register("/TofRaw", fhScmStartMessDist );
+#endif
+
+   name = "hScmStartMessEvo";
+   title = "Start message rate for GET4 #0; Time in Run [s]; Start Mess []";
+   fhScmStartMessEvo = new TH1I(name, title, fuHistoryHistoSize, 0., fuHistoryHistoSize);
+   fHM->Add(name.Data(), fhScmStartMessEvo);
+#ifdef USE_HTTP_SERVER
+   if (server)
+      server->Register("/TofRaw", fhScmStartMessEvo );
 #endif
 
    // Prepare storing of hit time info
@@ -642,6 +735,48 @@ void CbmTSMonitorTofStar::CreateHistograms()
       if (server)
         server->Register("/TofRaw", fHM->H1( name.Data() ) );
 #endif
+
+      name = "hTimeRmsZoomPulsChosenFee";
+      fhTimeRmsZoomPulsChosenFee = new TH2D( name.Data(),
+            "Time difference RMS after zoom for any channels pair in chosen Fee; Ch A; Ch B; RMS [ps]",
+            fNrOfChannelsPerFeet - 1, -0.5, fNrOfChannelsPerFeet - 1.5,
+            fNrOfChannelsPerFeet - 1,  0.5, fNrOfChannelsPerFeet - 0.5);
+      fHM->Add( name.Data(), fhTimeRmsZoomPulsChosenFee);
+#ifdef USE_HTTP_SERVER
+      if (server)
+        server->Register("/TofRaw", fHM->H2( name.Data() ) );
+#endif
+
+      name = "hTimeRmsZoomFitPulsChosenChPairs";
+      fhTimeRmsZoomFitPulsChosenChPairs = new TH1D( name.Data(),
+            "Time difference RMS after zoom for chosen channels pairs; Pair # ; RMS [ps]",
+            kuNbChanTest - 1, -0.5, kuNbChanTest - 1.5);
+      fHM->Add( name.Data(), fhTimeRmsZoomFitPulsChosenChPairs);
+#ifdef USE_HTTP_SERVER
+      if (server)
+        server->Register("/TofRaw", fHM->H1( name.Data() ) );
+#endif
+
+      name = "hTimeResFitPulsChosenFee";
+      fhTimeResFitPulsChosenFee = new TH2D( name.Data(),
+            "Time difference Res from fit for any channels pair in chosen Fee; Ch A; Ch B; Sigma [ps]",
+            fNrOfChannelsPerFeet - 1, -0.5, fNrOfChannelsPerFeet - 1.5,
+            fNrOfChannelsPerFeet - 1,  0.5, fNrOfChannelsPerFeet - 0.5);
+      fHM->Add( name.Data(), fhTimeResFitPulsChosenFee);
+#ifdef USE_HTTP_SERVER
+      if (server)
+        server->Register("/TofRaw", fHM->H2( name.Data() ) );
+#endif
+
+      name = "hTimeResFitPulsChosenChPairs";
+      fhTimeResFitPulsChosenChPairs = new TH1D( name.Data(),
+            "Time difference Res from fit for chosen channels pairs; Pair # ; Sigma [ps]",
+            kuNbChanTest - 1, -0.5, kuNbChanTest - 1.5);
+      fHM->Add( name.Data(), fhTimeResFitPulsChosenChPairs);
+#ifdef USE_HTTP_SERVER
+      if (server)
+        server->Register("/TofRaw", fHM->H1( name.Data() ) );
+#endif
   } // if( fbPulserMode )
 
   if( fbGet4M24b )
@@ -721,7 +856,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
       title = Form(
           "Counts per second in Feet %1u of gDPB %02u; Time[s] ; Counts", uFeet,
           uGdpb);
-      fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), 1800, 0, 1800));
+      fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize));
 #ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
@@ -731,7 +866,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
       title = Form(
           "Error Counts per second in Feet %1u of gDPB %02u; Time[s] ; Error Counts", uFeet,
           uGdpb);
-      fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), 1800, 0, 1800));
+      fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize));
 #ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
@@ -969,6 +1104,36 @@ void CbmTSMonitorTofStar::CreateHistograms()
 
       } // if( fbGet4M24b )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
+
+   /** Real MS QA **/
+   fbFirstEpochInMsFound.push_back( kFALSE );
+
+   name = Form("fRealMsFineQa_gDPB_%02u", uGdpb);
+   title = Form("QA check of epoch index in Real MS for gDPB %02u; Ms Idx []; 1st Ep Idx / MS Idx []", uGdpb);
+   fRealMsFineQa_gDPB.push_back( new TH1D(name.Data(), title.Data(), 10000, -0.5, 10000.0 - 0.5 ) );
+   fHM->Add(name.Data(), fRealMsFineQa_gDPB[uGdpb] );
+#ifdef USE_HTTP_SERVER
+   if (server)
+      server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+   name = Form("fRealMsMidQa_gDPB_%02u", uGdpb);
+   title = Form("QA check of epoch index in Real MS for gDPB %02u, Mid range; Ms Idx []; 1st Ep Idx / MS Idx []", uGdpb);
+   fRealMsMidQa_gDPB.push_back( new TProfile(name.Data(), title.Data(), 10000, -0.5, 1e6 - 0.5 ) );
+   fHM->Add(name.Data(), fRealMsMidQa_gDPB[uGdpb] );
+#ifdef USE_HTTP_SERVER
+   if (server)
+      server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+   name = Form("fRealMsCoarseQa_gDPB_%02u", uGdpb);
+   title = Form("QA check of epoch index in Real MS for gDPB %02u, Coarse range; Ms Idx []; 1st Ep Idx / MS Idx []", uGdpb);
+   fRealMsCoarseQa_gDPB.push_back( new TProfile(name.Data(), title.Data(), 10000, -0.5, 1e9 - 0.5 ) );
+   fHM->Add(name.Data(), fRealMsCoarseQa_gDPB[uGdpb] );
+#ifdef USE_HTTP_SERVER
+   if (server)
+      server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
   fhTempHistInlRise = new TH1D( "TempHistInlRise",
                                 "Temp holder for INL distribution in current channel, rising edge; FT Rise [bin]; INL []",
@@ -1052,7 +1217,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
 
   name = "hTriggerRate";
   title = "STAR trigger signals per second; Time[s] ; Counts";
-  fhTriggerRate = new TH1F(name, title, 1800, 0, 1800);
+  fhTriggerRate = new TH1F(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize);
   fHM->Add(name.Data(), fhTriggerRate);
 #ifdef USE_HTTP_SERVER
   if (server)
@@ -1102,7 +1267,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
 
   name = "hStarTokenEvo";
   title = "STAR token value VS time; Time in Run [s] ; STAR Token; Counts";
-  fhStarTokenEvo = new TH2I(name, title, 1800, 0, 1800, 410, 0, 4100 ); // 4096
+  fhStarTokenEvo = new TH2I(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize, 410, 0, 4100 ); // 4096
   fHM->Add(name.Data(), fhStarTokenEvo);
 #ifdef USE_HTTP_SERVER
   if (server)
@@ -1192,6 +1357,10 @@ void CbmTSMonitorTofStar::CreateHistograms()
     server->RegisterCommand("/Cycle_Pulser_FEE", "bTofCyclePulserFee=kTRUE");
     server->RegisterCommand("/Update_Norm_FT", "bTofUpdateNormedFt=kTRUE");
 
+    if( fbPulserMode )
+      server->RegisterCommand("/Update_Zoom_Fit", "bTofUpdateZoomedFit=kTRUE");
+
+
     server->Restrict("/Reset_All_TOF", "allow=admin");
     server->Restrict("/Save_All_Tof", "allow=admin");
   } // if (server)
@@ -1257,15 +1426,16 @@ void CbmTSMonitorTofStar::CreateHistograms()
 
   /** Create TOT Canvas(es) for STAR 2017 **/
   TCanvas* cTotPnt = NULL;
+  uNbFeetPlotsPerGdpb = fNrOfFebsPerGdpb/uNbFeetPlot + ( 0 != fNrOfFebsPerGdpb%uNbFeetPlot ? 1 : 0 );
   for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb ) {
 
     cTotPnt = new TCanvas( Form("cTotPnt_g%02u", uGdpb),
                            Form("gDPB %02u TOT distributions", uGdpb),
                            w, h);
-    cTotPnt->Divide( fNrOfFebsPerGdpb/uNbFeetPlot + fNrOfFebsPerGdpb%uNbFeetPlot );
+    cTotPnt->Divide( uNbFeetPlotsPerGdpb );
     TH2* histPntTot = NULL;
     for (UInt_t uFeetPlot = 0;
-         uFeetPlot < fNrOfFebsPerGdpb/uNbFeetPlot + fNrOfFebsPerGdpb%uNbFeetPlot;
+         uFeetPlot < uNbFeetPlotsPerGdpb;
          ++uFeetPlot ) {
       name = Form("Raw_Tot_gDPB_%02u_%1u", uGdpb, uFeetPlot);
       histPntTot = fHM->H2(name.Data());
@@ -1512,6 +1682,21 @@ void CbmTSMonitorTofStar::CreateHistograms()
 
      cPulserRms->cd(2);
      fhTimeRmsPulserChosenChPairs->Draw( "hist" );
+
+     TCanvas* cPulserFit = new TCanvas("cPulserFit", "Time difference Res from fit for chosen FEE and channels in pulser mode", w, h);
+     cPulserFit->Divide( 2, 2 );
+
+     cPulserFit->cd(1);
+     fhTimeRmsZoomPulsChosenFee->Draw( "colz" );
+
+     cPulserFit->cd(2);
+     fhTimeRmsZoomFitPulsChosenChPairs->Draw( "hist" );
+
+     cPulserFit->cd(3);
+     fhTimeResFitPulsChosenFee->Draw( "colz" );
+
+     cPulserFit->cd(4);
+     fhTimeResFitPulsChosenChPairs->Draw( "hist" );
   } // if( fbPulserMode )
   /*****************************/
 
@@ -1574,6 +1759,7 @@ void CbmTSMonitorTofStar::CreateHistograms()
   fHistMessType = fHM->H1("hMessageType");
   fHistSysMessType = fHM->H1("hSysMessType");
   fHistGet4MessType = fHM->H2("hGet4MessType");
+  fHistGet4ChanScm = fHM->H2("hGet4ChanScm");
   fHistGet4ChanErrors = fHM->H2("hGet4ChanErrors");
   fHistGet4EpochFlags = fHM->H2("hGet4EpochFlags");
   fHistSpill = fHM->H2("hSpill");
@@ -1704,6 +1890,10 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
      UpdateNormedFt();
      bTofUpdateNormedFt = kFALSE;
   } // if (bTofUpdateNormedFt)
+  if (bTofUpdateZoomedFit) {
+     UpdateZoomedFit();
+     bTofUpdateZoomedFit = kFALSE;
+  } // if (bTofUpdateZoomedFit)
 
   ///* ASIC coincidences & offsets mapping *///
 /*
@@ -1787,7 +1977,8 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
         "Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]",
         component);
     fHM->Add(sMsSzName.Data(),
-        new TProfile(sMsSzName.Data(), sMsSzTitle.Data(), 180000, 0., 3600.));
+        new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
+                      100 * fuHistoryHistoSize, 0., 2 * fuHistoryHistoSize ) );
     hMsSzTime = fHM->P1(sMsSzName.Data());
 #ifdef USE_HTTP_SERVER
     if (server)
@@ -1818,6 +2009,7 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
 
     auto msDescriptor = ts.descriptor(component, m);
     fEquipmentId = msDescriptor.eq_id;
+    fdMsIndex = static_cast<double>(msDescriptor.idx);
     const uint8_t* msContent = reinterpret_cast<const uint8_t*>(ts.content(
         component, m));
 
@@ -1834,12 +2026,18 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
     } // if( numCompMsInTs - fuOverlapMsNb <= m )
 
     if( 0 == m )
-      dTsStartTime = (1e-9) * static_cast<double>(msDescriptor.idx);
+      dTsStartTime = (1e-9) * fdMsIndex;
 
     if( fdStartTimeMsSz < 0 )
-      fdStartTimeMsSz = (1e-9) * static_cast<double>(msDescriptor.idx);
+      fdStartTimeMsSz = (1e-9) * fdMsIndex;
     hMsSz->Fill(size);
-    hMsSzTime->Fill((1e-9) * static_cast<double>(msDescriptor.idx) - fdStartTimeMsSz, size);
+    if( 2 * fuHistoryHistoSize < (1e-9) * fdMsIndex - fdStartTimeMsSz )
+    {
+      // Reset the evolution Histogram and the start time when we reach the end of the range
+      hMsSzTime->Reset();
+      fdStartTimeMsSz = (1e-9) * fdMsIndex;
+    } // if( 2 * fuHistoryHistoSize < (1e-9) * fdMsIndex - fdStartTimeMsSz )
+    hMsSzTime->Fill((1e-9) * fdMsIndex - fdStartTimeMsSz, size);
 
     // If not integer number of message in input buffer, print warning/error
     if (0 != (size % kuBytesPerMessage))
@@ -1850,6 +2048,12 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
     // Compute the number of complete messages in the input microslice buffer
     uint32_t uNbMessages = (size - (size % kuBytesPerMessage))
         / kuBytesPerMessage;
+
+    /** Real MS QA **/
+    if( -1 == fdFirstMsIndex )
+      fdFirstMsIndex = fdMsIndex;
+    for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb ++)
+      fbFirstEpochInMsFound[uGdpb] = kFALSE;
 
     // Prepare variables for the loop on contents
     const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>(msContent);
@@ -1877,6 +2081,7 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
       fGet4Nr = (fGdpbNr * fNrOfGet4PerGdpb) + fGet4Id;
 
       if( fNrOfGet4PerGdpb <= fGet4Id &&
+          ngdpb::MSG_STAR_TRI != messageType &&
           ( get4v2x::kuChipIdMergedEpoch != fGet4Id ||
             kFALSE == fbMergedEpochsOn ) )
          LOG(WARNING) << "Message with Get4 ID too high: " << fGet4Id
@@ -2155,8 +2360,26 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
 
     if( !fbGet4M24b )
     {
-       fRaw_Tot_gDPB[fGdpbNr + uFeetNr/uNbFeetPlot]->Fill(channelNr, tot);
        fChCount_gDPB[fGdpbNr]->Fill(channelNr);
+       if( fRaw_Tot_gDPB.size() <= (fGdpbNr * uNbFeetPlotsPerGdpb  + uFeetNr/uNbFeetPlot) )
+       {
+          LOG(WARNING) << "Index error: "
+                       << Form("%03lu vs %03u (%03u, %03d, %03u)", fRaw_Tot_gDPB.size(),
+                                  (fGdpbNr * uNbFeetPlotsPerGdpb + uFeetNr/uNbFeetPlot),
+                                  fGdpbNr, uFeetNr, uNbFeetPlot )
+                       << FairLogger::endl
+                       << Form("(%03u, %03d)", fGet4Id, channel )
+                       << FairLogger::endl;
+          mess.printDataCout();
+       }
+       if( NULL == fRaw_Tot_gDPB[fGdpbNr * uNbFeetPlotsPerGdpb + uFeetNr/uNbFeetPlot ] )
+          LOG(WARNING) << "Histo pointer is NULL: "
+                       << Form("%03lu vs %03u (%03u, %03d, %03u)", fRaw_Tot_gDPB.size(),
+                                 (fGdpbNr * uNbFeetPlotsPerGdpb + uFeetNr/uNbFeetPlot),
+                                  fGdpbNr, uFeetNr, uNbFeetPlot )
+                       << FairLogger::endl;
+
+       fRaw_Tot_gDPB[ fGdpbNr * uNbFeetPlotsPerGdpb + uFeetNr/uNbFeetPlot ]->Fill(channelNr, tot);
 
       /// Finetime monitoring
       fhFtDistribPerCh[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
@@ -2244,6 +2467,23 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
     if (fdStartTime < 0)
       fdStartTime = dHitTime;
 
+    // Reset the evolution Histogram and the start time when we reach the end of the range
+    if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
+    {
+       for (UInt_t uGdpbLoop = 0; uGdpbLoop < fNrOfGdpbs; uGdpbLoop++)
+       {
+         for (UInt_t uFeetLoop = 0; uFeetLoop < fNrOfFebsPerGdpb; uFeetLoop++)
+         {
+            fFeetRate_gDPB[(uGdpbLoop * fNrOfFebsPerGdpb) + uFeetLoop]->Reset();
+            fFeetErrorRate_gDPB[(uGdpbLoop * fNrOfFebsPerGdpb) + uFeetLoop]->Reset();
+         } // for (UInt_t uFeetLoop = 0; uFeetLoop < fNrOfFebsPerGdpb; uFeetLoop++)
+       } // for (UInt_t uFeetLoop = 0; uFeetLoop < fNrOfFebsPerGdpb; uFeetLoop++)
+       fhTriggerRate->Reset();
+       fhStarTokenEvo->Reset();
+
+       fdStartTime = dHitTime;
+    } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
+
     if (0 <= fdStartTime)
     {
       fFeetRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
@@ -2256,9 +2496,10 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
              1e-9 * (dHitTime - fdStartTime)  );
        } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
     }
-/*
+
     Int_t iChanInGdpb = fGet4Id * fNrOfChannelsPerGet4 + channel;
     Int_t increment = static_cast<CbmFlibCern2016Source*>(FairRunOnline::Instance()->GetSource())->GetNofTSSinceLastTS();
+/*
     // if condition to find the right strip/end index
       fHistSpill->Fill(0., 0., increment);
 */
@@ -2326,6 +2567,19 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
                  << " same as previous epoch number for same chip: "
                  << Form("%9u", fCurrentEpoch[fGet4Nr] ) << FairLogger::endl;
 */
+
+   /** Real MS QA **/
+   if( kFALSE == fbFirstEpochInMsFound[fGdpbNr] )
+   {
+      Double_t dMsIndexCnt = fdMsIndex / 102400; // ~10 kHz MS => 1e5 ns increase of index per MS
+      Double_t dMsIndexFromStart = (fdMsIndex - fdFirstMsIndex)/ 102400; // ~10 kHz MS => 1e5 ns increase of index per MS
+      Double_t dEpIdxMsIdxRatio = static_cast< Double_t >( ulEpochNr ) / dMsIndexCnt;
+      fRealMsFineQa_gDPB[fGdpbNr]->Fill(   dMsIndexFromStart, dEpIdxMsIdxRatio );
+      fRealMsMidQa_gDPB[fGdpbNr]->Fill(    dMsIndexFromStart, dEpIdxMsIdxRatio );
+      fRealMsCoarseQa_gDPB[fGdpbNr]->Fill( dMsIndexFromStart, dEpIdxMsIdxRatio );
+      fbFirstEpochInMsFound[fGdpbNr] = kTRUE;
+   } // if( kFALSE == fbFirstEpochInMsFound[uGdpb] )
+
 
   fCurrentEpoch[fGet4Nr] = ulEpochNr;
 
@@ -2597,19 +2851,105 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
 
 void CbmTSMonitorTofStar::PrintSlcInfo(ngdpb::Message mess)
 {
-  if (fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find(fGdpbId))
-    LOG(INFO) << "GET4 Slow Control message, epoch "
+   if (fGdpbIdIndexMap.end() != fGdpbIdIndexMap.find(fGdpbId))
+   {
+      UInt_t uChip = mess.getGdpbGenChipId();
+      UInt_t uChan = mess.getGdpbSlcChan();
+      UInt_t uEdge = mess.getGdpbSlcEdge();
+      UInt_t uData = mess.getGdpbSlcData();
+      UInt_t uCRC  = mess.getGdpbSlcCrc();
+      Double_t dFullChId =  fGet4Nr * fNrOfChannelsPerGet4 + mess.getGdpbSlcChan() + 0.5 * mess.getGdpbSlcEdge();
+      Double_t dMessTime = static_cast< Double_t>( fCurrentEpochTime ) * 1.e-9;
+
+      switch( mess.getGdpbSlcType() )
+      {
+         case 0: // Scaler counter
+         {
+            fhScmScalerCounters->Fill( uData, dFullChId);
+            break;
+         }
+         case 1: // Deadtime counter
+         {
+            fhScmDeadtimeCounters->Fill( uData, dFullChId);
+            break;
+         }
+         case 2: // SPI message
+         {
+            LOG(INFO) << "GET4 Slow Control message, epoch "
+                       << static_cast<Int_t>(fCurrentEpoch[fGet4Nr]) << ", time " << std::setprecision(9)
+                       << std::fixed << dMessTime << " s "
+                       << " for board ID " << std::hex << std::setw(4) << fGdpbId
+                       << std::dec << FairLogger::endl << " +++++++ > Chip = "
+                       << std::setw(2) << uChip << ", Chan = "
+                       << std::setw(1) << uChan << ", Edge = "
+                       << std::setw(1) << uEdge << ", Type = "
+                       << std::setw(1) << mess.getGdpbSlcType() << ", Data = 0x"
+//                 << std::hex << std::setw(6) << mess.getGdpbSlcData()
+                       << Form( "%06x", uData )
+                       << std::dec << ", CRC = " << uCRC
+//                 << " RAW: " << Form( "%08x", mess.getGdpbSlcMess() )
+                       << FairLogger::endl;
+            break;
+         }
+         case 3: // Start message or SEU counter
+         {
+            if( 0 == mess.getGdpbSlcChan() && 0 == mess.getGdpbSlcEdge() ) // START message
+            {
+               // Print or fill histo
+               if( 0 == fGet4Nr &&  0x474554 == mess.getGdpbSlcData() ) // START message block 1/6
+               {
+                  if( 0 < fdTimeLastStartMessage )
+                     fhScmStartMessDist->Fill( dMessTime - fdTimeLastStartMessage );
+                  fhScmStartMessEvo->Fill( dMessTime - fdStartTime * 1.e-9 );
+                  fdTimeLastStartMessage = dMessTime;
+               } // if( 0 == fGet4Nr &&  0x474554 == mess.getGdpbSlcData() )
+/*
+               LOG(INFO) << std::setprecision(9)
+                             << std::fixed << dMessTime << " s "
+                             << FairLogger::endl;
+            LOG(INFO) << "GET4 Slow Control message, epoch "
+                    << static_cast<Int_t>(fCurrentEpoch[fGet4Nr]) << ", time " << std::setprecision(9)
+                    << std::fixed << dMessTime << " s "
+                    << " for board ID " << std::hex << std::setw(4) << fGdpbId
+                    << std::dec << FairLogger::endl << " +++++++ > Chip = "
+                    << std::setw(2) << mess.getGdpbGenChipId() << ", Chan = "
+                    << std::setw(1) << mess.getGdpbSlcChan() << ", Edge = "
+                    << std::setw(1) << mess.getGdpbSlcEdge() << ", Type = "
+                    << std::setw(1) << mess.getGdpbSlcType() << ", Data = 0x"
+   //                 << std::hex << std::setw(6) << mess.getGdpbSlcData()
+                    << Form( "%06x", mess.getGdpbSlcData() )
+                    << std::dec << ", CRC = " << mess.getGdpbSlcCrc()
+                    << FairLogger::endl;
+*/
+            } // if( 0 == mess.getGdpbSlcChan() && 0 == mess.getGdpbSlcEdge() )
+            else if( 0 == mess.getGdpbSlcChan() && 1 == mess.getGdpbSlcEdge() ) // SEU counter message
+            {
+/*
+         LOG(INFO) << "GET4 Slow Control message, epoch "
                  << static_cast<Int_t>(fCurrentEpoch[fGet4Nr]) << ", time " << std::setprecision(9)
-                 << std::fixed << Double_t(fCurrentEpochTime) * 1.e-9 << " s "
+                 << std::fixed << dMessTime << " s "
                  << " for board ID " << std::hex << std::setw(4) << fGdpbId
                  << std::dec << FairLogger::endl << " +++++++ > Chip = "
                  << std::setw(2) << mess.getGdpbGenChipId() << ", Chan = "
                  << std::setw(1) << mess.getGdpbSlcChan() << ", Edge = "
                  << std::setw(1) << mess.getGdpbSlcEdge() << ", Type = "
-                 << std::setw(1) << mess.getGdpbSlcType() << ", Data = "
-                 << std::hex << std::setw(6) << mess.getGdpbSlcData()
-                 << std::dec << ", Type = " << mess.getGdpbSlcCrc()
+                 << std::setw(1) << mess.getGdpbSlcType() << ", Data = 0x"
+//                 << std::hex << std::setw(6) << mess.getGdpbSlcData()
+                 << Form( "%06x", mess.getGdpbSlcData() )
+                 << std::dec << ", CRC = " << mess.getGdpbSlcCrc()
                  << FairLogger::endl;
+*/
+               fhScmSeuCounters->Fill( uData, dFullChId);
+               fhScmSeuCountersEvo->Fill( dMessTime - fdStartTime* 1.e-9, uData, dFullChId);
+             } // else if( 0 == mess.getGdpbSlcChan() && 1 == mess.getGdpbSlcEdge() )
+            break;
+         }
+         default: // Should never happen
+            break;
+      } // switch( mess.getGdpbSlcType() )
+      fHistGet4ChanScm->Fill(dFullChId, mess.getGdpbSlcType());
+   }
+
 
 }
 
@@ -2784,6 +3124,23 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
 
          if( 0 <= fdStartTime )
          {
+            // Reset the evolution Histogram and the start time when we reach the end of the range
+            if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * 6.25 - fdStartTime) )
+            {
+               for (UInt_t uGdpbLoop = 0; uGdpbLoop < fNrOfGdpbs; uGdpbLoop++)
+               {
+                  for (UInt_t uFeetLoop = 0; uFeetLoop < fNrOfFebsPerGdpb; uFeetLoop++)
+                  {
+                     fFeetRate_gDPB[(uGdpbLoop * fNrOfFebsPerGdpb) + uFeetLoop]->Reset();
+                     fFeetErrorRate_gDPB[(uGdpbLoop * fNrOfFebsPerGdpb) + uFeetLoop]->Reset();
+                  } // for (UInt_t uFeetLoop = 0; uFeetLoop < fNrOfFebsPerGdpb; uFeetLoop++)
+               } // for (UInt_t uFeetLoop = 0; uFeetLoop < fNrOfFebsPerGdpb; uFeetLoop++)
+               fhTriggerRate->Reset();
+               fhStarTokenEvo->Reset();
+
+               fdStartTime = fulGdpbTsFullLast * 6.25;
+            } // if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * 6.25 - fdStartTime) )
+
             fhTriggerRate->Fill(
                1e-9 * ( fulGdpbTsFullLast * 6.25 - fdStartTime ) );
             fhStarTokenEvo->Fill(
@@ -3000,7 +3357,7 @@ void CbmTSMonitorTofStar::Finish()
                                               [ uTrigIdx ] );
             uNbFinalStarTokens++;
          } // for( UInt_t uTrigIdx = 0; uTrigIdx < uNbEpochTrgs; uTrigIdx ++)
-      } // for( Int_t uGdpbIdx = 0; uGdpbIdx < fNrOfGdpbs; ++uGdpbIdx )
+      } // for( UInt_t uGdpbIdx = 0; uGdpbIdx < fNrOfGdpbs; ++uGdpbIdx )
        LOG(INFO) << "Generated empty STAR events for the " << uNbFinalStarTokens
                  << " Last tokens without data in epoch"
                  << FairLogger::endl;
@@ -3120,10 +3477,14 @@ void CbmTSMonitorTofStar::SaveAllHistos( TString sFileName )
          fHM->H2(Form("FtLastRiseDistFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
       } // if( fbGet4M24b )
     } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++)
+   fRealMsFineQa_gDPB[uGdpb]->Write();
+   fRealMsMidQa_gDPB[uGdpb]->Write();
+   fRealMsCoarseQa_gDPB[uGdpb]->Write();
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
   fHM->H1("hMessageType")->Write();
   fHM->H1("hSysMessType")->Write();
   fHM->H2("hGet4MessType")->Write();
+  fHM->H2("hGet4ChanScm")->Write();
   fHM->H2("hGet4ChanErrors")->Write();
   fHM->H2("hGet4EpochFlags")->Write();
   fHM->H1("hSpillLength")->Write();
@@ -3194,6 +3555,7 @@ void CbmTSMonitorTofStar::ResetAllHistos()
   fHM->H1("hMessageType")->Reset();
   fHM->H1("hSysMessType")->Reset();
   fHM->H2("hGet4MessType")->Reset();
+  fHM->H2("hGet4ChanScm")->Reset();
   fHM->H2("hGet4ChanErrors")->Reset();
   fHM->H2("hGet4EpochFlags")->Reset();
   fHM->H1("hSpillLength")->Reset();
@@ -3231,6 +3593,10 @@ void CbmTSMonitorTofStar::ResetAllHistos()
          fHM->H2(Form("FtLastRiseDistFall_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
       } // if( fbGet4M24b )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
+   fRealMsFineQa_gDPB[uGdpb]->Reset();
+   fRealMsMidQa_gDPB[uGdpb]->Reset();
+   fRealMsCoarseQa_gDPB[uGdpb]->Reset();
+   fdFirstMsIndex = -1;
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 
   for (UInt_t uLinks = 0; uLinks < 16; uLinks++) {
@@ -3496,6 +3862,166 @@ void CbmTSMonitorTofStar::UpdateNormedFt()
    delete constantVal;
 
    oldDir->cd();
+}
+void CbmTSMonitorTofStar::UpdateZoomedFit()
+{
+   // Do something only if we are in pulser mode
+   if( kFALSE == fbPulserMode )
+      return;
+
+   // Only do something is the user defined the width a want for the zoom
+   if( 0.0 < fdFitZoomWidthPs )
+   {
+      // Reset summary histograms for safety
+      fhTimeRmsZoomPulsChosenFee->Reset();
+      fhTimeRmsZoomFitPulsChosenChPairs->Reset();
+      fhTimeResFitPulsChosenFee->Reset();
+      fhTimeResFitPulsChosenChPairs->Reset();
+
+      UInt_t uHistoFeeIdx = 0;
+      Double_t dRes = 0;
+      TF1 *fitFuncFee[ fNrOfChannelsPerFeet * fNrOfChannelsPerFeet ]; // bigger than needed but OK
+      for( UInt_t uChanFeeA = 0; uChanFeeA < fNrOfChannelsPerFeet; uChanFeeA++)
+      {
+         for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < fNrOfChannelsPerFeet; uChanFeeB++)
+         {
+            // Check that we have at least 1 entry
+            if( 0 == fhTimeDiffPulserChosenFee[uHistoFeeIdx]->GetEntries() )
+            {
+               fhTimeRmsZoomPulsChosenFee->Fill( uChanFeeA, uChanFeeB, 0.0 );
+               fhTimeResFitPulsChosenFee->Fill( uChanFeeA, uChanFeeB, 0.0 );
+               LOG(INFO) << "CbmTSMonitorTofStar::UpdateZoomedFit => Empty input "
+                            << "for channels " << uChanFeeA << " and " << uChanFeeB << " !!!"
+                            << FairLogger::endl;
+               continue;
+            } // if( 0 == fhTimeDiffPulserChosenFee[uHistoFeeIdx]->GetEntries() )
+
+            // Read the peak position (bin with max counts) + total nb of entries
+            Int_t    iBinWithMax = fhTimeDiffPulserChosenFee[uHistoFeeIdx]->GetMaximumBin();
+            Double_t dNbCounts   = fhTimeDiffPulserChosenFee[uHistoFeeIdx]->Integral();
+
+            // Zoom the X axis to +/- ZoomWidth around the peak position
+            Double_t dPeakPos = fhTimeDiffPulserChosenFee[uHistoFeeIdx]->GetXaxis()->GetBinCenter( iBinWithMax );
+            fhTimeDiffPulserChosenFee[uHistoFeeIdx]->GetXaxis()->SetRangeUser( dPeakPos - fdFitZoomWidthPs,
+                                                                               dPeakPos + fdFitZoomWidthPs );
+
+            // Read integral and check how much we lost due to the zoom (% loss allowed)
+            Double_t dZoomCounts = fhTimeDiffPulserChosenFee[uHistoFeeIdx]->Integral();
+            if( ( dZoomCounts / dNbCounts ) < 0.99 )
+            {
+               fhTimeRmsZoomPulsChosenFee->Fill( uChanFeeA, uChanFeeB, 0.0 );
+               fhTimeResFitPulsChosenFee->Fill( uChanFeeA, uChanFeeB, 0.0 );
+               LOG(WARNING) << "CbmTSMonitorTofStar::UpdateZoomedFit => Zoom too strong, "
+                            << "more than 1% loss for channels " << uChanFeeA << " and "
+                            << uChanFeeB << " !!!"
+                            << FairLogger::endl;
+               continue;
+            } // if( ( dZoomCounts / dNbCounts ) < 0.99 )
+
+            // Fill new RMS after zoom into summary histo
+            fhTimeRmsZoomPulsChosenFee->Fill( uChanFeeA, uChanFeeB, fhTimeDiffPulserChosenFee[uHistoFeeIdx]->GetRMS() );
+
+            // Fit using zoomed boundaries + starting gaussian width, store into summary histo
+            dRes = 0;
+            fitFuncFee[uHistoFeeIdx] = new TF1( Form("fFee_%02d", uHistoFeeIdx ), "gaus",
+                                           dPeakPos - fdFitZoomWidthPs ,
+                                           dPeakPos + fdFitZoomWidthPs);
+            // Fix the Mean fit value around the Histogram Mean
+            fitFuncFee[uHistoFeeIdx]->SetParameter( 0, dZoomCounts );
+            fitFuncFee[uHistoFeeIdx]->SetParameter( 1, dPeakPos );
+            fitFuncFee[uHistoFeeIdx]->SetParameter( 2, 200.0 ); // Hardcode start with ~4*BinWidth, do better later
+            // Using integral instead of bin center seems to lead to unrealistic values => no "I"
+            fhTimeDiffPulserChosenFee[uHistoFeeIdx]->Fit( Form("fFee_%02d", uHistoFeeIdx ), "QRM0");
+            // Get Sigma
+            dRes = fitFuncFee[uHistoFeeIdx]->GetParameter(2);
+            // Cleanup memory
+            delete fitFuncFee[uHistoFeeIdx];
+            // Fill summary
+            fhTimeResFitPulsChosenFee->Fill( uChanFeeA, uChanFeeB, dRes / TMath::Sqrt2() );
+
+            // Restore original axis state?
+            fhTimeDiffPulserChosenFee[uHistoFeeIdx]->GetXaxis()->UnZoom();
+
+            uHistoFeeIdx++;
+         } // for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < fNrOfChannelsPerFeet; uChanFeeB++)
+      } // for( UInt_t uChanFeeA = 0; uChanFeeA < fNrOfChannelsPerFeet; uChanFeeA++)
+
+      TF1 *fitFuncPairs[ kuNbChanTest - 1 ];
+      for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+      {
+         // Check that we have at least 1 entry
+         if( 0 == fhTimeDiffPulserChosenChPairs[uChan]->GetEntries() )
+         {
+            fhTimeRmsZoomFitPulsChosenChPairs->Fill( uChan, 0.0 );
+            fhTimeResFitPulsChosenChPairs->Fill( uChan, 0.0 );
+            LOG(INFO) << "CbmTSMonitorTofStar::UpdateZoomedFit => Empty input "
+                         << "for channels pair " << uChan << " !!! "
+                         << FairLogger::endl;
+            continue;
+         } // if( 0 == fhTimeDiffPulserChosenChPairs[uChan]>GetEntries() )
+
+         // Read the peak position (bin with max counts) + total nb of entries
+         Int_t    iBinWithMax = fhTimeDiffPulserChosenChPairs[uChan]->GetMaximumBin();
+         Double_t dNbCounts   = fhTimeDiffPulserChosenChPairs[uChan]->Integral();
+
+         // Zoom the X axis to +/- ZoomWidth around the peak position
+         Double_t dPeakPos = fhTimeDiffPulserChosenChPairs[uChan]->GetXaxis()->GetBinCenter( iBinWithMax );
+         fhTimeDiffPulserChosenChPairs[uChan]->GetXaxis()->SetRangeUser( dPeakPos - fdFitZoomWidthPs,
+                                                                         dPeakPos + fdFitZoomWidthPs );
+
+         // Read integral and check how much we lost due to the zoom (% loss allowed)
+         Double_t dZoomCounts = fhTimeDiffPulserChosenChPairs[uChan]->Integral();
+         if( ( dZoomCounts / dNbCounts ) < 0.99 )
+         {
+            fhTimeRmsZoomFitPulsChosenChPairs->Fill( uChan, 0.0 );
+            fhTimeResFitPulsChosenChPairs->Fill( uChan, 0.0 );
+            LOG(WARNING) << "CbmTSMonitorTofStar::UpdateZoomedFit => Zoom too strong, "
+                         << "more than 1% loss for channels pair " << uChan << " !!!"
+                         << FairLogger::endl;
+            continue;
+         } // if( ( dZoomCounts / dNbCounts ) < 0.99 )
+
+         // Fill new RMS after zoom into summary histo
+         fhTimeRmsZoomFitPulsChosenChPairs->Fill( uChan, fhTimeDiffPulserChosenChPairs[uChan]->GetRMS() );
+
+
+         // Fit using zoomed boundaries + starting gaussian width, store into summary histo
+         dRes = 0;
+         fitFuncPairs[uChan] = new TF1( Form("fPair_%02d", uChan ), "gaus",
+                                        dPeakPos - fdFitZoomWidthPs ,
+                                        dPeakPos + fdFitZoomWidthPs);
+         // Fix the Mean fit value around the Histogram Mean
+         fitFuncPairs[uChan]->SetParameter( 0, dZoomCounts );
+         fitFuncPairs[uChan]->SetParameter( 1, dPeakPos );
+         fitFuncPairs[uChan]->SetParameter( 2, 200.0 ); // Hardcode start with ~4*BinWidth, do better later
+         // Using integral instead of bin center seems to lead to unrealistic values => no "I"
+         fhTimeDiffPulserChosenChPairs[uChan]->Fit( Form("fPair_%02d", uChan ), "QRM0");
+         // Get Sigma
+         dRes = fitFuncPairs[uChan]->GetParameter(2);
+         // Cleanup memory
+         delete fitFuncPairs[uChan];
+         // Fill summary
+         fhTimeResFitPulsChosenChPairs->Fill( uChan,  dRes / TMath::Sqrt2() );
+
+         // Restore original axis state?
+         fhTimeDiffPulserChosenChPairs[uChan]->GetXaxis()->UnZoom();
+      } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+   } // if( 0.0 < fdFitZoomWidthPs )
+      else
+      {
+         LOG(ERROR) << "CbmTSMonitorTofStar::UpdateZoomedFit => Zoom width not defined, "
+                    << "please use SetFitZoomWidthPs, e.g. in macro, before trying this update !!!"
+                    << FairLogger::endl;
+      } // else of if( 0.0 < fdFitZoomWidthPs )
+/*
+   {
+      // Update RMS plots only every 10s in data
+      if( 10.0 < dTsStartTime - fdLastRmsUpdateTime )
+      {
+
+      } // if( 10.0 < dTsStartTime - fdLastRmsUpdateTime )
+   } // if( kTRUE == fbPulserMode )
+   */
 }
 
 void CbmTSMonitorTofStar::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )

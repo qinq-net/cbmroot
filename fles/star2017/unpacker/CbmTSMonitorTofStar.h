@@ -95,11 +95,14 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
                                 UInt_t inPulserChanJ =  9, UInt_t inPulserChanK = 10, UInt_t inPulserChanL = 11,
                                 UInt_t inPulserChanM = 12, UInt_t inPulserChanN = 13, UInt_t inPulserChanO = 14,
                                 UInt_t inPulserChanP = 15 );
+    inline void SetFitZoomWidthPs( Double_t inZoomWidth = 1000.0 ) { fdFitZoomWidthPs = inZoomWidth; }
+    inline void SetHistoryHistoSize( UInt_t inHistorySizeSec = 1800 ) { fuHistoryHistoSize = inHistorySizeSec; }
 
     void SaveAllHistos( TString sFileName = "" );
     void ResetAllHistos();
     void CyclePulserFee();
     void UpdateNormedFt();
+    void UpdateZoomedFit();
 
   private:
 
@@ -162,12 +165,14 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     std::vector< std::vector< std::vector< Double_t > > > fTsLastHit; // * 6.25 ns
 
     Int_t fEquipmentId;
+    Double_t fdMsIndex;
 
     CbmTofUnpackPar* fUnpackPar;      //!
 
     TH1* fHistMessType;
     TH1* fHistSysMessType;
     TH2* fHistGet4MessType;
+    TH2* fHistGet4ChanScm;
     TH2* fHistGet4ChanErrors;
     TH2* fHistGet4EpochFlags;
     TH2* fHistSpill;
@@ -175,15 +180,31 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     TH1* fHistSpillCount;
     TH2* fHistSpillQA;
 
+    TH2* fhScmScalerCounters;
+    TH2* fhScmDeadtimeCounters;
+    TH2* fhScmSeuCounters;
+    TH2* fhScmSeuCountersEvo;
+
+    Double_t fdTimeLastStartMessage;
+    TH1* fhScmStartMessDist;
+    TH1* fhScmStartMessEvo;
+
     std::vector<TH2*> fRaw_Tot_gDPB;
     std::vector<TH1*> fChCount_gDPB;
     std::vector<TH2*> fChannelRate_gDPB;
     std::vector<TH1*> fFeetRate_gDPB;
     std::vector<TH1*> fFeetErrorRate_gDPB;
+    UInt_t            fuHistoryHistoSize;
 
     std::vector<TH1*> fFeetRateDate_gDPB;
     Int_t             fiRunStartDateTimeSec;
     Int_t             fiBinSizeDatePlots;
+
+    Double_t fdFirstMsIndex;
+    std::vector<Bool_t> fbFirstEpochInMsFound;
+    std::vector<TH1*> fRealMsFineQa_gDPB;
+    std::vector<TProfile*> fRealMsMidQa_gDPB;
+    std::vector<TProfile*> fRealMsCoarseQa_gDPB;
 
     ///* ASIC coincidences & offsets mapping *///
 /*
@@ -222,6 +243,11 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     TH2 * fhTimeRmsPulserChosenFee;
     TH1 * fhTimeRmsPulserChosenChPairs;
     Double_t fdLastRmsUpdateTime;
+    Double_t fdFitZoomWidthPs;
+    TH2 * fhTimeRmsZoomPulsChosenFee;
+    TH1 * fhTimeRmsZoomFitPulsChosenChPairs;
+    TH2 * fhTimeResFitPulsChosenFee;
+    TH1 * fhTimeResFitPulsChosenChPairs;
     std::vector<TH2 *> fhFtDistribPerCh;
     std::vector<TH1*>  fChCountFall_gDPB;
     std::vector<TH2 *> fhFtDistribPerChFall;
