@@ -534,26 +534,27 @@ void CbmKFTrackFitQA::FillHitHistos()
       pull_STShit_y -> Fill( dy/(StsHit->GetDy()) );
     }
   }
-  if(CbmKF::Instance()->vMvdMaterial.size() != 0)
-  {
-    for (Int_t iMvd=0; iMvd<listMvdHits->GetEntriesFast(); iMvd++)
-    {
-      CbmMvdHit* MvdHit = (CbmMvdHit*)listMvdHits->At(iMvd);
-      CbmMvdHitMatch* MvdHitMatch = (CbmMvdHitMatch*)listMvdHitMatches->At(iMvd);
-
-      if(MvdHitMatch->GetPointId() > -1) 
-      {
-        CbmMvdPoint* MvdP = (CbmMvdPoint*) listMvdPts->At(MvdHitMatch->GetPointId());
-        if(!MvdP) continue;
-        Double_t dx = (MvdHit->GetX() - 0.5*(MvdP->GetX() + MvdP->GetXOut()));
-        Double_t dy = (MvdHit->GetY() - 0.5*(MvdP->GetY() + MvdP->GetYOut()));
-        res_MVDhit_x -> Fill( dx*10000. );
-        res_MVDhit_y -> Fill( dy*10000. );
-        pull_MVDhit_x -> Fill( dx/(MvdHit->GetDx()) );
-        pull_MVDhit_y -> Fill( dy/(MvdHit->GetDy()) );
-      }
-    }
-  }
+// TODO correct the matching for MVD
+//   if(CbmKF::Instance()->vMvdMaterial.size() != 0)
+//   {
+//     for (Int_t iMvd=0; iMvd<listMvdHits->GetEntriesFast(); iMvd++)
+//     {
+//       CbmMvdHit* MvdHit = (CbmMvdHit*)listMvdHits->At(iMvd);
+//       CbmMvdHitMatch* MvdHitMatch = (CbmMvdHitMatch*)listMvdHitMatches->At(iMvd);
+// 
+//       if(MvdHitMatch->GetPointId() > -1) 
+//       {
+//         CbmMvdPoint* MvdP = (CbmMvdPoint*) listMvdPts->At(MvdHitMatch->GetPointId());
+//         if(!MvdP) continue;
+//         Double_t dx = (MvdHit->GetX() - 0.5*(MvdP->GetX() + MvdP->GetXOut()));
+//         Double_t dy = (MvdHit->GetY() - 0.5*(MvdP->GetY() + MvdP->GetYOut()));
+//         res_MVDhit_x -> Fill( dx*10000. );
+//         res_MVDhit_y -> Fill( dy*10000. );
+//         pull_MVDhit_x -> Fill( dx/(MvdHit->GetDx()) );
+//         pull_MVDhit_y -> Fill( dy/(MvdHit->GetDy()) );
+//       }
+//     }
+//   }
 }
 
 void CbmKFTrackFitQA::StsHitMatch()

@@ -29,7 +29,6 @@
 #include "CbmStsCluster.h"
 #include "CbmStsDigi.h"
 #include "CbmMvdHit.h"
-#include "CbmMvdHitMatch.h"
 
 #include "CbmKFTrErrMCPoints.h"
 

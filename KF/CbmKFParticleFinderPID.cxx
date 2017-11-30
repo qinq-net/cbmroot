@@ -30,7 +30,7 @@ CbmKFParticleFinderPID::CbmKFParticleFinderPID(const char* name, Int_t iVerbose)
   fTrackArray(0), fGlobalTrackArray(0), fTofHitArray(0), fMCTrackArray(0), fTrackMatchArray(0), fTrdTrackArray(0), fRichRingArray(0),
   fMuchTrackArray(0), fMCTracks(0),
   fPIDMode(0), fSisMode(1), fTrdPIDMode(0), fRichPIDMode(0),
-  fMuchMode(0),
+  fMuchMode(0), fTimeSliceMode(0),
   fPID(0)
 {
   //MuCh cuts
