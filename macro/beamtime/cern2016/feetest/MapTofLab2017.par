@@ -1,8 +1,9 @@
 [CbmTofUnpackPar]
 //----------------------------------------------------------------------------
-NrOfRocs: Int_t 2
+NrOfRocs: Int_t 1
 RocIdArray: Int_t \
-0x181c 0x1949
+0x1949
+//0x181c 0x1949
 //0x1949 0x181c
 NrOfFebsPerGdpb: Int_t 4
 NrOfGet4PerFeb: Int_t 8

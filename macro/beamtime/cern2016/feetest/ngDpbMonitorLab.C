@@ -67,7 +67,7 @@ void ngDpbMonitorLab(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24
   CbmTSMonitorTofStar* test_monitor_tof = new CbmTSMonitorTofStar();
   test_monitor_tof->SetPulserMode();
   test_monitor_tof->SetPulserFee(0, 0);
-  test_monitor_tof->SetPulserChans(3, 35, 67, 1, 32, 64);
+  test_monitor_tof->SetPulserChans(3, 35, 67, 99, 1, 127 );
   test_monitor_tof->SetGet4v20Mode( bGet4v2Mode );
   test_monitor_tof->SetGet4Mode24b( b24bModeOn );
   test_monitor_tof->SetMergedEpochs( bMergedEpochsOn );
@@ -75,6 +75,7 @@ void ngDpbMonitorLab(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24
 //   test_monitor_tof->SetEpochSuppressedMode( kTRUE );
   test_monitor_tof->SetFitZoomWidthPs( );
   test_monitor_tof->SetMsOverlap();
+  test_monitor_tof->SetHistoryHistoSize( 600. );
 
   // --- Source task
   CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
