@@ -494,7 +494,7 @@ void CbmSetup::SetModule(Int_t moduleId, const char* geoTag,
                          Bool_t active) {
 
 	// Success flag
-	Bool_t success = kTRUE;
+//	Bool_t success = kTRUE;
 
   // Check validity of module Id
   if ( moduleId < 0 || moduleId > kNofSystems ) {
@@ -526,7 +526,7 @@ void CbmSetup::SetModule(Int_t moduleId, const char* geoTag,
   	LOG(FATAL) << GetName() << ": could not find geometry file for module "
   			       << CbmModuleList::GetModuleNameCaps(moduleId) << ", tag "
   			       << geoTag << FairLogger::endl;
-  	success = kFALSE;
+//  	success = kFALSE;
   }
   fGeoFileNames[moduleId] = fileName;
 

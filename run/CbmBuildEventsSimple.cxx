@@ -28,8 +28,8 @@ using namespace std;
 // =====   Constructor   =====================================================
 CbmBuildEventsSimple::CbmBuildEventsSimple() :
   FairTask("BuildEventsSimple"), fStsDigis(NULL), fEvents(NULL),
-    fNDigis(0), fEv(0), fSliceN(0),
-    fSN(-1111), fST(-1111),
+    fSliceN(0), fEv(0), fNDigis(0),   
+    fSN(-1111), fST(-1111), fNStsDigis(),
     fWindDur(5), fMinusDeltaT(10), fPlusDeltaT(15), fDeadT(10),
     fMinHitStations(8), fMinDigis(2000)
 
