@@ -21,13 +21,12 @@
 
 using namespace std;
 
-
 // =====   Constructor   =====================================================
 CbmDaq::CbmDaq(Double_t timeSliceSize) : FairTask("Daq"),
                    fSystemTime(0.),
                    fCurrentStartTime (1000.),
-                   fBufferTime(500.),
                    fDuration (timeSliceSize),
+                   fBufferTime(500.),
                    fStoreEmptySlices(kTRUE),
                    fTimer(),
                    fNofSteps(0),
@@ -71,9 +70,12 @@ void CbmDaq::CloseTimeSlice() {
   } //? empty time slice
   else
   LOG(INFO) << GetName() << ": closing time slice from " << fTimeSlice->GetStartTime()
-    << " to " << fTimeSlice->GetEndTime() << " ns, data: STS " << fStsDigis->GetEntriesFast()
-    << " MUCH " << fMuchDigis->GetEntriesFast() << " TOF " << fTofDigis->GetEntriesFast()
-    << FairLogger::endl;
+            << " to " << fTimeSlice->GetEndTime() << " ns, data: STS " 
+            << fStsDigis->GetEntriesFast()
+            << " MUCH " << fMuchDigis->GetEntriesFast() 
+            << " TRD " << fTrdDigis->GetEntriesFast() 
+            << " TOF " << fTofDigis->GetEntriesFast()
+            << FairLogger::endl;
 
   // --- Fill current time slice into tree (if required)
   if ( fStoreEmptySlices || (!fTimeSlice->IsEmpty()) ) {
@@ -97,6 +99,7 @@ void CbmDaq::CloseTimeSlice() {
   // --- Clear data output arrays
   fStsDigis->Delete();
   fMuchDigis->Delete();
+  fTrdDigis->Delete();
   fTofDigis->Delete();
 
 }
@@ -217,7 +220,9 @@ void CbmDaq::FillData(CbmDigi* data) {
     case kTrd: {
       CbmTrdDigi* digi = static_cast<CbmTrdDigi*>(data);
       Int_t nDigis = fTrdDigis->GetEntriesFast();
-
+      new ( (*fTrdDigis)[nDigis] ) CbmTrdDigi(*digi);
+      fTimeSlice->SetEmpty(kFALSE);
+      break;
     }
 
     case kTof: {

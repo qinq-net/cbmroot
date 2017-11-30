@@ -49,6 +49,12 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   TString geoTag;
   CbmSetup* setup = CbmSetup::Instance();
 
+  // - TRD digitisation parameters
+  if ( setup->GetGeoTag(kTrd, geoTag) ) {
+        TObjString* trdFile = new TObjString(paramDir + "trd/trd_" + geoTag + ".digi.par");
+        parFileList->Add(trdFile);
+  }
+
   // - TOF digitisation parameters
   if ( setup->GetGeoTag(kTof, geoTag) ) {
   	TObjString* tofFile = new TObjString(paramDir + "tof/tof_" + geoTag + ".digi.par");
@@ -89,6 +95,10 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   // ----- STS digitiser
   CbmStsDigitize* stsDigi = new CbmStsDigitize();
   run->AddTask(stsDigi);
+
+  CbmTrdRadiator *radiator = new CbmTrdRadiator(kTRUE,"K++");
+  FairTask* trdDigi = new CbmTrdDigitizerPRF(radiator);
+  run->AddTask(trdDigi);
   
   CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF");
   tofDigi->SetInputFileName( paramDir + "tof/test_bdf_input.root");
@@ -100,10 +110,6 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   FairTask* daq = new CbmDaq(timeSliceSize);
   run->AddTask(daq);
   
- 
-  
-
-
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
