@@ -56,7 +56,7 @@ void L1Algo::KFTrackFitter_simple()  // TODO: Add pipe.
 
     L1TrackPar T; // fitting parametr coresponding to current track
 
-    fvec qp0 = 0;
+    fvec qp0 = 0.25;
     //fvec qp0 = 2./t.Momentum;
     for(int iter=0; iter<3; iter++ )
     {
@@ -141,7 +141,8 @@ void L1Algo::KFTrackFitter_simple()  // TODO: Add pipe.
 
           L1Station &sta = vStations[ista];
           
-          L1Extrapolate( T, (*vStsZPos)[hit.iz], qp0, fld );
+      //    L1Extrapolate( T, (*vStsZPos)[hit.iz], qp0, fld );
+          L1ExtrapolateLine( T, (*vStsZPos)[hit.iz]);
 //           T.L1Extrapolate( sta.z, qp0, fld );
 //         L1Extrapolate( T, hit.z, qp0, fld );
 #ifdef USE_RL_TABLE
@@ -275,8 +276,11 @@ void L1Algo::KFTrackFitter_simple()  // TODO: Add pipe.
           L1Station &sta = vStations[ista];
           fvec u = static_cast<fscal>( (*vStsStrips)[hit.f] );
           fvec v = static_cast<fscal>( (*vStsStripsB)[hit.b] );
+          
+          
 
-          L1Extrapolate( T, (*vStsZPos)[hit.iz], qp0, fld );
+       //   L1Extrapolate( T, (*vStsZPos)[hit.iz], qp0, fld );
+          L1ExtrapolateLine( T, (*vStsZPos)[hit.iz]);
 //           T.L1Extrapolate( sta.z, qp0, fld );
 //           L1Extrapolate( T, hit.z, qp0, fld );
 #ifdef USE_RL_TABLE
@@ -471,7 +475,7 @@ void L1Algo::L1KFTrackFitter()
 
 
 
-      // L1AddMaterial( T, sta[i].materialInfo, qp0 );
+     // L1AddMaterial( T, sta[i].materialInfo, qp0 );
 
       fz1 = z[i];
       
@@ -500,9 +504,14 @@ void L1Algo::L1KFTrackFitter()
         fvec wIn = (ONE & (initialised));
             
         fld1 = fld;
+        
+        
         T1.Extrapolate(z[i], qp01, fld1, &w1 );
+      //  T1.ExtrapolateLine(z[i]);
         
         L1Extrapolate( T, z[i], qp0, fld, &w1 );
+        
+    //    L1ExtrapolateLine( T, z[i]);
 //         std::cout << "Extrapolate" << std::endl;
 //         T1.Compare(T);
         
@@ -531,9 +540,9 @@ void L1Algo::L1KFTrackFitter()
 #endif
         L1Filter( T, sta[i].frontInfo, u[i], w1 );
         T1.Filter( sta[i].frontInfo, u[i], w1 );
-//         std::cout << "Filter 1" << std::endl;
-//         T1.Compare(T);
-
+// //         std::cout << "Filter 1" << std::endl;
+// //         T1.Compare(T);
+// 
         L1Filter( T, sta[i].backInfo,  v[i], w1 );        
         T1.Filter( sta[i].backInfo,  v[i], w1 );
         
@@ -589,6 +598,9 @@ void L1Algo::L1KFTrackFitter()
       // extrapolate to the PV region
       L1TrackParFit T1PV = T1;
       T1PV.Extrapolate(0.f, T1PV.fqp, fld); 
+      
+     // T1PV.ExtrapolateLine(0.f); 
+      
       for(iVec=0; iVec<nTracks_SIMD; iVec++)
       {
         t[iVec]->Tpv[0] = T1PV.fx[iVec];
@@ -660,7 +672,11 @@ void L1Algo::L1KFTrackFitter()
             
         L1Extrapolate( T, z[i], qp0, fld,&w1 );
         
+       // L1ExtrapolateLine( T, z[i]);
+        
         T1.Extrapolate( z[i], qp0, fld,&w1 );
+        
+       // T1.ExtrapolateLine( z[i]);
         
         if(i == NMvdStations)
         {

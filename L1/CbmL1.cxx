@@ -859,8 +859,14 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
 //      algo->NTracksIsecAll=algo->vTracks.size();
   if( fVerbose>1 ) cout<<"L1 Track finder ok"<<endl;
 //  algo->L1KFTrackFitter( fExtrapolateToTheEndOfSTS );
-    algo->L1KFTrackFitter();
-//  algo->KFTrackFitter_simple();
+
+ 
+  L1FieldValue fB0 = algo->GetVtxFieldValue();  
+  
+  if ((fabs(fB0.x[0]) < 0.0000001)&&(fabs(fB0.y[0]) < 0.0000001)&&(fabs(fB0.z[0]) < 0.0000001)) algo->KFTrackFitter_simple();
+  
+  else algo->L1KFTrackFitter();
+  
   if( fVerbose>1 ) cout<<"L1 Track fitter  ok"<<endl;
   
     // save recontstructed tracks

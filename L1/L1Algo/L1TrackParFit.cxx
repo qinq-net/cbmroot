@@ -137,6 +137,44 @@ void L1TrackParFit::Filter( fvec t0, fvec dt0, fvec w)
   C55-= K5*F5;
 }
 
+void L1TrackParFit::ExtrapolateLine // extrapolates track parameters and returns jacobian for extrapolation of CovMatrix
+(
+ fvec  z_out   // extrapolate to this z position
+
+)
+{
+
+  const fvec dz     = (z_out - fz);
+
+  
+  { // update parameters
+    fx += fx*dz;
+    fy += fy*dz;
+    fz += dz;
+
+  //  ft +=((J[6*4+5]*dqp) & initialised);
+  }
+  
+  const fvec dzC32_in = dz * C32;  
+
+  C21 += dzC32_in;
+  C10 += dz * (  C21 + C30 );
+
+  const fvec C20_in = C20;
+
+  C20 += dz * C22;
+  C00 += dz * ( C20 + C20_in );
+
+  const fvec C31_in = C31;
+
+  C31 += dz * C33;
+  C11 += dz * ( C31 + C31_in );
+  C30 += dzC32_in;
+
+  C40 += dz * C42;
+  C41 += dz * C43;
+}
+
 void L1TrackParFit::Extrapolate // extrapolates track parameters and returns jacobian for extrapolation of CovMatrix
 (
  fvec  z_out  , // extrapolate to this z position

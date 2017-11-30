@@ -76,6 +76,7 @@ class L1TrackParFit{
     void Filter( L1UMeasurementInfo &info, fvec u, fvec w = 1.);
     void Filter( fvec t0, fvec dt0, fvec w = 1. );
     void Extrapolate(fvec z_out, fvec qp0, const L1FieldRegion &F, fvec *w = 0);
+    void ExtrapolateLine(fvec z_out);
     void Compare(L1TrackPar &T);
     void EnergyLossCorrection(const fvec& mass2, const fvec& radThick, fvec& qp0, fvec direction, fvec w = 1);
     void L1AddMaterial(L1MaterialInfo &info, fvec qp0, fvec w = 1, fvec mass2 = 0.1395679f*0.1395679f );
