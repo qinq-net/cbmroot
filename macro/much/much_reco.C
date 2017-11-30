@@ -25,7 +25,7 @@ void much_reco(
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
 //   TList* parFileList = new TList();
 //   TObjString stsDigiFile(parDir + "/sts/sts_v13d_std.digi.par"); // STS digi file
-   TString muchDigiFile(parDir + "/much/much_v15b_digi_sector.root"); // MUCH digi file
+   TString muchDigiFile(parDir + "/much/much_v17b_digi_sector.root"); // MUCH digi file
    TString stsMatBudgetFile(parDir + "/sts/sts_matbudget_v15a.root");
 //   parFileList->Add(&stsDigiFile);
 
