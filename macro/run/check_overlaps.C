@@ -21,15 +21,19 @@ void check_overlaps(const char* setup = "sis300_electron")
   while ((ov=(TGeoOverlap*)next())) {
     TString OverlapName = ov->GetTitle();
     if (OverlapName.Contains("cave/magnet_v15b_0 overlapping cave/much_0/absorber_1/absblock1_1/absorber_1")) {
-      cout << "Expected Overlap" << endl; 
+      cout << "Expected Overlap between much and magnet" << endl; 
       cout << ov->GetTitle() << endl;    
       cout << endl;
     } else if(OverlapName.Contains("cave/magnet_v15b_0 overlapping cave/much_0/absorber_1/absblock0_0/absorber_0")) {
-      cout << "Expected Overlap" << endl; 
+      cout << "Expected Overlap between much and magnet" << endl; 
       cout << ov->GetTitle() << endl;    
       cout << endl;
     } else if(OverlapName.Contains("cave/magnet_v15a_0 overlapping cave/rich_v17a_1e_0/rich_container_290")) {
-      cout << "Expected Overlap" << endl; 
+      cout << "Expected Overlap between rich and magnet" << endl; 
+      cout << ov->GetTitle() << endl;    
+      cout << endl;
+    } else if(OverlapName.Contains("cave/magnet_v15a_0 overlapping cave/rich_v17a_3e_0/rich_container_288")) {
+      cout << "Expected Overlap between rich and magnet" << endl; 
       cout << ov->GetTitle() << endl;    
       cout << endl;
     } else {
@@ -46,11 +50,15 @@ void check_overlaps(const char* setup = "sis300_electron")
   while ((ov=(TGeoOverlap*)next1())) {
     TString OverlapName = ov->GetTitle();
     if (OverlapName.Contains("magnet_v15b_0 overlapping much_0/absorber_1/absblock1_1/absorber_1")) {
-      cout << "Expected Overlap" << endl; 
+      cout << "Expected Overlap between much and magnet" << endl; 
       cout << ov->GetTitle() << endl;    
       cout << endl;
     } else if(OverlapName.Contains("magnet_v15a_0 overlapping rich_v17a_1e_0/rich_container_290")) {
-      cout << "Expected Overlap" << endl; 
+      cout << "Expected Overlap between rich and magnet" << endl; 
+      cout << ov->GetTitle() << endl;    
+      cout << endl;
+    } else if(OverlapName.Contains("magnet_v15a_0 overlapping rich_v17a_3e_0/rich_container_288")) {
+      cout << "Expected Overlap between rich and magnet" << endl; 
       cout << ov->GetTitle() << endl;    
       cout << endl;
     } else {
