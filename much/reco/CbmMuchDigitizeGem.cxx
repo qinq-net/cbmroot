@@ -542,14 +542,12 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
 
     // std::cout<<"min Rad "<<rMin<<"   max Rad  "<<rMax<<std::endl;
     //Calculating drifttime once for one track or one MCPoint, not for all the Primary Electrons generated during DriftGap.
-    Double_t aL   = gRandom->Rndm();
+    Double_t aL   = gRandom->Gaus(0.5,0.133); //Generting random number for calculating Drift Time.
     Double_t driftTime = -1;
-    while(driftTime < 0) driftTime = (1-aL)*fTotalDriftTime + gRandom->Gaus(0, fDTime); //Finding drifttime with random factor of Detector Time Resolution
+    while(driftTime < 0) driftTime = (1-aL)*fTotalDriftTime; 
     for (Int_t i=0;i<nElectrons;i++) { //Looping over all the primary electrons
-      //Double_t aL   = gRandom->Rndm();
-      //Double_t driftTime = -1;
-      //while(driftTime < 0) driftTime = (1-aL)*fTotalDriftTime + gRandom->Gaus(0, fDTime); //Finding drifttime with random factor of Detector Time Resolution
-      TVector3 ve   = v1 + dv*aL;
+      Double_t RandomNumberForPrimaryElectronPosition   = gRandom->Rndm();
+      TVector3 ve   = v1 + dv*RandomNumberForPrimaryElectronPosition;
       UInt_t ne     = GasGain(); //Number of secondary electrons
       Double_t r    = ve.Perp(); //
       Double_t phi  = ve.Phi();
