@@ -29,8 +29,6 @@
 #pragma link C++ class CbmMvdDetectorId+;
 #pragma link C++ class CbmMvdDigi+;
 #pragma link C++ class CbmMvdHit+;
-#pragma link C++ class CbmMvdHitMatch+;
-#pragma link C++ class CbmMvdDigiMatch+;
 #pragma link C++ class CbmMvdPoint+;
 
 #pragma link C++ class CbmStsAddress;

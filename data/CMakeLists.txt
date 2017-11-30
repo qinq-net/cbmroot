@@ -57,8 +57,6 @@ mvd/CbmMvdCluster.cxx
 mvd/CbmMvdDetectorId.cxx
 mvd/CbmMvdDigi.cxx  
 mvd/CbmMvdHit.cxx 
-mvd/CbmMvdHitMatch.cxx 
-mvd/CbmMvdDigiMatch.cxx 
 mvd/CbmMvdPoint.cxx
 
 sts/CbmStsAddress.cxx
