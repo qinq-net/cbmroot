@@ -537,8 +537,8 @@ namespace ngdpb {
          inline uint32_t getGdpbSlcMess()        const { return getField( 12, 29); }
          inline uint32_t getGdpbSlcData()        const { return getField( 12, 24); }
          inline uint32_t getGdpbSlcType()        const { return getField( 36,  2); }
-         inline uint32_t getGdpbSlcEdge()        const { return getBit(   37    ); }
-         inline uint32_t getGdpbSlcChan()        const { return getField( 38,  2); }
+         inline uint32_t getGdpbSlcEdge()        const { return getBit(   38    ); }
+         inline uint32_t getGdpbSlcChan()        const { return getField( 39,  2); }
          inline uint16_t getGdpbSlcCrc()         const { return getField(  4,  8); }
 
          // ---------- Get4 gDPB System Msg access methods -------------------------
