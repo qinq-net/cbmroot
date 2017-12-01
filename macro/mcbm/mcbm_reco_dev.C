@@ -27,7 +27,8 @@ void mcbm_reco_dev(Int_t nEvents = 2,
 //             const char* setupName = "sis18_mcbm_20deg_short")
 //             const char* setupName = "sis18_mcbm_20deg_long"
                const char* setupName = "sis18_mcbm_20deg_long_dev",
-               const char* mSub      = "10101110")
+//               const char* mSub      = "901101110")
+               const char* mSub      = "901101100")
 {
   // ========================================================================
   //          Adjust this part according to your requirements
@@ -73,6 +74,7 @@ void mcbm_reco_dev(Int_t nEvents = 2,
   setupFunct = setupFunct + setupName + "(" + mSub + ")";
 
   std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
+  std::cout << "-I- " << myName << ": Loading macro " << setupFunct << std::endl;
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunct);
   CbmSetup* setup = CbmSetup::Instance();
