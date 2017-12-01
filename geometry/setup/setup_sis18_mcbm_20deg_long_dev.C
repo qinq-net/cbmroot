@@ -21,17 +21,21 @@
 
 
 
-void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 11101110)
+void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 901101110)
 {
    
+  TString myName = "setup_sis18_mcbm_20deg_long_dev";  // this macro's name for screen output
+
   // -----  Geometry Tags  --------------------------------------------------
   //  TString platGeoTag      = "v18a_mcbm";    // concrete wall
   TString platGeoTag      = "v18c_mcbm";    // support table
   TString pipeGeoTag      = "v18f_mcbm";    // 20 degree beampipe
+
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";
   TString stsGeoTag       = "v18f_mcbm";    // 1-1-1-2 ladder configuration
   TString muchGeoTag      = "v18g_mcbm";    // 11 o'clock, Mv2 size
   TString buchGeoTag      = "v18m_1e_mcbm"; // long, with mBUCH
+
   TString trdGeoTag       = "v18n_1e_mcbm"; // long, without mBUCH
   TString tofGeoTag       = "v18i_mcbm";    // long distance
   TString richGeoTag      = "v18d_mcbm";    // long distance
@@ -58,30 +62,31 @@ void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 11101110)
 
   cout << "DE setup: "<< nSetup << endl;
 
-//  cout << nSetup /100000000000 %10 << endl; 
-//  cout << nSetup /10000000000  %10 << endl; 
-//  cout << nSetup /1000000000   %10 << endl; 
-//  cout << nSetup /100000000    %10 << endl; 
+////  cout << nSetup /100000000000 %10 << endl; 
+////  cout << nSetup /10000000000  %10 << endl; 
+////  cout << nSetup /1000000000   %10 << endl; 
+////  cout << nSetup /100000000    %10 << endl; 
+//
+//  cout << nSetup /10000000     %10 << endl; 
+//  cout << nSetup /1000000      %10 << endl; 
+//  cout << nSetup /100000       %10 << endl; 
+//  cout << nSetup /10000        %10 << endl; 
+//
+//  cout << nSetup /1000         %10 << endl; 
+//  cout << nSetup /100          %10 << endl; 
+//  cout << nSetup /10           %10 << endl; 
+//  cout << nSetup               %10 << endl; 
 
-  cout << nSetup /10000000     %10 << endl; 
-  cout << nSetup /1000000      %10 << endl; 
-  cout << nSetup /100000       %10 << endl; 
-  cout << nSetup /10000        %10 << endl; 
+  if (nSetup /10000000     %10) { mMvd  = 1; cout << myName << ": mMVD  enabled" << endl; }
+  if (nSetup /1000000      %10) { mSts  = 1; cout << myName << ": mSTS  enabled" << endl; }
+  if (nSetup /100000       %10) { mMuch = 1; cout << myName << ": mMUCH enabled" << endl; }
+  if (nSetup /10000        %10) { mBuch = 1; cout << myName << ": mBUCH enabled" << endl; }
 
-  cout << nSetup /1000         %10 << endl; 
-  cout << nSetup /100          %10 << endl; 
-  cout << nSetup /10           %10 << endl; 
-  cout << nSetup               %10 << endl; 
-
-  if (nSetup /10000000     %10) { mMvd  = 1; cout << "mMVD  enabled" << endl; }
-  if (nSetup /1000000      %10) { mSts  = 1; cout << "mSTS  enabled" << endl; }
-  if (nSetup /100000       %10) { mMuch = 1; cout << "mMUCH enabled" << endl; }
-  if (nSetup /10000        %10) { mBuch = 1; cout << "mBUCH enabled" << endl; }
-
-  if (nSetup /1000         %10) { mTrd  = 1; cout << "mTRD  enabled" << endl; }
-  if (nSetup /100          %10) { mTof  = 1; cout << "mTOF  enabled" << endl; }
-  if (nSetup /10           %10) { mRich = 1; cout << "mRICH enabled" << endl; }
-  if (nSetup               %10) { mPsd  = 1; cout << "mPSD  enabled" << endl; }
+  if (nSetup /1000         %10) { mTrd  = 1; cout << myName << ": mTRD  enabled" << endl; }
+  if (nSetup /100          %10) { mTof  = 1; cout << myName << ": mTOF  enabled" << endl; }
+  if (nSetup /10           %10) { mRich = 1; cout << myName << ": mRICH enabled" << endl; }
+  if (nSetup               %10) { mPsd  = 1; cout << myName << ": mPSD  enabled" << endl; }
+  cout << endl;
 
   // -----  Create setup  ---------------------------------------------------
   CbmSetup* setup = CbmSetup::Instance();
