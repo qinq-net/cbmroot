@@ -319,7 +319,7 @@ private:
    CbmMCDataArray* fMCTracks; // CbmMCTrack array
    TClonesArray* fGlobalTracks; // CbmGlobalTrack array
    CbmMCDataArray* fMvdPoints; // CbmMvdPoint array
-   TClonesArray* fMvdHitMatches; // CbmMvdHitMatch array
+   TClonesArray* fMvdHitMatches; // CbmMatch array
    TClonesArray* fStsTracks; // CbmStsTrack array
    TClonesArray* fStsMatches; // CbmStsTrackMatch array
    TClonesArray* fRichRings; // CbmRichRing array

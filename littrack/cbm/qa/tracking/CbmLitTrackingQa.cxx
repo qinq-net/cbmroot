@@ -18,7 +18,7 @@
 #include "CbmHit.h"
 #include "FairMCPoint.h"
 #include "CbmStsTrack.h"
-#include "CbmMvdHitMatch.h"
+#include "CbmMatch.h"
 #include "CbmTrackMatchNew.h"
 #include "utils/CbmRichUtil.h"
 #include "CbmMCDataArray.h"
@@ -858,10 +858,10 @@ void CbmLitTrackingQa::ProcessMvd(
    Int_t nofTrueHits = 0, nofFakeHits = 0;
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
       Int_t hitId = track->GetMvdHitIndex(iHit);
-      const CbmMvdHitMatch* hitMatch = static_cast<const CbmMvdHitMatch*>(fMvdHitMatches->At(hitId));
+      const CbmMatch* hitMatch = static_cast<const CbmMatch*>(fMvdHitMatches->At(hitId));
       if (NULL == hitMatch) continue;
-      Int_t pointId = hitMatch->GetPointId();
-      Int_t eventId = hitMatch->GetEntryNumber();
+      Int_t pointId = hitMatch->GetMatchedLink().GetIndex();
+      Int_t eventId = hitMatch->GetMatchedLink().GetEntry();
       const FairMCPoint* point = static_cast<const FairMCPoint*>(fMvdPoints->Get(0, eventId, pointId));
       if (NULL == point) continue;
       Int_t mcTrackId = point->GetTrackID();

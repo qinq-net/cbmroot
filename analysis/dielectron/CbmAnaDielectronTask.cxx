@@ -56,7 +56,7 @@
 
 #include "CbmStsHit.h"
 #include "CbmMvdHit.h"
-#include "CbmMvdHitMatch.h"
+#include "CbmMatch.h"
 
 #include "TString.h"
 #include "TSystem.h"
@@ -1861,9 +1861,9 @@ void CbmAnaDielectronTask::CheckClosestMvdHit(
         
         // Check MVD cut quality
         double bin = -1.;
-        const CbmMvdHitMatch* hitMatch = static_cast<const CbmMvdHitMatch*>(fMvdHitMatches->At(minMvdInd));
+        const CbmMatch* hitMatch = static_cast<const CbmMatch*>(fMvdHitMatches->At(minMvdInd));
         if (NULL != hitMatch){
-            int mcMvdHitId = hitMatch->GetTrackId();
+            int mcMvdHitId = hitMatch->GetMatchedLink().GetIndex();
             CbmMCTrack* mct1 = (CbmMCTrack*) fMCTracks->At(mcMvdHitId);
             int mcMvdHitPdg = TMath::Abs(mct1->GetPdgCode());
             int mvdMotherId = mct1->GetMotherId();
@@ -1950,9 +1950,9 @@ void CbmAnaDielectronTask::MvdCutMcDistance()
                 
                 int nofMvdHits = fMvdHitMatches->GetEntriesFast();
                 for (int iMvd = 0; iMvd < nofMvdHits; iMvd++){
-                    const CbmMvdHitMatch* hitMatch = static_cast<const CbmMvdHitMatch*>(fMvdHitMatches->At(iMvd));
+                    const CbmMatch* hitMatch = static_cast<const CbmMatch*>(fMvdHitMatches->At(iMvd));
                     if (NULL == hitMatch) continue;
-                    int mcMvdHitId = hitMatch->GetTrackId();
+                    int mcMvdHitId = hitMatch->GetMatchedLink().GetIndex();
                     if (stsMcTrackId != mcMvdHitId) continue;
                     CbmMvdHit *pmh2 = (CbmMvdHit*) fMvdHits->At(iMvd);
                     if ( pmh2->GetStationNr() != stationNum) continue;
