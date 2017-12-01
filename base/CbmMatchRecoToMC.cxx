@@ -417,7 +417,7 @@ void CbmMatchRecoToMC::MatchClusters(
       CbmMatch* clusterMatch = new ((*clusterMatches)[iCluster]) CbmMatch();
       Int_t nofDigis = cluster->GetNofDigis();
       for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
-//         Int_t digiIndex = cluster->GetDigi(iDigi);
+         Int_t digiIndex = cluster->GetDigi(iDigi);
          const CbmMatch* digiMatch = static_cast<const CbmMatch*>(digiMatches->At(cluster->GetDigi(iDigi)));
          clusterMatch->AddLinks(*digiMatch);
       }  //# digis in cluster
@@ -504,7 +504,7 @@ void CbmMatchRecoToMC::MatchHitsTof(
    CbmMatch   * pMatchDigiPnt;
 
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-//      CbmTofHit* hit         = static_cast<CbmTofHit*>(hits->At(iHit));
+      CbmTofHit* hit         = static_cast<CbmTofHit*>(hits->At(iHit));
       CbmMatch* hitDigiMatch = static_cast<CbmMatch*>( HitDigiMatches->At(iHit) );
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
 
@@ -556,7 +556,7 @@ void CbmMatchRecoToMC::MatchHitsTofDigiExp(
    CbmMatch   * pMatchDigiPnt;
 
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-//      CbmTofHit* hit         = static_cast<CbmTofHit*>(hits->At(iHit));
+      CbmTofHit* hit         = static_cast<CbmTofHit*>(hits->At(iHit));
       CbmMatch* hitDigiMatch = static_cast<CbmMatch*>( HitDigiMatches->At(iHit) );
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
 
