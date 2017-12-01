@@ -21,23 +21,20 @@
 
 
 
-void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 999)
+void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 11101110)
 {
    
   // -----  Geometry Tags  --------------------------------------------------
-//  TString platGeoTag      = "v18a_mcbm";    // concrete wall
+  //  TString platGeoTag      = "v18a_mcbm";    // concrete wall
   TString platGeoTag      = "v18c_mcbm";    // support table
   TString pipeGeoTag      = "v18f_mcbm";    // 20 degree beampipe
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";
-  TString stsGeoTag       = "v18f_mcbm";    // 1-1-1-2 ladder configuration 
-//  TString muchGeoTag      = "v18c_mcbm";    // 12 o'clock
-  TString muchGeoTag      = "v18d_mcbm";    // 11 o'clock
-
-  TString buchGeoTag      = "v18l_1e_mcbm"; // long, with mBUCH
-  TString trdGeoTag       = "v18g_1e_mcbm"; // long, without mBUCH
-
+  TString stsGeoTag       = "v18f_mcbm";    // 1-1-1-2 ladder configuration
+  TString muchGeoTag      = "v18g_mcbm";    // 11 o'clock, Mv2 size
+  TString buchGeoTag      = "v18m_1e_mcbm"; // long, with mBUCH
+  TString trdGeoTag       = "v18n_1e_mcbm"; // long, without mBUCH
   TString tofGeoTag       = "v18i_mcbm";    // long distance
-  TString richGeoTag      = "v18c_mcbm";    // long distance
+  TString richGeoTag      = "v18d_mcbm";    // long distance
   TString psdGeoTag       = "";             // not yet available
   // ------------------------------------------------------------------------
 
@@ -94,17 +91,19 @@ void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 999)
   	setup->Clear();
   }
   setup->SetTitle("SIS18 - MCBM Setup");
+
   setup->SetModule(kPlatform, platGeoTag);
   setup->SetModule(kPipe, pipeGeoTag);
-  if (mMvd  == 1) setup->SetModule(kMvd,  mvdGeoTag);   // skip mvd in the initial setup
+
+  if (mMvd  == 1) setup->SetModule(kMvd,  mvdGeoTag); 
   if (mSts  == 1) setup->SetModule(kSts,  stsGeoTag);
-  if (mMuch == 1) setup->SetModule(kMuch, muchGeoTag);  // disable, reco missing
+  if (mMuch == 1) setup->SetModule(kMuch, muchGeoTag);
   if (mBuch == 1) setup->SetModule(kTrd,  buchGeoTag);
   else if (mTrd  == 1) setup->SetModule(kTrd,  trdGeoTag);
 
   if (mTof  == 1) setup->SetModule(kTof,  tofGeoTag);
-  if (mRich == 1) setup->SetModule(kRich, richGeoTag);  // disable, reco missing
-  if (mPsd  == 1) setup->SetModule(kPsd,  psdGeoTag);   // disable, reco missing
+  if (mRich == 1) setup->SetModule(kRich, richGeoTag);
+  if (mPsd  == 1) setup->SetModule(kPsd,  psdGeoTag); 
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
 
   // ------------------------------------------------------------------------
