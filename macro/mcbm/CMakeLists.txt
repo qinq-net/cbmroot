@@ -69,7 +69,7 @@ ForEach(config IN LISTS cbm_config)
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
-  Set(_FileName_Dependency data/mcbm_mc_${config}_ok)
+  Set(_FileName_Dependency data/mcbm_mc_dev_${config}_ok)
   Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
   Set(dep_reco ${testname})
