@@ -20,8 +20,9 @@
 void mcbm_mc_dev(Int_t nEvents = 2,
 //	     const char* setupName = "sis18_mcbm_25deg",
 //           const char* setupName = "sis18_mcbm_20deg_short",
+//           const char* setupName = "sis18_mcbm_20deg_long",
              const char* setupName = "sis18_mcbm_20deg_long_dev",
-             const char* nSubsystem = "901101100", // "901111100", // "123456789", 
+             const char* mSub      = "10101110",
              const char* inputFile ="")
 {
 
@@ -39,7 +40,7 @@ void mcbm_mc_dev(Int_t nEvents = 2,
   //  TString defaultInputFile = "/input/urqmd.pau.4.5gev.mbias.00001.root";
 
   // -----   Environment   --------------------------------------------------
-  TString myName = "mcbm_mc";  // this macro's name for screen output
+  TString myName = "mcbm_mc_dev";  // this macro's name for screen output
   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
   // ------------------------------------------------------------------------
 
@@ -108,7 +109,8 @@ void mcbm_mc_dev(Int_t nEvents = 2,
 
 
   // -----   Remove old CTest runtime dependency file   ---------------------
-  TString depFile = Remove_CTest_Dependency_File(outDir, "mcbm_mc" , setupName);
+  //  TString depFile = Remove_CTest_Dependency_File(outDir, "mcbm_mc_dev" , setupName);
+  TString depFile = Remove_CTest_Dependency_File(outDir, "mcbm_mc_dev" , mSub);
   // ------------------------------------------------------------------------
 
 
@@ -130,9 +132,12 @@ void mcbm_mc_dev(Int_t nEvents = 2,
   std::cout << std::endl;
   TString setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
   TString setupFunct = "setup_";
+
+
   //  setupFunct = setupFunct + setupName + "()";
-  //  setupFunct = setupFunct + setupName + "(" + nSubsystem + ")";
-  setupFunct = setupFunct + setupName + "(" + nSubsystem + ")";
+  //  setupFunct = setupFunct + setupName + "(" + ")";
+  setupFunct = setupFunct + setupName + "(" + mSub + ")";
+
   std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunct);
