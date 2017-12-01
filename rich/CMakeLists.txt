@@ -167,6 +167,7 @@ prototype/CbmRichProtHitProducer.h
 prototype/CbmRichProtPrepareExtrapolation.h
 prototype/CbmRichProtProjectionProducer.h
 prototype/CbmRichPrototypeQa.h
+mcbm/CbmRichMCbmQa.h
 qa/CbmRichGeoTest.h 
 qa/CbmRichUrqmdTest.h
 qa/CbmRichGeoOpt.h
