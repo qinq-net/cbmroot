@@ -119,6 +119,7 @@ prototype/CbmRichProtRingFinderHoughImpl.cxx
 prototype/CbmRichPrototypeQa.cxx
 prototype/smallprototype/CbmRichSmallPrototypeQa.cxx
 prototype/smallprototype/CbmRichSmallPrototypeStudyReport.cxx
+mcbm/CbmRichMCbmQa.cxx
 qa/CbmRichGeoTest.cxx 
 qa/CbmRichUrqmdTest.cxx
 qa/CbmRichGeoTestStudyReport.cxx
