@@ -47,9 +47,9 @@ void mcbm_mc_dev(Int_t nEvents = 2,
   // -----   In- and output file names   ------------------------------------
   TString inFile = ""; // give here or as argument; otherwise default is taken
   TString outDir  = "data/";
-  TString outFile = outDir + setupName + "_test.mc.root";
-  TString parFile = outDir + setupName + "_params.root";
-  TString geoFile = outDir + setupName + "_geofile_full.root";
+  TString outFile = outDir + setupName + mSub + "_test.mc.root";
+  TString parFile = outDir + setupName + mSub + "_params.root";
+  TString geoFile = outDir + setupName + mSub + "_geofile_full.root";
   // ------------------------------------------------------------------------
 
   // --- Logger settings ----------------------------------------------------
