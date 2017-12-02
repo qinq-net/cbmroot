@@ -19,18 +19,15 @@ CbmTrdTestBeamTools::CbmTrdTestBeamTools () : TObject(), fDigis(nullptr)
   Instance(this);
 }
 
-CbmTrdTestBeamTools* CbmTrdTestBeamTools::Instance(CbmTrdTestBeamTools* ptr=nullptr){
-  /*Get the current instance of TestBeam tools in use, or set it.
-   *Only permits one instance of TestBeam tools.
-   */
+CbmTrdTestBeamTools* CbmTrdTestBeamTools::Instance(CbmTrdTestBeamTools* NewInstance=nullptr){
   static CbmTrdTestBeamTools* CurrentInstance=nullptr;
-  if (!ptr&&!CurrentInstance)
-    return new CbmTrdTestBeamTools();
-  if (!ptr)
+  if (!NewInstance&&!CurrentInstance)
+      CurrentInstance = new CbmTrdTestBeamTools();
+  if (!NewInstance)
     return CurrentInstance;
   if (!CurrentInstance)
-    CurrentInstance=ptr;
-  if (ptr!=CurrentInstance)
+    CurrentInstance=NewInstance;
+  if (NewInstance!=CurrentInstance)
     LOG(FATAL)<<"Preexisting Instance of "<< CurrentInstance->GetName()<<FairLogger::endl;
   return CurrentInstance;
 };
@@ -117,7 +114,7 @@ Int_t CbmTrdTestBeamTools::GetColumnID(CbmSpadicRawMessage* raw){
   return ColID;
 };
 
-TString CbmTrdTestBeamTools::GetSpadicName(Int_t RobID,Int_t SpadicID,TString RobName="SysCore",Bool_t FullSpadic=true)
+TString CbmTrdTestBeamTools::GetSpadicName(Int_t DpbID,Int_t SpadicID,TString DpbName="SysCore",kSpadicSize SpadicSize=kFullSpadic)
 {
 	/*	Get a String of the Form "Syscore_0_Spadic_0" describing the specific SPADIC corresponding to the input parameters.
 	 *  The Parameter InputType allows either the Equipment ID/Source Address or the final Syscore/Spadic ID to be used.
@@ -126,8 +123,8 @@ TString CbmTrdTestBeamTools::GetSpadicName(Int_t RobID,Int_t SpadicID,TString Ro
 	 *  	via kHalfSpadic.
 	 * */
   TString spadicName="";
-  spadicName=RobName+"_"+std::to_string(RobID)+"_";
-  if(FullSpadic){
+  spadicName=DpbName+"_"+std::to_string(DpbID)+"_";
+  if(SpadicSize){
 	  spadicName += "Spadic_";
   }else{
 	  spadicName += "Half_Spadic_";

@@ -15,7 +15,7 @@ class CbmTrdTestBeamTools2017DESY: public CbmTrdTestBeamTools
     /*
      * Get inverse sampling frequency in nano seconds.
      */
-   return 1E3/15.6;
+   return 1E3/16;
   };
   Int_t GetShapingTime(){
     /*
