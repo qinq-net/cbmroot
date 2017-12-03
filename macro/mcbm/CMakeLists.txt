@@ -19,41 +19,41 @@ Else()
   List(APPEND cbm_setup sis18_mcbm_20deg_long)
 EndIf()
 
-# DE-TEST ForEach(setup IN LISTS cbm_setup)
-# DE-TEST 
-# DE-TEST   Set(testname mcbm_mc_${setup})
-# DE-TEST   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_mc.sh ${NumEvents} \"${setup}\")
-# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
-# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-# DE-TEST   
-# DE-TEST   Set(dep_mc ${testname})
-# DE-TEST 
-# DE-TEST   Set(testname mcbm_reco_${setup})
-# DE-TEST   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_reco.sh ${NumEvents} \"${setup}\")
-# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
-# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
-# DE-TEST   Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
-# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
-# DE-TEST 
-# DE-TEST   Set(dep_reco ${testname})
-# DE-TEST 
-# DE-TEST   Set(testname mcbm_overlap_${setup})
-# DE-TEST   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_check_overlaps.sh \"${setup}\")
-# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
-# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
-# DE-TEST   Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
-# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
-# DE-TEST 
-# DE-TEST EndForEach(setup IN LISTS cbm_setup)
+ForEach(setup IN LISTS cbm_setup)
+
+  Set(testname mcbm_mc_${setup})
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_mc.sh ${NumEvents} \"${setup}\")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+  
+  Set(dep_mc ${testname})
+
+  Set(testname mcbm_reco_${setup})
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_reco.sh ${NumEvents} \"${setup}\")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
+  Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+
+  Set(dep_reco ${testname})
+
+  Set(testname mcbm_overlap_${setup})
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_check_overlaps.sh \"${setup}\")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
+  Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+
+EndForEach(setup IN LISTS cbm_setup)
 
 
 # Define the different configs to be tested
 # test all subsystems
-#List(APPEND cbm_config 901101110 910000000 901000000 900100000 900010000 900001000 900000100 900000010 900000001)
+#List(APPEND cbm_config 801101110 810000000 801000000 800100000 800010000 800001000 800000100 800000010 800000001)
 # test selected subsystems
-List(APPEND cbm_config 901101110 901000000 900100000 900010000 900001000 900000100 900000010)
+List(APPEND cbm_config 801101110 801000000 800100000 800010000 800001000 800000100 800000010)
 
 ForEach(config IN LISTS cbm_config)
 
