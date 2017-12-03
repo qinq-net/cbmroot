@@ -19,34 +19,34 @@ Else()
   List(APPEND cbm_setup sis18_mcbm_20deg_long)
 EndIf()
 
-ForEach(setup IN LISTS cbm_setup)
-
-  Set(testname mcbm_mc_${setup})
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_mc.sh ${NumEvents} \"${setup}\")
-  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
-  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  
-  Set(dep_mc ${testname})
-
-  Set(testname mcbm_reco_${setup})
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_reco.sh ${NumEvents} \"${setup}\")
-  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
-  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
-  Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
-  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
-
-  Set(dep_reco ${testname})
-
-  Set(testname mcbm_overlap_${setup})
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_check_overlaps.sh \"${setup}\")
-  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
-  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
-  Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
-  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
-
-EndForEach(setup IN LISTS cbm_setup)
+# DE-TEST ForEach(setup IN LISTS cbm_setup)
+# DE-TEST 
+# DE-TEST   Set(testname mcbm_mc_${setup})
+# DE-TEST   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_mc.sh ${NumEvents} \"${setup}\")
+# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+# DE-TEST   
+# DE-TEST   Set(dep_mc ${testname})
+# DE-TEST 
+# DE-TEST   Set(testname mcbm_reco_${setup})
+# DE-TEST   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_reco.sh ${NumEvents} \"${setup}\")
+# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
+# DE-TEST   Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
+# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+# DE-TEST 
+# DE-TEST   Set(dep_reco ${testname})
+# DE-TEST 
+# DE-TEST   Set(testname mcbm_overlap_${setup})
+# DE-TEST   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_check_overlaps.sh \"${setup}\")
+# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
+# DE-TEST   Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
+# DE-TEST   Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+# DE-TEST 
+# DE-TEST EndForEach(setup IN LISTS cbm_setup)
 
 
 # Define the different configs to be tested
@@ -57,14 +57,14 @@ List(APPEND cbm_config 901101110 901000000 900100000 900010000 900001000 9000001
 
 ForEach(config IN LISTS cbm_config)
 
-  Set(testname mcbm_mc_${config})
+  Set(testname mcbm_mc_dev_${config})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_mc_dev.sh ${NumEvents} \"sis18_mcbm_20deg_long_dev\" \"${config}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   
   Set(dep_mc ${testname})
 
-  Set(testname mcbm_reco_${config})
+  Set(testname mcbm_reco_dev_${config})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_reco_dev.sh ${NumEvents} \"sis18_mcbm_20deg_long_dev\" \"${config}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
