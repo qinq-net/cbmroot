@@ -159,11 +159,11 @@ void mcbm_reco(Int_t nEvents = 2,
   gROOT->LoadMacro(macroName);
   Bool_t recoSuccess = gROOT->ProcessLine("reconstruct()");
   if ( ! recoSuccess ) {
-  	std::cerr << "-E-" << myName << ": error in executing " << macroName
+  	std::cerr << "-E- " << myName << ": error in executing " << macroName
   			<< std::endl;
   	return;
   }
-  std::cout << "-I-" << myName << ": " << macroName << " excuted successfully"
+  std::cout << "-I- " << myName << ": " << macroName << " executed successfully"
   		<< std::endl;
   // ------------------------------------------------------------------------
 
