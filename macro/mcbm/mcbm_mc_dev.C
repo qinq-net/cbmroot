@@ -47,9 +47,9 @@ void mcbm_mc_dev(Int_t nEvents = 2,
   // -----   In- and output file names   ------------------------------------
   TString inFile = ""; // give here or as argument; otherwise default is taken
   TString outDir  = "data/";
-  TString outFile = outDir + setupName + mSub + "_test.mc.root";
-  TString parFile = outDir + setupName + mSub + "_params.root";
-  TString geoFile = outDir + setupName + mSub + "_geofile_full.root";
+  TString outFile = outDir + setupName + "_" + mSub + "_test.mc.root";
+  TString parFile = outDir + setupName + "_" + mSub + "_params.root";
+  TString geoFile = outDir + setupName + "_" + mSub + "_geofile_full.root";
   // ------------------------------------------------------------------------
 
   // --- Logger settings ----------------------------------------------------
@@ -110,7 +110,7 @@ void mcbm_mc_dev(Int_t nEvents = 2,
 
   // -----   Remove old CTest runtime dependency file   ---------------------
   //  TString depFile = Remove_CTest_Dependency_File(outDir, "mcbm_mc_dev" , setupName);
-  TString depFile = Remove_CTest_Dependency_File(outDir, "mcbm_mc_dev" , mSub);
+  TString depFile = Remove_CTest_Dependency_File(outDir, "mcbm_mc_dev", mSub);
   // ------------------------------------------------------------------------
 
 
