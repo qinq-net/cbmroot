@@ -13,7 +13,7 @@ Bool_t reconstruct()
 {
 
 
-	// -----   Get the run instance   ------------------------------------------
+  // -----   Get the run instance   ------------------------------------------
 	FairRun* run = FairRun::Instance();
 	if ( ! run ) {
 		std::cerr << "-E- digitize: No run instance!" << std::endl;
@@ -25,7 +25,7 @@ Bool_t reconstruct()
   // -------------------------------------------------------------------------
 
 
-	// -----   Get the CBM setup instance   ------------------------------------
+  // -----   Get the CBM setup instance   ------------------------------------
 	CbmSetup* setup = CbmSetup::Instance();
 	std::cout << std::endl;
 	std::cout << "-I- digitize: Found setup " << setup->GetTitle() << std::endl;
