@@ -6,7 +6,7 @@ void Import_GDML_Export_ROOT()
 
 	TGDMLParse parser;
 	// Define your input GDML file HERE
-	TGeoVolume* gdmlTop = parser.GDMLReadFile (vmcDir + "/geometry/rich/rich_v17a_1e_nobpmt.gdml");
+	TGeoVolume* gdmlTop = parser.GDMLReadFile (vmcDir + "/geometry/rich/rich_v18a_1e.gdml");
 	TGeoVolume* rootTop = new TGeoVolumeAssembly("TOP");
 
 	gGeoManager->SetTopVolume(rootTop);
@@ -21,7 +21,7 @@ void Import_GDML_Export_ROOT()
 	gGeoManager->CloseGeometry();
 
 	// Define you output ROOT file HERE
-	TFile* outfile = new TFile(vmcDir + "/geometry/rich/rich_v17a_1e_nobpmt.geo.root", "RECREATE");
+	TFile* outfile = new TFile(vmcDir + "/geometry/rich/rich_v18a_1e.geo.root", "RECREATE");
 	rootTop->Write();
 	outfile->Close();
 }

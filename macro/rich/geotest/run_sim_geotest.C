@@ -1,186 +1,204 @@
 #include <stdio.h>
 
-void run_sim_geotest(Int_t nEvents = 10)
+void run_sim_geotest(Int_t nEvents = 1)
 {
     TTree::SetMaxTreeSize(90000000000);
     
     TString script = TString(gSystem->Getenv("SCRIPT"));
-    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
-    
+
+    TString myName = "run_sim_geotest";  // this macro's name for screen output
+    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+
+    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100.C";
+
     TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/geotest/";
     TString parFile =  outDir + "param.00000.root";
     TString mcFile = outDir + "mc.00000.root";
     TString geoFile = outDir + "geo_file.root";
-    TString caveGeom = "cave.geo";
-    TString pipeGeom   = "pipe/pipe_v16b_1e.geo.root";
-    TString magnetGeom = "magnet/magnet_v15a.geo.root";
-    TString stsGeom = "sts/sts_v16x.geo.root";
-    TString richGeom= "rich/rich_v17a_1e.geo.root"; //"rich/test1_21feb2017.root";;//"rich/rich_v16a_1e.geo.root";
-    TString fieldMap = "field_v16a";
-    Double_t fieldZ = 40.; // field center z position
-    Double_t fieldScale =  1.0; // field scaling factor
-    Int_t fieldSymType =  3;
-    
-    
-    if (script == "yes") {
-        mcFile = TString(gSystem->Getenv("MC_FILE"));
-        parFile = TString(gSystem->Getenv("PAR_FILE"));
-        caveGeom = TString(gSystem->Getenv("CAVE_GEOM"));
-        pipeGeom = TString(gSystem->Getenv("PIPE_GEOM"));
-        stsGeom = TString(gSystem->Getenv("STS_GEOM"));
-        richGeom = TString(gSystem->Getenv("RICH_GEOM"));
-        fieldMap = TString(gSystem->Getenv("FIELD_MAP"));
-        magnetGeom = TString(gSystem->Getenv("MAGNET_GEOM"));
-        fieldScale = TString(gSystem->Getenv("FIELD_MAP_SCALE")).Atof();
-    }
-    
-    // Remove MC file and par file before simulation started
+
     remove(parFile.Data());
     remove(mcFile.Data());
-    
-    gDebug = 0;
-    TStopwatch timer;
-    timer.Start();
-    
-    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-    loadlibs();
-    
-    FairRunSim* fRun = new FairRunSim();
-    fRun->SetName("TGeant3"); // Transport engine
-    fRun->SetOutputFile(mcFile);
-    FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
-    
-    fRun->SetMaterials("media.geo"); // Materials
-    
-    //Target geometry
+    remove(geoFile.Data());
+
+//    if (script == "yes") {
+//        mcFile = TString(gSystem->Getenv("MC_FILE"));
+//        parFile = TString(gSystem->Getenv("PAR_FILE"));
+//        caveGeom = TString(gSystem->Getenv("CAVE_GEOM"));
+//        pipeGeom = TString(gSystem->Getenv("PIPE_GEOM"));
+//        stsGeom = TString(gSystem->Getenv("STS_GEOM"));
+//        richGeom = TString(gSystem->Getenv("RICH_GEOM"));
+//        fieldMap = TString(gSystem->Getenv("FIELD_MAP"));
+//        magnetGeom = TString(gSystem->Getenv("MAGNET_GEOM"));
+//        fieldScale = TString(gSystem->Getenv("FIELD_MAP_SCALE")).Atof();
+//    }
+
+    TString logLevel = "INFO";
+    TString logVerbosity = "LOW";
+
+    // Target geometry
     TString  targetElement   = "Gold";
-    Double_t targetThickness = 0.025; // 250 mum, full thickness in cm
+    Double_t targetThickness = 0.025;  // full thickness in cm
     Double_t targetDiameter  = 2.5;    // diameter in cm
     Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
     Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
     Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
     Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
-    
-    // creation of the primary vertex
+
+
+    // primary vertex
     Bool_t smearVertexXY = kTRUE;
     Bool_t smearVertexZ  = kTRUE;
-    Double_t beamWidthX   = 1.;  // Gaussian sigma of the beam profile in x [cm]
-    Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
-    // ------------------------------------------------------------------------
-    
-    if ( caveGeom != "" ) {
-        FairModule* cave = new CbmCave("CAVE");
-        cave->SetGeometryFileName(caveGeom);
-        fRun->AddModule(cave);
-    }
-    
-    if ( pipeGeom != "") {
-        FairModule* pipe = new CbmPipe("PIPE");
-        pipe->SetGeometryFileName(pipeGeom);
-        fRun->AddModule(pipe);
-    }
-    
+    Double_t beamWidthX   = 0.1;  // Gaussian sigma of the beam profile in x [cm]
+    Double_t beamWidthY   = 0.1;  // Gaussian sigma of the beam profile in y [cm]
+
+
+    TStopwatch timer;
+    timer.Start();
+    gDebug = 0;
+
+    FairRunSim* run = new FairRunSim();
+    run->SetName("TGeant3");              // Transport engine
+    run->SetOutputFile(mcFile);          // Output file
+    run->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
+
+
+    FairLogger::GetLogger()->SetLogScreenLevel(logLevel.Data());
+    FairLogger::GetLogger()->SetLogVerbosityLevel(logVerbosity.Data());
+
+    TString setupFunct = "do_setup()";
+    std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
+    gROOT->LoadMacro(geoSetupFile);
+    gROOT->ProcessLine(setupFunct);
+    // You can modify the pre-defined setup by using
+    // CbmSetup::Instance()->RemoveModule(ESystemId) or
+    // CbmSetup::Instance()->SetModule(ESystemId, const char*, Bool_t) or
+    // CbmSetup::Instance()->SetActive(ESystemId, Bool_t)
+    // See the class documentation of CbmSetup.
+
+
+    std::cout << std:: endl << "-I- " << myName << ": Setting media file" << std::endl;
+    run->SetMaterials("media.geo"); // Materials
+
+
+    TString macroName = gSystem->Getenv("VMCWORKDIR");
+    macroName += "/macro/run/modules/registerSetup.C";
+    std::cout << std::endl << "Loading macro " << macroName << std::endl;
+    gROOT->LoadMacro(macroName);
+    gROOT->ProcessLine("registerSetup()");
+
+
+    std::cout << std::endl << "-I- " << myName << ": Registering target" << std::endl;
     CbmTarget* target = new CbmTarget(targetElement.Data(), targetThickness, targetDiameter);
     target->SetPosition(targetPosX, targetPosY, targetPosZ);
     target->SetRotation(targetRotY);
-    fRun->AddModule(target);
-    
-    if ( magnetGeom != "") {
-        FairModule* magnet = new CbmMagnet("MAGNET");
-        magnet->SetGeometryFileName(magnetGeom);
-        fRun->AddModule(magnet);
+    target->Print();
+    run->AddModule(target);
+
+
+    // Magnetic field
+    std::cout << std::endl << "-I- " << myName << ": Registering magnetic field" << std::endl;
+    CbmFieldMap* magField = CbmSetup::Instance()->CreateFieldMap();
+    if ( !magField ) {
+    	std::cout << "-ERROR- : No valid field!";
+    	return;
     }
-    
-    if ( stsGeom != "") {
-        FairDetector* sts = new CbmStsMC(kTRUE);
-        sts->SetGeometryFileName(stsGeom);
-        fRun->AddModule(sts);
-    }
-    
-    if ( richGeom != "") {
-        FairDetector* rich = NULL;
-        rich = new CbmRich("RICH", kTRUE);
-        rich->SetGeometryFileName(richGeom);
-        fRun->AddModule(rich);
-    }
-    
-    // Create magnetic field
-    cout <<"fieldSymType=" << fieldSymType << endl;
-    CbmFieldMap* magField = NULL;
-    if ( 2 == fieldSymType ) {
-        CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
-    }  else if ( 3 == fieldSymType ) {
-        CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
-    }
-    magField->SetPosition(0., 0., fieldZ);
-    magField->SetScale(fieldScale);
-    fRun->SetField(magField);
-    
+    run->SetField(magField);
+
+
+    //  PrimaryGenerator
+    std::cout << std::endl << "-I- " << myName << ": Registering event generators" << std::endl;
     FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
-    // e+/-
+    // --- Uniform distribution of event plane angle
+    primGen->SetEventPlane(0., 2. * TMath::Pi());
+    // --- Get target parameters
+    Double_t tX = 0.;
+    Double_t tY = 0.;
+    Double_t tZ = 0.;
+    Double_t tDz = 0.;
+    if ( target ) {
+    	target->GetPosition(tX, tY, tZ);
+    	tDz = target->GetThickness();
+    }
+    primGen->SetTarget(tZ, tDz);
+    primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
+    primGen->SmearGausVertexXY(smearVertexXY);
+    primGen->SmearVertexZ(smearVertexZ);
+
+
     FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 1);
     boxGen1->SetPtRange(0.,3.);
-    boxGen1->SetPhiRange(0.,360.);
-    boxGen1->SetThetaRange(2.5,25.);
-    boxGen1->SetCosTheta();
-    boxGen1->Init();
-    primGen->AddGenerator(boxGen1);
-    
-    FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, 1);
-    boxGen2->SetPtRange(0.,3.);//4
-    boxGen2->SetPhiRange(0.,360.);
-    boxGen2->SetThetaRange(2.5,25.);//35
-    boxGen2->SetCosTheta();
-    boxGen2->Init();
-    primGen->AddGenerator(boxGen2);
-    
-    // pi+/-
-    /*     FairBoxGenerator* boxGen1 = new FairBoxGenerator(211, 1);
-     boxGen1->SetPtRange(0.,3.);
-     boxGen1->SetPhiRange(0.,360.);
-     boxGen1->SetThetaRange(2.5,25.);
-     boxGen1->SetCosTheta();
-     boxGen1->Init();
-     primGen->AddGenerator(boxGen1);
-     
-     FairBoxGenerator* boxGen2 = new FairBoxGenerator(-211, 1);
-     boxGen2->SetPtRange(0.,3.);
-     boxGen2->SetPhiRange(0.,360.);
-     boxGen2->SetThetaRange(2.5,25.);
-     boxGen2->SetCosTheta();
-     boxGen2->Init();
-     primGen->AddGenerator(boxGen2);*/
-    
-    fRun->SetGenerator(primGen);
-    fRun->SetStoreTraj(kTRUE);
-    fRun->Init();
-    
+	boxGen1->SetPhiRange(0.,360.);
+	boxGen1->SetThetaRange(2.5,25.);
+	boxGen1->SetCosTheta();
+	boxGen1->Init();
+	primGen->AddGenerator(boxGen1);
+
+	FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, 1);
+	boxGen2->SetPtRange(0.,3.);//4
+	boxGen2->SetPhiRange(0.,360.);
+	boxGen2->SetThetaRange(2.5,25.);//35
+	boxGen2->SetCosTheta();
+	boxGen2->Init();
+	primGen->AddGenerator(boxGen2);
+    run->SetGenerator(primGen);
+
+
+    std::cout << std::endl << "-I- " << myName << ": Initialise run" << std::endl;
+    run->Init();
+
+
     // -----   Runtime database   ---------------------------------------------
+    std::cout << std::endl << std::endl;
+    std::cout << "-I- " << myName << ": Set runtime DB" << std::endl;
+    FairRuntimeDb* rtdb = run->GetRuntimeDb();
     CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
     fieldPar->SetParameters(magField);
     fieldPar->setChanged();
-    fieldPar->setInputVersion(fRun->GetRunId(),1);
+    fieldPar->setInputVersion(run->GetRunId(),1);
     Bool_t kParameterMerged = kTRUE;
     FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
     parOut->open(parFile.Data());
     rtdb->setOutput(parOut);
     rtdb->saveOutput();
     rtdb->print();
-    
-    fRun->Run(nEvents);
-    
-    fRun->CreateGeometryFile(geoFile);
 
-    //fRun->CreateGeometryFile("geoFile.root");
-    
+
+    std::cout << std::endl << std::endl << "-I- " << myName << ": Starting run" << std::endl;
+    run->Run(nEvents);
+
+
+    run->CreateGeometryFile(geoFile);
+
     timer.Stop();
     Double_t rtime = timer.RealTime();
     Double_t ctime = timer.CpuTime();
-    cout << endl << endl;
-    cout << "Macro finished succesfully." << endl;
-    cout << "Output file is "    << mcFile << endl;
-    cout << "Parameter file is " << parFile << endl;
-    cout << "Real time " << rtime << " s, CPU time " << ctime << "s" << endl << endl;
-    cout << " Test passed" << endl;
-    cout << " All ok " << endl;
+    std::cout << std::endl << std::endl;
+    std::cout << "Macro finished successfully." << std::endl;
+    std::cout << "Output file is "    << mcFile << std::endl;
+    std::cout << "Parameter file is " << parFile << std::endl;
+    std::cout << "Geometry file is "  << geoFile << std::endl;
+    std::cout << "Real time " << rtime << " s, CPU time " << ctime
+              << "s" << std::endl << std::endl;
+    // ------------------------------------------------------------------------
+
+
+    // -----   Resource monitoring   ------------------------------------------
+//    if ( Has_Fair_Monitor() ) {      // FairRoot Version >= 15.11
+//      // Extract the maximal used memory an add is as Dart measurement
+//      // This line is filtered by CTest and the value send to CDash
+//      FairSystemInfo sysInfo;
+//      Float_t maxMemory=sysInfo.GetMaxMemory();
+//      std::cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+//      std::cout << maxMemory;
+//      std::cout << "</DartMeasurement>" << std::endl;
+//
+//      Float_t cpuUsage=ctime/rtime;
+//      std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+//      std::cout << cpuUsage;
+//      std::cout << "</DartMeasurement>" << std::endl;
+//    }
+
+    std::cout << " Test passed" << std::endl;
+    std::cout << " All ok " << std::endl;
+
 }

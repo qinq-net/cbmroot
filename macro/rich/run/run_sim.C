@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 10)
+void run_sim(Int_t nEvents = 12)
 {
     TTree::SetMaxTreeSize(90000000000);
     Int_t iVerbose = 0;
@@ -18,7 +18,7 @@ void run_sim(Int_t nEvents = 10)
     TString electrons = "yes"; // If "yes" than primary electrons will be generated
     Int_t NELECTRONS = 5; // number of e- to be generated
     Int_t NPOSITRONS = 5; // number of e+ to be generated
-    TString urqmd = "no"; // If "yes" than UrQMD will be used as background
+    TString urqmd = "yes"; // If "yes" than UrQMD will be used as background
     TString pluto = "no"; // If "yes" PLUTO particles will be embedded
     TString plutoFile = "";
     TString plutoParticle = "";

@@ -9,15 +9,15 @@ void run_train_ann(
 {
     gRandom->SetSeed(10);
     
-    TString inFile1 = "/Users/slebedev/Development/cbm/data/simulations/rich/newrich/mc.1.root";
-    TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/newrich/param.1.root";
-    TString inFile2 ="/Users/slebedev/Development/cbm/data/simulations/rich/newrich/ht.reco.1.root";
-    TString outFile ="/Users/slebedev/Development/cbm/data/simulations/rich/newrich/richselect.1.root";
+	TString mcFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/mc.00000.root";
+	TString parFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/param.00000.root";
+	TString recoFile ="/Users/slebedev/Development/cbm/data/sim/rich/reco/reco.00000.root";
+	TString outFile ="/Users/slebedev/Development/cbm/data/sim/rich/reco/selectann.00000.root";
     
     // please specify what you want to run
     // select = train ANN for fake rejection algorithm
     // electron = train ANN for electron identification algorithm
-    TString option = "select";
+    TString option = "electron";
     
     gDebug = 0;
     
@@ -27,9 +27,9 @@ void run_train_ann(
     cbmlibs();
     
     FairRunAna *run = new FairRunAna();
-    if (inFile1 != "") run->SetInputFile(inFile2);
-    if (inFile2 != "") run->AddFriend(inFile1);
-    if (outFile != "") run->SetOutputFile(outFile);
+    run->SetInputFile(mcFile);
+    run->AddFriend(recoFile);
+    run->SetOutputFile(outFile);
     
     FairTask* richAnn;
     if (option == "select") richAnn = new CbmRichTrainAnnSelect();

@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 10)
+void run_reco(Int_t nEvents = 100)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -112,11 +112,10 @@ void run_reco(Int_t nEvents = 10)
     run->AddTask(stsDigi);
 
 
-	FairTask* stsClusterFinder = new CbmStsFindClustersEvents();
-
+	FairTask* stsClusterFinder = new CbmStsFindClusters();
 	run->AddTask(stsClusterFinder);
 
-	FairTask* stsFindHits = new CbmStsFindHitsEvents();
+	FairTask* stsFindHits = new CbmStsFindHits();
 	run->AddTask(stsFindHits);
 
 	CbmKF* kalman = new CbmKF();
@@ -240,7 +239,7 @@ void run_reco(Int_t nEvents = 10)
     // RICH reco QA
     CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
     richRecoQa->SetOutputDir(resultDir);
-    //run->AddTask(richRecoQa);
+    run->AddTask(richRecoQa);
 
 	// Reconstruction Qa
 	CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();

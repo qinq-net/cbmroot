@@ -31,25 +31,25 @@ export GEO_SETUP_FILE=geosetup_25gev.C
 #number of events for each thread
 export NEVENTS=1000
 
-for Z in 1; do
+for Z in 0; do
 
 export DIR=/Users/slebedev/Development/cbm/data/sim/rich/reco/
  #export LIT_RESULT_DIR=recqa_cyl_${Z}/
  #  mkdir -p ${LIT_RESULT_DIR}
    
    export IN_FILE=/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root
-export MC_FILE=${DIR}/mc.v16a.${Z}.root
-export PAR_FILE=$DIR/param.v16a.${Z}.root
-export RECO_FILE=$DIR/reco.v16a.${Z}.root
+export MC_FILE=${DIR}/mc.test.${Z}.root
+export PAR_FILE=$DIR/param.test.${Z}.root
+export RECO_FILE=$DIR/reco.test.${Z}.root
 
     if [ ${Z} = "0" ] ; then
         export GEO_SETUP_FILE=geosetup_8gev.C
-        export NEVENTS=20000
+        export NEVENTS=10000
         export NELECTRONS=1
 		export NPOSITRONS=1
 		export URQMD=no
         export IN_FILE=/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root
-        export LIT_RESULT_DIR=results_v16a/recqa_electrons_v16a_1e_rich_TrackRing/
+        export LIT_RESULT_DIR=results_v17a_test/
 		mkdir -p ${LIT_RESULT_DIR}
 
     elif [ ${Z} = "1" ]; then
