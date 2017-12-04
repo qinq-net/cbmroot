@@ -107,7 +107,7 @@ const Double_t zfront[5]  = { 260., 140., 360., 410., 550. };
 const TString setupVer[5] = { "_1h", "_1e", "_1m", "_3e", "_3m" };
 const TString subVersion = setupVer[setupid];
 
-const TString geoVersion   = "trd_" + tagVersion + subVersion;
+const TString geoVersion   = "trd_" + tagVersion; // + subVersion;
 const TString FileNameSim  = geoVersion + "_mcbm.geo.root";
 const TString FileNameGeo  = geoVersion + "_mcbm_geo.root";
 const TString FileNameInfo = geoVersion + "_mcbm.geo.info";
