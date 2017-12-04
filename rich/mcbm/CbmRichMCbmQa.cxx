@@ -134,11 +134,19 @@ void CbmRichMCbmQa::InitHistograms()
     fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius;Ring radius [cm];Yield (a.u.)", 200, 1., 8.);
     
     
-    vector<Double_t> xbins = GetHistBins(true);
-    vector<Double_t> ybins = GetHistBins(false);
-    fHM->Add("fh_rich_hits_xy", new TH2D("fh_rich_hits_xy", "fh_rich_hits_xy;X [cm];Y [cm];Yield (a.u.)", xbins.size() - 1, &xbins[0], ybins.size() - 1, &ybins[0]));
-	cout << "binsize: " << xbins.size()  << "bin Ende Anfang: " << &xbins[0] << endl;
-    fHM->Create2<TH2D>("fh_rich_points_xy", "fh_rich_points_xy;X [cm];Y [cm];Yield (a.u.)", 250, -8., 8., 250, -10., 10.);    
+//    vector<Double_t> xbins = GetHistBins(true);
+//    vector<Double_t> ybins = GetHistBins(false);
+//    fHM->Add("fh_rich_hits_xy", new TH2D("fh_rich_hits_xy", "fh_rich_hits_xy;X [cm];Y [cm];Yield (a.u.)", xbins.size() - 1, &xbins[0], ybins.size() - 1, &ybins[0]));
+//	cout << "binsize: " << xbins.size()  << "bin Ende Anfang: " << &xbins[0] << endl;
+
+	const Double_t xMin = -60.5;
+	const Double_t xMax = -10.5;
+	const Double_t yMin = -40.5;
+	const Double_t yMax = 40.5;
+
+    fHM->Create2<TH2D>("fh_rich_hits_xy","fh_rich_hits_xy;X [cm];Y [cm];Yield (a.u.)", 50, xMin, xMax, 80, yMin, yMax); 
+
+    fHM->Create2<TH2D>("fh_rich_points_xy", "fh_rich_points_xy;X [cm];Y [cm];Yield (a.u.)", 250, xMin, xMax, 250, yMin, yMax);    
 
     fHM->Create1<TH1D>("fh_hits_per_ring", "fh_hits_per_ring;Hits per Ring;Yield (a.u.)", 58, 2.5, 60.5);
 
@@ -148,7 +156,9 @@ void CbmRichMCbmQa::InitHistograms()
 
     fHM->Create2<TH2D>("fh_radius_momentum", "fh_radius_momentum; Momentum [GeV];Radius [cm]; Yield (a.u.)", 500 , 0., 5., 500 , 0. , 5.);
 
-    fHM->Create2<TH2D>("fh_ring_center_xy","fh_ring_center_xy;X [cm];Y [cm];Yield (a.u.)", 100, -5., 5., 100, -5., 5.);	
+    fHM->Create2<TH2D>("fh_ring_center_xy","fh_ring_center_xy;X [cm];Y [cm];Yield (a.u.)", 100, xMin, xMax, 100, yMin, yMax);	
+
+    fHM->Create2<TH2D>("fh_nonphoton_pmt_points_xy","fh_nonphoton_pmt_points_xy;X [cm]; Y [cm];Yield(a.u.)" , 250., xMin, xMax, 250, yMin, yMax);
 }
 
 
@@ -174,13 +184,18 @@ void CbmRichMCbmQa::Exec(
     
     for (int i = 0; i < nofRichHits; i++) {
         CbmRichHit* hit = static_cast<CbmRichHit*>(fRichHits->At(i));
+	if(hit == NULL) continue;
         fHM->H2("fh_rich_hits_xy")->Fill(hit->GetX(), hit->GetY());
+//	cout << "hit x coordinate: " << hit->GetX() << endl;
+//	cout << "hit y coordinate: " << hit->GetY() << endl;
     }
     
     for(int i = 0; i < nofRichPoints; i++) {
         CbmRichPoint* point= static_cast<CbmRichPoint*>(fRichPoints->At(i));
         if (point == NULL) continue;
         fHM->H2("fh_rich_points_xy")->Fill(point->GetX(), point->GetY());    
+//	cout << "point x coordinate: " << point->GetX() << endl;
+//	cout << "point y coordinate: " << point->GetY() << endl;
     }
 
   
@@ -302,7 +317,7 @@ void CbmRichMCbmQa::DrawEvent()
     stringstream ss;
     ss << "richsp_event_display_event_"<< fEventNum;
     TCanvas *c = fHM->CreateCanvas(ss.str().c_str(), ss.str().c_str(), 705, 800);
-    TH2D* pad = new TH2D("event_display_pad", ";X [cm];Y [cm]", 1, -12., 12., 1, -12., 12);
+    TH2D* pad = new TH2D("event_display_pad", ";X [cm];Y [cm]", 1, -60., -10., 1, -40., 40.);
     DrawH2(pad);
     pad->GetYaxis()->SetTitleOffset(0.9);
     gPad->SetLeftMargin(0.13);
