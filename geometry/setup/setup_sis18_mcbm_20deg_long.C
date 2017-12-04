@@ -6,6 +6,7 @@
  **
  **/
 
+// 2017-12-04 - DE - add mPSD to mCBM setup
 // 2017-11-22 - DE - use TRD v17n with 22 cm spacing from CAD
 // 2017-11-17 - DE - set aerogel mRICH v18d as default
 // 2017-11-10 - DE - switch to mMUCH v18e with Mv2 dimensions
@@ -38,6 +39,7 @@ void setup_sis18_mcbm_20deg_long()
   TString trdGeoTag       = "v18n_1e_mcbm"; // long, without mBUCH
   TString tofGeoTag       = "v18i_mcbm";    // long distance
   TString richGeoTag      = "v18d_mcbm";    // long distance
+  TString psdGeoTag       = "v18a_mcbm";    // below the beampipe
   // ------------------------------------------------------------------------
 
 
@@ -59,11 +61,12 @@ void setup_sis18_mcbm_20deg_long()
   setup->SetModule(kPlatform, platGeoTag);
   setup->SetModule(kPipe, pipeGeoTag);
   //  setup->SetModule(kMvd, mvdGeoTag);  // skip mvd in the initial setup
-  setup->SetModule(kSts, stsGeoTag);
+  setup->SetModule(kSts,  stsGeoTag);
   setup->SetModule(kMuch, muchGeoTag);
-  setup->SetModule(kTrd, trdGeoTag);
-  setup->SetModule(kTof, tofGeoTag);
+  setup->SetModule(kTrd,  trdGeoTag);
+  setup->SetModule(kTof,  tofGeoTag);
   setup->SetModule(kRich, richGeoTag);
+  setup->SetModule(kPsd,  psdGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
