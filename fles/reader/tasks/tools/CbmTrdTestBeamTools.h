@@ -458,7 +458,7 @@ class CbmTrdTestBeamTools: public TObject
 protected:
     /**
      * A precise position reconstruction algorithm for Clusters.
-     * To be used on consecutive groups of three clusters.
+     * To be used on consecutive groups of three pads.
      * Not in use at the moment due to the necessary filtering.
      * @params FirstCharge Charge on the first pad of the partial Cluster, must be larger than 0.0.
      * @params SecondCharge Charge on the central pad of the partial Cluster, must be larger than 0.0.
