@@ -6,6 +6,7 @@
  **
  **/
 
+// 2017-12-04 - DE - add mPSD to mCBM setup
 // 2017-11-03 - DE - add long setup, (acceptance matching +-12 degrees from mSTS)
 // 2017-11-02 - DE - add common support table v18c
 // 2017-11-02 - DE - include mBUCH with mTRD v18j
@@ -21,7 +22,7 @@
 
 
 
-void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 901101110)
+void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 901101111)
 {
    
   TString myName = "setup_sis18_mcbm_20deg_long_dev";  // this macro's name for screen output
@@ -39,7 +40,7 @@ void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 901101110)
   TString trdGeoTag       = "v18n_1e_mcbm"; // long, without mBUCH
   TString tofGeoTag       = "v18i_mcbm";    // long distance
   TString richGeoTag      = "v18d_mcbm";    // long distance
-  TString psdGeoTag       = "v18a_mcbm";    // not yet available
+  TString psdGeoTag       = "v18a_mcbm";    // below the beampipe
   // ------------------------------------------------------------------------
 
 
