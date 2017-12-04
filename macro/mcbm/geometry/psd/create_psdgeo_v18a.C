@@ -37,14 +37,14 @@ void create_psdgeo_v18a()
   // -----   Steering variables   ---------------------------------------------
   const char* geoTag = "v18a_mcbm";  // geometry tag
 
-  Double_t psdX       =  100.;  // x position of PSD in cave
-  Double_t psdY       = -100.;  // y position of PSD in cave
-  Double_t psdZ       =  200.;  // z position of PSD in cave (back side)
-  Double_t psdRotX    =  0.;    // Rotation of PSD around x axis [degrees]
-  Double_t psdRotY    =  0.; // 20.;    // Rotation of PSD around y axis [degrees]
-  Double_t moduleSize = 20.;    // Module size [cm]
-  Int_t    nModulesX  = 1; // 7;  // Number of modules in a row (x direction)
-  Int_t    nModulesY  = 1; // 7;  // Number of modules in a row (x direction)
+  Double_t psdX       =    0.;  // x position is automatically determined from psdRotY
+  Double_t psdY       = -155.;  // y position of PSD in cave
+  Double_t psdZ       =  160.;  // z position of PSD in cave (back side)
+  Double_t psdRotX    =    0.;  // Rotation of PSD around x axis [degrees]
+  Double_t psdRotY    =   20.;  // Rotation of PSD around y axis [degrees]
+  Double_t moduleSize =   20.;  // Module size [cm]
+  Int_t    nModulesX  = 1;      // Number of modules in a row (x direction)
+  Int_t    nModulesY  = 1;      // Number of modules in a row (x direction)
   // --------------------------------------------------------------------------
 
 
@@ -223,21 +223,24 @@ void create_psdgeo_v18a()
   //  psdRot->RotateY(psdRotY);
 
   // DEDE start
-  Double_t proto_angle;
   psdZ = psdZ + psdSizeZ;
+
+  // calculate mPSD x-position
+  psdX = psdZ * tan (psdRotY * acos(-1) / 180); 
+  cout << "psdX at " << psdRotY << " degree angle: x= " << psdX << " cm" << endl;
 
   // rotate around x axis
   psdRotX = atan( psdY / sqrt( psdX*psdX + psdZ*psdZ ) ) * 180 / acos(-1);
   psdRot->RotateX(-psdRotX);
 
-  cout << "angle x" << psdRotX << " deg" << endl;
+  cout << "angle around x: " << psdRotX << " deg" << endl;
   cout << "y " << psdY << " t " << sqrt( psdX*psdX + psdZ*psdZ ) << " cm" << endl;
 
   // rotate around y axis                                                                                   
-  psdRotY = atan( psdX / psdZ ) * 180 / acos(-1);
+  //  psdRotY = atan( psdX / psdZ ) * 180 / acos(-1);  // psdX is already calculated accordingly
   psdRot->RotateY(psdRotY);
 
-  cout << "angle y" << psdRotY << " deg" << endl;
+  cout << "angle around y: " << psdRotY << " deg" << endl;
   cout << "x " << psdX << " y " << psdY << " cm" << endl;
 
   cout << endl;
