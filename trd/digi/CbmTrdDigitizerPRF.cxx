@@ -640,7 +640,11 @@ void CbmTrdDigitizerPRF::ProcessBuffer(Int_t address,Double_t weighting){
   }
   charge.clear();
 
-  CbmMatch* digiMatch = analog.begin()->second;
+  // Copy match object. Will be deleted in the digi destructor.
+  // TODO: check if move of object is possible
+  CbmMatch* digiMatch = new CbmMatch(*analog.begin()->second);
+//  CbmMatch* digiMatch = analog.begin()->second;
+
   CbmTrdDigi* digi= new CbmTrdDigi(address, digicharge, fCurrentTime);
   digi->SetChargeTR(digiTRcharge);
   digi->SetMatch(digiMatch);
