@@ -42,11 +42,13 @@ Link_Directories(
 )
 
 Set(SRCS
+  unpacker/StsXyterRawMessage.cxx
   unpacker/StsXyterMessage.cxx
 
 #  unpacker/CbmCern2017UnpackerSts.cxx
 #  unpacker/CbmCern2017UnpackerMuch.cxx
 
+  unpacker/CbmCern2017MonitorRawSts.cxx
   unpacker/CbmCern2017MonitorSts.cxx
 #  unpacker/CbmCern2017MonitorMuch.cxx
 
