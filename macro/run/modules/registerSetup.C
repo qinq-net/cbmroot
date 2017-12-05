@@ -14,11 +14,6 @@ void registerSetup()
 	// --- Get the setup singleton. Check whether it was defined (has at
 	// --- least one module).
 	CbmSetup* setup = CbmSetup::Instance();
-	if ( ! setup->GetNofModules() ) {
-		std::cerr << "-E- registerSetup: setup " << setup->GetTitle()
-				      << " is empty!" << std::endl;
-		return;
-	}
 
 	// --- Get the FairRunSim instance
 	FairRunSim* run = FairRunSim::Instance();

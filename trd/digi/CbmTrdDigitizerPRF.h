@@ -71,7 +71,7 @@ class CbmTrdDigitizerPRF : public FairTask {
   void ProcessBuffer(Int_t address,Double_t weighting);
   Double_t AddNoise(Double_t charge);
   Double_t CheckTime(Int_t address);
-  Double_t NoiseTime();
+  void NoiseTime();
   Double_t AddDrifttime(Double_t x);
 
   void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);

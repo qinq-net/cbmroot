@@ -459,11 +459,14 @@ void CbmTrdDigitizerPRF::AddDigitoBuffer(Int_t pointId, Int_t address, Double_t 
 void CbmTrdDigitizerPRF::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
 				      Double_t& eventTime)
 {
+
+  // --- The event number is taken from the FairRootManager
+  eventNr = FairRootManager::Instance()->GetEntryNr();
+
   // --- In a FairRunAna, take the information from FairEventHeader
   if ( FairRunAna::Instance() ) {
     FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
     inputNr   = event->GetInputFileId();
-    eventNr   = event->GetMCEntryNumber();
     eventTime = event->GetEventTime();
   }
 
@@ -473,9 +476,7 @@ void CbmTrdDigitizerPRF::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
     if ( ! FairRunSim::Instance() )
       LOG(FATAL) << GetName() << ": neither SIM nor ANA run." 
 		 << FairLogger::endl;
-    FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
     inputNr   = 0;
-    eventNr   = event->GetEventID();
     eventTime = 0.;
   }
 }
@@ -677,7 +678,7 @@ Double_t CbmTrdDigitizerPRF::CheckTime(Int_t address){
 }
 
 
-Double_t CbmTrdDigitizerPRF::NoiseTime(){
+void CbmTrdDigitizerPRF::NoiseTime(){
 
   Double_t dEventTime=fEventTime-fLastEventTime;
   fCurrentTime=fNoise->Uniform(fLastEventTime,fEventTime);
