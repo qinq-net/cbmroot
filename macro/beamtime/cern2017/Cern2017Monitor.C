@@ -53,9 +53,14 @@ void Cern2017Monitor(TString inFile = "")
   std::cout << ">>> Cern2017Monitor: Initialising..." << std::endl;
 
   // Sts Monitor
+//  CbmCern2017MonitorRawSts* monitorSts = new CbmCern2017MonitorRawSts();
   CbmCern2017MonitorSts* monitorSts = new CbmCern2017MonitorSts();
 //  monitorSts->SetPrintMessage();
   monitorSts->EnableChanHitDtPlot();
+  monitorSts->SetPulserChannels( 2, 91, 2, 95,
+                                 3, 27, 3, 31 );
+  monitorSts->SetLongDurationLimits( 600, 10 );
+  monitorSts->SetBetaFormatMode();
 
   // --- Source task
   CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
@@ -100,6 +105,8 @@ void Cern2017Monitor(TString inFile = "")
   timer.Stop();
 
   std::cout << "Processed " << std::dec << source->GetTsCount() << " timeslices" << std::endl;
+
+  run->Finish();
 
   // --- End-of-run info
   Double_t rtime = timer.RealTime();
