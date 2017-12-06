@@ -11,6 +11,7 @@
 #include "CbmPsdMC.h"
 
 #include <cassert>
+#include <string>
 #include "TGeoManager.h"
 #include "TKey.h"
 #include "TVirtualMC.h"
@@ -69,48 +70,59 @@ void CbmPsdMC::ConstructGeometry() {
     return;
   }
 
-  // --- Import PSD volume
-  TGeoVolume* psd = TGeoVolume::Import(fgeoName);
-  if ( ! psd ) {
-    LOG(FATAL) << GetName() << ": No TGeoVolume found in " << fgeoName
-        << FairLogger::endl;
-    return;
-  }
-  if ( ! TString(psd->GetName()).BeginsWith("psd", TString::kIgnoreCase)) {
-    LOG(FATAL) << GetName() << ": Volume " << psd->GetName() << " in "
-        << fgeoName << " is not a PSD volume!" << FairLogger::endl;
-    return;
-  }
-  LOG(DEBUG) << GetName() << ": Found PSD volume " << psd->GetName()
-      << FairLogger::endl;
-
-  // Import the transformation matrix
-  TGeoMatrix* transformation = nullptr;
+  // --- Look for PSD volume and transformation matrix in geometry file
   TFile* geoFile = new TFile(fgeoName);
   assert ( geoFile );
   TKey* key = nullptr;
   TIter keyIter(geoFile->GetListOfKeys());
+  Bool_t foundVolume = kFALSE;
+  Bool_t foundMatrix = kFALSE;
+  std::string volumeName = "";
+  TGeoMatrix* transformation = nullptr;
+
   while ( (key = (TKey*)keyIter() ) ) {
+
+    if ( key->ReadObj()->InheritsFrom("TGeoVolume") ) {
+      if ( foundVolume) {
+        LOG(FATAL) << GetName() << ": More than one TGeoVolume in file! "
+            << volumeName << " " << key->GetName() << FairLogger::endl;
+        break;
+      } //? already found a volume
+      volumeName = key->GetName();
+      foundVolume = kTRUE;
+      continue;
+    } //? key inherits from TGeoVolume
+
     if ( key->ReadObj()->InheritsFrom("TGeoMatrix") ) {
+      if ( foundMatrix ) {
+        LOG(FATAL) << GetName() << ": More than one TGeoMatrix in file! "
+            << FairLogger::endl;
+        break;
+      } //? already found a matrix
       transformation = dynamic_cast<TGeoMatrix*>(key->ReadObj());
-      break;
-    }
-  }
-  if ( ! transformation ) {
-    LOG(FATAL) << GetName() << ": No transformation matrix found in "
-              << fgeoName << FairLogger::endl;
-    return;
-  }
+      foundMatrix = kTRUE;
+      continue;
+    } //? key inherits from TGeoMatrix
+
+  } //# keys in file
+
+  if ( ! foundVolume ) LOG(FATAL) << GetName() << ": No TGeoVolume in file "
+      << fgeoName << FairLogger::endl;
+  if ( ! foundMatrix ) LOG(FATAL) << GetName() << ": No TGeoMatrix in file "
+      << fgeoName << FairLogger::endl;
+
+  // --- Import PSD volume
+  TGeoVolume* psdVolume = TGeoVolume::Import(fgeoName, volumeName.c_str());
 
   // Add PSD to the geometry
-  gGeoManager->GetTopVolume()->AddNode(psd, 0, transformation);
+  gGeoManager->GetTopVolume()->AddNode(psdVolume, 0, transformation);
   if ( gLogger->IsLogNeeded(DEBUG) ) {
-    psd->Print();
+    psdVolume->Print();
     transformation->Print();
   }
 
   // Register all sensitive volumes
-  RegisterSensitiveVolumes(psd->GetNode(0));
+  RegisterSensitiveVolumes(psdVolume->GetNode(0));
   LOG(DEBUG) << GetName() << ": " << fNbOfSensitiveVol
       << " sensitive volumes" << FairLogger::endl;
 
