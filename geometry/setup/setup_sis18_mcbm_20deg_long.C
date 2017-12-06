@@ -39,7 +39,7 @@ void setup_sis18_mcbm_20deg_long()
   TString trdGeoTag       = "v18n_mcbm";    // long, without mBUCH
   TString tofGeoTag       = "v18i_mcbm";    // long distance
   TString richGeoTag      = "v18d_mcbm";    // long distance
-  TString psdGeoTag       = "v18a_mcbm";    // below the beampipe
+  TString psdGeoTag       = "v18c_mcbm";    // below the beampipe
   // ------------------------------------------------------------------------
 
 
