@@ -102,7 +102,7 @@ protected:
     Int_t fAdcOffset;
     Int_t fAdcBits;
     Int_t fAdcSteps;
-    Int_t fAdress;
+    Int_t fAddress;
     Float_t fAdcStepSize;
 
     TClonesArray* fDigis;

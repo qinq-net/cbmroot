@@ -479,7 +479,7 @@ if(nPlugin <= maxPlugin)
   if(plugin->PluginReady()) 
     {
     //cout << endl << "exec chain on sensor "<< this->GetName() << endl;
-    for(Int_t i=nPlugin+1; i<maxPlugin; i++)
+    for(UInt_t i=nPlugin+1; i<maxPlugin; i++)
       {
 	//cout << endl << "exec plugin " << i << " on sensor "<< this->GetName() << endl;
 	plugin=(CbmMvdSensorPlugin*)fPluginArray->At(i);

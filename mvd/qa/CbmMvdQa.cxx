@@ -596,7 +596,7 @@ for(Int_t i = 0; i < nrDigis; i ++)
 void CbmMvdQa::ExecHitQa()
 {
     Int_t nrHits = fMvdHits->GetEntriesFast();
-    Int_t nrDigis = fMvdDigis->GetEntriesFast();
+   // Int_t nrDigis = fMvdDigis->GetEntriesFast();
 
     Int_t DigisPerHit[nrHits];
 
@@ -678,7 +678,7 @@ for ( Int_t itr=0; itr<nGlobalTracks; itr++ )
         glQP =  stsTrack->GetParamFirst()->GetQp();
 	glP = fabs( 1 / glQP);
 	mcP = mcTrack->GetP();
-	GetFirstMCPos(mcMatchId, stsTrack, mcPosFirst);
+	GetFirstMCPos(stsTrack, mcPosFirst);
         GetFirstMvdHitPos(stsTrack, hitFirst);
 
 	trueOverAll = trackMatch->GetTrueOverAllHitsRatio();
@@ -876,7 +876,6 @@ Bool_t CbmMvdQa::HasHitFirstTrue(Int_t MCtrackID, CbmStsTrack* stsTrack)
 Int_t nrOfMvdHits = stsTrack->GetNofMvdHits();
 Int_t nrOfLinks = 0;
 Int_t mcTrackId = 0;
-Int_t mcPointId = 0;
 const CbmMvdPoint* point = NULL;
 for(Int_t iHit = 0; iHit < nrOfMvdHits; iHit++)	
 	{
@@ -912,11 +911,10 @@ return kFALSE;
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmMvdQa::GetFirstMCPos(Int_t MCtrackID, CbmStsTrack* stsTrack, Float_t* pos)
+void CbmMvdQa::GetFirstMCPos(CbmStsTrack* stsTrack, Float_t* pos)
 {
 Int_t nrOfMvdHits = stsTrack->GetNofMvdHits();
 Int_t nrOfLinks = 0;
-Int_t mcPointId = 0;
 const CbmMvdPoint* point = NULL;
 for(Int_t iHit = 0; iHit < nrOfMvdHits; iHit++)	
 	{
@@ -957,11 +955,9 @@ void  CbmMvdQa::SetMatches(Int_t MCtrackID, CbmStsTrack* stsTrack){
 
 Int_t nrOfMvdHits = stsTrack->GetNofMvdHits();
 Int_t mcTrackId = 0;
-Int_t trueCounter = 0;
 Float_t falseCounter = 0;
 Bool_t hasTrack;
 Int_t nrOfLinks = 0;
-Int_t mcPointId = 0;
 fMvdRecoRatio = 0.;
 const CbmMvdPoint* point = NULL;
 for(Int_t iHit = 0; iHit < nrOfMvdHits; iHit++)	
@@ -1063,22 +1059,28 @@ void CbmMvdQa::FinishHitQa()
 //    fHits1F[0]->Draw();
 
     TCanvas* hitCanvas1b = new TCanvas();
+    hitCanvas1b->cd();
     fHits1F[1]->Draw();
 
     TCanvas* hitCanvas1c = new TCanvas();
+    hitCanvas1c->cd();
     fHits1F[2]->Draw();
 
     TCanvas* hitCanvas1d = new TCanvas();
+    hitCanvas1d->cd();
     fHits1F[3]->Draw("COL");
 
     TCanvas* hitCanvas1e = new TCanvas();
+    hitCanvas1e->cd();
     fHits1F[4]->Draw();
 
     TCanvas* hitCanvas1f = new TCanvas();
+    hitCanvas1f->cd();
     fHits1F[5]->Draw();
 
 
     TCanvas* hitCanvas2a = new TCanvas();
+    hitCanvas2a->cd();
     fHits2F[0]->Draw("COL");
 
     }

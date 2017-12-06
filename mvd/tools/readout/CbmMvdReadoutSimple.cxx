@@ -162,7 +162,7 @@ void CbmMvdReadoutSimple::SetupHistograms()
 
 
 // -------------------------------------------------------------------------
-void CbmMvdReadoutSimple::Exec(Option_t* opt)
+void CbmMvdReadoutSimple::Exec(Option_t* /*opt*/)
 {
     fEventNumber++;
 

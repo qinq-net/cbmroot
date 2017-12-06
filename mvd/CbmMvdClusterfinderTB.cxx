@@ -81,7 +81,6 @@ for(Int_t iEv = 0; iEv < nEvents; ++iEv)
 {
     LOG(DEBUG) << "Getting data from CbmEvent" <<  FairLogger:: endl;
     CbmEvent* event = dynamic_cast<CbmEvent*>(fEvents->At(iEv));
-    Int_t eventNr = event->GetNumber();
     Int_t nrOfDigis = event->GetNofData(kMvdDigi);
     fEventDigis->Delete();
     for(Int_t nDigi = 0; nDigi < nrOfDigis; ++nDigi)

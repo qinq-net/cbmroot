@@ -52,7 +52,6 @@ class CbmMvdSensorDigitizerTBTask : public CbmMvdSensorTask
 
   /** Default constructor **/
   CbmMvdSensorDigitizerTBTask();
-  CbmMvdSensorDigitizerTBTask(Int_t iMode);
 
   /** Destructor **/
   virtual ~CbmMvdSensorDigitizerTBTask();

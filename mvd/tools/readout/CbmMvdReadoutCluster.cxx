@@ -84,7 +84,7 @@ void CbmMvdReadoutCluster::SetupHistograms()
 
 
 // -------------------------------------------------------------------------
-void CbmMvdReadoutCluster::Exec(Option_t* opt)
+void CbmMvdReadoutCluster::Exec(Option_t* /*opt*/)
 {
     LOG(DEBUG) << "//--------------- New Event " << fEventNumber << " -----------------------\\" << FairLogger::endl;
 
@@ -97,10 +97,10 @@ for(Int_t nClusters = 0; nClusters < fMvdCluster->GetEntriesFast(); ++nClusters)
        for(auto cntr = pixelMap.begin(); cntr != pixelMap.end(); ++cntr)
        {
 	   Int_t xPix = cntr->first.first; 
-	   Int_t yPix = cntr->first.second;
-	   Int_t regionNr = (Int_t) (cntr->first.first / fPixelsPerRegion);
+	  // Int_t yPix = cntr->first.second;
+	   Int_t regionNr = (Int_t) (xPix / fPixelsPerRegion);
 	   fWordsPerRegion[sensorNr]->Fill(regionNr);
-	   Int_t superRegionNr = (Int_t)(cntr->first.first / fPixelsPerSuperRegion);
+	   Int_t superRegionNr = (Int_t)(xPix / fPixelsPerSuperRegion);
            fWordsPerSuperRegion[sensorNr]->Fill(superRegionNr);
        }
 

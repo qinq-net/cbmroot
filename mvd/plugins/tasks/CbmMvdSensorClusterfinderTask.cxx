@@ -15,55 +15,7 @@ using std::vector;
 
 // -----   Default constructor   -------------------------------------------
 CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask() 
-  : CbmMvdSensorTask(),
-    fAdcDynamic(200),
-    fAdcOffset(0),
-    fAdcBits(1),
-    fAdcSteps(-1),
-    fAdcStepSize(-1.),
-    fDigis(NULL),
-    fPixelChargeHistos(NULL),
-    fTotalChargeInNpixelsArray(NULL),
-    fResolutionHistoX(NULL),
-    fResolutionHistoY(NULL),
-    fResolutionHistoCleanX(NULL),
-    fResolutionHistoCleanY(NULL),
-    fResolutionHistoMergedX(NULL),
-    fResolutionHistoMergedY(NULL),
-    fBadHitHisto(NULL),
-    fGausArray(NULL),
-    fGausArrayIt(-1),
-    fGausArrayLimit(5000),  
-    fDigiMap(),
-    fDigiMapIt(),
-    h(NULL),
-    h3(NULL),
-    h1(NULL),
-    h2(NULL),
-    Qseed(NULL),
-    fFullClusterHisto(NULL),
-    c1(NULL),
-    fNEvent(0),
-    fMode(0),
-    fCounter(0),
-    fVerbose(0),
-    fSigmaNoise(15.),
-    fSeedThreshold(1.),
-    fNeighThreshold(1.),
-    fUseMCInfo(kFALSE),
-    inputSet(kFALSE),
-    ftempPixelMap(),
-    fLayerRadius(0.),
-    fLayerRadiusInner(0.),
-    fLayerPosZ(0.),
-    fHitPosX(0.),
-    fHitPosY(0.),
-    fHitPosZ(0.),
-    fHitPosErrX(0.0005),
-    fHitPosErrY(0.0005),
-    fHitPosErrZ(0.0),
-    fBranchName("MvdHit"),
-    fAddNoise(kFALSE)
+  : CbmMvdSensorClusterfinderTask(0,0)
 {
 }
 // -------------------------------------------------------------------------
@@ -83,6 +35,7 @@ CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask(Int_t iMode, Int_t 
     fAdcBits(1),
     fAdcSteps(-1),
     fAdcStepSize(-1.),
+    fAddress(0),
     fDigis(NULL),
     fPixelChargeHistos(NULL),
     fTotalChargeInNpixelsArray(NULL),
@@ -130,9 +83,6 @@ CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask(Int_t iMode, Int_t 
 }
 // -------------------------------------------------------------------------
 
-
-
-
 // -----    Virtual private method Init   ----------------------------------
 void CbmMvdSensorClusterfinderTask::InitTask(CbmMvdSensor* mysensor) {
 
@@ -151,7 +101,7 @@ void CbmMvdSensorClusterfinderTask::InitTask(CbmMvdSensor* mysensor) {
     fAdcSteps= (Int_t)TMath::Power(2,fAdcBits);
     fAdcStepSize  = fAdcDynamic/fAdcSteps;
 
-    fAdress = 1000*fSensor->GetStationNr() + fSensor->GetSensorNr();
+    fAddress = 1000*fSensor->GetStationNr() + fSensor->GetSensorNr();
 
 initialized = kTRUE;
 
@@ -334,7 +284,7 @@ Int_t refId;
 			Int_t nClusters = fOutputBuffer->GetEntriesFast();
 			//cout << endl << "new cluster: " << nClusters << endl;
 			CbmMvdCluster* clusterNew=new ((*fOutputBuffer)[nClusters]) CbmMvdCluster();
-	 		clusterNew->SetAddress(fAdress);
+	 		clusterNew->SetAddress(fAddress);
 
 			for(i=0;i<clusterSize;i++)
 			{

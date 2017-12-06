@@ -158,7 +158,7 @@ private:
   Bool_t HasHitFirstMvd(CbmStsTrack* stsTrack);
   Bool_t HasHitFirstTrue(Int_t MCtrackID, CbmStsTrack* stsTrack);
 
-  void GetFirstMCPos(Int_t MCtrackID, CbmStsTrack* stsTrack, Float_t* pos);
+  void GetFirstMCPos(CbmStsTrack* stsTrack, Float_t* pos);
   void GetFirstMvdHitPos(CbmStsTrack* stsTrack, Float_t* hitPos);
 
 

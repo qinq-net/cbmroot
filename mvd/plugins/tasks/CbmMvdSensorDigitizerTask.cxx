@@ -753,10 +753,10 @@ void CbmMvdSensorDigitizerTask::ProducePixelCharge(CbmMvdPoint* point) {
     sigmaX  = sPoint->sigmaX;
     sigmaY  = sPoint->sigmaY;
         
-    xLo = sPoint->x - fWidthOfCluster*sPoint->sigmaX;
-    xUp = sPoint->x + fWidthOfCluster*sPoint->sigmaX;
-    yLo = sPoint->y - fWidthOfCluster*sPoint->sigmaY;
-    yUp = sPoint->y + fWidthOfCluster*sPoint->sigmaY;
+    xLo = sPoint->x - fWidthOfCluster*sigmaX;
+    xUp = sPoint->x + fWidthOfCluster*sigmaX;
+    yLo = sPoint->y - fWidthOfCluster*sigmaY;
+    yUp = sPoint->y + fWidthOfCluster*sigmaY;
 
     if (fNumberOfSegments<2){Fatal("-E- CbmMvdDigitizer: ","fNumberOfSegments < 2, this makes no sense, check parameters.");}
 
@@ -793,10 +793,10 @@ void CbmMvdSensorDigitizerTask::ProducePixelCharge(CbmMvdPoint* point) {
     	sigmaX  = sPoint->sigmaX;
     	sigmaY  = sPoint->sigmaY;
 	
-	minCoord[0] = sPoint->x - fWidthOfCluster*sPoint->sigmaX;
-	minCoord[1] = sPoint->y - fWidthOfCluster*sPoint->sigmaY;
-        maxCoord[0] = sPoint->x + fWidthOfCluster*sPoint->sigmaX;
-	maxCoord[1] = sPoint->y + fWidthOfCluster*sPoint->sigmaY;
+	minCoord[0] = sPoint->x - fWidthOfCluster*sigmaX;
+	minCoord[1] = sPoint->y - fWidthOfCluster*sigmaY;
+        maxCoord[0] = sPoint->x + fWidthOfCluster*sigmaX;
+	maxCoord[1] = sPoint->y + fWidthOfCluster*sigmaY;
   
 	
 	fSensor->LocalToPixel(minCoord, lowerXArray[i], lowerYArray[i]);
