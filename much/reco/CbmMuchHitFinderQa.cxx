@@ -50,11 +50,11 @@ CbmMuchHitFinderQa::CbmMuchHitFinderQa(const char* name, Int_t verbose)
     fGeoScheme( CbmMuchGeoScheme::Instance()),
     fGeoFileName("much.digi.root"),
     fFileName("performance.root"),
-    fFlag(0),
     fSignalPoints(0),
     fSignalHits(0),
     fVerbose(verbose),
     fEvent(0),
+    fFlag(0),
     fPoints(NULL),
     fDigis(NULL),
     fDigiMatches(NULL),
@@ -485,7 +485,8 @@ void CbmMuchHitFinderQa::FinishTask(){
     if (fPrintToFileOn) gPad->Print(".eps");
     c4->cd();
 
-    TCanvas* c_alone = new TCanvas("c_alone","Pulls",400,400);
+//    TCanvas* c_alone = new TCanvas("c_alone","Pulls",400,400);
+    new TCanvas("c_alone","Pulls",400,400);
     fhPullX->Draw();
     gPad->Print(".gif");
 //
@@ -589,15 +590,18 @@ void CbmMuchHitFinderQa::FinishTask(){
     }
     c3->cd();
     
-    TCanvas* oc_1 = new TCanvas("oc_1","",1200,1000);
+//    TCanvas* oc_1 = new TCanvas("oc_1","",1200,1000);
+    new TCanvas("oc_1","",1200,1000);
     fhOccupancyR[0]->GetYaxis()->SetTitleOffset(1.6);
     fhOccupancyR[0]->Draw();
     if (fPrintToFileOn) gPad->Print(".gif");
-    TCanvas* oc_2 = new TCanvas("oc_2","",1200,1000);
+//    TCanvas* oc_2 = new TCanvas("oc_2","",1200,1000);
+    new TCanvas("oc_2","",1200,1000);
     fhOccupancyR[1]->GetYaxis()->SetTitleOffset(1.6);
     fhOccupancyR[1]->Draw();
     if (fPrintToFileOn) gPad->Print(".gif");
-    TCanvas* oc_3 = new TCanvas("oc_3","",1200,1000);
+//    TCanvas* oc_3 = new TCanvas("oc_3","",1200,1000);
+    new TCanvas("oc_3","",1200,1000);
     fhOccupancyR[2]->GetYaxis()->SetTitleOffset(1.6);
     fhOccupancyR[2]->Draw();
     if (fPrintToFileOn) gPad->Print(".gif");
@@ -654,7 +658,8 @@ void CbmMuchHitFinderQa::FinishTask(){
       if (fPrintToFileOn) gPad->Print(".eps");
     }
     
-    TCanvas* ch_1 = new TCanvas("ch_1","",1200,1000);
+//    TCanvas* ch_1 = new TCanvas("ch_1","",1200,1000);
+    new TCanvas("ch_1","",1200,1000);
     gPad->SetBottomMargin(0.11);
     gPad->SetRightMargin(0.14);
     gPad->SetLeftMargin(0.12);
@@ -664,7 +669,8 @@ void CbmMuchHitFinderQa::FinishTask(){
     fit_el->Draw("same");
     if (fPrintToFileOn) gPad->Print(".gif");
     
-    TCanvas* ch_2 = new TCanvas("ch_2","",1200,1000);
+//    TCanvas* ch_2 = new TCanvas("ch_2","",1200,1000);
+    new TCanvas("ch_2","",1200,1000);
     gPad->SetBottomMargin(0.11);
     gPad->SetRightMargin(0.14);
     gPad->SetLeftMargin(0.12);
@@ -674,7 +680,8 @@ void CbmMuchHitFinderQa::FinishTask(){
     fit_pi->Draw("same");
     if (fPrintToFileOn) gPad->Print(".gif");
 
-    TCanvas* ch_3 = new TCanvas("ch_3","",1200,1000);
+//    TCanvas* ch_3 = new TCanvas("ch_3","",1200,1000);
+    new TCanvas("ch_3","",1200,1000);
     gPad->SetBottomMargin(0.11);
     gPad->SetRightMargin(0.14);
     gPad->SetLeftMargin(0.12);
@@ -730,7 +737,7 @@ void CbmMuchHitFinderQa::FinishTask(){
       //printf("%f %f\n",s[iS],nMean[iS]);
     }
     c8->cd(2);
-    TGraph* gNvsS = new TGraph(11,s,nMean);
+//    TGraph* gNvsS = new TGraph(11,s,nMean);
     //gNvsS->DrawClone();
 
 

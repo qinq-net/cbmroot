@@ -150,7 +150,8 @@ Bool_t CheckIfSensitive(std::string name);
   Bool_t         kGeoSaved;          //!
   TList *flGeoPar; //!
   CbmGeoMuchPar* fPar;               //!  parameter container
- std::string fVolumeName;
+  std::string fVolumeName;
+  TGeoCombiTrans*   fCombiTrans;
 //TClonesArray* fMuchPoints;
 
   //TGeoCombiTrans*   fCombiTrans;
@@ -173,13 +174,13 @@ Bool_t IsNewGeometryFile(TString filename);
   void ResetParameters();
 // virtual void        ConstructRootGeometry();
   Int_t GetDetId(FairVolume* vol);
-private:
+
   Int_t Intersect(Float_t x, Float_t y, Float_t lx, Float_t ly, Float_t r);
   TGeoMedium* CreateMedium(const char* matName);
 
   CbmMuch(const CbmMuch&);
   CbmMuch& operator=(const CbmMuch&);
-TGeoCombiTrans*   fCombiTrans;
+
   ClassDef(CbmMuch,1);
 
 };

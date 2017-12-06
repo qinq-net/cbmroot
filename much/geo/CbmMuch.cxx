@@ -73,10 +73,10 @@ CbmMuch::CbmMuch()
   fPosIndex(0),
   fMuchCollection(new TClonesArray("CbmMuchPoint")),
   kGeoSaved(kFALSE),
-  fCombiTrans(),
   flGeoPar(new TList()),
   fPar(NULL),
-  fVolumeName("")
+  fVolumeName(""),
+  fCombiTrans()
 {
   ResetParameters();
   flGeoPar->SetName( GetName());
@@ -102,11 +102,11 @@ CbmMuch::CbmMuch(const char* name, Bool_t active)
     fELoss(0.),
     fPosIndex(0),
     fMuchCollection(new TClonesArray("CbmMuchPoint")),
-    fCombiTrans(),
     kGeoSaved(kFALSE),
     flGeoPar(new TList()),    
     fPar(NULL),
-  fVolumeName("")
+    fVolumeName(""),
+    fCombiTrans()
 {
   
   ResetParameters();
@@ -323,8 +323,8 @@ void CbmMuch::ConstructRootGeometry()
   FairGeoLoader*    geoLoad = FairGeoLoader::Instance();
   FairGeoInterface* geoFace = geoLoad->getGeoInterface();
   geoFace->addGeoModule(new CbmGeoMuch());
-  FairGeoMedia*     media    = geoFace->getMedia();
-  FairGeoBuilder*   geobuild = geoLoad->getGeoBuilder();
+//  FairGeoMedia*     media    = geoFace->getMedia();
+//  FairGeoBuilder*   geobuild = geoLoad->getGeoBuilder();
   
   FairRun*        fRun = FairRun::Instance();
   if (!fRun) {Fatal("CreateGeometry","No FairRun found"); return;}
@@ -347,7 +347,7 @@ void CbmMuch::ConstructRootGeometry()
   TGeoMedium* polyethylene = CreateMedium("MUCHpolyethylene");
   */
 
-  Double_t* buf = NULL;
+//  Double_t* buf = NULL;
 
   //-------------------------------------------------------
   

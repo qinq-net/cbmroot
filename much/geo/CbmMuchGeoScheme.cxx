@@ -606,7 +606,7 @@ else fSupportLz[iStation]=2.0*GetSizeZ(Supportlayer3Path);
     muchLy = muchSt->GetLayer(0);
     Double_t supDx  = muchLy->GetSupportDx();
     Double_t supDy  = muchLy->GetSupportDy();
-    Double_t supDz  = muchLy->GetSupportDz();
+//    Double_t supDz  = muchLy->GetSupportDz();
     muchSt->SetTubeRmin(muchSt->GetRmin());
     muchSt->SetTubeRmax(TMath::Sqrt(supDx*supDx+supDy*supDy)+10);
     //cout<<" fill fStations array "<<iStation<<" z cent "<<fStationZ0[iStation]<<endl;
@@ -654,7 +654,7 @@ void CbmMuchGeoScheme::ModuleNode(TGeoNode* layerNode, Int_t iStation, Int_t iLa
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void CbmMuchGeoScheme::ActiveModuleNode(TGeoNode* moduleNode, Int_t iStation, Int_t iLayer, Int_t iModule, TString modulePath){
+void CbmMuchGeoScheme::ActiveModuleNode(TGeoNode* moduleNode, Int_t iStation, Int_t iLayer, Int_t /*iModule*/, TString modulePath){
 
   TString modName = moduleNode->GetName();
 
@@ -685,7 +685,7 @@ Double_t sideDz = fSupportLz[iStation]/2. + fActiveLzSector/2.;
     gGeoManager->cd(modulePath.Data());
     //   TGeoNode* moduleNode = gGeoManager->GetMother(0);
     moduleNode = gGeoManager->GetMother(0);
-    Int_t nModule=moduleNode->GetNumber();
+//    Int_t nModule=moduleNode->GetNumber();
 
     Bool_t iSide;
     if(modName.Contains("factive")) iSide = 0;
@@ -703,11 +703,11 @@ Double_t sideDz = fSupportLz[iStation]/2. + fActiveLzSector/2.;
     cout<<" positions  "<<pos[0]<<"  "<<pos[1]<<"  "<<pos[2]<<" phi "<<Phi<<endl;
 
     // Is this formula correct? Check Omveer (PPB 16.11.2017)
-    Double_t yMin = (pos[1]/TMath::Cos(Phi))-Dy;
-    Double_t yMax = 2*Dy + yMin;
+//    Double_t yMin = (pos[1]/TMath::Cos(Phi))-Dy;
+//    Double_t yMax = 2*Dy + yMin;
    // Double_t Rmin = yMin-2.0; // Spacer width[cm] = 2.0
     // Why is R0 required?
-    Double_t R0 = yMax-Dy;
+//    Double_t R0 = yMax-Dy;
    // Double_t Rmax = yMax;
 
 

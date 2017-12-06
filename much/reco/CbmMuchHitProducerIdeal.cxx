@@ -27,8 +27,8 @@ CbmMuchHitProducerIdeal::CbmMuchHitProducerIdeal(const char* digiFileName, Int_t
   fSigmaX(0.01),
   fSigmaY(0.01),
   fSigmaZ(0.),
-  fDigiFile(digiFileName),
   fId(Id),
+  fDigiFile(digiFileName),
   fGeoScheme(NULL)
 {
 }
