@@ -28,9 +28,9 @@ CbmPsdMC::CbmPsdMC(Bool_t active, const char* name)
     fPosZ(0.),
     fRotY(0.),
     fUserPlacement(kFALSE),
+    fPsdPoints(new TClonesArray("CbmPsdPoint")),
     fTrackID(-3),       
     fAddress(-3),
-    fPsdPoints(new TClonesArray("CbmPsdPoint")),
     fPos(),           
     fMom(),        
     fTime(-1.),         
@@ -182,7 +182,8 @@ Bool_t CbmPsdMC::ProcessHits(FairVolume*) {
     
     // Create CbmPsdPoint
     Int_t size = fPsdPoints->GetEntriesFast();
-    CbmPsdPoint* point = new((*fPsdPoints)[size]) CbmPsdPoint(fTrackID,
+//    CbmPsdPoint* point = new((*fPsdPoints)[size]) CbmPsdPoint(fTrackID,
+    new((*fPsdPoints)[size]) CbmPsdPoint(fTrackID,
                                                               fAddress,
                                                               fPos.Vect(),
                                                               fMom.Vect(),

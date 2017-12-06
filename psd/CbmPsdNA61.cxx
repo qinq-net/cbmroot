@@ -179,7 +179,8 @@ void CbmPsdNA61::CreateMaterial() {
     matSIL->SetUniqueID(  20);
     TGeoMaterial *matHE = new TGeoMaterial("HE_GAS",4,2,0.1780000E-03);
     matHE->SetUniqueID(  24);
-    TGeoMaterial *matAl = new TGeoMaterial("Al", 26.98,13,2.7);
+//    TGeoMaterial *matAl = new TGeoMaterial("Al", 26.98,13,2.7);
+    new TGeoMaterial("Al", 26.98,13,2.7);
     
     TGeoMixture *matPLASTIC = new TGeoMixture("PLASTIC",2,   1.03200    );
     matPLASTIC->SetUniqueID(  25);
@@ -213,7 +214,7 @@ void CbmPsdNA61::CreateModule (TGeoVolume *module, Float_t half_modul_size_x,  F
     TGeoMaterial *matAl = new TGeoMaterial("Al", 26.98,13,2.7);    
     TGeoMedium *medAl = new TGeoMedium("Al", 3, matAl);
 
-    Float_t *buf = 0;
+//    Float_t *buf = 0;
 
     Float_t tyvec_thick = 0.02;
     Float_t iron_thick_x = 0.1;
@@ -415,7 +416,7 @@ void CbmPsdNA61::ConstructGeometry() {
    
     //NA61 geometry
     Float_t xi[100], yi[100];
-    Int_t iMod=0, iModNoHole=0;
+    Int_t iMod=0; //, iModNoHole=0;
     ofstream fxypos(fGeoFile);
 //     ofstream fxypos("psd_geo_xy_test.txt");   
 
@@ -459,7 +460,8 @@ void CbmPsdNA61::ConstructGeometry() {
     
     }
     gGeoManager->Node("module_45", iMod+1, "PSD", 0, 0, -(25.98-1.6)/2-0.5-half_modul_size_z, 0, kTRUE, buf, 0); 
-    TGeoVolume *al_support = gGeoManager->MakeBox("al_support",medAl,  7.5, 1.25, 13. );
+//    TGeoVolume *al_support = gGeoManager->MakeBox("al_support",medAl,  7.5, 1.25, 13. );
+    gGeoManager->MakeBox("al_support",medAl,  7.5, 1.25, 13. );
     gGeoManager->Node("al_support", iMod+2, "PSD", 0, -5.-1.25/2, -13-0.5-half_modul_size_z, 0, kTRUE, buf, 0); 
     
     fxypos << 0.0 << " " << 0.0 << endl;

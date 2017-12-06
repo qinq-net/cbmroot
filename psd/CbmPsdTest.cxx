@@ -33,10 +33,10 @@ CbmPsdTest::CbmPsdTest()
   fPosIndex(0),
   fPsdCollection(new TClonesArray("CbmPsdPoint")),
   fXshift(0.),
-  fHoleSize(10.),
   fZposition(0.),
   fRotYAngle(0.),
-  fGeoFile("")
+  fGeoFile(""),
+  fHoleSize(10.)
 {
 }
 // -------------------------------------------------------------------------
@@ -57,10 +57,10 @@ CbmPsdTest::CbmPsdTest(const char* name, Bool_t active)
   fPosIndex(0),
   fPsdCollection(new TClonesArray("CbmPsdPoint")),
   fXshift(0.),
-  fHoleSize(10.),
   fZposition(0.),
   fRotYAngle(0.),
-  fGeoFile("")
+  fGeoFile(""),
+  fHoleSize(10.)
 {
 }
 
@@ -205,7 +205,7 @@ void CbmPsdTest::CreateModule (TGeoVolume *module, Float_t half_modul_size_x,  F
     TGeoMedium *medFIBER = new TGeoMedium("PLASTIC",   27, 125, 0, 1, 0.19, 1,    -1, -1, 0.1000000E-02, -1);
     TGeoMedium *medTYVEC = new TGeoMedium("TYVEC",     32, 138, 0, 0, 0,    1,    -1, -1, 0.1000000E-02, -1);
 
-    Float_t *buf = 0;
+//    Float_t *buf = 0;
 
     Float_t half_modul_size_z = 62.4; //cm
 
@@ -341,7 +341,7 @@ void CbmPsdTest::CreateModule (TGeoVolume *module, Float_t half_modul_size_x,  F
         
 }
 
-void CbmPsdTest::CreateModuleWithHole (TGeoVolume *modulePSD_with_hole, Int_t hole_size)
+void CbmPsdTest::CreateModuleWithHole (TGeoVolume* /*modulePSD_with_hole*/, Int_t /*hole_size*/)
 {
 
 }
@@ -370,7 +370,7 @@ void CbmPsdTest::ConstructGeometry() {
     Float_t half_modul_size_y = 10.; //cm
     Float_t half_modul_size_z = 62.4; //cm
     
-    Float_t hole_size = fHoleSize;//10.0;      
+//    Float_t hole_size = fHoleSize;//10.0;      
     
     TGeoVolume *PSD = gGeoManager->MakeBox("PSD", medAIR, 90, 70, half_modul_size_z);
 
@@ -396,7 +396,7 @@ void CbmPsdTest::ConstructGeometry() {
     gGeoManager->Node("central_module0", 27, "PSD",  10,  10,  0,  0, kTRUE, buf, 0); 
     
     //44 mods  
-    Float_t xi[48], yi[48];
+//    Float_t xi[48], yi[48];
     Float_t xCur=-70., yCur=-50.;
     Int_t iMod=0, iModNoHole=0;
 //       ofstream fxypos(fGeoFile);
@@ -416,14 +416,14 @@ void CbmPsdTest::ConstructGeometry() {
                 iModNoHole++;
                 if(iModNoHole==18 || iModNoHole==19 || iModNoHole==26 || iModNoHole==27)   //18, 19, 26, 27 - central modules with hole
                 {
-                    xi[iModNoHole-1] = xCur + xPSD;
-                    yi[iModNoHole-1] = yCur;  // change: put fxzpos << etc here
+//                    xi[iModNoHole-1] = xCur + xPSD;
+//                    yi[iModNoHole-1] = yCur;  // change: put fxzpos << etc here
 //                     fxypos << xi[iModNoHole-1]<< " " << yi[iModNoHole-1] << endl;
                 }
                 else  {
                     gGeoManager->Node("modulePSD", iModNoHole, "PSD", xCur,yCur,0, 0, kTRUE, buf, 0); 
-                    xi[iModNoHole-1] = xCur + xPSD;
-                    yi[iModNoHole-1] = yCur;  // change: put fxzpos << etc here
+//                    xi[iModNoHole-1] = xCur + xPSD;
+//                    yi[iModNoHole-1] = yCur;  // change: put fxzpos << etc here
 //                     fxypos << xi[iModNoHole-1]<< " " << yi[iModNoHole-1] << endl;
 //                     cout << xi[iModNoHole-1] << " " << yi[iModNoHole-1] << endl;
                     
