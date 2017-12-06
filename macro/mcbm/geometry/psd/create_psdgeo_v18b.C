@@ -170,8 +170,11 @@ void create_psdgeo_v18b()
 
   TString psdName = "psd_";
   psdName += geoTag;
-  TGeoVolume* psd = gGeoManager->MakeBox(psdName, psdMedium, psdSizeX,
-                                         psdSizeY, psdSizeZ);
+
+  TGeoVolume* psd = new TGeoVolumeAssembly(psdName);
+
+//  TGeoVolume* psd = gGeoManager->MakeBox(psdName, psdMedium, psdSizeX,
+//                                         psdSizeY, psdSizeZ);
   cout << "Module array is " << nModulesX << " x " << nModulesY
        << endl;
   cout << "PSD size is " << 2. * psdSizeX << " cm x " << 2. * psdSizeY
