@@ -451,7 +451,7 @@ void CbmTrdElectronsTrainAnn::DoTrain()
       ss<< fOutputDir+"/ann_weights_" <<fNofTrdLayers << ".txt";
       fNN->DumpWeights(ss.str().c_str());
    } else if (fIdMethod == kBDT) {
-      TMVA::Factory* factory = CreateFactory(simu);
+//      TMVA::Factory* factory = CreateFactory(simu);
       (TMVA::gConfig().GetIONames()).fWeightFileDir = fOutputDir;
       TCut mycuts = "";
       TCut mycutb = "";
@@ -671,7 +671,7 @@ string CbmTrdElectronsTrainAnn::CreateAnnString()
 	return st;
 }
 
-TMVA::Factory* CbmTrdElectronsTrainAnn::CreateFactory(TTree* simu)
+TMVA::Factory* CbmTrdElectronsTrainAnn::CreateFactory(TTree* /*simu*/)
 {
    if (fOutputDir != "") gSystem->mkdir(fOutputDir.c_str(), true);
 	TFile* outputFile = TFile::Open(string(fOutputDir+"/tmva_output.root").c_str(), "RECREATE");

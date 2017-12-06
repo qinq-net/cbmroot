@@ -26,10 +26,10 @@ CbmTrdTriangle::CbmTrdTriangle(Float_t W, Float_t H, Int_t n)
   ,fY0(0.)
   ,fW(W)
   ,fH(H)
-  ,fSlope(0.)
-  ,fUp()
   ,fdW(W/n/2.)
   ,fdH(H/n/2.)
+  ,fSlope(0.)
+  ,fUp()
   ,fX()
   ,fY()
   ,fPRFx(NULL)
@@ -144,7 +144,7 @@ Double_t CbmTrdTriangle::GetChargeFraction() const
  * Compute charge fraction on the current bin
  */
   
-  Int_t bin(fBinx*fN+fBiny), bin0(fBinx0*fN+fBiny0);
+  Int_t bin(fBinx*fN+fBiny); //, bin0(fBinx0*fN+fBiny0);
   return  fPRFx->Eval(fX[bin]-fX0)*
           fPRFy->Eval(fY[bin]-fY0)*
           4*fdW*fdH;
@@ -194,7 +194,7 @@ Bool_t CbmTrdTriangle::NextBinX()
 /**
  * Move current bin to the right. Check we are still in the allocated map
  */
-  if((fBinx+1)*fN >= fX.size()) return kFALSE;
+  if((fBinx+1)*fN >= static_cast<Int_t>(fX.size())) return kFALSE;
   fBinx++;
   return kTRUE;
 }
@@ -215,7 +215,7 @@ void CbmTrdTriangle::Print(Option_t *opt) const
 {
   printf("N=%d dw=%f dh=%f Slope=%f\n", fN, fdW, fdH, fSlope);
   if(strcmp(opt, "all")!=0) return;
-  for(Int_t i(0); i<fX.size(); i++){
+  for(UInt_t i(0); i<fX.size(); i++){
     if(i&&i%fN==0) printf("\n\n");
     printf("%2d(%5.2f %5.2f) ", fUp[i], fX[i], fY[i]);
   }

@@ -151,7 +151,7 @@ public:
 
 	void SetNofAnnEpochs(Int_t nofAnnEpochs){fNofAnnEpochs = nofAnnEpochs;}
 
-	void SetNofTrainSamples(Int_t nofTr){fNofTrainSamples = nofTr;}
+	void SetNofTrainSamples(UInt_t nofTr){fNofTrainSamples = nofTr;}
 
 	void SetSigmaError(Double_t sigma){fSigmaError = sigma;}
 
@@ -213,7 +213,7 @@ private:
 	TMVA::Reader* fReader;
 	IdMethod fIdMethod;
 	Int_t fNofAnnEpochs;
-	Int_t fNofTrainSamples;
+	UInt_t fNofTrainSamples;
 	TRandom* fRandom;
 	double fElIdEfficiency;
 

@@ -118,7 +118,6 @@ void CbmTrdMCQa::ProcessPoints(const TClonesArray * points)
   
   Double_t pointX=0.;
   Double_t pointY=0.;
-  Double_t pointZ=0.;
 
   std::map<Int_t, vector<Int_t>> used_map;
 
@@ -129,7 +128,6 @@ void CbmTrdMCQa::ProcessPoints(const TClonesArray * points)
     
     pointX = trdPoint -> GetXIn();
     pointY = trdPoint -> GetYIn();
-    pointZ = trdPoint -> GetZIn();
 
     fHM -> H1(Form("h_trd_XPos_Station%i",stationId)) -> Fill(pointX);
     fHM -> H1(Form("h_trd_YPos_Station%i",stationId)) -> Fill(pointY);

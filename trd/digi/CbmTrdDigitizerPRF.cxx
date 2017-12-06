@@ -53,18 +53,18 @@ CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
    fMinimumChargeTH(1.0e-06),
    fCurrentTime(-1.),
    fAddress(-1.),
-   fdtlow(0),
-   fpoints(0),
-   fdthigh(0),
+   fLastEventTime(-1),
+   fCollectTime(100),
    fnClusterConst(0),
    fnScanRowConst(0),
    fnScanColConst(0),
    fnRow(-1),
    fnCol(-1),
+   fdtlow(0),
+   fdthigh(0),
+   fpoints(0),
    fLayerId(-1),
    fModuleId(-1),
-   fCollectTime(100),
-   fLastEventTime(-1),
    fBufferAddress(-1),
    fMCPointId(-1),
    fPoints(NULL),
@@ -75,9 +75,9 @@ CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
    fModuleInfo(NULL),
    fRadiator(radiator),
    fDigiMap(),
-   fTimeBuffer(),
    fAnalogBuffer(),
-   fChargeBuffer()
+   fChargeBuffer(),
+   fTimeBuffer()
 {
 }
 
@@ -624,7 +624,7 @@ Double_t(chargeFractionTriangle * clusterELossTR), fCurrentTime);
   }  
 }
 
-void CbmTrdDigitizerPRF::ProcessBuffer(Int_t address,Double_t weighting){
+void CbmTrdDigitizerPRF::ProcessBuffer(Int_t address,Double_t /*weighting*/){
 
   Double_t digicharge=0;
   Double_t digiTRcharge=0;
@@ -680,12 +680,12 @@ Double_t CbmTrdDigitizerPRF::CheckTime(Int_t address){
 
 void CbmTrdDigitizerPRF::NoiseTime(){
 
-  Double_t dEventTime=fEventTime-fLastEventTime;
+//  Double_t dEventTime=fEventTime-fLastEventTime;
   fCurrentTime=fNoise->Uniform(fLastEventTime,fEventTime);
   
 }
 
-Double_t CbmTrdDigitizerPRF::AddDrifttime(Double_t x){
+Double_t CbmTrdDigitizerPRF::AddDrifttime(Double_t /*x*/){
 
   Double_t drifttime[240]={0.11829,0.11689,0.11549,0.11409,0.11268,0.11128,0.10988,0.10847,0.10707,0.10567,
 			   0.10427,0.10287,0.10146,0.10006,0.09866,0.09726,0.095859,0.094459,0.09306,0.091661,
