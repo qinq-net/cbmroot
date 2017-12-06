@@ -55,7 +55,7 @@ void CbmRichProjectionProducerTGeo::Init()
     
     fTrackParams = (TClonesArray*)manager->GetObject("RichTrackParamZ");
     if ( NULL == fTrackParams) {
-        Fatal("CbmRichProjectionProducerTGeo::Init: No RichTrackParamZ array!", "");
+        LOG(FATAL) << "No RichTrackParamZ array!" << FairLogger::endl;
     }
 }
 

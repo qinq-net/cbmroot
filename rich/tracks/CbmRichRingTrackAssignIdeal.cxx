@@ -68,8 +68,8 @@ void CbmRichRingTrackAssignIdeal::DoAssign(
       CbmTrackMatchNew* pRingMatch = (CbmTrackMatchNew*) fRingMatches->At(iRing);
       if (NULL == pRingMatch) continue;
       Int_t ringID = pRingMatch->GetMatchedLink().GetIndex();
-      Double_t xRing = pRing->GetCenterX();
-      Double_t yRing = pRing->GetCenterY();
+//      Double_t xRing = pRing->GetCenterX();
+//      Double_t yRing = pRing->GetCenterY();
 
       for (Int_t iTrack=0; iTrack < nofTracks; iTrack++){
          FairTrackParam* pTrack = (FairTrackParam*) richProj->At(iTrack);

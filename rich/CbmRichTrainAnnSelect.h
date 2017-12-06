@@ -87,7 +87,7 @@ private:
 
    Int_t fEventNumber;
    Double_t fQuota; // Quality quota for reconstructed ring
-   Int_t fMaxNofTrainSamples; // maximum number of train samples for ANN
+   UInt_t fMaxNofTrainSamples; // maximum number of train samples for ANN
    Int_t fNofFakeLikeTrue;
    Int_t fNofTrueLikeFake;
    Double_t fAnnCut;

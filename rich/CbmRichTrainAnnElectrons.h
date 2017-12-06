@@ -99,7 +99,7 @@ private:
     
     Int_t fMinNofHitsInRichRing;
     Double_t fQuota;
-    Int_t fMaxNofTrainSamples; // maximum number of train samples for ANN
+    UInt_t fMaxNofTrainSamples; // maximum number of train samples for ANN
     
     Int_t fNofPiLikeEl;
     Int_t fNofElLikePi;

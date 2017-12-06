@@ -82,8 +82,8 @@ private:
 		const CbmRichRing* richRing = static_cast<const CbmRichRing*>(richRings->At(richId));
 		if (richRing == NULL) return errorVec;
 
-		Double_t xRing = richRing->GetCenterX();
-		Double_t yRing = richRing->GetCenterY();
+//		Double_t xRing = richRing->GetCenterX();
+//		Double_t yRing = richRing->GetCenterY();
 		Double_t dx =  richRing->GetCenterX() - pTrack->GetX();
 		Double_t dy = richRing->GetCenterY() - pTrack->GetY();
 

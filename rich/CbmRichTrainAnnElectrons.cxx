@@ -385,13 +385,15 @@ void CbmRichTrainAnnElectrons::Draw(Option_t*)
     
     SetDefaultDrawStyle();
     {
-        TCanvas* c = CreateCanvas("ann_electrons_ann_output", "ann_electrons_ann_output", 500, 500);
+//        TCanvas* c = CreateCanvas("ann_electrons_ann_output", "ann_electrons_ann_output", 500, 500);
+        CreateCanvas("ann_electrons_ann_output", "ann_electrons_ann_output", 500, 500);
         DrawH1(list_of(fhAnnOutput[0])(fhAnnOutput[1]), list_of("e^{#pm}")("#pi^{#pm}"),
                kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99);
     }
     
     {
-        TCanvas* c = CreateCanvas("ann_electrons_cum_prob", "ann_electrons_cum_prob", 500, 500);
+//        TCanvas* c = CreateCanvas("ann_electrons_cum_prob", "ann_electrons_cum_prob", 500, 500);
+        CreateCanvas("ann_electrons_cum_prob", "ann_electrons_cum_prob", 500, 500);
         DrawH1(list_of(fhCumProb[0])(fhCumProb[1]), list_of("e^{#pm}")("#pi^{#pm}"),
                kLinear, kLinear, true, 0.8, 0.8, 0.99, 0.99);
     }

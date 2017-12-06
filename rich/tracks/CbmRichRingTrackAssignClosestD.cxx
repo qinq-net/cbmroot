@@ -137,7 +137,7 @@ void CbmRichRingTrackAssignClosestD::DoAssignRingTrack(
 
 	// fill global tracks
 	for (UInt_t i = 0; i < trackIndex.size(); i++){
-		CbmRichRing* pRing = (CbmRichRing*)rings->At(i);
+//		CbmRichRing* pRing = (CbmRichRing*)rings->At(i);
 	   // cout << "trackIndex[i]:" << trackIndex[i] << " trackDist[i]:" << trackDist[i] << " r:" << pRing->GetRadius() << " x:" << pRing->GetCenterX() << " y:" << pRing->GetCenterY()<< endl;
 		if (trackIndex[i] == -1) continue;
 		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(trackIndex[i]);
@@ -178,7 +178,7 @@ void CbmRichRingTrackAssignClosestD::DoAssignTrackRing(
 			}
 		} // loop rings
 		if (iRingMin < 0) continue;
-		CbmRichRing* pRing = (CbmRichRing*)rings->At(iRingMin);
+//		CbmRichRing* pRing = (CbmRichRing*)rings->At(iRingMin);
 		gTrack->SetRichRingIndex(iRingMin);
 	}//loop tracks
 }
