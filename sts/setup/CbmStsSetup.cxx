@@ -45,10 +45,11 @@ CbmStsSetup* CbmStsSetup::fgInstance = NULL;
 // -----   Constructor   ---------------------------------------------------
 CbmStsSetup::CbmStsSetup() : CbmStsElement(kSts, kStsSystem),
 			     fDigitizer(NULL), fSettings(NULL),fIsInitialised(kFALSE),
-			     fNofSensorsDefault(0), fSensorDinact(0.), fSensorPitch(0.),
+			     fIsOld(kFALSE), fNofSensorsDefault(0), fSensorDinact(0.), fSensorPitch(0.),
                              fSensorStereoF(0.), fSensorStereoB(0.),
-			     fIsOld(kFALSE), fModules(), fModuleVector(),
-			     fSensors(), fStations() {
+			     fSensors(), fModules(), fModuleVector(),
+			     fStations() 
+{
 }
 // -------------------------------------------------------------------------
 
@@ -290,7 +291,7 @@ Int_t CbmStsSetup::GetStationNumber(Int_t address) {
 
 
 // -----   Initialisation   ------------------------------------------------
-Bool_t CbmStsSetup::Init(const char* geoFile, const char* parFile) {
+Bool_t CbmStsSetup::Init(const char* /*geoFile*/, const char* parFile) {
 
   // Prevent duplicate initialisation
   assert( ! fIsInitialised );
@@ -720,7 +721,7 @@ Int_t CbmStsSetup::SetModuleParameters(const char* fileName) {
   Double_t noise           = -1.e10;
   Double_t zeroNoise       = -1.e10;
   Double_t fracDead        = -1.e10;
-  Int_t nModules = 0;
+  UInt_t nModules = 0;
 
   while ( kTRUE ) {  // read one line
     if ( inFile.eof() ) break;
@@ -902,7 +903,7 @@ Int_t CbmStsSetup::SetSensorConditions(const char* fileName) {
   Double_t temperature = -1.e10;
   Double_t cCoupling   = -1.e10;
   Double_t cInterstrip = -1.e10;
-  Int_t nSensors = 0;
+  UInt_t nSensors = 0;
 
   while ( kTRUE ) {  // read one line
     if ( inFile.eof() ) break;

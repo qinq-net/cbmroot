@@ -147,7 +147,7 @@ void CbmStsRecoQa::ProcessEvent(CbmEvent* event) {
 		  fNofGoodTracks++;
 		}
 
-		Double_t p = 1. / TMath::Abs( track->GetParamFirst()->GetQp());
+//		Double_t p = 1. / TMath::Abs( track->GetParamFirst()->GetQp());
 
 		fNofHitsTot += Double_t(nHits);
 		fNofTracksTot++;

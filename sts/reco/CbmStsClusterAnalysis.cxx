@@ -33,7 +33,7 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 		Int_t index = cluster->GetDigi(0);
 		CbmStsDigi* digi = dynamic_cast<CbmStsDigi*> ( digiArray->At(index) );
 		assert(digi);
-		UInt_t address = digi->GetAddress();
+//		UInt_t address = digi->GetAddress();
 		Double_t x = Double_t(digi->GetChannel());
 		Double_t time = digi->GetTime();
 		Double_t timeError = module->GetTimeResolution();
@@ -65,7 +65,7 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
         // Channel positions and charge
         Double_t x1 = Double_t(chan1);
         Double_t q1 = module->AdcToCharge(digi1->GetCharge());
-        Double_t x2 = Double_t(chan2);
+//        Double_t x2 = Double_t(chan2);
         Double_t q2 = module->AdcToCharge(digi2->GetCharge());
 
         // Periodic position for clusters round the edge
@@ -119,7 +119,7 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 	else {
 
 		Double_t tSum = 0.;  // sum of digi times
-		Double_t eqMidSq = 0.;  // sum of errors of digi charges (middle)
+//		Double_t eqMidSq = 0.;  // sum of errors of digi charges (middle)
 		Int_t chanF = 9999999;  // first channel in cluster
 		Int_t chanL = -1;  // last channel in cluster
 		Double_t qF = 0.; // charge in first channel
@@ -188,8 +188,8 @@ void CbmStsClusterAnalysis::Analyze(CbmStsCluster* cluster,
 		Double_t exFsq = eqFsq / qM / qM / 4.;  // error from first charge
 		Double_t exMsq = eqMsq * (qL - qF) * (qL - qF) / qM / qM / qM / qM / 4.;
 		Double_t exLsq = eqLsq / qM / qM / 4.;
-		Double_t ex1sq = 0.;    // error from first charge
-		Double_t ex2sq = 0.;    // error from second charge
+//		Double_t ex1sq = 0.;    // error from first charge
+//		Double_t ex2sq = 0.;    // error from second charge
 		Double_t xError = TMath::Sqrt(exFsq + exMsq + exLsq);
 
 		cluster->SetAddress(module->GetAddress());

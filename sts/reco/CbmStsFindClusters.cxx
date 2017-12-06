@@ -312,7 +312,7 @@ void CbmStsFindClusters::ProcessData(CbmEvent* event) {
   Int_t digiIndex = -1;
   for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {
     digiIndex = (event ? event->GetIndex(kStsDigi, iDigi) : iDigi);
-    CbmStsDigi* digi = dynamic_cast<CbmStsDigi*>(fDigis->At(digiIndex));
+//    CbmStsDigi* digi = dynamic_cast<CbmStsDigi*>(fDigis->At(digiIndex));
     ProcessDigi(digiIndex);
   }  //# digis in time slice or event
   fTimer.Stop();
@@ -428,7 +428,7 @@ void CbmStsFindClusters::ProcessLegacyEvent() {
   Int_t digiIndex = -1;
   for ( auto it = fDigiMap.begin(); it != fDigiMap.end(); it++) {
     digiIndex = it->second;
-    CbmStsDigi* digi = dynamic_cast<CbmStsDigi*>(fDigis->At(digiIndex));
+//    CbmStsDigi* digi = dynamic_cast<CbmStsDigi*>(fDigis->At(digiIndex));
     ProcessDigi(digiIndex);
   }  //# digis in time slice or event
   fTimer.Stop();

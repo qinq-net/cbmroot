@@ -352,7 +352,7 @@ void CbmStsFindTracksQa::ProcessEvent(CbmEvent* event) {
   fTimer.Start();
 
   // Eventwise counters
-  Int_t nMCTracks = 0;
+//  Int_t nMCTracks = 0;
   Int_t nTracks   = 0;
   Int_t nGhosts   = 0;
   Int_t nClones   = 0;
@@ -422,10 +422,10 @@ void CbmStsFindTracksQa::ProcessEvent(CbmEvent* event) {
     // Get matched StsTrack
     Int_t    trackId  = -1;
     Double_t quali    =  0.;
-    Bool_t   isRec    = kFALSE;
+//    Bool_t   isRec    = kFALSE;
     if (fMatchMap.find(mcTrackId) != fMatchMap.end() ) {
       trackId  = fMatchMap[mcTrackId];
-      isRec = kTRUE;
+//      isRec = kTRUE;
       CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(trackId);
       assert(stsTrack);
       quali = fQualiMap[mcTrackId];

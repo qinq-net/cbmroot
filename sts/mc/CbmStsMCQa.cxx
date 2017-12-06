@@ -142,7 +142,7 @@ void CbmStsMCQa::ProcessPoints(const TClonesArray * points)
   
   Double_t pointX=0.;
   Double_t pointY=0.;
-  Double_t pointZ=0.;
+
   Double_t pX=0.;
   Double_t pY=0.;
   Double_t pZ=0.;
@@ -156,7 +156,6 @@ void CbmStsMCQa::ProcessPoints(const TClonesArray * points)
     
     pointX = stsPoint -> GetXIn();
     pointY = stsPoint -> GetYIn();
-    pointZ = stsPoint -> GetZIn();
 
     pX = stsPoint -> GetPx();
     pY = stsPoint -> GetPy();

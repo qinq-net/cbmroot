@@ -38,7 +38,7 @@ using std::map;
 using std::pair;
 using std::string;
 
-CbmStsDigitizeQa::CbmStsDigitizeQa(CbmStsDigitize * digitizer):
+CbmStsDigitizeQa::CbmStsDigitizeQa(CbmStsDigitize * /*digitizer*/):
     FairTask("CbmStsDigitizeQa")
     , fDigiPar(nullptr)
     , fHM(NULL)
@@ -276,7 +276,7 @@ void CbmStsDigitizeQa::ProcessDigisAndPoints(const TClonesArray* digis, const TC
     }
     if ( pointIndexes.size() > static_cast<size_t>(fMaxScale) ) fMaxScale = pointIndexes.size();
 
-    Double_t pointX, pointY, pointZ;
+    Double_t pointX, pointY; //, pointZ;
     Double_t pointPX, pointPZ;
     for (Int_t iPoint = 0; iPoint < points -> GetEntriesFast(); iPoint ++){
 	const FairMCPoint * stsPoint = static_cast<const FairMCPoint*>(points -> At(iPoint));
@@ -288,7 +288,7 @@ void CbmStsDigitizeQa::ProcessDigisAndPoints(const TClonesArray* digis, const TC
 	}
 	pointX = stsPoint -> GetX();
 	pointY = stsPoint -> GetY();
-	pointZ = stsPoint -> GetZ();
+//	pointZ = stsPoint -> GetZ();
 	pointPX = stsPoint -> GetPx();
 	pointPZ = stsPoint -> GetPz();
 	Int_t stationId = fSetup->GetStationNumber(stsPoint->GetDetectorID());

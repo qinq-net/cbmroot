@@ -118,7 +118,7 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal, Double_t varX,
 // -----   Find hits in sensor   -------------------------------------------
 Int_t CbmStsSensor::FindHits(vector<CbmStsCluster*>& clusters,
 		                         TClonesArray* hitArray, CbmEvent* event,
-		                         Double_t dTime) {
+		                         Double_t /*dTime*/) {
 	fHits = hitArray;
 	fEvent = event;
 	Int_t nHits = 0;
@@ -184,11 +184,11 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point,
   // --- Average track direction in local c.s.
   Double_t tXav = 0.;
   Double_t tYav = 0.;
-  Int_t    tZav = 0;
+//  Int_t    tZav = 0;
   if ( z2 - z1 != 0. ) {
   	tXav = ( x2 - x1 ) / (z2 - z1);
   	tYav = ( y2 - y1 ) / (z2 - z1);
-  	tZav = 1;
+//  	tZav = 1;
   }
 
   // --- Normally, the entry and exit coordinates are slightly outside of

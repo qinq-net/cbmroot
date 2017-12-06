@@ -76,7 +76,7 @@ void CbmStsHitProducerIdeal::Exec(Option_t* /*opt*/) {
   // Declare some variables
   CbmStsPoint* point = NULL;
   Int_t detID   = 0;        // Detector ID
-  Int_t trackID = 0;        // Track index
+//  Int_t trackID = 0;        // Track index
   Double_t x, y, z;         // Position
   Double_t dx = 0.0001;     // Position error
   TVector3 pos, dpos;       // Position and error vectors
@@ -91,7 +91,7 @@ void CbmStsHitProducerIdeal::Exec(Option_t* /*opt*/) {
     detID = point->GetDetectorID();
 
     // MCTrack ID
-    trackID = point->GetTrackID();
+//    trackID = point->GetTrackID();
 
     // Determine hit position (centre plane of station)
     x  = 0.5 * ( point->GetXOut() + point->GetXIn() );
