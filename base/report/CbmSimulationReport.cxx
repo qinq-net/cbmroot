@@ -62,7 +62,8 @@ void CbmSimulationReport::DrawH1ByPattern(
    for (UInt_t iHist = 0; iHist < nofHistos; iHist++) {
       TH1* hist = histos[iHist];
       string canvasName = GetReportName() + hist->GetName();
-      TCanvas* canvas = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
+//      TCanvas* canvas = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
+      CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
       DrawH1(hist, kLinear, kLinear);
    }
 }
@@ -75,7 +76,8 @@ void CbmSimulationReport::DrawH1ByPattern(
    UInt_t nofHistos = histos.size();
    if (nofHistos < 1) return;
    string canvasName = GetReportName() + histos[0]->GetName();
-   TCanvas* canvas = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 600, 500);
+//   TCanvas* canvas = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 600, 500);
+   CreateCanvas(canvasName.c_str(), canvasName.c_str(), 600, 500);
 
    vector<string> labels(nofHistos);
    for (UInt_t iHist = 0; iHist < nofHistos; iHist++) {
@@ -99,7 +101,8 @@ void CbmSimulationReport::DrawH2ByPattern(
     for (UInt_t iHist = 0; iHist < nofHistos; iHist++) {
         TH2* hist = histos[iHist];
         string canvasName = GetReportName() + hist->GetName();
-        TCanvas* canvas = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
+//        TCanvas* canvas = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
+        CreateCanvas(canvasName.c_str(), canvasName.c_str(), 800, 500);
         DrawH2(hist, logx, logy, logz, drawOpt);
     }
 }
