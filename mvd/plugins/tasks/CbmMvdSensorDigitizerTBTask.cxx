@@ -122,7 +122,8 @@ CbmMvdSensorDigitizerTBTask::CbmMvdSensorDigitizerTBTask()
   fTime(),
   fReadoutLast(),
   fReadoutCurrent(),
-  fReadoutNext()
+  fReadoutNext(),
+  fSignalPoints()
 {
     LOG(DEBUG)<< "Starting CbmMvdSensorDigitizerTBTask::CbmMvdSensorDigitizerTBTask() "<< FairLogger::endl;
 
