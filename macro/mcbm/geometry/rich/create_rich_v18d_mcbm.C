@@ -23,8 +23,9 @@ void create_rich_v18d_mcbm()
 
 	FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
 	FairGeoInterface* geoFace = geoLoad->getGeoInterface();
-	TString geoPath = gSystem->Getenv("VMCWORKDIR");
-	TString medFile = geoPath + "/geometry/media.geo";
+//	TString geoPath = gSystem->Getenv("VMCWORKDIR");
+//	TString medFile = geoPath + "/geometry/media.geo";
+	TString medFile = "/home/aghoehne/Documents/CbmRoot/trunkNew/geometry/media.geo";
 
 	geoFace->setMediaFile(medFile);
 	geoFace->readMedia();
@@ -99,7 +100,7 @@ void create_rich_v18d_mcbm()
 	//Dimensions of the RICH prototype [cm]
 	// Box
 	const Double_t boxLength = 44;
-	const Double_t boxWidth = 20;
+	const Double_t boxWidth = 25;
 	const Double_t boxHeight = 30;
 	const Double_t wallWidth = 0.3;
 	const Double_t boxThickness = 0.1;
@@ -115,7 +116,7 @@ void create_rich_v18d_mcbm()
 	const Double_t pmtGap = 0.1;
 	const Double_t pmtGapHalf = pmtGap / 2.;
 	const Double_t pmtPadding = 0.175;
-	const Double_t pmtMatrixGap = 1.0; //3.5;
+	const Double_t pmtMatrixGap = 0.3; //3.5;
 	const Double_t pmtThickness = 0.1;
 
 	// Electronics
@@ -137,7 +138,7 @@ void create_rich_v18d_mcbm()
 
 	// Absorber
 	const Double_t absorberThickness = 0.1;
-	const Double_t absorberRadius = 0.0;// 2.0;		//Absorberradius = 0 bei Glaslinse? 
+	const Double_t absorberRadius = 0.0;// 2.0;		
 
 	// Aerogel Box
 	const Double_t aerogelLength = 2.;
@@ -152,7 +153,7 @@ void create_rich_v18d_mcbm()
 
 	TGeoRotation *rotBox= new TGeoRotation("rotBox", 0., 0., 0.);
 
-  	Double_t xPos[4] = {-48, -18, -48, -18};   // {-20,  20, -20,  20};
+  	Double_t xPos[4] = {-48, -18, -48, -18};   // {-20,  20, -20,  20};  
   	Double_t yPos[4] = {-24, -24,  24,  24};   // {-20, -20,  20,  20};
   	Double_t zPos[4] = {355, 355, 355, 355};   // { 50,  50,  50,  50};
         Double_t proto_angle[4];
@@ -199,7 +200,7 @@ void create_rich_v18d_mcbm()
 
 	TGeoTranslation *trAerogel = new TGeoTranslation(0., 0., 0.);
 
-	Double_t pmtPlaneY = pmtSize + pmtMatrixGap/2. + pmtGap/2.;
+	Double_t pmtPlaneY = pmtSize +  pmtMatrixGap/2.  + pmtGap/2.;
 	TGeoTranslation *trPmtPlaneUp = new TGeoTranslation(0., pmtPlaneY, pmtPlaneZ);
 	TGeoTranslation *trPmtPlaneDown = new TGeoTranslation(0., -pmtPlaneY, pmtPlaneZ);
 
@@ -263,7 +264,7 @@ void create_rich_v18d_mcbm()
 
 	//Positioning
 	rich->AddNode(caveVol, 1, trCave[0]);
-	rich->AddNode(caveVol, 1, trCave[1]);		//falsche Nummerierung?
+	rich->AddNode(caveVol, 2, trCave[1]);		
 	rich->AddNode(caveVol, 3, trCave[2]);
 	rich->AddNode(caveVol, 4, trCave[3]);
 
