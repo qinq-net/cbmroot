@@ -79,12 +79,7 @@ class CbmDaq : public FairTask
     Double_t fTimeSliceLast;     ///< Stop time of last time slice
 
     /** Output array (digis) **/
-    TClonesArray* fStsDigis;
-    TClonesArray* fRichDigis;
-    TClonesArray* fMuchDigis;
-    TClonesArray* fTrdDigis;
-    TClonesArray* fTofDigis;
-
+    std::map<Int_t, TClonesArray*> fDigis;
 
     /** Pointer to current time slice **/
     CbmTimeSlice* fTimeSlice;

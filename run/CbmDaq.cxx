@@ -14,8 +14,13 @@
 
 #include "CbmDaq.h"
 #include "CbmDaqBuffer.h"
+#include "CbmMvdDigi.h"
+#include "CbmStsDigi.h"
 #include "CbmRichDigi.h"
+#include "CbmMuchDigi.h"
 #include "CbmTrdDigi.h"
+#include "CbmTofDigi.h"
+#include "CbmPsdDigi.h"
 #include "CbmTimeSlice.h"
 
 
@@ -37,11 +42,7 @@ CbmDaq::CbmDaq(Double_t timeSliceSize) : FairTask("Daq"),
                    fTimeDigiLast(-1.),
                    fTimeSliceFirst(-1.),
                    fTimeSliceLast(-1.),
-                   fStsDigis(NULL),
-                   fRichDigis(nullptr),
-                   fMuchDigis(NULL),
-                   fTrdDigis(NULL),
-                   fTofDigis(NULL),
+                   fDigis(),
                    fTimeSlice(NULL),
                    fBuffer(NULL),
                    fEventList(),
@@ -70,12 +71,13 @@ void CbmDaq::CloseTimeSlice() {
   } //? empty time slice
   else
   LOG(INFO) << GetName() << ": closing time slice from " << fTimeSlice->GetStartTime()
-            << " to " << fTimeSlice->GetEndTime() << " ns, data: STS " 
-            << fStsDigis->GetEntriesFast()
-            << " MUCH " << fMuchDigis->GetEntriesFast() 
-            << " TRD " << fTrdDigis->GetEntriesFast() 
-            << " TOF " << fTofDigis->GetEntriesFast()
-            << FairLogger::endl;
+            << " to " << fTimeSlice->GetEndTime() << " ns, data: ";
+  for (Int_t detector = kMvd; detector < kNofSystems; detector++) {
+    if ( fDigis[detector] == nullptr ) continue;
+    LOG(INFO) << CbmModuleList::GetModuleNameCaps(detector)
+    << fDigis[detector]->GetEntriesFast();
+  }
+  LOG(INFO) << FairLogger::endl;
 
   // --- Fill current time slice into tree (if required)
   if ( fStoreEmptySlices || (!fTimeSlice->IsEmpty()) ) {
@@ -97,10 +99,9 @@ void CbmDaq::CloseTimeSlice() {
   fEventsCurrent->Clear("");
 
   // --- Clear data output arrays
-  fStsDigis->Delete();
-  fMuchDigis->Delete();
-  fTrdDigis->Delete();
-  fTofDigis->Delete();
+  for ( Int_t detector = kMvd; detector < kNofSystems; detector++) {
+    if ( fDigis[detector] ) fDigis[detector]->Delete();
+  }
 
 }
 // ===========================================================================
@@ -191,44 +192,54 @@ void CbmDaq::Exec(Option_t*) {
 void CbmDaq::FillData(CbmDigi* data) {
 
   Int_t iDet = data->GetSystemId();
+  if ( fDigis[iDet] == nullptr ) {
+    LOG(FATAL) << GetName() << ": received digi from "
+        << CbmModuleList::GetModuleNameCaps(iDet)
+        << " but have no corresponding output array!" << FairLogger::endl;
+    return;
+  }
+  Int_t nDigis = fDigis[iDet]->GetEntriesFast();
+
   switch ( iDet ) {
+
+    case kMvd: {
+      CbmMvdDigi* digi = static_cast<CbmMvdDigi*>(data);
+      new ( (*(fDigis[kMvd]))[nDigis] ) CbmMvdDigi(*digi);
+      fTimeSlice->SetEmpty(kFALSE);
+      break;
+    }
 
     case kSts: {
       CbmStsDigi* digi = static_cast<CbmStsDigi*>(data);
-      Int_t nDigis = fStsDigis->GetEntriesFast();
-      new ( (*fStsDigis)[nDigis] ) CbmStsDigi(*digi);
+      new ( (*(fDigis[kSts]))[nDigis] ) CbmStsDigi(*digi);
       fTimeSlice->SetEmpty(kFALSE);
       break;
     }
 
     case kRich: {
       CbmRichDigi* digi = static_cast<CbmRichDigi*>(data);
-      Int_t nDigis = fRichDigis->GetEntriesFast();
-      new ( (*fRichDigis)[nDigis] ) CbmRichDigi(*digi);
+      new ( (*(fDigis[kRich]))[nDigis] ) CbmRichDigi(*digi);
       fTimeSlice->SetEmpty(kFALSE);
       break;
     }
 
     case kMuch: {
       CbmMuchDigi* digi = static_cast<CbmMuchDigi*>(data);
-      Int_t nDigis = fMuchDigis->GetEntriesFast();
-      new ( (*fMuchDigis)[nDigis] ) CbmMuchDigi(*digi);
+      new ( (*(fDigis[kMuch]))[nDigis] ) CbmMuchDigi(*digi);
       fTimeSlice->SetEmpty(kFALSE);
       break;
     }
 
     case kTrd: {
       CbmTrdDigi* digi = static_cast<CbmTrdDigi*>(data);
-      Int_t nDigis = fTrdDigis->GetEntriesFast();
-      new ( (*fTrdDigis)[nDigis] ) CbmTrdDigi(*digi);
+      new ( (*(fDigis[kTrd]))[nDigis] ) CbmTrdDigi(*digi);
       fTimeSlice->SetEmpty(kFALSE);
       break;
     }
 
     case kTof: {
       CbmTofDigiExp* digi = static_cast<CbmTofDigiExp*>(data);
-      Int_t nDigis = fTofDigis->GetEntriesFast();
-      new ( (*fTofDigis)[nDigis] ) CbmTofDigiExp(*digi);
+      new ( (*(fDigis[kTof]))[nDigis] ) CbmTofDigiExp(*digi);
       fTimeSlice->SetEmpty(kFALSE);
       break;
     }
@@ -360,31 +371,30 @@ InitStatus CbmDaq::Init() {
   FairRootManager::Instance()->Register("MCEventList.", "Event list",
       fEventsCurrent, kTRUE);
 
-  // Register output array (CbmStsDigi)
-  fStsDigis = new TClonesArray("CbmStsDigi",1000);
-  FairRootManager::Instance()->Register("StsDigi", "STS raw data",
-  		            fStsDigis, IsOutputBranchPersistent("StsDigi"));
+  // Register output branches (CbmDigi)
+  TString className = "Cbm";
+  TString branchName = "";
+  for (Int_t detector = kMvd; detector < kNofSystems; detector++) {
 
-  // Register output array (CbmRichDigi)
-  fRichDigis = new TClonesArray("CbmRichDigi",1000);
-  FairRootManager::Instance()->Register("RichDigi", "RICH raw data",
-                    fRichDigis, IsOutputBranchPersistent("RichDigi"));
+    switch (detector) {
+      case kMvd:  branchName = "MvdDigi";  break;
+      case kSts:  branchName = "StsDigi";  break;
+      case kRich: branchName = "RichDigi"; break;
+      case kMuch: branchName = "MuchDigi"; break;
+      case kTrd:  branchName = "TrdDigiExp";  break;
+      case kTof:  branchName = "TofDigi";  break;
+      case kPsd:  branchName = "PsdDigi";  break;
+      default: break;
+    } //? detector
+    if ( branchName.IsNull() ) continue;
+    className += branchName;
 
-  // Register output array (CbmMuchDigi)
-  fMuchDigis = new TClonesArray("CbmMuchDigi",1000);
-  FairRootManager::Instance()->Register("MuchDigi", "MUCH raw data",
-                    fMuchDigis, IsOutputBranchPersistent("MuchDigi"));
+    fDigis[detector] = new TClonesArray(className.Data(), 1000);
+    FairRootManager::Instance()->Register(branchName.Data(), "",
+         fDigis[detector],IsOutputBranchPersistent(branchName));
 
-  // Register output array (CbmTrdDigi)
-  fTrdDigis = new TClonesArray("CbmTrdDigi", 1000);
-  FairRootManager::Instance()->Register("TrdDigi", "TRD raw data",
-                                        fTrdDigis,
-                                        IsOutputBranchPersistent("TrdDigi"));
+  } //? systems
 
-  // Register output array (CbmTofDigi)
-  fTofDigis = new TClonesArray("CbmTofDigiExp",1000);
-  FairRootManager::Instance()->Register("TofDigiExp", "TOF raw data",
-                    fTofDigis, IsOutputBranchPersistent("TofDigiExp"));
 
   // Get Daq Buffer
   fBuffer = CbmDaqBuffer::Instance();

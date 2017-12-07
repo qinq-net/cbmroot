@@ -41,12 +41,14 @@ enum ECbmModuleId {
 enum ECbmDataType {
   kUnknown,
   kMCTrack,
+  kMvdPoint, kMvdDigi, kMvdCluster, kMvdHit,             // MVD
   kStsPoint, kStsDigi, kStsCluster, kStsHit, kStsTrack,  // STS
+  kRichPoint, kRichDigi, kRichHit, kRichRing,            // RICH
   kMuchDigi, kMuchPixelHit, kMuchStrawHit, kMuchTrack,   // MUCH
   kTrdDigi, kTrdHit, kTrdTrack,                          // TRD
   kTofDigi, kTofHit, kTofTrack,                          // TOF
-  kGlobalTrack,                                          // Global
-  kMvdPoint, kMvdDigi, kMvdCluster, kMvdHit              // MVD    //add last not to change the numbering scheme 
+  kPsdPoint, kPsdDigi,                                   // PSD
+  kGlobalTrack                                           // Global
 };
 
 
