@@ -11,11 +11,14 @@
 #include "CbmTrdAddress.h"
 
 #include <string>
-//#include <list>
+#include <vector>
 
 class CbmTrdDigi : public CbmDigi
 {
  public:
+  enum CbmTrdDigiDef{
+    kTriang = BIT(15)     ///< set type of pads on which the digit represent
+  };
   /**
    * \brief Default constructor.
    */
@@ -27,7 +30,7 @@ class CbmTrdDigi : public CbmDigi
    * \param[in] charge Charge.
    * \param[in] time Absolute time [ns].
    */
-  CbmTrdDigi(Int_t address, Double_t charge, Double_t time);
+  CbmTrdDigi(Int_t address, Double_t charge, Double_t time, Bool_t padType=kFALSE);
   CbmTrdDigi(Int_t address, Double_t charge, Double_t time, Int_t triggerType, Int_t infoType, Int_t stopType);
   CbmTrdDigi(Int_t address, Double_t fullTime, Int_t triggerType, Int_t infoType, Int_t stopType, Int_t nrSamples, Float_t* samples);
   /**
@@ -43,8 +46,8 @@ class CbmTrdDigi : public CbmDigi
   /**
    * \brief Inherited from CbmDigi.
    */
-  Double_t GetCharge() const { return fCharge; }
-  Double_t GetChargeTR() const { return fChargeTR; }
+  Double_t GetCharge(Int_t up=1) const { return up?fCharge:fChargeT; }
+  Double_t GetChargeTR(Int_t up=1) const { return up?fChargeTR:fChargeTTR; }
 
   /**
    * \brief Inherited from CbmDigi.
@@ -57,25 +60,27 @@ class CbmTrdDigi : public CbmDigi
   Double_t GetTime() const { return fTime; }
 
   // Accessors for CbmSpadicRawMessage Testbeam input
-  Int_t GetNrSamples() { return fNrSamples; }
-  Float_t* GetSamples() { return fSamples; }
+  Int_t GetNrSamples() { return fSamples.size(); }
+  Float_t* GetSamples() { return fSamples.data(); }
   Int_t GetTriggerType() { return fTriggerType; }
   Int_t GetStopType() { return fStopType; }
   Int_t GetInfoType() { return fInfoType; }
+  Bool_t  IsTriangular() const {return TestBit(kTriang);}
   //===============================================
 
   /** Accessors **/
   void SetAddress(Int_t address) { fAddress = address; }
-  void SetCharge(Double_t charge) { fCharge = charge; }
-  void SetChargeTR(Double_t charge) { fChargeTR = charge; }
+  void SetCharge(Double_t charge, Int_t up=1) { if(up) fCharge = charge; else  fChargeT = charge; }
+  void SetChargeTR(Double_t charge, Int_t up=1) { if(up) fChargeTR = charge;  else  fChargeTTR = charge; }
   void SetTime(Double_t time) { fTime = time; }
+  void SetTriangular(Bool_t set=kTRUE) {SetBit(kTriang, set);}
   void SetTriggerType(Int_t triggerType) {fTriggerType = triggerType; }
   void SetInfoType(Int_t infoType) {fInfoType = infoType; }
   void SetStopType(Int_t stopType) {fStopType = stopType; }
   void SetPulseShape(Float_t pulse[45]);
   /** Modifiers **/
-  void AddCharge(Double_t charge) { fCharge += charge; }
-  void AddChargeTR(Double_t charge) { fChargeTR += charge; }
+  void AddCharge(Double_t charge, Int_t up=1) { if(up) fCharge += charge; else fChargeT += charge; }
+  void AddChargeTR(Double_t charge, Int_t up=1) { if(up) fChargeTR += charge;else fChargeTTR += charge; }
   /** Needed for TClonesArray sorting **/
   Int_t Compare(const TObject*) const;
   Bool_t IsSortable() const { return kTRUE; }
@@ -87,15 +92,16 @@ class CbmTrdDigi : public CbmDigi
   Int_t fAddress; ///< Unique channel address
   Double_t fCharge; ///< Charge
   Double_t fChargeTR; ///< Charge TR
+  Double_t fChargeT; ///< Charge for tilt coupled pads
+  Double_t fChargeTTR; ///< Charge TR for tilt coupled pads
   Double_t fTime; ///< Absolute time [ns]
   Int_t fTriggerType;
   Int_t fInfoType;
   Int_t fStopType;
   Int_t fBufferOverflowCount; 
-  Int_t fNrSamples;
-  Float_t fSamples[45];
+  std::vector<Float_t> fSamples;
 
-  ClassDef(CbmTrdDigi, 6);
+  ClassDef(CbmTrdDigi, 7);
 };
 
 #endif

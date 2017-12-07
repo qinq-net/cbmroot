@@ -105,4 +105,11 @@
 #pragma link C++ class CbmStsxyterRawHitMessage;
 #pragma link C++ class CbmTrbRawMessage;
 
+#pragma read sourceClass="CbmTrdDigi" version="[6]" targetClass="CbmTrdDigi" \
+   source="int fNrSamples; float* fSamples" target="fSamples" \
+   code="{ if (onfile.fNrSamples > 0) { \
+           for (Int_t sample = 0; sample < onfile.fNrSamples; sample++) fSamples.push_back(onfile.fSamples[sample]); \
+           } \
+         }"
+
 #endif
