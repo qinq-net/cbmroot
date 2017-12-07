@@ -16,7 +16,7 @@ CbmBinnedTrackerConfigurator::CbmBinnedTrackerConfigurator(bool useAllDetectors)
    fStsPoints(0), fMuchPoints(0), fTrdPoints(0), fTofPoints(0)
 {
    fill_n(fUseModules, int(kLastModule), fUseAllDetectors);
-   fUseModules[kMuch] = false;// Temporary hack
+   //fUseModules[kMuch] = false;// Temporary hack
    fUseModules[kRich] = false;// Temporary hack
 }
 

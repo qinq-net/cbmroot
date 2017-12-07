@@ -52,7 +52,7 @@ public:
                       tofPoints(), use(false), evN(0), ind(0), tofHits(),
                       used(false), parent(nullptr), offsprings()
                       {}
-//        TrackData(const TrackData&) = delete;
+        TrackData(const TrackData&) = default;
         TrackData& operator=(const TrackData&) = delete;
     };
     

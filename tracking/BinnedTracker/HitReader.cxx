@@ -484,15 +484,47 @@ public:
 #include "CbmMuchDigi.h"
 #include "CbmMuchPoint.h"
 #include "CbmTrdPoint.h"
+#include "TH1.h"
 
 class CbmBinnedMuchHitReader : public CbmBinnedHitReader
 {
+/*private:
+   TClonesArray* fMuchClusters;
+   TClonesArray* fMuchDigis;
+   TClonesArray* fMuchPoints;
+   TH1F* fHitResidualXHisto;
+   TH1F* fHitResidualYHisto;*/
+   
 public:
    CbmBinnedMuchHitReader() : CbmBinnedHitReader()
    {
       FairRootManager* ioman = FairRootManager::Instance();
       fHitArray = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
+      /*
+      fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
+      fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
+      fMuchPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
+      fHitResidualXHisto = new TH1F("muchHitResidualXHisto", "muchHitResidualXHisto", 200, -10., 10.);
+      fHitResidualYHisto = new TH1F("muchHitResidualYHisto", "muchHitResidualYHisto", 200, -10., 10.);*/
    }
+   
+   void SaveHisto(TH1* histo)
+   {
+      TFile* curFile = TFile::CurrentFile();
+      TString histoName = histo->GetName();
+      histoName += ".root";
+      TFile fh(histoName.Data(), "RECREATE");
+      histo->Write();
+      fh.Close();
+      delete histo;
+      TFile::CurrentFile() = curFile;
+   }
+   
+   /*void Finish()
+   {
+      SaveHisto(fHitResidualXHisto);
+      SaveHisto(fHitResidualYHisto);
+   }*/
    
    CbmBinnedMuchHitReader(const CbmBinnedMuchHitReader&) = delete;
    CbmBinnedMuchHitReader& operator=(const CbmBinnedMuchHitReader&) = delete;
@@ -524,7 +556,9 @@ public:
             for (Int_t k = 0; k < nofLinks; ++k)
             {
                const CbmLink& link = match->GetLink(k);
-               const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->Get(link));
+               const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->At(link.GetIndex()));
+               fHitResidualXHisto->Fill(hit->GetX() - (muchPoint->GetXIn() + muchPoint->GetXOut()) / 2);
+               fHitResidualYHisto->Fill(hit->GetY() - (muchPoint->GetYIn() + muchPoint->GetYOut()) / 2);
                t += muchPoint->GetTime();
                ++cnt;
             }

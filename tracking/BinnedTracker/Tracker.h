@@ -109,7 +109,10 @@ public:
         fVertexPseudoStation->AddHit(&fVertex, -1);
         
         for (std::map<Double_t, CbmBinnedStation*>::const_iterator i = fStations.begin(); i != fStations.end(); ++i)
+        {
             fStationArray.push_back(i->second);
+            std::cout << "Station min and max Zs: " << i->second->GetMinZ() << ", " << i->second->GetMaxZ() << std::endl;
+        }
     }
     
     Double_t GetBeamDxSq() const { return fBeamDxSq; }
@@ -903,8 +906,6 @@ private:
     }
     
 private:
-    //std::list<CbmBinnedStation*> fStations;
-    //std::vector<CbmBinnedStation*> fStations;
     std::map<Double_t, CbmBinnedStation*> fStations;
     std::vector<CbmBinnedStation*> fStationArray;
     int fNofStations;

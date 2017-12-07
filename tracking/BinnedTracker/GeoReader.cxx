@@ -304,7 +304,7 @@ void CbmBinnedGeoReader::ReadRich()
 
 void CbmBinnedGeoReader::ReadMuch()
 {
-   list<const char*> stationPath = { "much", "muchstation", "layer" };
+   list<const char*> stationPath = { "much", "station", "muchstation", "layer" };
    list<const char*> geoPath = { "active" };
    gGeoManager->cd("/cave_1");
    int firstStationNumber = fLastStationNumber;
