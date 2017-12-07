@@ -40,6 +40,8 @@ public:
 	 */
 	void SetAddress(Int_t address) { fAddress = address; }
 
+
+        std::string ToString() const { return std::string{""}; }
 private :
 	  Int_t fAddress; // Unique pixel address
 

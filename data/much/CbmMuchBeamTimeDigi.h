@@ -63,7 +63,7 @@ class CbmMuchBeamTimeDigi : public CbmDigi{
   Int_t GetNxCh() const {return fNxCh; }
 
 
-
+  std::string ToString() const { return std::string{""}; }
  
  private:
   Long64_t fData;

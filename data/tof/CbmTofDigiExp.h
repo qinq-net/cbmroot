@@ -127,7 +127,7 @@ class CbmTofDigiExp : public CbmDigi
       void SetTime(Double_t time) { fdTime = time; };
       void SetTot(Double_t tot) { fdTot = tot; };
 
-      TString ToString() const;
+      std::string ToString() const;
    
    private:
       UInt_t   fuAddress; ///< Unique channel address

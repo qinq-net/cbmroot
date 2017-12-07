@@ -71,6 +71,8 @@ class CbmMuchDigi : public CbmDigi{
 	Int_t GetADCCharge()  const { return GetAdc(); }
 	Int_t GetDTime() const { return 0; }
 
+        std::string ToString() const { return std::string{""}; }
+
 	template <class Archive>
   	void serialize(Archive& ar, const unsigned int /*version*/)
   	{

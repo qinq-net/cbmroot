@@ -107,11 +107,11 @@ void CbmTofDigi::SetTot(Double_t tot)
    flData = flData | ( (iBinnedTot & fgklTotMask) << fgkiTotOffs );
 };
                      
-TString CbmTofDigi::ToString() const 
+std::string CbmTofDigi::ToString() const
 {
    TString string = Form( "CbmTrdDigi: address = 0x%08X time = %7f tot = %7f", 
                           GetAddress(), GetCharge(), GetTot() );
-   return string;
+   return string.Data();
 }
 
 Bool_t  CbmTofDigi::operator <( const CbmTofDigi& rhs) const

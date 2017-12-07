@@ -54,7 +54,7 @@ class CbmAuxDigi : public CbmDigi {
 		/** Time [ns]  **/
 		virtual Double_t GetTime() const { return Double_t(fTime); }
 
-
+                std::string ToString() const { return std::string{""}; }
 	private:
 
 		UShort_t  fRocId;     ///< ROC number

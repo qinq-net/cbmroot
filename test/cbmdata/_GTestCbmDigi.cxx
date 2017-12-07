@@ -54,6 +54,8 @@ class CbmTestDigi : public CbmDigi
 
     /** Absolute time [ns]  **/
     Double_t GetTime() const {return CbmDigi::GetTime();}
+
+    std::string ToString() const { return std::string{""}; }
 };
 
 #include "compareDigi.h"

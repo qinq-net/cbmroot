@@ -57,11 +57,11 @@ CbmTofDigiExp::~CbmTofDigiExp()
 {
 }
 
-TString CbmTofDigiExp::ToString() const 
+std::string CbmTofDigiExp::ToString() const
 {
    TString string = Form( "CbmTofDigi: address = 0x%08X time = %f tot = %f", 
                           fuAddress, fdTime, fdTot);
-   return string;
+   return string.Data();
 }
 
 Bool_t  CbmTofDigiExp::operator <( const CbmTofDigiExp& rhs) const

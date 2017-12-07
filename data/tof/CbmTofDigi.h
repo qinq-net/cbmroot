@@ -26,6 +26,7 @@
 #include "CbmTofAddress.h"
 
 class TString;
+#include <string>
 
 class CbmTofDigi : public CbmDigi
 {
@@ -131,7 +132,7 @@ class CbmTofDigi : public CbmDigi
       void SetTime(    Double_t time);
       void SetTot(     Double_t tot);
 
-      TString ToString() const;
+      std::string ToString() const;
    
    private:
       Long64_t flData; ///< Fully compressed data
