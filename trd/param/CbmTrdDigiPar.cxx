@@ -59,6 +59,27 @@ void CbmTrdDigiPar::clear()
 
 void CbmTrdDigiPar::putParams(FairParamList* l) 
 {
+/**  
+   Instead of a fixed number of values the number of values to
+   store now depends on the maximum number of sectors per module
+   The first eleven parameters are for the complete module.  
+   The parametrs are:
+   orientation         : module rotation in 90deg
+   RO type             : ASIC/PAD type. The read-out type is ancrypted as a 2 bit map : 
+                            bit0=1 triangular pads [default rectangular]
+                            bit1=1 FASP asic       [default SPADIC] 
+   fAnodeWireSpacing   : width of amplification cell in cm
+   fAnodeWireToPadPlaneDistance : anode 2 pad plane distance in cm   
+   fAnodeWireOffset    : offset of first anode wire wrt pad plane   
+   X, Y, Z             : position of the middle of the gaslayer.
+   SizeX, SizeY, SizeZ : size of the gaslayer. The values are only
+                         the half size which are the values returned
+                         by geant.
+   
+   The rest of the parameters depend on the number of sectors.
+   SectorSizeX(Y)      : size of a sector
+   PadSizeX(Y)         : size of the pads in this sector
+*/
 
   if (!l) return;
 
@@ -66,41 +87,36 @@ void CbmTrdDigiPar::putParams(FairParamList* l)
    l->add("MaxSectors",    fMaxSectors);
    l->add("ModuleIdArray", fModuleIdArray);
 
-   // Instead of a fixed number of values the number of values to
-   // store now depends on the maximum number of sectors per module
-   // The first six parameters are for the complete module. The rest
-   // of the parameters depend on the number of sectors.
-   // The parametrs are:
-   // X, Y, Z             : position of the middle of the gaslayer.
-   // SizeX, SizeY, SizeZ : size of the gaslayer. The values are only
-   //                       the half size which are the values returned
-   //                       by geant.
-   // SectorSizeX(Y)      : size of a sector
-   // PadSizeX(Y)         : size of the pads in this sector
-
-   Int_t nrValues = 7 + ( fMaxSectors * 4 );
+   Int_t nrValues = 11 + ( fMaxSectors * 4 );
    TArrayD values(nrValues);
  
    for (Int_t i=0; i < fNrOfModules; i++){
-     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetOrientation(),0);         
-     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetX(),1);         
-     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetY(),2);          
-     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetZ(),3);          
-     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetSizeX(),4);      
-     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetSizeY(),5); 
-     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetSizeZ(),6); 
+     Int_t k(0);
+     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetOrientation(), k++);         
+     Int_t roType(0);
+     if(fModuleMap[fModuleIdArray[i]]->GetPadGeoTriangular()) roType |= 1;
+     if(fModuleMap[fModuleIdArray[i]]->GetAsicFASP()) roType |= 2;
+     values.AddAt(roType, k++);         
+     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetAnodeWireSpacing(),k++); 
+     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetAnodeWireToPadPlaneDistance(),k++); 
+     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetAnodeWireOffset(),k++); 
+     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetX(),k++);         
+     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetY(),k++);          
+     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetZ(),k++);          
+     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetSizeX(),k++);      
+     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetSizeY(),k++); 
+     values.AddAt(fModuleMap[fModuleIdArray[i]]->GetSizeZ(),k++); 
      for (Int_t j=0; j < fMaxSectors; j++){       
-       Int_t k=7+(j*4);
-       values.AddAt(fModuleMap[fModuleIdArray[i]]->GetSectorSizeX(j),k+0);   
-       values.AddAt(fModuleMap[fModuleIdArray[i]]->GetSectorSizeY(j),k+1);   
-       values.AddAt(fModuleMap[fModuleIdArray[i]]->GetPadSizeX(j),k+2);   
-       values.AddAt(fModuleMap[fModuleIdArray[i]]->GetPadSizeY(j),k+3);   
+       values.AddAt(fModuleMap[fModuleIdArray[i]]->GetSectorSizeX(j),k++);   
+       values.AddAt(fModuleMap[fModuleIdArray[i]]->GetSectorSizeY(j),k++);   
+       values.AddAt(fModuleMap[fModuleIdArray[i]]->GetPadSizeX(j),k++);   
+       values.AddAt(fModuleMap[fModuleIdArray[i]]->GetPadSizeY(j),k++);   
      }
+
      TString text;
      text += fModuleIdArray[i];
      l->add(text.Data(), values);
    }
-
 }
 
 //------------------------------------------------------
@@ -117,7 +133,7 @@ Bool_t CbmTrdDigiPar::getParams(FairParamList* l) {
   
   // Instead of a fixed number of values the number of values to
   // store now depends on the maximum number of sectors per module
-  Int_t nrValues = 7 + ( fMaxSectors * 4 );
+  Int_t nrValues = 11 + ( fMaxSectors * 4 );
   TArrayD *values = new TArrayD(nrValues);
   TArrayD sectorSizeX(fMaxSectors);
   TArrayD sectorSizeY(fMaxSectors);
@@ -130,6 +146,10 @@ Bool_t CbmTrdDigiPar::getParams(FairParamList* l) {
   Double_t sizex;
   Double_t sizey;
   Double_t sizez;
+  Double_t awPitch(-1.);
+  Double_t awPP(-1.);
+  Double_t awOff(-1.);
+  Int_t roType(0);
 
   TString text;
   for (Int_t i=0; i < fNrOfModules; i++){
@@ -137,25 +157,33 @@ Bool_t CbmTrdDigiPar::getParams(FairParamList* l) {
     text += fModuleIdArray[i];
     if ( ! l->fill(text.Data(), values) ) return kFALSE;
     Int_t VolumeID = text.Atoi();
-    orientation=values->At(0);
-    x=values->At(1);
-    y=values->At(2);
-    z=values->At(3);
-    sizex= values->At(4);
-    sizey= values->At(5);
-    sizez= values->At(6);
+    Int_t k(0);
+    orientation=values->At(k++);
+    roType=values->At(k++);
+    awPitch=values->At(k++);
+    awPP=values->At(k++);
+    awOff=values->At(k++);
+    x=values->At(k++);
+    y=values->At(k++);
+    z=values->At(k++);
+    sizex= values->At(k++);
+    sizey= values->At(k++);
+    sizez= values->At(k++);
     for (Int_t j=0; j < fMaxSectors; j++){       
-      Int_t k=7+(j*4);
-      sectorSizeX.AddAt(values->At(k+0),j);
-      sectorSizeY.AddAt(values->At(k+1),j);
-      padSizeX.AddAt(values->At(k+2),j);
-      padSizeY.AddAt(values->At(k+3),j);
+      sectorSizeX.AddAt(values->At(k++),j);
+      sectorSizeY.AddAt(values->At(k++),j);
+      padSizeX.AddAt(values->At(k++),j);
+      padSizeY.AddAt(values->At(k++),j);
     }
 
     fModuleMap[VolumeID] = new CbmTrdModule(VolumeID, orientation, x, y, z,
                                             sizex, sizey, sizez, fMaxSectors,
                                             sectorSizeX, sectorSizeY,
-                                            padSizeX, padSizeY);
+                                            padSizeX, padSizeY, roType&1, roType&2);
+    fModuleMap[VolumeID]->SetAnodeWireToPadPlaneDistance(awPP>0?awPP:0.35);
+    fModuleMap[VolumeID]->SetAnodeWireOffset(awOff>0?awOff:0.375);
+    fModuleMap[VolumeID]->SetAnodeWireSpacing(awPitch>0?awPitch:0.25);
+    //fModuleMap[VolumeID]->Print();
   }
 
   delete values;
