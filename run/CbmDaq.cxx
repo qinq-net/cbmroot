@@ -372,17 +372,17 @@ InitStatus CbmDaq::Init() {
       fEventsCurrent, kTRUE);
 
   // Register output branches (CbmDigi)
-  TString className = "Cbm";
-  TString branchName = "";
   for (Int_t detector = kMvd; detector < kNofSystems; detector++) {
+    TString className = "Cbm";
+    TString branchName = "";
 
     switch (detector) {
       case kMvd:  branchName = "MvdDigi";  break;
       case kSts:  branchName = "StsDigi";  break;
       case kRich: branchName = "RichDigi"; break;
       case kMuch: branchName = "MuchDigi"; break;
-      case kTrd:  branchName = "TrdDigiExp";  break;
-      case kTof:  branchName = "TofDigi";  break;
+      case kTrd:  branchName = "TrdDigi";  break;
+      case kTof:  branchName = "TofDigiExp";  break;
       case kPsd:  branchName = "PsdDigi";  break;
       default: break;
     } //? detector
@@ -392,6 +392,8 @@ InitStatus CbmDaq::Init() {
     fDigis[detector] = new TClonesArray(className.Data(), 1000);
     FairRootManager::Instance()->Register(branchName.Data(), "",
          fDigis[detector],IsOutputBranchPersistent(branchName));
+    LOG(INFO) << GetName() << ": Registered branch " << branchName
+        << FairLogger::endl;
 
   } //? systems
 
