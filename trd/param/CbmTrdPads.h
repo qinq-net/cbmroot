@@ -9,9 +9,9 @@
 #define CBMTRDPADS_H
 
 Int_t fst1_sect_count = 3;
-// array of pad geometries in the TRD (trd1mod[1-8])
-// 8 modules  // 3 sectors  // 4 values 
-Float_t fst1_pad_type[8][3][4] =        
+// array of pad geometries in the TRD (trd1mod[1-9])
+// 9 modules  // 3 sectors  // 4 values 
+Float_t fst1_pad_type[9][3][4] =        
 			 		 
 // module type 1
 // number of pads:  80 x 32 = 2560
@@ -77,6 +77,15 @@ Float_t fst1_pad_type[8][3][4] =
 // pad size sector 0:  0.67 cm x 24.00 cm = 16.00 cm2
     { { 96.0, 24.00, 96.0/144, 24.00 },
       { 96.0, 48.00, 96.0/144, 24.00 },
-      { 96.0, 24.00, 96.0/144, 24.00 } } };
+      { 96.0, 24.00, 96.0/144, 24.00 } },
+
+// module type 9
+// number of pads:  72 x 20 = 1440
+// pad size sector 1:  0.75 cm x  2.79 cm =  2.09 cm2
+// pad size sector 0:  0.75 cm x  2.79 cm =  2.09 cm2
+    { { 54.0,  5.58, 54.0/ 72,  2.79 },
+      { 54.0, 44.64, 54.0/ 72,  2.79 },
+      { 54.0,  5.58, 54.0/ 72,  2.79 } } };
+
 
 #endif
