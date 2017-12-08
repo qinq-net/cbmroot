@@ -109,7 +109,7 @@ const Double_t zfront[5]  = { 260., 149., 360., 410., 550. };
 const TString setupVer[5] = { "_1h", "_1e", "_1m", "_3e", "_3m" };
 const TString subVersion = setupVer[setupid];
 
-const TString geoVersion   = "trd_" + tagVersion; // + subVersion;
+const TString geoVersion   = "trd_" + tagVersion + subVersion;
 const TString FileNameSim  = geoVersion + "_mcbm.geo.root";
 const TString FileNameGeo  = geoVersion + "_mcbm_geo.root";
 const TString FileNameInfo = geoVersion + "_mcbm.geo.info";
@@ -323,19 +323,19 @@ const Int_t layer3o[9][11] = { { 823,  823,  823,  823,  823,  821,  821,  821, 
 
 
 // Parameters defining the layout of the different detector modules
-const Int_t NofModuleTypes = 8;
-const Int_t ModuleType[NofModuleTypes]    = {  0,  0,  0,  2,  1,  1,  1,  1 }; // 0 = small module, 1 = large module, 2 = mCBM Bucharest prototype
+const Int_t NofModuleTypes = 9;
+const Int_t ModuleType[NofModuleTypes]    = {  0,  0,  0,  0,  1,  1,  1,  1, 2}; // 0 = small module, 1 = large module, 2 = mCBM Bucharest prototype
 
 // FEB inclination angle
-const Double_t feb_rotation_angle[NofModuleTypes] = { 70,  90,  90,  0,  80,  90,  90,  90 }; // rotation around x-axis, 0 = vertical, 90 = horizontal
+const Double_t feb_rotation_angle[NofModuleTypes] = { 70,  90,  90,  90,  80,  90,  90,  90, 0}; // rotation around x-axis, 0 = vertical, 90 = horizontal
 //const Double_t feb_rotation_angle[NofModuleTypes] = { 45,  45,  45,  45,  45,  45,  45,  45 }; // rotation around x-axis, 0 = vertical, 90 = horizontal
 
 // GBTx ROB definitions
-const Int_t RobsPerModule[NofModuleTypes] = {  3,  2,  1,  6,  2,  2,  1,  1 }; // number of GBTx ROBs on module
-const Int_t GbtxPerRob[NofModuleTypes]    = {105,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
+const Int_t RobsPerModule[NofModuleTypes] = {  3,  2,  1,  6,  2,  2,  1,  1, 6}; // number of GBTx ROBs on module
+const Int_t GbtxPerRob[NofModuleTypes]    = {105,105,105,103,107,105,105,103, 103}; // number of GBTx ASICs on ROB
 
-const Int_t GbtxPerModule[NofModuleTypes] = { 15, 10,  5, 18,  0, 10,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
-const Int_t RobTypeOnModule[NofModuleTypes]={555, 55,  5,333333,  0, 55,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
+const Int_t GbtxPerModule[NofModuleTypes] = { 15, 10,  5, 18,  0, 10,  5,  3, 18}; // for .geo.info - TODO: merge with above GbtxPerRob
+const Int_t RobTypeOnModule[NofModuleTypes]={555, 55,  5,333333,  0, 55,  5,  3, 333333}; // for .geo.info - TODO: merge with above GbtxPerRob
 
 //const Int_t RobsPerModule[NofModuleTypes] = {  2,  2,  1,  1,  2,  2,  1,  1 }; // number of GBTx ROBs on module
 //const Int_t GbtxPerRob[NofModuleTypes]    = {107,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
@@ -343,9 +343,9 @@ const Int_t RobTypeOnModule[NofModuleTypes]={555, 55,  5,333333,  0, 55,  5,  3 
 //const Int_t RobTypeOnModule[NofModuleTypes] = { 77, 53,  5,  0,  0, 55,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
 
 // super density for type 1 modules - 2017 - 540 mm
-const Int_t FebsPerModule[NofModuleTypes] = {  9,  5,  6, 18, 12,  8,  4,  3 }; // number of FEBs on backside
+const Int_t FebsPerModule[NofModuleTypes] = {  9,  5,  6, 18, 12,  8,  4,  3, 18 }; // number of FEBs on backside
 //const Int_t FebsPerModule[NofModuleTypes] = {  9,  6,  3,  4, 12,  8,  4,  2 }; // number of FEBs on backside
-const Int_t AsicsPerFeb[NofModuleTypes]   = {210,210,210,410,108,108,108,108 }; // %100 gives number of ASICs on FEB, /100 gives grouping
+const Int_t AsicsPerFeb[NofModuleTypes]   = {210,210,210,410,108,108,108,108, 410 }; // %100 gives number of ASICs on FEB, /100 gives grouping
 //// ultimate density - 540 mm
 //const Int_t FebsPerModule[NofModuleTypes] = {  6,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside - reduced FEBs (64 ch ASICs)
 //const Int_t AsicsPerFeb[NofModuleTypes]   = {315,210,105,105,108,108,108,108 }; //  %100 gives number of ASICs on FEB, /100 gives grouping
@@ -398,7 +398,7 @@ Double_t asic_distance;
 //const Double_t FrameWidth[2]    = { 1.5, 2.0 };   // Width of detector frames in cm
 const Double_t FrameWidth[3]    = { 1.5, 1.5, 2.5};   // Width of detector frames in cm
 // mini - production
-const Double_t DetectorSizeX[3] = { 57., 95., 59.0};   // => 54 x 54 cm2 & 91 x 91 cm2 active area
+const Double_t DetectorSizeX[3] = { 57, 95., 59};   // => 54 x 54 cm2 & 91 x 91 cm2 active area
 const Double_t DetectorSizeY[3] = { 57., 95., 60.8};   // quadratic modules
 //// default
 //const Double_t DetectorSizeX[2] = { 60., 100.};   // => 57 x 57 cm2 & 96 x 96 cm2 active area
@@ -672,13 +672,13 @@ void dump_digi_file()
           {  2.25,  2.25,  2.25 },   // module type 2 -  1.52 mm2
 //          {  2.75,  2.50,  2.75 },   // module type 2 -  1.86 mm2
           {  4.50,  4.50,  4.50 },   // module type 3 -  3.04 mm2
-//          {  2.75,  6.75,  6.75 },   // module type 4 -  4.56 mm2
-          {  2.79,  2.79,  2.79 },   // module type 4 -  triangular pads H=27.7+0.2 mm, W=7.3+0.2 mm  
+          {  6.75,  6.75,  6.75 },   // module type 4 -  4.56 mm2
 
           {  3.75,  4.00,  3.75 },   // module type 5 -  2.84 mm2
           {  5.75,  5.75,  5.75 },   // module type 6 -  4.13 mm2
           { 11.50, 11.50, 11.50 },   // module type 7 -  8.26 mm2
-          { 15.25, 15.50, 15.25 } }; // module type 8 - 11.14 mm2
+          { 15.25, 15.50, 15.25 },   // module type 8 - 11.14 mm2
+          {  2.79,  2.79,  2.79 }};  // module type 9 -  triangular pads H=27.7+0.2 mm, W=7.3+0.2 mm  
   //          { 23.00, 23.00, 23.00 } };     // module type 8 - 16.52 mm2
 //          {  7.50,  7.75,  7.50 },   // module type 6 -  5.51 mm2
 //          {  5.50,  5.75,  5.50 },   // module type 6 -  4.09 mm2
@@ -689,13 +689,13 @@ void dump_digi_file()
           {   8,   8,   8 },         // module type 2
 //          {   8,   4,   8 },         // module type 2
           {   4,   4,   4 },         // module type 3
-//          {   2,   4,   2 },         // module type 4
-          {   2,  16,   2 },         // module type 4
+          {   2,   4,   2 },         // module type 4
 
           {   8,   8,   8 },         // module type 5
           {   4,   8,   4 },         // module type 6
           {   2,   4,   2 },         // module type 7
-          {   2,   2,   2 } };       // module type 8
+          {   2,   2,   2 },          // module type 8
+          {   2,  16,   2 } };        // module type 9
   //          {   1,   2,   1 } };       // module type 8
 //          {  10,   4,  10 },         // module type 5
 //          {   4,   4,   4 },         // module type 6
@@ -717,7 +717,7 @@ void dump_digi_file()
 
   // check, if the entire module size is covered by pads
   for (Int_t im = 0; im < NofModuleTypes; im++){
-    if (im!=3 && ActiveAreaX[ModuleType[im]] - (HeightOfSector[im][0] + HeightOfSector[im][1] + HeightOfSector[im][2]) != 0)
+    if (im!=8 && ActiveAreaX[ModuleType[im]] - (HeightOfSector[im][0] + HeightOfSector[im][1] + HeightOfSector[im][2]) != 0)
     {
       printf("WARNING: sector size does not add up to module size for module type %d\n", im+1);
       printf("%.2f = %.2f + %.2f + %.2f\n", ActiveAreaX[ModuleType[im]], HeightOfSector[im][0], HeightOfSector[im][1], HeightOfSector[im][2]);
@@ -749,9 +749,9 @@ void dump_digi_file()
   fprintf(ifile,"#define CBMTRDPADS_H\n");
   fprintf(ifile,"\n");
   fprintf(ifile,"Int_t fst1_sect_count = 3;\n");
-  fprintf(ifile,"// array of pad geometries in the TRD (trd1mod[1-8])\n");
-  fprintf(ifile,"// 8 modules  // 3 sectors  // 4 values \n");
-  fprintf(ifile,"Float_t fst1_pad_type[8][3][4] =        \n");
+  fprintf(ifile,"// array of pad geometries in the TRD (trd1mod[1-%d])\n", NofModuleTypes);
+  fprintf(ifile,"// %d modules  // 3 sectors  // 4 values \n", NofModuleTypes);
+  fprintf(ifile,"Float_t fst1_pad_type[%d][3][4] =        \n", NofModuleTypes);
 //fprintf(ifile,"Double_t fst1_pad_type[8][3][4] =       \n");
   fprintf(ifile,"			 		 \n");
 
@@ -2115,7 +2115,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 //________________________________________________________________________________________________
 TGeoVolume* create_trdi_module_type()
 {
-  Int_t lyType = 2, moduleType = 4;
+  Int_t lyType = 2, moduleType = 8;
   Double_t sizeX = DetectorSizeX[lyType];
   Double_t sizeY = DetectorSizeY[lyType];
   Double_t frameWidth = FrameWidth[lyType];

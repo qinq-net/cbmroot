@@ -1,8 +1,8 @@
 #
-##   trd_v18m information file
+##   trd_v18m_1e information file
 #
 
-# created 20171204
+# created 20171208
 
 # envelope
 -24.000000 cm   start of TRD (z)
@@ -53,43 +53,43 @@ front-end boards are    : included
 GBTX readout boards are : included
 
 # modules
-     mod1     mod2     mod3     mod4     mod5     mod6     mod7     mod8    total
+     mod1     mod2     mod3     mod4     mod5     mod6     mod7     mod8     mod9    total
 ---------------------------------------------------------------------------------
-        0        0        0        0        0        0        0        1            layer  1
-        0        0        0        0        0        0        0        1            layer  2
-        0        0        0        0        0        0        0        1            layer  3
-        0        0        0        0        0        0        0        1            layer  4
-        0        0        0        1        0        0        0        0            layer  5
+        0        0        0        0        0        0        0        1        0            layer  1
+        0        0        0        0        0        0        0        1        0            layer  2
+        0        0        0        0        0        0        0        1        0            layer  3
+        0        0        0        0        0        0        0        1        0            layer  4
+        0        0        0        1        0        0        0        0        0            layer  5
 
 ---------------------------------------------------------------------------------
-        0        0        0        1        0        0        0        4        5   number of modules
+        0        0        0        1        0        0        0        4        0        5   number of modules
 # febs
-        9s       5s       6s      18       12        8        4        3            FEBs per module
-                                                                                0   ultimate  FEBs
-        0s       0s       0s                                                    0   super     FEBs
-                                            0        0        0       12       12   regular   FEBs
-        0        0        0       18        0        0        0       12       30   number of FEBs
+        9s       5s       6s      18       12        8        4        3       18            FEBs per module
+                                                                                         0   ultimate  FEBs
+        0s       0s       0s                                                             0   super     FEBs
+                                            0        0        0       12                12   regular   FEBs
+        0        0        0       18        0        0        0       12        0       30   number of FEBs
 # asics
-       10       10       10       10        8        8        8        8            ASICs per FEB
-       90       50       60      180       96       64       32       24            ASICs per module
-        0        0        0      180        0        0        0       96      276   number of ASICs
+       10       10       10       10        8        8        8        8       10            ASICs per FEB
+       90       50       60      180       96       64       32       24      180            ASICs per module
+        0        0        0      180        0        0        0       96        0      276   number of ASICs
 # gbtx
-       15       10        5       18        0       10        5        3            GBTXs per module
-        0        0        0       18        0        0        0       12       30   number of GBTXs
-      555       55        5   333333        0       55        5        3            GBTX ROB types on module
-        0        0        0        0        0        0        0        0        0   number of GBTX ROB7
-        0        0        0        0        0        0        0        0        0   number of GBTX ROB5
-        0        0        0        6        0        0        0        4       10   number of GBTX ROB3
+       15       10        5       18        0       10        5        3       18            GBTXs per module
+        0        0        0       18        0        0        0       12        0       30   number of GBTXs
+      555       55        5   333333        0       55        5        3   333333            GBTX ROB types on module
+        0        0        0        0        0        0        0        0        0        0   number of GBTX ROB7
+        0        0        0        0        0        0        0        0        0        0   number of GBTX ROB5
+        0        0        0        6        0        0        0        4        0       10   number of GBTX ROB3
 # e-links
-      180      100      120      360      192      128       64       48      552   e-links used
-      210      140       70      252        0      140       70       42      420   e-links available
-        -        -        -   142.9%        -        -        -   114.3%   131.4%   e-link efficiency
+      180      100      120      360      192      128       64       48      360      552   e-links used
+      210      140       70      252        0      140       70       42      252      420   e-links available
+        -        -        -   142.9%        -        -        -   114.3%        -   131.4%   e-link efficiency
 
 # channels
-     1440      800      960     2880     3072     2048     1024      768            channels per module
-      160      160      160      160      256      256      256      256            channels per feb
-        0        0        0     2880        0        0        0     3072     5952   channels used
-        0s       0s       0s    2880F       0        0        0     3072     8832   channels available
+     1440      800      960     2880     3072     2048     1024      768     2880            channels per module
+      160      160      160      160      256      256      256      256      160            channels per feb
+        0        0        0     2880        0        0        0     3072        0     5952   channels used
+        0s       0s       0s    2880F       0        0        0     3072        0F    8832   channels available
     32.6%u    0.0%s   34.8%r                                                        channel ratio
 
     67.4%   channel efficiency
