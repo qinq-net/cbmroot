@@ -21,11 +21,13 @@ class TClonesArray;
 
 typedef struct MyDigi
 {
+  Bool_t trianglePads;///< triangular pads flag
   Int_t digiId;
   Int_t rowId;
   Int_t colId;
   Int_t combiId;
-  Float_t charge;
+  Float_t charge;     ///< in case of triangular pads rectangular coupled pads
+  Float_t chargeDn;   ///< added to account for triangular pads tilt coupled pads
 } MyDigi;
 
 typedef std::list<MyDigi*> MyDigiList;
@@ -34,8 +36,9 @@ typedef std::vector<MyDigiList*> ClusterList;
 class RowCluster
 {
  public:
-  RowCluster()
+  RowCluster(Bool_t tri=false)
     : hasBeenVisited(false),
+    hasTrianglePads(tri),
     minCol(-1),
     maxCol(-1),
     row(-1),
@@ -53,6 +56,7 @@ class RowCluster
       }
     }
   Bool_t hasBeenVisited;
+  Bool_t hasTrianglePads; ///< semaphore for triangle reconstruction
   Int_t minCol;
   Int_t maxCol;
   Int_t row;
@@ -70,7 +74,7 @@ class CbmTrdClusterFinderFast : public FairTask
 {
 
  public:
-
+  
   /**
    * Default constructor.
    */
@@ -142,7 +146,7 @@ class CbmTrdClusterFinderFast : public FairTask
   Bool_t fNeighbourRowTrigger; // trigger channels in the neighbouring rows (if false and fNeighbourReadout == true: only left and right neighbour are triggered)
   Bool_t fRowClusterMerger;  // merge self triggered channels accross rows
   Bool_t fMultiHit;
-  Bool_t fTrianglePads;
+  Bool_t fTrianglePads;     ///< semaphore for triangle reconstruction
   CbmTrdClusterFinderFast(const CbmTrdClusterFinderFast&);
   CbmTrdClusterFinderFast& operator=(const CbmTrdClusterFinderFast&);
 
