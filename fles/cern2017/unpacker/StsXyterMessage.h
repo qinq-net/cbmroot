@@ -9,10 +9,6 @@
 #include <stdint.h>
 #include <iostream>
 
-// Switch to VHDL-like bitwise CRC if defined
-// CrcCpp implementation otherwise
-#define USE_VHDL_CRC
-
 namespace stsxyter {
 
 // tools: Use to this allow bitwise operations on C++11 enums
@@ -36,9 +32,7 @@ namespace stsxyter {
    {
       Dummy,
       Hit,
-      TsMsb,
-      ReadDataAck,
-      Ack
+      TsMsb
    };
       /// Printout control
    enum class MessagePrintMask : uint16_t
@@ -46,72 +40,38 @@ namespace stsxyter {
       msg_print_Prefix = (0x1 << 0),
       msg_print_Data   = (0x1 << 1),
       msg_print_Hex    = (0x1 << 2),
-      msg_print_Human  = (0x1 << 3),
-      msg_print_Crc    = (0x1 << 4)
+      msg_print_Human  = (0x1 << 3)
    };
    ENABLE_BITMASK_OPERATORS( stsxyter::MessagePrintMask ) // Preproc macro!
 
       /// Fields position (Start bit index)
-   static const uint16_t kusPosLinkIndex  = 24;
-   static const uint16_t kusPosNotHitFlag = 23;
+   static const uint16_t kusPosNotHitFlag = 31;
+   static const uint16_t kusPosLinkIndex  = 22;
       // Hit message
-   static const uint16_t kusPosHitChannel = 16;
-   static const uint16_t kusPosHitAdc     = 11;
+   static const uint16_t kusPosHitChannel = 15;
+   static const uint16_t kusPosHitAdc     = 10;
    static const uint16_t kusPosHitTsOver  =  9;
    static const uint16_t kusPosHitTs      =  1;
    static const uint16_t kusPosHitEmFlag  =  0;
       // Non-hit messages
    static const uint16_t kusPosTsMsbFlag  = 22;
          // TS_MSB message
-   static const uint16_t kusPosTsMsbValA  = 16;
-   static const uint16_t kusPosTsMsbValB  = 10;
-   static const uint16_t kusPosTsMsbValC  =  4;
-   static const uint16_t kusPosTsMsbCrc   =  0;
-         // Control messages
-   static const uint16_t kusPosRdDataFlag = 21;
-            // Read Data Ack message
-   static const uint16_t kusPosRdDataVal  =  6;
-   static const uint16_t kusPosRdDataSeqN =  3;
-   static const uint16_t kusPosRdDataCrc  =  0;
-            // Ack messages
-   static const uint16_t kusPosAckValAck  = 19;
-   static const uint16_t kusPosAckSeqNb   = 15;
-   static const uint16_t kusPosAckCpFlag  = 14;
-   static const uint16_t kusPosAckStatus  = 10;
-   static const uint16_t kusPosAckTime    =  4;
-   static const uint16_t kusPosAckCrc     =  0;
+   static const uint16_t kusPosTsMsbVal   =  0;
 
       /// Fields length (bits)
-   static const uint16_t kusLenLinkIndex  =  8;
-   static const uint16_t kusLenRawMess    = 24;
    static const uint16_t kusLenNotHitFlag =  1;
+   static const uint16_t kusLenLinkIndex  =  9;
       // Hit message
    static const uint16_t kusLenHitChannel =  7;
    static const uint16_t kusLenHitAdc     =  5;
-   static const uint16_t kusLenHitTsFull  = 10; // Includes 2 bit overlap with TS message
-   static const uint16_t kusLenHitTsOver  =  2; // 2 bit overlap with TS message
+   static const uint16_t kusLenHitTsFull  =  9; // Includes 1 bit overlap with TS message ?
+   static const uint16_t kusLenHitTsOver  =  1; // 2 bit overlap with TS message
    static const uint16_t kusLenHitTs      =  8;
    static const uint16_t kusLenHitEmFlag  =  1;
       // Other message
    static const uint16_t kusLenTsMsbFlag  =  1;
          // TS_MSB message
-   static const uint16_t kusLenTsMsbValA  =  6;
-   static const uint16_t kusLenTsMsbValB  =  6;
-   static const uint16_t kusLenTsMsbValC  =  6;
-   static const uint16_t kusLenTsMsbCrc   =  4;
-         // Control messages
-   static const uint16_t kusLenRdDataFlag =  1;
-            // Read Data Ack message
-   static const uint16_t kusLenRdDataVal  = 15;
-   static const uint16_t kusLenRdDataSeqN =  3;
-   static const uint16_t kusLenRdDataCrc  =  3;
-            // Ack messages
-   static const uint16_t kusLenAckValAck  =  2;
-   static const uint16_t kusLenAckSeqNb   =  4;
-   static const uint16_t kusLenAckCpFlag  =  1;
-   static const uint16_t kusLenAckStatus  =  4;
-   static const uint16_t kusLenAckTime    =  6;
-   static const uint16_t kusLenAckCrc     =  4;
+   static const uint16_t kusLenTsMsbVal   = 13;
 
       /// Fields Info
    static const MessField kFieldLinkIndex(  kusPosLinkIndex,  kusLenLinkIndex );
@@ -126,42 +86,20 @@ namespace stsxyter {
       // Non-hit messages
    static const MessField kFieldTsMsbFlag ( kusPosTsMsbFlag,  kusLenTsMsbFlag );
          // TS_MSB message
-   static const MessField kFieldTsMsbValA ( kusPosTsMsbValA,  kusLenTsMsbValA );
-   static const MessField kFieldTsMsbValB ( kusPosTsMsbValB,  kusLenTsMsbValB );
-   static const MessField kFieldTsMsbValC ( kusPosTsMsbValC,  kusLenTsMsbValC );
-   static const MessField kFieldTsMsbCrc  ( kusPosTsMsbCrc,   kusLenTsMsbCrc );
-         // Control messages
-   static const MessField kFieldRdDataFlag( kusPosRdDataFlag, kusLenRdDataFlag );
-            // Read Data Ack message
-   static const MessField kFieldRdDataVal ( kusPosRdDataVal,  kusLenRdDataVal );
-   static const MessField kFieldRdDataSeqN( kusPosRdDataSeqN, kusLenRdDataSeqN );
-   static const MessField kFieldRdDataCrc ( kusPosRdDataCrc,  kusLenRdDataCrc );
-            // Ack messages
-   static const MessField kFieldAckValAck ( kusPosAckValAck,  kusLenAckValAck );
-   static const MessField kFieldAckSeqNb  ( kusPosAckSeqNb,   kusLenAckSeqNb );
-   static const MessField kFieldAckCpFlag ( kusPosAckCpFlag,  kusLenAckCpFlag);
-   static const MessField kFieldAckStatus ( kusPosAckStatus,  kusLenAckStatus );
-   static const MessField kFieldAckTime   ( kusPosAckTime,    kusLenAckTime );
-   static const MessField kFieldAckCrc    ( kusPosAckCrc,     kusLenAckCrc );
+   static const MessField kFieldTsMsbVal  ( kusPosTsMsbVal,   kusLenTsMsbVal );
 
       /// Status/properties constants
    static const uint32_t  kuHitNbAdcBins   = 1 << kusLenHitAdc;
    static const uint32_t  kuHitNbTsBins    = 1 << kusLenHitTs;
    static const uint32_t  kuHitNbOverBins  = 1 << kusLenHitTsOver;
-   static const uint32_t  kuTsMsbNbTsBins  = 1 << kusLenTsMsbValA;
+   static const uint32_t  kuTsMsbNbTsBins  = 1 << kusLenTsMsbVal;
    static const uint32_t  kuTsCycleNbBins  = kuTsMsbNbTsBins * kuHitNbTsBins;
    static const uint16_t  kusInvalidTsMsb  = kuTsMsbNbTsBins;
    static const uint16_t  kusMaskTsMsbOver = (1 << kusLenHitTsOver) - 1;
-   static const double    kdClockCycleNs   = 6.25; // ns, equivalent to 160 MHz clock
+   static const double    kdClockCycleNs   = 3.125; // ns, equivalent to 2*160 MHz clock
 
    class Message {
       private:
-#ifndef USE_VHDL_CRC
-         uint16_t CalcCrc3Pol5Len21( uint32_t uVal ) const;
-         uint16_t CalcCrc4Pol9Len20( uint32_t uVal ) const;
-#endif // not USE_VHDL_CRC
-         uint16_t VhdlCalcCrc3Pol5Len21( uint32_t uVal ) const;
-         uint16_t VhdlCalcCrc4Pol9Len20( uint32_t uVal ) const;
 
 
       protected:
@@ -230,16 +168,11 @@ namespace stsxyter {
          //! Check if the message if a Dummy Hit Message
          inline bool     IsDummy()       const { return IsHit() && ( 0 == GetHitAdc() ); }
          //! Check if the message if a Ts_Msb
-         inline bool     IsTsMsb()       const { return (!IsHit() ) && GetFlag( kFieldTsMsbFlag ); }
-         //! Check if the message if a Hit Message
-         inline bool     IsReadDataAck() const { return (!IsHit() ) && (!IsTsMsb() )
-                                                                    && GetFlag( kFieldRdDataFlag ); }
+         inline bool     IsTsMsb()       const { return (!IsHit() ); }
          //! Returns the message type, see enum MessType
          inline MessType GetMessType() const { return !GetFlag( kFieldNotHitFlag ) ? ( 0 == GetHitAdc() ? MessType::Dummy :
                                                                                                           MessType::Hit ) :
-                                                       GetFlag( kFieldTsMsbFlag )  ? MessType::TsMsb       :
-                                                       GetFlag( kFieldRdDataFlag ) ? MessType::ReadDataAck :
-                                                                                     MessType::Ack; }
+                                                                                     MessType::TsMsb; }
 
          // ------------------------ Hit message fields -------------------------------
          //! For Hit data: Returns StsXYTER channel number (7 bit field)
@@ -279,97 +212,11 @@ namespace stsxyter {
          inline void  SetHitMissEvtsFlag( bool bVal)  { SetBit(   kFieldHitEmFlag, bVal ); }
 
          // ------------------------ TS_MSB message fields ----------------------------
-         //! For TS MSB data: Returns 1st copy of the TS MSB (6 bit field)
-         inline uint16_t GetTsMsbValA() const { return GetField( kFieldTsMsbValA ); }
-         //! For TS MSB data: Returns 2nd copy of the TS MSB (6 bit field)
-         inline uint16_t GetTsMsbValB() const { return GetField( kFieldTsMsbValB ); }
-         //! For TS MSB data: Returns 3rd copy of the TS MSB (6 bit field)
-         inline uint16_t GetTsMsbValC() const { return GetField( kFieldTsMsbValC ); }
-         //! For TS MSB data: Returns message CRC (4 bit field)
-         inline uint16_t GetTsMsbCrc()  const { return GetField( kFieldTsMsbCrc ); }
-         //! For TS MSB data: Returns data protected by CRC (20 bit field)
-         inline uint32_t GetTsMsbCrcInput() const { return GetField( kFieldTsMsbValC.fusPos,
-                                                                     kusLenRawMess - kFieldTsMsbCrc.fusLen ); }
+         //! For TS MSB data: Returns the TS MSB 13 bit field)
+         inline uint16_t GetTsMsbVal() const { return GetField( kFieldTsMsbVal ); }
 
-         //! For TS MSB data: Sets 1st copy of the TS MSB (6 bit field)
-         inline void SetTsMsbValA( uint16_t usVal ) { SetField( kFieldTsMsbValA, usVal ); }
-         //! For TS MSB data: Sets 2nd copy of the TS MSB (6 bit field)
-         inline void SetTsMsbValB( uint16_t usVal ) { SetField( kFieldTsMsbValB, usVal ); }
-         //! For TS MSB data: Sets 3rd copy of the TS MSB (6 bit field)
-         inline void SetTsMsbValC( uint16_t usVal ) { SetField( kFieldTsMsbValC, usVal ); }
-         //! For TS MSB data: Sets message CRC (4 bit field)
-         inline void SetTsMsbCRC(  uint16_t usVal ) { SetField( kFieldTsMsbCrc, usVal ); }
-
-         // ------------------------ Read Data Ack message fields ---------------------
-         //! For Read Data Ack data: Returns read value (15 bit field)
-         inline uint16_t GetRdDataVal()  const { return GetField( kFieldRdDataVal ); }
-         //! For Read Data Ack data: Returns Sequence Number (3 bit field)
-         inline uint16_t GetRdDataSeqN() const { return GetField( kFieldRdDataSeqN ); }
-         //! For Read Data Ack data: Returns message CRC (3 bit field)
-         inline uint16_t GetRdDataCrc()  const { return GetField( kFieldRdDataCrc ); }
-         //! For Read Data Ack data: Returns data protected by CRC (21 bit field)
-         inline uint32_t GetRdDataCrcInput() const { return GetField( kFieldRdDataSeqN.fusPos,
-                                                                      kusLenRawMess - kFieldRdDataCrc.fusLen ); }
-
-         //! For Read Data Ack data: Sets read value (15 bit field)
-         inline void SetRdDataVal(  uint16_t usVal ) { SetField( kFieldRdDataVal,  usVal ); }
-         //! For Read Data Ack data: Sets Sequence Number (3 bit field)
-         inline void SetRdDataSeqN( uint16_t usVal ) { SetField( kFieldRdDataSeqN, usVal ); }
-         //! For Read Data Ack data: Sets message CRC (3 bit field)
-         inline void SetRdDataCrc(  uint16_t usVal ) { SetField( kFieldRdDataCrc,  usVal ); }
-
-         // ------------------------ Ack message fields -------------------------------
-         //! For Ack data: Returns ACK value (2 bit field)
-         inline uint16_t GetAckVal()    const { return GetField( kFieldAckValAck ); }
-         //! For Ack data: Returns Sequence Number (4 bit field)
-         inline uint16_t GetAckSeqNb()  const { return GetField( kFieldAckSeqNb ); }
-         //! For Ack data: Returns config parity flag (1 bit field)
-         inline uint16_t GetAckCpFlag() const { return GetFlag(  kFieldAckCpFlag ); }
-         //! For Ack data: Returns ACK status (4 bit field)
-         inline uint16_t GetAckStatus() const { return GetField( kFieldAckStatus ); }
-         //! For Ack data: Returns ACK time (6 bit field)
-         inline uint16_t GetAckTime()   const { return GetField( kFieldAckTime ); }
-         //! For Ack data: Returns message CRC (4 bit field)
-         inline uint16_t GetAckCrc()    const { return GetField( kFieldAckCrc ); }
-         //! For Ack data: Returns data protected by CRC (20 bit field)
-         inline uint32_t GetAckCrcInput() const { return GetField( kFieldAckTime.fusPos,
-                                                                   kusLenRawMess - kFieldAckCrc.fusLen ); }
-
-         //! For Ack data: Sets ACK value (2 bit field)
-         inline void SetAckVal(    uint16_t usVal ) { SetField( kFieldAckValAck, usVal ); }
-         //! For Ack data: Sets Sequence Number (4 bit field)
-         inline void SetAckSeqNb(  uint16_t usVal ) { SetField( kFieldAckSeqNb,  usVal ); }
-         //! For Ack data: Sets config parity flag (1 bit field)
-         inline void SetAckCpFlag( uint16_t usVal ) { SetBit(   kFieldAckCpFlag, usVal ); }
-         //! For Ack data: Sets ACK status (4 bit field)
-         inline void SetAckStatus( uint16_t usVal ) { SetField( kFieldAckStatus, usVal ); }
-         //! For Ack data: Sets ACK time (6 bit field)
-         inline void SetAckTime(   uint16_t usVal ) { SetField( kFieldAckTime,   usVal ); }
-         //! For Ack data: Sets message CRC (4 bit field)
-         inline void SetAckCrc(    uint16_t usVal ) { SetField( kFieldAckCrc,    usVal ); }
-
-         // ------------------------ Hit message OP -----------------------------------
-         // ------------------------ TS_MSB message OP --------------------------------
-         //! For TS MSB data: computes message 4b 0x9 CRC
-         uint16_t TsMsbCrcCalc()   const;
-         //! For TS MSB data: check if 4b 0x9 CRC is ok
-         bool     TsMsbCrcCheck()  const;
-         //! For TS MSB data: check if CRC is ok and all 3 TS copies agree
-         bool     TsMsbTsCheck()   const;
-         //! For TS MSB data: count how many values are agreeing, possible are 1 (none), 2 or 3
-         uint16_t GetTsMsbMajCnt() const;
-         //! For TS MSB data: check TS integrity and try to correct by majority if corrupted
-         bool     GetTsMsbValCorr( uint16_t & uVal ) const;
-         // ------------------------ Read Data Ack message OP -------------------------
-         //! For Read Data Sck data: computes message 3b 0x5 CRC
-         uint16_t RdDataCrcCalc()  const;
-         //! For Read Data Sck data: check if 3b 0x5 CRC is ok
-         bool     RdDataCrcCheck() const;
-         // ------------------------ Ack message OP -----------------------------------
-         //! For Ack data: computes message 4b 0x9 CRC
-         uint16_t AckCrcCalc()     const;
-         //! For Ack data: check if 4b 0x9 CRC is ok
-         bool     AckCrcCheck()    const;
+         //! For TS MSB data: Sets the TS MSB (13 bit field)
+         inline void SetTsMsbVal( uint16_t usVal ) { SetField( kFieldTsMsbVal, usVal ); }
 
          // ------------------------ General OP ---------------------------------------
          bool PrintMess( std::ostream& os, MessagePrintMask ctrl = MessagePrintMask::msg_print_Human ) const;

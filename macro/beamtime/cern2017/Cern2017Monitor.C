@@ -58,8 +58,8 @@ void Cern2017Monitor(TString inFile = "")
 //  monitorSts->SetPrintMessage();
   monitorSts->EnableChanHitDtPlot();
   monitorSts->SetPulserChannels( 2, 91, 2, 95,
-                                 3, 27, 3, 31 );
-  monitorSts->SetLongDurationLimits( 600, 10 );
+                                 5, 27, 5, 31 );
+  monitorSts->SetLongDurationLimits( 3600, 10 );
   monitorSts->SetBetaFormatMode();
 
   // --- Source task

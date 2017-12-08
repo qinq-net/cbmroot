@@ -14,15 +14,18 @@
 
 // Data
 #include "StsXyterMessage.h"
+#include "StsXyterBetaHit.h"
 
 // CbmRoot
 #include "CbmTSUnpack.h"
 #include "CbmHistManager.h"
 
 // C++11
+#include <chrono>
 
 // C/C++
 #include <vector>
+#include <set>
 #include <map>
 
 class CbmDigi;
@@ -61,10 +64,14 @@ public:
 
    void SetPrintMessage( Bool_t bPrintMessOn = kTRUE,
                          stsxyter::MessagePrintMask ctrl = stsxyter::MessagePrintMask::msg_print_Hex |
-                                                           stsxyter::MessagePrintMask::msg_print_Crc |
                                                            stsxyter::MessagePrintMask::msg_print_Human )
                         { fbPrintMessages = bPrintMessOn; fPrintMessCtrl = ctrl; }
    void EnableChanHitDtPlot( Bool_t bEnable = kTRUE ) { fbChanHitDtEna = bEnable; }
+   void SetPulserChannels( UInt_t uAsicA, UInt_t uChanA, UInt_t uAsicB, UInt_t uChanB,
+                           UInt_t uAsicC, UInt_t uChanC, UInt_t uAsicD, UInt_t uChanD,
+                           UInt_t uMaxNbMicroslices = 100 );
+   void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
+   void SetBetaFormatMode( Bool_t bEnable = kTRUE ) { fbBetaFormat = bEnable; }
 
 private:
    size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
@@ -80,7 +87,7 @@ private:
 
    // Constants
    static const Int_t    kiMaxNbFlibLinks = 16;
-   static const UInt_t   kuBytesPerMessage = 8;
+   static const UInt_t   kuBytesPerMessage = 4;
 
    // Internal Control/status of monitor
       // Task configuration values
@@ -94,21 +101,32 @@ private:
    UInt_t                fuCurrDpbIdx;          //! Index of the DPB from which the MS currently unpacked is coming
    Int_t                 fiRunStartDateTimeSec; //! Start of run time since "epoch" in s, for the plots with date as X axis
    Int_t                 fiBinSizeDatePlots;    //! Bin size in s for the plots with date as X axis
-   std::vector< std::vector< UInt_t > > fvuCurrentTsMsb;       //! Current TS MSB for each eLink
+//   std::vector< std::vector< UInt_t > > fvuCurrentTsMsb;       //! Current TS MSB for each eLink
+   std::vector< std::vector< ULong64_t > > fvuCurrentTsMsb;       //! Current TS MSB for each eLink
    std::vector< std::vector< UInt_t > > fvuCurrentTsMsbCycle;  //! Current TS MSB cycle for each eLink
    std::vector< std::vector< UInt_t > > fvuCurrentTsMsbOver;   //! Current TS MSB overlap bits for each eLink
    std::vector< std::vector< ULong64_t > > fvulChanLastHitTime; //! Last hit time in bins for each Channel
    std::vector< std::vector<Double_t> > fvdChanLastHitTime;    //! Last hit time in ns   for each Channel
+   std::vector< std::vector< std::vector< UInt_t > > > fvuChanNbHitsInMs;    //! Number of hits in each MS for each Channel
+   std::vector< std::vector< std::vector< Double_t > > > fvdChanLastHitTimeInMs; //! Last hit time in bins in each MS for each Channel
+   std::vector< std::vector< std::vector< UShort_t > > > fvusChanLastHitAdcInMs; //! Last hit ADC in bins in each MS for each Channel
+   std::vector< std::vector< std::multiset< stsxyter::BetaHit > > > fvmChanHitsInTs; //! All hits (time & ADC) in bins in last TS for each Channel
       // Starting state book-keeping
    Double_t              fdStartTime;           /** Time of first valid hit (TS_MSB available), used as reference for evolution plots**/
    Double_t              fdStartTimeMsSz;       /** Time of first microslice, used as reference for evolution plots**/
+   std::chrono::steady_clock::time_point ftStartTimeUnix; /** Time of run Start from UNIX system, used as reference for long evolution plots against reception time **/
+      // Data format control
+   Bool_t fbBetaFormat;
+   std::vector< std::vector< UInt_t > > fvuElinkLastTsHit;       //! TS from last hit for each eLink
 
-   // Historgrams
+   // Histograms
    CbmHistManager* fHM;                 //! Histogram manager
    TH1* fhStsMessType;
    TH1* fhStsSysMessType;
    TH2* fhStsMessTypePerDpb;
    TH2* fhStsSysMessTypePerDpb;
+   TH2* fhStsMessTypePerElink;
+   TH2* fhStsSysMessTypePerElink;
 
    std::vector<TH1*> fhStsChanCounts;
    std::vector<TH2*> fhStsChanRawAdc;
@@ -122,14 +140,31 @@ private:
    std::vector<TH1*> fhStsXyterRateEvoLong;
    std::vector<TH2*> fhStsChanHitDt;
    std::vector<TH2*> fhStsChanHitDtNeg;
+   std::vector<TH2*> fhStsChanHitsPerMs;
+   std::vector<TH2*> fhStsChanSameMs;
+   std::vector<TProfile2D*> fpStsChanSameMsTimeDiff;
+   std::vector<TH2*> fhStsChanSameMsTimeDiff;
+
+   Bool_t fbPulserTimeDiffOn;
+   UInt_t fuPulserMaxNbMicroslices;
+   std::vector<UInt_t> fvuPulserAsic;
+   std::vector<UInt_t> fvuPulserChan;
+   std::vector<TH1*> fhStsPulserChansTimeDiff;
+   std::vector<TH2*> fhStsPulserChansTimeDiffEvo;
 
    TH2* fhStsAsicTsMsb;
    TH2* fhStsAsicTsMsbMaj;
    std::vector<TH2*> fhStsElinkTsMsbCrc;
    std::vector<TH2*> fhStsElinkTsMsbMaj;
 
+   Bool_t fbLongHistoEnable;
+   UInt_t fuLongHistoNbSeconds;
+   UInt_t fuLongHistoBinSizeSec;
+   UInt_t fuLongHistoBinNb;
+   std::vector<TH1*> fhFebRateEvoLong;
+   std::vector<TH2*> fhFebChRateEvoLong;
 /*
-   std::vector<TH1*> fhFebRateDate_nDPB;
+   std::vector<TH1*> fhFebRateEvoDate;
 */
 
    TCanvas*  fcMsSizeAll;
@@ -138,7 +173,7 @@ private:
 
    void CreateHistograms();
 
-   void FillHitInfo(   stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx );
+   void FillHitInfo(   stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx, const UInt_t & uMsIdx );
    void FillTsMsbInfo( stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx );
 
    CbmCern2017MonitorSts(const CbmCern2017MonitorSts&);

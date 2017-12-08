@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
 // -----                     CbmCern2017MonitorSts                         -----
-// -----                Created 25/07/17  by P.-A. Loizeau                 -----
+// -----                Created 24/11/17  by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
@@ -26,6 +26,7 @@
 #include "TRandom.h"
 #include "THttpServer.h"
 #include "TROOT.h"
+#include "TStyle.h"
 
 // C++11
 
@@ -61,13 +62,22 @@ CbmCern2017MonitorSts::CbmCern2017MonitorSts() :
    fvuCurrentTsMsbOver(),
    fvulChanLastHitTime(),
    fvdChanLastHitTime(),
+   fvuChanNbHitsInMs(),
+   fvdChanLastHitTimeInMs(),
+   fvusChanLastHitAdcInMs(),
+   fvmChanHitsInTs(),
    fdStartTime(-1.0),
    fdStartTimeMsSz(-1.0),
+   ftStartTimeUnix( std::chrono::steady_clock::now() ),
+   fbBetaFormat( kFALSE ),
+   fvuElinkLastTsHit(),
    fHM(new CbmHistManager()),
    fhStsMessType(NULL),
    fhStsSysMessType(NULL),
    fhStsMessTypePerDpb(NULL),
    fhStsSysMessTypePerDpb(NULL),
+   fhStsMessTypePerElink(NULL),
+   fhStsSysMessTypePerElink(NULL),
    fhStsChanCounts(),
    fhStsChanRawAdc(),
    fhStsChanRawAdcProf(),
@@ -80,10 +90,26 @@ CbmCern2017MonitorSts::CbmCern2017MonitorSts() :
    fhStsXyterRateEvoLong(),
    fhStsChanHitDt(),
    fhStsChanHitDtNeg(),
+   fhStsChanHitsPerMs(),
+   fhStsChanSameMs(),
+   fpStsChanSameMsTimeDiff(),
+   fhStsChanSameMsTimeDiff(),
+   fbPulserTimeDiffOn(kFALSE),
+   fuPulserMaxNbMicroslices(100),
+   fvuPulserAsic(),
+   fvuPulserChan(),
+   fhStsPulserChansTimeDiff(),
+   fhStsPulserChansTimeDiffEvo(),
    fhStsAsicTsMsb(NULL),
    fhStsAsicTsMsbMaj(NULL),
    fhStsElinkTsMsbCrc(),
    fhStsElinkTsMsbMaj(),
+   fbLongHistoEnable( kFALSE ),
+   fuLongHistoNbSeconds( 0 ),
+   fuLongHistoBinSizeSec( 0 ),
+   fuLongHistoBinNb( 0 ),
+   fhFebRateEvoLong(),
+   fhFebChRateEvoLong(),
    fcMsSizeAll(NULL)
 {
 }
@@ -179,32 +205,62 @@ Bool_t CbmCern2017MonitorSts::ReInitContainers()
    fvuCurrentTsMsb.resize( fuNrOfDpbs );
    fvuCurrentTsMsbCycle.resize( fuNrOfDpbs );
    fvuCurrentTsMsbOver.resize( fuNrOfDpbs );
+   fvuElinkLastTsHit.resize( fuNrOfDpbs );
    for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
    {
       fvuCurrentTsMsb[uDpb].resize( fuNbElinksPerDpb );
       fvuCurrentTsMsbCycle[uDpb].resize( fuNbElinksPerDpb );
       fvuCurrentTsMsbOver[uDpb].resize( fuNbElinksPerDpb );
+      fvuElinkLastTsHit[uDpb].resize( fuNbElinksPerDpb );
       for( UInt_t uElink = 0; uElink < fuNbElinksPerDpb; ++uElink )
       {
          fvuCurrentTsMsb[uDpb][uElink]      = 0;
          fvuCurrentTsMsbCycle[uDpb][uElink] = 0;
          fvuCurrentTsMsbOver[uDpb][uElink]  = 0;
+         fvuElinkLastTsHit[uDpb][uElink]  = 0;
       } // for( UInt_t uElink = 0; uElink < fuNbElinksPerDpb; ++uElink )
    } // for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
 
    fvulChanLastHitTime.resize( fuNbStsXyters );
    fvdChanLastHitTime.resize( fuNbStsXyters );
+   fvuChanNbHitsInMs.resize( fuNbStsXyters );
+   fvdChanLastHitTimeInMs.resize( fuNbStsXyters );
+   fvusChanLastHitAdcInMs.resize( fuNbStsXyters );
+   fvmChanHitsInTs.resize( fuNbStsXyters );
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
       fvulChanLastHitTime[ uXyterIdx ].resize( fuNbChanPerAsic );
       fvdChanLastHitTime[ uXyterIdx ].resize( fuNbChanPerAsic );
+      fvuChanNbHitsInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
+      fvdChanLastHitTimeInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
+      fvusChanLastHitAdcInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
+      fvmChanHitsInTs[ uXyterIdx ].resize( fuNbChanPerAsic );
       for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
       {
          fvulChanLastHitTime[ uXyterIdx ][ uChan ] = 0;
          fvdChanLastHitTime[ uXyterIdx ][ uChan ] = -1.0;
+
+         fvuChanNbHitsInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
+         fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
+         fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
+         fvmChanHitsInTs[ uXyterIdx ][ uChan ].clear();
+         for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
+         {
+            fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
+            fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = -1.0;
+            fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
+         } // for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
       } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-
+   LOG(INFO) << "CbmCern2017MonitorSts::ReInitContainers => Changed fvuChanNbHitsInMs size "
+                << fvuChanNbHitsInMs.size() << " VS " << fuNbStsXyters
+                << FairLogger::endl;
+   LOG(INFO) << "CbmCern2017MonitorSts::ReInitContainers =>  Changed fvuChanNbHitsInMs size "
+                << fvuChanNbHitsInMs[ 0 ].size() << " VS " << fuNbChanPerAsic
+                << FairLogger::endl;
+   LOG(INFO) << "CbmCern2017MonitorSts::ReInitContainers =>  Changed fvuChanNbHitsInMs size "
+                << fvuChanNbHitsInMs[ 0 ][ 0 ].size() << " VS " << fuPulserMaxNbMicroslices
+                << FairLogger::endl;
    return kTRUE;
 }
 
@@ -281,6 +337,39 @@ void CbmCern2017MonitorSts::CreateHistograms()
    fHM->Add(sHistName.Data(), fhStsSysMessTypePerDpb);
 #ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsSysMessTypePerDpb );
+#endif
+
+   sHistName = "hStsMessageTypePerElink";
+   title = "Nb of message of each type for each eLink; eLink; Type";
+   fhStsMessTypePerElink = new TH2I(sHistName, title, fuNrOfDpbs * fuNbElinksPerDpb, 0, fuNrOfDpbs * fuNbElinksPerDpb, 5, 0., 5.);
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 1,       "Dummy");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 2,         "Hit");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 3,       "TsMsb");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 4, "ReadDataAck");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 5,         "Ack");
+/* *** Missing int + MessType OP!!!! ****
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::Dummy,       "Dummy");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::Hit,         "Hit");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::TsMsb,       "TsMsb");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::ReadDataAck, "ReadDataAck");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::Ack,         "Ack");
+*/
+   fHM->Add(sHistName.Data(), fhStsMessTypePerElink);
+#ifdef USE_HTTP_SERVER
+   if( server ) server->Register("/StsRaw", fhStsMessTypePerElink );
+#endif
+
+   sHistName = "hStsSysMessTypePerElink";
+   title = "Nb of system message of each type for each eLink; eLink; System Type";
+   fhStsSysMessTypePerElink = new TH2I(sHistName, title, fuNrOfDpbs * fuNbElinksPerDpb, 0, fuNrOfDpbs * fuNbElinksPerDpb, 17, 0., 17.);
+/*
+   fhStsSysMessTypePerElink->GetYaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_START,       "DAQ START");
+   fhStsSysMessTypePerElink->GetYaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_FINISH,      "DAQ FINISH");
+   fhStsSysMessTypePerElink->GetYaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
+*/
+   fHM->Add(sHistName.Data(), fhStsSysMessTypePerElink);
+#ifdef USE_HTTP_SERVER
+   if( server ) server->Register("/StsRaw", fhStsSysMessTypePerElink );
 #endif
 
    // Number of rate bins =
@@ -447,7 +536,115 @@ void CbmCern2017MonitorSts::CreateHistograms()
 
       } // if( fbChanHitDtEna )
 
+      sHistName = Form( "hStsChanHitsPerMs_%03u", uXyterIdx );
+      title = Form( "Nb of hits per channel in each MS in StsXyter #%03u; Nb Hits in MS []; Channel []; MS []", uXyterIdx );
+      fhStsChanHitsPerMs.push_back( new TH2I( sHistName, title,
+                                                100, -0.5, 99.5,
+                                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+      fHM->Add(sHistName.Data(), fhStsChanHitsPerMs[ uXyterIdx ] );
+#ifdef USE_HTTP_SERVER
+      if( server ) server->Register("/StsRaw", fhStsChanHitsPerMs[ uXyterIdx ] );
+#endif
+
+      sHistName = Form( "hStsChanSameMs_%03u", uXyterIdx );
+      title = Form( "Nb of MS with hits in both channels in StsXyter #%03u; Channel A []; Channel B []; Coinc. MS []", uXyterIdx );
+      fhStsChanSameMs.push_back( new TH2I( sHistName, title,
+                                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+      fHM->Add(sHistName.Data(), fhStsChanHitsPerMs[ uXyterIdx ] );
+#ifdef USE_HTTP_SERVER
+      if( server ) server->Register("/StsRaw", fhStsChanSameMs[ uXyterIdx ] );
+#endif
+
+      sHistName = Form( "pStsChanSameMsTimeDiff_%03u", uXyterIdx );
+      title = Form( "Mean Time difference of channels when hits in same MS in StsXyter #%03u; Channel A []; Channel B []; Mean time diff [bins]", uXyterIdx );
+      fpStsChanSameMsTimeDiff.push_back( new TProfile2D( sHistName, title,
+                                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+
+      sHistName = Form( "hStsChanSameMsTimeDiff_%03u", uXyterIdx );
+      title = Form( "Mean Time difference of channels when hits in same MS in StsXyter #%03u; Channel A []; Channel B []; Mean time diff [bins]", uXyterIdx );
+      fhStsChanSameMsTimeDiff.push_back( new TH2D( sHistName, title,
+                                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+      fHM->Add(sHistName.Data(), fhStsChanSameMsTimeDiff[ uXyterIdx ] );
+#ifdef USE_HTTP_SERVER
+      if( server ) server->Register("/StsRaw", fhStsChanSameMsTimeDiff[ uXyterIdx ] );
+#endif
+
+      if( kTRUE == fbLongHistoEnable )
+      {
+         UInt_t uAlignedLimit = fuLongHistoNbSeconds - (fuLongHistoNbSeconds % fuLongHistoBinSizeSec);
+         fuLongHistoBinNb = uAlignedLimit / fuLongHistoBinSizeSec;
+
+         sHistName = Form( "hFebRateEvoLong_%03u", uXyterIdx );
+         title = Form( "Mean rate VS run time in same MS in StsXyter #%03u; Time in run [s]; Rate [1/s]", uXyterIdx );
+         fhFebRateEvoLong.push_back( new TH1D( sHistName, title,
+                                                   fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5) );
+         fHM->Add(sHistName.Data(), fhFebRateEvoLong[ uXyterIdx ] );
+#ifdef USE_HTTP_SERVER
+         if( server ) server->Register("/StsRaw", fhFebRateEvoLong[ uXyterIdx ] );
+#endif
+
+         sHistName = Form( "hFebChRateEvoLong_%03u", uXyterIdx );
+         title = Form( "Mean rate per channel VS run time in StsXyter #%03u; Time in run [s]; Channel []; Rare [1/s]", uXyterIdx );
+         fhFebChRateEvoLong.push_back( new TH2D( sHistName, title,
+                                                   fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5,
+                                                   fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+         fHM->Add(sHistName.Data(), fhFebChRateEvoLong[ uXyterIdx ] );
+#ifdef USE_HTTP_SERVER
+         if( server ) server->Register("/StsRaw", fhFebChRateEvoLong[ uXyterIdx ] );
+#endif
+      } // if( kTRUE == fbLongHistoEnable )
+
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+
+   if( kTRUE == fbPulserTimeDiffOn )
+   {
+      UInt_t uNbPulserChans = fvuPulserAsic.size();
+      UInt_t uNbBinEvo = 32768 + 1;
+      Double_t dMaxEdgeEvo = stsxyter::kdClockCycleNs
+                            * static_cast< Double_t >( uNbBinEvo ) / 2.0;
+      Double_t dMinEdgeEvo = dMaxEdgeEvo * -1.0;
+      for( UInt_t uChA = 0; uChA < uNbPulserChans; ++uChA )
+         for( UInt_t uChB = uChA + 1; uChB < uNbPulserChans; ++uChB )
+         {
+            sHistName = Form( "hStsPulserTimeDiff_%02u_%03u_%02u_%03u",
+                              fvuPulserAsic[uChA], fvuPulserChan[uChA],
+                              fvuPulserAsic[uChB], fvuPulserChan[uChB] );
+            title = Form( "Time diff for hits in same MS from ASIC %02d ch %03d and ASIC %02d ch %03d; tB - tA [ns]; Counts",
+                              fvuPulserAsic[uChA], fvuPulserChan[uChA],
+                              fvuPulserAsic[uChB], fvuPulserChan[uChB] );
+//            TH1 * pHist = new TH1I(sHistName, title, 16385, -51203.125, 51203.125);
+            TH1 * pHist = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+
+            fHM->Add(sHistName.Data(), pHist);
+#ifdef USE_HTTP_SERVER
+            if( server ) server->Register("/StsRaw", pHist );
+#endif
+            fhStsPulserChansTimeDiff.push_back( pHist );
+
+            if( kTRUE == fbLongHistoEnable )
+            {
+               UInt_t uAlignedLimit = fuLongHistoNbSeconds - (fuLongHistoNbSeconds % fuLongHistoBinSizeSec);
+               sHistName = Form( "hStsPulserChansTimeDiffEvo_%02u_%03u_%02u_%03u",
+                              fvuPulserAsic[uChA], fvuPulserChan[uChA],
+                              fvuPulserAsic[uChB], fvuPulserChan[uChB] );
+               title = Form( "Time diff for hits in same MS from ASIC %02d ch %03d and ASIC %02d ch %03d, vs time in run; Time in run [min]; tB - tA [ns]; Counts",
+                                 fvuPulserAsic[uChA], fvuPulserChan[uChA],
+                                 fvuPulserAsic[uChB], fvuPulserChan[uChB] );
+               TH2 * pHistEvo = new TH2I( sHistName, title,
+                                       fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5,
+                                       uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+
+               fHM->Add(sHistName.Data(), pHistEvo);
+#ifdef USE_HTTP_SERVER
+               if( server ) server->Register("/StsRaw", pHistEvo );
+#endif
+               fhStsPulserChansTimeDiffEvo.push_back( pHistEvo );
+            } // if( kTRUE == fbLongHistoEnable )
+         } // Loop on pairs of channels
+   } // if( kTRUE == fbPulserTimeDiffOn )
 
    // Distribution of the TS_MSB per StsXyter
    sHistName = "hStsAsicTsMsb";
@@ -519,7 +716,7 @@ void CbmCern2017MonitorSts::CreateHistograms()
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
       TCanvas* cStsSumm = new TCanvas( Form("cStsSum_%03u", uXyterIdx ),
-                                       Form("Summary plots fo StsXyter %03u", uXyterIdx ),
+                                       Form("Summary plots for StsXyter %03u", uXyterIdx ),
                                        w, h);
       cStsSumm->Divide( 2, 2 );
 
@@ -539,6 +736,67 @@ void CbmCern2017MonitorSts::CreateHistograms()
       gPad->SetLogy();
       fhStsXyterRateEvo[ uXyterIdx ]->Draw();
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+
+      // Pulser testing
+   if( kTRUE == fbPulserTimeDiffOn )
+   {
+      UInt_t uNbPulserPlots = fhStsPulserChansTimeDiff.size();
+      TCanvas* cStsPulser = new TCanvas( "cStsPulser" , "Summary plots for StsXyter pulser testing",
+                                         w, h);
+      cStsPulser->Divide( 2, uNbPulserPlots/2 + uNbPulserPlots%2 );
+
+      for( UInt_t uPulserPlot = 0; uPulserPlot < uNbPulserPlots; ++uPulserPlot)
+      {
+         cStsPulser->cd( 1 + uPulserPlot );
+         gPad->SetLogy();
+         gPad->SetGridx();
+         gPad->SetGridy();
+         fhStsPulserChansTimeDiff[ uPulserPlot ]->Draw();
+         gStyle->SetOptStat("emruo");
+         fhStsPulserChansTimeDiff[ uPulserPlot ]->SetStats(1);
+      } // for( UInt_t uPulserPlot = 0; uPulserPlot < uNbPulserPlots; ++uPulserPlot)
+
+      if( kTRUE == fbLongHistoEnable )
+      {
+         TCanvas* cStsPulserEvo = new TCanvas( "cStsPulserEvo" , "Summary plots for StsXyter pulser testing vs time",
+                                            w, h);
+         cStsPulserEvo->Divide( 2, uNbPulserPlots/2 + uNbPulserPlots%2 );
+
+         for( UInt_t uPulserPlot = 0; uPulserPlot < uNbPulserPlots; ++uPulserPlot)
+         {
+            cStsPulserEvo->cd( 1 + uPulserPlot );
+            gPad->SetGridx();
+            gPad->SetGridy();
+            fhStsPulserChansTimeDiffEvo[ uPulserPlot ]->Draw( "colz" );
+            gStyle->SetOptStat("emruo");
+            fhStsPulserChansTimeDiffEvo[ uPulserPlot ]->SetStats(1);
+         } // for( UInt_t uPulserPlot = 0; uPulserPlot < uNbPulserPlots; ++uPulserPlot)
+      } // if( kTRUE == fbLongHistoEnable )
+   } // if( kTRUE == fbPulserTimeDiffOn )
+
+      // Long duration rate monitoring
+   if( kTRUE == fbLongHistoEnable )
+   {
+      TCanvas* cStsLongRate = new TCanvas( "cStsLongRate" , "Long duration rate plots for StsXyter",
+                                           w, h);
+      cStsLongRate->Divide( 2, fuNbStsXyters );
+
+      for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+      {
+         cStsLongRate->cd( 1 + 2 * uXyterIdx );
+         gPad->SetLogy();
+         gPad->SetGridx();
+         gPad->SetGridy();
+         fhFebRateEvoLong[ uXyterIdx ]->Draw( "hist" );
+
+         cStsLongRate->cd( 2 + 2 * uXyterIdx );
+         gPad->SetLogz();
+         gPad->SetGridx();
+         gPad->SetGridy();
+         fhFebChRateEvoLong[ uXyterIdx ]->Draw( "colz" );
+      } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+   } // if( kTRUE == fbLongHistoEnable )
+
 /*
   Int_t iNbPadsPerDpb = fuNbElinksPerDpb/2 + fuNbElinksPerDpb%2;
   TCanvas* cMuchChCounts = new TCanvas("cMuchChCounts", "MUCH Channels counts", w, h);
@@ -661,6 +919,43 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
 //   Int_t messageType = -111;
    // Loop over microslices
    size_t numCompMsInTs = ts.num_microslices(component);
+
+   if( fuPulserMaxNbMicroslices < numCompMsInTs )
+   {
+      fuPulserMaxNbMicroslices = numCompMsInTs;
+
+      fvuChanNbHitsInMs.resize( fuNbStsXyters );
+      fvdChanLastHitTimeInMs.resize( fuNbStsXyters );
+      fvusChanLastHitAdcInMs.resize( fuNbStsXyters );
+      for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+      {
+         fvuChanNbHitsInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
+         fvdChanLastHitTimeInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
+         fvusChanLastHitAdcInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
+         for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
+         {
+            fvuChanNbHitsInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
+            fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
+            fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
+            for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
+            {
+               fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
+               fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = -1.0;
+               fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
+            } // for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
+         } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
+      } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+      LOG(INFO) << "CbmCern2017MonitorSts::DoUnpack => Changed fvuChanNbHitsInMs size "
+                   << fvuChanNbHitsInMs.size() << " VS " << fuNbStsXyters
+                   << FairLogger::endl;
+      LOG(INFO) << "CbmCern2017MonitorSts::DoUnpack =>  Changed fvuChanNbHitsInMs size "
+                   << fvuChanNbHitsInMs[ 0 ].size() << " VS " << fuNbChanPerAsic
+                   << FairLogger::endl;
+      LOG(INFO) << "CbmCern2017MonitorSts::DoUnpack =>  Changed fvuChanNbHitsInMs size "
+                   << fvuChanNbHitsInMs[ 0 ][ 0 ].size() << " VS " << fuPulserMaxNbMicroslices
+                   << FairLogger::endl;
+   } // if( fuPulserMaxNbMicroslices < numCompMsInTs )
+
    for( size_t m = 0; m < numCompMsInTs; ++m )
    {
       // Ignore overlap ms if number defined by user
@@ -673,7 +968,11 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
 
       uint32_t size = msDescriptor.size;
       LOG(DEBUG) << "Microslice: " << msDescriptor.idx
+                 << " from EqId " << std::hex << fuCurrentEquipmentId << std::dec
                  << " has size: " << size << FairLogger::endl;
+
+      fuCurrDpbId  = static_cast< uint32_t >( fuCurrentEquipmentId & 0xFFFF );
+      fuCurrDpbIdx = fDpbIdIndexMap[ fuCurrDpbId ];
 
       if( component < kiMaxNbFlibLinks )
       {
@@ -682,6 +981,31 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
          fhMsSz[ component ]->Fill( size );
          fhMsSzTime[ component ]->Fill( (1e-9) * static_cast<double>( msDescriptor.idx) - fdStartTimeMsSz, size);
       } // if( component < kiMaxNbFlibLinks )
+
+      if( 0 == component && 0 == ( ( msDescriptor.idx / 1000000000 ) % 10 )
+                         && 0 == ( ( msDescriptor.idx / 100000 ) ) %50000 )
+      {
+         for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+         {
+            fhStsChanSameMsTimeDiff[uXyterIdx]->Reset();
+            TH2* tempProj = fpStsChanSameMsTimeDiff[uXyterIdx]->ProjectionXY( );
+            fhStsChanSameMsTimeDiff[uXyterIdx]->Add( tempProj );
+            delete tempProj;
+/*
+            for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
+               for( UInt_t uChanB = uChan + 1; uChanB < fuNbChanPerAsic; ++uChanB )
+                  if( 0 < fpStsChanSameMsTimeDiff[uXyterIdx]->GetBinEntries( fpStsChanSameMsTimeDiff[uXyterIdx]->GetBin( uChan, uChanB ) ) )
+                  {
+                     LOG(DEBUG) << "Microslice Index =  " << (msDescriptor.idx / 1000000000)
+                                << "s, ASIC " << uXyterIdx << " Chan " << uChan << " VS " << uChanB
+                                << " Entries " << fpStsChanSameMsTimeDiff[uXyterIdx]->GetBinEntries( fpStsChanSameMsTimeDiff[uXyterIdx]->GetBin( uChan, uChanB ) )
+                                << " Mean time diff "<< fpStsChanSameMsTimeDiff[uXyterIdx]->GetBinContent( uChan, uChanB )
+                                << " Error " << fpStsChanSameMsTimeDiff[uXyterIdx]->GetBinError( uChan, uChanB )
+                                << FairLogger::endl;
+                  } // if( 0 < fpStsChanSameMsTimeDiff[uXyterIdx]->GetBinEntries( uChan, uChanB ) )
+*/
+         }  // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+      } // if( 0 == ( ( msDescriptor.idx / 1e-9 ) % 10 )  )
 
       // If not integer number of message in input buffer, print warning/error
       if( 0 != (size % kuBytesPerMessage) )
@@ -694,29 +1018,11 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                               / kuBytesPerMessage;
 
       // Prepare variables for the loop on contents
-      const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>( msContent );
+      const uint32_t* pInBuff = reinterpret_cast<const uint32_t*>( msContent );
       for( uint32_t uIdx = 0; uIdx < uNbMessages; ++uIdx )
       {
          // Fill message
-         uint64_t ulData = static_cast<uint64_t>(pInBuff[uIdx]);
-
-         // temp solution until the DPB ID is moved to the equipment ID field in MS header
-         // The ID is the same in all messages, so no need to do it for each
-         if( 0 == uIdx )
-         {
-//            fuCurrDpbId  = static_cast< uint32_t >( (ulData >> 32) & 0xFFFFFFFF );
-            fuCurrDpbId  = static_cast< uint32_t >( (ulData >> 48) & 0xFFFF );
-            fuCurrDpbIdx = fDpbIdIndexMap[ fuCurrDpbId ];
-/*
-            LOG(INFO) << "CbmCern2017MonitorSts::DoUnpack => "
-                       << "Data in DPB " << fuCurrDpbIdx
-                       << " With ID " << std::setw(8) << std::hex << fuCurrDpbId << std::dec
-                       << " VS " << std::setw(8) << std::hex << fUnpackPar->GetDpbId( 0 ) << std::dec
-                       << " or " << std::setw(8) << std::hex << fUnpackPar->GetDpbId( 1 ) << std::dec
-                       << " " << ( fUnpackPar->GetDpbId( 1 ) - fuCurrDpbId )
-                       << FairLogger::endl;
-*/
-         } // if( 0 == uIdx )
+         uint32_t ulData = static_cast<uint32_t>(pInBuff[uIdx]);
 
          stsxyter::Message mess( static_cast< uint32_t >( ulData & 0xFFFFFFFF ) );
 
@@ -738,12 +1044,14 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
          fmMsgCounter[ typeMess ] ++;
          fhStsMessType->Fill( static_cast< uint16_t > (typeMess) );
          fhStsMessTypePerDpb->Fill( fuCurrDpbIdx, static_cast< uint16_t > (typeMess) );
+         fhStsMessTypePerElink->Fill( fuCurrDpbIdx * fuNbElinksPerDpb + usElinkIdx,
+                                      static_cast< uint16_t > (typeMess) );
 
          switch( typeMess )
          {
             case stsxyter::MessType::Hit :
             {
-               FillHitInfo( mess, usElinkIdx, uAsicIdx );
+               FillHitInfo( mess, usElinkIdx, uAsicIdx, m );
                break;
             } // case stsxyter::MessType::Hit :
             case stsxyter::MessType::TsMsb :
@@ -752,9 +1060,13 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                break;
             } // case stsxyter::MessType::TsMsb :
             case stsxyter::MessType::Dummy :
-            case stsxyter::MessType::ReadDataAck :
-            case stsxyter::MessType::Ack :
             {
+               if( kTRUE == fbBetaFormat )
+               {
+                  // In beta data format, a dummy hit indicates a TS overflow => TS_MSB increase by 1
+                  fvuCurrentTsMsb[fuCurrDpbIdx][0] ++;
+                  fvuElinkLastTsHit[fuCurrDpbIdx][0] = 0;
+               } // if( kTRUE == fbBetaFormat )
                break;
             } // case stsxyter::MessType::Dummy / ReadDataAck / Ack :
             default:
@@ -768,10 +1080,154 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
    } // for( size_t m = 0; m < numCompMsInTs; ++m )
 
 
+   // End of TS, check if stuff to do with the hits inside each MS
+   // Usefull for low rate pulser tests
+      // Need to do it only when last DPB is processed, as they are done one by one
+   if( fuCurrDpbIdx == fuNrOfDpbs - 1 )
+   {
+      for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
+      {
+/*
+         if( kTRUE == fbPulserTimeDiffOn )
+         {
+            UInt_t uNbPulserChans = fvuPulserAsic.size();
+            UInt_t uHistoIdx = 0;
+            for( UInt_t uChA = 0; uChA < uNbPulserChans; ++uChA )
+               for( UInt_t uChB = uChA + 1; uChB < uNbPulserChans; ++uChB )
+               {
+                  if( 0 < fvuChanNbHitsInMs[ fvuPulserAsic[uChA] ][ fvuPulserChan[uChA] ][ uMsIdx ] &&
+                      0 < fvuChanNbHitsInMs[ fvuPulserAsic[uChB] ][ fvuPulserChan[uChB] ][ uMsIdx ] )
+                  {
+                     Double_t dTimeDiff = fvdChanLastHitTimeInMs[ fvuPulserAsic[uChB] ][ fvuPulserChan[uChB] ][ uMsIdx ]
+                                        - fvdChanLastHitTimeInMs[ fvuPulserAsic[uChA] ][ fvuPulserChan[uChA] ][ uMsIdx ];
+                     Short_t sAdcDiff = static_cast< Short_t >( fvusChanLastHitAdcInMs[ fvuPulserAsic[uChB] ][ fvuPulserChan[uChB] ][ uMsIdx ] )
+                                      - static_cast< Short_t >( fvusChanLastHitAdcInMs[ fvuPulserAsic[uChA] ][ fvuPulserChan[uChA] ][ uMsIdx ] );
+
+                     if( dTimeDiff < -102406.25 || 102406.25 < dTimeDiff )
+                        LOG(INFO) << "CbmCern2017MonitorSts::DoUnpack =>"
+                                  << " ASIC A" << fvuPulserAsic[uChA] << " chan A " << fvuPulserChan[uChA]
+                                  << " tA " << fvdChanLastHitTimeInMs[ fvuPulserAsic[uChA] ][ fvuPulserChan[uChA] ][ uMsIdx ]
+                                  << " ASIC B" << fvuPulserAsic[uChB] << " chan B " << fvuPulserChan[uChB]
+                                  << " tB " << fvdChanLastHitTimeInMs[ fvuPulserAsic[uChB] ][ fvuPulserChan[uChB] ][ uMsIdx ]
+                                  << " dt " << dTimeDiff
+                                  << FairLogger::endl;
+
+                     if( dTimeDiff < -102406.25 )
+                        dTimeDiff += 102406.25;
+                     else if( 102406.25 < dTimeDiff )
+                        dTimeDiff -= 102406.25;
+
+                     fhStsPulserChansTimeDiff[ uHistoIdx ]->Fill( dTimeDiff );
+                  } // Both pulser channels got data in last MS
+                  uHistoIdx ++;
+               } // Loop on channel pairs
+         } // if( kTRUE == fbPulserTimeDiffOn )
+*/
+         for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+         {
+            for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
+            {
+               fhStsChanHitsPerMs[uXyterIdx]->Fill( fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ], uChan );
+
+               // Coincidences between
+               if( fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] )
+                  for( UInt_t uChanB = uChan + 1; uChanB < fuNbChanPerAsic; ++uChanB )
+                     if( fvuChanNbHitsInMs[ uXyterIdx ][ uChanB ][ uMsIdx ] )
+                     {
+                        fhStsChanSameMs[ uXyterIdx ]->Fill( uChan, uChanB );
+                        Double_t dTimeDiff = fvdChanLastHitTimeInMs[ uXyterIdx ][ uChanB ][ uMsIdx ]
+                                           - fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ][ uMsIdx ];
+
+                        fpStsChanSameMsTimeDiff[ uXyterIdx ]->Fill( uChan, uChanB, dTimeDiff );
+                     } // if( fvuChanNbHitsInMs[ uXyterIdx ][ uChanB ] )
+
+/*
+               // Pulser test: Coincidences between different FEEs (maybe on different DPBs)
+               for( UInt_t uXyterIdxB = uXyterIdx; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
+               {
+                  for( UInt_t uChanB = 0; uChanB < fuNbChanPerAsic; ++uChanB )
+                  {
+                  } // for( UInt_t uChanB = 0; uChanB < fuNbChanPerAsic; ++uChanB )
+               } // for( UInt_t uXyterIdxB = uXyterIdx; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
+*/
+               // Ok to reset as we only compare to channels with higher indices (or channels in ASICs with higher indices)
+               fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
+               fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = -1.0;
+               fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
+            } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
+         } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+      } // for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
+
+      if( kTRUE == fbPulserTimeDiffOn )
+      {
+         UInt_t uNbPulserChans = fvuPulserAsic.size();
+         UInt_t uHistoIdx = 0;
+         std::chrono::steady_clock::time_point tNow = std::chrono::steady_clock::now();
+         Double_t dUnixTimeInRun = std::chrono::duration_cast< std::chrono::seconds >(tNow - ftStartTimeUnix).count();
+         for( UInt_t uChA = 0; uChA < uNbPulserChans; ++uChA )
+            for( UInt_t uChB = uChA + 1; uChB < uNbPulserChans; ++uChB )
+            {
+               if( 0 < fvmChanHitsInTs[ fvuPulserAsic[uChA] ][ fvuPulserChan[uChA] ].size() &&
+                   0 < fvmChanHitsInTs[ fvuPulserAsic[uChB] ][ fvuPulserChan[uChB] ].size() )
+               {
+                  std::multiset< stsxyter::BetaHit >::iterator itClosestHitB = fvmChanHitsInTs[ fvuPulserAsic[uChB] ][ fvuPulserChan[uChB] ].begin();
+                  for( std::multiset< stsxyter::BetaHit >::iterator itHitA = fvmChanHitsInTs[ fvuPulserAsic[uChA] ][ fvuPulserChan[uChA] ].begin();
+                       itHitA != fvmChanHitsInTs[ fvuPulserAsic[uChA] ][ fvuPulserChan[uChA] ].end();
+                       ++itHitA )
+                  {
+                     Double_t dClosestTimeDiff = 1e12;
+
+                     for( std::multiset< stsxyter::BetaHit >::iterator itHitB = itClosestHitB ;
+                          itHitB != fvmChanHitsInTs[ fvuPulserAsic[uChB] ][ fvuPulserChan[uChB] ].end();
+                          ++itHitB )
+                     {
+                        Double_t dTimeDiff = static_cast< Double_t >( (*itHitB).GetTs() )
+                                           - static_cast< Double_t >( (*itHitA).GetTs() );
+
+                        if( TMath::Abs( dTimeDiff ) <  TMath::Abs( dClosestTimeDiff ) )
+                        {
+                           dClosestTimeDiff = dTimeDiff;
+                           itClosestHitB = itHitB;
+                        } // if( TMath::Abs( dTimeDiff ) <  TMath::Abs( dClosestTimeDiff ) )
+                     } // Loop on hits in channel B, starting from match to previous channel A hit
+
+                     Double_t dTimeDiff = dClosestTimeDiff * stsxyter::kdClockCycleNs;
+                     Short_t sAdcDiff = static_cast< Short_t >( (*itClosestHitB).GetAdc() )
+                                      - static_cast< Short_t >( (*itHitA).GetAdc() );
+
+                     fhStsPulserChansTimeDiff[ uHistoIdx ]->Fill( dTimeDiff );
+                     if( fbLongHistoEnable )
+                     {
+                        Double_t dTimeSinceStartSec = ( (*itHitA).GetTs() * stsxyter::kdClockCycleNs - fdStartTime )* 1e-9;
+                        fhStsPulserChansTimeDiffEvo[ uHistoIdx ]->Fill( dUnixTimeInRun, dTimeDiff );
+                     } // if( fbLongHistoEnable )
+                  } // Loop on hits in channel A
+               } // Both pulser channels got data in last TS
+               uHistoIdx ++;
+            } // Loop on channel pairs
+
+         // Clean up the buffers now that we used the data
+         for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+            for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
+               fvmChanHitsInTs[ uXyterIdx ][ uChan ].clear();
+      } // if( kTRUE == fbPulserTimeDiffOn )
+
+   } // if( fuCurrDpbIdx == fuNrOfDpbs - 1 )
+
+   if( kTRUE == fbBetaFormat && 0 == ts.index() % 1000 && fuCurrDpbIdx == fuNrOfDpbs - 1)
+   {
+      for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
+         LOG(INFO) << "eDPB "   << std::setw(2) << uDpb
+                   << " eLink " << std::setw(2) << 0
+                   << " current TS cycle counter is " << std::setw(12) << fvuCurrentTsMsb[uDpb][0]
+                      << FairLogger::endl;
+
+   } // if( kTRUE == fbBetaFormat && 0 == ts.descriptor.index % 10000 )
+
   return kTRUE;
 }
 
-void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx )
+void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx, const UInt_t & uMsIdx )
 {
    UShort_t usChan   = mess.GetHitChannel();
    UShort_t usRawAdc = mess.GetHitAdc();
@@ -842,49 +1298,67 @@ void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
 */
       // Use TS w/o overlap bits as they will anyway come from the TS_MSB
    fvulChanLastHitTime[ uAsicIdx ][ usChan ] = usRawTs;
-      // Overlap need to be used to correct the TS_MSB
-      // Formula used here gives the following correction table
-      /*
-       *      |  TS MSB Over
-       *      | 0 | 1 | 2 | 3
-       * _____|___|___|___|___
-       * H  0 | 0 | 1 | 2 | 3
-       * I ___|___|___|___|___
-       * T  1 | 3 | 0 | 1 | 2
-       *  ____|___|___|___|___
-       * O  2 | 2 | 3 | 0 | 1
-       * V ___|___|___|___|___
-       * E  3 | 1 | 2 | 3 | 0
-       * R    |   |   |   |
-       */
-   UInt_t uTsMsbCorr = ( stsxyter::kuHitNbOverBins + fvuCurrentTsMsbOver[fuCurrDpbIdx][usElinkIdx] - usTsOver )
-                      % stsxyter::kuHitNbOverBins;
-   fhStsChanOverDiff[ uAsicIdx ]->Fill( usChan, uTsMsbCorr );
 
-      // Need TS cycle counter as otherwise period of only 102.400 us!!!
-      // => Check if we need also a TS MSB cycle correction
-   if( fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] < uTsMsbCorr )
+   if( kFALSE == fbBetaFormat )
    {
-      if( 0 == fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] )
-      {
-         // TO BE CHECKED
-         LOG(WARNING) << "CbmCern2017MonitorSts::FillHitInfo => "
-                    << "Ignore Hit as coming from TS_MSB before system start!"
-                    << FairLogger::endl;
-         return;
-      } // if( 0 == fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] )
+         // Overlap need to be used to correct the TS_MSB
+         // Formula used here gives the following correction table
+         /*
+          *      |  TS MSB Over
+          *      | 0 | 1 | 2 | 3
+          * _____|___|___|___|___
+          * H  0 | 0 | 1 | 2 | 3
+          * I ___|___|___|___|___
+          * T  1 | 3 | 0 | 1 | 2
+          *  ____|___|___|___|___
+          * O  2 | 2 | 3 | 0 | 1
+          * V ___|___|___|___|___
+          * E  3 | 1 | 2 | 3 | 0
+          * R    |   |   |   |
+          */
+      UInt_t uTsMsbCorr = ( stsxyter::kuHitNbOverBins + fvuCurrentTsMsbOver[fuCurrDpbIdx][usElinkIdx] - usTsOver )
+                         % stsxyter::kuHitNbOverBins;
+      fhStsChanOverDiff[ uAsicIdx ]->Fill( usChan, uTsMsbCorr );
 
-      fvulChanLastHitTime[ uAsicIdx ][ usChan ] +=
-                  stsxyter::kuHitNbTsBins   * static_cast<ULong64_t>(  fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx]
-                                                                     + stsxyter::kuHitNbTsBins - uTsMsbCorr )
-                + stsxyter::kuTsCycleNbBins * static_cast<ULong64_t>( fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] - 1 );
-   } // if( fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] < uTsMsbCorr )
-      else fvulChanLastHitTime[ uAsicIdx ][ usChan ] +=
-                  stsxyter::kuHitNbTsBins   * static_cast<ULong64_t>( fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] - uTsMsbCorr )
-                + stsxyter::kuTsCycleNbBins * static_cast<ULong64_t>( fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] );
+         // Need TS cycle counter as otherwise period of only 102.400 us!!!
+         // => Check if we need also a TS MSB cycle correction
+      if( fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] < uTsMsbCorr )
+      {
+         if( 0 == fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] )
+         {
+            // TO BE CHECKED
+            LOG(WARNING) << "CbmCern2017MonitorSts::FillHitInfo => "
+                       << "Ignore Hit as coming from TS_MSB before system start!"
+                       << FairLogger::endl;
+            return;
+         } // if( 0 == fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] )
+
+         fvulChanLastHitTime[ uAsicIdx ][ usChan ] +=
+                     stsxyter::kuHitNbTsBins   * static_cast<ULong64_t>(  fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx]
+                                                                        + stsxyter::kuHitNbTsBins - uTsMsbCorr )
+   //                + stsxyter::kuTsCycleNbBins * static_cast<ULong64_t>( fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] - 1 )
+                   ;
+      } // if( fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] < uTsMsbCorr )
+         else fvulChanLastHitTime[ uAsicIdx ][ usChan ] +=
+                     stsxyter::kuHitNbTsBins   * static_cast<ULong64_t>( fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] - uTsMsbCorr )
+   //                + stsxyter::kuTsCycleNbBins * static_cast<ULong64_t>( fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] )
+                   ;
+   } // if( kFALSE == fbBetaFormat )
+      else
+      {
+//         if( usRawTs < fvuElinkLastTsHit[fuCurrDpbIdx][usElinkIdx] )
+//            fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx]++;
+
+         fvulChanLastHitTime[ uAsicIdx ][ usChan ] +=
+                     static_cast<ULong64_t>( stsxyter::kuHitNbTsBins )
+                   * static_cast<ULong64_t>( fvuCurrentTsMsb[fuCurrDpbIdx][0]);
+
+         fvuElinkLastTsHit[fuCurrDpbIdx][usElinkIdx] = usRawTs;
+      } // else of if( kFALSE == fbBetaFormat )
 
    // Convert the Hit time in bins to Hit time in ns
    Double_t dHitTimeNs = fvulChanLastHitTime[ uAsicIdx ][ usChan ] * stsxyter::kdClockCycleNs;
+
 
    // If needed fill the hit interval plots
    if( fbChanHitDtEna )
@@ -898,7 +1372,13 @@ void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
    } // if( fbChanHitDtEna )
 
    // Store new value of Hit time in ns
-   fvdChanLastHitTime[ uAsicIdx ][ usChan ] = dHitTimeNs;
+   fvdChanLastHitTime[ uAsicIdx ][ usChan ] = fvulChanLastHitTime[ uAsicIdx ][ usChan ];
+
+   // Pulser and MS
+   fvuChanNbHitsInMs[      uAsicIdx ][ usChan ][ uMsIdx ] ++;
+   fvdChanLastHitTimeInMs[ uAsicIdx ][ usChan ][ uMsIdx ] = dHitTimeNs;
+   fvusChanLastHitAdcInMs[ uAsicIdx ][ usChan ][ uMsIdx ] = usRawAdc;
+   fvmChanHitsInTs[        uAsicIdx ][ usChan ].insert( stsxyter::BetaHit( fvulChanLastHitTime[ uAsicIdx ][ usChan ], usRawAdc ) );
 
    // Check Starting point of histos with time as X axis
    if( -1 == fdStartTime )
@@ -912,63 +1392,28 @@ void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
    fhStsChanHitRateEvoLong[ uAsicIdx ]->Fill( dTimeSinceStartMin, usChan, 1.0/60.0 );
    fhStsXyterRateEvoLong[ uAsicIdx ]->Fill(   dTimeSinceStartMin, 1.0/60.0 );
 
+   if( kTRUE == fbLongHistoEnable )
+   {
+      std::chrono::steady_clock::time_point tNow = std::chrono::steady_clock::now();
+      Double_t dUnixTimeInRun = std::chrono::duration_cast< std::chrono::seconds >(tNow - ftStartTimeUnix).count();
+      fhFebRateEvoLong[ uAsicIdx ]->Fill( dUnixTimeInRun , 1.0 / fuLongHistoBinSizeSec );
+      fhFebChRateEvoLong[ uAsicIdx ]->Fill( dUnixTimeInRun , usChan, 1.0 / fuLongHistoBinSizeSec );
+   } // if( kTRUE == fbLongHistoEnable )
+
 }
 
 void CbmCern2017MonitorSts::FillTsMsbInfo( stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx )
 {
-   UShort_t usValA    = mess.GetTsMsbValA();
-//   UShort_t usValB    = mess.GetTsMsbValB();
-//   UShort_t usValC    = mess.GetTsMsbValC();
-   bool     bCrcCheck = mess.TsMsbCrcCheck();
+   UShort_t usVal    = mess.GetTsMsbVal();
 
-   // Fill CRC check histo as independent of other data processing
-   fhStsElinkTsMsbCrc[fuCurrDpbIdx]->Fill( usElinkIdx, ( bCrcCheck ? 1 : 0 ) );
+   // Update Status counters
+   if( usVal < fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] )
+      fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] ++;
+   fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] = usVal;
 
-   if( bCrcCheck )
-   {
-      // Everything ok
-
-      // Update Status counters
-      if( usValA < fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] )
-         fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] ++;
-      fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] = usValA;
-
-      fhStsAsicTsMsb->Fill( fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx], uAsicIdx );
-      fhStsAsicTsMsbMaj->Fill( uAsicIdx, 3 );
-      fhStsElinkTsMsbMaj[fuCurrDpbIdx]->Fill( usElinkIdx, 3 );
-   } // if( bCrcCheck )
-      else
-      {
-         // Either nor 3 agreement or bad CRC
-         UShort_t uMajVal = 0;
-         mess.GetTsMsbValCorr( uMajVal );
-         if( stsxyter::kusInvalidTsMsb == uMajVal )
-         {
-            // No majority => value cannot be recovered & used
-            LOG(WARNING) << "CbmCern2017MonitorSts::FillTsMsbInfo => "
-                         << " Ignoring value for DPB " << fuCurrDpbIdx
-                         << " and link " << usElinkIdx << " (ASIC " << uAsicIdx << ") "
-                         << " as not majority can be found!! CRC check " << bCrcCheck
-                         << FairLogger::endl;
-
-            fhStsAsicTsMsbMaj->Fill( uAsicIdx, 1 );
-            fhStsElinkTsMsbMaj[fuCurrDpbIdx]->Fill( usElinkIdx, 1 );
-
-            return;
-         } // if( stsxyter::kusInvalidTsMsb == uMajVal )
-
-         // Update Status counters
-         if( uMajVal < fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] )
-            fvuCurrentTsMsbCycle[fuCurrDpbIdx][usElinkIdx] ++;
-         fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx] = uMajVal;
-
-         fhStsAsicTsMsb->Fill( fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx], uAsicIdx );
-
-         // Get majority count used (should be 2 or 3)
-         UShort_t uMajCnt = mess. GetTsMsbMajCnt();
-         fhStsAsicTsMsbMaj->Fill( uAsicIdx, uMajCnt );
-         fhStsElinkTsMsbMaj[fuCurrDpbIdx]->Fill( usElinkIdx, uMajCnt );
-      } // else of if( bCrcCheck )
+   fhStsAsicTsMsb->Fill( fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx], uAsicIdx );
+   fhStsAsicTsMsbMaj->Fill( uAsicIdx, 3 );
+   fhStsElinkTsMsbMaj[fuCurrDpbIdx]->Fill( usElinkIdx, 3 );
 
    // Update the overlap bits for this eLink
    fvuCurrentTsMsbOver[fuCurrDpbIdx][usElinkIdx] =  fvuCurrentTsMsb[fuCurrDpbIdx][usElinkIdx]
@@ -986,9 +1431,7 @@ void CbmCern2017MonitorSts::Finish()
    LOG(INFO) << "CbmCern2017MonitorSts statistics are " << FairLogger::endl;
    LOG(INFO) << " Hit      messages: " << fmMsgCounter[ stsxyter::MessType::Hit   ] << FairLogger::endl
              << " Ts MSB   messages: " << fmMsgCounter[ stsxyter::MessType::TsMsb ] << FairLogger::endl
-             << " Dummy    messages: " << fmMsgCounter[ stsxyter::MessType::TsMsb ] << FairLogger::endl
-             << " Read Ack messages: " << fmMsgCounter[ stsxyter::MessType::TsMsb ] << FairLogger::endl
-             << " Ack      messages: " << fmMsgCounter[ stsxyter::MessType::TsMsb ] << FairLogger::endl;
+             << " Dummy    messages: " << fmMsgCounter[ stsxyter::MessType::Dummy ] << FairLogger::endl;
 
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
 
@@ -1021,6 +1464,8 @@ void CbmCern2017MonitorSts::SaveAllHistos( TString sFileName )
    fhStsSysMessType->Write();
    fhStsMessTypePerDpb->Write();
    fhStsSysMessTypePerDpb->Write();
+   fhStsMessTypePerElink->Write();
+   fhStsSysMessTypePerElink->Write();
 
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
@@ -1039,7 +1484,28 @@ void CbmCern2017MonitorSts::SaveAllHistos( TString sFileName )
          fhStsChanHitDt[ uXyterIdx ]->Write();
          fhStsChanHitDtNeg[ uXyterIdx ]->Write();
       } // if( fbChanHitDtEna )
+      fhStsChanHitsPerMs[ uXyterIdx ]->Write();
+      fhStsChanSameMs[ uXyterIdx ]->Write();
+      fpStsChanSameMsTimeDiff[ uXyterIdx ]->Write();
+      fhStsChanSameMsTimeDiff[ uXyterIdx ]->Write();
+      if( kTRUE == fbLongHistoEnable )
+      {
+         fhFebRateEvoLong[ uXyterIdx ]->Write();
+         fhFebChRateEvoLong[ uXyterIdx ]->Write();
+      } // if( kTRUE == fbLongHistoEnable )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+
+   if( kTRUE == fbPulserTimeDiffOn )
+   {
+      UInt_t uNbPulserChans = fvuPulserAsic.size();
+      UInt_t uHistoIdx = 0;
+      for( UInt_t uChA = 0; uChA < uNbPulserChans; ++uChA )
+         for( UInt_t uChB = uChA + 1; uChB < uNbPulserChans; ++uChB )
+         {
+            fhStsPulserChansTimeDiff[ uHistoIdx ]->Write();
+            uHistoIdx ++;
+         } // Loop on channel pairs
+   } // if( kTRUE == fbPulserTimeDiffOn )
 
    fhStsAsicTsMsb->Write();
    fhStsAsicTsMsbMaj->Write();
@@ -1083,6 +1549,8 @@ void CbmCern2017MonitorSts::ResetAllHistos()
    fhStsSysMessType->Reset();
    fhStsMessTypePerDpb->Reset();
    fhStsSysMessTypePerDpb->Reset();
+   fhStsMessTypePerElink->Reset();
+   fhStsSysMessTypePerElink->Reset();
 
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
@@ -1101,7 +1569,29 @@ void CbmCern2017MonitorSts::ResetAllHistos()
          fhStsChanHitDt[ uXyterIdx ]->Reset();
          fhStsChanHitDtNeg[ uXyterIdx ]->Reset();
       } // if( fbChanHitDtEna )
+      fhStsChanHitsPerMs[ uXyterIdx ]->Reset();
+      fhStsChanSameMs[ uXyterIdx ]->Reset();
+      fpStsChanSameMsTimeDiff[ uXyterIdx ]->Reset();
+      fhStsChanSameMsTimeDiff[ uXyterIdx ]->Reset();
+      if( kTRUE == fbLongHistoEnable )
+      {
+         ftStartTimeUnix = std::chrono::steady_clock::now();
+         fhFebRateEvoLong[ uXyterIdx ]->Reset();
+         fhFebChRateEvoLong[ uXyterIdx ]->Reset();
+      } // if( kTRUE == fbLongHistoEnable )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+
+   if( kTRUE == fbPulserTimeDiffOn )
+   {
+      UInt_t uNbPulserChans = fvuPulserAsic.size();
+      UInt_t uHistoIdx = 0;
+      for( UInt_t uChA = 0; uChA < uNbPulserChans; ++uChA )
+         for( UInt_t uChB = uChA + 1; uChB < uNbPulserChans; ++uChB )
+         {
+            fhStsPulserChansTimeDiff[ uHistoIdx ]->Reset();
+            uHistoIdx ++;
+         } // Loop on channel pairs
+   } // if( kTRUE == fbPulserTimeDiffOn )
 
    fhStsAsicTsMsb->Reset();
    fhStsAsicTsMsbMaj->Reset();
@@ -1134,6 +1624,65 @@ void CbmCern2017MonitorSts::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinS
    fiBinSizeDatePlots    = iBinSize;
 
    LOG(INFO) << "Assigned new MUCH Run Start Date-Time: " << fRunStartDateTime->AsString() << FairLogger::endl;
+}
+void CbmCern2017MonitorSts::SetPulserChannels( UInt_t uAsicA, UInt_t uChanA, UInt_t uAsicB, UInt_t uChanB,
+                                               UInt_t uAsicC, UInt_t uChanC, UInt_t uAsicD, UInt_t uChanD,
+                                               UInt_t uMaxNbMicroslices )
+{
+/*
+#ifdef USE_HTTP_SERVER
+   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
+#endif
+   TString sHistName{""};
+   TString title{""};
+*/
+   fuPulserMaxNbMicroslices = uMaxNbMicroslices;
+
+   UInt_t uNbChans = 4;
+
+   fvuPulserAsic.resize( uNbChans );
+   fvuPulserChan.resize( uNbChans );
+   fvuPulserAsic[0] = uAsicA;
+   fvuPulserChan[0] = uChanA;
+   fvuPulserAsic[1] = uAsicB;
+   fvuPulserChan[1] = uChanB;
+   fvuPulserAsic[2] = uAsicC;
+   fvuPulserChan[2] = uChanC;
+   fvuPulserAsic[3] = uAsicD;
+   fvuPulserChan[3] = uChanD;
+/*
+   // Remove old histos
+   if( kTRUE == fbPulserTimeDiffOn )
+   {
+      for( Int_t iIdx = 0; iIdx < fhStsPulserChansTimeDiff.size(); ++iIdx )
+         delete fhStsPulserChansTimeDiff[ iIdx ];
+   } // if( kTRUE == fbPulserTimeDiffOn )
+   fhStsPulserChansTimeDiff.clear();
+
+   for( UInt_t uChA = 0; uChA < uNbChans; ++uChA )
+      for( UInt_t uChB = uChA + 1; uChB < uNbChans; ++uChB )
+      {
+         sHistName = Form( "hStsPulserTimeDiff_%02u_%03u_%02u_%03u",
+                           fvuPulserAsic[uChA], fvuPulserChan[uChA],
+                           fvuPulserAsic[uChB], fvuPulserChan[uChB] );
+         title = "Time diff for hits in same MS from ASIC %02d ch %03d and ASIC %02d ch %03d; tB - tA [ns]; Counts";
+         TH1 * pHist = new TH1I(sHistName, title, 16385, -51203.125, 51203.125);
+
+         fHM->Add(sHistName.Data(), pHist);
+#ifdef USE_HTTP_SERVER
+         if( server ) server->Register("/StsRaw", pHist );
+#endif
+         fhStsPulserChansTimeDiff.push_back( pHist );
+      } // Loop on pairs of channels
+*/
+   fbPulserTimeDiffOn = kTRUE;
+}
+
+void CbmCern2017MonitorSts::SetLongDurationLimits( UInt_t uDurationSeconds, UInt_t uBinSize )
+{
+   fbLongHistoEnable     = kTRUE;
+   fuLongHistoNbSeconds  = uDurationSeconds;
+   fuLongHistoBinSizeSec = uBinSize;
 }
 
 ClassImp(CbmCern2017MonitorSts)
