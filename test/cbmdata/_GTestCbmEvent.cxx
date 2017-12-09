@@ -251,7 +251,7 @@ TEST(_GTestCbmCluster, CheckSettersAndGetters)
      compareEventMap(test, 9,  3, kStsTrack,   ststrack);
    }
 
-   EXPECT_STREQ("Event -111 at t = 1 ns. Registered data types: 6, data objects: 9\n          -- Data type 1, number of data 2\n          -- Data type 2, number of data 1\n          -- Data type 3, number of data 1\n          -- Data type 4, number of data 1\n          -- Data type 5, number of data 1\n          -- Data type 6, number of data 3\n", test.ToString().c_str());
+   EXPECT_STREQ("Event -111 at t = 1 ns. Registered data types: 6, data objects: 9\n          -- Data type 1, number of data 2\n          -- Data type 6, number of data 1\n          -- Data type 7, number of data 1\n          -- Data type 8, number of data 1\n          -- Data type 9, number of data 1\n          -- Data type 10, number of data 3\n", test.ToString().c_str());
 
  }
 
