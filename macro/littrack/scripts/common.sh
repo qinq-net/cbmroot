@@ -90,23 +90,23 @@ function set_default_muon_geometry() {
 # Function sets the default electron geometry
 function set_default_electron_geometry() {
     export LIT_CAVE_GEOM=cave.geo
-    export LIT_PIPE_GEOM=pipe/pipe_v14y.geo.root
+    export LIT_PIPE_GEOM=pipe/pipe_v14n.geo.root
     export LIT_SHIELD_GEOM=
     export LIT_MVD_GEOM=
-    export LIT_STS_GEOM=sts/sts_v13d.geo.root
-    export LIT_STS_DIGI=${VMCWORKDIR}/parameters/sts/sts_v13d_std.digi.par
-    export LIT_STS_MAT_BUDGET_FILE=${VMCWORKDIR}/parameters/sts/sts_matbudget_v13d.root
+    export LIT_STS_GEOM=sts/sts_v16g.geo.root
+    export LIT_STS_DIGI=
+    export LIT_STS_MAT_BUDGET_FILE=${VMCWORKDIR}/parameters/sts/sts_matbudget_v16g.root
     export LIT_MUCH_GEOM=
     export LIT_MUCH_DIGI=
-    export LIT_RICH_GEOM=rich/rich_v16a_3e.geo.root
-    export LIT_TRD_GEOM=trd/trd_v15a_3e.geo.root
-    export LIT_TRD_DIGI=${VMCWORKDIR}/parameters/trd/trd_v15a_3e.digi.par
-    export LIT_TOF_GEOM=tof/tof_v16a_1e.geo.root
-    export LIT_TOF_DIGI=${VMCWORKDIR}/parameters/tof/tof_v16a_1e.digi.par
-    export LIT_TOF_DIGI_BDF=${VMCWORKDIR}/parameters/tof/tof_v16a_1e.digibdf.par
+    export LIT_RICH_GEOM=rich/rich_v17a_3e.geo.root
+    export LIT_TRD_GEOM=trd/trd_v17c_3e.geo.root
+    export LIT_TRD_DIGI=${VMCWORKDIR}/parameters/trd/trd_v17c_3e.digi.par
+    export LIT_TOF_GEOM=tof/tof_v16c_3e.geo.root
+    export LIT_TOF_DIGI=${VMCWORKDIR}/parameters/tof/tof_v16c_3e.digi.par
+    export LIT_TOF_DIGI_BDF=${VMCWORKDIR}/parameters/tof/tof_v16c_3e.digibdf.par
     export LIT_ECAL_GEOM=
     export LIT_FIELD_MAP=field_v12b
-    export LIT_MAGNET_GEOM=magnet/magnet_v12b.geo.root
+    export LIT_MAGNET_GEOM=magnet/magnet_v15a.geo.root
     
     export LIT_CONSEQUTIVE_STS_POINTS=1
     export LIT_NORM_STS_POINTS=4

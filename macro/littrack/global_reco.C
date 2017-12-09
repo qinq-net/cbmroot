@@ -65,7 +65,7 @@ void global_reco(Int_t nEvents = 10, // number of events
     stsMatBudgetFile = TString(gSystem->Getenv("LIT_STS_MAT_BUDGET_FILE"));
   }
 
-  parFileList->Add(&stsDigiFile);
+//  parFileList->Add(&stsDigiFile);
 
   Int_t iVerbose = 1;
   TStopwatch timer;
