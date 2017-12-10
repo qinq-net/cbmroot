@@ -4,6 +4,43 @@
 #include <stdint.h>
 #include <iostream>
 
+#ifndef __CINT__
+namespace get4v1x {
+   // Size of one clock cycle (=1 coarse bin)
+   const double   kdClockCycleSize    = 6250.0; //[ps]
+   const double   kdClockCycleSizeNs  = kdClockCycleSize / 1000.0; //[ns]
+   // TODO:For now make 100ps default, maybe need later an option for it
+   const double   kdTotBinSize      =   50.0; //ps
+
+   const uint32_t kuFineTime    = 0x0000007F; // Fine Counter value
+   const uint32_t kuFtShift     =          0; // Fine Counter offset
+   const uint32_t kuCoarseTime  = 0x0007FF80; // Coarse Counter value
+   const uint32_t kuCtShift     =          7; // Coarse Counter offset
+   const uint32_t kuCtSize      =         12; // Coarse Counter size in bits
+
+   const uint32_t kuFineCounterSize    = ( (kuFineTime>>kuFtShift)+1 );
+   const uint32_t kuCoarseCounterSize  = ( (kuCoarseTime>>kuCtShift)+1 );
+   const uint32_t kuCoarseOverflowTest = kuCoarseCounterSize / 2 ; // Limit for overflow check
+   const uint32_t kuTotCounterSize     = 256;
+
+   // Nominal bin size of NL are neglected
+   const double   kdBinSize     = kdClockCycleSize / static_cast<double>(kuFineCounterSize);
+   // Epoch Size in bins
+   const uint32_t kuEpochInBins = kuFineTime + kuCoarseTime + 1;
+   // Epoch Size in ps
+   // alternatively: (kiCoarseTime>>kiCtShift + 1)*kdClockCycleSize
+   const double   kdEpochInPs   = static_cast<double>(kuEpochInBins)*kdBinSize;
+   const double   kdEpochInNs   = kdEpochInPs / 1000.0;
+
+   // Epoch counter size in epoch
+   const uint32_t kuEpochCounterSz = 0x7FFFFFFF;
+   const double   kdEpochCycleInS  = static_cast<double>(kuEpochCounterSz) * (kdEpochInNs/1e9);
+}
+namespace get4v2x {
+   const uint32_t kuChipIdMergedEpoch = 63; // 0x3F
+}
+#endif
+
 namespace ngdpb {
 
 
@@ -294,7 +331,7 @@ namespace ngdpb {
           * This field identifies FEB as well as chip.
           */
          inline uint8_t getEpochNxNum() const { return getField(4, 2); }
-         
+
          // 2 bit unused
 
          //! For Epoch data: Returns current epoch number (32 bit field)
@@ -396,7 +433,7 @@ namespace ngdpb {
 
          // ---------- Epoch2 marker access methods ------------
 
-         //! For Epoch2 data: Returns epoch missmatch flag (set in ROC when 
+         //! For Epoch2 data: Returns epoch missmatch flag (set in ROC when
          //! ROC timestamp and timestamp send by GET4 did not match) (1 bit field)
          inline uint32_t getEpoch2EpochMissmatch() const { return getBit(4); }
 
@@ -483,7 +520,7 @@ namespace ngdpb {
          //! For Get4 data: Sets Get4 rising or falling edge (1 bit field)
          inline void setGet4Edge(uint32_t v) { setBit(16, v); }
 
-         //! For Get4 data: Set the CRC-8 of the rest of the message 
+         //! For Get4 data: Set the CRC-8 of the rest of the message
          //! For details check the ROC documentation. (8 bit field)
          inline void setGet4CRC(uint32_t v) { setField(0, 8, v); }
 
@@ -620,7 +657,7 @@ namespace ngdpb {
          uint64_t getMsgFullTime(uint32_t epoch) const;
 
          double getMsgFullTimeD(uint32_t epoch) const;
-         
+
          uint64_t getMsgG4v2FullTime(uint32_t epoch) const;
 
          double getMsgG4v2FullTimeD(uint32_t epoch) const;

@@ -16,43 +16,6 @@
 
 #include <vector>
 
-#ifndef __CINT__
-namespace get4v1x {
-   // Size of one clock cycle (=1 coarse bin)
-   const double   kdClockCycleSize    = 6250.0; //[ps]
-   const double   kdClockCycleSizeNs  = kdClockCycleSize / 1000.0; //[ns]
-   // TODO:For now make 100ps default, maybe need later an option for it
-   const double   kdTotBinSize      =   50.0; //ps
-
-   const uint32_t kuFineTime    = 0x0000007F; // Fine Counter value
-   const uint32_t kuFtShift     =          0; // Fine Counter offset
-   const uint32_t kuCoarseTime  = 0x0007FF80; // Coarse Counter value
-   const uint32_t kuCtShift     =          7; // Coarse Counter offset
-   const uint32_t kuCtSize      =         12; // Coarse Counter size in bits
-
-   const uint32_t kuFineCounterSize    = ( (kuFineTime>>kuFtShift)+1 );
-   const uint32_t kuCoarseCounterSize  = ( (kuCoarseTime>>kuCtShift)+1 );
-   const uint32_t kuCoarseOverflowTest = kuCoarseCounterSize / 2 ; // Limit for overflow check
-   const uint32_t kuTotCounterSize     = 256;
-
-   // Nominal bin size of NL are neglected
-   const double   kdBinSize     = kdClockCycleSize / static_cast<double>(kuFineCounterSize);
-   // Epoch Size in bins
-   const uint32_t kuEpochInBins = kuFineTime + kuCoarseTime + 1;
-   // Epoch Size in ps
-   // alternatively: (kiCoarseTime>>kiCtShift + 1)*kdClockCycleSize
-   const double   kdEpochInPs   = static_cast<double>(kuEpochInBins)*kdBinSize;
-   const double   kdEpochInNs   = kdEpochInPs / 1000.0;
-
-   // Epoch counter size in epoch
-   const uint32_t kuEpochCounterSz = 0x7FFFFFFF;
-   const double   kdEpochCycleInS  = static_cast<double>(kuEpochCounterSz) * (kdEpochInNs/1e9);
-}
-namespace get4v2x {
-   const uint32_t kuChipIdMergedEpoch = 63; // 0x3F
-}
-#endif
-
 class CbmTofStarTrigger
 {
    // Methods implementation can be found at the end of CbmTsMonitorTofStar.cxx!
