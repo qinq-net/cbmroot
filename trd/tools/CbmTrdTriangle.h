@@ -86,6 +86,7 @@ public:
     * \return true if still in map
     **/
   Bool_t    NextBinY();
+  Double_t  Norm() const {return fNorm;}
   void      Print(Option_t *opt="") const;
   /**
     * \brief Move current bin to the left
@@ -105,6 +106,8 @@ public:
     **/
   Bool_t    SetOrigin(Double_t x, Double_t y);
 private:
+  CbmTrdTriangle(const CbmTrdTriangle &ref);
+  CbmTrdTriangle& operator=(const CbmTrdTriangle &ref);
   /**
     * \brief Define triangular pad type
     * \param x position along wires in column coordinates
@@ -129,6 +132,7 @@ private:
   Double_t              fdW;  ///< bin half width
   Double_t              fdH;  ///< bin half height
   Double_t              fSlope;   ///< slope of triangle H/W
+  Double_t              fNorm;    ///< normalization factor for the 2D Gauss distribution
   std::vector<Char_t>   fUp;  ///< 1 for the upper pad, -1 for the bottom pad and 0 on the boundary
   std::vector<Double_t> fX;   ///< position of bin center along wires
   std::vector<Double_t> fY;   ///< position of bin center across wires

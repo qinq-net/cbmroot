@@ -28,7 +28,8 @@ CbmTrdTriangle::CbmTrdTriangle(Float_t W, Float_t H, Int_t n)
   ,fH(H)
   ,fdW(W/n/2.)
   ,fdH(H/n/2.)
-  ,fSlope(0.)
+  ,fSlope(H/W)
+  ,fNorm(0.)
   ,fUp()
   ,fX()
   ,fY()
@@ -38,7 +39,6 @@ CbmTrdTriangle::CbmTrdTriangle(Float_t W, Float_t H, Int_t n)
 /**
  *  Build the map for triangular pad integration. The dimension of the map is given by the no of adjacent columns/rows considered in the map (default 5 columns and 3 rows)
 */  
-  fSlope = H/W;
   fN=n*(2*NR+1);
   Double_t epsilon(1.e-3*W), dw(2*fdW), dh(2*fdH);
   
@@ -72,6 +72,7 @@ CbmTrdTriangle::CbmTrdTriangle(Float_t W, Float_t H, Int_t n)
   fPRFx->SetParameters(1, 0., 0.46*fW); // TODO should be loaded from DB
   fPRFy = new TF1("prfy", "gaus", -(NR+.5)*fH, (NR+.5)*fH);
   fPRFy->SetParameters(1, 0., 0.46*fW); // TODO should be loaded from DB
+  fNorm=fPRFx->Integral(-(NC+.5)*fW, (NC+.5)*fW)* fPRFy->Integral(-(NR+.5)*fH, (NR+.5)*fH);
 }
 
 //___________________________________________________________________________
@@ -144,7 +145,7 @@ Double_t CbmTrdTriangle::GetChargeFraction() const
  * Compute charge fraction on the current bin
  */
   
-  Int_t bin(fBinx*fN+fBiny); //, bin0(fBinx0*fN+fBiny0);
+  Int_t bin(fBinx*fN+fBiny)/*, bin0(fBinx0*fN+fBiny0)*/;
   return  fPRFx->Eval(fX[bin]-fX0)*
           fPRFy->Eval(fY[bin]-fY0)*
           4*fdW*fdH;
