@@ -1064,7 +1064,7 @@ void CbmTrdDigitizerPRF::ScanPadPlaneTriangleAB(const Double_t* point, Double_t 
     for(Int_t ic(0); ic<nc; ic++){
       for(Int_t iup(0); iup<2; iup++){
         if(array[ic][ir][iup]<=epsilon) continue;
-//        array[ic][ir][iup]*=ELoss/fTriangleBinning->Norm();
+        array[ic][ir][iup]*=ELoss/fTriangleBinning->Norm();
         array[ic][ir][iup]*=ELoss;
         Emeasure+=array[ic][ir][iup];
         array[ic][ir][iup] = (array[ic][ir][iup]-ECalib[0])*380.;
