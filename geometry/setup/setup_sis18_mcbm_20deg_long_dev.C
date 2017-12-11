@@ -6,6 +6,7 @@
  **
  **/
 
+// 2017-12-11 - DE - enable mBUCH v18m
 // 2017-12-04 - DE - add mPSD to mCBM setup
 // 2017-11-03 - DE - add long setup, (acceptance matching +-12 degrees from mSTS)
 // 2017-11-02 - DE - add common support table v18c
@@ -22,7 +23,7 @@
 
 
 
-void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 901101111)
+void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 901111111)
 {
    
   TString myName = "setup_sis18_mcbm_20deg_long_dev";  // this macro's name for screen output

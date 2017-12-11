@@ -1,3 +1,4 @@
+
 /** ROOT macro to define the CBM setup sis18_mcbm
  **
  ** @author Volker Friese <v.friese@gsi.de>
@@ -6,6 +7,7 @@
  **
  **/
 
+// 2017-12-11 - DE - enable mBUCH v18m
 // 2017-12-04 - DE - add mPSD to mCBM setup
 // 2017-11-22 - DE - use TRD v17n with 22 cm spacing from CAD
 // 2017-11-17 - DE - set aerogel mRICH v18d as default
@@ -35,8 +37,8 @@ void setup_sis18_mcbm_20deg_long()
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";
   TString stsGeoTag       = "v18f_mcbm";    // 1-1-1-2 ladder configuration 
   TString muchGeoTag      = "v18g_mcbm";    // 11 o'clock, Mv2 size
-//  TString trdGeoTag       = "v18m_mcbm";    // long, with mBUCH
-  TString trdGeoTag       = "v18n_mcbm";    // long, without mBUCH
+  TString trdGeoTag       = "v18m_mcbm";    // long, with mBUCH
+  //  TString trdGeoTag       = "v18n_mcbm";    // long, without mBUCH
   TString tofGeoTag       = "v18i_mcbm";    // long distance
   TString richGeoTag      = "v18d_mcbm";    // long distance
   TString psdGeoTag       = "v18c_mcbm";    // below the beampipe
