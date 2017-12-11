@@ -18,7 +18,7 @@
 // --------------------------------------------------------------------------
 
 
-void mcbm_reco(Int_t nEvents = 100, 
+void mcbm_reco(Int_t nEvents = 2, 
                TString cSys="nini", 
                TString cEbeam="1.93gev",
                TString cCentr="mbias",
