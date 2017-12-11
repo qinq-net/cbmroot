@@ -304,7 +304,7 @@ void CbmTofHitFinderTBQA::Exec(Option_t* option)
       evHits[i] = std::move( QAHit{hit->GetX(), hit->GetDx(), hit->GetY(), hit->GetDy(), hit->GetTime(), hit->GetTimeError(), set<const QAMCPoint*>{}, set<const QAMCTrack*>{} , CbmTofAddress::GetModFullId(hit->GetAddress()) } ) ;
       QAHit& lastHit = evHits[i];
       
-      int nofDigis = hitMatch->GetNofLinks();
+      nofDigis = hitMatch->GetNofLinks();
 
       for (int j = 0; j < nofDigis; ++j)
       {
