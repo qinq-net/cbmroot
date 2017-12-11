@@ -3,7 +3,7 @@
 void eventDisplay(const char* setup = "sis18_mcbm_20deg_long")
 {
 
-  TString dataDir   = "/home/aghoehne/Documents/CbmRoot/Gregor/";
+  TString dataDir   = "data/";
   TString InputFile = dataDir + setup + "_test.mc.root";
   TString ParFile   = dataDir + setup + "_params.root";
 
