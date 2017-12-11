@@ -39,8 +39,6 @@ public:
   CbmTrdTriangle(Float_t W, Float_t H, Int_t n=20);
   virtual ~CbmTrdTriangle();
 
-  CbmTrdTriangle(const CbmTrdTriangle&) = delete;
-  CbmTrdTriangle& operator=(const CbmTrdTriangle&) = delete;
   /**
     * \brief Find bin for point (x,y)
     * \param x coordinate along wires in pad coordinates
