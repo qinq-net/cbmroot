@@ -11,7 +11,7 @@
 
 //___________________________________________________________________________
 CbmTrdModule::CbmTrdModule() 
-: CbmTrdModule(0, 0, 0., 0., 0., 0., 0., 0., 0, TArrayD(0), TArrayD(0), TArrayD(0), TArrayD(0), false, false)
+: CbmTrdModule(0, 0, 0., 0., 0., 0., 0., 0., 1, TArrayD(1), TArrayD(1), TArrayD(1), TArrayD(1), false, false)
 {
 }
 
@@ -69,7 +69,7 @@ CbmTrdModule::CbmTrdModule(
   In the moment it is assumed that there are sectors which have either
   in x- or y-direction the size of the chamber.
 */
-
+  LOG(INFO) << "CbmTrdModule::CbmTrdModule" << FairLogger::endl;
   if (nofSectors > 1) {
     Double_t beginx, beginy, endx, endy;
     Double_t summed_sectsize;
