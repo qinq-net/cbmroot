@@ -2257,7 +2257,7 @@ TGeoVolume* create_trdi_module_type()
         TGeoVolume* trdmod1_asic = new TGeoVolume("fasp", trd_asic, asicVolMed);   // the ASIC made of a certain medium
         trdmod1_asic->SetLineColor(kBlack);                                                                  
   
-        Int_t nofAsics   = AsicsPerFeb[ moduleType - 1 ] % 100;
+        Int_t nofAsics   = AsicsPerFeb[ moduleType ] % 100;
         for (Int_t iAsic(0), jAsic(1); iAsic < nofAsics; iAsic++) {
             asic_pos   = (iAsic + 0.5) /nofAsics - 0.5;   // equal spacing of ASICs on the FEB
             asic_pos_y = asic_pos * activeAreaY/2.;            
@@ -2274,7 +2274,8 @@ TGeoVolume* create_trdi_module_type()
       Double_t feb_pos;
       Double_t feb_pos_x, feb_pos_y;
 
-      Int_t nofFebs = FebsPerModule[ moduleType - 1 ], nofFebsHalf(nofFebs/2);
+      Int_t nofFebs = FebsPerModule[ moduleType ], nofFebsHalf(nofFebs/2);
+      printf("AB : nofFebs[%d] nofFebsHalf[%d]\n", nofFebs, nofFebsHalf);
       Double_t zfeb_pos(febFASP_position);
       for(Int_t iFebLy(0), jFeb(1); iFebLy<4; iFebLy++){
         for (Int_t iFeb(0); iFeb < nofFebsHalf; iFeb++) {
@@ -2328,8 +2329,8 @@ TGeoVolume* create_trdi_module_type()
         TGeoVolume* trdmod1_gbtx = new TGeoVolume("gbtx", trd_gbtx, asicVolMed);
         trdmod1_gbtx->SetLineColor(kGreen);
   
-        Int_t nofGbtxs   = GbtxPerRob[ moduleType - 1 ] % 100;
-        Int_t groupGbtxs = GbtxPerRob[ moduleType - 1 ] / 100;   // usually 1
+        Int_t nofGbtxs   = GbtxPerRob[ moduleType ] % 100;
+        Int_t groupGbtxs = GbtxPerRob[ moduleType ] / 100;   // usually 1
   
         Int_t nofGbtxX = (nofGbtxs - 1) / 2. + 1; // +1 is for GBTx master
         Int_t nofGbtxY = 2;
@@ -2361,7 +2362,7 @@ TGeoVolume* create_trdi_module_type()
         Double_t rob_pos_y;
         TGeoTranslation *trd_rob_y_position; // shift to y position on TRD
   
-        Int_t nofRobs = RobsPerModule[ moduleType - 1 ], nofRobsHalf(nofRobs/2);
+        Int_t nofRobs = RobsPerModule[ moduleType ], nofRobsHalf(nofRobs/2);
         for (Int_t iRob = 0; iRob < nofRobsHalf; iRob++) {
           rob_pos   = (iRob + 0.5) / nofRobsHalf - 0.5;   // equal spacing of ROBs on the backpanel
           rob_pos_y = rob_pos * activeAreaY;
