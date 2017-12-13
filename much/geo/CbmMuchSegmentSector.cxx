@@ -100,7 +100,7 @@ InitStatus CbmMuchSegmentSector::Init(){
 
   // Get MUCH geometry parameter container
   fStations = fGeoPar->GetStations();
-  cout<<" Stations = "<<fStations->GetEntries()<<"     "<<fNStations<<endl;
+ // cout<<" Stations = "<<fStations->GetEntries()<<"     "<<fNStations<<endl;
   if(!fStations) Fatal("Init", "No input array of MUCH stations.");
   if(fStations->GetEntries() != fNStations) Fatal("Init", "Incorrect number of stations.");
 
@@ -150,7 +150,7 @@ void CbmMuchSegmentSector::SegmentMuch(){
 Int_t CbmMuchSegmentSector::SegmentLayerSide(CbmMuchLayerSide* layerSide){
   if(!layerSide) Fatal("SegmentLayerSide", "Incomplete layer sides array.");
   Int_t nModules = layerSide->GetNModules();
-  cout<<" Total Modules "<< nModules<<endl;
+//  cout<<" Total Modules "<< nModules<<endl;
   Int_t nSectors = 0;
   for(Int_t iModule = 0; iModule < nModules; iModule++){
     CbmMuchModule* module = layerSide->GetModule(iModule);
@@ -171,36 +171,35 @@ Int_t CbmMuchSegmentSector::SegmentModule(CbmMuchModuleGemRadial* module, Bool_t
   Int_t iLayer   = CbmMuchAddress::GetLayerIndex(detectorId);
   Int_t iSide    = CbmMuchAddress::GetLayerSideIndex(detectorId);
   CbmMuchStation* station = (CbmMuchStation*)fStations->At(iStation);
-  Double_t rMin=0.0,rMax=0.0;
+  Double_t rMin=0.0,rMax=0.0, r0=0.0;
   if (fFlag==0){
     rMin = station->GetRmin();
     rMax = station->GetRmax();
-    //  Double_t phi0 = module->GetPosition().Phi();
-    // Double_t r0   = module->GetPosition().Perp();
-    //  Double_t dx1  = module->GetDx1();
-    //  Double_t dx2  = module->GetDx2();
-    //  Double_t dy   = module->GetDy();
- 
+    r0   = module->GetPosition().Perp();
+
+//cout<<rMin<< "****************"<<rMax<<endl;
+    
 
   }
 
 else {
   //============For mini cbm=================================
-  rMin=18.89;
+  rMin=20.89;
   rMax=98.35;
-  // Double_t r0=59.62;
+  r0  =59.6222;
+  
+
+//cout<<"ro   "<<r0<<endl;
    
  }
 
-
-  Double_t phi0 = module->GetPosition().Phi();
-  Double_t r0   = module->GetPosition().Perp();
-  Double_t dx1  = module->GetDx1();
-  Double_t dx2  = module->GetDx2();
-  Double_t dy   = module->GetDy();
+     Double_t phi0 = module->GetPosition().Phi();
+     Double_t dx1  = module->GetDx1();
+     Double_t dx2  = module->GetDx2();
+      Double_t dy   = module->GetDy();
  
 
-  cout<<" station # "<<iStation<<" Layer No. "<<iLayer<<" Side # "<<iSide<<" Module # "<<iModule<<" rmin "<<rMin<<" rmax "<<rMax<<" phi "<<phi0<<" r0 "<<r0<<" dx1 "<<dx1<<" dx2 "<<dx2<<" dy "<<dy<<endl;
+  //cout<<" station # "<<iStation<<" Layer No. "<<iLayer<<" Side # "<<iSide<<" Module # "<<iModule<<" rmin "<<rMin<<" rmax "<<rMax<<" phi "<<phi0<<" r0 "<<r0<<" dx1 "<<dx1<<" dx2 "<<dx2<<" dy "<<dy<<endl;
 
   Double_t t  = 2*dy/(dx2-dx1);
   Double_t b= (r0-dy)-t*dx1;
@@ -220,8 +219,9 @@ else {
       Double_t dphi = TMath::ASin((-bt+sqrt(a*r2*r2-b2))/a/r2); 
 //      Int_t nPads = 2*Int_t(phiMax/angle)+2;
 //      if (iStation==0 && iLayer==0 && iSide==0 && iModule==0) printf("Sector: %f-%f %i phiMax=%f\n",r1,r2,nPads,phiMax);
-      cout<<" sector "<<iSector<< " pad size "<<r2-r1<<endl;
+   //   cout<<" sector "<<iSector<< " pad size "<<r2-r1<<endl;
       module->AddSector(new CbmMuchSectorRadial(detectorId,iSector,r1,r2,phi0-dphi,phi0+dphi));
+//cout<<"r1   "<<r1<<"   r2  "<<r2<<endl;
       r1 = r2;
       iSector++;
     }
