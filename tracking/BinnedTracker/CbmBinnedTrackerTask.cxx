@@ -116,9 +116,6 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
    clock_gettime(CLOCK_REALTIME, &ts);
    long beginTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
    fTracker->Reconstruct(-100);
-   clock_gettime(CLOCK_REALTIME, &ts);
-   long endTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
-   fullDuration += endTime - beginTime;
    
    if (fSettings->Use(kSts))
       fStsTracks->Clear();
@@ -286,6 +283,10 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
       
       ++trackNumber;
    }
+   
+   clock_gettime(CLOCK_REALTIME, &ts);
+   long endTime = ts.tv_sec * 1000000000 + ts.tv_nsec;
+   fullDuration += endTime - beginTime;
 }
 
 void CbmBinnedTrackerTask::Finish()
