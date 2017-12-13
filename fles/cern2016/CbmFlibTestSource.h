@@ -60,6 +60,7 @@ class CbmFlibTestSource : public FairSource
     void SetPortNumber(Int_t port) { fPort = port; }
     void SetReqDigiAddr(Int_t ival)  {fiReqDigiAddr.resize(1); fiReqDigiAddr[0] = ival;};
     void AddReqDigiAddr(Int_t ival); 
+    void SetReqMode(Int_t ival)      { fiReqMode = ival; } 
     void SetMaxDeltaT(Double_t dval) { fdMaxDeltaT = dval;}
 
     void AddUnpacker(CbmTSUnpack* unpacker, Int_t flibId, Int_t detId)
@@ -93,6 +94,7 @@ class CbmFlibTestSource : public FairSource
     UInt_t fTSNumber;
     UInt_t fTSCounter;
     std::vector< Int_t >  fiReqDigiAddr;
+    UInt_t fiReqMode;
     Double_t fdMaxDeltaT;
     TStopwatch fTimer;
 

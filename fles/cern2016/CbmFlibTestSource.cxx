@@ -44,6 +44,7 @@ CbmFlibTestSource::CbmFlibTestSource()
     fTSNumber(0),
     fTSCounter(0),
     fiReqDigiAddr(),
+    fiReqMode(0),
     fdMaxDeltaT(500.),
     fTimer(),
     fBufferFillNeeded(kTRUE),
@@ -64,6 +65,7 @@ CbmFlibTestSource::CbmFlibTestSource(const CbmFlibTestSource& source)
     fTSNumber(0),
     fTSCounter(0),
     fiReqDigiAddr(),
+    fiReqMode(0),
     fdMaxDeltaT(100.),
     fTimer(),
     fBufferFillNeeded(kTRUE),
@@ -293,7 +295,7 @@ Int_t CbmFlibTestSource::FillBuffer()
     while (auto timeslice = fSource->get()) {
       fTSCounter++;
       if ( 0 == fTSCounter%10000 ) {
-        LOG(INFO) << "Analyse Event " << fTSCounter << FairLogger::endl;
+        LOG(INFO) << "Processing TimeSlice " << fTSCounter << FairLogger::endl;
       }
 
       const fles::Timeslice& ts = *timeslice;
@@ -391,12 +393,22 @@ Int_t CbmFlibTestSource::GetNextEvent()
 
   //dTLast = vdigi[nDigi-1]->GetTime();
 
-  for(UInt_t i=0; i<fiReqDigiAddr.size(); i++)
-    if(bDet[i][0]==kFALSE || bDet[i][1]==kFALSE ) break;
-    else if( i == fiReqDigiAddr.size()-1 ) bOut=kTRUE;
+  if(fiReqDigiAddr.size()==0) bOut=kTRUE;    // output everything
+  else {
+    if( fiReqMode == 0 ) {           // check for presence of requested detectors
+      for(Int_t i=0; i<fiReqDigiAddr.size(); i++)
+	if(bDet[i][0]==kFALSE || bDet[i][1]==kFALSE ) break;
+	else if( i == fiReqDigiAddr.size()-1 ) bOut=kTRUE;
+    } else {                        // check for presence of any known detector
+      Int_t iDetMul=0;
+      for(Int_t i=0; i<fiReqDigiAddr.size(); i++)
+	if(bDet[i][0]==kTRUE && bDet[i][1]==kTRUE ) {
+	  iDetMul++;
+	  if(iDetMul == fiReqMode) {bOut=kTRUE; break;}
+	}
+    }
 
-  if(fiReqDigiAddr.size()==0) bOut=kTRUE;
-
+  }
   for(UInt_t iDigi=0; iDigi<nDigi; iDigi++){
     digi=vdigi[iDigi];
     Int_t detId = digi->GetSystemId();
