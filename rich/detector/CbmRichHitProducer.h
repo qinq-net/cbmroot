@@ -16,6 +16,7 @@
 //class CbmGeoRichPar;
 class TClonesArray;
 class TVector3;
+class CbmEvent;
 
 /**
  * \class CbmRichHitProducer
@@ -59,6 +60,16 @@ public:
      */
     virtual void Finish();
     
+    /**
+     * Processblock of data either event-by-event or CbmEvent
+     */
+    void ProcessData(CbmEvent* event);
+
+    /**
+     * Process RichDigi. CbmEvent can be NULL.
+     */
+    void ProcessDigi(CbmEvent* event, Int_t digiIndex);
+
     void SetRotationNeeded(Bool_t b) {fRotationNeeded = b;}
     
     
@@ -67,16 +78,20 @@ private:
     
     TClonesArray* fRichDigis; // RICH digis
     TClonesArray* fRichHits; // RICH hits
+    TClonesArray* fCbmEvents; // CbmEvent for time-based simulations
     
     Int_t fEventNum; // event number
     
     Bool_t fRotationNeeded;
     
+    Double_t fHitError;
+
     /**
-     * \brief Add hit to the output array
+     * \brief Add hit to the output array (and) CbmEvent if it is not NULL.
      */
     
     void AddHit(
+                CbmEvent* event,
                 TVector3 &posHit,
                 Int_t index);
     

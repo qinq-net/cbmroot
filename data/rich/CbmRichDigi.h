@@ -33,17 +33,23 @@ public:
 	 * \brief Inherited from CbmDigi
 	 * @value Time [ns]
 	 */
-	virtual Double_t GetTime() const { return 0.0; }
+	virtual Double_t GetTime() const { return fTime; }
 
 	/*
 	 * \brief Set pixel Address
 	 */
 	void SetAddress(Int_t address) { fAddress = address; }
 
+   /*
+    * \brief Set pixel Address
+    */
+   void SetTime(Double_t time) { fTime = time; }
 
-        std::string ToString() const { return std::string{""}; }
+
+    std::string ToString() const { return std::string{""}; }
 private :
 	  Int_t fAddress; // Unique pixel address
+	  Double_t fTime;
 
 
 	  ClassDef(CbmRichDigi, 1);

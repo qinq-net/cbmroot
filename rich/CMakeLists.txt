@@ -36,6 +36,8 @@ ${CBMROOT_SOURCE_DIR}/KF
 ${CBMROOT_SOURCE_DIR}/KF/Interface
 
 ${CBMROOT_SOURCE_DIR}/L1/OffLineInterface
+
+${CBMROOT_SOURCE_DIR}/run
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

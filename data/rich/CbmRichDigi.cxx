@@ -8,7 +8,8 @@
 #include "CbmRichDigi.h"
 
 CbmRichDigi::CbmRichDigi():
-fAddress(0)
+fAddress(0),
+fTime(0.0)
 {
 	// TODO Auto-generated constructor stub
 

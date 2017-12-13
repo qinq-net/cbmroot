@@ -21,6 +21,8 @@ class CbmLink;
 
 using namespace std;
 
+enum CbmRichDigitizerModeEnum { CbmRichDigitizerModeEvents = 0, CbmRichDigitizerModeTimeBased = 1 };
+
 
 /**
 * \class CbmRichDigitizer
@@ -85,8 +87,21 @@ public:
     */
    //void SetSigmaMirror(Double_t sigMirror) {fSigmaMirror = sigMirror;}
 
+   /**
+    * \brief Set Rich digitizer mode (CbmRichDigitizerModeEnum).
+    */
+   void SetMode(CbmRichDigitizerModeEnum mode){ fMode = mode; }
+
+   /**
+    * \brief Set Time resolution.
+    */
+   void SetTimeResolution(Double_t dt){ fTimeResolution = dt; }
+
 private:
    Int_t fEventNum;
+
+   CbmRichDigitizerModeEnum fMode;
+
    TClonesArray* fRichPoints; // RICH MC points
    TClonesArray* fRichDigis; // RICH digis (output array)
    TClonesArray* fMcTracks; // Monte-Carlo tracks
@@ -97,6 +112,9 @@ private:
 
    map<Int_t, CbmRichDigi*> fDigisMap; //map which contains all fired digis, one digi per pixel
 
+   Double_t fEventTime; // time of the current event
+   Double_t fTimeResolution; // in ns
+
    /*
     * \brief Add crasstalk digis to the output array for the digi assuming fCrossTalkProbability
     */
@@ -106,14 +124,18 @@ private:
    /*
     * \brief Add fNofNoiseDigis number of digis.
     */
-   void AddNoiseDigis();
+   void AddNoiseDigis(
+           Int_t eventNum,
+           Int_t inputNum);
 
    /*
     * \brief Process CbmRichPoint. Main method which is calle dfor all CbmRichPoints.
     */
    void ProcessPoint(
 		   CbmRichPoint* point,
-		   Int_t pointId);
+		   Int_t pointId,
+		   Int_t eventNum,
+		   Int_t inputNum);
 
    /*
     * \brief Add all the fired digis to the output array
@@ -121,9 +143,24 @@ private:
    void AddDigisToOutputArray();
 
    /*
+    * \brief Process current MC event.
+    */
+   void ProcessMcEvent();
+
+   /*
+    * \brief Generate noise between events.
+    */
+   void GenerateNoiseBetweenEvents(
+         Double_t oldEventTime,
+         Double_t newEventTime);
+
+   /*
     *
     */
-   void AddDigi(Int_t address, const CbmLink& link);
+   void AddDigi(
+         Int_t address,
+         Double_t time,
+         const CbmLink& link);
 
 
    /**
