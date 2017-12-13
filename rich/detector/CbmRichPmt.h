@@ -43,6 +43,8 @@
 #define RICH_DETECTOR_CBMRICHPMT_H_
 
 #include "TObject.h"
+#include <vector>
+#include "CbmRichPmtType.h"
 
 class CbmRichPmt {
 public:
@@ -55,7 +57,7 @@ public:
 	/**
 	* \brief Set detector type
 	*/
-	void SetDetectorType(Int_t detType){
+	void SetDetectorType(CbmRichPmtTypeEnum detType){
 		fDetectorType = detType;
 		InitQE();
 	}
@@ -67,11 +69,11 @@ public:
 
 private:
 	Double_t fCollectionEfficiency; // collection efficiency. Final QE = QE * fCollectionEfficiency
-	Int_t fDetectorType; // pmt type
+	CbmRichPmtTypeEnum fDetectorType; // pmt type, See CbmRichPmtType.h for on details about each Pmt detector type
     Double_t fLambdaMin; // minimum wavwlength in QE table
     Double_t fLambdaMax; // maximum wavelength in QE table
     Double_t fLambdaStep; // waelangth in QE table
-    Double_t fEfficiency[200]; // Array of QE
+    std::vector<Double_t> fEfficiency; // Array of QE
 
     static const Double_t c; // speed of light
     static const Double_t h; // Planck constant

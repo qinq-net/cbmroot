@@ -13,6 +13,7 @@
 #include "FairTask.h"
 #include <map>
 #include "CbmRichPmt.h"
+#include "CbmRichPmtType.h"
 
 class TClonesArray;
 class CbmRichDigi;
@@ -70,7 +71,7 @@ public:
    /**
     * \brief Set detector type
     */
-   void SetDetectorType(Int_t detType){ fPmt.SetDetectorType(detType);}
+   void SetDetectorType(CbmRichPmtTypeEnum detType){ fPmt.SetDetectorType(detType);}
 
    /**
     * \brief Set number of noise hits to be added.
