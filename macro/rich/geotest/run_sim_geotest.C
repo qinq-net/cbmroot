@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void run_sim_geotest(Int_t nEvents = 1)
+void run_sim_geotest(Int_t nEvents = 100)
 {
     TTree::SetMaxTreeSize(90000000000);
     
@@ -32,9 +32,6 @@ void run_sim_geotest(Int_t nEvents = 1)
 //        fieldScale = TString(gSystem->Getenv("FIELD_MAP_SCALE")).Atof();
 //    }
 
-    TString logLevel = "INFO";
-    TString logVerbosity = "LOW";
-
     // Target geometry
     TString  targetElement   = "Gold";
     Double_t targetThickness = 0.025;  // full thickness in cm
@@ -57,13 +54,13 @@ void run_sim_geotest(Int_t nEvents = 1)
     gDebug = 0;
 
     FairRunSim* run = new FairRunSim();
-    run->SetName("TGeant3");              // Transport engine
-    run->SetOutputFile(mcFile);          // Output file
-    run->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
+    run->SetName("TGeant3");
+    run->SetOutputFile(mcFile);
+    run->SetGenerateRunInfo(kTRUE);
 
 
-    FairLogger::GetLogger()->SetLogScreenLevel(logLevel.Data());
-    FairLogger::GetLogger()->SetLogVerbosityLevel(logVerbosity.Data());
+    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+    FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
     TString setupFunct = "do_setup()";
     std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
@@ -144,7 +141,9 @@ void run_sim_geotest(Int_t nEvents = 1)
 
 
     std::cout << std::endl << "-I- " << myName << ": Initialise run" << std::endl;
+    //run->SetStoreTraj(kTRUE);
     run->Init();
+
 
 
     // -----   Runtime database   ---------------------------------------------

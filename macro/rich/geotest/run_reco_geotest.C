@@ -1,47 +1,61 @@
 
-void run_reco_geotest(Int_t nEvents = 1000)
+void run_reco_geotest(Int_t nEvents = 100)
 {
    TTree::SetMaxTreeSize(90000000000);
    TString script = TString(gSystem->Getenv("SCRIPT"));
-   gRandom->SetSeed(10);
+
+   TString myName = "run_reco_geotest";
+   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+
+   TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100.C";
 
    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/geotest/";
-   TString mcFile = outDir + "mc.0.root";
-   TString parFile = outDir + "param.0.root";
-   TString recoFile = outDir + "reco.0.root";
+   TString mcFile = outDir + "mc.00000.root";
+   TString parFile = outDir + "param.00000.root";
+   TString recoFile = outDir + "reco.00000.root";
    std::string resultDir = "results_geotest/";
 
-   if (script == "yes") {
-      mcFile = TString(gSystem->Getenv("MC_FILE"));
-      recoFile = TString(gSystem->Getenv("RECO_FILE"));
-      parFile = TString(gSystem->Getenv("PAR_FILE"));
-      resultDir = TString(gSystem->Getenv("RESULT_DIR"));
-   }
-    
+//   if (script == "yes") {
+//      mcFile = TString(gSystem->Getenv("MC_FILE"));
+//      recoFile = TString(gSystem->Getenv("RECO_FILE"));
+//      parFile = TString(gSystem->Getenv("PAR_FILE"));
+//      resultDir = TString(gSystem->Getenv("RESULT_DIR"));
+//   }
+
     remove(recoFile.Data());
 
-   gDebug = 0;
-   TStopwatch timer;
-   timer.Start();
+    TString setupFunct = "do_setup()";
+    std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
+    gROOT->LoadMacro(geoSetupFile);
+    gROOT->ProcessLine(setupFunct);
 
-   gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-   loadlibs();
+	std::cout << std::endl<< "-I- " << myName << ": Defining parameter files " << std::endl;
+	TList *parFileList = new TList();
 
-   FairRunAna *run= new FairRunAna();
-   run->SetInputFile(mcFile);
-   run->SetOutputFile(recoFile);
 
-   CbmKF *kalman = new CbmKF();
-   run->AddTask(kalman);
-    
-    // ----- MC Data Manager   ------------------------------------------------
-    CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-    mcManager->AddFile(mcFile);
-    run->AddTask(mcManager);
+	TStopwatch timer;
+	timer.Start();
+	gDebug = 0;
 
-    CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
-    run->AddTask(richDigitizer);
-    
+
+	FairRunAna *run = new FairRunAna();
+	FairFileSource* inputSource = new FairFileSource(mcFile);
+	run->SetSource(inputSource);
+	run->SetOutputFile(recoFile);
+	run->SetGenerateRunInfo(kTRUE);
+
+	FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+	FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
+
+
+
+	CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+	mcManager->AddFile(mcFile);
+	run->AddTask(mcManager);
+
+	CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
+	run->AddTask(richDigitizer);
+
 	CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
 	run->AddTask(richHitProd);
 
@@ -52,38 +66,51 @@ void run_reco_geotest(Int_t nEvents = 1000)
 	richReco->SetFinderName("ideal");
 	run->AddTask(richReco);
 
-    CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
+	CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
 	run->AddTask(matchRecoToMc);
 
-   CbmRichGeoTest* geoTest = new CbmRichGeoTest();
-   geoTest->SetOutputDir(resultDir);
-   run->AddTask(geoTest);
+	CbmRichGeoTest* geoTest = new CbmRichGeoTest();
+	geoTest->SetOutputDir(resultDir);
+	run->AddTask(geoTest);
 
-    FairRuntimeDb* rtdb = run->GetRuntimeDb();
-    FairParRootFileIo* parIo1 = new FairParRootFileIo();
-    FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-    parIo1->open(parFile.Data());
-  //  parIo2->open(parFileList, "in");
-    rtdb->setFirstInput(parIo1);
-    rtdb->setSecondInput(parIo2);
-    rtdb->setOutput(parIo1);
-    rtdb->saveOutput();
-    
-    run->Init();
-    cout << "Starting run" << endl;
-    run->Run(0,nEvents);
 
-   // -----   Finish   -------------------------------------------------------
-   timer.Stop();
-   Double_t rtime = timer.RealTime();
-   Double_t ctime = timer.CpuTime();
-   cout << endl << endl;
-   cout << "Macro finished successfully." << endl;
-   cout << "Output file is "    << recoFile << endl;
-   cout << "Parameter file is " << parFile << endl;
-   cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
-   cout << endl;
 
-   cout << " Test passed" << endl;
-   cout << " All ok " << endl;
+	std::cout << std::endl << std::endl << "-I- " << myName << ": Set runtime DB" << std::endl;
+	FairRuntimeDb* rtdb = run->GetRuntimeDb();
+	FairParRootFileIo* parIo1 = new FairParRootFileIo();
+	FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
+	parIo1->open(parFile.Data(),"UPDATE");
+	rtdb->setFirstInput(parIo1);
+	if ( ! parFileList->IsEmpty() ) {
+		parIo2->open(parFileList, "in");
+		rtdb->setSecondInput(parIo2);
+	}
+
+
+	std::cout << std::endl << "-I- " << myName << ": Initialise run" << std::endl;
+	run->Init();
+
+
+	rtdb->setOutput(parIo1);
+	rtdb->saveOutput();
+	rtdb->print();
+
+
+	std::cout << std::endl << std::endl;
+	std::cout << "-I- " << myName << ": Starting run" << std::endl;
+	run->Run(0, nEvents);
+
+
+	timer.Stop();
+	Double_t rtime = timer.RealTime();
+	Double_t ctime = timer.CpuTime();
+	std::cout << std::endl << std::endl;
+	std::cout << "Macro finished succesfully." << std::endl;
+	std::cout << "Output file is " << mcFile << std::endl;
+	std::cout << "Parameter file is " << parFile << std::endl;
+	std::cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << std::endl;
+	std::cout << std::endl;
+	std::cout << " Test passed" << std::endl;
+	std::cout << " All ok " << std::endl;
+
 }
