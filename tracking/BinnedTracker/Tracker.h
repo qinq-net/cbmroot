@@ -107,6 +107,7 @@ public:
         fVertexPseudoStation->SetMaxX(0.1);
         fVertexPseudoStation->Init();
         fVertexPseudoStation->AddHit(&fVertex, -1);
+        fChiSqCut = fStations.size() * cbmBinnedSigmaSq * 2;
         
         for (std::map<Double_t, CbmBinnedStation*>::const_iterator i = fStations.begin(); i != fStations.end(); ++i)
         {

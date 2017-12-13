@@ -40,6 +40,7 @@ public:
     Double_t GetBeamDy() const { return fBeamDy; }
     bool Use(ECbmModuleId m) const { return fUseModules[m]; }
     void SetUse(ECbmModuleId m, bool v) { fUseModules[m] = v; }
+    void SetChiSqCut(Double_t v) { fChiSqCut = v; }
     
 private:
     static CbmBinnedTrackerTask* fInstance;
@@ -48,6 +49,7 @@ private:
     bool fUseAllDetectors;
     bool fIsOnlyPrimary;
     bool fUseModules[kLastModule];
+    Double_t fChiSqCut;
     CbmBinnedSettings* fSettings;
     Double_t fBeamDx;
     Double_t fBeamDy;

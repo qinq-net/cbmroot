@@ -39,8 +39,9 @@ using std::copy;
 
 CbmBinnedTrackerTask* CbmBinnedTrackerTask::fInstance = 0;
    
-CbmBinnedTrackerTask::CbmBinnedTrackerTask(bool useAllDetectors, Double_t beamWidthX, Double_t beamWidthY) : fUseAllDetectors(useAllDetectors), fIsOnlyPrimary(false),
-   fSettings(0), fBeamDx(beamWidthX), fBeamDy(beamWidthY), fTracker(0), fGlobalTracks(0), fStsTracks(0), fMuchTracks(0), fTrdTracks(0)
+CbmBinnedTrackerTask::CbmBinnedTrackerTask(bool useAllDetectors, Double_t beamWidthX, Double_t beamWidthY) : fUseAllDetectors(useAllDetectors),
+   fIsOnlyPrimary(false), fChiSqCut(0), fSettings(0), fBeamDx(beamWidthX), fBeamDy(beamWidthY), fTracker(0), fGlobalTracks(0), fStsTracks(0),
+   fMuchTracks(0), fTrdTracks(0)
 {
    fInstance = this;
    fill_n(fUseModules, int(kLastModule), fUseAllDetectors);
@@ -70,8 +71,10 @@ InitStatus CbmBinnedTrackerTask::Init()
    
    geoReader->Read();
    fTracker = CbmBinnedTracker::Instance();
-   fTracker->SetChiSqCut(320);
    fTracker->Init();
+   
+   if (fChiSqCut)
+      fTracker->SetChiSqCut(fChiSqCut);
    
    FairRootManager* ioman = FairRootManager::Instance();
     
