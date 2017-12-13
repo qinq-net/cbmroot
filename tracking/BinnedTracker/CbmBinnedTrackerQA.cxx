@@ -42,7 +42,6 @@ struct TrackDesc
 {
    static Int_t nofStsStations;
    static Int_t nofMuchStations;
-   static Int_t nofMuchLayers;
    static Int_t nofTrdStations;
    static bool hasTof;
    
@@ -142,7 +141,6 @@ struct TrackDesc
 
 Int_t TrackDesc::nofStsStations = 0;
 Int_t TrackDesc::nofMuchStations = 0;
-Int_t TrackDesc::nofMuchLayers = 0;
 Int_t TrackDesc::nofTrdStations = 0;
 bool TrackDesc::hasTof = false;
 
@@ -258,14 +256,8 @@ InitStatus CbmBinnedTrackerQA::Init()
    TrackDesc::nofTrdStations = fSettings->Use(kTrd) ? fSettings->GetNofTrdStations() : 0;
    TrackDesc::hasTof = fSettings->Use(kTof);
    
-   if (TrackDesc::nofMuchStations > 0)
-   {
-      const CbmMuchStation* muchStation = CbmMuchGeoScheme::Instance()->GetStation(0);
-      TrackDesc::nofMuchLayers = muchStation->GetNLayers();
-   }
-   
    TrackDesc::firstMuchStationNo = TrackDesc::nofStsStations;
-   TrackDesc::firstTrdStationNo = TrackDesc::firstMuchStationNo + TrackDesc::nofMuchStations * TrackDesc::nofMuchLayers;
+   TrackDesc::firstTrdStationNo = TrackDesc::firstMuchStationNo + TrackDesc::nofMuchStations;
    TrackDesc::tofStationNo = TrackDesc::firstTrdStationNo + TrackDesc::nofTrdStations;
    
    effByMom = new TProfile("effByMom", "Track reconstruction efficiency by momentum distribution %", 400, 0., 10.);
@@ -504,8 +496,10 @@ InitStatus CbmBinnedTrackerQA::Init()
             Int_t trackId = muchPoint->GetTrackID();
             int muchStationNumber = CbmMuchGeoScheme::GetStationIndex(muchPoint->GetDetectorID());
             int layerNumber = CbmMuchGeoScheme::GetLayerIndex(muchPoint->GetDetectorID());
-            int stationNumber = muchStationNumber * TrackDesc::nofMuchLayers + layerNumber;
+            int stationNumber = muchStationNumber * 3 + layerNumber;
             //tracks[trackId].much[stationNumber].first.insert(j);
+            TrackDesc& trackDesk = tracks[trackId];
+            trackDesk.muchPoints[stationNumber].insert(muchPoint);
          }
       }
    }
@@ -750,7 +744,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
          const CbmMuchPixelHit* muchHit = static_cast<const CbmMuchPixelHit*> (fMuchHits->At(i));
          Int_t muchStationNumber = CbmMuchGeoScheme::GetStationIndex(muchHit->GetAddress());
          Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(muchHit->GetAddress());
-         Int_t stationNumber = muchStationNumber * TrackDesc::nofMuchLayers + layerNumber;
+         Int_t stationNumber = muchStationNumber * 3 + layerNumber;
          Int_t clusterId = muchHit->GetRefId();
          const CbmMuchCluster* cluster = static_cast<const CbmMuchCluster*> (fMuchClusters->At(clusterId));
          Int_t nofDigis = cluster->GetNofDigis();
@@ -1223,7 +1217,7 @@ void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> 
       const CbmMuchPixelHit* muchHit = static_cast<const CbmMuchPixelHit*> (fMuchHits->At(muchHitInd));
       Int_t muchStationNumber = CbmMuchGeoScheme::GetStationIndex(muchHit->GetAddress());
       Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(muchHit->GetAddress());
-      Int_t stationNumber = muchStationNumber * TrackDesc::nofMuchLayers + layerNumber;
+      Int_t stationNumber = muchStationNumber * 3 + layerNumber;
       globalTracksHitInds[muchTrackIndex * nofStations + TrackDesc::firstMuchStationNo + stationNumber] = muchHitInd;
       Int_t clusterId = muchHit->GetRefId();
       const CbmMuchCluster* cluster = static_cast<const CbmMuchCluster*> (fMuchClusters->At(clusterId));
@@ -1247,8 +1241,8 @@ void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> 
             globalTrackMCRefs[muchTrackIndex * nofStations + TrackDesc::firstMuchStationNo + stationNumber].insert(trackId);
             TrackDesc& trackDesk = gTracks[eventId][trackId];
             
-            //if (trackDesk.much[stationNumber].first.find(muchHitInd) != trackDesk.much[stationNumber].first.end())
-               //trackDesk.much[stationNumber].second.insert(muchTrackIndex);
+            if (trackDesk.much[stationNumber].first.find(muchHitInd) != trackDesk.much[stationNumber].first.end())
+               trackDesk.much[stationNumber].second.insert(muchTrackIndex);
          }
       }
    }
@@ -1475,6 +1469,18 @@ void CbmBinnedTrackerQA::Finish()
          }
 #endif//CBM_BINNED_QA_FILL_HISTOS
          
+         for (int k = 0; k < TrackDesc::nofMuchStations; ++k)
+         {
+            if (trackDesc.much[k].first.empty())
+            {
+               isRef = false;
+               break;
+            }
+         }
+         
+         if (!isRef)
+            continue;
+         
          for (int k = 0; k < TrackDesc::nofTrdStations; ++k)
          {
             if (trackDesc.trd[k].first.empty())
@@ -1643,7 +1649,7 @@ void CbmBinnedTrackerQA::Finish()
             }
          }
          
-         for (int k = 0; k < TrackDesc::nofMuchStations * TrackDesc::nofMuchLayers; ++k)
+         for (int k = 0; k < TrackDesc::nofMuchStations; ++k)
          {
             for (set<Int_t>::const_iterator l = trackDesc.much[k].second.begin(); l != trackDesc.much[k].second.end(); ++l)
             {
