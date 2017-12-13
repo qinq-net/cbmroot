@@ -335,6 +335,7 @@ void CbmMuchFindHitsGem::CreateHits(CbmMuchCluster* cluster, Int_t iCluster) {
   Int_t nDigis = cluster->GetNofDigis();
   Double_t sumq=0, sumx=0, sumy=0, sumt=0, sumdx2=0, sumdy2=0, sumdxy2=0, sumdt2=0;
   Double_t q=0,x=0,y=0,t=0,z=0,dx=0,dy=0,dxy=0,dt=0;
+   Double_t nX=0, nY=0, nZ=0;
   Int_t address = 0;
   Int_t planeId = 0;
   CbmMuchModuleGem* module = NULL;
@@ -348,10 +349,13 @@ void CbmMuchFindHitsGem::CreateHits(CbmMuchCluster* cluster, Int_t iCluster) {
       planeId = fGeoScheme->GetLayerSideNr(address);
       module  = (CbmMuchModuleGem*) fGeoScheme->GetModuleByDetId(address);
       z       = module->GetPosition()[2];
+//std::cout<<"Zposition  "<<z<<std::endl;
     }
     CbmMuchPad* pad = module->GetPad(digi->GetAddress());
     x   = pad->GetX();
     y   = pad->GetY();
+
+//std::cout<<i<<"   "<<x<<"   "<<y<<std::endl;
     t   = digi->GetTime();
     if (tmin<0) tmin = t;
     if (tmin<t) tmin = t;
@@ -379,9 +383,22 @@ void CbmMuchFindHitsGem::CreateHits(CbmMuchCluster* cluster, Int_t iCluster) {
   dxy = sqrt(sumdxy2/12)/sumq;
   dt = sqrt(sumdt2)/sumq;
   Int_t iHit = fHits->GetEntriesFast();
-  new ((*fHits)[iHit]) CbmMuchPixelHit(address,x,y,z,dx,dy,0,dxy,iCluster,planeId,t,dt);
+//std::cout<<"Fill X "<<x<<"  Y "<<y<<std::endl;
+
+
+//------------------------------Added by O. Singh 11.12.2017 for mCbm ---------------------------
+Double_t  tX=11.8, tY=72.0, rAng=168.5;
+nX = tX+x*cos(rAng*TMath::DegToRad())-y*sin(rAng*TMath::DegToRad()); //Transformation of x(Translation + rotation 2D)
+nY=  tY+x*sin(rAng*TMath::DegToRad())+y*cos(rAng*TMath::DegToRad()); //Transformation of y(Translation + rotation 2D)
+nZ=z;
+
+if(fFlag==1){
+new ((*fHits)[iHit]) CbmMuchPixelHit(address,nX,nY,nZ,dx,dy,0,dxy,iCluster,planeId,t,dt);//mCbm
+}else{
+new ((*fHits)[iHit]) CbmMuchPixelHit(address,x,y,z,dx,dy,0,dxy,iCluster,planeId,t,dt);//Cbm
+}  
 }
-// -------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------
 
 ClassImp(CbmMuchFindHitsGem)
 

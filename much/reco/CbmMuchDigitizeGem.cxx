@@ -66,6 +66,9 @@ using std::setprecision;
 using std::setw;
 using std::string;
 using std::map;
+using std::cout;
+using std::endl;
+
 
 // -------------------------------------------------------------------------
 CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag) 
@@ -74,6 +77,7 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag)
     fAlgorithm(1),
     fGeoScheme(CbmMuchGeoScheme::Instance()),
     fDigiFile(digiFileName),
+    fFlag(flag),
     fPoints(NULL),
     fMCTracks(NULL),
     fDigis(NULL),
@@ -81,7 +85,6 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag)
     fNFailed(0),
     fNOutside(0),
     fNMulti(0),
-    fFlag(flag),
     fNADCChannels(256),
     fQMax(500000),
     fQThreshold(10000),
@@ -537,26 +540,65 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
 	LOG(DEBUG) << GetName() << ": Not Processing MCPoint " << iPoint <<" because it is not the last sector of module."<< module3 << FairLogger::endl;
 	return 1;
 	}
-    Double_t rMin = sFirst->GetR1(); //Mimimum radius of the Sector
-    Double_t rMax = sLast->GetR2();  //Maximum radius of the Sector
+    Double_t rMin =sFirst->GetR1(); //Mimimum radius of the Sector//5
+    Double_t rMax =sLast->GetR2();  //Maximum radius of the Sector//35
 
+//cout<<rMin<<"      Yeah      "<<rMax<<endl;
     // std::cout<<"min Rad "<<rMin<<"   max Rad  "<<rMax<<std::endl;
     //Calculating drifttime once for one track or one MCPoint, not for all the Primary Electrons generated during DriftGap.
+    Double_t aL   = gRandom->Rndm();
     Double_t driftTime = -1;
-    while(driftTime < 0) {
-      Double_t aL   = gRandom->Gaus(0.5,0.133); //Generting random number for calculating Drift Time.
-      driftTime = (1-aL)*fTotalDriftTime; 
-    }
+    while(driftTime < 0) driftTime = (1-aL)*fTotalDriftTime + gRandom->Gaus(0, fDTime); //Finding drifttime with random factor of Detector Time Resolution
     for (Int_t i=0;i<nElectrons;i++) { //Looping over all the primary electrons
-      Double_t RandomNumberForPrimaryElectronPosition   = gRandom->Rndm();
-      TVector3 ve   = v1 + dv*RandomNumberForPrimaryElectronPosition;
+      //Double_t aL   = gRandom->Rndm();
+      //Double_t driftTime = -1;
+      //while(driftTime < 0) driftTime = (1-aL)*fTotalDriftTime + gRandom->Gaus(0, fDTime); //Finding drifttime with random factor of Detector Time Resolution
+      TVector3 ve   = v1 + dv*aL;
+
+
+//------------------------Added by O. Singh 11.12.2017 for mCbm-------------------------
+
+      TVector3 nVe;
+Double_t XX = ve.X();
+Double_t YY = ve.Y();
+Double_t ZZ = ve.Z();
+
+
+Double_t tX=11.8;
+Double_t tY=72.0;
+Double_t rAng = 168.5;
+
+Double_t nXX = (XX-tX)*cos(rAng*TMath::DegToRad())+(YY-tY)*sin(rAng*TMath::DegToRad());//Transfotamation of MuChpoints to pads position
+Double_t nYY = -(XX-tX)*sin(rAng*TMath::DegToRad())+(YY-tY)*cos(rAng*TMath::DegToRad());
+Double_t nZZ = ZZ;
+
+       nVe.SetX(nXX);
+       nVe.SetY(nYY);
+       nVe.SetZ(nZZ);
+
+Double_t r=0.0, phi=0.0;
+
+if(fFlag==1){
+       r    = nVe.Perp(); //mCbm
+      phi  = nVe.Phi();
+}else {
+
+       r    = ve.Perp(); //Cbm
+      phi  = ve.Phi();
+      }
+//--------------------------------------------------------------------------
+
+
       UInt_t ne     = GasGain(); //Number of secondary electrons
-      Double_t r    = ve.Perp(); //
-      Double_t phi  = ve.Phi();
+      
       Double_t r1   = r-fSpotRadius; 
       Double_t r2   = r+fSpotRadius;
       Double_t phi1 = phi-fSpotRadius/r;
       Double_t phi2 = phi+fSpotRadius/r;
+//cout<<r1<<"   "<<r2<<endl;
+//cout<<"rMin  "<<rMin<<"   rMax    "<<rMax<<"   r1  "<<r1<<"    r2    "<<r2<<endl;
+
+//cout<<"Without condition X  "<<ve.X()<<"   Y  "<<ve.Y()<<endl;
       if (r1<rMin && r2>rMin) {//Adding charge to the pad which is on Lower Boundary 
         Status = AddCharge(sFirst,UInt_t(ne*(r2-rMin)/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
 	if(!Status)LOG(DEBUG) << GetName() << ": Processing MCPoint " << iPoint <<" in which Primary Electron : "<<i<< " not contributed charge. "<< FairLogger::endl;
@@ -570,6 +612,8 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
       if (r1 <rMin && r2 <rMin) continue;
       if (r1 >rMax && r2 >rMax) continue;
       
+//cout<<"With condition X  "<<ve.X()<<"   Y  "<<ve.Y()<<"  Rmin  "<<rMin<<"   Rmax   "<<rMax<<endl;
+
       // std::cout<<" rad1  "<<r1<<"  rad2 "<<r2<<std::endl;
       CbmMuchSectorRadial* s1 = module3->GetSectorByRadius(r1);
       CbmMuchSectorRadial* s2 = module3->GetSectorByRadius(r2);
