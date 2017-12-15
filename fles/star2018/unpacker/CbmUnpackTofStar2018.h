@@ -116,6 +116,18 @@ private:
    Double_t fdLastDigiTime;
    Double_t fdFirstDigiTimeDif;
    Double_t fdEvTime0;
+   TH1* fhRawTDigEvT0;
+   TH1* fhRawTDigRef0;
+   TH1* fhRawTDigRef;
+   TH1* fhRawTRefDig0;
+   TH1* fhRawTRefDig1;
+   TH1* fhRawDigiLastDigi;
+   std::vector< TH2* > fhRawTotCh;
+   std::vector< TH1* > fhChCount;
+   std::vector< Bool_t > fvbChanThere;
+   std::vector< TH2* > fhChanCoinc;
+   Bool_t fbDetChanThere[64];
+   TH2*   fhDetChanCoinc;
 
 #ifndef __CINT__
    std::vector< std::vector < ngdpb::Message > > fvmEpSupprBuffer;
