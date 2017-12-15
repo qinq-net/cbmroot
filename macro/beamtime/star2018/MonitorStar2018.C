@@ -55,6 +55,7 @@ void MonitorStar2018(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24
   
   // Get4 Unpacker
   CbmTSMonitorTofStar* test_monitor_tof = new CbmTSMonitorTofStar();
+
 /*
   test_monitor_tof->SetPulserMode();
   test_monitor_tof->SetPulserFee(0, 0);

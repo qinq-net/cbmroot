@@ -8,7 +8,7 @@
  */
 
 //void unpack_tsa(Int_t nEvt=100, TString FileId = "cosmic_2016110701_safe_4links_4")
-void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=50., Int_t iReqDet=0, TString FileId = "r0001_20171215_1342")
+void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=50., Int_t iReqDet = 0x00001006, TString FileId = "r0001_20171215_1342")
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
   TString inDir  = "./input/star2018/" + FileId + "/";
@@ -23,7 +23,7 @@ void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=50., Int_t iReqDet=0, TString F
    nEvents = nEvt;
   }
   // --- Specify output file name (this is just an example)
-  TString outDir = srcDir + "/macro/beamtime/star2017/data/";
+  TString outDir = "./data/";
   TString Mode = Form("_DT%d_0x%08x",(Int_t)dDeltaT,iReqDet);
   TString outFile = outDir + FileId + Mode + ".root";
   TString parFile = outDir + FileId + Mode + ".params.root";
@@ -64,6 +64,7 @@ void unpack_tsa(Int_t nEvt=100, Double_t dDeltaT=50., Int_t iReqDet=0, TString F
   CbmFlibTestSource* source = new CbmFlibTestSource();
   source->SetMaxDeltaT(dDeltaT);
   source->SetReqDigiAddr(iReqDet); //0x00005006);  // request diamond for output events
+  source->SetReqMode(1); // Look for events with ANY detector in setup
   //source->SetFileName(inFile);
   source->AddPath(inDir,inFile);
   source->AddUnpacker(unpacker_tof, 0x60, 6);//gDPB A & B
