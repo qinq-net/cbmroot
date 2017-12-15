@@ -94,7 +94,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
                                 UInt_t inPulserChanG =  6, UInt_t inPulserChanH =  7, UInt_t inPulserChanI =  8,
                                 UInt_t inPulserChanJ =  9, UInt_t inPulserChanK = 10, UInt_t inPulserChanL = 11,
                                 UInt_t inPulserChanM = 12, UInt_t inPulserChanN = 13, UInt_t inPulserChanO = 14,
-                                UInt_t inPulserChanP = 15 );
+                                UInt_t inPulserChanP = 15, UInt_t inPulserChanQ = 16, UInt_t inPulserChanR = 17 );
     inline void SetFitZoomWidthPs( Double_t inZoomWidth = 1000.0 ) { fdFitZoomWidthPs = inZoomWidth; }
     inline void SetHistoryHistoSize( UInt_t inHistorySizeSec = 1800 ) { fuHistoryHistoSize = inHistorySizeSec; }
 
@@ -119,6 +119,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     UInt_t fNrOfChannelsPerFeet; // Number of channels in each FEET
     UInt_t fNrOfGet4;            // Total number of Get4 chips in the system
     UInt_t fNrOfGet4PerGdpb;     // Number of GET4s per GDPB
+    UInt_t fuNbChannelsPerGdpb; // Number of channels in each gDPB
 
     Int_t fiCountsLastTs;
     Int_t fiSpillOnThr;
@@ -230,7 +231,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     TH2 *     fhStarTokenEvo;
 
     ///* STAR and pulser monitoring *///
-    static const UInt_t kuNbChanTest = 16;
+    static const UInt_t kuNbChanTest = 18;
     Bool_t fbGet4M24b;
     Bool_t fbGet4v20;
     Bool_t fbMergedEpochsOn;

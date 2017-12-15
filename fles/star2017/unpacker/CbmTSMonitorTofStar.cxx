@@ -71,6 +71,7 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fNrOfChannelsPerFeet(0),
     fNrOfGet4(0),
     fNrOfGet4PerGdpb(0),
+    fuNbChannelsPerGdpb( 0 ),
     fiCountsLastTs(0),
     fiSpillOnThr(10),
     fiSpillOffThr(3),
@@ -294,6 +295,10 @@ Bool_t CbmTSMonitorTofStar::ReInitContainers()
 
   fNrOfGet4PerGdpb = fNrOfFebsPerGdpb * fNrOfGet4PerFeb;
   LOG(INFO) << "Nr. of GET4s per GDPB: " << fNrOfGet4PerGdpb
+               << FairLogger::endl;
+
+  fuNbChannelsPerGdpb = fNrOfFebsPerGdpb * fNrOfGet4PerFeb * fNrOfChannelsPerGet4;
+  LOG(INFO) << "Nr. of channels per GDPB: " << fuNbChannelsPerGdpb
                << FairLogger::endl;
 
   fGdpbIdIndexMap.clear();
@@ -2821,17 +2826,19 @@ void CbmTSMonitorTofStar::FillEpochInfo(ngdpb::Message mess)
       // Fill the time difference for the chosen channel pairs
       for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
       {
-         UInt_t uChipA = fuPulserChan[ uChan     ] / fNrOfChannelsPerGet4;
-         UInt_t uChanA = fuPulserChan[ uChan     ] % fNrOfChannelsPerGet4;
-         UInt_t uChipB = fuPulserChan[ uChan + 1 ] / fNrOfChannelsPerGet4;
-         UInt_t uChanB = fuPulserChan[ uChan + 1 ] % fNrOfChannelsPerGet4;
+         UInt_t uGdpbA =   fuPulserChan[ uChan     ] / fuNbChannelsPerGdpb;
+         UInt_t uChipA = ( fuPulserChan[ uChan     ] % fuNbChannelsPerGdpb ) / fNrOfChannelsPerGet4;
+         UInt_t uChanA =   fuPulserChan[ uChan     ] % fNrOfChannelsPerGet4;
+         UInt_t uGdpbB =   fuPulserChan[ uChan + 1 ] / fuNbChannelsPerGdpb;
+         UInt_t uChipB = ( fuPulserChan[ uChan + 1 ] % fuNbChannelsPerGdpb ) / fNrOfChannelsPerGet4;
+         UInt_t uChanB =   fuPulserChan[ uChan + 1 ] % fNrOfChannelsPerGet4;
 
          Double_t dTimeDiff =
-               fTsLastHit[0][uChipB][ uChanB ] - fTsLastHit[0][uChipA][ uChanA ];
+               fTsLastHit[uGdpbB][uChipB][ uChanB ] - fTsLastHit[uGdpbA][uChipA][ uChanA ];
             dTimeDiff *= 1e3;  // ns -> ps
          if( ( 10.0 * dMinDt < dTimeDiff ) && ( dTimeDiff < 10.0 * dMaxDt ) &&
-             ( 0 < fTsLastHit[0][uChipA][ uChanA ] ) &&
-             ( 0 < fTsLastHit[0][uChipB][ uChanB ] ) )
+             ( 0 < fTsLastHit[uGdpbA][uChipA][ uChanA ] ) &&
+             ( 0 < fTsLastHit[uGdpbB][uChipB][ uChanB ] ) )
          {
             fhTimeDiffPulserChosenChPairs[uChan]->Fill( dTimeDiff );
          } // if both channels have already 1 hit and these are not too far away
@@ -4037,7 +4044,8 @@ void CbmTSMonitorTofStar::SetPulserChans(
       UInt_t inPulserChanA, UInt_t inPulserChanB, UInt_t inPulserChanC, UInt_t inPulserChanD,
       UInt_t inPulserChanE, UInt_t inPulserChanF, UInt_t inPulserChanG, UInt_t inPulserChanH,
       UInt_t inPulserChanI, UInt_t inPulserChanJ, UInt_t inPulserChanK, UInt_t inPulserChanL,
-      UInt_t inPulserChanM, UInt_t inPulserChanN, UInt_t inPulserChanO, UInt_t inPulserChanP )
+      UInt_t inPulserChanM, UInt_t inPulserChanN, UInt_t inPulserChanO, UInt_t inPulserChanP,
+      UInt_t inPulserChanQ, UInt_t inPulserChanR )
 {
    fuPulserChan[ 0] = inPulserChanA;
    fuPulserChan[ 1] = inPulserChanB;
@@ -4055,6 +4063,8 @@ void CbmTSMonitorTofStar::SetPulserChans(
    fuPulserChan[13] = inPulserChanN;
    fuPulserChan[14] = inPulserChanO;
    fuPulserChan[15] = inPulserChanP;
+   fuPulserChan[16] = inPulserChanQ;
+   fuPulserChan[17] = inPulserChanR;
 }
 
     ///* STAR event building/cutting *///
