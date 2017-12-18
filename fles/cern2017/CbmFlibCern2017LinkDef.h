@@ -13,9 +13,11 @@
 #pragma link C++ class CbmCern2017MonitorRawSts;
 #pragma link C++ class CbmCern2017MonitorSts;
 //#pragma link C++ class CbmCern2017MonitorMuch;
+#pragma link C++ class CbmCern2017MonitorHodo;
 
 #pragma link C++ class CbmCern2017ContFact;
 #pragma link C++ class CbmCern2017UnpackParSts;
 //#pragma link C++ class CbmCern2017UnpackParMuch;
+#pragma link C++ class CbmCern2017UnpackParHodo;
 
 #endif

@@ -51,10 +51,12 @@ Set(SRCS
   unpacker/CbmCern2017MonitorRawSts.cxx
   unpacker/CbmCern2017MonitorSts.cxx
 #  unpacker/CbmCern2017MonitorMuch.cxx
+  unpacker/CbmCern2017MonitorHodo.cxx
 
   param/CbmCern2017ContFact.cxx
   param/CbmCern2017UnpackParSts.cxx
 #  param/CbmCern2017UnpackParMuch.cxx
+  param/CbmCern2017UnpackParHodo.cxx
 )
 
 #Set(NO_DICT_SRCS

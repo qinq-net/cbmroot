@@ -11,6 +11,7 @@
 
 #include "CbmCern2017UnpackParSts.h"
 //#include "CbmMuchUnpackPar.h"
+#include "CbmCern2017UnpackParHodo.h"
 
 #include "FairRuntimeDb.h"
 
@@ -44,6 +45,14 @@ void CbmCern2017ContFact::setAllContainers() {
 
     containers->Add(p2);
 */
+
+    FairContainer* p3= new FairContainer("CbmCern2017UnpackParHodo",
+                                          "Hodo Unpack Parameters",
+                                          "TestDefaultContext");
+    p3->addContext("TestNonDefaultContext");
+
+    containers->Add(p3);
+
 }
 
 FairParSet* CbmCern2017ContFact::createContainer(FairContainer* c) {
@@ -60,6 +69,10 @@ FairParSet* CbmCern2017ContFact::createContainer(FairContainer* c) {
       p=new CbmCern2017UnpackParMuch(c->getConcatName().Data(),c->GetTitle(),c->getContext());
   }
 */
+  if (strcmp(name,"CbmCern2017UnpackParHodo")==0) {
+      p=new CbmCern2017UnpackParHodo(c->getConcatName().Data(),c->GetTitle(),c->getContext());
+  }
+
   return p;
 }
 
