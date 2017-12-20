@@ -101,8 +101,10 @@ void CbmCern2017UnpackParHodo::putParams(FairParamList* l)
    l->add("ChannelToPixelMap", fiChannelToPixelMap);
    l->add("ChannelToPlaneMap", fiChannelToPlaneMap);
 
-   l->add("AsicIdxHodo1", fuAsicIdxHodo1);
-   l->add("AsicIdxHodo2", fuAsicIdxHodo2);
+   Int_t iAsicIdxHodo1 = fuAsicIdxHodo1;
+   Int_t iAsicIdxHodo2 = fuAsicIdxHodo2;
+   l->add("AsicIdxHodo1", iAsicIdxHodo1);
+   l->add("AsicIdxHodo2", iAsicIdxHodo2);
    l->add("SwapHodo1XY",  fbSwapHodo1XY);
    l->add("SwapHodo2XY",  fbSwapHodo2XY);
    l->add("InvertHodo1X", fbInvertHodo1X);
