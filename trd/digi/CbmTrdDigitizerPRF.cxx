@@ -645,7 +645,7 @@ void CbmTrdDigitizerPRF::ProcessBuffer(Int_t address,Double_t /*weighting*/){
     digicharge+=it->first;
     digiTRcharge+=it->second;
   }
-  charge.clear();
+  fChargeBuffer[address].clear();
   
   // Copy match object. Will be deleted in the digi destructor.
   // TODO: check if move of object is possible
@@ -656,7 +656,7 @@ void CbmTrdDigitizerPRF::ProcessBuffer(Int_t address,Double_t /*weighting*/){
   digi->SetMatch(digiMatch);
   CbmDaqBuffer::Instance()->InsertData(digi);
 
-  analog.clear();
+  fAnalogBuffer[address].clear();
 }
 
 
