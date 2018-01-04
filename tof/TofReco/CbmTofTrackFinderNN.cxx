@@ -540,7 +540,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
     CbmTofTracklet* pTrk = new((*fTofTracks)[fiNtrks++]) CbmTofTracklet (*fTracks[iTr]);
     for(Int_t iHit=0; iHit<pTrk->GetNofHits(); iHit++){ // mark used Hit
       CbmTofHit* pHit = (CbmTofHit*) fHits->At( pTrk->GetHitIndex(iHit) );
-      pHit->SetFlag(pHit->GetFlag()+1);
+      pHit->SetFlag(pHit->GetFlag()+100.);
       LOG(DEBUG) << Form(" hit %d at %d flagged to %d ",iHit, pTrk->GetHitIndex(iHit), pHit->GetFlag())
 		 <<FairLogger::endl;
     }

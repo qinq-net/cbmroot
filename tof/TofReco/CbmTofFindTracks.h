@@ -35,6 +35,7 @@ class CbmTofDetectorId;
 class CbmTofDigiPar;
 class CbmTofDigiBdfPar;
 class CbmTofAddress;
+class CbmTofHit;
 
 class CbmTofFindTracks : public FairTask
 {
@@ -80,6 +81,8 @@ class CbmTofFindTracks : public FairTask
 
   virtual void FillUHits();
 
+  virtual Bool_t CheckHit2Track(CbmTofHit *pHit);
+
   virtual void FindVertex();
 
   virtual void FillHistograms();
@@ -96,9 +99,11 @@ class CbmTofFindTracks : public FairTask
 
   inline void SetMinNofHits (Int_t i)         { fMinNofHits = i-1;};
   inline void SetNStations (Int_t i)          { fNTofStations = i;};
+  inline void SetNReqStations (Int_t i)        { fNReqStations = i;};
 
   inline Int_t GetMinNofHits() const   { return fMinNofHits+1;}
   inline Int_t GetNStations() const    { return fNTofStations;}
+  inline Int_t GetNReqStations() const  { return fNReqStations;}
 
   void SetStations    (Int_t ival);
   void SetStation     (Int_t iVal, Int_t iModType, Int_t iModId, Int_t iRpcId);
@@ -155,6 +160,7 @@ class CbmTofFindTracks : public FairTask
   Int_t fMinNofHits;             // minimal number of Tof Hits for filling histos 
   Int_t fNofTracks;              // Number of tracks created
   Int_t fNTofStations;           // Number of Tof Stations
+  Int_t fNReqStations;           // Number of requested Stations
   Bool_t fInspectEvent;          // analyse event flag 
 
   std::vector<Int_t> fStationType; // Station SM type 
@@ -203,12 +209,13 @@ class CbmTofFindTracks : public FairTask
   std::vector<TH3 *> vhXY_DT;
   std::vector<TH3 *> vhXY_TOT;
   std::vector<TH3 *> vhXY_CSZ;
+  std::vector<TH3 *> vhUDXDY_DT;
 
   TH1* fhVTXNorm;
   TH2* fhVTX_XY0;
   TH2* fhVTX_DT0_Norm;
 
-  Int_t fTypeStation[10];        // FIXME fixed array size
+  Int_t fTypeStation[100];       // FIXME fixed array size
   TString  fOutHstFileName;      // name of the histogram output file name with Calibration Parameters
 
   Bool_t   LoadCalParameter();
