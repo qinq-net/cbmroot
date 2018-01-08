@@ -247,9 +247,6 @@ EndIf()
 SET(CBMLIBDIR ${CMAKE_BINARY_DIR}/lib)  
 SET(LD_LIBRARY_PATH  ${CBMLIBDIR} ${Boost_LIBRARY_DIRS} ${LD_LIBRARY_PATH})
 
-
-Generate_Version_Info()
-
 # Recurse into the given subdirectories.  This does not actually
 # cause another cmake executable to run.  The same process will walk through
 # the project's entire directory structure.
