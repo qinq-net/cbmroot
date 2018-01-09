@@ -106,7 +106,8 @@ void CbmTrdClusterFinderFast::Exec(Option_t*)
 
   TStopwatch timer;
   timer.Start();
-  cout << "================CbmTrdClusterFinderFast===============" << endl;
+  //  cout << "================CbmTrdClusterFinderFast===============" << endl;
+  LOG(INFO) << "================CbmTrdClusterFinderFast===============" << FairLogger::endl;
   //LOG(INFO) << "CbmTrdClusterFinderFast::Exec : Triangular Pads: " << (Bool_t)fTrianglePads << FairLogger::endl;
   Int_t counterI = 0;
   Int_t counterJ = 0;

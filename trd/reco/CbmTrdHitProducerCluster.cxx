@@ -78,7 +78,8 @@ void CbmTrdHitProducerCluster::Exec(Option_t*)
   
   TStopwatch timer;
   timer.Start();
-  cout << "================CbmTrdHitProducerCluster===============" << endl;
+  //  cout << "================CbmTrdHitProducerCluster===============" << endl;
+  LOG(INFO) << "================CbmTrdHitProducerCluster===============" << FairLogger::endl;
   //LOG(INFO) << "CbmTrdHitProducerCluster::Exec : Triangular Pads: " << (Bool_t)fTrianglePads << FairLogger::endl;
   Int_t nofCluster = fClusters->GetEntries(), clsTriangular(0);
   
