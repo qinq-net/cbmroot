@@ -2,7 +2,7 @@ void pl_TIS(TString sysinfo="", Double_t dFracMax=0.1){
  gROOT->LoadMacro("pl_Datime.C");
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
-  TCanvas *can = new TCanvas("can","can",48,55,700,700);
+  TCanvas *can = new TCanvas("can","can",48,55,450,600);
   can->Divide(2,3); 
 
  gPad->SetFillColor(0);
@@ -22,27 +22,30 @@ void pl_TIS(TString sysinfo="", Double_t dFracMax=0.1){
 
 can->cd(1);
  gROOT->cd();
- hname="tof_trb_time_in_spill";
- h1=(TH1 *)gROOT->FindObjectAny(hname);
- if (h1!=NULL) {
-  h1->Draw("");
- }else  { cout << hname << " not found" << endl; }
-
  hname="TIS_all";
  h1=(TH1 *)gROOT->FindObjectAny(hname);
  if (h1!=NULL) {
-  h1->Draw("same");
+  h1->Draw("");
   h1->SetLineColor(3);
   h1->GetXaxis()->SetTitle("time [s]");
  }else  { cout << hname << " not found" << endl; }
  TH1 *hTIS_all = (TH1 *)h1->Clone();
 
+ hname="tof_trb_time_in_spill";
+ h1=(TH1 *)gROOT->FindObjectAny(hname);
+ if (h1!=NULL) {
+  h1->Draw("same");
+ }else  { cout << hname << " not found" << endl; }
+
 can->cd(2);
  gROOT->cd();
+ if(NULL != hTIS_all) hTIS_all->Draw();
+ else return;
+
  hname="TIS_sel";
  h1=(TH1 *)gROOT->FindObjectAny(hname);
  if (h1!=NULL) {
-   h1->Draw();
+   h1->Draw("same");
    h1->GetXaxis()->SetTitle("time [s]");
    gPad->SetLogy();
  }else  { cout << hname << " not found" << endl; }
@@ -89,7 +92,7 @@ can->cd(3);
  hTISsel1frac->Draw("same");
  hTISsel1frac->SetLineColor(hTIS_sel1->GetLineColor()); 
  */
- gPad->SetLogy();
+ // gPad->SetLogy();
 
 can->cd(4);
 /*
@@ -112,6 +115,7 @@ can->cd(5);
  h2=(TH2 *)gROOT->FindObjectAny(hname);
  if (h2!=NULL) {
   h2->Draw("colz");
+  h2->GetYaxis()->SetTitleOffset(1.3);
   h2pfx=(TProfile *)h2->ProfileX("hTISDT04D4best_pfs",1,-1,"s");
  }else  { cout << hname << " not found" << endl; }
 
@@ -120,6 +124,7 @@ can->cd(6);
  TH1D *h2pfxes=(TH1D *)h2pfx->ProjectionX("hTISDT04D4best_RMS","C=E");
  h2pfxes->Draw("");
  h2pfxes->GetYaxis()->SetTitle("RMS(#Deltat) [ns]");
+ h2pfxes->GetYaxis()->SetTitleOffset(1.3);
 
  TString FADD=Form("pl_Datime(\"%s\")",sysinfo.Data());
  gInterpreter->ProcessLine(FADD.Data());
