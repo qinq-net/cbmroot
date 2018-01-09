@@ -25,8 +25,7 @@ ${CBMROOT_SOURCE_DIR}/L1/ParticleFinder
 
 ${CBMROOT_SOURCE_DIR}/KF
 ${CBMROOT_SOURCE_DIR}/KF/KFQA
-${CBMROOT_SOURCE_DIR}/KF/KFParticle
-${CBMROOT_SOURCE_DIR}/KF/KFParticlePerformance
+${KFParticle_INCLUDE_DIR}
 ${CBMROOT_SOURCE_DIR}/KF/Interface
 ${CBMROOT_SOURCE_DIR}/data
 
@@ -66,6 +65,7 @@ ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
 ${Vc_LIB_DIR}
+${KFParticle_LIB_DIR}
 )
  
 link_directories( ${LINK_DIRECTORIES})
@@ -91,7 +91,7 @@ ENDIF (SSE_FOUND)
 set(LINKDEF CbmEventBuilderLinkDef.h)
 Set(LIBRARY_NAME CbmEventBuilder)
 Set(DEPENDENCIES
-    CbmData CbmBase CbmField CbmMuch CbmMvd Base CbmRun
+    CbmData CbmBase CbmField CbmMuch CbmMvd Base CbmRun KF
 )
 
 GENERATE_LIBRARY()
