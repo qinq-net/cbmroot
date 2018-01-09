@@ -23,9 +23,8 @@ void create_rich_v18d_mcbm()
 
 	FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
 	FairGeoInterface* geoFace = geoLoad->getGeoInterface();
-//	TString geoPath = gSystem->Getenv("VMCWORKDIR");
-//	TString medFile = geoPath + "/geometry/media.geo";
-	TString medFile = "/home/aghoehne/Documents/CbmRoot/trunkNew/geometry/media.geo";
+	TString geoPath = gSystem->Getenv("VMCWORKDIR");
+	TString medFile = geoPath + "/geometry/media.geo";
 
 	geoFace->setMediaFile(medFile);
 	geoFace->readMedia();
