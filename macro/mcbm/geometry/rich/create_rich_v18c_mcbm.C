@@ -242,7 +242,7 @@ void create_rich_v18c_mcbm()
 
 	//Positioning
 	rich->AddNode(caveVol, 1, trCave[0]);
-	rich->AddNode(caveVol, 1, trCave[1]);
+	rich->AddNode(caveVol, 2, trCave[1]);
 	rich->AddNode(caveVol, 3, trCave[2]);
 	rich->AddNode(caveVol, 4, trCave[3]);
 
