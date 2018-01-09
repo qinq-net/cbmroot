@@ -2,6 +2,20 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
+# Download KFParticle and KFParticlePerformance subdirectories from external SVN repository when running cmake.
+# Allows to get rid of the svn externals. Must be done at configuration time since the code is 
+# needed when configuring the KF library target below.
+include(DownloadProject)
+download_project(PROJ            KFParticle
+                 SVN_REPOSITORY  "https://subversion.gsi.de/fairroot/cbmroot/development/mzyzak/KFParticle/KFParticle"
+                 SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/KFParticle
+)
+
+download_project(PROJ            KFParticlePerformance
+                 SVN_REPOSITORY  "https://subversion.gsi.de/fairroot/cbmroot/development/mzyzak/KFParticle/KFParticlePerformance"
+                 SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/KFParticlePerformance
+)
+
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/base 
 ${CBMROOT_SOURCE_DIR}/data
@@ -25,7 +39,9 @@ ${CBMROOT_SOURCE_DIR}/KF/KFModelParameters/InverseSlope
 ${CBMROOT_SOURCE_DIR}/KF/KFModelParameters/BoltzmannDistribution
 ${CBMROOT_SOURCE_DIR}/KF/KFModelParameters/BlastWaveModel
 ${CBMROOT_SOURCE_DIR}/KF/KFQA
-${KFParticle_INCLUDE_DIR}
+${CBMROOT_SOURCE_DIR}/KF/KFParticle
+#${CBMROOT_SOURCE_DIR}/KF/KFParticle/KFPHistogram
+${CBMROOT_SOURCE_DIR}/KF/KFParticlePerformance
 
 ${CBMROOT_SOURCE_DIR}/sts 
 ${CBMROOT_SOURCE_DIR}/sts/setup
@@ -64,7 +80,6 @@ ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
 ${Vc_LIB_DIR}
-${KFParticle_LIB_DIR}
 )
  
 link_directories( ${LINK_DIRECTORIES})
@@ -125,6 +140,25 @@ KFQA/CbmKFTrErrMCPoints.cxx
 KFQA/CbmKFTrackFitQA.cxx
 KFQA/CbmKFTrackQA.cxx
 KFQA/KFParticleMatch.cxx
+# KFParticlesFinder/CbmKFParticleDatabase.cxx
+KFParticle/KFParticleDatabase.cxx
+KFParticle/KFParticleBase.cxx
+KFParticle/KFParticle.cxx
+KFParticle/KFPTrack.cxx
+KFParticle/KFPVertex.cxx
+KFParticle/KFPTrackVector.cxx
+KFParticle/KFParticleBaseSIMD.cxx
+KFParticle/KFParticleSIMD.cxx
+KFParticle/KFVertex.cxx 
+KFParticle/KFParticlePVReconstructor.cxx
+KFParticle/KFParticleFinder.cxx
+KFParticle/KFParticleTopoReconstructor.cxx
+KFParticlePerformance/KFPartEfficiencies.cxx
+KFParticlePerformance/KFMCVertex.cxx
+KFParticlePerformance/KFMCParticle.cxx
+KFParticlePerformance/KFParticlePerformanceBase.cxx
+KFParticlePerformance/KFTopoPerformance.cxx
+KFParticlePerformance/KFPHistogram/KFPHistogramSet.cxx
 CbmKFParticleFinder.cxx
 CbmKFParticleFinderPID.cxx
 CbmKFParticleFinderQA.cxx
@@ -188,6 +222,18 @@ KFQA/CbmKFTrackFitQA.h
 KFQA/CbmKFTrackQA.h
 KFQA/CbmKFPartEfficiencies.h
 KFQA/KFParticleMatch.h
+# KFParticlesFinder/CbmKFParticleDatabase.h
+KFParticle/KFParticleBase.h
+KFParticle/KFParticle.h
+KFParticle/KFVertex.h
+KFParticlePerformance/KFPartEfficiencies.h
+KFParticlePerformance/KFPVEfficiencies.h
+KFParticlePerformance/KFPartMatch.h
+KFParticlePerformance/KFMCTrack.h
+KFParticlePerformance/KFMCVertex.h
+KFParticlePerformance/KFMCParticle.h
+KFParticlePerformance/KFParticlePerformanceBase.h
+KFParticlePerformance/KFTopoPerformance.h
 CbmKFParticleFinder.h
 CbmKFParticleFinderPID.h
 CbmKFParticleFinderQA.h
@@ -231,10 +277,8 @@ ENDIF (SSE_FOUND)
 set(LINKDEF KFLinkDef.h)
 Set(LIBRARY_NAME KF)
 Set(DEPENDENCIES
-    CbmSts CbmEcal CbmBase CbmData Base Vc.a Minuit2 KFParticle
+    CbmSts CbmEcal CbmBase CbmData Base Vc.a Minuit2
 )
 Set(DEFINITIONS -DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS)
 
 GENERATE_LIBRARY()
-
-Add_Dependencies(KF KFPARTICLE)

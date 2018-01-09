@@ -28,11 +28,12 @@ ${CBMROOT_SOURCE_DIR}/run
 
 ${CBMROOT_SOURCE_DIR}/KF
 ${CBMROOT_SOURCE_DIR}/KF/Interface 
-${KFParticle_INCLUDE_DIR}
+${CBMROOT_SOURCE_DIR}/KF/KFParticle
 
 ${CBMROOT_SOURCE_DIR}/L1
 ${CBMROOT_SOURCE_DIR}/L1/ParticleFinder
 ${CBMROOT_SOURCE_DIR}/L1/L1Algo
+##${CBMROOT_SOURCE_DIR}/L1/vectors
 
 ${CBMROOT_SOURCE_DIR}/littrack
 ${CBMROOT_SOURCE_DIR}/littrack/cbm
@@ -65,7 +66,6 @@ ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
 ${Vc_LIB_DIR}
-${KFParticle_LIB_DIR}
 )
 
 #Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -Weffc++ -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-ignored-qualifiers -Wno-overloaded-virtual")
