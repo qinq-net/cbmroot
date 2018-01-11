@@ -2,8 +2,8 @@
  *
  ************************************************************/
 
-#ifndef STSXYTERBETAHIT_H
-#define STSXYTERBETAHIT_H
+#ifndef STSXYTERFINALHIT_H
+#define STSXYTERFINALHIT_H
 
 // C/C++ headers
 #include <stdint.h>
@@ -11,7 +11,7 @@
 
 namespace stsxyter {
 
-   class BetaHit {
+   class FinalHit {
       private:
 
 
@@ -23,27 +23,28 @@ namespace stsxyter {
 
       public:
 
-         BetaHit(const BetaHit& src) :
+         FinalHit(const FinalHit& src) :
                fulLongTs(src.fulLongTs), fusRawAdc(src.fusRawAdc), fusAsicIdx(src.fusAsicIdx), fusChanIdx(src.fusChanIdx) {}
 
-         BetaHit( uint64_t ulLongTsIn, uint16_t usRawAdcIn, uint16_t usAsicIdxIn = 0, uint16_t usChanIdxIn = 0 ) :
+         FinalHit( uint64_t ulLongTsIn, uint16_t usRawAdcIn, uint16_t usAsicIdxIn, uint16_t usChanIdxIn ) :
                fulLongTs( ulLongTsIn ), fusRawAdc( usRawAdcIn ), fusAsicIdx( usAsicIdxIn ), fusChanIdx( usChanIdxIn ) {}
-         BetaHit() : BetaHit( 0, 0, 0, 0) {}
 
-         virtual ~BetaHit() {};
+         FinalHit() : FinalHit( 0, 0, 0, 0) {}
 
-         void assign(const BetaHit& src) { fulLongTs = src.fulLongTs; fusRawAdc = src.fusRawAdc;
-                                           fusAsicIdx = src.fusAsicIdx; fusChanIdx = src.fusChanIdx;}
+         virtual ~FinalHit() {};
 
-         BetaHit& operator=(const BetaHit& src) { assign(src); return *this; }
-         bool     operator<(const BetaHit& other) const { return fulLongTs < other.fulLongTs; }
+         void assign(const FinalHit& src) { fulLongTs = src.fulLongTs;   fusRawAdc = src.fusRawAdc;
+                                            fusAsicIdx = src.fusAsicIdx; fusChanIdx = src.fusChanIdx;}
+
+         FinalHit& operator=(const FinalHit& src) { assign(src); return *this; }
+         bool     operator<(const FinalHit& other) const { return fulLongTs < other.fulLongTs; }
 
          inline void reset() { fulLongTs = 0; fusRawAdc = 0; fusAsicIdx = 0; fusChanIdx = 0; }
 
-         inline uint64_t GetTs()  const { return fulLongTs; }
-         inline uint16_t GetAdc() const { return fusRawAdc; }
+         inline uint64_t GetTs()   const { return fulLongTs; }
+         inline uint16_t GetAdc()  const { return fusRawAdc; }
          inline uint16_t GetAsic() const { return fusAsicIdx; }
          inline uint16_t GetChan() const { return fusChanIdx; }
    };
 }
-#endif // STSXYTERBETAHIT_H
+#endif // STSXYTERFINALHIT_H

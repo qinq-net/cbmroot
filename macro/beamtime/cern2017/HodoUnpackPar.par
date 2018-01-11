@@ -9,7 +9,7 @@ NrOfDpbs: Int_t 2
 DbpIdArray: Int_t \
   0x18ef 0x0b5c
 //   0x6161
-NbElinksPerDpb: Int_t 15
+NbElinksPerDpb: Int_t 20
 NbStsXyters: Int_t 6
 NbChanPerAsic: Int_t 128
 // Array size has to match NrOfDpbs * NbElinksPerDpb
@@ -19,9 +19,11 @@ ElinkToAsicMap: Int_t \
  0x0000 0x0000 0x0000 0x0000 0x0000 \
  0x0001 0x0001 0x0001 0x0001 0x0001 \
  0x0002 0x0002 0x0002 0x0002 0x0002 \
+ 0xFFFF 0xFFFF 0xFFFF 0xFFFF 0xFFFF \
  0x0003 0x0003 0x0003 0x0003 0x0003 \
  0x0004 0x0004 0x0004 0x0004 0x0004 \
- 0x0005 0x0005 0x0005 0x0005 0x0005
+ 0x0005 0x0005 0x0005 0x0005 0x0005 \
+ 0xFFFF 0xFFFF 0xFFFF 0xFFFF 0xFFFF
 ChannelToFiberMap: Int_t \
  0 32 16 48 15 47 31 63  1 33 17 49 14 46 30 62 \
  2 34 18 50 13 45 29 61  3 35 19 51 12 44 28 60 \
@@ -49,7 +51,8 @@ ChannelToPlaneMap: Int_t \
  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1 \
  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1 \
  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-AsicIdxHodo1: Int_t 1
+AsicIdxHodo1: Int_t 3
+//AsicIdxHodo2: Int_t 4
 AsicIdxHodo2: Int_t 4
 SwapHodo1XY:  Int_t 0
 SwapHodo2XY:  Int_t 1

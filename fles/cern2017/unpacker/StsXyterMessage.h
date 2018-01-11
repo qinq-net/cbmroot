@@ -32,7 +32,16 @@ namespace stsxyter {
    {
       Dummy,
       Hit,
-      TsMsb
+      TsMsb,
+      Epoch,
+      Empty
+   };
+      /// Non-hit Message sub-types
+   enum class MessSubType : uint16_t
+   {
+      TsMsb = 0,
+      Epoch = 1,
+      Empty = 3
    };
       /// Printout control
    enum class MessagePrintMask : uint16_t
@@ -54,9 +63,11 @@ namespace stsxyter {
    static const uint16_t kusPosHitTs      =  1;
    static const uint16_t kusPosHitEmFlag  =  0;
       // Non-hit messages
-   static const uint16_t kusPosTsMsbFlag  = 22;
+   static const uint16_t kusPosSubtype    = 29;
          // TS_MSB message
    static const uint16_t kusPosTsMsbVal   =  0;
+         // Epoch
+   static const uint16_t kusPosEpochVal   =  0;
 
       /// Fields length (bits)
    static const uint16_t kusLenNotHitFlag =  1;
@@ -65,13 +76,15 @@ namespace stsxyter {
    static const uint16_t kusLenHitChannel =  7;
    static const uint16_t kusLenHitAdc     =  5;
    static const uint16_t kusLenHitTsFull  =  9; // Includes 1 bit overlap with TS message ?
-   static const uint16_t kusLenHitTsOver  =  1; // 2 bit overlap with TS message
+   static const uint16_t kusLenHitTsOver  =  0; // 0 bit overlap with TS message
    static const uint16_t kusLenHitTs      =  8;
    static const uint16_t kusLenHitEmFlag  =  1;
       // Other message
-   static const uint16_t kusLenTsMsbFlag  =  1;
+   static const uint16_t kusLenSubtype    =  2;
          // TS_MSB message
-   static const uint16_t kusLenTsMsbVal   = 13;
+   static const uint16_t kusLenTsMsbVal   = 22;
+         // Epoch
+   static const uint16_t kusLenEpochVal   = 29;
 
       /// Fields Info
    static const MessField kFieldLinkIndex(  kusPosLinkIndex,  kusLenLinkIndex );
@@ -84,9 +97,11 @@ namespace stsxyter {
    static const MessField kFieldHitTs     ( kusPosHitTs,      kusLenHitTs );
    static const MessField kFieldHitEmFlag ( kusPosHitEmFlag,  kusLenHitEmFlag );
       // Non-hit messages
-   static const MessField kFieldTsMsbFlag ( kusPosTsMsbFlag,  kusLenTsMsbFlag );
+   static const MessField kFieldSubtype   ( kusPosSubtype,    kusLenSubtype );
          // TS_MSB message
    static const MessField kFieldTsMsbVal  ( kusPosTsMsbVal,   kusLenTsMsbVal );
+         // Epoch message
+   static const MessField kFieldEpochVal  ( kusPosEpochVal,   kusLenEpochVal );
 
       /// Status/properties constants
    static const uint32_t  kuHitNbAdcBins   = 1 << kusLenHitAdc;
@@ -94,7 +109,6 @@ namespace stsxyter {
    static const uint32_t  kuHitNbOverBins  = 1 << kusLenHitTsOver;
    static const uint32_t  kuTsMsbNbTsBins  = 1 << kusLenTsMsbVal;
    static const uint32_t  kuTsCycleNbBins  = kuTsMsbNbTsBins * kuHitNbTsBins;
-   static const uint16_t  kusInvalidTsMsb  = kuTsMsbNbTsBins;
    static const uint16_t  kusMaskTsMsbOver = (1 << kusLenHitTsOver) - 1;
    static const double    kdClockCycleNs   = 3.125; // ns, equivalent to 2*160 MHz clock
 
@@ -168,11 +182,13 @@ namespace stsxyter {
          //! Check if the message if a Dummy Hit Message
          inline bool     IsDummy()       const { return IsHit() && ( 0 == GetHitAdc() ); }
          //! Check if the message if a Ts_Msb
-         inline bool     IsTsMsb()       const { return (!IsHit() ); }
+         inline bool     IsTsMsb()       const { return (!IsHit() && MessSubType::TsMsb == GetSubType() ); }
          //! Returns the message type, see enum MessType
          inline MessType GetMessType() const { return !GetFlag( kFieldNotHitFlag ) ? ( 0 == GetHitAdc() ? MessType::Dummy :
                                                                                                           MessType::Hit ) :
-                                                                                     MessType::TsMsb; }
+                                                                                     ( MessSubType::TsMsb == GetSubType() ? MessType::TsMsb :
+                                                                                     ( MessSubType::Epoch == GetSubType() ? MessType::Epoch :
+                                                                                                                            MessType::Empty ) ) ; }
 
          // ------------------------ Hit message fields -------------------------------
          //! For Hit data: Returns StsXYTER channel number (7 bit field)
@@ -211,12 +227,24 @@ namespace stsxyter {
          //! For Hit data: Sets Missed event flag (1 bit field)
          inline void  SetHitMissEvtsFlag( bool bVal)  { SetBit(   kFieldHitEmFlag, bVal ); }
 
-         // ------------------------ TS_MSB message fields ----------------------------
-         //! For TS MSB data: Returns the TS MSB 13 bit field)
-         inline uint16_t GetTsMsbVal() const { return GetField( kFieldTsMsbVal ); }
+         // ----------------------- Non-Hit message fields ----------------------------
+         //! For non-Hit data: Returns subtype (2 bit field)
+//         inline MessSubType GetSubType() const { return static_cast< uint16_t >( GetField( kFieldSubtype ) ); }
+         MessSubType GetSubType() const;
 
-         //! For TS MSB data: Sets the TS MSB (13 bit field)
-         inline void SetTsMsbVal( uint16_t usVal ) { SetField( kFieldTsMsbVal, usVal ); }
+         // ------------------------ TS_MSB message fields ----------------------------
+         //! For TS MSB data: Returns the TS MSB 22 bit field)
+         inline uint32_t GetTsMsbVal() const { return GetField( kFieldTsMsbVal ); }
+
+         //! For TS MSB data: Sets the TS MSB (22 bit field)
+         inline void SetTsMsbVal( uint32_t uVal ) { SetField( kFieldTsMsbVal, uVal ); }
+
+         // ------------------------ Epoch message fields ----------------------------
+         //! For Epoch data: Returns the Epoch (29 bit field)
+         inline uint32_t GetEpochVal() const { return GetField( kFieldEpochVal ); }
+
+         //! For Epoch data: Sets the Epoch (29 bit field)
+         inline void SetEpochVal( uint32_t uVal ) { SetField( kFieldEpochVal, uVal ); }
 
          // ------------------------ General OP ---------------------------------------
          bool PrintMess( std::ostream& os, MessagePrintMask ctrl = MessagePrintMask::msg_print_Human ) const;

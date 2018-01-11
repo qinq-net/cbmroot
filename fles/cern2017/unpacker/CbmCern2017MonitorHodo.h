@@ -13,7 +13,7 @@
 #endif
 
 // Data
-#include "StsXyterMessage.h"
+#include "StsXyterBetaMessage.h"
 #include "StsXyterBetaHit.h"
 
 // CbmRoot
@@ -63,8 +63,8 @@ public:
    size_t GetMsOverlap()                      { return fuOverlapMsNb; }
 
    void SetPrintMessage( Bool_t bPrintMessOn = kTRUE,
-                         stsxyter::MessagePrintMask ctrl = stsxyter::MessagePrintMask::msg_print_Hex |
-                                                           stsxyter::MessagePrintMask::msg_print_Human )
+                         stsxyter::BetaMessagePrintMask ctrl = stsxyter::BetaMessagePrintMask::msg_print_Hex |
+                                                           stsxyter::BetaMessagePrintMask::msg_print_Human )
                         { fbPrintMessages = bPrintMessOn; fPrintMessCtrl = ctrl; }
    void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
    void SetBetaFormatMode( Bool_t bEnable = kTRUE ) { fbBetaFormat = bEnable; }
@@ -88,9 +88,9 @@ private:
    // Internal Control/status of monitor
       // Task configuration values
    Bool_t                fbPrintMessages;
-   stsxyter::MessagePrintMask fPrintMessCtrl;
+   stsxyter::BetaMessagePrintMask fPrintMessCtrl;
       // Current data properties
-   std::map< stsxyter::MessType, UInt_t > fmMsgCounter;
+   std::map< stsxyter::BetaMessType, UInt_t > fmMsgCounter;
    UInt_t                fuCurrentEquipmentId;  //! Current equipment ID, tells from which DPB the current MS is originating
    UInt_t                fuCurrDpbId; //! Temp holder until Current equipment ID is properly filled in MS
    UInt_t                fuCurrDpbIdx;          //! Index of the DPB from which the MS currently unpacked is coming
@@ -100,11 +100,12 @@ private:
    std::vector< std::vector< ULong64_t > > fvuCurrentTsMsb;       //! Current TS MSB for each eLink
    std::vector< std::vector< UInt_t > >    fvuCurrentTsMsbCycle;  //! Current TS MSB cycle for each eLink
    std::vector< std::vector< UInt_t > >    fvuCurrentTsMsbOver;   //! Current TS MSB overlap bits for each eLink
-   std::vector< std::vector< ULong64_t > > fvulChanLastHitTime; //! Last hit time in bins for each Channel
+   std::vector< std::vector< ULong64_t > > fvulChanLastHitTime;   //! Last hit time in bins for each Channel
    std::vector< std::vector<Double_t> >    fvdChanLastHitTime;    //! Last hit time in ns   for each Channel
-   std::vector< std::vector< std::vector< UInt_t > > >   fvuChanNbHitsInMs;    //! Number of hits in each MS for each Channel
-   std::vector< std::vector< std::vector< Double_t > > > fvdChanLastHitTimeInMs; //! Last hit time in bins in each MS for each Channel
-   std::vector< std::vector< std::vector< UShort_t > > > fvusChanLastHitAdcInMs; //! Last hit ADC in bins in each MS for each Channel
+   std::vector< Double_t >                               fvdMsTime;                  //! Header time of each MS
+   std::vector< std::vector< std::vector< UInt_t > > >   fvuChanNbHitsInMs;          //! Number of hits in each MS for each Channel
+   std::vector< std::vector< std::vector< Double_t > > > fvdChanLastHitTimeInMs;     //! Last hit time in bins in each MS for each Channel
+   std::vector< std::vector< std::vector< UShort_t > > > fvusChanLastHitAdcInMs;     //! Last hit ADC in bins in each MS for each Channel
    std::vector< std::vector< std::multiset< stsxyter::BetaHit > > > fvmChanHitsInTs; //! All hits (time & ADC) in bins in last TS for each Channel
       // Starting state book-keeping
    Double_t              fdStartTime;           /** Time of first valid hit (TS_MSB available), used as reference for evolution plots**/
@@ -113,6 +114,12 @@ private:
       // Data format control
    Bool_t fbBetaFormat;
    std::vector< std::vector< UInt_t > > fvuElinkLastTsHit;       //! TS from last hit for each eLink
+      // Hits time-sorting
+   std::multiset< stsxyter::BetaHit > fvmHitsInTs; //! All hits (time in bins, ADC in bins, asic, channel) in last TS, sorted by multiset with "<" operator
+   stsxyter::BetaHit fLastSortedHit1X; //! Last sorted hit for Hodo 1 X
+   stsxyter::BetaHit fLastSortedHit1Y; //! Last sorted hit for Hodo 1 Y
+   stsxyter::BetaHit fLastSortedHit2X; //! Last sorted hit for Hodo 2 X
+   stsxyter::BetaHit fLastSortedHit2Y; //! Last sorted hit for Hodo 2 Y
       // Coincidence histos
    UInt_t fuMaxNbMicroslices;
       // Rate evolution histos
@@ -158,8 +165,32 @@ private:
    TH1 * fhHodoRateEvo2Y;
    TH2 * fhHodoSameMs1XY;
    TH2 * fhHodoSameMs2XY;
-   TH2 * fhHodoSameMs1X2;
-   TH2 * fhHodoSameMs1Y2;
+   TH2 * fhHodoSameMsX1X2;
+   TH2 * fhHodoSameMsY1Y2;
+   TH2 * fhHodoSameMsX1Y2;
+   TH2 * fhHodoSameMsY1X2;
+
+   TH1 * fhHodoSameMsCntEvoX1Y1;
+   TH1 * fhHodoSameMsCntEvoX2Y2;
+   TH1 * fhHodoSameMsCntEvoX1X2;
+   TH1 * fhHodoSameMsCntEvoY1Y2;
+   TH1 * fhHodoSameMsCntEvoX1Y2;
+   TH1 * fhHodoSameMsCntEvoY1X2;
+   TH1 * fhHodoSameMsCntEvoX1Y1X2Y2;
+
+      // Coincidences in sorted hits
+   TH1 * fhHodoSortedDtX1Y1;
+   TH1 * fhHodoSortedDtX2Y2;
+   TH1 * fhHodoSortedDtX1X2;
+   TH1 * fhHodoSortedDtY1Y2;
+   TH1 * fhHodoSortedDtX1Y2;
+   TH1 * fhHodoSortedDtY1X2;
+   TH2 * fhHodoSortedMapX1Y1;
+   TH2 * fhHodoSortedMapX2Y2;
+   TH2 * fhHodoSortedMapX1X2;
+   TH2 * fhHodoSortedMapY1Y2;
+   TH2 * fhHodoSortedMapX1Y2;
+   TH2 * fhHodoSortedMapY1X2;
 
    TH2* fhHodoFebTsMsb;
 
@@ -169,8 +200,8 @@ private:
 
    void CreateHistograms();
 
-   void FillHitInfo(   stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx, const UInt_t & uMsIdx );
-   void FillTsMsbInfo( stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx );
+   void FillHitInfo(   stsxyter::BetaMessage mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx, const UInt_t & uMsIdx );
+   void FillTsMsbInfo( stsxyter::BetaMessage mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx );
 
    CbmCern2017MonitorHodo(const CbmCern2017MonitorHodo&);
    CbmCern2017MonitorHodo operator=(const CbmCern2017MonitorHodo&);

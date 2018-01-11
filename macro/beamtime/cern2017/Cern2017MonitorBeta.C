@@ -10,7 +10,7 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void Cern2017Monitor(TString inFile = "")
+void Cern2017MonitorBeta(TString inFile = "")
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
   TString inDir  = srcDir + "/input/";
@@ -54,13 +54,17 @@ void Cern2017Monitor(TString inFile = "")
 
   // Sts Monitor
 //  CbmCern2017MonitorRawSts* monitorSts = new CbmCern2017MonitorRawSts();
-  CbmCern2017MonitorSts* monitorSts = new CbmCern2017MonitorSts();
+  CbmCern2017MonitorBetaSts* monitorSts = new CbmCern2017MonitorBetaSts();
 //  monitorSts->SetPrintMessage();
   monitorSts->EnableChanHitDtPlot();
+//  monitorSts->SetPulserChannels( 0,  95, 1, 95,
+//                                 2,  95, 6, 27 ); // X-4
   monitorSts->SetPulserChannels( 0,  95, 1, 95,
-                                 2,  27, 5, 27);
+                                 2,  27, 5, 27 ); // X-3
+//  monitorSts->SetPulserChannels( 0,  95, 1, 27,
+//                                 2,  27, 3, 27 ); // X-2
   monitorSts->SetLongDurationLimits( 3600, 10 );
-//  monitorSts->SetBetaFormatMode();
+  monitorSts->SetBetaFormatMode();
 
   // --- Source task
   CbmFlibCern2016Source* source = new CbmFlibCern2016Source();

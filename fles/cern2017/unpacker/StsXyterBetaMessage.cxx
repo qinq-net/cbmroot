@@ -1,5 +1,5 @@
 
-#include "StsXyterMessage.h"
+#include "StsXyterBetaMessage.h"
 
 // tools
 
@@ -13,31 +13,17 @@
 // Namespace
 using namespace stsxyter;    // Class own namespace
 // Namespaces alias
-//namespace sxm = stsxyter::Message;
+//namespace sxm = stsxyter::BetaMessage;
 
 
 //************************* Messages OP ************************************//
 //----------------------------------------------------------------------------
-MessSubType Message::GetSubType() const
+bool     BetaMessage::PrintMess(std::ostream& os, BetaMessagePrintMask ctrl ) const
 {
-   switch(  GetField( kFieldSubtype ) )
-   {
-      case static_cast< uint16_t>( MessSubType::TsMsb ):
-         return MessSubType::TsMsb;
-      case static_cast< uint16_t>( MessSubType::Epoch ):
-         return MessSubType::Epoch;
-      default:
-         return MessSubType::Empty;
-   } // switch( static_cast< uint16_t>( GetField( kFieldSubtype ) ) )
-
-}
-//----------------------------------------------------------------------------
-bool     Message::PrintMess(std::ostream& os, MessagePrintMask ctrl ) const
-{
-   bool bPrintHex    = static_cast< bool >(ctrl & MessagePrintMask::msg_print_Hex);
-   bool bPrintHuman  = static_cast< bool >(ctrl & MessagePrintMask::msg_print_Human);
-   bool bPrintPrefix = static_cast< bool >(ctrl & MessagePrintMask::msg_print_Prefix);
-   bool bPrintData   = static_cast< bool >(ctrl & MessagePrintMask::msg_print_Data);
+   bool bPrintHex    = static_cast< bool >(ctrl & BetaMessagePrintMask::msg_print_Hex);
+   bool bPrintHuman  = static_cast< bool >(ctrl & BetaMessagePrintMask::msg_print_Human);
+   bool bPrintPrefix = static_cast< bool >(ctrl & BetaMessagePrintMask::msg_print_Prefix);
+   bool bPrintData   = static_cast< bool >(ctrl & BetaMessagePrintMask::msg_print_Data);
 
 
    if( bPrintHex )
@@ -69,7 +55,7 @@ bool     Message::PrintMess(std::ostream& os, MessagePrintMask ctrl ) const
    {
       switch( GetMessType() )
       {
-         case MessType::Hit :
+         case BetaMessType::Hit :
          {
             std::cout << " Ch: "      << std::setw(3) << GetHitChannel()
                       << " Adc: "     << std::setw(2) << GetHitAdc()
@@ -78,13 +64,13 @@ bool     Message::PrintMess(std::ostream& os, MessagePrintMask ctrl ) const
                       << " Ts: "      << std::setw(3) << GetHitTime()
                       << " Missed? "  << IsHitMissedEvts();
             break;
-         } // case MessType::Hit
-         case MessType::TsMsb :
+         } // case BetaMessType::Hit
+         case BetaMessType::TsMsb :
          {
             std::cout << " TS_MSB: " << std::setw(2) <<  GetTsMsbVal()
                       << " (Over= " << std::hex     << (GetTsMsbVal()) << std::dec << ")";
             break;
-         } // case MessType::TsMsb
+         } // case BetaMessType::TsMsb
          default:
          {
          } // default
@@ -95,14 +81,14 @@ bool     Message::PrintMess(std::ostream& os, MessagePrintMask ctrl ) const
    {
       switch( GetMessType() )
       {
-         case MessType::Hit :
+         case BetaMessType::Hit :
          {
             break;
-         } // case MessType::Hit
-         case MessType::TsMsb :
+         } // case BetaMessType::Hit
+         case BetaMessType::TsMsb :
          {
             break;
-         } // case MessType::TsMsb
+         } // case BetaMessType::TsMsb
          default:
          {
          } // default
@@ -113,14 +99,14 @@ bool     Message::PrintMess(std::ostream& os, MessagePrintMask ctrl ) const
    {
       switch( GetMessType() )
       {
-         case MessType::Hit :
+         case BetaMessType::Hit :
          {
             break;
-         } // case MessType::Hit
-         case MessType::TsMsb :
+         } // case BetaMessType::Hit
+         case BetaMessType::TsMsb :
          {
             break;
-         } // case MessType::TsMsb
+         } // case BetaMessType::TsMsb
          default:
          {
          } // default
