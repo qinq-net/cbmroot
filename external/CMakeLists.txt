@@ -63,7 +63,7 @@ if(Vc_FOUND)
 endif()
 
 
-set(KFPARTICLE_SRC_URL "https://cbmgsi.githost.io/m.zyzak/KFParticle")
+set(KFPARTICLE_SRC_URL "https://cbmgsi.githost.io/m.zyzak/KFParticle.git")
 set(KFPARTICLE_DESTDIR "${CMAKE_BINARY_DIR}/external/KFPARTICLE-prefix")
 set(KFPARTICLE_ROOTDIR "${KFPARTICLE_DESTDIR}/${CMAKE_BINARY_DIR}")
 set(KFPARTICLE_LIBNAME "${CMAKE_DYNAMIC_LIBRARY_PREFIX}KFParticle${CMAKE_DYNAMIC_LIBRARY_SUFFIX}")
