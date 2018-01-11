@@ -96,10 +96,6 @@ add_dependencies(KFParticle KFPARTICLE)
 set(KFParticle_LIB_DIR ${KFPARTICLE_ROOTDIR}/lib PARENT_SCOPE)
 set(KFParticle_LIBRARIES KFParticle PARENT_SCOPE)
 set(KFParticle_INCLUDE_DIR "${KFPARTICLE_ROOTDIR}/include" PARENT_SCOPE)
-
-find_package_handle_standard_args(KFParticle
-  FOUND_VAR KFParticle_FOUND
-  REQUIRED_VARS KFParticle_INCLUDE_DIR KFParticle_LIBRARIES
-)
+set(KFParticle_FOUND TRUE PARENT_SCOPE)
 
 install(DIRECTORY ${KFPARTICLE_ROOTDIR}/ DESTINATION ".")
