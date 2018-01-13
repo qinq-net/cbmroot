@@ -263,6 +263,7 @@ void CbmTof::FinishEvent()
       // Create the beam point in the CbmTofPoint collection
       tBeamPoint = new( (*fTofCollection)[fTofCollection->GetEntriesFast()] ) CbmTofPoint();
       tBeamPoint->SetDetectorID(iUniqueCounterId);
+      tBeamPoint->SetEventID(fOutputTreeEntry); // set to the exact same value in 'CbmMCPointBuffer::Fill'
       tBeamPoint->SetTime(dCounterBeamTime*1.0e09); // [ns]
       tBeamPoint->SetLength(dCounterTargetDistance);
       tBeamPoint->SetX(dGlobalCounterCoordinates[0]);
