@@ -71,10 +71,10 @@ Set(SRCS
   CbmFiberHodoMapping.cxx
 
   unpacker/CbmTSUnpackSpadic.cxx
-#  unpacker/CbmTSUnpackSpadic20.cxx
+  unpacker/CbmTSUnpackSpadic20.cxx
   unpacker/CbmTSUnpackSpadic11OnlineMonitor.cxx
-#  unpacker/CbmTSUnpackSpadic20OnlineMonitor.cxx
-#  unpacker/CbmTSUnpackSpadic20DesyOnlineMonitor.cxx
+  unpacker/CbmTSUnpackSpadic20OnlineMonitor.cxx
+  unpacker/CbmTSUnpackSpadic20DesyOnlineMonitor.cxx
   unpacker/CbmTSUnpackSpadicLegacy.cxx
   unpacker/CbmTSUnpackNxyter.cxx
   unpacker/CbmTSUnpackStsxyter.cxx
@@ -92,6 +92,7 @@ Set(SRCS
 
   tasks/tools/CbmTrdTestBeamTools.cxx
   tasks/tools/CbmTrdTestBeamTools2017DESY.cxx
+  tasks/tools/CbmTrdTestBeamTools2017GIF.cxx
   tasks/tools/CbmTrdTestBeamToolsBuch2016.cxx
   tasks/tools/CbmTrdLabTools.cxx
 
@@ -123,7 +124,7 @@ Set(SRCS
 
 Set(NO_DICT_SRCS
   unpacker/TimesliceReader.cpp
-#  unpacker/TimesliceReader20.cpp
+  unpacker/TimesliceReader20.cpp
 # unpacker/TimesliceReader20.cpp
 )
 
@@ -144,7 +145,7 @@ EndIf()
 Set(LINKDEF  CbmFlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-  CbmBase CbmBeamtimeBase CbmRich fles_ipc_legacy flib_dpb #flib_dpb_20
+  CbmBase CbmBeamtimeBase CbmRich fles_ipc_legacy flib_dpb flib_dpb_20
   spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base
 )
 
