@@ -235,33 +235,33 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
   
   Bool_t isInfo(false), isHit(false), isEpoch(false), isEpochOutOfSync(false), isOverflow(false), isHitAborted(false), isStrange(false);
   
-  while(auto m = r.get_message()) {
+  while(auto message = r.get_message()) {
 
-    if(m->is_hit()){
-      auto& s = m->samples();
+    if(message->is_hit()){
+      auto& sample = message->samples();
       
-      printf("Group: %i Ch: %i Ts: %i Samples: %i\n", m->group_id(), m->channel_id(), m->timestamp(),  s.size());
-      //printf("Ch: %i Ts: %i hit type: %i Stop type: %i Samples: %i Trace: \n", m->channel_id(), m->timestamp(),  m->hit_type(), m->stop_type(), s.size());
-      //for(int i = 0; i < s.size(); i++)
-      //     printf(" %02i,", s[i]);
+      printf("Group: %i Ch: %i Ts: %i Samples: %lu\n", message->group_id(), message->channel_id(), message->timestamp(), sample.size());
+      //printf("Ch: %i Ts: %i hit type: %i Stop type: %i Samples: %i Trace: \n", message->channel_id(), message->timestamp(),  message->hit_type(), message->stop_type(), sample.size());
+      //for(int i = 0; i < sample.size(); i++)
+      //     printf(" %02i,", sample[i]);
       //printf("\n");
       
 
       // Fill some nice histos
-      Int_t triggerType =  static_cast<Int_t>(m->hit_type());
-      Int_t stopType = static_cast<Int_t>(m->stop_type());
-      Int_t time = m->timestamp();
+      Int_t triggerType =  static_cast<Int_t>(message->hit_type());
+      Int_t stopType = static_cast<Int_t>(message->stop_type());
+      Int_t time = message->timestamp();
       Int_t infoType = -1;
-      Int_t channel = m->channel_id();
-      Int_t groupId = m->group_id();
+      Int_t channel = message->channel_id();
+      Int_t groupId = message->group_id();
       Int_t bufferOverflowCounter = 0;
-      Int_t samples = m->samples().size();
+      Int_t samples = message->samples().size();
       Int_t padRow(-1);
       Int_t padChannel = GetChannelOnPadPlane(channel,groupId);
       Int_t counter1=0;
       Int_t maxADC(-256), maxTB(-1);
       Int_t* sample_values = new Int_t[samples];
-      for (auto x : m->samples()) {
+      for (auto x : message->samples()) {
 	sample_values[counter1] = x;
 	//if (sample_values[2]>-150) {
 	//if (!fHighPerformance)
@@ -302,17 +302,17 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
       // ----
     }
 
-    else if ( m->is_buffer_overflow() ){
+    else if ( message->is_buffer_overflow() ){
     	LOG(DEBUG) <<  counter << " This is a buffer overflow message" << FairLogger::endl;
     	isOverflow = true;
     	//GetEpochInfo(link, addr);
     	Int_t triggerType = -1;
     	Int_t infoType = -1;
     	Int_t stopType = -1;
-    	Int_t groupId = m->group_id();
-    	Int_t channel = m->channel_id();
-    	Int_t time = m->timestamp();
-    	Int_t bufferOverflowCounter = static_cast<Int_t>(m->buffer_overflow_count());
+    	Int_t groupId = message->group_id();
+    	Int_t channel = message->channel_id();
+    	Int_t time = message->timestamp();
+    	Int_t bufferOverflowCounter = static_cast<Int_t>(message->buffer_overflow_count());
     	Int_t samples = 1;
     	Int_t* sample_values = new Int_t[samples];
     	sample_values[0] = -256;
@@ -335,17 +335,17 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
     	fLost[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId,bufferOverflowCounter);
     }
 
-    else if ( m->is_info() ){
+    else if ( message->is_info() ){
     	LOG(DEBUG) <<  counter << " This is a info message" << FairLogger::endl;
     	isInfo = true;
     	//GetEpochInfo(link, addr);
 
     	Int_t triggerType = -1;
-    	Int_t infoType = static_cast<Int_t>(m->info_type());
+    	Int_t infoType = static_cast<Int_t>(message->info_type());
     	Int_t stopType = -1;
-    	Int_t groupId = m->group_id();
-    	Int_t channel = m->channel_id();
-    	Int_t time = m->timestamp();
+    	Int_t groupId = message->group_id();
+    	Int_t channel = message->channel_id();
+    	Int_t time = message->timestamp();
     	Int_t bufferOverflowCounter = 0;//mp->buffer_overflow_count();// should be now obsolete
     	Int_t samples = 1;
     	Int_t* sample_values = new Int_t[samples];
@@ -368,20 +368,20 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
     }
 
 
-    else if ( m->is_hit_aborted()) {
+    else if ( message->is_hit_aborted()) {
     	LOG(DEBUG) <<  counter << " This is a hit message was aborted" << FairLogger::endl;
     	isHitAborted = true;
     	GetEpochInfo(link, addr);
     	Int_t triggerType = -1;
     	Int_t stopType = -1;
-    	Int_t time = m->timestamp();
+    	Int_t time = message->timestamp();
     	Int_t infoType = -1;
     	Int_t groupId = -1;//mp->group_id();//???
     	Int_t bufferOverflowCounter = 0;
     	Int_t samples = 1;
     	Int_t* sample_values = NULL;
-    	Int_t channel = m->channel_id();
-    	infoType = static_cast<Int_t>(m->info_type());// should here be stoptype instead???
+    	Int_t channel = message->channel_id();
+    	infoType = static_cast<Int_t>(message->info_type());// should here be stoptype instead???
     	sample_values = new Int_t[samples];
     	sample_values[0] = -256;
     	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
@@ -418,22 +418,22 @@ Bool_t CbmTSUnpackSpadic20OnlineMonitor::DoUnpack(const fles::Timeslice& ts, siz
     	fMessageStatistic[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(fMessageTypes[6].Data(),1);
     	//fStrange[GetSyscoreID(link) * NrOfSpadics + GetSpadicID(address)]->Fill(channel,groupId);
     	LOG(DEBUG) <<  counter << " This message type is not hit, info, epoch or overflow and will not be stored in the TClonesArray" << FairLogger::endl;
-    	LOG(DEBUG) << " valide:" << m->is_valid() << " epoch marker:" << fEpochMarker << " super epoch marker:" << fSuperEpoch << " time:" << time << " link:" << link << " address:" << address << FairLogger::endl;
-    	LOG(DEBUG) << "Channel ID:" << m->channel_id() << FairLogger::endl;
+    	LOG(DEBUG) << " valide:" << message->is_valid() << " epoch marker:" << fEpochMarker << " super epoch marker:" << fSuperEpoch << " time:" << time << " link:" << link << " address:" << address << FairLogger::endl;
+    	LOG(DEBUG) << "Channel ID:" << message->channel_id() << FairLogger::endl;
     	//if ( mp->is_hit_aborted() )
     	//LOG(INFO) << "hit is aborted" << FairLogger::endl;
     	//if ( mp->is_hit() )
-    	LOG(DEBUG) << "GroupID:" << m->group_id() << "hit: triggerType:" << static_cast<Int_t>(m->hit_type()) << " stopType:" << static_cast<Int_t>(m->stop_type()) << " Nr.of samples:" << m->samples().size() << FairLogger::endl;
+    	LOG(DEBUG) << "GroupID:" << message->group_id() << "hit: triggerType:" << static_cast<Int_t>(message->hit_type()) << " stopType:" << static_cast<Int_t>(message->stop_type()) << " Nr.of samples:" << message->samples().size() << FairLogger::endl;
 
     	//if ()
-    	for (auto x : m->samples()) {
+    	for (auto x : message->samples()) {
     	  LOG(DEBUG) << " " << x;
     	}
     	LOG(DEBUG) << FairLogger::endl;
     	//if (mp->is_info())
-    	LOG(DEBUG) << "InfoType:" << static_cast<Int_t>(m->info_type()) << FairLogger::endl;
+    	LOG(DEBUG) << "InfoType:" << static_cast<Int_t>(message->info_type()) << FairLogger::endl;
     	//if ()
-    	LOG(DEBUG) << "Nr. of overflows:" << static_cast<Int_t>(m->buffer_overflow_count()) << FairLogger::endl;
+    	LOG(DEBUG) << "Nr. of overflows:" << static_cast<Int_t>(message->buffer_overflow_count()) << FairLogger::endl;
     	//print_message(mp);
     }
   }
