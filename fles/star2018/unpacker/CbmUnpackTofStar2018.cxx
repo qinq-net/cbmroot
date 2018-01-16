@@ -77,6 +77,7 @@ CbmUnpackTofStar2018::CbmUnpackTofStar2018( UInt_t uNbGdpb )
     fhChCount(),
     fvbChanThere(),
     fhChanCoinc(),
+    fhDetChanCoinc(nullptr),
     fvmEpSupprBuffer()
 {
 }

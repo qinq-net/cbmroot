@@ -39,9 +39,9 @@ CbmTSUnpackSpadic20DesyOnlineMonitor::CbmTSUnpackSpadic20DesyOnlineMonitor(Bool_
   : CbmTSUnpack(),
     fSpadicRaw(new TClonesArray("CbmSpadicRawMessage", 10)),
     fHighPerformance(highPerformance),
-    //  fEpochMarkerArray(),
-    //fPreviousEpochMarkerArray(),
-    // fSuperEpochArray(),
+    fEpochMarkerArray(),
+    fPreviousEpochMarkerArray(),
+    fSuperEpochArray(),
     fEpochMarker(0),
     fSuperEpoch(0),
     fLastSuperEpochA{0},
@@ -62,7 +62,11 @@ CbmTSUnpackSpadic20DesyOnlineMonitor::CbmTSUnpackSpadic20DesyOnlineMonitor(Bool_
     fcPS{NULL},
     fcMS{NULL},
     fcSy{NULL},
+    fcNS{nullptr},
+    fcTH{nullptr},
     fcA{NULL},
+    fcES{nullptr},
+    fcHC{nullptr},
     fBaseline{NULL},
     fmaxADCmaxTimeBin{NULL},
     fHit{NULL},
@@ -87,12 +91,21 @@ CbmTSUnpackSpadic20DesyOnlineMonitor::CbmTSUnpackSpadic20DesyOnlineMonitor(Bool_
     fSyncChambers{NULL},
     fAlignment{NULL},
     fEventSelection{NULL},
-    fLastTimes{NULL},
-    fLastTrigger{NULL},
-    fLastChannel{NULL},
-    fClusterSwitch{NULL},
-    fMaxSum{NULL},
-    fHitsTrd0{{NULL}},
+    fLastTimes{},
+    fLastTrigger{},
+    fLastChannel{},
+    fClusterSwitch{},
+    fMaxSum{},
+    fHitsTrd0{{}},
+    fHitsTrd1{{}},
+    fHitsTrd1n{{}},
+    fHitsTrd2{{}},
+    fLastTimeGlobal{0},
+    fThisTime{0},
+    fAlignmentCounter0{0},
+    fAlignmentCounter1{0},
+    fAlignmentCompareCounter{0},
+    fAlignmentCompareCounter1{0},
     fMessageTypes{"Epoch",
 	  "Epoch out of synch",
 	  "Hit",
@@ -126,6 +139,9 @@ CbmTSUnpackSpadic20DesyOnlineMonitor::CbmTSUnpackSpadic20DesyOnlineMonitor(Bool_
 	"3"},
     //    fAFCKs{24465,0x1889,43522,43523}, // Insert AFCK Adresses!!!!!!!!! 6281 22465
     fAFCKs{43520,43521,43522,43523}, // Insert AFCK Adresses!!!!!!!!! 6281 22465
+    fSource{-1},
+    fLastSource{-1},
+    fFillCounter{0},
     fHM(new CbmHistManager()),
     fNrExtraneousSamples{0}
 {
@@ -1136,7 +1152,7 @@ void CbmTSUnpackSpadic20DesyOnlineMonitor::InitHistos()
        //Alignment Histos
 	for (Int_t iHist =0; iHist <3; iHist++){
 	  TString align;  
-	  align.Form(fAlignments[iHist]);
+	  align.Form("%s", fAlignments[iHist].Data());
 	    fHM->Add(TString("Alignment_"+align).Data(),new TH2I (TString("Alignment_"+align).Data(),TString("Alignment_"+align).Data(),32,-0.5,31.5,32,-0.5,31.5));
 	  fAlignment[iHist]=(TH2I*)fHM->H2(TString("Alignment_"+align).Data());
 	  fAlignment[iHist]->GetXaxis()->SetTitle(TString("Channels_Chamber_"+fChambers[iHist]).Data());

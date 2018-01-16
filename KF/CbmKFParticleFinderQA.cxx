@@ -33,9 +33,10 @@
 using std::vector;
 
 CbmKFParticleFinderQA::CbmKFParticleFinderQA(const char* name, Int_t iVerbose, const KFParticleTopoReconstructor* tr, TString outFileName):
-  FairTask(name, iVerbose), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fMCTrackArray(0), fMCTrackArrayEvent(0), fTrackMatchArray(0), 
-  fRecParticles(0), fMCParticles(0), fMatchParticles(0), fSaveParticles(0), fSaveMCParticles(0), fTimeSliceMode(0),
-  fOutFileName(outFileName), fOutFile(0), fEfffileName("Efficiency.txt"), fTopoPerformance(0), fPrintFrequency(100), fNEvents(0), fSuperEventAnalysis(0)
+  FairTask(name, iVerbose), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fMCTrackArray(nullptr), fMCTrackArrayEvent(nullptr), 
+  fEventList(nullptr), fTrackMatchArray(nullptr), fRecParticles(nullptr), fMCParticles(nullptr), fMatchParticles(nullptr), 
+  fSaveParticles(false), fSaveMCParticles(false), fTimeSliceMode(false), fOutFileName(outFileName), fOutFile(nullptr), 
+  fEfffileName("Efficiency.txt"), fTopoPerformance(nullptr), fPrintFrequency(100), fNEvents(0), fTime(), fSuperEventAnalysis(false)
 {
   for(Int_t i=0; i<5; i++)
     fTime[i] = 0;
