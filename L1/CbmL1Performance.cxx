@@ -966,7 +966,7 @@ cout<<vMCTracks.size()<< " vMCTracks"<<endl;
 void CbmL1::TrackFitPerformance()
 {
   const int Nh_fit = 14;
-  static TH1F *h_fit[Nh_fit], *h_fitL[Nh_fit], *h_fitSV[Nh_fit], *h_fitPV[Nh_fit], *h_fit_chi2, *h_smoothed[12][Nh_fit];
+  static TH1F *h_fit[Nh_fit], *h_fitL[Nh_fit], *h_fitSV[Nh_fit], *h_fitPV[Nh_fit], *h_fit_chi2; //, *h_smoothed[12][Nh_fit];
 
   static TH2F *PRes2D, *PRes2DPrim, *PRes2DSec;
 
@@ -1060,7 +1060,7 @@ void CbmL1::TrackFitPerformance()
         for( int j=0; j<12; j++){
 	  sprintf(n,"smth_%s_sta_%i",Table[i].name,j);
 	  sprintf(t,"Station %i %s",j,Table[i].title);
-	  h_smoothed[j][i] = new TH1F(n,t, Table[i].n, Table[i].l, Table[i].r);
+//	  h_smoothed[j][i] = new TH1F(n,t, Table[i].n, Table[i].l, Table[i].r);
 	}
       }
       h_fit_chi2 = new TH1F("h_fit_chi2", "Chi2/NDF", 50, -0.5, 10.0);
