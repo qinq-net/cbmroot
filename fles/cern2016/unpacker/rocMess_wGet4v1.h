@@ -685,7 +685,7 @@ namespace ngdpb {
 
          bool copyto(void* tgt, int fmt = formatNormal);
    };
-/*
+
    class FullMessage : public Message {
       protected:
          uint64_t fuExtendedEpoch;   // Epoch of the message, extended with 32b epoch cycle counter
@@ -693,7 +693,7 @@ namespace ngdpb {
       public:
          FullMessage() : Message(), fuExtendedEpoch(0) {}
 
-         FullMessage(const Message& src, uint64_t uEpIn) : Message(src), fuExtendedEpoch(uEpIn) {}
+         FullMessage(const Message& src, uint64_t uEpIn = 0) : Message(src), fuExtendedEpoch(uEpIn) {}
 
          FullMessage(const FullMessage& src) : Message(src), fuExtendedEpoch(src.fuExtendedEpoch) {}
 
@@ -707,7 +707,7 @@ namespace ngdpb {
 
          inline uint64_t getExtendedEpoch() const {return fuExtendedEpoch; }
    };
-*/
+
 }
 
 

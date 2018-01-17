@@ -61,12 +61,12 @@ bool ngdpb::Message::operator<(const ngdpb::Message& other) const
 //! With the DPBs, both GET4 and nXYTER systems operate at the same frequency of 160MHz.
 //! When converting from GET4 to nXYTER clocks, one should take into account
 //! that initial value of nDPB timestamp counter is 0x80 or 512 ns. Therefore such offset
-//! should be applied during conversion => Is it really true? nXYTER or nDPB effect? 
+//! should be applied during conversion => Is it really true? nXYTER or nDPB effect?
 //! =====> see '///' lines
 
 uint64_t ngdpb::Message::getMsgFullTime(uint32_t epoch) const
 {
-/*   
+/*
    switch (getMessageType()) {
       case MSG_HIT:
          return FullTimeStamp(getNxLastEpoch() ? epoch - 1 : epoch, getNxTs());
@@ -105,7 +105,7 @@ uint64_t ngdpb::Message::getMsgFullTime(uint32_t epoch) const
 
 double ngdpb::Message::getMsgFullTimeD(uint32_t epoch) const
 {
-   switch (getMessageType()) {         
+   switch (getMessageType()) {
       case MSG_HIT:
          if( 0 < epoch )
             return FullTimeStamp(getNxLastEpoch() ? epoch - 1 : epoch, getNxTs()) * (6.25 / 4.); // ignore the 2 last bits of NX TS (fine-time)
@@ -113,7 +113,7 @@ double ngdpb::Message::getMsgFullTimeD(uint32_t epoch) const
       case MSG_EPOCH:
          return FullTimeStamp(getEpochNumber(), 0); // ignore the 2 last bits
       case MSG_SYNC:
-         return FullTimeStamp((getSyncEpochLSB() == (epoch & 0x1)) ? epoch : epoch - 1, getSyncTs()) * (6.25 / 4.); 
+         return FullTimeStamp((getSyncEpochLSB() == (epoch & 0x1)) ? epoch : epoch - 1, getSyncTs()) * (6.25 / 4.);
       case MSG_AUX:
          return FullTimeStamp((getAuxEpochLSB() == (epoch & 0x1)) ? epoch : epoch - 1, getAuxTs()) * (6.25 / 4.);
       case MSG_EPOCH2:
@@ -121,14 +121,16 @@ double ngdpb::Message::getMsgFullTimeD(uint32_t epoch) const
       case MSG_GET4:
          return FullTimeStamp2(epoch, getGdpbHitFullTs()) * (6.25 / 128.);
       case MSG_SYS:
-         return FullTimeStamp(epoch, 0) * (6.25 / 4.); // Assume same internal TS as NX TS
+         if( SYSMSG_GET4_EVENT == getGdpbSysSubType() )
+            return FullTimeStamp2(epoch, 0) * (6.25 / 128.); // Use epoch period of TOF!!
+            else return FullTimeStamp(epoch, 0) * (6.25 / 4.); // Use epoch period of NX TS
       case MSG_GET4_32B:
          return FullTimeStamp2(epoch, getGdpbHitFullTs()) * (6.25 / 128.);
       case MSG_GET4_SLC:
       case MSG_GET4_SYS:
          return FullTimeStamp2(epoch, 0) * (6.25 / 128.);
    }
-   
+
    // If not already dealt with => unknown type
    return 0.0;
 }
@@ -143,7 +145,7 @@ uint64_t ngdpb::Message::getMsgG4v2FullTime(uint32_t epoch) const
 //! Harcoded constants should be implemented better as soon as their value is fixed
 double ngdpb::Message::getMsgG4v2FullTimeD(uint32_t epoch) const
 {
-   switch (getMessageType()) {         
+   switch (getMessageType()) {
       case MSG_HIT:
          if( 0 < epoch )
             return FullTimeStamp(getNxLastEpoch() ? epoch - 1 : epoch, getNxTs()) * (6.25 / 4.); // ignore the 2 last bits of NX TS (fine-time)
@@ -151,24 +153,27 @@ double ngdpb::Message::getMsgG4v2FullTimeD(uint32_t epoch) const
       case MSG_EPOCH:
          return FullTimeStamp(getEpochNumber(), 0); // ignore the 2 last bits
       case MSG_SYNC:
-         return FullTimeStamp((getSyncEpochLSB() == (epoch & 0x1)) ? epoch : epoch - 1, getSyncTs()) * (6.25 / 4.); 
+         return FullTimeStamp((getSyncEpochLSB() == (epoch & 0x1)) ? epoch : epoch - 1, getSyncTs()) * (6.25 / 4.);
       case MSG_AUX:
          return FullTimeStamp((getAuxEpochLSB() == (epoch & 0x1)) ? epoch : epoch - 1, getAuxTs()) * (6.25 / 4.);
       case MSG_EPOCH2:
-         return FullTimeStamp2(getEpoch2Number(), 0) * (6.25 / 128.);
+         return get4v1x::kdEpochInNs * static_cast<double_t>( getEpoch2Number() );
       case MSG_GET4:
-         return ( static_cast<double_t>(FullTimeStamp2(epoch, (getGdpbHitCoarse() << 7))) + ( static_cast<double_t>(getGdpbHitFineTs() - 8. ) * 128. /112.) ) 
+         return ( static_cast<double_t>(FullTimeStamp2(epoch, (getGdpbHitCoarse() << 7))) + ( static_cast<double_t>(getGdpbHitFineTs() - 8. ) * 128. /112.) )
                   * (6.25 / 128.); /// TODO: hardcoded -> constant values!!
       case MSG_SYS:
-         return FullTimeStamp(epoch, 0) * (6.25 / 4.); // Assume same internal TS as NX TS
+         if( SYSMSG_GET4_EVENT == getGdpbSysSubType() )
+            return get4v1x::kdEpochInNs * static_cast<double_t>( epoch ); // Use epoch period of TOF!!
+            else return FullTimeStamp(epoch, 0) * (6.25 / 4.); // Use epoch period of NX TS
       case MSG_GET4_32B:
-         return ( static_cast<double_t>(FullTimeStamp2(epoch, (getGdpbHitCoarse() << 7))) + static_cast<double_t>(getGdpbHitFineTs() )  ) 
-                  * (6.25 / 112.); /// TODO: hardcoded -> constant values!!
+//         return ( static_cast<double_t>(FullTimeStamp2(epoch, (getGdpbHitCoarse() << 7))) + static_cast<double_t>(getGdpbHitFineTs() )  )
+//                  * (6.25 / 112.); /// TODO: hardcoded -> constant values!!
+         return ( get4v1x::kdEpochInNs * static_cast<double_t>( epoch ) + static_cast<double_t>( getGdpbHitFullTs() ) * get4v1x::kdClockCycleSizeNs / 112. );
       case MSG_GET4_SLC:
       case MSG_GET4_SYS:
          return FullTimeStamp2(epoch, 0) * (6.25 / 128.);
    }
-   
+
    // If not already dealt with => unknown type
    return 0.0;
 }
@@ -301,7 +306,7 @@ void ngdpb::Message::printData(unsigned outType, unsigned kind, uint32_t epoch, 
          std::cout << buf;
       else if( msg_print_File == outType )
          os << buf;
-         
+
       snprintf(buf, sizeof(buf), " ");
    }
 
@@ -401,8 +406,8 @@ void ngdpb::Message::printData(unsigned outType, unsigned kind, uint32_t epoch, 
                os << buf;
 
             snprintf(buf, sizeof(buf),
-                  "EPO2 @%17.11f Get4:%2d Epoche2:%10u 0x%08x StampTime:%2d Sync:%x Dataloss:%x Epochloss:%x Epochmissmatch:%x", 
-                        timeInSec, getEpoch2ChipNumber(), getEpoch2Number(), getEpoch2Number(), 
+                  "EPO2 @%17.11f Get4:%2d Epoche2:%10u 0x%08x StampTime:%2d Sync:%x Dataloss:%x Epochloss:%x Epochmissmatch:%x",
+                        timeInSec, getEpoch2ChipNumber(), getEpoch2Number(), getEpoch2Number(),
                         getEpoch2StampTime(), getEpoch2Sync(), getEpoch2DataLost(), getEpoch2EpochLost(), getEpoch2EpochMissmatch());
 //            os << buf << std::endl;
             if( msg_print_Cout == outType)
@@ -474,7 +479,7 @@ void ngdpb::Message::printData(unsigned outType, unsigned kind, uint32_t epoch, 
                     getAuxFalling(), getAuxOverflow());
             break;
          case MSG_EPOCH2:
-            snprintf(buf, sizeof(buf), "Get4:0x%02x Link: %1u Epoche2:0x%08x StampTime:0x%x Sync:%x Dataloss:%x Epochloss:%x Epochmissmatch:%x", 
+            snprintf(buf, sizeof(buf), "Get4:0x%02x Link: %1u Epoche2:0x%08x StampTime:0x%x Sync:%x Dataloss:%x Epochloss:%x Epochmissmatch:%x",
                      getGdpbGenChipId(), getGdpbEpLinkId(), getGdpbEpEpochNb(), getGdpbEpStampTs(), getGdpbEpSync(),
                      getGdpbEpDataLoss(), getGdpbEpEpochLoss(), getGdpbEpMissmatch());
             break;
@@ -502,7 +507,7 @@ void ngdpb::Message::printData(unsigned outType, unsigned kind, uint32_t epoch, 
                    uint32_t nxb1_val = (nxb3_data>>8 ) & 0x7f;
                    uint32_t nxb0_flg = (nxb3_data>>7 ) & 0x01;
                    uint32_t nxb0_val = (nxb3_data    ) & 0x7f;
-                   snprintf(sysbuf, sizeof(sysbuf),"Nx:%1x %1d%1d%1d%1d:%02x:%02x:%02x:%02x nX parity error", getNxNumber(), 
+                   snprintf(sysbuf, sizeof(sysbuf),"Nx:%1x %1d%1d%1d%1d:%02x:%02x:%02x:%02x nX parity error", getNxNumber(),
                             nxb3_flg, nxb2_flg, nxb1_flg, nxb0_flg,
                             nxb3_val, nxb2_val, nxb1_val, nxb0_val);
                  }
@@ -609,7 +614,7 @@ void ngdpb::Message::printData(unsigned outType, unsigned kind, uint32_t epoch, 
                   snprintf(sysbuf, sizeof(sysbuf), "unknown system message type %u", getGdpbSysSubType());
             } // switch( getGdpbSysSubType() )
             snprintf(buf, sizeof(buf), "%s", sysbuf);
-            
+
             break;
          } // case MSG_GET4_SYS:
          case MSG_STAR_TRI:
@@ -754,7 +759,7 @@ double ngdpb::Message::CalcGet4V10R32HitTimeDiff(
 
    return dTimeDiff;
 }
-
+*/
 //----------------------------------------------------------------------------
 //! strict weak ordering operator, including epoch for both messages
 bool ngdpb::FullMessage::operator<(const FullMessage& other) const
@@ -765,4 +770,4 @@ bool ngdpb::FullMessage::operator<(const FullMessage& other) const
       else return this->fuExtendedEpoch < other.fuExtendedEpoch;
 
 }
-*/
+
