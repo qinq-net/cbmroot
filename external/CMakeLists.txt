@@ -92,6 +92,7 @@ ExternalProject_Add(KFPARTICLE
              -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
              -DVc_INCLUDE_DIR=${Vc_INCLUDE_DIR}
              -DVc_LIBRARIES=${Vc_LIBRARY}
+             -DFIXTARGET=TRUE
              -DROOTSYS=${SIMPATH}
              -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
   INSTALL_COMMAND env DESTDIR=${KFPARTICLE_DESTDIR} ${CMAKE_COMMAND} --build . --target install
