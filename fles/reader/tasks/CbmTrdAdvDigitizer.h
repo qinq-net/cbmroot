@@ -69,11 +69,11 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
         NewMessage (Int_t Idx)
             : fIndex (Idx)
         {/*
-        * The argument given is the index of the next Spadic raw message to be processed.
-        * The No filtering on this is performed, but it is encouraged to only
-        * iterate over a time sorted series of Indices, at least there should not
-        * be any time regressions on a channel.
-        */
+         * The argument given is the index of the next Spadic raw message to be processed.
+         * The No filtering on this is performed, but it is encouraged to only
+         * iterate over a time sorted series of Indices, at least there should not
+         * be any time regressions on a channel.
+         */
         }
         ;
         Int_t fIndex;
@@ -89,8 +89,8 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
         SetArrays (TClonesArray*Raw, TClonesArray*Digis)
             : fRaw (Raw), fDigis (Digis)
         {/*
-        * Set the CbmSpadicRawMessage and CbmTrdDigi TClonesArrays.
-        */
+         * Set the CbmSpadicRawMessage and CbmTrdDigi TClonesArrays.
+         */
         }
         ;
         TClonesArray*fRaw;
@@ -103,9 +103,9 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
 
         struct UninitializedEntry
         {/*
-        * This is the initial state of the digifinder. The Digifinder is reinitilized for each timeslice,
-        * to mimic later operation procedures. Nothing is set yet and both the input and output arrays need to be provided.
-        */
+         * This is the initial state of the digifinder. The Digifinder is reinitilized for each timeslice,
+         * to mimic later operation procedures. Nothing is set yet and both the input and output arrays need to be provided.
+         */
             template<class Event, class FSM, class STATE>
               void
               operator() (Event const&, FSM&SM, STATE&)
@@ -118,8 +118,8 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
         };
         struct UninitializedExit
         {/*
-        * This sets the in- and output arays. It is the responsibilty of the user to provide valid pointers.
-        */
+         * This sets the in- and output arays. It is the responsibilty of the user to provide valid pointers.
+         */
             template<class Event, class FSM, class STATE>
               void
               operator() (Event const&evt, FSM&SM, STATE&)
@@ -129,7 +129,7 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
                               << FairLogger::endl;
                 SM.fRaw = evt.fRaw;
                 SM.fDigis = evt.fDigis;
-                SM.fNrDigis=0;
+                SM.fNrDigis = 0;
               }
         };
         struct UninitializedTag
@@ -140,10 +140,10 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
 
         struct ReadyEntry
         {/*
-        * This is the entry into the'groundstate' of the state machine. It is prepared
-        * for the next digi and awaits the next index. Traversal of the input array is managed by the user,
-        * this enables emitting a time sorted output array.
-        */
+         * This is the entry into the'groundstate' of the state machine. It is prepared
+         * for the next digi and awaits the next index. Traversal of the input array is managed by the user,
+         * this enables emitting a time sorted output array.
+         */
 
             template<class Event, class FSM, class STATE>
               void
@@ -156,7 +156,7 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
         };
         struct ReadyExit
         {
-	  template<class Event, class FSM, class STATE>
+            template<class Event, class FSM, class STATE>
               void
               operator() (Event const&, FSM&SM, STATE&)
               {
@@ -170,22 +170,21 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
 
         struct HitFoundEntry
         {/*
-        * Called after a standard hit has been found by the guards. All bookkeeping variables
-        * are updated and initialized if necessary. State between different hits is kept via pointers
-        * to previous messages. If such state exists, this method should not be called, but rather the
-        * multihit processing facilities.
-        * Also record the running baseline for each channel.
-        */
+         * Called after a MultiHit-Follower has been found by the guards. All bookkeeping variables
+         * are updated and initialized if necessary. State between different hits is kept via pointers
+         * to previous messages. If such state exists, this method should be called. This method will
+         * initialize the buffers for the samples and estimate the residual signal from the precursor hit.
+         */
             template<class Event, class FSM, class STATE>
               void
               operator() (Event const&evt, FSM&SM, STATE&)
               {
                 LOG(DEBUG)
-                              << "CbmTrdAdvDigitizer: Digitizer State Machine: Reading basic Parameters"
+                              << "CbmTrdAdvDigitizer: Digitizer State Machine: Estimating Hit Parameters"
                               << FairLogger::endl;
                 CbmSpadicRawMessage* raw =
                     static_cast<CbmSpadicRawMessage*> (SM.fRaw->At (evt.fIndex));
-                SM.fCurrentMessage=raw;
+                SM.fCurrentMessage = raw;
                 //Nullptr Check is unnecessary, as we will only transition to this state if raw is valid;
                 UInt_t Address = SM.fBT->GetAddress (raw);
                 auto Identifier = SM.fIndexMap.find (Address);
@@ -195,20 +194,21 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
                     SM.fIndexMap[Address] = NewIndex;
                     //TODO: Initialize all bookkeeping members.
                     Identifier = SM.fIndexMap.find (Address);
-                    SM.fPointer.resize(SM.fPointer.size()+1);
-                    SM.fRunningBaseline.resize(SM.fRunningBaseline.size()+1);
-                    SM.fRunningBaseline.rbegin()->set_capacity(1);
-                    SM.fRunningBaseline.rbegin()->resize(0);
-                    SM.fBaselineStart=raw->GetFullTime();
+                    SM.fPointer.resize (SM.fPointer.size () + 1);
+                    SM.fRunningBaseline.resize (
+                        SM.fRunningBaseline.size () + 1);
+                    SM.fRunningBaseline.rbegin ()->set_capacity (1);
+                    SM.fRunningBaseline.rbegin ()->resize (0);
+                    SM.fBaselineStart = raw->GetFullTime ();
                   }
                 //TODO: Read Baseline to running Buffer
-                UInt_t Index=Identifier->second;
-                SM.fCurrentBookkeepingIndex=Index;
-                SM.fPointer[Index].push_back(raw);
-                int16_t BaselineEstimate=SM.fBT->GetBaseline(raw);
+                UInt_t Index = Identifier->second;
+                SM.fCurrentBookkeepingIndex = Index;
+                SM.fPointer[Index].push_back (raw);
+                int16_t BaselineEstimate = SM.fBT->GetBaseline (raw);
                 //if(BaselineEstimate<-120)
-                  SM.fRunningBaseline[Index].push_back(BaselineEstimate);
-                SM.process_event(PrepareDigi());
+                SM.fRunningBaseline[Index].push_back (BaselineEstimate);
+                SM.process_event (PrepareDigi ());
               }
         };
         struct HitFoundExit
@@ -217,22 +217,24 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
               void
               operator() (Event const&evt, FSM&SM, STATE&)
               {
-                CbmSpadicRawMessage*raw=SM.fCurrentMessage;
-                UInt_t Index=SM.fCurrentBookkeepingIndex;
-                Float_t BaselineEstimate=std::accumulate(SM.fRunningBaseline[Index].begin(),SM.fRunningBaseline[Index].end(),0L);
-                BaselineEstimate /= SM.fRunningBaseline[Index].size();
+                CbmSpadicRawMessage*raw = SM.fCurrentMessage;
+                UInt_t Index = SM.fCurrentBookkeepingIndex;
+                Float_t BaselineEstimate = std::accumulate (
+                    SM.fRunningBaseline[Index].begin (),
+                    SM.fRunningBaseline[Index].end (), 0L);
+                BaselineEstimate /= SM.fRunningBaseline[Index].size ();
                 /*
                  * Prepare sample and baseline arrays. the baseline array in this internal context is to be understood as the
                  * residual signal underlying the signal, e.g. the actual channel baseline or, in the case of a follower hit,
                  * the falling tail from the precursor hit.
                  */
-                SM.fBaseline.fill(BaselineEstimate);
-                SM.fSamples.fill(0.0);
-                SM.fBaselineStart=raw->GetFullTime();
-                Int_t*Samples=raw->GetSamples();
-                UInt_t NrSamples=raw->GetNrSamples();
-                for(UInt_t i=0;i<NrSamples;i++)
-                  SM.fSamples.at(i)=Samples[i];
+                SM.fBaseline.fill (BaselineEstimate);
+                SM.fSamples.fill (0.0);
+                SM.fBaselineStart = raw->GetFullTime ();
+                Int_t*Samples = raw->GetSamples ();
+                UInt_t NrSamples = raw->GetNrSamples ();
+                for (UInt_t i = 0; i < NrSamples; i++)
+                  SM.fSamples.at (i) = Samples[i];
               }
         };
         struct HitFoundTag
@@ -241,25 +243,103 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
         typedef msm::front::euml::func_state<HitFoundTag, HitFoundEntry,
             HitFoundExit> HitFound;
 
-        struct DigiReadyEntry
+        struct MultiHitFoundEntry
         {/*
-        *called after preparattion of the digi, either by the hit- or multihit-path
-        * Test if the baselinetimestamp is valid.
-        * Subtract Baseline&Signal correction.
-        */
+         * Called after a standard hit has been found by the guards. All bookkeeping variables
+         * are updated and initialized if necessary. State between different hits is kept via pointers
+         * to previous messages. If such state exists, this method should not be called, but rather the
+         * multihit processing facilities.
+         * Also record the running baseline for each channel.
+         */
             template<class Event, class FSM, class STATE>
               void
               operator() (Event const&evt, FSM&SM, STATE&)
               {
-                CbmSpadicRawMessage*raw=SM.fCurrentMessage;
-                UInt_t Index=SM.fCurrentBookkeepingIndex;
-                Int_t DeltaTime =raw->GetFullTime()-SM.fBaselineStart;
-                if(DeltaTime<0)
-                  LOG(FATAL)<<"CbmTrdAdvDigitizer: Digitizer State Machine: Wrong Baseline Timestamp"<<FairLogger::endl;
-                UInt_t NrSamples=raw->GetNrSamples();
-                for(UInt_t i =0;i<NrSamples;i++)
-                  SM.fSamples.at(i)-=SM.fBaseline.at(i+DeltaTime);
-                SM.process_event(CreateDigi());
+                LOG(DEBUG)
+                              << "CbmTrdAdvDigitizer: Digitizer State Machine: Estimating MultiHit Parameters."
+                              << FairLogger::endl;
+                CbmSpadicRawMessage* raw =
+                    static_cast<CbmSpadicRawMessage*> (SM.fRaw->At (evt.fIndex));
+                SM.fCurrentMessage = raw;
+                //Nullptr Check is unnecessary, as we will only transition to this state if raw is valid;
+                UInt_t Address = SM.fBT->GetAddress (raw);
+                auto Identifier = SM.fIndexMap.find (Address);
+                if (Identifier == SM.fIndexMap.end ())
+                  {
+                    Int_t NewIndex = SM.fIndexMap.size ();
+                    SM.fIndexMap[Address] = NewIndex;
+                    //TODO: Initialize all bookkeeping members.
+                    Identifier = SM.fIndexMap.find (Address);
+                    SM.fPointer.resize (SM.fPointer.size () + 1);
+                    SM.fRunningBaseline.resize (
+                        SM.fRunningBaseline.size () + 1);
+                    SM.fRunningBaseline.rbegin ()->set_capacity (1);
+                    SM.fRunningBaseline.rbegin ()->resize (0);
+                    SM.fBaselineStart = raw->GetFullTime ();
+                  }
+                //TODO: Read Baseline to running Buffer
+                UInt_t Index = Identifier->second;
+                SM.fCurrentBookkeepingIndex = Index;
+                SM.fPointer[Index].push_back (raw);
+                int16_t BaselineEstimate = SM.fBT->GetBaseline (raw);
+                //if(BaselineEstimate<-120)
+                SM.fRunningBaseline[Index].push_back (BaselineEstimate);
+                SM.process_event (PrepareDigi ());
+              }
+        };
+        struct MultiHitFoundExit
+        {
+            template<class Event, class FSM, class STATE>
+              void
+              operator() (Event const&evt, FSM&SM, STATE&)
+              {
+                CbmSpadicRawMessage*raw = SM.fCurrentMessage;
+                UInt_t Index = SM.fCurrentBookkeepingIndex;
+                Float_t BaselineEstimate = std::accumulate (
+                    SM.fRunningBaseline[Index].begin (),
+                    SM.fRunningBaseline[Index].end (), 0L);
+                BaselineEstimate /= SM.fRunningBaseline[Index].size ();
+                /*
+                 * Prepare sample and baseline arrays. the baseline array in this internal context is to be understood as the
+                 * residual signal underlying the signal, e.g. the actual channel baseline or, in the case of a follower hit,
+                 * the falling tail from the precursor hit.
+                 */
+                SM.fBaseline.fill (BaselineEstimate);
+                SM.fSamples.fill (0.0);
+                SM.fBaselineStart = raw->GetFullTime ();
+                Int_t*Samples = raw->GetSamples ();
+                UInt_t NrSamples = raw->GetNrSamples ();
+                for (UInt_t i = 0; i < NrSamples; i++)
+                  SM.fSamples.at (i) = Samples[i];
+              }
+        };
+        struct MultiHitFoundTag
+        {
+        };
+        typedef msm::front::euml::func_state<MultiHitFoundTag,
+            MultiHitFoundEntry, MultiHitFoundExit> MultiHitFound;
+
+        struct DigiReadyEntry
+        {/*
+         *called after preparattion of the digi, either by the hit- or multihit-path
+         * Test if the baselinetimestamp is valid.
+         * Subtract Baseline&Signal correction.
+         */
+            template<class Event, class FSM, class STATE>
+              void
+              operator() (Event const&evt, FSM&SM, STATE&)
+              {
+                CbmSpadicRawMessage*raw = SM.fCurrentMessage;
+                UInt_t Index = SM.fCurrentBookkeepingIndex;
+                Int_t DeltaTime = raw->GetFullTime () - SM.fBaselineStart;
+                if (DeltaTime < 0)
+                  LOG(FATAL)
+                                << "CbmTrdAdvDigitizer: Digitizer State Machine: Wrong Baseline Timestamp"
+                                << FairLogger::endl;
+                UInt_t NrSamples = raw->GetNrSamples ();
+                for (UInt_t i = 0; i < NrSamples; i++)
+                  SM.fSamples.at (i) -= SM.fBaseline.at (i + DeltaTime);
+                SM.process_event (CreateDigi ());
               }
         };
         struct DigiReadyExit
@@ -269,24 +349,31 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
               operator() (Event const&evt, FSM&SM, STATE&)
               {
 
-                CbmSpadicRawMessage*raw=SM.fCurrentMessage;
-                TClonesArray*Digis=SM.fDigis;
-                Int_t NrDigis=SM.fNrDigis++;
-                CbmTrdDigi* Digi = static_cast<CbmTrdDigi*> (SM.fDigis->ConstructedAt (NrDigis));
-                Digi->SetCharge (SM.fBT->GetIntegratedCharge (SM.fSamples.data(),raw->GetNrSamples()));
-                Digi->SetAddress (static_cast<Int_t> (SM.fBT->GetAddress (raw)));
-                Digi->SetTime (raw->GetFullTime () * SM.fBT->GetSamplingTime ()); //65 ns per timestamp
+                CbmSpadicRawMessage*raw = SM.fCurrentMessage;
+                TClonesArray*Digis = SM.fDigis;
+                Int_t NrDigis = SM.fNrDigis++;
+                CbmTrdDigi* Digi =
+                    static_cast<CbmTrdDigi*> (SM.fDigis->ConstructedAt (NrDigis));
+                Digi->SetCharge (
+                    SM.fBT->GetIntegratedCharge (SM.fSamples.data (),
+                                                 raw->GetNrSamples ()));
+                Digi->SetAddress (
+                    static_cast<Int_t> (SM.fBT->GetAddress (raw)));
+                Digi->SetTime (
+                    raw->GetFullTime () * SM.fBT->GetSamplingTime ()); //65 ns per timestamp
                 Digi->SetTriggerType (raw->GetTriggerType ());
                 Digi->SetInfoType (raw->GetInfoType ());
                 Digi->SetStopType (raw->GetStopType ());
-                Digi->SetPulseShape (SM.fSamples.data());/*&Samples[32]*/
+                Digi->SetPulseShape (SM.fSamples.data ());/*&Samples[32]*/
                 //TODO: Mehr Durchwischen
-                UInt_t Index=SM.fCurrentBookkeepingIndex;
-                SM.fSamples.fill(0.0);
-                SM.fBaseline.fill(0.0);
+                UInt_t Index = SM.fCurrentBookkeepingIndex;
+                SM.fSamples.fill (0.0);
+                SM.fBaseline.fill (0.0);
                 //TODO: Only remove pointers if done, else delegate this to the multihit task.
-                SM.fBaselineStart=0;
-                SM.fPointer[Index].erase(SM.fPointer[Index].begin());
+                SM.fBaselineStart = 0;
+                if (!SM.fIsPrecursor)
+                  SM.fPointer[Index].erase (SM.fPointer[Index].begin ());
+                SM.fIsPrecursor = false;
               }
         };
         struct DigiReadyTag
@@ -334,43 +421,75 @@ class CbmTrdAdvDigitizer : public CbmTrdQABase
                 return false;
               }
         };
+        struct isFollower
+        {
+            template<class EVT, class FSM, class SourceState, class TargetState>
+              bool
+              operator() (EVT const& evt, FSM&SM, SourceState&, TargetState&)
+              {
+                CbmSpadicRawMessage*raw =
+                    static_cast<CbmSpadicRawMessage*> (SM.fRaw->At (evt.fIndex));
+                if (raw)
+                  {
+                    if (raw->GetHitAborted ())
+                      {
+                        return true;
+                      }
+                  }
+                return false;
+              }
+        };
 
         typedef CbmTrdDigiFinder_ df;
         struct transition_table : mpl::vector<
             //    Start          Event          Next          Action                  Guard
-            //  +---------------+--------------+-------------+-----------------------+----------------+
-            Row < Uninitialized , SetArrays    , Ready       , none                  , none           >,
-            //  +---------------+--------------+-------------+-----------------------+----------------+
-            Row < Ready         , NewMessage   , HitFound    , none                  , df::isHit      >,
-            Row < Ready         , NewMessage   , HitFound    , none                  , df::isMultiHit >,
-            //  +---------------+--------------+-------------+-----------------------+----------------+
-            Row < HitFound      ,PrepareDigi   , DigiReady   , none                  , none           >,
-            //  +---------------+--------------+-------------+-----------------------+----------------+
-            Row < DigiReady     ,CreateDigi    , Ready       , none                  , none           >
-            //  +---------------+--------------+-------------+-----------------------+----------------+
-        > {};
-        template <class FSM,class Event>
-        void no_transition(Event const& e, FSM&,int state)
+            //  +---------------+--------------+--------------+-----------------------+----------------+
+            Row<Uninitialized, SetArrays, Ready, none, none>,
+            //  +---------------+--------------+--------------+-----------------------+----------------+
+            Row<Ready, NewMessage, HitFound, none, df::isHit>,
+            Row<Ready, NewMessage, MultiHitFound, none, df::isMultiHit>,
+            Row<Ready, NewMessage, HitFound    , none                  , df::isFollower >,
+            //  +---------------+--------------+--------------+-----------------------+----------------+
+            Row<HitFound, PrepareDigi, DigiReady, none, none>,
+            //  +---------------+--------------+--------------+-----------------------+----------------+
+            Row<DigiReady, CreateDigi, Ready, none, none>
+        //  +---------------+--------------+--------------+-----------------------+----------------+
+        >
         {
+        };
+        template<class FSM, class Event>
+          void
+          no_transition (Event const& e, FSM&, int state)
+          {
             LOG(DEBUG) << "CbmTrdDigiFinder: no transition from state " << state
-                << " on event " << typeid(e).name() << FairLogger::endl;
-        }
-        TClonesArray*fRaw;
+                          << " on event " << typeid(e).name ()
+                          << FairLogger::endl;
+          }
+        TClonesArray*fRaw ;
         TClonesArray*fDigis;
         CbmSpadicRawMessage* fCurrentMessage;
+        Bool_t fIsPrecursor;
         Int_t fNrDigis;
         UInt_t fCurrentBookkeepingIndex;
-        std::map<UInt_t,UInt_t>fIndexMap;
-        std::array<Float_t,45> fBaseline;
-        std::array<Float_t,45> fSamples;
+        std::map<UInt_t, UInt_t> fIndexMap;
+        std::array<Float_t, 45> fBaseline;
+        std::array<Float_t, 45> fSamples;
         std::vector<std::vector<CbmSpadicRawMessage*> > fPointer;
         ULong_t fBaselineStart;
         std::vector<boost::circular_buffer<int16_t>> fRunningBaseline;
         CbmTrdTestBeamTools* fBT;
+    public:
+    CbmTrdDigiFinder_ () :
+	fRaw (nullptr), fDigis (nullptr), fCurrentMessage (nullptr), fIsPrecursor (false),
+	fNrDigis (0), fCurrentBookkeepingIndex (0), fIndexMap (), fBaseline (), fSamples (),
+	fPointer (), fBaselineStart (0), fRunningBaseline (),
+	fBT (CbmTrdTestBeamTools::Instance (nullptr))
+    {};
     };
     typedef msm::back::state_machine<CbmTrdDigiFinder_> CbmTrdDigiFinder;
 
-    ClassDef(CbmTrdAdvDigitizer,1);
+  ClassDef(CbmTrdAdvDigitizer,1)
+    ;
 };
 
 #endif /* FLES_READER_TASKS_CBMTRDADVDIGITIZER_H_ */

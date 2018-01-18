@@ -78,7 +78,7 @@ CbmTrdAdvDigitizer::Exec (Option_t*)
   //LOG(INFO) << this->GetName () << ": Clearing  Digis" << FairLogger::endl;
   //fDigis->Clear ();
   UInt_t nSpadicMessages = fRaw->GetEntriesFast (); //SPADIC messages per TimeSlice
-  TString Statefullness = "statefull";
+  TString Statefullness = "stateful";
   LOG(INFO) << this->GetName () << ": Estimating Baseline " << Statefullness
                << " Digitizer" << FairLogger::endl;
   std::vector<TProfile2D*> Hitmaps;
