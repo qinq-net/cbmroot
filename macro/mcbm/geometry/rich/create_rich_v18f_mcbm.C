@@ -248,7 +248,7 @@ void create_rich_v18f_mcbm()
 	//	TGeoVolume *pmtVol = gGeoMan->MakeBox("Pmt", medCsI , pmtSizeHalf, pmtSizeHalf, pmtThickness / 2.);
         TGeoVolume* pmtVol = new TGeoVolumeAssembly("Pmt");
 		
-	TGeoVolume *pmtPixelVol = gGeoMan->MakeBox("pmt_pixel", medCsI, pmtPixelSize/2., pmtPixelSize/2., pmtThickness / 2.);
+	TGeoVolume *pmtPixelVol = gGeoMan->MakeBox("pmt_pixel", medNitrogen, pmtPixelSize/2., pmtPixelSize/2., pmtThickness / 2.);
 
 	// Lense composite shape
 	TGeoSphere *lenseCoatingVol = new TGeoSphere("LenseCoating", lenseRadius, lenseRadius + lenseCoating, 90., 180., 0., 360.);
