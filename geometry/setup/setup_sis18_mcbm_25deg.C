@@ -1,3 +1,4 @@
+
 /** ROOT macro to define the CBM setup sis18_mcbm
  **
  ** @author Volker Friese <v.friese@gsi.de>
@@ -25,7 +26,7 @@ void setup_sis18_mcbm_25deg()
   TString platGeoTag      = "v18c_mcbm";    // support table
   TString pipeGeoTag      = "v18d_mcbm";    // 25 degreee beampipe 
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";						  
-  TString stsGeoTag       = "v18f_mcbm";    // 1-1-1-2 ladder configuration
+  TString stsGeoTag       = "v18g_mcbm";    // 1-1-1-2 ladder configuration
 //  TString muchGeoTag      = "v18c_mcbm";    // 12 o'clock
   TString muchGeoTag      = "v18d_mcbm";    // 11 o'clock
   TString trdGeoTag       = "v18e_mcbm";    // short, without mBUCH
