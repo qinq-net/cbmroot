@@ -1,0 +1,62 @@
+#0  0x00007f2ceb98c07a in __GI___waitpid (pid=9591, stat_loc=stat_loc
+entry=0x7ffffbc227f0, options=options
+entry=0) at ../sysdeps/unix/sysv/linux/waitpid.c:29
+#1  0x00007f2ceb904fbb in do_system (line=<optimised out>) at ../sysdeps/posix/system.c:148
+#2  0x00007f2cec4f54f4 in TUnixSystem::Exec (shellcmd=<optimised out>, this=0x6d34f0) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/core/unix/src/TUnixSystem.cxx:2118
+#3  TUnixSystem::StackTrace (this=0x6d34f0) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/core/unix/src/TUnixSystem.cxx:2405
+#4  0x00007f2cd676b23b in FairLogger::LogFatalMessage (this=<optimised out>, strm=...) at /home/aghoehne/Documents/fairroot_src_v-17.03-fairsoft_mar17_root6/fairtools/FairLogger.cxx:576
+#5  0x00007f2cd676b394 in FairLogger::endl (strm=...) at /home/aghoehne/Documents/fairroot_src_v-17.03-fairsoft_mar17_root6/fairtools/FairLogger.cxx:503
+#6  0x00007f2cd67687ae in std::ostream::operator<< (__pf=0x7f2cd676b340 <FairLogger::endl(std::ostream&)>, this=<optimised out>) at /usr/include/c++/5/ostream:113
+#7  FairLogger::operator<< (this=this
+entry=0x1cbe690, manip=0x7f2cd676b340 <FairLogger::endl(std::ostream&)>) at /home/aghoehne/Documents/fairroot_src_v-17.03-fairsoft_mar17_root6/fairtools/FairLogger.cxx:470
+#8  0x00007f2cd0cc442b in CbmUnigenGenerator::CbmUnigenGenerator (this=0xa19a1f0, fileName=...) at /home/aghoehne/Documents/CbmRoot/trunkNew/generators/CbmUnigenGenerator.cxx:71
+#9  0x00007f2cecc74fc8 in ?? ()
+#10 0x00007ffffbc24d90 in ?? ()
+#11 0x00007f2cecc8f6f8 in ?? ()
+#12 0x00007fff00000003 in ?? ()
+#13 0x0000000000000028 in ?? ()
+#14 0x00007ffffbc24c60 in ?? ()
+#15 0x00007f2ceca732d1 in _dl_lookup_symbol_x (undef_name=0x1 <error: Cannot access memory at address 0x1>, undef_map=<optimised out>, ref=0x15, symbol_scope=0x7ffffbc25600, version=<optimised out>, type_class=0, flags=-71148680, skip_map=0x7f2cecc73000) at dl-lookup.c:871
+#16 0x00007f2cecc78092 in ?? ()
+#17 0x00000064fbc25b78 in ?? ()
+#18 0x00007f2cecc73000 in ?? ()
+#19 0x00000001fbc25b30 in ?? ()
+#20 0x0000000000787be0 in ?? ()
+#21 0x00007f2ce8337d40 in ?? () from /home/aghoehne/Documents/fairsoft_mar17_root6/installation/lib/root/libCling.so
+#22 0x00007ffffbc26030 in ?? ()
+#23 0x00007ffffbc25b30 in ?? ()
+#24 0x00007f2ce82d455f in cling::IncrementalExecutor::executeWrapper (returnValue=0x7ffffbc25470, function=..., this=0x73a750) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/interpreter/cling/lib/Interpreter/IncrementalExecutor.h:197
+#25 cling::Interpreter::RunFunction (this=<optimised out>, FD=<optimised out>, res=0x7ffffbc25470) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/interpreter/cling/lib/Interpreter/Interpreter.cpp:693
+#26 0x00007f2ce82d5fbd in cling::Interpreter::EvaluateInternal (this=0x734770, input="mcbm_mc_gp() /* invoking function corresponding to '.x' */", CO=..., V=V
+entry=0x7ffffbc26030, T=T
+entry=0x0, wrapPoint=44, wrapPoint
+entry=0) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/interpreter/cling/lib/Interpreter/Interpreter.cpp:961
+#27 0x00007f2ce82d60cb in cling::Interpreter::echo (this=<optimised out>, input="mcbm_mc_gp() /* invoking function corresponding to '.x' */", V=V
+entry=0x7ffffbc26030) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/interpreter/cling/lib/Interpreter/Interpreter.cpp:626
+#28 0x00007f2ce8365042 in cling::MetaSema::actOnxCommand (this=0x7a0120, file=..., args=..., result=result
+entry=0x7ffffbc26030) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/interpreter/cling/lib/MetaProcessor/MetaSema.cpp:125
+#29 0x00007f2ce836fbd6 in cling::MetaParser::isXCommand (this=this
+entry=0xa9af00, actionResult=
+0x7ffffbc25ed0: cling::MetaSema::AR_Success, resultValue=resultValue
+entry=0x7ffffbc26030) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/interpreter/cling/lib/MetaProcessor/MetaParser.cpp:272
+#30 0x00007f2ce8370bde in cling::MetaParser::isCommand (this=0xa9af00, actionResult=
+0x7ffffbc25ed0: cling::MetaSema::AR_Success, resultValue=0x7ffffbc26030) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/interpreter/cling/lib/MetaProcessor/MetaParser.cpp:124
+#31 0x00007f2ce835f059 in cling::MetaProcessor::process (this=0x903cc0, input_text=0x1042760 ".X  /home/aghoehne/Documents/CbmRoot/trunkNew/macro/rich/mcbm/./mcbm_mc_gp.C", compRes=
+0x7ffffbc2601c: cling::Interpreter::kSuccess, result=result
+entry=0x7ffffbc26030) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/interpreter/cling/lib/MetaProcessor/MetaProcessor.cpp:152
+#32 0x00007f2ce82436f6 in HandleInterpreterException (metaProcessor=<optimised out>, input_line=<optimised out>, compRes=
+0x7ffffbc2601c: cling::Interpreter::kSuccess, result=result
+entry=0x7ffffbc26030) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/core/meta/src/TCling.cxx:1882
+#33 0x00007f2ce82548c5 in TCling::ProcessLine (this=0x72d620, line=<optimised out>, error=0x7ffffbc271ac) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/core/meta/src/TCling.cxx:2031
+#34 0x00007f2ce82464a7 in TCling::ProcessLineSynch (this=0x72d620, line=0x1042640 ".X  /home/aghoehne/Documents/CbmRoot/trunkNew/macro/rich/mcbm/./mcbm_mc_gp.C", error=0x7ffffbc271ac) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/core/meta/src/TCling.cxx:2876
+#35 0x00007f2cec3e5417 in TApplication::ExecuteFile (file=<optimised out>, error=0x7ffffbc271ac, keep=<optimised out>) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/core/base/src/TApplication.cxx:1137
+#36 0x00007f2cec3e636f in TApplication::ProcessLine (this=0x71ec00, line=<optimised out>, sync=<optimised out>, err=0x7ffffbc271ac) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/core/base/src/TApplication.cxx:986
+#37 0x00007f2cec8527f4 in TRint::ProcessLineNr (this=this
+entry=0x71ec00, filestem=filestem
+entry=0x7f2cec8611ca "ROOT_cli_", line=line
+entry=0x7ffffbc271b0 ".x mcbm_mc_gp.C", error=error
+entry=0x7ffffbc271ac) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/core/rint/src/TRint.cxx:764
+#38 0x00007f2cec853eff in TRint::Run (this=this
+entry=0x71ec00, retrn=retrn
+entry=false) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/core/rint/src/TRint.cxx:424
+#39 0x00000000004010bc in main (argc=1, argv=0x7ffffbc29338) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/main/src/rmain.cxx:30

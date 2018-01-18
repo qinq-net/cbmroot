@@ -1,0 +1,18 @@
+#0  0x00007f1fd1a9f07a in __GI___waitpid (pid=18773, stat_loc=stat_loc
+entry=0x7ffd8a32c400, options=options
+entry=0) at ../sysdeps/unix/sysv/linux/waitpid.c:29
+#1  0x00007f1fd1a17fbb in do_system (line=<optimised out>) at ../sysdeps/posix/system.c:148
+#2  0x00007f1fd26084f4 in TUnixSystem::Exec (shellcmd=<optimised out>, this=0x1d834f0) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/core/unix/src/TUnixSystem.cxx:2118
+#3  TUnixSystem::StackTrace (this=0x1d834f0) at /home/aghoehne/Documents/fairsoft_src_mar17_root6/tools/root/core/unix/src/TUnixSystem.cxx:2405
+#4  0x00007f1fbc08e23b in FairLogger::LogFatalMessage (this=<optimised out>, strm=...) at /home/aghoehne/Documents/fairroot_src_v-17.03-fairsoft_mar17_root6/fairtools/FairLogger.cxx:576
+#5  0x00007f1fbc08e394 in FairLogger::endl (strm=...) at /home/aghoehne/Documents/fairroot_src_v-17.03-fairsoft_mar17_root6/fairtools/FairLogger.cxx:503
+#6  0x00007f1fbc08b7ae in std::ostream::operator<< (__pf=0x7f1fbc08e340 <FairLogger::endl(std::ostream&)>, this=<optimised out>) at /usr/include/c++/5/ostream:113
+#7  FairLogger::operator<< (this=this
+entry=0x3610950, manip=0x7f1fbc08e340 <FairLogger::endl(std::ostream&)>) at /home/aghoehne/Documents/fairroot_src_v-17.03-fairsoft_mar17_root6/fairtools/FairLogger.cxx:470
+#8  0x00007f1fbd0b88ee in CbmSetup::SetModule (this=0x7042d00, moduleId=8, geoTag=0x7ffd8a32eb59 "v18c_mcbm", active=<optimised out>) at /home/aghoehne/Documents/CbmRoot/trunkNew/run/CbmSetup.cxx:528
+#9  0x00007f1fd2d83bd1 in ?? ()
+#10 0x00000000070f0b10 in ?? ()
+#11 0x00000000067f0800 in ?? ()
+#12 0x0000000004f6d6b0 in ?? ()
+#13 0x0000000001d89100 in ?? ()
+#14 0x0000000000000000 in ?? ()
