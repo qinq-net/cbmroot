@@ -391,7 +391,7 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       name = Form("StarHitToTrigWin_gDPB_%02u", uGdpb);
       title = Form("Time to trigger for hits in trigger window gDPB %02u; t(Hit) - t(Trigg) [ns]", uGdpb);
       UInt_t uNbBins = static_cast< UInt_t >( fdStarTriggerWinSize[uGdpb] / 10.0 );
-      Double_t dLowBin = -fdStarTriggerDelay[uGdpb];
+      Double_t dLowBin  = -fdStarTriggerDelay[uGdpb];
       Double_t dHighBin = -fdStarTriggerDelay[uGdpb] + fdStarTriggerWinSize[uGdpb];
       fhStarHitToTrigWin_gDPB.push_back(
          new TH1I( name.Data(), title.Data(),
@@ -402,45 +402,49 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
          server->Register("/StarRaw", fhStarHitToTrigWin_gDPB[ uGdpb ] );
 #endif
 
-      name = Form("StarEventSize_gDPB_%02u", uGdpb);
-      title = Form("STAR SubEvent size gDPB %02u; SubEvent size [bytes]", uGdpb);
-      uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize() / 8 ); // 1 bin = 1 long 64b uint
-      fhStarEventSize_gDPB.push_back(
-         new TH1I( name.Data(), title.Data(),
-                   uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
-      fHM->Add( name.Data(), fhStarEventSize_gDPB[ uGdpb ] );
+      /// Check if we are in "single link per sub-event" building mode
+      if( kFALSE == fbEventBuilding )
+      {
+         name = Form("StarEventSize_gDPB_%02u", uGdpb);
+         title = Form("STAR SubEvent size gDPB %02u; SubEvent size [bytes]", uGdpb);
+         uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize() / 8 ); // 1 bin = 1 long 64b uint
+         fhStarEventSize_gDPB.push_back(
+            new TH1I( name.Data(), title.Data(),
+                      uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
+         fHM->Add( name.Data(), fhStarEventSize_gDPB[ uGdpb ] );
 #ifdef USE_HTTP_SERVER
-      if (server)
-         server->Register("/StarRaw", fhStarEventSize_gDPB[ uGdpb ] );
+         if (server)
+            server->Register("/StarRaw", fhStarEventSize_gDPB[ uGdpb ] );
 #endif
 
-      name = Form("StarEventSizeTime_gDPB_%02u", uGdpb);
-      title = Form("STAR SubEvent size gDPB %02u; run time [s]; SubEvent size [bytes]", uGdpb);
-      uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize()
-                                            / (sizeof( ngdpb::Message )) );
-      fhStarEventSizeTime_gDPB.push_back(
-         new TH2I( name.Data(), title.Data(),
-                   fuHistoryHistoSize, 0.0, fuHistoryHistoSize,
-                   uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
-      fHM->Add( name.Data(), fhStarEventSizeTime_gDPB[ uGdpb ] );
+         name = Form("StarEventSizeTime_gDPB_%02u", uGdpb);
+         title = Form("STAR SubEvent size gDPB %02u; run time [s]; SubEvent size [bytes]", uGdpb);
+         uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize()
+                                               / (sizeof( ngdpb::Message )) );
+         fhStarEventSizeTime_gDPB.push_back(
+            new TH2I( name.Data(), title.Data(),
+                      fuHistoryHistoSize, 0.0, fuHistoryHistoSize,
+                      uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
+         fHM->Add( name.Data(), fhStarEventSizeTime_gDPB[ uGdpb ] );
 #ifdef USE_HTTP_SERVER
-      if (server)
-         server->Register("/StarRaw", fhStarEventSizeTime_gDPB[ uGdpb ] );
+         if (server)
+            server->Register("/StarRaw", fhStarEventSizeTime_gDPB[ uGdpb ] );
 #endif
 
-      name = Form("StarEventSizeTimeLong_gDPB_%02u", uGdpb);
-      title = Form("STAR SubEvent size gDPB %02u; run time [min]; SubEvent size [bytes]", uGdpb);
-      uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize()
-                                            / (sizeof( ngdpb::Message )) );
-      fhStarEventSizeTimeLong_gDPB.push_back(
-         new TH2I( name.Data(), title.Data(),
-                   fuHistoryHistoSizeLong, 0.0, fuHistoryHistoSizeLong,
-                   uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
-      fHM->Add( name.Data(), fhStarEventSizeTimeLong_gDPB[ uGdpb ] );
+         name = Form("StarEventSizeTimeLong_gDPB_%02u", uGdpb);
+         title = Form("STAR SubEvent size gDPB %02u; run time [min]; SubEvent size [bytes]", uGdpb);
+         uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize()
+                                               / (sizeof( ngdpb::Message )) );
+         fhStarEventSizeTimeLong_gDPB.push_back(
+            new TH2I( name.Data(), title.Data(),
+                      fuHistoryHistoSizeLong, 0.0, fuHistoryHistoSizeLong,
+                      uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
+         fHM->Add( name.Data(), fhStarEventSizeTimeLong_gDPB[ uGdpb ] );
 #ifdef USE_HTTP_SERVER
-      if (server)
-         server->Register("/StarRaw", fhStarEventSizeTimeLong_gDPB[ uGdpb ] );
+         if (server)
+            server->Register("/StarRaw", fhStarEventSizeTimeLong_gDPB[ uGdpb ] );
 #endif
+      } // if( kFALSE == fbEventBuilding )
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 
 //   fhDetChanCoinc = new TH2F( "fhDetChanCoinc",
@@ -683,7 +687,7 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
 
       } // for (uint32_t uIdx = 0; uIdx < uNbMessages; uIdx ++)
 
-      /// Check if we are in single link per sub-event building mode
+      /// Check if we are in "single link per sub-event" building mode
       if( kFALSE == fbEventBuilding )
       {
          /// Make sure that the current MS is not one of the overlap ones
@@ -693,6 +697,12 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
       } // if( kFALSE == fbEventBuilding )
 
    } // for (size_t m = 0; m < numCompMsInTs; ++m)
+
+   /// Check if we are in "single sub-event for all links" building mode
+   if( kTRUE == fbEventBuilding )
+   {
+      BuildStarEventsAllLinks();
+   } // if( kTRUE == fbEventBuilding )
 
 
   return kTRUE;
@@ -1242,10 +1252,16 @@ void CbmTofStarEventBuilder2018::BuildStarEventsSingleLink()
             bFirstMessClosestEventFound = kTRUE;
          } // If first possible hit of closest event not found and current hit fits
 
+         /// Plotting of time to trigger for all hits
+         fhStarHitToTrigAll_gDPB[ fuGdpbNr ]->Fill( dMessageFullTime - dTriggerTime );
+
          if( dTriggerWinBeg   <= dMessageFullTime && dMessageFullTime <= dTriggerWinEnd )
          {
             /// Message belongs to this event
             fStarSubEvent.AddMsg( (*itMess) );
+
+            /// Plotting of time to trigger for hits within the event window
+            fhStarHitToTrigWin_gDPB[ fuGdpbNr ]->Fill( dMessageFullTime - dTriggerTime );
          } // if( dTriggerWinBeg   <= dMessageFullTime && dMessageFullTime <= dTriggerWinEnd )
             else if( dTriggerWinEnd < dMessageFullTime )
                /// First Message out of the window for this event => Stop there and go to the next
@@ -1299,6 +1315,13 @@ void CbmTofStarEventBuilder2018::BuildStarEventsSingleLink()
 }
 void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
 {
+   std::vector< std::vector< gdpb::FullMessage >::iterator > itFirstMessageNextEvent( fuNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+      itFirstMessageNextEvent[ uGdpb ] = fvmTsLinksBuffer[ uGdpb ].begin();
+
+   Double_t dPrevEventEnd = 0.0;
+
+
 }
 
 ClassImp(CbmTofStarEventBuilder2018)
