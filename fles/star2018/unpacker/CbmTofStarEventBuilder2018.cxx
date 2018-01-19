@@ -12,16 +12,17 @@
 
 #include "CbmTbDaqBuffer.h"
 
-//#include "CbmFiberHodoAddress.h"
 #include "CbmHistManager.h"
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
 #include "FairRun.h"
 #include "FairRuntimeDb.h"
+#include "FairRunOnline.h"
 
 #include "TClonesArray.h"
 #include "TString.h"
+#include "THttpServer.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -61,6 +62,10 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fvbFirstEpochSeen(),
     fNofEpochs(0),
     fulCurrentEpochTime(0.),
+    fdStartTime(-1.),
+    fdStartTimeLong(-1.),
+    fdStartTimeMsSz(-1.),
+    fcMsSizeAll(NULL),
     fEquipmentId(0),
     fdMsIndex(0.),
     fdTShiftRef(0.),
@@ -68,6 +73,8 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fDigi(NULL),
     fBuffer(CbmTbDaqBuffer::Instance()),
     fUnpackPar(NULL),
+    fuHistoryHistoSize( 1800 ),
+    fuHistoryHistoSizeLong( 600 ),
     fdRefTime(0.),
     fdLastDigiTime(0.),
     fdFirstDigiTimeDif(0.),
@@ -109,6 +116,11 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fdCurrentTsStartTime( 0.0 ),
     fvmTsLinksBuffer(),
     fvtTsLinksBuffer(),
+    fhStarHitToTrigAll_gDPB(),
+    fhStarHitToTrigWin_gDPB(),
+    fhStarEventSize_gDPB(),
+    fhStarEventSizeTime_gDPB(),
+    fhStarEventSizeTimeLong_gDPB(),
     fvmEpSupprBuffer()
 {
 }
@@ -295,6 +307,13 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
    LOG(INFO) << "create Histos for " << fuNrOfGdpbs <<" gDPBs "
 	          << FairLogger::endl;
 
+#ifdef USE_HTTP_SERVER
+   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
+#endif
+
+   TString name { "" };
+   TString title { "" };
+
    fhRawTDigEvT0 = new TH1F( Form("Raw_TDig-EvT0"),
                              Form("Raw digi time difference to 1st digi ; time [ns]; cts"),
                              100, 0, 50.);
@@ -355,12 +374,108 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
                                       Form("Channels Coincidence %02u; Left; Right", uGdpb),
                                       fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb,
                                       fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb );
+
+      /// Event building
+      name = Form("StarHitToTrigAll_gDPB_%02u", uGdpb);
+      title = Form("Time to trigger for all hits gDPB %02u; t(Hit) - t(Trigg) [ns]", uGdpb);
+      fhStarHitToTrigAll_gDPB.push_back(
+         new TH1I( name.Data(), title.Data(),
+                   5000, -100000.0, 50000.0) ); // TODO make offset parameter
+//                   4000, -800000.0, 0.0) ); // TODO make offset parameter
+      fHM->Add( name.Data(), fhStarHitToTrigAll_gDPB[ uGdpb ] );
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhStarHitToTrigAll_gDPB[ uGdpb ] );
+#endif
+
+      name = Form("StarHitToTrigWin_gDPB_%02u", uGdpb);
+      title = Form("Time to trigger for hits in trigger window gDPB %02u; t(Hit) - t(Trigg) [ns]", uGdpb);
+      UInt_t uNbBins = static_cast< UInt_t >( fdStarTriggerWinSize[uGdpb] / 10.0 );
+      Double_t dLowBin = -fdStarTriggerDelay[uGdpb];
+      Double_t dHighBin = -fdStarTriggerDelay[uGdpb] + fdStarTriggerWinSize[uGdpb];
+      fhStarHitToTrigWin_gDPB.push_back(
+         new TH1I( name.Data(), title.Data(),
+                   uNbBins, dLowBin, dHighBin) ); // TODO make size parameter
+      fHM->Add( name.Data(), fhStarHitToTrigWin_gDPB[ uGdpb ] );
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhStarHitToTrigWin_gDPB[ uGdpb ] );
+#endif
+
+      name = Form("StarEventSize_gDPB_%02u", uGdpb);
+      title = Form("STAR SubEvent size gDPB %02u; SubEvent size [bytes]", uGdpb);
+      uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize() / 8 ); // 1 bin = 1 long 64b uint
+      fhStarEventSize_gDPB.push_back(
+         new TH1I( name.Data(), title.Data(),
+                   uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
+      fHM->Add( name.Data(), fhStarEventSize_gDPB[ uGdpb ] );
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhStarEventSize_gDPB[ uGdpb ] );
+#endif
+
+      name = Form("StarEventSizeTime_gDPB_%02u", uGdpb);
+      title = Form("STAR SubEvent size gDPB %02u; run time [s]; SubEvent size [bytes]", uGdpb);
+      uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize()
+                                            / (sizeof( ngdpb::Message )) );
+      fhStarEventSizeTime_gDPB.push_back(
+         new TH2I( name.Data(), title.Data(),
+                   fuHistoryHistoSize, 0.0, fuHistoryHistoSize,
+                   uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
+      fHM->Add( name.Data(), fhStarEventSizeTime_gDPB[ uGdpb ] );
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhStarEventSizeTime_gDPB[ uGdpb ] );
+#endif
+
+      name = Form("StarEventSizeTimeLong_gDPB_%02u", uGdpb);
+      title = Form("STAR SubEvent size gDPB %02u; run time [min]; SubEvent size [bytes]", uGdpb);
+      uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize()
+                                            / (sizeof( ngdpb::Message )) );
+      fhStarEventSizeTimeLong_gDPB.push_back(
+         new TH2I( name.Data(), title.Data(),
+                   fuHistoryHistoSizeLong, 0.0, fuHistoryHistoSizeLong,
+                   uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
+      fHM->Add( name.Data(), fhStarEventSizeTimeLong_gDPB[ uGdpb ] );
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhStarEventSizeTimeLong_gDPB[ uGdpb ] );
+#endif
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 
 //   fhDetChanCoinc = new TH2F( "fhDetChanCoinc",
 //                              "Det Channels Coincidence; Left; Right",
 //                              32, 0., 32,
 //                              32, 0., 32 );
+
+   /** Create summary Canvases for STAR 2017 **/
+   Double_t w = 10;
+   Double_t h = 10;
+   /*****************************/
+
+   /** Create Event building mode Canvas(es) for STAR 2017 **/
+
+   for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   {
+      TCanvas* cStarEvtBuild = new TCanvas( Form("cStarEvt_g%02u", uGdpb),
+                                           Form("STAR SubEvent Building for gDPB %02u", uGdpb),
+                                           w, h);
+      cStarEvtBuild->Divide( 2, 2 );
+
+      cStarEvtBuild->cd(1);
+      fhStarHitToTrigAll_gDPB[uGdpb]->Draw();
+
+      cStarEvtBuild->cd(2);
+      fhStarHitToTrigWin_gDPB[uGdpb]->Draw();
+
+      cStarEvtBuild->cd(3);
+      fhStarEventSize_gDPB[uGdpb]->Draw();
+
+      cStarEvtBuild->cd(4);
+      fhStarEventSizeTime_gDPB[uGdpb]->Draw( "colz" );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   /*****************************/
+
 }
 
 Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t component)
@@ -392,6 +507,9 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
       if( 0 < size )
          LOG(DEBUG1) << "Microslice "<< m <<": " << fdMsIndex
                      << " has size: " << size << FairLogger::endl;
+
+      if( fdStartTimeMsSz < 0 )
+         fdStartTimeMsSz = (1e-9) * fdMsIndex;
 
       // If not integer number of message in input buffer, print warning/error
       if( 0 != (size % kuBytesPerMessage) )
@@ -656,7 +774,23 @@ void CbmTofStarEventBuilder2018::FillHitInfo( gdpb::Message mess )
 
       fBuffer->InsertData(fDigi);
 
-      // Histograms filling
+      /// Histograms filling
+         /// In Run rate evolution
+      if (fdStartTime < 0)
+         fdStartTime = dHitTime;
+      if (fdStartTimeLong < 0)
+         fdStartTimeLong = dHitTime;
+         /// Reset the evolution Histogram and the start time when we reach the end of the range
+      if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
+      {
+         fdStartTime = dHitTime;
+      } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
+          /// Reset the long evolution Histogram and the start time when we reach the end of the range
+      if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) )
+      {
+         fdStartTimeLong = dHitTime;
+      } // if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) )
+
       fhRawTotCh[ fuGdpbNr ]->Fill( uChanInGdpb, dHitTot);
       fhChCount[ fuGdpbNr ] ->Fill( uChanInGdpb );
 
@@ -851,6 +985,21 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
          fuStarDaqCmdLast  = uNewDaqCmd;
          fuStarTrigCmdLast = uNewTrigCmd;
 
+         /// Histograms filling
+         /// In Run rate evolution
+         if( 0 <= fdStartTime )
+         {
+            /// Reset the evolution Histogram and the start time when we reach the end of the range
+            if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * 6.25 - fdStartTime) )
+            {
+               fdStartTime = fulGdpbTsFullLast * 6.25;
+            } // if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * 6.25 - fdStartTime) )
+
+//            fhTriggerRate->Fill( 1e-9 * ( fulGdpbTsFullLast * 6.25 - fdStartTime ) );
+//           fhStarTokenEvo->Fill( 1e-9 * ( fulGdpbTsFullLast * 6.25 - fdStartTime ), fuStarTokenLast );
+         } // if( 0 < fdStartTime )
+            else fdStartTime = fulGdpbTsFullLast * 6.25;
+
          /// Generate Fake digi for NH analysis framework -----------///
          Double_t dTot = 1.;
          Double_t dTime = fulGdpbTsFullLast * 6.25;
@@ -929,6 +1078,22 @@ void CbmTofStarEventBuilder2018::Finish()
                    << FairLogger::endl;
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
 
+  SaveAllHistos();
+
+}
+
+void CbmTofStarEventBuilder2018::SaveAllHistos( TString sFileName )
+{
+   TDirectory * oldDir = NULL;
+   TFile * histoFile = NULL;
+   if( "" != sFileName )
+   {
+      // Store current directory position to allow restore later
+      oldDir = gDirectory;
+      // open separate histo file in recreate mode
+      histoFile = new TFile( sFileName , "RECREATE");
+      histoFile->cd();
+   } // if( "" != sFileName )
 
    gDirectory->mkdir("Tof_Raw_gDPB");
    gDirectory->cd("Tof_Raw_gDPB");
@@ -948,12 +1113,64 @@ void CbmTofStarEventBuilder2018::Finish()
          fhChanCoinc[ uLeftFeb ]->Write();
 */
       fhChanCoinc[ uGdpb ]->Write();
+
+      /// Event building
+      fhStarHitToTrigAll_gDPB[ uGdpb ]->Write();
+      fhStarHitToTrigWin_gDPB[ uGdpb ]->Write();
+      fhStarEventSize_gDPB[ uGdpb ]->Write();
+      fhStarEventSizeTime_gDPB[ uGdpb ]->Write();
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 //   fhDetChanCoinc->Write();
    gDirectory->cd("..");
 
+   if( "" != sFileName )
+   {
+      // Restore original directory position
+      histoFile->Close();
+      oldDir->cd();
+   } // if( "" != sFileName )
+   if( "" != sFileName )
+   {
+      // Restore original directory position
+      histoFile->Close();
+      oldDir->cd();
+   } // if( "" != sFileName )
+
 }
 
+void CbmTofStarEventBuilder2018::ResetAllHistos()
+{
+   LOG(INFO) << "Reseting all Event building histograms." << FairLogger::endl;
+
+   fHM->H1( Form("Raw_TDig-Ref0") )->Reset();
+   fHM->H1( Form("Raw_TDig-Ref") )->Reset();
+   fHM->H1( Form("Raw_TRef-Dig0") )->Reset();
+   fHM->H1( Form("Raw_TRef-Dig1") )->Reset();
+   fHM->H1( Form("Raw_Digi-LastDigi") )->Reset();
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+   {
+      fHM->H2( Form("Raw_Tot_gDPB_%02u", uGdpb) )->Reset();
+      fHM->H1( Form("ChCount_gDPB_%02u", uGdpb) )->Reset();
+/*
+      for( UInt_t uLeftFeb = uGdpb*fuNrOfFebsPerGdpb / 2;
+           uLeftFeb < (uGdpb + 1 )*fuNrOfFebsPerGdpb / 2;
+           ++uLeftFeb )
+         fhChanCoinc[ uLeftFeb ]->Reset();
+*/
+      fhChanCoinc[ uGdpb ]->Reset();
+
+      /// Event building
+      fhStarHitToTrigAll_gDPB[ uGdpb ]->Reset();
+      fhStarHitToTrigWin_gDPB[ uGdpb ]->Reset();
+      fhStarEventSize_gDPB[ uGdpb ]->Reset();
+      fhStarEventSizeTime_gDPB[ uGdpb ]->Reset();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+//   fhDetChanCoinc->Reset();
+
+  fdStartTime = -1;
+  fdStartTimeLong = -1;
+  fdStartTimeMsSz = -1;
+}
 
 void CbmTofStarEventBuilder2018::FillOutput(CbmDigi* digi)
 {
@@ -990,14 +1207,10 @@ void CbmTofStarEventBuilder2018::BuildStarEventsSingleLink()
 
    for( UInt_t uTriggIdx = 0; uTriggIdx < fvtCurrentLinkBuffer.size(); uTriggIdx++ )
    {
-      Double_t dTriggerWinBeg = get4v2x::kdClockCycleSizeNs * fvtCurrentLinkBuffer[uTriggIdx].GetFullGdpbTs()
-                                - fdStarTriggerDelay[ fuGdpbNr ];
-      Double_t dTriggerWinEnd = get4v2x::kdClockCycleSizeNs * fvtCurrentLinkBuffer[uTriggIdx].GetFullGdpbTs()
-                                - fdStarTriggerDelay[ fuGdpbNr ]
-                                + fdStarTriggerWinSize[ fuGdpbNr ];
-      Double_t dClosestTriggerWinStart = get4v2x::kdClockCycleSizeNs * fvtCurrentLinkBuffer[uTriggIdx].GetFullGdpbTs()
-                                         - fdStarTriggerDelay[ fuGdpbNr ]
-                                         + fdStarTriggerDeadtime[ fuGdpbNr ];
+      Double_t dTriggerTime   = get4v2x::kdClockCycleSizeNs * fvtCurrentLinkBuffer[uTriggIdx].GetFullGdpbTs();
+      Double_t dTriggerWinBeg = dTriggerTime - fdStarTriggerDelay[ fuGdpbNr ];
+      Double_t dTriggerWinEnd = dTriggerTime - fdStarTriggerDelay[ fuGdpbNr ] + fdStarTriggerWinSize[ fuGdpbNr ];
+      Double_t dClosestTriggerWinStart = dTriggerTime - fdStarTriggerDelay[ fuGdpbNr ] + fdStarTriggerDeadtime[ fuGdpbNr ];
       Bool_t bFirstMessClosestEventFound = kFALSE;
 
       /// Associate this trigger to its subevent
@@ -1070,10 +1283,12 @@ void CbmTofStarEventBuilder2018::BuildStarEventsSingleLink()
                          << FairLogger::endl;
 
       /// Fill plot of event size
-//      fhStarEventSize_gDPB[ iGdpbIdx ]->Fill( iBuffSzByte );
+      fhStarEventSize_gDPB[ fuGdpbNr ]->Fill( iBuffSzByte );
       /// Fill plot of event size as function of trigger time
-//      if( 0 < fdStartTime )
-//         fhStarEventSizeTime_gDPB[ iGdpbIdx ]->Fill( 1e-9 *(dTriggerTime - fdStartTime), iBuffSzByte );
+      if( 0 < fdStartTime )
+         fhStarEventSizeTime_gDPB[ fuGdpbNr ]->Fill( 1e-9 *(dTriggerTime - fdStartTime), iBuffSzByte );
+      if( 0 < fdStartTimeLong )
+         fhStarEventSizeTimeLong_gDPB[ fuGdpbNr ]->Fill( 1e-9 *(dTriggerTime - fdStartTimeLong) / 60.0, iBuffSzByte/60.0 );
 
       /// Now clear the sub-event
       fStarSubEvent.ClearSubEvent();

@@ -69,8 +69,14 @@ public:
    inline void SetEventBuildingMode( Bool_t bEventBuildingMode = kFALSE );
    inline void SetTimeSortOutput( Bool_t bTimeSort = kTRUE );
 
+   inline void SetHistoryHistoSize( UInt_t inHistorySizeSec = 1800 ) { fuHistoryHistoSize = inHistorySizeSec; }
+   inline void SetHistoryHistoSizeLong( UInt_t inHistorySizeMin = 1800 ) { fuHistoryHistoSizeLong = inHistorySizeMin; }
+
+
    // Output control methods
    void FillOutput(CbmDigi* digi);
+   void SaveAllHistos( TString sFileName = "" );
+   void ResetAllHistos();
 
 private:
 
@@ -118,6 +124,10 @@ private:
 
    Int_t fNofEpochs;              /** Current epoch marker for each ROC **/
    ULong64_t fulCurrentEpochTime;     /** Time stamp of current epoch **/
+   Double_t fdStartTime; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
+   Double_t fdStartTimeLong; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
+   Double_t fdStartTimeMsSz; /** Time of first microslice, used as reference for evolution plots**/
+   TCanvas* fcMsSizeAll;
 
    Int_t fEquipmentId;
    Double_t fdMsIndex;
@@ -133,6 +143,8 @@ private:
    void CreateHistograms();
 
    // Variables used for histo filling
+   UInt_t            fuHistoryHistoSize;
+   UInt_t            fuHistoryHistoSizeLong;
    Double_t fdRefTime;
    Double_t fdLastDigiTime;
    Double_t fdFirstDigiTimeDif;
@@ -180,6 +192,11 @@ private:
    Double_t fdCurrentTsStartTime;                                      //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
    std::vector< std::vector < gdpb::FullMessage > > fvmTsLinksBuffer;  //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
    std::vector< std::vector < CbmTofStarTrigger  > > fvtTsLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
+   std::vector<TH1*> fhStarHitToTrigAll_gDPB;
+   std::vector<TH1*> fhStarHitToTrigWin_gDPB;
+   std::vector<TH1*> fhStarEventSize_gDPB;
+   std::vector<TH2*> fhStarEventSizeTime_gDPB;
+   std::vector<TH2*> fhStarEventSizeTimeLong_gDPB;
 
 #ifndef __CINT__
    std::vector< std::vector < gdpb::Message > > fvmEpSupprBuffer;
