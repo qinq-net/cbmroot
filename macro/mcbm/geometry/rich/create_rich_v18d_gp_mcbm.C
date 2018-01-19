@@ -23,13 +23,13 @@ void create_rich_v18d_gp_mcbm()
 
 	FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
 	FairGeoInterface* geoFace = geoLoad->getGeoInterface();
-	TString geoPath = gSystem->Getenv("VMCWORKDIR");
-	TString medFile = geoPath + "/geometry/media.geo";
-//	TString medFile = "/home/aghoehne/Documents/CbmRoot/trunkNew/geometry/media.geo";
+//	TString geoPath = gSystem->Getenv("VMCWORKDIR");
+//	TString medFile = geoPath + "/geometry/media.geo";
+	TString medFile = "/home/aghoehne/Documents/CbmRoot/trunkNew/geometry/media.geo";
 
 	geoFace->setMediaFile(medFile);
 	geoFace->readMedia();
-	TGeoManager* gGeoMan = gGeoManager;
+	gGeoMan = gGeoManager;
 
 	FairGeoMedia*   geoMedia = geoFace->getMedia();
 	FairGeoBuilder* geoBuild = geoLoad->getGeoBuilder();
@@ -162,7 +162,7 @@ void create_rich_v18d_gp_mcbm()
 	//	TGeoTranslation* trCave[4];
 	//	TGeoTranslation *trCave= new TGeoTranslation(-48., 0., 280.);   // miniCBM position
 
-        for (int i=0;i<4;i++)
+        for (i=0;i<4;i++)
 	{
 	  //          trCave[i]= new TGeoTranslation(xPos[i], yPos[i], zPos[i]);
           proto_rotation[i] = new TGeoRotation();
@@ -310,18 +310,8 @@ void create_rich_v18d_gp_mcbm()
 		cout << endl;
 	}	
 
-  gGeoMan->CheckOverlaps(0.000001);
-  gGeoMan->PrintOverlaps();
-
-  gGeoMan->CheckOverlaps(0.000001, "s");
-  gGeoMan->PrintOverlaps();
-
-  gGeoMan->Test();
-
-/*
 	gGeoMan->CheckOverlaps();
 	gGeoMan->PrintOverlaps();
-*/
 
 	//Draw
 	lenseCoatingCompVol->SetLineColor(kCyan);
