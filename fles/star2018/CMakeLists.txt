@@ -14,6 +14,9 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/cern2016/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/cern2016/param
 
+  ${CBMROOT_SOURCE_DIR}/fles/star2017
+  ${CBMROOT_SOURCE_DIR}/fles/star2017/unpacker
+
   ${CBMROOT_SOURCE_DIR}/fles/star2018
   ${CBMROOT_SOURCE_DIR}/fles/star2018/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/star2018/param
@@ -43,10 +46,18 @@ Link_Directories(
 )
 
 Set(SRCS
-#  unpacker/CbmTofStar2018Data.cxx
-#  unpacker/CbmMonitorTofStar2018.cxx
-#  unpacker/CbmTofStar2018EventBuilder.cxx
+  param/CbmTofStar2018Par.cxx
+  param/CbmTofStar2018ContFact.cxx
+
+  unpacker/CbmTofStarData2018.cxx
+  unpacker/CbmTofStarMonitor2018.cxx
+  unpacker/CbmTofStarMonitorShift2018.cxx
+  unpacker/CbmTofStarEventBuilder2018.cxx
   unpacker/CbmUnpackTofStar2018.cxx
+)
+
+Set(NO_DICT_SRCS
+  unpacker/rocMess_wGet4v2.cxx
 )
 
 If( STAR_SUBEVT_BUILDER )
@@ -80,7 +91,7 @@ EndIf()
 Set(LINKDEF CbmFlibStar2018LinkDef.h )
 Set(LIBRARY_NAME CbmFlibStar2018)
 Set(DEPENDENCIES
-    CbmFlibCern2016 CbmBase CbmBeamtimeBase fles_ipc Eve Base
+    CbmFlibStar2017 CbmFlibCern2016 CbmBase CbmBeamtimeBase fles_ipc Eve Base
 )
 
 GENERATE_LIBRARY()
