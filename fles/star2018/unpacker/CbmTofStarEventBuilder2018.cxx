@@ -57,7 +57,6 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fuGdpbNr(0),
     fuGet4Id(0),
     fuGet4Nr(0),
-    fHM(new CbmHistManager()),
     fvulCurrentEpoch(),
     fvbFirstEpochSeen(),
     fNofEpochs(0),
@@ -68,27 +67,9 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fcMsSizeAll(NULL),
     fEquipmentId(0),
     fdMsIndex(0.),
-    fdTShiftRef(0.),
-    fTofDigi(),
-    fDigi(NULL),
-    fBuffer(CbmTbDaqBuffer::Instance()),
     fUnpackPar(NULL),
     fuHistoryHistoSize( 1800 ),
     fuHistoryHistoSizeLong( 600 ),
-    fdRefTime(0.),
-    fdLastDigiTime(0.),
-    fdFirstDigiTimeDif(0.),
-    fdEvTime0(0.),
-    fhRawTDigEvT0( NULL ),
-    fhRawTDigRef0( NULL ),
-    fhRawTDigRef( NULL ),
-    fhRawTRefDig0( NULL ),
-    fhRawTRefDig1( NULL ),
-    fhRawDigiLastDigi( NULL ),
-    fhRawTotCh(),
-    fhChCount(),
-    fvbChanThere(),
-    fhChanCoinc(),
     fulGdpbTsMsb(),
     fulGdpbTsLsb(),
     fulStarTsMsb(),
@@ -140,21 +121,6 @@ Bool_t CbmTofStarEventBuilder2018::Init()
       LOG(FATAL) << "No FairRootManager instance" << FairLogger::endl;
    }
 
-   fTofDigi= new TClonesArray("CbmTofDigiExp", 10);
-   if( NULL == fTofDigi )
-   {
-      LOG(FATAL) << "No Digi TClonesarray " << FairLogger::endl;
-   }
-   ioman->Register("CbmTofDigi", "Tof raw Digi", fTofDigi, kTRUE);
-
-/*
-   CbmTbEvent * fEventHeader = (CbmTbEvent *)ioman->GetObject("EventHeader.");
-   if( NULL == fEventHeade r)
-   {
-      LOG(FATAL) << "No EventHeader TClonesarray " << FairLogger::endl;
-   }
-*/
-
    fUnpackPar = (CbmTofStar2018Par*)(FairRun::Instance());
 
    return kTRUE;
@@ -178,13 +144,11 @@ Bool_t CbmTofStarEventBuilder2018::InitContainers()
 
    fvulCurrentEpoch.resize( fuNrOfGdpbs * fuNrOfGet4PerGdpb );
    fvbFirstEpochSeen.resize( fuNrOfGdpbs * fuNrOfGet4PerGdpb );
-   fvbChanThere.resize( fUnpackPar->GetNumberOfChannels(), kFALSE );
    for( UInt_t i = 0; i < fuNrOfGdpbs; ++i )
    {
       for( UInt_t j = 0; j < fuNrOfGet4PerGdpb; ++j )
       {
          fvulCurrentEpoch[GetArrayIndex(i, j)] = 0;
-         fvbFirstEpochSeen[GetArrayIndex(i, j)] = kFALSE;
       } // for( UInt_t j = 0; j < fuNrOfGet4PerGdpb; ++j )
    } // for( UInt_t i = 0; i < fuNrOfGdpbs; ++i )
 
@@ -346,67 +310,8 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
    TString name { "" };
    TString title { "" };
 
-   fhRawTDigEvT0 = new TH1F( Form("Raw_TDig-EvT0"),
-                             Form("Raw digi time difference to 1st digi ; time [ns]; cts"),
-                             100, 0, 50.);
-   fHM->Add( Form("Raw_TDig-EvT0"), fhRawTDigEvT0);
-
-   fhRawTDigRef0 = new TH1F( Form("Raw_TDig-Ref0"),
-                             Form("Raw digi time difference to Ref ; time [ns]; cts"),
-                             5000, 0, 500000);
-   fHM->Add( Form("Raw_TDig-Ref0"), fhRawTDigRef0);
-
-   fhRawTDigRef = new TH1F( Form("Raw_TDig-Ref"),
-                            Form("Raw digi time difference to Ref ; time [ns]; cts"),
-                            5000, 0, 50000);
-   fHM->Add( Form("Raw_TDig-Ref"), fhRawTDigRef);
-
-   fhRawTRefDig0 = new TH1F( Form("Raw_TRef-Dig0"),
-                             Form("Raw Ref time difference to last digi  ; time [ns]; cts"),
-                             9999, -500000000, 500000000);
-   fHM->Add( Form("Raw_TRef-Dig0"), fhRawTRefDig0);
-
-   fhRawTRefDig1 = new TH1F( Form("Raw_TRef-Dig1"),
-                             Form("Raw Ref time difference to last digi  ; time [ns]; cts"),
-                             9999, -5000000, 5000000);
-   fHM->Add( Form("Raw_TRef-Dig1"), fhRawTRefDig1);
-
-   fhRawDigiLastDigi = new TH1F( Form("Raw_Digi-LastDigi"),
-                                 Form("Raw Digi time difference to last digi  ; time [ns]; cts"),
-                                 9999, -5000000, 5000000);
-   fHM->Add( Form("Raw_Digi-LastDigi"), fhRawDigiLastDigi);
-
-   fhRawTotCh.resize( fuNrOfGdpbs );
-   fhChCount.resize( fuNrOfGdpbs );
-   fhChanCoinc.resize( fuNrOfGdpbs * fuNrOfFebsPerGdpb / 2 );
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
    {
-      fhRawTotCh[ uGdpb ] = new TH2F( Form("Raw_Tot_gDPB_%02u", uGdpb),
-                                      Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb),
-                                      fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb,
-                                      256, 0., 256. );
-      fHM->Add( Form("Raw_Tot_gDPB_%02u", uGdpb), fhRawTotCh[ uGdpb ]);
-
-      fhChCount[ uGdpb ] = new TH1I( Form("ChCount_gDPB_%02u", uGdpb),
-                                     Form("Channel counts gDPB %02u; channel; Hits", uGdpb),
-                                     fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb );
-      fHM->Add( Form("ChCount_gDPB_%02u", uGdpb), fhChCount[ uGdpb ]);
-/*
-      for( UInt_t uLeftFeb = uGdpb*fuNrOfFebsPerGdpb / 2;
-           uLeftFeb < (uGdpb + 1 )*fuNrOfFebsPerGdpb / 2;
-           ++uLeftFeb )
-      {
-         fhChanCoinc[ uLeftFeb ] = new TH2F( Form("fhChanCoinc_%02u", uLeftFeb),
-                                      Form("Channels Coincidence %02; Left; Right", uLeftFeb),
-                                      fuNrOfChannelsPerFeet, 0., fuNrOfChannelsPerFeet,
-                                      fuNrOfChannelsPerFeet, 0., fuNrOfChannelsPerFeet );
-      } // for( UInt_t uLeftFeb = 0; uLeftFeb < fuNrOfFebsPerGdpb / 2; uLeftFeb ++ )
-*/
-         fhChanCoinc[ uGdpb ] = new TH2F( Form("fhChanCoinc_%02u", uGdpb),
-                                      Form("Channels Coincidence %02u; Left; Right", uGdpb),
-                                      fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb,
-                                      fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb );
-
       /// Event building
       name = Form("StarHitToTrigAll_gDPB_%02u", uGdpb);
       title = Form("Time to trigger for all hits gDPB %02u; t(Hit) - t(Trigg) [ns]", uGdpb);
@@ -414,7 +319,6 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
          new TH1I( name.Data(), title.Data(),
                    5000, -100000.0, 50000.0) ); // TODO make offset parameter
 //                   4000, -800000.0, 0.0) ); // TODO make offset parameter
-      fHM->Add( name.Data(), fhStarHitToTrigAll_gDPB[ uGdpb ] );
 #ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhStarHitToTrigAll_gDPB[ uGdpb ] );
@@ -428,7 +332,6 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       fhStarHitToTrigWin_gDPB.push_back(
          new TH1I( name.Data(), title.Data(),
                    uNbBins, dLowBin, dHighBin) ); // TODO make size parameter
-      fHM->Add( name.Data(), fhStarHitToTrigWin_gDPB[ uGdpb ] );
 #ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhStarHitToTrigWin_gDPB[ uGdpb ] );
@@ -442,7 +345,6 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       fhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 2, "B"); // gDPB TS low, STAR TS high
       fhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 3, "C"); // STAR TS mid
       fhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 4, "D"); // STAR TS low, token, CMDs
-      fHM->Add(name.Data(), fhTokenMsgType[ uGdpb ] );
 #ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhTokenMsgType[ uGdpb ] );
@@ -451,7 +353,6 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       name = Form( "hTriggerRate_gDPB_%02u", uGdpb);
       title = Form( "STAR trigger signals per second gDPB %02u; Time[s] ; Counts", uGdpb);
       fhTriggerRate[ uGdpb ] =  new TH1F(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize);
-      fHM->Add(name.Data(), fhTriggerRate[ uGdpb ] );
 #ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhTriggerRate[ uGdpb ] );
@@ -492,7 +393,6 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(14, "0xD: 13"); // To be filled at STAR
       fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(15, "0xE: 14"); // To be filled at STAR
       fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(16, "0xF: 15"); // To be filled at STAR
-      fHM->Add(name.Data(), fhCmdDaqVsTrig[ uGdpb ] );
 #ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhCmdDaqVsTrig[ uGdpb ] );
@@ -501,7 +401,6 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       name = Form( "hStarTokenEvo_gDPB_%02u", uGdpb);
       title = Form( "STAR token value VS time gDPB %02u; Time in Run [s] ; STAR Token; Counts", uGdpb);
       fhStarTokenEvo[ uGdpb ] =  new TH2I(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize, 410, 0, 4100 ); // 4096
-      fHM->Add(name.Data(), fhStarTokenEvo[ uGdpb ]);
 #ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhStarTokenEvo[ uGdpb ] );
@@ -516,7 +415,6 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
          fhStarEventSize_gDPB.push_back(
             new TH1I( name.Data(), title.Data(),
                       uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
-         fHM->Add( name.Data(), fhStarEventSize_gDPB[ uGdpb ] );
 #ifdef USE_HTTP_SERVER
          if (server)
             server->Register("/StarRaw", fhStarEventSize_gDPB[ uGdpb ] );
@@ -530,7 +428,6 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
             new TH2I( name.Data(), title.Data(),
                       fuHistoryHistoSize, 0.0, fuHistoryHistoSize,
                       uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
-         fHM->Add( name.Data(), fhStarEventSizeTime_gDPB[ uGdpb ] );
 #ifdef USE_HTTP_SERVER
          if (server)
             server->Register("/StarRaw", fhStarEventSizeTime_gDPB[ uGdpb ] );
@@ -544,18 +441,12 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
             new TH2I( name.Data(), title.Data(),
                       fuHistoryHistoSizeLong, 0.0, fuHistoryHistoSizeLong,
                       uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) ); // TODO make size parameter
-         fHM->Add( name.Data(), fhStarEventSizeTimeLong_gDPB[ uGdpb ] );
 #ifdef USE_HTTP_SERVER
          if (server)
             server->Register("/StarRaw", fhStarEventSizeTimeLong_gDPB[ uGdpb ] );
 #endif
       } // if( kFALSE == fbEventBuilding )
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
-
-//   fhDetChanCoinc = new TH2F( "fhDetChanCoinc",
-//                              "Det Channels Coincidence; Left; Right",
-//                              32, 0., 32,
-//                              32, 0., 32 );
 
    /** Create summary Canvases for STAR 2017 **/
    Double_t w = 10;
@@ -622,7 +513,7 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
       fulNbBuiltSubEventLastPrintout = fulNbBuiltSubEvent;
       fulNbStarSubEventLastPrintout  = fulNbStarSubEvent;
    } // if( 0 == fTimeLastPrintoutNbStarEvent.time_since_epoch().count() )
-   else if( 300 < elapsed_seconds.count() )
+   else if( 30 < elapsed_seconds.count() )
    {
       std::time_t cTimeCurrent = std::chrono::system_clock::to_time_t( timeCurrent );
       char tempBuff[80];
@@ -643,6 +534,14 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
                << FairLogger::endl;
       fTimeLastPrintoutNbStarEvent = timeCurrent;
       fulNbStarSubEventLastPrintout   = fulNbStarSubEvent;
+
+      if( kTRUE == fbEventBuilding )
+      {
+      } // if( kTRUE == fbEventBuilding )
+         else LOG(INFO) << "CbmTofStarEventBuilder2018::DoUnpack => " << tempBuff
+                        << " Buffers size: messages " << std::setw(9) << fvmCurrentLinkBuffer.size()
+                        << " triggers " << std::setw(9) << fvtCurrentLinkBuffer.size()
+                        << FairLogger::endl;
 
       SaveAllHistos( "data/histos_test.root" );
    } // else if( 300 < elapsed_seconds.count() )
@@ -708,8 +607,16 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
          iMessageType = mess.getMessageType();
          fMsgCounter[ iMessageType ]++;
 
-         fuGdpbId = mess.getRocNumber();
-         fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
+         if( 0 == uIdx )
+         {
+            fuGdpbId = mess.getRocNumber();
+
+            /// if unmapped gDPB, just ignore this block
+            if( fGdpbIdIndexMap.end() == fGdpbIdIndexMap.find( fuGdpbId ) )
+               break;
+
+            fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
+         } // if( 0 = uIdx )
 
          fuGet4Id = mess.getGdpbGenChipId();
          fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
@@ -742,16 +649,6 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
             {
                if( get4v2x::kuChipIdMergedEpoch == fuGet4Id )
                {
-
-                  for( UInt_t uChan = fuGdpbNr * fuNrOfChannelsPerGdpb;
-                       uChan < (fuGdpbNr + 1 ) * fuNrOfChannelsPerGdpb;
-                       ++uChan )
-                     fvbChanThere[ uChan ] = kFALSE;
-/*
-                  if( 0 == fuGdpbNr )
-                     for( UInt_t uDetChan = 0; uDetChan < 64; uDetChan ++)
-                        fbDetChanThere[uDetChan] = kFALSE;
-*/
                   /// Propagate for all ASICs corresponding to this merged epoch
                   for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGet4Index ++ )
                   {
@@ -772,35 +669,6 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
                      fdCurrentMsStartTime = fullMess.GetFullTimeNs();
                      fdCurrentMsEndTime   = fdCurrentMsStartTime + fdMsSizeInNs;
                   } // if( 0 == uIdx && kFALSE == fbEventBuilding )
-/*
-                  for( UInt_t uChanA = fuGdpbNr * fuNrOfChannelsPerGdpb;
-                       uChanA < (fuGdpbNr + 1 ) * fuNrOfChannelsPerGdpb;
-                       ++uChanA )
-                  {
-                     if( kTRUE == fvbChanThere[ uChanA ] )
-                     {
-                        for( UInt_t uChanB = fuGdpbNr * fuNrOfChannelsPerGdpb;
-                             uChanB < (fuGdpbNr + 1 ) * fuNrOfChannelsPerGdpb;
-                             ++uChanB )
-                        {
-                           if( kTRUE == fvbChanThere[ uChanB ] )
-                           {
-                              fhChanCoinc[ fuGdpbNr  ]->Fill( uChanA - fuGdpbNr * fuNrOfChannelsPerGdpb,
-                                                              uChanB - fuGdpbNr * fuNrOfChannelsPerGdpb );
-                           } // if uChanB
-                        } // for uChanB
-                     } // if uChanA
-                  } // for uChanA
-
-                  if( 0 == fuGdpbNr )
-                  {
-                     for( UInt_t uDetChanLeft = 0; uDetChanLeft < 32; uDetChanLeft ++)
-                        if( kTRUE == fbDetChanThere[ uDetChanLeft ] )
-                           for( UInt_t uDetChanRight = 0; uDetChanRight < 32; uDetChanRight ++)
-                              if( kTRUE == fbDetChanThere[ 32 + uDetChanRight ] )
-                                 fhDetChanCoinc->Fill( uDetChanLeft, uDetChanRight );
-                  } // if( 0 == fuGdpbNr )
-*/
                } // if this epoch message is a merged one valiud for all chips
                   else
                   {
@@ -823,8 +691,7 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
             } // case gdpb::MSG_GET4_SLC:
             case gdpb::MSG_GET4_SYS:
             {
-               if(100 > iMess++)
-                  PrintSysInfo(mess);
+               PrintSysInfo(mess);
                break;
             } // case gdpb::MSG_GET4_SYS:
             case gdpb::MSG_STAR_TRI:
@@ -854,6 +721,14 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
          /// and build sub-events in it if that is the case
          if( m < fuTotalMsNb - fuOverlapMsNb )
             BuildStarEventsSingleLink();
+            else
+            {
+               /// clear message buffer
+               fvmCurrentLinkBuffer.clear();
+
+               /// Clear trigger buffer
+               fvtCurrentLinkBuffer.clear();
+            } // if( m < fuTotalMsNb - fuOverlapMsNb )
       } // if( kFALSE == fbEventBuilding )
 
    } // for (size_t m = 0; m < numCompMsInTs; ++m)
@@ -912,38 +787,6 @@ void CbmTofStarEventBuilder2018::FillHitInfo( gdpb::Message mess )
          return;
       } // if( fUnpackPar->GetNumberOfChannels() < uChanUId )
 
-      fvbChanThere[ uChanInSyst ] = kTRUE;
-
-      UInt_t uChanUId = fUnpackPar->GetChannelToDetUIdMap( uChanInSyst );
-      if( 0 == uChanUId )
-         return;   // Hit not mapped to digi
-
-/*
-      if( (uChanUId & DetMask) == 0x00001006 )
-      {
-         UInt_t uDetChan = (uChanUId & 0xFF000000) >> 24;
-         if( (uChanUId & 0x00800000) == 0x00800000 )
-            uDetChan += 32;
-
-         fbDetChanThere[ uDetChan ] = kTRUE;
-      } // if( (uChanUId & DetMask) == 0x00001006 )
-*/
-
-      fhRawDigiLastDigi->Fill( dHitTime - fdLastDigiTime );
-      fdLastDigiTime = dHitTime;
-
-      if( (uChanUId & DetMask) == 0x00001006 )
-         dHitTime += fdTShiftRef;
-
-      LOG(DEBUG) << Form("Insert 0x%08x digi with time ", uChanUId ) << dHitTime << Form(", Tot %4.0f",dHitTot)
-                 << " into buffer with " << fBuffer->GetSize() << " data from "
-                 << Form("%11.1f to %11.1f ", fBuffer->GetTimeFirst(), fBuffer->GetTimeLast())
-                 << " at epoch " << ulCurEpochGdpbGet4
-                 << FairLogger::endl;
-      fDigi = new CbmTofDigiExp(uChanUId, dHitTime, dHitTot);
-
-      fBuffer->InsertData(fDigi);
-
       /// Histograms filling
          /// In Run rate evolution
       if (fdStartTime < 0)
@@ -960,9 +803,6 @@ void CbmTofStarEventBuilder2018::FillHitInfo( gdpb::Message mess )
       {
          fdStartTimeLong = dHitTime;
       } // if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) )
-
-      fhRawTotCh[ fuGdpbNr ]->Fill( uChanInGdpb, dHitTot);
-      fhChCount[ fuGdpbNr ] ->Fill( uChanInGdpb );
 
       gdpb::FullMessage fullMess( mess, ulCurEpochGdpbGet4 );
       if( fbEventBuilding )
@@ -1062,38 +902,44 @@ void CbmTofStarEventBuilder2018::PrintGenInfo(gdpb::Message mess)
 
 void CbmTofStarEventBuilder2018::PrintSysInfo(gdpb::Message mess)
 {
-   LOG(INFO) << "GET4 System message,       epoch " << (fvulCurrentEpoch[ fuGet4Nr])
-                << ", time " << std::setprecision(9) << std::fixed
-                << Double_t(fulCurrentEpochTime) * 1.e-9 << " s "
-                << " for board ID " << std::hex << std::setw(4) << fuGdpbId << std::dec
-                << FairLogger::endl;
+/*
+      LOG(INFO) << "GET4 System message,       epoch " << (fvulCurrentEpoch[ fuGet4Nr])
+                   << ", time " << std::setprecision(9) << std::fixed
+                   << Double_t(fulCurrentEpochTime) * 1.e-9 << " s "
+                   << " for board ID " << std::hex << std::setw(4) << fuGdpbId << std::dec
+                   << FairLogger::endl;
+*/
 
    switch( mess.getGdpbSysSubType() )
    {
       case gdpb::SYSMSG_GET4_EVENT:
       {
-         LOG(INFO) << " +++++++ > Chip = " << std::setw(2) << mess.getGdpbGenChipId()
-                   << ", Chan = " << std::setw(1) << mess.getGdpbSysErrChanId()
-                   << ", Edge = " << std::setw(1) << mess.getGdpbSysErrEdge()
-                   << ", Empt = " << std::setw(1) << mess.getGdpbSysErrUnused()
-                   << ", Data = " << std::hex << std::setw(2) << mess.getGdpbSysErrData() << std::dec
-                   << " -- GET4 V1 Error Event"
-                   << FairLogger::endl;
-
+/*
+            LOG(INFO) << " +++++++ > Chip = " << std::setw(2) << mess.getGdpbGenChipId()
+                      << ", Chan = " << std::setw(1) << mess.getGdpbSysErrChanId()
+                      << ", Edge = " << std::setw(1) << mess.getGdpbSysErrEdge()
+                      << ", Empt = " << std::setw(1) << mess.getGdpbSysErrUnused()
+                      << ", Data = " << std::hex << std::setw(2) << mess.getGdpbSysErrData() << std::dec
+                      << " -- GET4 V1 Error Event"
+                      << FairLogger::endl;
+*/
          /// TODO FIXME: Add the error messages to the buffer for inclusion in the STAR event
          ///             NEEDS the proper "<" operator in FullMessage or Message to allow time sorting
          break;
       } //
       case gdpb::SYSMSG_CLOSYSYNC_ERROR:
-         LOG(INFO) << "Closy synchronization error" << FairLogger::endl;
+         if(100 > iMess++)
+            LOG(INFO) << "Closy synchronization error" << FairLogger::endl;
          break;
       case gdpb::SYSMSG_TS156_SYNC:
-         LOG(INFO) << "156.25MHz timestamp reset" << FairLogger::endl;
+         if(100 > iMess++)
+            LOG(INFO) << "156.25MHz timestamp reset" << FairLogger::endl;
          break;
       case gdpb::SYSMSG_GDPB_UNKWN:
-         LOG(INFO) << "Unknown GET4 message, data: " << std::hex << std::setw(8)
-                   << mess.getGdpbSysUnkwData() << std::dec
-                   << FairLogger::endl;
+         if(100 > iMess++)
+            LOG(INFO) << "Unknown GET4 message, data: " << std::hex << std::setw(8)
+                      << mess.getGdpbSysUnkwData() << std::dec
+                      << FairLogger::endl;
          break;
    } // switch( getGdpbSysSubType() )
 }
@@ -1143,7 +989,7 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
                          << FairLogger::endl;
             return;
          } // if exactly same message repeated
-/*
+
          if( (uNewToken != fuStarTokenLast[fuGdpbNr] + 1) &&
              0 < fulGdpbTsFullLast[fuGdpbNr] && 0 < fulStarTsFullLast[fuGdpbNr] &&
              ( 4095 != fuStarTokenLast[fuGdpbNr] || 1 != uNewToken)  )
@@ -1155,7 +1001,7 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
                          << Form("old = %2u vs new = %2u ", fuStarDaqCmdLast[fuGdpbNr],  uNewDaqCmd)
                          << Form("old = %2u vs new = %2u ", fuStarTrigCmdLast[fuGdpbNr], uNewTrigCmd)
                          << FairLogger::endl;
-*/
+
 
          // STAR TS counter reset detection
          if( ulNewStarTsFull < fulStarTsFullLast[fuGdpbNr] )
@@ -1187,28 +1033,6 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
             else fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * 6.25;
          fhCmdDaqVsTrig[fuGdpbNr]->Fill( fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
 
-         /// Generate Fake digi for NH analysis framework -----------///
-         Double_t dTot = 1.;
-         Double_t dTime = fulGdpbTsFullLast[fuGdpbNr] * 6.25;
-         if( 0. == fdFirstDigiTimeDif && 0. != fdLastDigiTime )
-         {
-            fdFirstDigiTimeDif = dTime - fdLastDigiTime;
-            LOG(INFO) << "Default fake digi time shift initialized to " << fdFirstDigiTimeDif
-                      <<FairLogger::endl;
-         } // if( 0. == fdFirstDigiTimeDif && 0. != fdLastDigiTime )
-
-         dTime -= fdFirstDigiTimeDif;
-         dTime += fdTShiftRef;
-
-         LOG(DEBUG) << "Insert fake digi with time " << dTime << ", Tot " << dTot
-                    << FairLogger::endl;
-         fhRawTRefDig0->Fill( dTime - fdLastDigiTime);
-         fhRawTRefDig1->Fill( dTime - fdLastDigiTime);
-
-         fDigi = new CbmTofDigiExp(0x00005006, dTime, dTot); // fake start counter signal
-         fBuffer->InsertData(fDigi);
-         ///---------------------------------------------------------///
-
          /// Generate Trigger object and store it for event building ///
          CbmTofStarTrigger newTrig( fulGdpbTsFullLast[fuGdpbNr], fulStarTsFullLast[fuGdpbNr], fuStarTokenLast[fuGdpbNr],
                                     fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
@@ -1227,8 +1051,10 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
 
 void CbmTofStarEventBuilder2018::Reset()
 {
-  //  fFiberHodoRaw->Clear();
-  fTofDigi->Clear();
+}
+
+void CbmTofStarEventBuilder2018::FillOutput(CbmDigi* /*digi*/)
+{
 }
 
 void CbmTofStarEventBuilder2018::Finish()
@@ -1284,22 +1110,13 @@ void CbmTofStarEventBuilder2018::SaveAllHistos( TString sFileName )
 
    gDirectory->mkdir("Tof_Raw_gDPB");
    gDirectory->cd("Tof_Raw_gDPB");
-   fHM->H1( Form("Raw_TDig-Ref0") )->Write();
-   fHM->H1( Form("Raw_TDig-Ref") )->Write();
-   fHM->H1( Form("Raw_TRef-Dig0") )->Write();
-   fHM->H1( Form("Raw_TRef-Dig1") )->Write();
-   fHM->H1( Form("Raw_Digi-LastDigi") )->Write();
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
    {
-      fHM->H2( Form("Raw_Tot_gDPB_%02u", uGdpb) )->Write();
-      fHM->H1( Form("ChCount_gDPB_%02u", uGdpb) )->Write();
-/*
-      for( UInt_t uLeftFeb = uGdpb*fuNrOfFebsPerGdpb / 2;
-           uLeftFeb < (uGdpb + 1 )*fuNrOfFebsPerGdpb / 2;
-           ++uLeftFeb )
-         fhChanCoinc[ uLeftFeb ]->Write();
-*/
-      fhChanCoinc[ uGdpb ]->Write();
+      /// Token detection
+      fhTokenMsgType[ uGdpb ]->Write();
+      fhTriggerRate[ uGdpb ]->Write();
+      fhCmdDaqVsTrig[ uGdpb ]->Write();
+      fhStarTokenEvo[ uGdpb ]->Write();
 
       /// Event building
       fhStarHitToTrigAll_gDPB[ uGdpb ]->Write();
@@ -1307,7 +1124,6 @@ void CbmTofStarEventBuilder2018::SaveAllHistos( TString sFileName )
       fhStarEventSize_gDPB[ uGdpb ]->Write();
       fhStarEventSizeTime_gDPB[ uGdpb ]->Write();
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
-//   fhDetChanCoinc->Write();
    gDirectory->cd("..");
 
    if( "" != sFileName )
@@ -1329,22 +1145,13 @@ void CbmTofStarEventBuilder2018::ResetAllHistos()
 {
    LOG(INFO) << "Reseting all Event building histograms." << FairLogger::endl;
 
-   fHM->H1( Form("Raw_TDig-Ref0") )->Reset();
-   fHM->H1( Form("Raw_TDig-Ref") )->Reset();
-   fHM->H1( Form("Raw_TRef-Dig0") )->Reset();
-   fHM->H1( Form("Raw_TRef-Dig1") )->Reset();
-   fHM->H1( Form("Raw_Digi-LastDigi") )->Reset();
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
    {
-      fHM->H2( Form("Raw_Tot_gDPB_%02u", uGdpb) )->Reset();
-      fHM->H1( Form("ChCount_gDPB_%02u", uGdpb) )->Reset();
-/*
-      for( UInt_t uLeftFeb = uGdpb*fuNrOfFebsPerGdpb / 2;
-           uLeftFeb < (uGdpb + 1 )*fuNrOfFebsPerGdpb / 2;
-           ++uLeftFeb )
-         fhChanCoinc[ uLeftFeb ]->Reset();
-*/
-      fhChanCoinc[ uGdpb ]->Reset();
+      /// Token detection
+      fhTokenMsgType[ uGdpb ]->Reset();
+      fhTriggerRate[ uGdpb ]->Reset();
+      fhCmdDaqVsTrig[ uGdpb ]->Reset();
+      fhStarTokenEvo[ uGdpb ]->Reset();
 
       /// Event building
       fhStarHitToTrigAll_gDPB[ uGdpb ]->Reset();
@@ -1352,38 +1159,10 @@ void CbmTofStarEventBuilder2018::ResetAllHistos()
       fhStarEventSize_gDPB[ uGdpb ]->Reset();
       fhStarEventSizeTime_gDPB[ uGdpb ]->Reset();
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
-//   fhDetChanCoinc->Reset();
 
   fdStartTime = -1;
   fdStartTimeLong = -1;
   fdStartTimeMsSz = -1;
-}
-
-void CbmTofStarEventBuilder2018::FillOutput(CbmDigi* digi)
-{
-   if( 100 > iMess++ )
-      LOG(DEBUG) << "Fill digi TClonesarray with "
-                 << Form("0x%08x", digi->GetAddress())
-                 << " at " << static_cast<Int_t>( fTofDigi->GetEntriesFast() )
-                 << FairLogger::endl;
-
-
-   new( (*fTofDigi)[ fTofDigi->GetEntriesFast() ] )
-      CbmTofDigiExp( *( dynamic_cast<CbmTofDigiExp*>(digi) ) );
-   //CbmTofDigiExp((CbmTofDigiExp *)digi);
-
-   if( 0 == fTofDigi->GetEntriesFast())
-      fdEvTime0=digi->GetTime();
-      else fhRawTDigEvT0->Fill( digi->GetTime() - fdEvTime0 );
-
-   if( (digi->GetAddress() & DetMask) != 0x00001006 )
-   {
-      fhRawTDigRef0->Fill( digi->GetTime() - fdRefTime);
-      fhRawTDigRef->Fill( digi->GetTime() - fdRefTime);
-   } // if( (digi->GetAddress() & DetMask) != 0x00001006 )
-      else  fdRefTime = digi->GetTime();
-
-   digi->Delete();
 }
 
 void CbmTofStarEventBuilder2018::BuildStarEventsSingleLink()
@@ -1487,8 +1266,16 @@ void CbmTofStarEventBuilder2018::BuildStarEventsSingleLink()
       fStarSubEvent.ClearSubEvent();
    } // for( UInt_t uTriggIdx = 0; uTriggIdx < fvtCurrentLinkBuffer.size(); uTriggIdx++ )
 
+   /// catch case of MS without triggers
+   if( 0 == fvtCurrentLinkBuffer.size() )
+      itFirstMessageNextEvent   = fvmCurrentLinkBuffer.end();
+
    /// Remove message until the first which could fit in an event in next MS
    fvmCurrentLinkBuffer.erase( fvmCurrentLinkBuffer.begin(), itFirstMessageNextEvent);
+
+   /// Clear trigger buffer
+   fvtCurrentLinkBuffer.clear();
+
 }
 void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
 {

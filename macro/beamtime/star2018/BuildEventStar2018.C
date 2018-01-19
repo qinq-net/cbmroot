@@ -13,7 +13,7 @@ FairRunOnline *run = NULL;
 void BuildEventStar2018( TString inFile = "",
                          Bool_t bEventBuildingMode = kFALSE, Bool_t bTimeSort = kTRUE,
                          Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8081,
-                         size_t uAcceptBoundaryPct = 100, Double_t dTShiftRef = 0.0  )
+                         size_t uAcceptBoundaryPct = 100  )
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
   TString inDir  = srcDir + "/input/";
@@ -58,14 +58,13 @@ void BuildEventStar2018( TString inFile = "",
   // eTOF event builder
   CbmTofStarEventBuilder2018* etofEventBuilder = new CbmTofStarEventBuilder2018();
    etofEventBuilder->SetMsLimitLevel( uAcceptBoundaryPct );
-   etofEventBuilder->SetTShiftRef( dTShiftRef );
    etofEventBuilder->SetEventBuildingMode( bEventBuildingMode );
    etofEventBuilder->SetTimeSortOutput( bTimeSort );
    etofEventBuilder->SetHistoryHistoSize( 600. );
    etofEventBuilder->SetHistoryHistoSizeLong( 600. );
 
   // --- Source task
-  CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
+  CbmTofStar2018Source* source = new CbmTofStar2018Source();
   if( "" != inFile )
       source->SetFileName(inFile);
       else

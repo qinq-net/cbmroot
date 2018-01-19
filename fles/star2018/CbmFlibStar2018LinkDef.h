@@ -4,6 +4,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class CbmTofStar2018Source;
+
 #pragma link C++ class CbmTofStar2018Par;
 #pragma link C++ class CbmTofStar2018ContFact;
 

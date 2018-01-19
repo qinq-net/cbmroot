@@ -1,6 +1,6 @@
 [CbmTofStar2018Par]
 //----------------------------------------------------------------------------
-NrOfRocs: Int_t 5
+NrOfRocs: Int_t 1
 RocIdArray: Int_t \
 0x18f6 0x0b59 0x1898 0x5f64 0x18e6
 NrOfFebsPerGdpb: Int_t 4
@@ -90,10 +90,11 @@ ChannelToDetUIdMap: Int_t \
 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
 NbMsTot: Int_t 11
 NbMsOverlap: Int_t 1
-SizeMsInNs: Double_t 102400.0
+//SizeMsInNs: Double_t 102400.0
+SizeMsInNs: Double_t 1638400
 StarTriggerDeadtime:  Double_t \
  1000.0  1000.0  1000.0  1000.0  1000.0
 StarTriggerDelay: Double_t \
-20000.0 20000.0 20000.0 20000.0 20000.0
+ 2000.0  2000.0  2000.0  2000.0  2000.0
 StarTriggerWinSize: Double_t \
- 1000.0  1000.0  1000.0  1000.0  1000.0
+ 2000.0  2000.0  2000.0  2000.0  2000.0

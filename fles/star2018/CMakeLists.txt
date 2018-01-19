@@ -46,9 +46,12 @@ Link_Directories(
 )
 
 Set(SRCS
+  CbmTofStar2018Source.cxx
+
   param/CbmTofStar2018Par.cxx
   param/CbmTofStar2018ContFact.cxx
 
+  unpacker/rocMess_wGet4v2.cxx
   unpacker/CbmTofStarData2018.cxx
   unpacker/CbmTofStarMonitor2018.cxx
   unpacker/CbmTofStarMonitorShift2018.cxx
@@ -56,9 +59,9 @@ Set(SRCS
   unpacker/CbmUnpackTofStar2018.cxx
 )
 
-Set(NO_DICT_SRCS
-  unpacker/rocMess_wGet4v2.cxx
-)
+#Set(NO_DICT_SRCS
+#  unpacker/rocMess_wGet4v2.cxx
+#)
 
 If( STAR_SUBEVT_BUILDER )
   ADD_DEFINITIONS(-DSTAR_SUBEVT_BUILDER)

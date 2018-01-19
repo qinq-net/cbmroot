@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <iostream>
 
-#ifndef __CINT__
+//#ifndef __CINT__
 namespace get4v2x {
    // Size of one clock cycle (=1 coarse bin)
    const double   kdClockCycleSize    = 6250.0; //[ps]
@@ -38,7 +38,7 @@ namespace get4v2x {
 
    const uint32_t kuChipIdMergedEpoch = 63; // 0x3F
 }
-#endif
+//#endif
 
 namespace gdpb {
 

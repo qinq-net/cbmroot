@@ -10,8 +10,8 @@
 
 //#ifndef __CINT__
   #include "rocMess_wGet4v2.h"
-  #include "CbmTofStarData.h"
 //#endif
+#include "CbmTofStarData.h"
 
 #include "Rtypes.h"
 
@@ -95,9 +95,9 @@ class CbmTofStarSubevent2018
       inline void SetEndBorderEventFlag(  Bool_t bFlagState = kTRUE ){
                         bFlagState ? (fulEventStatusFlags |= kulFlagEndBorderEvt) :
                                      (fulEventStatusFlags &= ~(kulFlagEndBorderEvt) ); }
-#ifndef __CINT__
+//#ifndef __CINT__
       inline void AddMsg( gdpb::FullMessage & msgIn){ fvMsgBuffer.push_back( msgIn ); }
-#endif
+//#endif
 
       // Accessors
       inline CbmTofStarTrigger GetTrigger() const { return fTrigger;}
@@ -106,13 +106,13 @@ class CbmTofStarSubevent2018
       inline Bool_t            GetEmptyEventFlag()       const { return 0 < (fulEventStatusFlags & kulFlagEmptyEvt); }
       inline Bool_t            SetStartBorderEventFlag() const { return 0 < (fulEventStatusFlags & kulFlagStartBorderEvt); }
       inline Bool_t            SetEndBorderEventFlag()   const { return 0 < (fulEventStatusFlags & kulFlagEndBorderEvt); }
-#ifndef __CINT__
+//#ifndef __CINT__
       inline gdpb::Message    GetMsg( UInt_t uMsgIdx ) const;
-#endif
+//#endif
       inline UInt_t            GetMsgBuffSize() const { return fvMsgBuffer.size();}
-#ifndef __CINT__
+//#ifndef __CINT__
       inline static uint32_t   GetMaxOutputSize() { return kuMaxOutputSize;}
-#endif
+//#endif
 
       // Content clearing
       void   ClearSubEvent();
@@ -127,7 +127,7 @@ class CbmTofStarSubevent2018
       Bool_t LoadInput( void * pBuff, Int_t iInputSizeBytes );
 
    private:
-#ifndef __CINT__
+//#ifndef __CINT__
       static const uint32_t         kuMaxOutputSize       = 131072; // 2^17
       static const uint32_t         kuMaxNbMsgs           =   8190; // 4 * 64b in header => floor( (2^17 / 8 ) - 4) / 2
       static const uint64_t         kulFlagBadEvt         = 0x1 << 0;
@@ -137,16 +137,16 @@ class CbmTofStarSubevent2018
       static const uint64_t         kulFlagEndBorderEvt   = 0x1 << 4;
       static const uint64_t         kulSourceIdOffset     =       16;
       static const uint64_t         kulSourceIdMask       =   0xFFFF;
-#endif
+//#endif
 
       Bool_t                        fbTriggerSet;
       CbmTofStarTrigger             fTrigger;
       UShort_t                      fusSourceId;
       ULong64_t                     fulEventStatusFlags;
-#ifndef __CINT__
+//#ifndef __CINT__
       std::vector< gdpb::FullMessage > fvMsgBuffer;
       ULong64_t                     fpulBuff[kuMaxOutputSize];
-#endif
+//#endif
 
 
       CbmTofStarSubevent2018(const CbmTofStarSubevent2018&);
