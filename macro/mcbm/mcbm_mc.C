@@ -28,12 +28,12 @@ void mcbm_mc(Int_t nEvents = 2,
   //          Adjust this part according to your requirements
 
 // available input files
-  TString defaultInputFile = "/input/urqmd.agag.1.65gev.centr.00001.root";
+  //TString defaultInputFile = "/input/urqmd.agag.1.65gev.centr.00001.root";
   //  TString defaultInputFile = "/input/urqmd.agag.1.65gev.mbias.00001.root";
   //  TString defaultInputFile = "/input/urqmd.auau.1.24gev.mbias.00001.root";
   //  TString defaultInputFile = "/input/urqmd.niau.1.93gev.centr.00001.root";
   //  TString defaultInputFile = "/input/urqmd.niau.1.93gev.mbias.00001.root";
-  //  TString defaultInputFile = "/input/urqmd.nini.1.93gev.centr.00001.root";
+    TString defaultInputFile = "/input/urqmd.nini.1.93gev.centr.00001.root";
   //  TString defaultInputFile = "/input/urqmd.nini.1.93gev.mbias.00001.root";
   //  TString defaultInputFile = "/input/urqmd.pau.4.5gev.mbias.00001.root";
 

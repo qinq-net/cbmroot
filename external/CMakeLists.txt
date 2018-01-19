@@ -7,12 +7,30 @@ download_project(PROJ            cppzmq
                  SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/cppzmq
 )
 
-include(DownloadProject)
 download_project(PROJ            flib_dpb_20
                  GIT_REPOSITORY  "https://cbmgsi.githost.io/garcia_AT_iri.uni-frankfurt.de/flib_dpb_20.git"
                  GIT_TAG         "ce30a7530204f860c433753ec0db9b649795bf94"
                  SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/flib_dpb_20
 )
+
+set(Vc_VERSION "1.3.2")
+set(Vc_SRC_URL "https://github.com/VcDevel/Vc")
+
+download_project(PROJ            vc_source
+                 GIT_REPOSITORY  ${Vc_SRC_URL}
+                 GIT_TAG         ${Vc_VERSION}
+                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Vc
+)
+
+set(KFPARTICLE_SRC_URL "https://cbmgsi.githost.io/m.zyzak/KFParticle.git")
+set(KFPARTICLE_DESTDIR "${CMAKE_BINARY_DIR}/external/KFPARTICLE-prefix")
+
+download_project(PROJ            kfparticle_source
+                 GIT_REPOSITORY  ${KFPARTICLE_SRC_URL}
+                 GIT_TAG         ${KFPARTICLE_VERSION}
+                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/KFParticle
+)
+
 
 Set(IPC_INCLUDE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ipc/ipc/lib/fles_ipc PARENT_SCOPE)
 
@@ -25,16 +43,15 @@ Add_Subdirectory(spadic)
 # Build Vc as external project
 set(_LIBDIR_DEFAULT "lib")
 
-set(Vc_VERSION "1.3.2")
-set(Vc_SRC_URL "https://github.com/VcDevel/Vc")
 set(Vc_DESTDIR "${CMAKE_BINARY_DIR}/external/VC-prefix")
 set(Vc_ROOTDIR "${Vc_DESTDIR}/${CMAKE_BINARY_DIR}")
 set(Vc_LIBNAME "${CMAKE_STATIC_LIBRARY_PREFIX}Vc${CMAKE_STATIC_LIBRARY_SUFFIX}")
 set(Vc_LIBRARY "${Vc_ROOTDIR}/${_LIBDIR_DEFAULT}/${Vc_LIBNAME}")
 
 ExternalProject_Add(VC
-  GIT_REPOSITORY ${Vc_SRC_URL}
-  GIT_TAG ${Vc_VERSION}
+#  GIT_REPOSITORY ${Vc_SRC_URL}
+#  GIT_TAG ${Vc_VERSION}
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Vc
   BUILD_IN_SOURCE 0   
   BUILD_BYPRODUCTS ${Vc_LIBRARY}
   LOG_DOWNLOAD 1 LOG_CONFIGURE 1 LOG_BUILD 1 LOG_INSTALL 1
@@ -71,16 +88,15 @@ if(Vc_FOUND)
 endif()
 
 
-set(KFPARTICLE_SRC_URL "https://cbmgsi.githost.io/m.zyzak/KFParticle.git")
-set(KFPARTICLE_DESTDIR "${CMAKE_BINARY_DIR}/external/KFPARTICLE-prefix")
 set(KFPARTICLE_ROOTDIR "${KFPARTICLE_DESTDIR}/${CMAKE_BINARY_DIR}")
-set(KFPARTICLE_LIBNAME "${CMAKE_DYNAMIC_LIBRARY_PREFIX}KFParticle${CMAKE_DYNAMIC_LIBRARY_SUFFIX}")
-set(KFPARTICLE_LIBRARY "${KFPARTICLE_ROOTDIR}/${KFPARTICLE_LIBNAME}")
+set(KFPARTICLE_LIBNAME "${CMAKE_SHARED_LIBRARY_PREFIX}KFParticle${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(KFPARTICLE_LIBRARY "${KFPARTICLE_ROOTDIR}/${_LIBDIR_DEFAULT}/${KFPARTICLE_LIBNAME}")
 
 ExternalProject_Add(KFPARTICLE
   DEPENDS Vc
-  GIT_REPOSITORY ${KFPARTICLE_SRC_URL}
+#    GIT_REPOSITORY ${KFPARTICLE_SRC_URL}
   BUILD_IN_SOURCE 0
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/KFParticle
   BUILD_BYPRODUCTS ${KFPARTICLE_LIBRARY}
   LOG_DOWNLOAD 1 LOG_CONFIGURE 1 LOG_BUILD 1 LOG_INSTALL 1
   CMAKE_ARGS -G ${CMAKE_GENERATOR}
