@@ -35,8 +35,7 @@ namespace get4v1x {
    // Epoch counter size in epoch
    const uint32_t kuEpochCounterSz = 0x7FFFFFFF;
    const double   kdEpochCycleInS  = static_cast<double>(kuEpochCounterSz) * (kdEpochInNs/1e9);
-}
-namespace get4v2x {
+
    const uint32_t kuChipIdMergedEpoch = 63; // 0x3F
 }
 #endif
@@ -656,19 +655,38 @@ namespace ngdpb {
 
          uint64_t getMsgFullTime(uint32_t epoch) const;
 
-         double getMsgFullTimeD(uint32_t epoch) const;
+         double getMsgFullTimeD(uint64_t epoch) const;
+
+//         double getMsgFullTimeD(uint32_t epoch) const
+//            { return getMsgFullTimeD( static_cast<uint64_t>(epoch), stamp ); };
 
          uint64_t getMsgG4v2FullTime(uint32_t epoch) const;
 
-         double getMsgG4v2FullTimeD(uint32_t epoch) const;
+//         double getMsgG4v2FullTimeD(uint32_t epoch) const;
+//         double getMsgG4v2FullTimeD(uint32_t epoch) const
+//            { return getMsgG4v2FullTimeD( static_cast<uint64_t>(epoch), stamp ); };
+
+         double getMsgG4v2FullTimeD(uint64_t epoch) const;
 
          //! Expanded timestamp for 160 MHz * 14 bit (12 + 2) epochs
-         inline static uint64_t FullTimeStamp(uint32_t epoch, uint16_t stamp)
-            { return (static_cast<uint64_t>(epoch) << 14) | (stamp & 0x3fff); }
+//         inline static uint64_t FullTimeStamp(uint32_t epoch, uint16_t stamp)
+//            { return (static_cast<uint64_t>(epoch) << 14) | (stamp & 0x3fff); }
+//         inline static uint64_t FullTimeStamp(uint32_t epoch, uint32_t stamp)
+//            { return FullTimeStamp( static_cast<uint64_t>(epoch), stamp ); }
+
+         //! Expanded timestamp for 160 MHz * 14 bit (12 + 2) epochs
+         inline static uint64_t FullTimeStamp(uint64_t epoch, uint16_t stamp)
+            { return (epoch << 14) | (stamp & 0x3fff); }
 
          //! Expanded timestamp for 160 MHz * 19 bit (12 + 7) epochs
-         inline static uint64_t FullTimeStamp2(uint32_t epoch, uint32_t stamp)
-            { return (static_cast<uint64_t>(epoch) << 19) | (stamp & 0x7ffff); }
+//         inline static uint64_t FullTimeStamp2(uint32_t epoch, uint32_t stamp)
+//            { return (static_cast<uint64_t>(epoch) << 19) | (stamp & 0x7ffff); }
+//         inline static uint64_t FullTimeStamp2(uint32_t epoch, uint32_t stamp)
+//            { return FullTimeStamp2( static_cast<uint64_t>(epoch), stamp ); }
+
+         //! Expanded timestamp for 160 MHz * 19 bit (12 + 7) epochs
+         inline static uint64_t FullTimeStamp2(uint64_t epoch, uint32_t stamp)
+            { return ( epoch << 19) | (stamp & 0x7ffff); }
 
 
          static uint64_t CalcDistance(uint64_t start, uint64_t stop);
@@ -706,6 +724,9 @@ namespace ngdpb {
          inline void reset() {  Message::reset(); fuExtendedEpoch = 0; }
 
          inline uint64_t getExtendedEpoch() const {return fuExtendedEpoch; }
+
+         // Works only for GET4 v2.XXX !!!!!!
+         inline double GetFullTimeNs() { return getMsgG4v2FullTimeD( fuExtendedEpoch ); }
    };
 
 }

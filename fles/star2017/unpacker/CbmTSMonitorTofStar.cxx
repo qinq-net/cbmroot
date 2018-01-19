@@ -94,6 +94,7 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fNofEpochs(0),
     fCurrentEpochTime(0.),
     fdStartTime(-1.),
+    fdStartTimeLong(-1.),
     fdStartTimeMsSz(-1.),
     fcMsSizeAll(NULL),
     fTsLastHit(),
@@ -123,6 +124,9 @@ CbmTSMonitorTofStar::CbmTSMonitorTofStar() :
     fFeetRate_gDPB(),
     fFeetErrorRate_gDPB(),
     fuHistoryHistoSize( 1800 ),
+    fFeetRateLong_gDPB(),
+    fFeetErrorRateLong_gDPB(),
+    fuHistoryHistoSizeLong( 600 ),
     fFeetRateDate_gDPB(),
     fiRunStartDateTimeSec( -1 ),
     fiBinSizeDatePlots( -1 ),
@@ -877,6 +881,26 @@ void CbmTSMonitorTofStar::CreateHistograms()
         server->Register("/TofRaw", fHM->H1(name.Data()));
 #endif
 
+      name = Form("FeetRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet);
+      title = Form(
+          "Counts per minutes in Feet %1u of gDPB %02u; Time[min] ; Counts", uFeet,
+          uGdpb);
+      fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong));
+#ifdef USE_HTTP_SERVER
+      if (server)
+        server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
+      name = Form("FeetErrorRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet);
+      title = Form(
+          "Error Counts per minutes in Feet %1u of gDPB %02u; Time[min] ; Error Counts", uFeet,
+          uGdpb);
+      fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong));
+#ifdef USE_HTTP_SERVER
+      if (server)
+        server->Register("/TofRaw", fHM->H1(name.Data()));
+#endif
+
       if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
         name = Form("FeetRateDate_gDPB_g%02u_f%1u", uGdpb, uFeet);
         title = Form(
@@ -1429,6 +1453,30 @@ void CbmTSMonitorTofStar::CreateHistograms()
   } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
   /*****************************/
 
+
+  /** Create FEET rates long Canvas for STAR 2017 **/
+  TCanvas* cFeeRatesLong = new TCanvas("cFeeRatesLong", "gDPB Monitoring FEET rates", w, h);
+  cFeeRatesLong->Divide(fNrOfFebsPerGdpb, fNrOfGdpbs );
+
+  histPnt = NULL;
+  for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb ) {
+    for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet ) {
+      name = Form("FeetRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet);
+      histPnt = fHM->H1(name.Data());
+
+      cFeeRatesLong->cd( 1 + uGdpb * fNrOfFebsPerGdpb + uFeet );
+      gPad->SetLogy();
+
+      histPnt->Draw();
+
+      name = Form("FeetErrorRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet);
+      histPnt = fHM->H1(name.Data());
+      histPnt->SetLineColor( kRed );
+      histPnt->Draw("same");
+    } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet )
+  } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
+  /*****************************/
+
   /** Create TOT Canvas(es) for STAR 2017 **/
   TCanvas* cTotPnt = NULL;
   uNbFeetPlotsPerGdpb = fNrOfFebsPerGdpb/uNbFeetPlot + ( 0 != fNrOfFebsPerGdpb%uNbFeetPlot ? 1 : 0 );
@@ -1815,6 +1863,10 @@ void CbmTSMonitorTofStar::CreateHistograms()
       fFeetRate_gDPB.push_back(fHM->H1(name.Data()));
       name = Form("FeetErrorRate_gDPB_g%02u_f%1u", i, uFeet);
       fFeetErrorRate_gDPB.push_back(fHM->H1(name.Data()));
+      name = Form("FeetRateLong_gDPB_g%02u_f%1u", i, uFeet);
+      fFeetRateLong_gDPB.push_back(fHM->H1(name.Data()));
+      name = Form("FeetErrorRateLong_gDPB_g%02u_f%1u", i, uFeet);
+      fFeetErrorRateLong_gDPB.push_back(fHM->H1(name.Data()));
       if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
         name = Form("FeetRateDate_gDPB_g%02u_f%1u", i, uFeet);
         fFeetRateDate_gDPB.push_back(fHM->H1(name.Data()));
@@ -2087,7 +2139,7 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
 
       if( fNrOfGet4PerGdpb <= fGet4Id &&
           ngdpb::MSG_STAR_TRI != messageType &&
-          ( get4v2x::kuChipIdMergedEpoch != fGet4Id ||
+          ( get4v1x::kuChipIdMergedEpoch != fGet4Id ||
             kFALSE == fbMergedEpochsOn ) )
          LOG(WARNING) << "Message with Get4 ID too high: " << fGet4Id
                       << " VS " << fNrOfGet4PerGdpb << " set in parameters." << FairLogger::endl;
@@ -2108,7 +2160,7 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
           break;
         case ngdpb::MSG_EPOCH2:
         {
-          if( get4v2x::kuChipIdMergedEpoch == fGet4Id &&
+          if( get4v1x::kuChipIdMergedEpoch == fGet4Id &&
               kTRUE == fbMergedEpochsOn )
           {
              for( uint32_t uGet4Index = 0; uGet4Index < fNrOfGet4PerGdpb; uGet4Index ++ )
@@ -2155,6 +2207,11 @@ Bool_t CbmTSMonitorTofStar::DoUnpack(const fles::Timeslice& ts,
             {
                fFeetErrorRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
                   1e-9 * (mess.getMsgFullTimeD(fCurrentEpoch[fGet4Nr]) - fdStartTime));
+            } // if (0 <= fdStartTime)
+            if (0 <= fdStartTimeLong)
+            {
+               fFeetErrorRateLong_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
+                  1e-9 / 60.0 * (mess.getMsgFullTimeD(fCurrentEpoch[fGet4Nr]) - fdStartTimeLong), 1 / 60.0);
             } // if (0 <= fdStartTime)
 
             Int_t dFullChId =  fGet4Nr * fNrOfChannelsPerGet4 + mess.getGdpbSysErrChanId();
@@ -2489,6 +2546,25 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
        fdStartTime = dHitTime;
     } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
 
+    // In Run rate evolution
+    if (fdStartTimeLong < 0)
+      fdStartTimeLong = dHitTime;
+
+    // Reset the evolution Histogram and the start time when we reach the end of the range
+    if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) )
+    {
+       for (UInt_t uGdpbLoop = 0; uGdpbLoop < fNrOfGdpbs; uGdpbLoop++)
+       {
+         for (UInt_t uFeetLoop = 0; uFeetLoop < fNrOfFebsPerGdpb; uFeetLoop++)
+         {
+            fFeetRateLong_gDPB[(uGdpbLoop * fNrOfFebsPerGdpb) + uFeetLoop]->Reset();
+            fFeetErrorRateLong_gDPB[(uGdpbLoop * fNrOfFebsPerGdpb) + uFeetLoop]->Reset();
+         } // for (UInt_t uFeetLoop = 0; uFeetLoop < fNrOfFebsPerGdpb; uFeetLoop++)
+       } // for (UInt_t uFeetLoop = 0; uFeetLoop < fNrOfFebsPerGdpb; uFeetLoop++)
+
+       fdStartTimeLong = dHitTime;
+    } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
+
     if (0 <= fdStartTime)
     {
       fFeetRate_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
@@ -2501,6 +2577,12 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
              1e-9 * (dHitTime - fdStartTime)  );
        } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
     }
+
+    if (0 <= fdStartTimeLong)
+    {
+      fFeetRateLong_gDPB[(fGdpbNr * fNrOfFebsPerGdpb) + uFeetNr]->Fill(
+          1e-9 / 60.0 * (dHitTime - fdStartTimeLong), 1 / 60.0);
+    } // if (0 <= fdStartTimeLong)
 
     Int_t iChanInGdpb = fGet4Id * fNrOfChannelsPerGet4 + channel;
     Int_t increment = static_cast<CbmFlibCern2016Source*>(FairRunOnline::Instance()->GetSource())->GetNofTSSinceLastTS();
@@ -3170,7 +3252,7 @@ void CbmTSMonitorTofStar::FillStarTrigInfo(ngdpb::Message mess)
          break;
 	  } // case 3
       default:
-         LOG(FATAL) << "Unknown Star Trigger messageindex: " << iMsgIndex << FairLogger::endl;
+         LOG(ERROR) << "Unknown Star Trigger messageindex: " << iMsgIndex << FairLogger::endl;
   } // switch( iMsgIndex )
 }
 void CbmTSMonitorTofStar::FillTrigEpochInfo(ngdpb::Message mess)
@@ -3465,6 +3547,8 @@ void CbmTSMonitorTofStar::SaveAllHistos( TString sFileName )
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
       fHM->H1(Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
       fHM->H1(Form("FeetErrorRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
+      fHM->H1(Form("FeetRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
+      fHM->H1(Form("FeetErrorRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
       if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
         fHM->H1(Form("FeetRateDate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Write();
       } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
@@ -3583,6 +3667,8 @@ void CbmTSMonitorTofStar::ResetAllHistos()
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
       fHM->H1(Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
       fHM->H1(Form("FeetErrorRate_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
+      fHM->H1(Form("FeetRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
+      fHM->H1(Form("FeetErrorRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
       fHM->H2(Form("FtDistribPerCh_gDPB_g%02u_f%1u", uGdpb, uFeet))->Reset();
       fHM->H1(Form("SelChFtNormDnlRise_g%02u_f%1u", uGdpb, uFeet))->Reset();
       fHM->H1(Form("FtNormDnlMinRise_g%02u_f%1u", uGdpb, uFeet))->Reset();
@@ -3655,6 +3741,7 @@ void CbmTSMonitorTofStar::ResetAllHistos()
   } // if( fbStarSortAndCutMode )
 
   fdStartTime = -1;
+  fdStartTimeLong = -1;
   fdStartTimeMsSz = -1;
 }
 void CbmTSMonitorTofStar::CyclePulserFee()

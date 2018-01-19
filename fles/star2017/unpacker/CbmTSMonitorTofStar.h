@@ -97,6 +97,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
                                 UInt_t inPulserChanP = 15, UInt_t inPulserChanQ = 16, UInt_t inPulserChanR = 17 );
     inline void SetFitZoomWidthPs( Double_t inZoomWidth = 1000.0 ) { fdFitZoomWidthPs = inZoomWidth; }
     inline void SetHistoryHistoSize( UInt_t inHistorySizeSec = 1800 ) { fuHistoryHistoSize = inHistorySizeSec; }
+    inline void SetHistoryHistoSizeLong( UInt_t inHistorySizeMin = 1800 ) { fuHistoryHistoSizeLong = inHistorySizeMin; }
 
     void SaveAllHistos( TString sFileName = "" );
     void ResetAllHistos();
@@ -158,6 +159,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     Int_t fNofEpochs; /** Current epoch marker for each ROC **/
     ULong_t fCurrentEpochTime; /** Time stamp of current epoch **/
     Double_t fdStartTime; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
+    Double_t fdStartTimeLong; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
     Double_t fdStartTimeMsSz; /** Time of first microslice, used as reference for evolution plots**/
     TCanvas* fcMsSizeAll;
 
@@ -196,6 +198,10 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     std::vector<TH1*> fFeetRate_gDPB;
     std::vector<TH1*> fFeetErrorRate_gDPB;
     UInt_t            fuHistoryHistoSize;
+
+    std::vector<TH1*> fFeetRateLong_gDPB;
+    std::vector<TH1*> fFeetErrorRateLong_gDPB;
+    UInt_t            fuHistoryHistoSizeLong;
 
     std::vector<TH1*> fFeetRateDate_gDPB;
     Int_t             fiRunStartDateTimeSec;
