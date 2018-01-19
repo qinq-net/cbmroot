@@ -271,7 +271,7 @@ void CbmUnpackTofStar2018::CreateHistograms()
       } // for( UInt_t uLeftFeb = 0; uLeftFeb < fuNrOfFebsPerGdpb / 2; uLeftFeb ++ )
 */
          fhChanCoinc[ uGdpb ] = new TH2F( Form("fhChanCoinc_%02u", uGdpb),
-                                      Form("Channels Coincidence %02; Left; Right", uGdpb),
+                                      Form("Channels Coincidence %02u; Left; Right", uGdpb),
                                       fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb,
                                       fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb );
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
@@ -352,7 +352,7 @@ Bool_t CbmUnpackTofStar2018::DoUnpack(const fles::Timeslice& ts, size_t componen
 
          if( fuNrOfGet4PerGdpb <= fuGet4Id &&
              ngdpb::MSG_STAR_TRI != iMessageType &&
-             get4v2x::kuChipIdMergedEpoch != fuGet4Id )
+             get4v1x::kuChipIdMergedEpoch != fuGet4Id )
             LOG(WARNING) << "Message with Get4 ID too high: " << fuGet4Id
                          << " VS " << fuNrOfGet4PerGdpb << " set in parameters." << FairLogger::endl;
 
@@ -370,9 +370,9 @@ Bool_t CbmUnpackTofStar2018::DoUnpack(const fles::Timeslice& ts, size_t componen
             } // case old non tof messages
             case ngdpb::MSG_EPOCH2:
             {
-               if( get4v2x::kuChipIdMergedEpoch == fuGet4Id )
+               if( get4v1x::kuChipIdMergedEpoch == fuGet4Id )
                {
-                  
+
                   for( UInt_t uChan = fuGdpbNr * fuNrOfChannelsPerGdpb;
                        uChan < (fuGdpbNr + 1 ) * fuNrOfChannelsPerGdpb;
                        ++uChan )
@@ -381,7 +381,7 @@ Bool_t CbmUnpackTofStar2018::DoUnpack(const fles::Timeslice& ts, size_t componen
                   if( 0 == fuGdpbNr )
                      for( UInt_t uDetChan = 0; uDetChan < 64; uDetChan ++)
                         fbDetChanThere[uDetChan] = kFALSE;
-         
+
                   for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGet4Index ++ )
                   {
                      ngdpb::Message tmpMess( mess );
@@ -511,11 +511,11 @@ void CbmUnpackTofStar2018::FillHitInfo( ngdpb::Message mess )
       } // if( fUnpackPar->GetNumberOfChannels() < uChanUId )
 
       fvbChanThere[ uChanInSyst ] = kTRUE;
-      
+
       UInt_t uChanUId = fUnpackPar->GetChannelToDetUIdMap( uChanInSyst );
       if( 0 == uChanUId )
          return;   // Hit not mapped to digi
-         
+
       if( (uChanUId & DetMask) == 0x00001006 )
       {
          UInt_t uDetChan = (uChanUId & 0xFF000000) >> 24;
@@ -543,7 +543,7 @@ void CbmUnpackTofStar2018::FillHitInfo( ngdpb::Message mess )
       // Histograms filling
       fhRawTotCh[ fuGdpbNr ]->Fill( uChanInGdpb, dHitTot);
       fhChCount[ fuGdpbNr ] ->Fill( uChanInGdpb );
-       
+
    } // if( kTRUE == fvbFirstEpochSeen[ fuGet4Nr ] )
 }
 
@@ -571,12 +571,12 @@ void CbmUnpackTofStar2018::FillEpochInfo( ngdpb::Message mess )
    {
       LOG(DEBUG) << "Now processing stored messages for for get4 " << fuGet4Nr << " with epoch number "
                  << (fvulCurrentEpoch[ fuGet4Nr ] - 1) << FairLogger::endl;
-         
+
       for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
       {
          FillHitInfo( fvmEpSupprBuffer[ fuGet4Nr ][ iMsgIdx ] );
       } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
-/*     
+/*
       for( UInt_t uLeftFeb = fuGdpbNr * fuNrOfFebsPerGdpb / 2;
            uLeftFeb < (fuGdpbNr + 1) * fuNrOfFebsPerGdpb / 2;
            ++uLeftFeb )
@@ -599,7 +599,7 @@ void CbmUnpackTofStar2018::FillEpochInfo( ngdpb::Message mess )
             }
          }
       } // for( UInt_t uLeftFeb = 0; uLeftFeb < fuNrOfFebsPerGdpb / 2; ++uLeftFeb )
-*/      
+*/
       fvmEpSupprBuffer[fuGet4Nr].clear();
    } // if( 0 < fvmEpSupprBuffer[fGet4Nr] )
 }
@@ -724,7 +724,7 @@ void CbmUnpackTofStar2018::Finish()
    {
       fHM->H2( Form("Raw_Tot_gDPB_%02u", uGdpb) )->Write();
       fHM->H1( Form("ChCount_gDPB_%02u", uGdpb) )->Write();
-/*      
+/*
       for( UInt_t uLeftFeb = uGdpb*fuNrOfFebsPerGdpb / 2;
            uLeftFeb < (uGdpb + 1 )*fuNrOfFebsPerGdpb / 2;
            ++uLeftFeb )
