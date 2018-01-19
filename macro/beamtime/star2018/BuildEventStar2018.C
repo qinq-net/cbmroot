@@ -12,7 +12,7 @@ FairRunOnline *run = NULL;
 
 void BuildEventStar2018( TString inFile = "",
                          Bool_t bEventBuildingMode = kFALSE, Bool_t bTimeSort = kTRUE,
-                         Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
+                         Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8081,
                          size_t uAcceptBoundaryPct = 100, Double_t dTShiftRef = 0.0  )
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
@@ -39,7 +39,7 @@ void BuildEventStar2018( TString inFile = "",
   TList *parFileList = new TList();
   TString paramDir = "./";
 
-  TString paramFileTof = paramDir + "MapTofHD_v18b.par";
+  TString paramFileTof = paramDir + "BuildEtof_v18b.par";
   TObjString* tutDetDigiFileTof = new TObjString(paramFileTof);
   parFileList->Add(tutDetDigiFileTof);
 
@@ -61,6 +61,8 @@ void BuildEventStar2018( TString inFile = "",
    etofEventBuilder->SetTShiftRef( dTShiftRef );
    etofEventBuilder->SetEventBuildingMode( bEventBuildingMode );
    etofEventBuilder->SetTimeSortOutput( bTimeSort );
+   etofEventBuilder->SetHistoryHistoSize( 600. );
+   etofEventBuilder->SetHistoryHistoSizeLong( 600. );
 
   // --- Source task
   CbmFlibCern2016Source* source = new CbmFlibCern2016Source();

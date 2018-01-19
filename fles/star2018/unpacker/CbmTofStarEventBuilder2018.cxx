@@ -89,19 +89,19 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fhChCount(),
     fvbChanThere(),
     fhChanCoinc(),
-    fulGdpbTsMsb(0),
-    fulGdpbTsLsb(0),
-    fulStarTsMsb(0),
-    fulStarTsMid(0),
-    fulGdpbTsFullLast(0),
-    fulStarTsFullLast(0),
-    fuStarTokenLast(0),
-    fuStarDaqCmdLast(0),
-    fuStarTrigCmdLast(0),
-    fhTokenMsgType(NULL),
-    fhTriggerRate(NULL),
-    fhCmdDaqVsTrig(NULL),
-    fhStarTokenEvo(NULL),
+    fulGdpbTsMsb(),
+    fulGdpbTsLsb(),
+    fulStarTsMsb(),
+    fulStarTsMid(),
+    fulGdpbTsFullLast(),
+    fulStarTsFullLast(),
+    fuStarTokenLast(),
+    fuStarDaqCmdLast(),
+    fuStarTrigCmdLast(),
+    fhTokenMsgType(),
+    fhTriggerRate(),
+    fhCmdDaqVsTrig(),
+    fhStarTokenEvo(),
     fbEventBuilding( kFALSE ),
     fbTimeSortOutput( kFALSE ),
     fStarSubEvent(),
@@ -109,6 +109,7 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fulNbStarSubEvent( 0 ),
     fulNbBuiltSubEventLastPrintout( 0 ),
     fulNbStarSubEventLastPrintout( 0 ),
+    fTimeLastPrintoutNbStarEvent(),
     fdCurrentMsStartTime( 0.0 ),
     fdCurrentMsEndTime( 0.0 ),
     fvmCurrentLinkBuffer(),
@@ -255,20 +256,51 @@ Bool_t CbmTofStarEventBuilder2018::ReInitContainers()
    fdStarTriggerDeadtime.resize( fuNrOfGdpbs );
    fdStarTriggerDelay.resize(    fuNrOfGdpbs );
    fdStarTriggerWinSize.resize(  fuNrOfGdpbs );
-   for (UInt_t iGdpb = 0; iGdpb < fuNrOfGdpbs; ++iGdpb)
+   for (UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb)
    {
-      fdStarTriggerDeadtime[ iGdpb ] = fUnpackPar->GetStarTriggDeadtime( iGdpb );
-      fdStarTriggerDelay[ iGdpb ]    = fUnpackPar->GetStarTriggDelay( iGdpb );
-      fdStarTriggerWinSize[ iGdpb ]  = fUnpackPar->GetStarTriggWinSize( iGdpb );
-      LOG(INFO) << "STAR trigger par of gDPB  " << iGdpb << " are: "
-                << " Deadtime "  <<  fdStarTriggerDeadtime[ iGdpb ]
-                << " Delay "     << -fdStarTriggerDelay[ iGdpb ]
-                << " and WinSz " <<  fdStarTriggerWinSize[ iGdpb ]
+      fdStarTriggerDeadtime[ uGdpb ] = fUnpackPar->GetStarTriggDeadtime( uGdpb );
+      fdStarTriggerDelay[ uGdpb ]    = fUnpackPar->GetStarTriggDelay( uGdpb );
+      fdStarTriggerWinSize[ uGdpb ]  = fUnpackPar->GetStarTriggWinSize( uGdpb );
+      LOG(INFO) << "STAR trigger par of gDPB  " << uGdpb << " are: "
+                << " Deadtime "  <<  fdStarTriggerDeadtime[ uGdpb ]
+                << " Delay "     << -fdStarTriggerDelay[ uGdpb ]
+                << " and WinSz " <<  fdStarTriggerWinSize[ uGdpb ]
                 << FairLogger::endl;
-      if( fdStarTriggerDelay[ iGdpb ] < fdStarTriggerWinSize[ iGdpb ] )
+      if( fdStarTriggerDelay[ uGdpb ] < fdStarTriggerWinSize[ uGdpb ] )
          LOG(FATAL) << "STAR trigger window should end at latest on token itself!"
                     << " => Delay has to be greater or equal with window size!"
                     << FairLogger::endl;
+   } // for (Int_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb)
+
+   /// STAR Trigger decoding and monitoring
+   fulGdpbTsMsb.resize(  fuNrOfGdpbs );
+   fulGdpbTsLsb.resize(  fuNrOfGdpbs );
+   fulStarTsMsb.resize(  fuNrOfGdpbs );
+   fulStarTsMid.resize(  fuNrOfGdpbs );
+   fulGdpbTsFullLast.resize(  fuNrOfGdpbs );
+   fulStarTsFullLast.resize(  fuNrOfGdpbs );
+   fuStarTokenLast.resize(  fuNrOfGdpbs );
+   fuStarDaqCmdLast.resize(  fuNrOfGdpbs );
+   fuStarTrigCmdLast.resize(  fuNrOfGdpbs );
+   fhTokenMsgType.resize(  fuNrOfGdpbs );
+   fhTriggerRate.resize(  fuNrOfGdpbs );
+   fhCmdDaqVsTrig.resize(  fuNrOfGdpbs );
+   fhStarTokenEvo.resize(  fuNrOfGdpbs );
+   for (UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb)
+   {
+      fulGdpbTsMsb[ uGdpb ] = 0;
+      fulGdpbTsLsb[ uGdpb ] = 0;
+      fulStarTsMsb[ uGdpb ] = 0;
+      fulStarTsMid[ uGdpb ] = 0;
+      fulGdpbTsFullLast[ uGdpb ] = 0;
+      fulStarTsFullLast[ uGdpb ] = 0;
+      fuStarTokenLast[ uGdpb ]   = 0;
+      fuStarDaqCmdLast[ uGdpb ]  = 0;
+      fuStarTrigCmdLast[ uGdpb ] = 0;
+      fhTokenMsgType[ uGdpb ] = NULL;
+      fhTriggerRate[ uGdpb ]  = NULL;
+      fhCmdDaqVsTrig[ uGdpb ] = NULL;
+      fhStarTokenEvo[ uGdpb ] = NULL;
    } // for (Int_t iGdpb = 0; iGdpb < fuNrOfGdpbs; ++iGdpb)
 
 /// TODO clean epoch suppression in STAR 2018!
@@ -402,6 +434,79 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
          server->Register("/StarRaw", fhStarHitToTrigWin_gDPB[ uGdpb ] );
 #endif
 
+      /// STAR Trigger decoding and monitoring
+      name = Form( "hTokenMsgType_gDPB_%02u", uGdpb);
+      title = Form( "STAR trigger Messages type gDPB %02u; Type ; Counts", uGdpb);
+      fhTokenMsgType[ uGdpb ] =  new TH1F(name, title, 4, 0, 4);
+      fhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 1, "A"); // gDPB TS high
+      fhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 2, "B"); // gDPB TS low, STAR TS high
+      fhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 3, "C"); // STAR TS mid
+      fhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 4, "D"); // STAR TS low, token, CMDs
+      fHM->Add(name.Data(), fhTokenMsgType[ uGdpb ] );
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhTokenMsgType[ uGdpb ] );
+#endif
+
+      name = Form( "hTriggerRate_gDPB_%02u", uGdpb);
+      title = Form( "STAR trigger signals per second gDPB %02u; Time[s] ; Counts", uGdpb);
+      fhTriggerRate[ uGdpb ] =  new TH1F(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize);
+      fHM->Add(name.Data(), fhTriggerRate[ uGdpb ] );
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhTriggerRate[ uGdpb ] );
+#endif
+
+      name = Form( "hCmdDaqVsTrig_gDPB_%02u", uGdpb);
+      title = Form( "STAR daq command VS STAR trigger command gDPB %02u; DAQ ; TRIGGER", uGdpb);
+      fhCmdDaqVsTrig[ uGdpb ] =  new TH2I(name, title, 16, 0, 16, 16, 0, 16 );
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 1, "0x0: no-trig "); // idle link
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 2, "0x1: clear   "); // clears redundancy counters on the readout boards
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 3, "0x2: mast-rst"); // general reset of the whole front-end logic
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 4, "0x3: spare   "); // reserved
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 5, "0x4: trigg. 0"); // Default physics readout, all det support required
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 6, "0x5: trigg. 1"); //
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 7, "0x6: trigg. 2"); //
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 8, "0x7: trigg. 3"); //
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 9, "0x8: puls.  0"); //
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(10, "0x9: puls.  1"); //
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(11, "0xA: puls.  2"); //
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(12, "0xB: puls.  3"); //
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(13, "0xC: config  "); // housekeeping trigger: return geographic info of FE
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(14, "0xD: abort   "); // aborts and clears an active event
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(15, "0xE: L1accept"); //
+      fhCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(16, "0xF: L2accept"); //
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 1, "0x0:  0"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 2, "0x1:  1"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 3, "0x2:  2"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 4, "0x3:  3"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 5, "0x4:  4"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 6, "0x5:  5"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 7, "0x6:  6"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 8, "0x7:  7"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 9, "0x8:  8"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(10, "0x9:  9"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(11, "0xA: 10"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(12, "0xB: 11"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(13, "0xC: 12"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(14, "0xD: 13"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(15, "0xE: 14"); // To be filled at STAR
+      fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(16, "0xF: 15"); // To be filled at STAR
+      fHM->Add(name.Data(), fhCmdDaqVsTrig[ uGdpb ] );
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhCmdDaqVsTrig[ uGdpb ] );
+#endif
+
+      name = Form( "hStarTokenEvo_gDPB_%02u", uGdpb);
+      title = Form( "STAR token value VS time gDPB %02u; Time in Run [s] ; STAR Token; Counts", uGdpb);
+      fhStarTokenEvo[ uGdpb ] =  new TH2I(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize, 410, 0, 4100 ); // 4096
+      fHM->Add(name.Data(), fhStarTokenEvo[ uGdpb ]);
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhStarTokenEvo[ uGdpb ] );
+#endif
+
       /// Check if we are in "single link per sub-event" building mode
       if( kFALSE == fbEventBuilding )
       {
@@ -457,8 +562,27 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
    Double_t h = 10;
    /*****************************/
 
-   /** Create Event building mode Canvas(es) for STAR 2017 **/
 
+   /** Create STAR token Canvas for STAR 2017 **/
+   for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   {
+      TCanvas* cStarToken = new TCanvas( Form("cStarToken_g%02u", uGdpb),
+                                           Form("STAR token detection info for gDPB %02u", uGdpb),
+                                           w, h);
+      cStarToken->Divide( 2, 2 );
+
+      cStarToken->cd(1);
+      fhTriggerRate[uGdpb]->Draw();
+
+      cStarToken->cd(2);
+      fhCmdDaqVsTrig[uGdpb]->Draw( "colz" );
+
+      cStarToken->cd(3);
+      fhStarTokenEvo[uGdpb]->Draw();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   /*****************************/
+
+   /** Create Event building mode Canvas(es) for STAR 2017 **/
    for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    {
       TCanvas* cStarEvtBuild = new TCanvas( Form("cStarEvt_g%02u", uGdpb),
@@ -473,9 +597,11 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       fhStarHitToTrigWin_gDPB[uGdpb]->Draw();
 
       cStarEvtBuild->cd(3);
+      gPad->SetLogx();
       fhStarEventSize_gDPB[uGdpb]->Draw();
 
       cStarEvtBuild->cd(4);
+      gPad->SetLogy();
       fhStarEventSizeTime_gDPB[uGdpb]->Draw( "colz" );
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    /*****************************/
@@ -486,6 +612,40 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
 {
    LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
               << " microslices of component " << component << FairLogger::endl;
+
+   /// Printout of nb star events log
+   std::chrono::time_point<std::chrono::system_clock> timeCurrent = std::chrono::system_clock::now();
+   std::chrono::duration<double> elapsed_seconds = timeCurrent - fTimeLastPrintoutNbStarEvent;
+   if( 0 == fTimeLastPrintoutNbStarEvent.time_since_epoch().count() )
+   {
+      fTimeLastPrintoutNbStarEvent = timeCurrent;
+      fulNbBuiltSubEventLastPrintout = fulNbBuiltSubEvent;
+      fulNbStarSubEventLastPrintout  = fulNbStarSubEvent;
+   } // if( 0 == fTimeLastPrintoutNbStarEvent.time_since_epoch().count() )
+   else if( 300 < elapsed_seconds.count() )
+   {
+      std::time_t cTimeCurrent = std::chrono::system_clock::to_time_t( timeCurrent );
+      char tempBuff[80];
+      std::strftime( tempBuff, 80, "%F %T", localtime (&cTimeCurrent) );
+
+      LOG(INFO) << "CbmTofStarEventBuilder2018::DoUnpack => " << tempBuff
+               << " Total number of Built events: " << std::setw(9) << fulNbBuiltSubEvent
+               << ", " << std::setw(9) << (fulNbBuiltSubEvent - fulNbBuiltSubEventLastPrintout)
+               << " events in last " << std::setw(4) << elapsed_seconds.count() << " s"
+               << FairLogger::endl;
+      fTimeLastPrintoutNbStarEvent = timeCurrent;
+      fulNbBuiltSubEventLastPrintout   = fulNbBuiltSubEvent;
+
+      LOG(INFO) << "CbmTofStarEventBuilder2018::DoUnpack => " << tempBuff
+               << " Total number of events sent to STAR: " << std::setw(9) << fulNbStarSubEvent
+               << ", " << std::setw(9) << (fulNbStarSubEvent - fulNbStarSubEventLastPrintout)
+               << " events in last " << std::setw(4) << elapsed_seconds.count() << " s"
+               << FairLogger::endl;
+      fTimeLastPrintoutNbStarEvent = timeCurrent;
+      fulNbStarSubEventLastPrintout   = fulNbStarSubEvent;
+
+      SaveAllHistos( "data/histos_test.root" );
+   } // else if( 300 < elapsed_seconds.count() )
 
    // Loop over microslices
    Int_t iMessageType = -111;
@@ -945,74 +1105,91 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
    switch( iMsgIndex )
    {
       case 0:
-         fulGdpbTsMsb = mess.getGdpbTsMsbStarA();
+         fhTokenMsgType[fuGdpbNr]->Fill(0);
+         fulGdpbTsMsb[fuGdpbNr] = mess.getGdpbTsMsbStarA();
          break;
       case 1:
-         fulGdpbTsLsb = mess.getGdpbTsLsbStarB();
-         fulStarTsMsb = mess.getStarTsMsbStarB();
+         fhTokenMsgType[fuGdpbNr]->Fill(1);
+         fulGdpbTsLsb[fuGdpbNr] = mess.getGdpbTsLsbStarB();
+         fulStarTsMsb[fuGdpbNr] = mess.getStarTsMsbStarB();
          break;
       case 2:
-         fulStarTsMid = mess.getStarTsMidStarC();
+         fhTokenMsgType[fuGdpbNr]->Fill(2);
+         fulStarTsMid[fuGdpbNr] = mess.getStarTsMidStarC();
          break;
       case 3:
       {
-         ULong64_t ulNewGdpbTsFull = ( fulGdpbTsMsb << 24 )
-                           + ( fulGdpbTsLsb       );
-         ULong64_t ulNewStarTsFull = ( fulStarTsMsb << 48 )
-                           + ( fulStarTsMid <<  8 )
-                           + mess.getStarTsLsbStarD();
+         fhTokenMsgType[fuGdpbNr]->Fill(3);
+
+         ULong64_t ulNewGdpbTsFull = ( fulGdpbTsMsb[fuGdpbNr] << 24 )
+                                   + ( fulGdpbTsLsb[fuGdpbNr]       );
+         ULong64_t ulNewStarTsFull = ( fulStarTsMsb[fuGdpbNr] << 48 )
+                                   + ( fulStarTsMid[fuGdpbNr] <<  8 )
+                                   + mess.getStarTsLsbStarD();
          UInt_t uNewToken  = mess.getStarTokenStarD();
          UInt_t uNewDaqCmd  = mess.getStarDaqCmdStarD();
          UInt_t uNewTrigCmd = mess.getStarTrigCmdStarD();
-         if( ( uNewToken == fuStarTokenLast ) && ( ulNewGdpbTsFull == fulGdpbTsFullLast ) &&
-             ( ulNewStarTsFull == fulStarTsFullLast ) && ( uNewDaqCmd == fuStarDaqCmdLast ) &&
-             ( uNewTrigCmd == fuStarTrigCmdLast ) )
+         if( ( uNewToken == fuStarTokenLast[fuGdpbNr] ) && ( ulNewGdpbTsFull == fulGdpbTsFullLast[fuGdpbNr] ) &&
+             ( ulNewStarTsFull == fulStarTsFullLast[fuGdpbNr] ) && ( uNewDaqCmd == fuStarDaqCmdLast[fuGdpbNr] ) &&
+             ( uNewTrigCmd == fuStarTrigCmdLast[fuGdpbNr] ) )
          {
             LOG(DEBUG) << "Possible error: identical STAR tokens found twice in a row => ignore 2nd! "
-                         << Form("token = %5u ", fuStarTokenLast )
-                         << Form("gDPB ts  = %12llu ", fulGdpbTsFullLast )
-                         << Form("STAR ts = %12llu ", fulStarTsFullLast )
-                         << Form("DAQ cmd = %2u ", fuStarDaqCmdLast )
-                         << Form("TRG cmd = %2u ", fuStarTrigCmdLast )
+                         << " gDBB #" << fuGdpbNr << " "
+                         << Form("token = %5u ", fuStarTokenLast[fuGdpbNr] )
+                         << Form("gDPB ts  = %12llu ", fulGdpbTsFullLast[fuGdpbNr] )
+                         << Form("STAR ts = %12llu ", fulStarTsFullLast[fuGdpbNr] )
+                         << Form("DAQ cmd = %2u ", fuStarDaqCmdLast[fuGdpbNr] )
+                         << Form("TRG cmd = %2u ", fuStarTrigCmdLast[fuGdpbNr] )
                          << FairLogger::endl;
             return;
          } // if exactly same message repeated
-
-         if( (uNewToken != fuStarTokenLast + 1) &&
-             0 < fulGdpbTsFullLast && 0 < fulStarTsFullLast &&
-             ( 4095 != fuStarTokenLast || 1 != uNewToken)  )
+/*
+         if( (uNewToken != fuStarTokenLast[fuGdpbNr] + 1) &&
+             0 < fulGdpbTsFullLast[fuGdpbNr] && 0 < fulStarTsFullLast[fuGdpbNr] &&
+             ( 4095 != fuStarTokenLast[fuGdpbNr] || 1 != uNewToken)  )
             LOG(WARNING) << "Possible error: STAR token did not increase by exactly 1! "
-                         << Form("old = %5u vs new = %5u ", fuStarTokenLast,   uNewToken)
-                         << Form("old = %12llu vs new = %12llu ", fulGdpbTsFullLast, ulNewGdpbTsFull)
-                         << Form("old = %12llu vs new = %12llu ", fulStarTsFullLast, ulNewStarTsFull)
-                         << Form("old = %2u vs new = %2u ", fuStarDaqCmdLast,  uNewDaqCmd)
-                         << Form("old = %2u vs new = %2u ", fuStarTrigCmdLast, uNewTrigCmd)
+                         << " gDBB #" << fuGdpbNr << " "
+                         << Form("old = %5u vs new = %5u ", fuStarTokenLast[fuGdpbNr],   uNewToken)
+                         << Form("old = %12llu vs new = %12llu ", fulGdpbTsFullLast[fuGdpbNr], ulNewGdpbTsFull)
+                         << Form("old = %12llu vs new = %12llu ", fulStarTsFullLast[fuGdpbNr], ulNewStarTsFull)
+                         << Form("old = %2u vs new = %2u ", fuStarDaqCmdLast[fuGdpbNr],  uNewDaqCmd)
+                         << Form("old = %2u vs new = %2u ", fuStarTrigCmdLast[fuGdpbNr], uNewTrigCmd)
                          << FairLogger::endl;
+*/
 
-         fulGdpbTsFullLast = ulNewGdpbTsFull;
-         fulStarTsFullLast = ulNewStarTsFull;
-         fuStarTokenLast   = uNewToken;
-         fuStarDaqCmdLast  = uNewDaqCmd;
-         fuStarTrigCmdLast = uNewTrigCmd;
+         // STAR TS counter reset detection
+         if( ulNewStarTsFull < fulStarTsFullLast[fuGdpbNr] )
+            LOG(DEBUG) << "Probable reset of the STAR TS: old = " << Form("%16llu", fulStarTsFullLast[fuGdpbNr])
+                       << " new = " << Form("%16llu", ulNewStarTsFull)
+                       << " Diff = -" << Form("%8llu", fulStarTsFullLast[fuGdpbNr] - ulNewStarTsFull)
+                       << FairLogger::endl;
+
+         ULong64_t ulGdpbTsDiff = ulNewGdpbTsFull - fulGdpbTsFullLast[fuGdpbNr];
+         fulGdpbTsFullLast[fuGdpbNr] = ulNewGdpbTsFull;
+         fulStarTsFullLast[fuGdpbNr] = ulNewStarTsFull;
+         fuStarTokenLast[fuGdpbNr]   = uNewToken;
+         fuStarDaqCmdLast[fuGdpbNr]  = uNewDaqCmd;
+         fuStarTrigCmdLast[fuGdpbNr] = uNewTrigCmd;
 
          /// Histograms filling
          /// In Run rate evolution
          if( 0 <= fdStartTime )
          {
             /// Reset the evolution Histogram and the start time when we reach the end of the range
-            if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * 6.25 - fdStartTime) )
+            if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast[fuGdpbNr] * 6.25 - fdStartTime) )
             {
-               fdStartTime = fulGdpbTsFullLast * 6.25;
+               fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * 6.25;
             } // if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * 6.25 - fdStartTime) )
 
-//            fhTriggerRate->Fill( 1e-9 * ( fulGdpbTsFullLast * 6.25 - fdStartTime ) );
-//           fhStarTokenEvo->Fill( 1e-9 * ( fulGdpbTsFullLast * 6.25 - fdStartTime ), fuStarTokenLast );
+            fhTriggerRate[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * 6.25 - fdStartTime ) );
+            fhStarTokenEvo[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * 6.25 - fdStartTime ), fuStarTokenLast[fuGdpbNr] );
          } // if( 0 < fdStartTime )
-            else fdStartTime = fulGdpbTsFullLast * 6.25;
+            else fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * 6.25;
+         fhCmdDaqVsTrig[fuGdpbNr]->Fill( fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
 
          /// Generate Fake digi for NH analysis framework -----------///
          Double_t dTot = 1.;
-         Double_t dTime = fulGdpbTsFullLast * 6.25;
+         Double_t dTime = fulGdpbTsFullLast[fuGdpbNr] * 6.25;
          if( 0. == fdFirstDigiTimeDif && 0. != fdLastDigiTime )
          {
             fdFirstDigiTimeDif = dTime - fdLastDigiTime;
@@ -1033,8 +1210,8 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
          ///---------------------------------------------------------///
 
          /// Generate Trigger object and store it for event building ///
-         CbmTofStarTrigger newTrig( fulGdpbTsFullLast, fulStarTsFullLast, fuStarTokenLast,
-                                    fuStarDaqCmdLast, fuStarTrigCmdLast );
+         CbmTofStarTrigger newTrig( fulGdpbTsFullLast[fuGdpbNr], fulStarTsFullLast[fuGdpbNr], fuStarTokenLast[fuGdpbNr],
+                                    fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
          if( fbEventBuilding )
             fvtTsLinksBuffer[fuGdpbNr].push_back( newTrig );
             else

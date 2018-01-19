@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <map>
+#include <chrono>
 
 class CbmDigi;
 class CbmTofStar2018Par;
@@ -163,19 +164,19 @@ private:
 //   TH2*   fhDetChanCoinc;
 
    ///* STAR TRIGGER detection *///
-   ULong64_t fulGdpbTsMsb;
-   ULong64_t fulGdpbTsLsb;
-   ULong64_t fulStarTsMsb;
-   ULong64_t fulStarTsMid;
-   ULong64_t fulGdpbTsFullLast;
-   ULong64_t fulStarTsFullLast;
-   UInt_t    fuStarTokenLast;
-   UInt_t    fuStarDaqCmdLast;
-   UInt_t    fuStarTrigCmdLast;
-   TH1 *     fhTokenMsgType;
-   TH1 *     fhTriggerRate;
-   TH2 *     fhCmdDaqVsTrig;
-   TH2 *     fhStarTokenEvo;
+   std::vector< ULong64_t > fulGdpbTsMsb;
+   std::vector< ULong64_t > fulGdpbTsLsb;
+   std::vector< ULong64_t > fulStarTsMsb;
+   std::vector< ULong64_t > fulStarTsMid;
+   std::vector< ULong64_t > fulGdpbTsFullLast;
+   std::vector< ULong64_t > fulStarTsFullLast;
+   std::vector< UInt_t    > fuStarTokenLast;
+   std::vector< UInt_t    > fuStarDaqCmdLast;
+   std::vector< UInt_t    > fuStarTrigCmdLast;
+   std::vector< TH1 *     > fhTokenMsgType;
+   std::vector< TH1 *     > fhTriggerRate;
+   std::vector< TH2 *     > fhCmdDaqVsTrig;
+   std::vector< TH2 *     > fhStarTokenEvo;
 
    ///* STAR event building *///
    Bool_t fbEventBuilding; //! If false => build subevents in each MS => M1, if true => store data for full TS, then build subevents in TS => M2
@@ -185,6 +186,7 @@ private:
    ULong64_t fulNbStarSubEvent;
    ULong64_t fulNbBuiltSubEventLastPrintout;
    ULong64_t fulNbStarSubEventLastPrintout;
+   std::chrono::time_point<std::chrono::system_clock> fTimeLastPrintoutNbStarEvent;
    Double_t fdCurrentMsStartTime;                          //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
    Double_t fdCurrentMsEndTime;                            //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
    std::vector< gdpb::FullMessage > fvmCurrentLinkBuffer;  //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
