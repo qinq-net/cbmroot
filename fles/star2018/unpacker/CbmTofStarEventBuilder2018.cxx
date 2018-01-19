@@ -293,11 +293,11 @@ void CbmTofStarEventBuilder2018::SetTimeSortOutput( Bool_t bTimeSort )
    fbTimeSortOutput = bTimeSort;
    if( fbTimeSortOutput )
       LOG(INFO) << "Output buffer will be time sorted before being sent to STAR DAQ " << FairLogger::endl
-                << "=> This will have an effect (build time) only in eevent building mode with all links in one subevent "
+                << "=> This will have an effect (build time) only in event building mode with all links in one subevent "
                 << " as data for single links are already time sorted"
                 << FairLogger::endl;
       else LOG(INFO) << "Output buffer will NOT be time sorted before being sent to STAR DAQ " << FairLogger::endl
-                     << "=> This will have an effect (build time) only in eevent building mode with all links in one subevent "
+                     << "=> This will have an effect (build time) only in event building mode with all links in one subevent "
                      << " as data for single links are already time sorted"
                      << FairLogger::endl;
 }

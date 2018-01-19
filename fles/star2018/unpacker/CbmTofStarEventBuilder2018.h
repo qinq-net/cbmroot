@@ -66,8 +66,8 @@ public:
 
    inline void SetTShiftRef( Double_t dTShiftRefIn ) {fdTShiftRef = dTShiftRefIn;}
 
-   inline void SetEventBuildingMode( Bool_t bEventBuildingMode = kFALSE );
-   inline void SetTimeSortOutput( Bool_t bTimeSort = kTRUE );
+   void SetEventBuildingMode( Bool_t bEventBuildingMode = kFALSE );
+   void SetTimeSortOutput( Bool_t bTimeSort = kTRUE );
 
    inline void SetHistoryHistoSize( UInt_t inHistorySizeSec = 1800 ) { fuHistoryHistoSize = inHistorySizeSec; }
    inline void SetHistoryHistoSizeLong( UInt_t inHistorySizeMin = 1800 ) { fuHistoryHistoSizeLong = inHistorySizeMin; }
