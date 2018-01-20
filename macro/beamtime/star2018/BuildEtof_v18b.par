@@ -1,6 +1,6 @@
 [CbmTofStar2018Par]
 //----------------------------------------------------------------------------
-NrOfRocs: Int_t 1
+NrOfRocs: Int_t 5
 RocIdArray: Int_t \
 0x18f6 0x0b59 0x1898 0x5f64 0x18e6
 NrOfFebsPerGdpb: Int_t 4

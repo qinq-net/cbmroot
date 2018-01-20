@@ -10,6 +10,7 @@
 #include <string.h>
 
 //#include <iostream>
+#include <iomanip>
 
 //----------------------------------------------------------------------------
 //! strict weak ordering operator, assumes same epoch for both messages
@@ -571,4 +572,9 @@ bool gdpb::FullMessage::operator<(const FullMessage& other) const
       else return this->fulExtendedEpoch < other.fulExtendedEpoch;
 
 }
-
+//----------------------------------------------------------------------------
+void gdpb::FullMessage::PrintMessage( unsigned outType, unsigned kind) const
+{
+   std::cout << "Full epoch = " << std::setw(9) << fulExtendedEpoch << " ";
+   printDataCout( outType, kind );
+}

@@ -9,6 +9,9 @@
 
 #include <algorithm>
 
+#include <iostream>
+#include <iomanip>
+
 /********************** CbmTofStarTrigger2018 *************************/
 /*
 CbmTofStarTrigger2018::CbmTofStarTrigger2018( ULong64_t ulGdpbTsFullIn, ULong64_t ulStarTsFullIn,
@@ -169,6 +172,30 @@ Bool_t CbmTofStarSubevent2018::LoadInput( void * pBuff, Int_t iInputSizeBytes )
    } // for( UInt_t uMsgIdx = 0; uMsgIdx < uMsgsToRead; uMsgIdx++)
 
    return kTRUE;
+}
+void CbmTofStarSubevent2018::PrintSubEvent()
+{
+   std::cout << "-------------------------------------------------------" << std::endl;
+   std::cout << "Printing CbmTofStarSubevent2018 dump" << std::endl;
+   // Print the header
+   std::cout << "Trigger info: gDPB TS = " << fTrigger.GetFullGdpbTs()
+             << " STAR TS = " << fTrigger.GetFullStarTs()
+             << " Token = " << fTrigger.GetStarToken()
+             << " DAQ CMD = " << fTrigger.GetStarDaqCmd()
+             << " TRIG CMD = " << fTrigger.GetStarTrigCmd()
+             << std::endl;
+   std::cout << "Status flags = "
+             << std::hex << std::setw(16) << fulEventStatusFlags
+             << std::dec << std::endl;
+
+   // Print the messages in the buffer
+
+   for( UInt_t uMsgIdx = 0; uMsgIdx < fvMsgBuffer.size(); uMsgIdx++)
+   {
+      fvMsgBuffer[uMsgIdx].PrintMessage( gdpb::msg_print_Prefix | gdpb::msg_print_Data );
+   } // for( UInt_t uMsgIdx = 0; uMsgIdx < uMsgsToRead; uMsgIdx++)
+
+   std::cout << "-------------------------------------------------------" << std::endl;
 }
 //ClassImp(CbmTofStarTrigger)
 /**********************************************************************/

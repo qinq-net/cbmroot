@@ -489,6 +489,8 @@ namespace gdpb {
 
          // Works only for GET4 v2.XXX !!!!!!
          inline double GetFullTimeNs() { return getMsgFullTimeD( fulExtendedEpoch ); }
+
+         void PrintMessage( unsigned outType = msg_print_Cout, unsigned kind = msg_print_Human ) const;
    };
 
 } // gdpb

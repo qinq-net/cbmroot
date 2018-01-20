@@ -108,6 +108,7 @@ private:
    Double_t                 fdTsDeadtimePeriod;
 
    /** Running indices **/
+   uint64_t fulCurrentTsIndex;  // Idx of the current TS
    size_t fuCurrentMs; // Idx of the current MS in TS (0 to fuTotalMsNb)
    UInt_t fuGdpbId;    // Id (hex number) of the GDPB for current message
    UInt_t fuGdpbNr;    // running number (0 to fNrOfGdpbs) of the GDPB for current message

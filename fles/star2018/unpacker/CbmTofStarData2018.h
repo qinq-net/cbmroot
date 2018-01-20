@@ -107,7 +107,7 @@ class CbmTofStarSubevent2018
       inline Bool_t            SetStartBorderEventFlag() const { return 0 < (fulEventStatusFlags & kulFlagStartBorderEvt); }
       inline Bool_t            SetEndBorderEventFlag()   const { return 0 < (fulEventStatusFlags & kulFlagEndBorderEvt); }
 //#ifndef __CINT__
-      inline gdpb::Message    GetMsg( UInt_t uMsgIdx ) const;
+      inline gdpb::Message     GetMsg( UInt_t uMsgIdx ) const;
 //#endif
       inline UInt_t            GetMsgBuffSize() const { return fvMsgBuffer.size();}
 //#ifndef __CINT__
@@ -125,6 +125,9 @@ class CbmTofStarSubevent2018
 
       // Sub-event input
       Bool_t LoadInput( void * pBuff, Int_t iInputSizeBytes );
+
+      // Print the heade and the messages in the buffer
+      void   PrintSubEvent();
 
    private:
 //#ifndef __CINT__

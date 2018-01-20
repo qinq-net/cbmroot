@@ -56,6 +56,7 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fdStarTriggerDelay(),
     fdStarTriggerWinSize(),
     fdTsDeadtimePeriod(0.0),
+    fulCurrentTsIndex(0),
     fuCurrentMs(0),
     fuGdpbId(0),
     fuGdpbNr(0),
@@ -581,7 +582,7 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
                                            Form("STAR SubEvent Building for gDPB %02u", uGdpb),
                                            w, h);
       if( kTRUE == fbEventBuilding )
-         cStarEvtBuild->Divide( 2 );
+         cStarEvtBuild->Divide( 1, 3 );
          else cStarEvtBuild->Divide( 2, 2 );
 
       cStarEvtBuild->cd(1);
@@ -615,6 +616,33 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
 
 Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
+   uint64_t ulTsIndex = ts.index();
+   if( fulCurrentTsIndex < ulTsIndex )
+   {
+      /// Check if we are in "single sub-event for all links" building mode
+      if( kTRUE == fbEventBuilding )
+      {
+         BuildStarEventsAllLinks();
+      } // if( kTRUE == fbEventBuilding )
+   } // if( fCurrentTsIndex < ts.index() )
+      else if( ulTsIndex < fulCurrentTsIndex )
+      {
+         /// Either TS index made a loop or the timestamps were reinitialised
+         /// Check if we are in "single sub-event for all links" building mode
+         if( kTRUE == fbEventBuilding )
+         {
+            /// Clear buffers, eventual border crossing should be taken care thanks to the overlap MS
+            for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+            {
+               fvtTsLinksBuffer[uGdpb].clear();
+               fvmTsLinksBuffer[uGdpb].clear();
+               fvmTsOverLinksBuffer[uGdpb].clear();
+               fvtTsOverLinksBuffer[uGdpb].clear();
+            } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+         } // if( kTRUE == fbEventBuilding )
+      } // if( tsIndex < fulCurrentTsIndex )
+   fulCurrentTsIndex = ulTsIndex;
+
    LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
               << " microslices of component " << component << FairLogger::endl;
 
@@ -799,6 +827,18 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
 //                     fHistGet4MessType->Fill( fuGet4Nr, gdpb::GET4_32B_EPOCH );
                      FillEpochInfo(mess);
                   } // if single chip epoch message
+
+               /// Out of FillEpochInfo so that we do not expand the Merged epoch!!
+               gdpb::FullMessage fullMess( mess, mess.getGdpbEpEpochNb() );
+               if( kTRUE == fbEventBuilding )
+               {
+                  if( fuCurrentMs < fuCoreMs )
+                     fvmTsLinksBuffer[fuGdpbNr].push_back( fullMess );
+                     else fvmTsOverLinksBuffer[fuGdpbNr].push_back( fullMess );
+               } // if( kTRUE == fbEventBuilding )
+                  else
+                     fvmCurrentLinkBuffer.push_back( fullMess );
+
                break;
             } // case gdpb::MSG_EPOCH2:
             case gdpb::MSG_GET4_32B:
@@ -856,13 +896,6 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
       } // if( kFALSE == fbEventBuilding )
 
    } // for( fuCurrentMs = 0; fuCurrentMs < numCompMsInTs; ++fuCurrentMs )
-
-   /// Check if we are in "single sub-event for all links" building mode
-   if( kTRUE == fbEventBuilding )
-   {
-      BuildStarEventsAllLinks();
-   } // if( kTRUE == fbEventBuilding )
-
 
   return kTRUE;
 }
@@ -980,15 +1013,6 @@ void CbmTofStarEventBuilder2018::FillEpochInfo( gdpb::Message mess )
       fvmEpSupprBuffer[fuGet4Nr].clear();
    } // if( 0 < fvmEpSupprBuffer[fGet4Nr] )
 */
-   gdpb::FullMessage fullMess( mess, ulEpochNr );
-   if( kTRUE == fbEventBuilding )
-   {
-      if( fuCurrentMs < fuCoreMs )
-         fvmTsLinksBuffer[fuGdpbNr].push_back( fullMess );
-         else fvmTsOverLinksBuffer[fuGdpbNr].push_back( fullMess );
-   } // if( kTRUE == fbEventBuilding )
-      else
-         fvmCurrentLinkBuffer.push_back( fullMess );
 }
 
 void CbmTofStarEventBuilder2018::PrintSlcInfo(gdpb::Message mess)
@@ -1167,15 +1191,16 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
          if( 0 <= fdStartTime )
          {
             /// Reset the evolution Histogram and the start time when we reach the end of the range
-            if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast[fuGdpbNr] * 6.25 - fdStartTime) )
+            if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime) )
             {
-               fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * 6.25;
-            } // if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * 6.25 - fdStartTime) )
+               fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
+            } // if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * get4v2x::kdClockCycleSizeNs - fdStartTime) )
 
-            fhTriggerRate[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * 6.25 - fdStartTime ) );
-            fhStarTokenEvo[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * 6.25 - fdStartTime ), fuStarTokenLast[fuGdpbNr] );
+            fhTriggerRate[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ) );
+            fhStarTokenEvo[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ),
+                                            fuStarTokenLast[fuGdpbNr] );
          } // if( 0 < fdStartTime )
-            else fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * 6.25;
+            else fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
          fhCmdDaqVsTrig[fuGdpbNr]->Fill( fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
 
          /// Generate Trigger object and store it for event building ///
@@ -1472,6 +1497,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
          fvmTsOverLinksBuffer[uGdpb].clear();
          fvtTsOverLinksBuffer[uGdpb].clear();
       } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+      return;
    } // if( kTRUE == bEmptyTS )
 
    /// Initialize the iterator for first possible message in event to beginning of buffer
@@ -1493,29 +1519,44 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
 
       for( UInt_t uGdpb = 1; uGdpb < fuNrOfGdpbs; uGdpb ++)
       {
-         if( 0 < fvtTsLinksBuffer[0].size() )
+         if( 0 < fvtTsLinksBuffer[uGdpb].size() )
          {
             vuIndexMatchingTrigger[uGdpb] = 0;
             if( fvtTsLinksBuffer[uGdpb][0].GetStarTrigerWord() != uFirstBoardFirstTriggerWord )
             {
+//               LOG(WARNING) << "Trigger word not matching for board " << uGdpb << ": "
+//                            << fvtTsLinksBuffer[uGdpb][0].GetStarTrigerWord() << " VS "
+//                            << uFirstBoardFirstTriggerWord
+//                            << FairLogger::endl;
                bFirstTriggerMatch = kFALSE;
                break;
             } // if( fvtTsLinksBuffer[uGdpb][0].GetStarTrigerWord() != uFirstBoardFirstTriggerWord )
          } // if( 0 < fvtTsLinksBuffer[0].size() )
-            else bFirstTriggerMatch = kFALSE;
+            else
+            {
+//               LOG(WARNING) << "No trigger in board " << uGdpb
+//                            << FairLogger::endl;
+               bFirstTriggerMatch = kFALSE;
+            }
       } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
    } // if( 0 < fvtTsLinksBuffer[0].size() )
       else
       {
+//         LOG(WARNING) << "No trigger in first board!"
+//                      << FairLogger::endl;
          bFirstTriggerMatch = kFALSE;
       } // else of if( 0 < fvtTsLinksBuffer[0].size() )
 
    if( kFALSE == bFirstTriggerMatch )
    {
-      LOG(ERROR) << "First trigger in TS not the same for all boards!"
-                 << FairLogger::endl;
+//      LOG(ERROR) << "First trigger in TS not the same for all boards!"
+//                 << FairLogger::endl;
       for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
       {
+//         LOG(ERROR) << "Board: " << uGdpb
+//                    << " has " << fvtTsLinksBuffer[uGdpb].size()
+//                    << " triggers"
+//                    << FairLogger::endl;
          fvtTsLinksBuffer[uGdpb].clear();
          fvmTsLinksBuffer[uGdpb].clear();
          fvmTsOverLinksBuffer[uGdpb].clear();
@@ -1532,8 +1573,8 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
       Double_t dMeanTriggerStarTs = 0;
       for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
       {
-         dMeanTriggerGdpbTs += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullGdpbTs() / fuNrOfGdpbs;
-         dMeanTriggerStarTs += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullStarTs() / fuNrOfGdpbs;
+         dMeanTriggerGdpbTs += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullGdpbTs();
+         dMeanTriggerStarTs += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullStarTs();
       } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
       dMeanTriggerGdpbTs /= fuNrOfGdpbs;
       dMeanTriggerStarTs /= fuNrOfGdpbs;
@@ -1557,9 +1598,9 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
       {
 
          Double_t dTriggerTime   = get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullGdpbTs();
-         Double_t dTriggerWinBeg = dTriggerTime - fdStarTriggerDelay[ fuGdpbNr ];
-         Double_t dTriggerWinEnd = dTriggerTime - fdStarTriggerDelay[ fuGdpbNr ] + fdStarTriggerWinSize[ fuGdpbNr ];
-         Double_t dClosestTriggerWinStart = dTriggerTime - fdStarTriggerDelay[ fuGdpbNr ] + fdStarTriggerDeadtime[ fuGdpbNr ];
+         Double_t dTriggerWinBeg = dTriggerTime - fdStarTriggerDelay[ uGdpb ];
+         Double_t dTriggerWinEnd = dTriggerTime - fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ];
+         Double_t dClosestTriggerWinStart = dTriggerTime - fdStarTriggerDelay[ uGdpb ] + fdStarTriggerDeadtime[ uGdpb ];
          Bool_t bFirstMessClosestEventFound = kFALSE;
 
          /// Check if this trigger may correspond to an event with data in previous TS
@@ -1571,7 +1612,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
             fStarSubEvent.SetEndBorderEventFlag();
 
          /// Check if this trigger leads to an event overlapping with the previous one
-         if( 0 < dPrevEventEnd[ fuGdpbNr ] && dTriggerWinBeg < dPrevEventEnd[ fuGdpbNr ] )
+         if( 0 < dPrevEventEnd[ uGdpb ] && dTriggerWinBeg < dPrevEventEnd[ uGdpb ] )
             fStarSubEvent.SetOverlapEventFlag();
 
          for( std::vector< gdpb::FullMessage >::iterator itMess = itFirstMessageNextEvent[ uGdpb ];
@@ -1587,7 +1628,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
             } // If first possible hit of closest event not found and current hit fits
 
             /// Plotting of time to trigger for all hits
-            fhStarHitToTrigAll_gDPB[ fuGdpbNr ]->Fill( dMessageFullTime - dTriggerTime );
+            fhStarHitToTrigAll_gDPB[ uGdpb ]->Fill( dMessageFullTime - dTriggerTime );
 
             if( dTriggerWinBeg   <= dMessageFullTime && dMessageFullTime <= dTriggerWinEnd )
             {
@@ -1595,7 +1636,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                fStarSubEvent.AddMsg( (*itMess) );
 
                /// Plotting of time to trigger for hits within the event window
-               fhStarHitToTrigWin_gDPB[ fuGdpbNr ]->Fill( dMessageFullTime - dTriggerTime );
+               fhStarHitToTrigWin_gDPB[ uGdpb ]->Fill( dMessageFullTime - dTriggerTime );
             } // if( dTriggerWinBeg   <= dMessageFullTime && dMessageFullTime <= dTriggerWinEnd )
                else if( dTriggerWinEnd < dMessageFullTime )
                   /// First Message out of the window for this event => Stop there and go to the next
@@ -1636,7 +1677,10 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
          else LOG(ERROR) << "Invalid STAR SubEvent Output, can only happen if trigger "
                          << " object was not set => Do Nothing more with it!!! "
                          << FairLogger::endl;
-
+/*
+      if( 1000 <  iBuffSzByte )
+         fStarSubEvent.PrintSubEvent();
+*/
       /// Fill plot of event size
       fhStarEventSize->Fill( iBuffSzByte );
       /// Fill plot of event size as function of trigger time
@@ -1737,13 +1781,13 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
             {
                if( bTriggerInOverMs[uGdpb] )
                {
-                  dMeanTriggerGdpbTsOver += get4v2x::kdClockCycleSizeNs * fvtTsOverLinksBuffer[uGdpb][ 0 ].GetFullGdpbTs() / fuNrOfGdpbs;
-                  dMeanTriggerStarTsOver += get4v2x::kdClockCycleSizeNs * fvtTsOverLinksBuffer[uGdpb][ 0 ].GetFullStarTs() / fuNrOfGdpbs;
+                  dMeanTriggerGdpbTsOver += get4v2x::kdClockCycleSizeNs * fvtTsOverLinksBuffer[uGdpb][ 0 ].GetFullGdpbTs();
+                  dMeanTriggerStarTsOver += get4v2x::kdClockCycleSizeNs * fvtTsOverLinksBuffer[uGdpb][ 0 ].GetFullStarTs();
                } // if( bTriggerInOverMs[uGdpb] )
                   else
                   {
-                     dMeanTriggerGdpbTsOver += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullGdpbTs() / fuNrOfGdpbs;
-                     dMeanTriggerStarTsOver += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullStarTs() / fuNrOfGdpbs;
+                     dMeanTriggerGdpbTsOver += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullGdpbTs();
+                     dMeanTriggerStarTsOver += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullStarTs();
                   } // else of if( bTriggerInOverMs[uGdpb] )
             } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
             dMeanTriggerGdpbTsOver /= fuNrOfGdpbs;
@@ -1773,14 +1817,23 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
             fStarSubEvent.SetSource( 16 );
 
             for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+               if( bTriggerInOverMs[uGdpb] )
+                fhStarTrigTimeToMeanTrig_gDPB[ uGdpb ]->Fill(
+                              get4v2x::kdClockCycleSizeNs * fvtTsOverLinksBuffer[uGdpb][ 0 ].GetFullGdpbTs()
+                            - dMeanTriggerGdpbTs );
+                  else fhStarTrigTimeToMeanTrig_gDPB[ uGdpb ]->Fill(
+                              get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullGdpbTs()
+                            - dMeanTriggerGdpbTs );
+
+            for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
             {
                Double_t dTriggerTime   = 0.0;
                if( bTriggerInOverMs[uGdpb] )
                   dTriggerTime = get4v2x::kdClockCycleSizeNs * fvtTsOverLinksBuffer[uGdpb][ 0 ].GetFullGdpbTs();
                   else dTriggerTime = get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullGdpbTs();
-               Double_t dTriggerWinBeg = dTriggerTime - fdStarTriggerDelay[ fuGdpbNr ];
-               Double_t dTriggerWinEnd = dTriggerTime - fdStarTriggerDelay[ fuGdpbNr ] + fdStarTriggerWinSize[ fuGdpbNr ];
-               Double_t dClosestTriggerWinStart = dTriggerTime - fdStarTriggerDelay[ fuGdpbNr ] + fdStarTriggerDeadtime[ fuGdpbNr ];
+               Double_t dTriggerWinBeg = dTriggerTime - fdStarTriggerDelay[ uGdpb ];
+               Double_t dTriggerWinEnd = dTriggerTime - fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ];
+               Double_t dClosestTriggerWinStart = dTriggerTime - fdStarTriggerDelay[ uGdpb ] + fdStarTriggerDeadtime[ uGdpb ];
                Bool_t bFirstMessClosestEventFound = kFALSE;
                Bool_t bEventWindowInOverlap = ( fdCurrentTsCoreEndTime < dTriggerWinEnd ? kTRUE : kFALSE );
 
@@ -1789,7 +1842,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                   fStarSubEvent.SetEndBorderEventFlag();
 
                /// Check if this trigger leads to an event overlapping with the previous one
-               if( 0 < dPrevEventEnd[ fuGdpbNr ] && dTriggerWinBeg < dPrevEventEnd[ fuGdpbNr ] )
+               if( 0 < dPrevEventEnd[ uGdpb ] && dTriggerWinBeg < dPrevEventEnd[ uGdpb ] )
                   fStarSubEvent.SetOverlapEventFlag();
 
                for( std::vector< gdpb::FullMessage >::iterator itMess = itFirstMessageNextEvent[ uGdpb ];
@@ -1805,7 +1858,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                   } // If first possible hit of closest event not found and current hit fits
 
                   /// Plotting of time to trigger for all hits
-                  fhStarHitToTrigAll_gDPB[ fuGdpbNr ]->Fill( dMessageFullTime - dTriggerTime );
+                  fhStarHitToTrigAll_gDPB[ uGdpb ]->Fill( dMessageFullTime - dTriggerTime );
 
                   if( dTriggerWinBeg   <= dMessageFullTime && dMessageFullTime <= dTriggerWinEnd )
                   {
@@ -1813,7 +1866,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                      fStarSubEvent.AddMsg( (*itMess) );
 
                      /// Plotting of time to trigger for hits within the event window
-                     fhStarHitToTrigWin_gDPB[ fuGdpbNr ]->Fill( dMessageFullTime - dTriggerTime );
+                     fhStarHitToTrigWin_gDPB[ uGdpb ]->Fill( dMessageFullTime - dTriggerTime );
                   } // if( dTriggerWinBeg   <= dMessageFullTime && dMessageFullTime <= dTriggerWinEnd )
                      else if( dTriggerWinEnd < dMessageFullTime )
                         /// First Message out of the window for this event => Stop there and go to the next
@@ -1823,7 +1876,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                /// If event window is going in overlap MS, check also these messages
                if( kTRUE == bEventWindowInOverlap )
                {
-                  for( std::vector< gdpb::FullMessage >::iterator itMess = fvmTsOverLinksBuffer[ fuGdpbNr ].begin();
+                  for( std::vector< gdpb::FullMessage >::iterator itMess = fvmTsOverLinksBuffer[ uGdpb ].begin();
                        itMess != fvmTsOverLinksBuffer[ uGdpb ].end();
                        ++ itMess )
                   {
@@ -1836,7 +1889,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                      } // If first possible hit of closest event not found and current hit fits
 
                      /// Plotting of time to trigger for all hits
-                     fhStarHitToTrigAll_gDPB[ fuGdpbNr ]->Fill( dMessageFullTime - dTriggerTime );
+                     fhStarHitToTrigAll_gDPB[ uGdpb ]->Fill( dMessageFullTime - dTriggerTime );
 
                      if( dTriggerWinBeg   <= dMessageFullTime && dMessageFullTime <= dTriggerWinEnd )
                      {
@@ -1844,7 +1897,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                         fStarSubEvent.AddMsg( (*itMess) );
 
                         /// Plotting of time to trigger for hits within the event window
-                        fhStarHitToTrigWin_gDPB[ fuGdpbNr ]->Fill( dMessageFullTime - dTriggerTime );
+                        fhStarHitToTrigWin_gDPB[ uGdpb ]->Fill( dMessageFullTime - dTriggerTime );
                      } // if( dTriggerWinBeg   <= dMessageFullTime && dMessageFullTime <= dTriggerWinEnd )
                         else if( dTriggerWinEnd < dMessageFullTime )
                            /// First Message out of the window for this event => Stop there and go to the next
@@ -1886,7 +1939,13 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                   else LOG(ERROR) << "Invalid STAR SubEvent Output, can only happen if trigger "
                                   << " object was not set => Do Nothing more with it!!! "
                                   << FairLogger::endl;
-
+/*
+            if( 1000 <  iBuffSzByte )
+            {
+               std::cout << "Big subevent in overlap" << std::endl;
+               fStarSubEvent.PrintSubEvent();
+            } // if( 100 <  iBuffSzByte )
+*/
             /// Fill plot of event size
             fhStarEventSize->Fill( iBuffSzByte );
             /// Fill plot of event size as function of trigger time
