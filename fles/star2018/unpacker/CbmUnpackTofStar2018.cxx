@@ -814,7 +814,7 @@ void CbmUnpackTofStar2018::FillStarTrigInfo(ngdpb::Message mess)
                          << FairLogger::endl;
             return;
          } // if exactly same message repeated
-
+/*
          if( (uNewToken != fuStarTokenLast + 1) &&
              0 < fulGdpbTsFullLast && 0 < fulStarTsFullLast &&
              ( 4095 != fuStarTokenLast || 1 != uNewToken)  )
@@ -825,7 +825,7 @@ void CbmUnpackTofStar2018::FillStarTrigInfo(ngdpb::Message mess)
                          << Form("old = %2u vs new = %2u ", fuStarDaqCmdLast,  uNewDaqCmd)
                          << Form("old = %2u vs new = %2u ", fuStarTrigCmdLast, uNewTrigCmd)
                          << FairLogger::endl;
-
+*/
          fulGdpbTsFullLast = ulNewGdpbTsFull;
          fulStarTsFullLast = ulNewStarTsFull;
          fuStarTokenLast   = uNewToken;
