@@ -43,13 +43,14 @@ class CbmTofStar2018Par : public FairParGenericSet
    inline Int_t GetNumberOfChannels() {return fiNrOfChannels;}
    inline Int_t GetChannelToDetUIdMap(Int_t channel) {return fiChannelToDetUIdMap[channel];}
 
-   inline Double_t GetNbMsTot() { return fiNbMsTot;}
-   inline Double_t GetNbMsOverlap() { return fiNbMsOverlap;}
+   inline Int_t    GetNbMsTot() { return fiNbMsTot;}
+   inline Int_t    GetNbMsOverlap() { return fiNbMsOverlap;}
    inline Double_t GetSizeMsInNs() { return fdSizeMsInNs;}
 
    inline Double_t GetStarTriggDeadtime(Int_t gdpb) { return fdStarTriggerDeadtime[gdpb];}
    inline Double_t GetStarTriggDelay(Int_t gdpb) { return fdStarTriggerDelay[gdpb];}
    inline Double_t GetStarTriggWinSize(Int_t gdpb) { return fdStarTriggerWinSize[gdpb];}
+   inline Double_t GetTsDeadtimePeriod() { return fdTsDeadtimePeriod;}
 
  private:
 
@@ -70,6 +71,7 @@ class CbmTofStar2018Par : public FairParGenericSet
    TArrayD  fdStarTriggerDeadtime; // STAR: Array to hold for each gDPB the deadtime between triggers in ns
    TArrayD  fdStarTriggerDelay; // STAR: Array to hold for each gDPB the Delay in ns to subtract when looking for beginning of coincidence of data with trigger window
    TArrayD  fdStarTriggerWinSize; // STAR: Array to hold for each gDPB the Size of the trigger window in ns
+   Double_t fdTsDeadtimePeriod; // Period (ns) in the first MS of each TS where events with missing triggers should be built using the overlap MS of previous TS (overlap events)
 
    ClassDef(CbmTofStar2018Par,1);
 };

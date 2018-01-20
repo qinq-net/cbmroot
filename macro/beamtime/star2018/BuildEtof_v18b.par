@@ -98,3 +98,4 @@ StarTriggerDelay: Double_t \
  2000.0  2000.0  2000.0  2000.0  2000.0
 StarTriggerWinSize: Double_t \
  2000.0  2000.0  2000.0  2000.0  2000.0
+TsDeadtimePeriod: Double_t 62.5

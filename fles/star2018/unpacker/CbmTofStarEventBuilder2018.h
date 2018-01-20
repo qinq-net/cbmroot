@@ -8,12 +8,10 @@
 #ifndef CbmTofStarEventBuilder2018_H
 #define CbmTofStarEventBuilder2018_H
 
-//#ifndef __CINT__
-  #include "Timeslice.hpp"
-  #include "rocMess_wGet4v2.h"
-  #include "CbmTofStarData.h"
-  #include "CbmTofStarData2018.h"
-//#endif
+#include "Timeslice.hpp"
+#include "rocMess_wGet4v2.h"
+#include "CbmTofStarData.h"
+#include "CbmTofStarData2018.h"
 
 #include "CbmTSUnpack.h"
 #include "CbmTofDigi.h"
@@ -51,9 +49,7 @@ public:
    virtual ~CbmTofStarEventBuilder2018();
 
    virtual Bool_t Init();
-//#ifndef __CINT__
    virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-//#endif
    virtual void Reset();
 
    virtual void Finish();
@@ -84,9 +80,11 @@ public:
 private:
 
    size_t   fuMsAcceptsPercent; /** Reject Ms with index inside TS above this, assumes 100 MS per TS **/
-   size_t   fuTotalMsNb;      /** Total nb of MS per link in timeslice **/
-   size_t   fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
+   size_t   fuTotalMsNb;        /** Total nb of MS per link in timeslice **/
+   size_t   fuOverlapMsNb;      /** Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
+   size_t   fuCoreMs;           /** Number of non overlap MS at beginning of TS **/
    Double_t fdMsSizeInNs;
+   Double_t fdTsCoreSizeInNs;
    UInt_t fuMinNbGdpb;
    UInt_t fuCurrNbGdpb;
 
@@ -107,12 +105,14 @@ private:
    std::vector< Double_t >  fdStarTriggerDeadtime;
    std::vector< Double_t >  fdStarTriggerDelay;
    std::vector< Double_t >  fdStarTriggerWinSize;
+   Double_t                 fdTsDeadtimePeriod;
 
    /** Running indices **/
-   UInt_t fuGdpbId; // Id (hex number) of the GDPB for current message
-   UInt_t fuGdpbNr; // running number (0 to fNrOfGdpbs) of the GDPB for current message
-   UInt_t fuGet4Id; // running number (0 to fNrOfGet4PerGdpb) of the Get4 chip of a unique GDPB for current message
-   UInt_t fuGet4Nr; // running number (0 to fNrOfGet4) of the Get4 chip in the system for current message
+   size_t fuCurrentMs; // Idx of the current MS in TS (0 to fuTotalMsNb)
+   UInt_t fuGdpbId;    // Id (hex number) of the GDPB for current message
+   UInt_t fuGdpbNr;    // running number (0 to fNrOfGdpbs) of the GDPB for current message
+   UInt_t fuGet4Id;    // running number (0 to fNrOfGet4PerGdpb) of the Get4 chip of a unique GDPB for current message
+   UInt_t fuGet4Nr;    // running number (0 to fNrOfGet4) of the Get4 chip in the system for current message
 
    /** Current epoch marker for each GDPB and GET4
      * (first epoch in the stream initializes the map item)
@@ -167,22 +167,24 @@ private:
    std::chrono::time_point<std::chrono::system_clock> fTimeLastPrintoutNbStarEvent;
    Double_t fdCurrentMsStartTime;                          //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
    Double_t fdCurrentMsEndTime;                            //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
-//#ifndef __CINT__
    std::vector< gdpb::FullMessage > fvmCurrentLinkBuffer;  //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
-//#endif
    std::vector< CbmTofStarTrigger  > fvtCurrentLinkBuffer; //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
    Double_t fdCurrentTsStartTime;                                      //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
-//#ifndef __CINT__
-   std::vector< std::vector < gdpb::FullMessage > > fvmTsLinksBuffer;  //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
-//#endif
+   Double_t fdCurrentTsCoreEndTime;                                    //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
+   std::vector< std::vector < gdpb::FullMessage > >  fvmTsLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
    std::vector< std::vector < CbmTofStarTrigger  > > fvtTsLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
+   std::vector< std::vector < gdpb::FullMessage > >  fvmTsOverLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
+   std::vector< std::vector < CbmTofStarTrigger  > > fvtTsOverLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
    std::vector<TH1*> fhStarHitToTrigAll_gDPB;
    std::vector<TH1*> fhStarHitToTrigWin_gDPB;
    std::vector<TH1*> fhStarEventSize_gDPB;
    std::vector<TH2*> fhStarEventSizeTime_gDPB;
    std::vector<TH2*> fhStarEventSizeTimeLong_gDPB;
+   std::vector<TH1*> fhStarTrigTimeToMeanTrig_gDPB;
+   TH1 * fhStarEventSize;
+   TH2 * fhStarEventSizeTime;
+   TH2 * fhStarEventSizeTimeLong;
 
-//#ifndef __CINT__
    std::vector< std::vector < gdpb::Message > > fvmEpSupprBuffer;
 
    void FillHitInfo(gdpb::Message);
@@ -191,7 +193,8 @@ private:
    void PrintSlcInfo(gdpb::Message);
    void PrintSysInfo(gdpb::Message);
    void PrintGenInfo(gdpb::Message);
-//#endif
+
+
    inline Int_t GetArrayIndex(Int_t gdpbId, Int_t get4Id)
    {
       return gdpbId * fuNrOfGet4PerGdpb + get4Id;

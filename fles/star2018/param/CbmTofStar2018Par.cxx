@@ -29,7 +29,8 @@ CbmTofStar2018Par::CbmTofStar2018Par(const char* name,
     fdSizeMsInNs(0.0),
     fdStarTriggerDeadtime(),
     fdStarTriggerDelay(),
-    fdStarTriggerWinSize()
+    fdStarTriggerWinSize(),
+    fdTsDeadtimePeriod(0.0)
 {
    detName="Tof";
 }
@@ -70,6 +71,7 @@ void CbmTofStar2018Par::putParams(FairParamList* l)
    l->add("StarTriggerDeadtime", fdStarTriggerDeadtime);
    l->add("StarTriggerDelay",    fdStarTriggerDelay);
    l->add("StarTriggerWinSize",  fdStarTriggerWinSize);
+   l->add("TsDeadtimePeriod",    fdTsDeadtimePeriod);
 }
 
 //------------------------------------------------------
@@ -103,6 +105,7 @@ Bool_t CbmTofStar2018Par::getParams(FairParamList* l) {
    if ( ! l->fill("StarTriggerDeadtime", &fdStarTriggerDeadtime) ) return kFALSE;
    if ( ! l->fill("StarTriggerDelay",    &fdStarTriggerDelay) ) return kFALSE;
    if ( ! l->fill("StarTriggerWinSize",  &fdStarTriggerWinSize) ) return kFALSE;
+   if ( ! l->fill("TsDeadtimePeriod",  &fdTsDeadtimePeriod) ) return kFALSE;
 
    return kTRUE;
 }
