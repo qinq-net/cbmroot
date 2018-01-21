@@ -2551,7 +2551,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
       fdStartTimeLong = dHitTime;
 
     // Reset the evolution Histogram and the start time when we reach the end of the range
-    if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) )
+    if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) / 60.0 )
     {
        for (UInt_t uGdpbLoop = 0; uGdpbLoop < fNrOfGdpbs; uGdpbLoop++)
        {
@@ -2563,7 +2563,7 @@ void CbmTSMonitorTofStar::FillHitInfo(ngdpb::Message mess)
        } // for (UInt_t uFeetLoop = 0; uFeetLoop < fNrOfFebsPerGdpb; uFeetLoop++)
 
        fdStartTimeLong = dHitTime;
-    } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
+    } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) / 60.0 )
 
     if (0 <= fdStartTime)
     {
