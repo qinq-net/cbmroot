@@ -1075,6 +1075,7 @@ void CbmTofStarMonitorShift2018::FillHitInfo(gdpb::Message mess)
    UInt_t uChannelNr = fuGet4Id * fuNrOfChannelsPerGet4 + uChannel;
    UInt_t uChannelNrInFeet = (fuGet4Id % fuNrOfGet4PerFeb) * fuNrOfChannelsPerGet4 + uChannel;
    UInt_t uFeetNr   = (fuGet4Id / fuNrOfGet4PerFeb);
+   UInt_t uRemappedChannelNr = uFeetNr * fuNrOfChannelsPerFeet + fvuGet4ToPadi[ uChannelNrInFeet ];
 
    ULong_t  ulHitTime = mess.getMsgFullTime(ulCurEpochGdpbGet4);
    Double_t dHitTime  = mess.getMsgFullTimeD(ulCurEpochGdpbGet4);
@@ -1088,8 +1089,8 @@ void CbmTofStarMonitorShift2018::FillHitInfo(gdpb::Message mess)
    fvhRawTot_gDPB[ fuGdpbNr * uNbFeetPlotsPerGdpb + uFeetNr/uNbFeetPlot ]->Fill(uChannelNr, uTot);
 
    /// Remapped for PADI to GET4
-   fvhRemapChCount_gDPB[fuGdpbNr]->Fill( fvuGet4ToPadi[ uChannelNr ] );
-   fvhRemapTot_gDPB[ fuGdpbNr * uNbFeetPlotsPerGdpb + uFeetNr/uNbFeetPlot ]->Fill( fvuGet4ToPadi[ uChannelNr ], uTot);
+   fvhRemapChCount_gDPB[fuGdpbNr]->Fill( uRemappedChannelNr );
+   fvhRemapTot_gDPB[ fuGdpbNr * uNbFeetPlotsPerGdpb + uFeetNr/uNbFeetPlot ]->Fill(  uRemappedChannelNr , uTot);
 
    // Save last hist time if channel rate histos or pulser mode enabled
 /*
