@@ -22,6 +22,7 @@
 #pragma link C++ class CbmTofDigiBdfPar+;
 #pragma link C++ class CbmTofDigitizerBDF+;
 
+#pragma link C++ class CbmTofCosmicClusterizer+;
 #pragma link C++ class CbmTofSimpClusterizer+;
 #pragma link C++ class CbmTofTBClusterizer;
 #pragma link C++ class CbmTofFindTracks+;

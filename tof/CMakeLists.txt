@@ -84,6 +84,7 @@ TofReco/CbmTofFindTracks.cxx
 TofReco/CbmTofTrackFinderNN.cxx 
 TofReco/LKFMinuit.cxx 
 TofReco/CbmTofTBClusterizer.cxx
+TofReco/CbmTofCosmicClusterizer.cxx
 
 TofTests/CbmTofTests.cxx 
 
