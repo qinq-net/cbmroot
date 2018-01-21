@@ -14,8 +14,6 @@
 #include "CbmTofStarData2018.h"
 
 #include "CbmTSUnpack.h"
-#include "CbmTofDigi.h"
-#include "CbmTofDigiExp.h"
 #include "CbmTbDaqBuffer.h"
 
 #include "TClonesArray.h"

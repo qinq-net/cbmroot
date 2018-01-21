@@ -309,8 +309,7 @@ Bool_t CbmTofStarEventBuilder2018::ReInitContainers()
       fvtTsOverLinksBuffer.resize(  fuNrOfGdpbs );
    } // if( kTRUE == fbEventBuilding )
 
-/// TODO clean epoch suppression in STAR 2018!
-//   fvmEpSupprBuffer.resize( fuNrOfGet4 );
+   fvmEpSupprBuffer.resize( fuNrOfGet4 );
 
 	return kTRUE;
 }
@@ -878,9 +877,8 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
             } // case gdpb::MSG_EPOCH2:
             case gdpb::MSG_GET4_32B:
             {
-               FillHitInfo( mess );
-/// TODO clean epoch suppression in STAR 2018!
-//               fvmEpSupprBuffer[ fuGet4Nr ].push_back( mess );
+//               FillHitInfo( mess );
+               fvmEpSupprBuffer[ fuGet4Nr ].push_back( mess );
                break;
             } // case gdpb::MSG_GET4_32B:
             case gdpb::MSG_GET4_SLC:
@@ -1026,14 +1024,10 @@ void CbmTofStarEventBuilder2018::FillEpochInfo( gdpb::Message mess )
    /// We received the epoch after the data instead of the one before!
    /// TODO FIXME: commented out for the time being so that the order in the STAR
    ///             date is the same as in the CBM data
-/*
    if( 0 < ulEpochNr )
       mess.setEpoch2Number( ulEpochNr - 1 );
    else mess.setEpoch2Number( get4v2x::kuEpochCounterSz );
-*/
 
-/// TODO clean epoch suppression in STAR 2018!
-/*
    Int_t iBufferSize = fvmEpSupprBuffer[ fuGet4Nr ].size();
    if( 0 < iBufferSize )
    {
@@ -1047,7 +1041,7 @@ void CbmTofStarEventBuilder2018::FillEpochInfo( gdpb::Message mess )
 
       fvmEpSupprBuffer[fuGet4Nr].clear();
    } // if( 0 < fvmEpSupprBuffer[fGet4Nr] )
-*/
+
 }
 
 void CbmTofStarEventBuilder2018::PrintSlcInfo(gdpb::Message mess)
