@@ -272,7 +272,7 @@ Bool_t CbmTofStarMonitorShift2018::ReInitContainers()
 /// TODO: move these constants somewhere shared, e.g the parameter file
    fvuPadiToGet4.resize( fuNrOfChannelsPerFeet );
    fvuGet4ToPadi.resize( fuNrOfChannelsPerFeet );
-   UInt_t uPaditoget4[32] = {
+   UInt_t uGet4topadi[32] = {
         4,  3,  2,  1,  // provided by Jochen
       24, 23, 22, 21,
        8,  7,  6,  5,
@@ -282,7 +282,7 @@ Bool_t CbmTofStarMonitorShift2018::ReInitContainers()
       16, 15, 14, 13,
       20, 19, 18, 17 };
 
-  UInt_t uGet4topadi[32] = {
+  UInt_t uPaditoget4[32] = {
        4,  3,  2,  1,  // provided by Jochen
       12, 11, 10,  9,
       20, 19, 18, 17,
