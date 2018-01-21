@@ -84,6 +84,11 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fuStarTokenLast(),
     fuStarDaqCmdLast(),
     fuStarTrigCmdLast(),
+    fulGdpbTsFullLastCore(),
+    fulStarTsFullLastCore(),
+    fuStarTokenLastCore(),
+    fuStarDaqCmdLastCore(),
+    fuStarTrigCmdLastCore(),
     fhTokenMsgType(),
     fhTriggerRate(),
     fhCmdDaqVsTrig(),
@@ -264,6 +269,11 @@ Bool_t CbmTofStarEventBuilder2018::ReInitContainers()
    fuStarTokenLast.resize(  fuNrOfGdpbs );
    fuStarDaqCmdLast.resize(  fuNrOfGdpbs );
    fuStarTrigCmdLast.resize(  fuNrOfGdpbs );
+   fulGdpbTsFullLastCore.resize(  fuNrOfGdpbs );
+   fulStarTsFullLastCore.resize(  fuNrOfGdpbs );
+   fuStarTokenLastCore.resize(  fuNrOfGdpbs );
+   fuStarDaqCmdLastCore.resize(  fuNrOfGdpbs );
+   fuStarTrigCmdLastCore.resize(  fuNrOfGdpbs );
    fhTokenMsgType.resize(  fuNrOfGdpbs );
    fhTriggerRate.resize(  fuNrOfGdpbs );
    fhCmdDaqVsTrig.resize(  fuNrOfGdpbs );
@@ -279,6 +289,11 @@ Bool_t CbmTofStarEventBuilder2018::ReInitContainers()
       fuStarTokenLast[ uGdpb ]   = 0;
       fuStarDaqCmdLast[ uGdpb ]  = 0;
       fuStarTrigCmdLast[ uGdpb ] = 0;
+      fulGdpbTsFullLastCore[ uGdpb ] = 0;
+      fulStarTsFullLastCore[ uGdpb ] = 0;
+      fuStarTokenLastCore[ uGdpb ]   = 0;
+      fuStarDaqCmdLastCore[ uGdpb ]  = 0;
+      fuStarTrigCmdLastCore[ uGdpb ] = 0;
       fhTokenMsgType[ uGdpb ] = NULL;
       fhTriggerRate[ uGdpb ]  = NULL;
       fhCmdDaqVsTrig[ uGdpb ] = NULL;
@@ -759,6 +774,26 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
                break;
 
             fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
+
+            /// Store the last STAR trigger values for the core MS when reaching the first overlap MS
+            if( fuCoreMs == fuCurrentMs )
+            {
+               fulGdpbTsFullLastCore[ fuGdpbNr ] = fulGdpbTsFullLast[ fuGdpbNr ];
+               fulStarTsFullLastCore[ fuGdpbNr ] = fulStarTsFullLast[ fuGdpbNr ];
+               fuStarTokenLastCore[ fuGdpbNr ]   = fuStarTokenLast[ fuGdpbNr ];
+               fuStarDaqCmdLastCore[ fuGdpbNr ]  = fuStarDaqCmdLast[ fuGdpbNr ];
+               fuStarTrigCmdLastCore[ fuGdpbNr ] = fuStarTrigCmdLast[ fuGdpbNr ];
+            } // if( fuCoreMs == fuCurrentMs )
+
+            /// Restore the last STAR trigger values for the core MS when reaching the first core MS
+            if( 0 == fuCurrentMs )
+            {
+               fulGdpbTsFullLast[ fuGdpbNr ] = fulGdpbTsFullLastCore[ fuGdpbNr ];
+               fulStarTsFullLast[ fuGdpbNr ] = fulStarTsFullLastCore[ fuGdpbNr ];
+               fuStarTokenLast[ fuGdpbNr ]   = fuStarTokenLastCore[ fuGdpbNr ];
+               fuStarDaqCmdLast[ fuGdpbNr ]  = fuStarDaqCmdLastCore[ fuGdpbNr ];
+               fuStarTrigCmdLast[ fuGdpbNr ] = fuStarTrigCmdLastCore[ fuGdpbNr ];
+            } // if( 0 == fuCurrentMs )
          } // if( 0 = uIdx )
 
          fuGet4Id = mess.getGdpbGenChipId();
@@ -956,10 +991,10 @@ void CbmTofStarEventBuilder2018::FillHitInfo( gdpb::Message mess )
          fdStartTime = dHitTime;
       } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
           /// Reset the long evolution Histogram and the start time when we reach the end of the range
-      if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) )
+      if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) / 60.0 )
       {
          fdStartTimeLong = dHitTime;
-      } // if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) )
+      } // if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) / 60.0 )
 
       gdpb::FullMessage fullMess( mess, ulCurEpochGdpbGet4 );
       if( kTRUE == fbEventBuilding )
@@ -1144,17 +1179,39 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
          UInt_t uNewToken  = mess.getStarTokenStarD();
          UInt_t uNewDaqCmd  = mess.getStarDaqCmdStarD();
          UInt_t uNewTrigCmd = mess.getStarTrigCmdStarD();
+
+/*
+         UInt_t uNewTrigWord =  ( (uNewTrigCmd & 0x00F) << 16 )
+                  + ( (uNewDaqCmd   & 0x00F) << 12 )
+                  + ( (uNewToken    & 0xFFF)       );
+         LOG(INFO) << "New STAR trigger "
+                   << " TS " << fulCurrentTsIndex
+                   << " gDBB #" << fuGdpbNr << " "
+                   << Form("token = %5u ", uNewToken )
+                   << Form("gDPB ts  = %12llu ", ulNewGdpbTsFull )
+                   << Form("STAR ts = %12llu ", ulNewStarTsFull )
+                   << Form("DAQ cmd = %2u ", uNewDaqCmd )
+                   << Form("TRG cmd = %2u ", uNewTrigCmd )
+                   << Form("TRG Wrd = %5x ", uNewTrigWord )
+                   << FairLogger::endl;
+*/
+
          if( ( uNewToken == fuStarTokenLast[fuGdpbNr] ) && ( ulNewGdpbTsFull == fulGdpbTsFullLast[fuGdpbNr] ) &&
              ( ulNewStarTsFull == fulStarTsFullLast[fuGdpbNr] ) && ( uNewDaqCmd == fuStarDaqCmdLast[fuGdpbNr] ) &&
              ( uNewTrigCmd == fuStarTrigCmdLast[fuGdpbNr] ) )
          {
-            LOG(DEBUG) << "Possible error: identical STAR tokens found twice in a row => ignore 2nd! "
+            UInt_t uTrigWord =  ( (fuStarTrigCmdLast[fuGdpbNr] & 0x00F) << 16 )
+                     + ( (fuStarDaqCmdLast[fuGdpbNr]   & 0x00F) << 12 )
+                     + ( (fuStarTokenLast[fuGdpbNr]    & 0xFFF)       );
+            LOG(WARNING) << "Possible error: identical STAR tokens found twice in a row => ignore 2nd! "
+                         << " TS " << fulCurrentTsIndex
                          << " gDBB #" << fuGdpbNr << " "
                          << Form("token = %5u ", fuStarTokenLast[fuGdpbNr] )
                          << Form("gDPB ts  = %12llu ", fulGdpbTsFullLast[fuGdpbNr] )
                          << Form("STAR ts = %12llu ", fulStarTsFullLast[fuGdpbNr] )
                          << Form("DAQ cmd = %2u ", fuStarDaqCmdLast[fuGdpbNr] )
                          << Form("TRG cmd = %2u ", fuStarTrigCmdLast[fuGdpbNr] )
+                         << Form("TRG Wrd = %5x ", uTrigWord )
                          << FairLogger::endl;
             return;
          } // if exactly same message repeated
@@ -1179,6 +1236,11 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
                        << " Diff = -" << Form("%8llu", fulStarTsFullLast[fuGdpbNr] - ulNewStarTsFull)
                        << FairLogger::endl;
 
+/*
+         LOG(INFO) << "Updating  trigger token for " << fuGdpbNr
+                   << " " << fuStarTokenLast[fuGdpbNr] << " " << uNewToken
+                   << FairLogger::endl;
+*/
          ULong64_t ulGdpbTsDiff = ulNewGdpbTsFull - fulGdpbTsFullLast[fuGdpbNr];
          fulGdpbTsFullLast[fuGdpbNr] = ulNewGdpbTsFull;
          fulStarTsFullLast[fuGdpbNr] = ulNewStarTsFull;
@@ -1186,22 +1248,25 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
          fuStarDaqCmdLast[fuGdpbNr]  = uNewDaqCmd;
          fuStarTrigCmdLast[fuGdpbNr] = uNewTrigCmd;
 
-         /// Histograms filling
-         /// In Run rate evolution
-         if( 0 <= fdStartTime )
+         /// Histograms filling only in core MS
+         if( fuCurrentMs < fuCoreMs  )
          {
-            /// Reset the evolution Histogram and the start time when we reach the end of the range
-            if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime) )
+            /// In Run rate evolution
+            if( 0 <= fdStartTime )
             {
-               fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
-            } // if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * get4v2x::kdClockCycleSizeNs - fdStartTime) )
+               /// Reset the evolution Histogram and the start time when we reach the end of the range
+               if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime) )
+               {
+                  fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
+               } // if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * get4v2x::kdClockCycleSizeNs - fdStartTime) )
 
-            fhTriggerRate[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ) );
-            fhStarTokenEvo[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ),
-                                            fuStarTokenLast[fuGdpbNr] );
-         } // if( 0 < fdStartTime )
-            else fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
-         fhCmdDaqVsTrig[fuGdpbNr]->Fill( fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
+               fhTriggerRate[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ) );
+               fhStarTokenEvo[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ),
+                                               fuStarTokenLast[fuGdpbNr] );
+            } // if( 0 < fdStartTime )
+               else fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
+            fhCmdDaqVsTrig[fuGdpbNr]->Fill( fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
+         } // if( fuCurrentMs < fuCoreMs  )
 
          /// Generate Trigger object and store it for event building ///
          CbmTofStarTrigger newTrig( fulGdpbTsFullLast[fuGdpbNr], fulStarTsFullLast[fuGdpbNr], fuStarTokenLast[fuGdpbNr],
@@ -1499,6 +1564,23 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
       } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
       return;
    } // if( kTRUE == bEmptyTS )
+/*
+   LOG(INFO) << "--------------------------------"
+             << FairLogger::endl;
+   LOG(INFO) << " TS " << fulCurrentTsIndex
+             << FairLogger::endl;
+
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+   {
+      for( UInt_t uTrig = 0; uTrig < fvtTsLinksBuffer[uGdpb].size(); uTrig ++)
+         LOG(INFO) << "board " << uGdpb << " Trig " << std::setw(2) << uTrig
+                   << " TS g " << std::setw(15) << fvtTsLinksBuffer[uGdpb][uTrig].GetFullGdpbTs()
+                   << " TS s " << std::setw(15) << fvtTsLinksBuffer[uGdpb][uTrig].GetFullStarTs()
+                   << " Trigger " << std::hex << std::setw(5) << fvtTsLinksBuffer[uGdpb][uTrig].GetStarTrigerWord()
+                   << std::dec
+                   << FairLogger::endl;
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+*/
 
    /// Initialize the iterator for first possible message in event to beginning of buffer
    std::vector< std::vector< gdpb::FullMessage >::iterator > itFirstMessageNextEvent( fuNrOfGdpbs );
@@ -1648,7 +1730,6 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
       if( kTRUE == fbTimeSortOutput )
          fStarSubEvent.SortMessages(  );
 
-      /** TODO: clarify how we deal with multiple sub-events (eg one for each gDPB) **/
       /// Send the sub-event to the STAR systems
       Int_t  iBuffSzByte = 0;
       void * pDataBuff = fStarSubEvent.BuildOutput( iBuffSzByte );
@@ -1910,7 +1991,6 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
             if( kTRUE == fbTimeSortOutput )
                fStarSubEvent.SortMessages(  );
 
-            /** TODO: clarify how we deal with multiple sub-events (eg one for each gDPB) **/
             /// Send the sub-event to the STAR systems
             iBuffSzByte = 0;
             pDataBuff = fStarSubEvent.BuildOutput( iBuffSzByte );

@@ -152,6 +152,11 @@ private:
    std::vector< UInt_t    > fuStarTokenLast;
    std::vector< UInt_t    > fuStarDaqCmdLast;
    std::vector< UInt_t    > fuStarTrigCmdLast;
+   std::vector< ULong64_t > fulGdpbTsFullLastCore;
+   std::vector< ULong64_t > fulStarTsFullLastCore;
+   std::vector< UInt_t    > fuStarTokenLastCore;
+   std::vector< UInt_t    > fuStarDaqCmdLastCore;
+   std::vector< UInt_t    > fuStarTrigCmdLastCore;
    std::vector< TH1 *     > fhTokenMsgType;
    std::vector< TH1 *     > fhTriggerRate;
    std::vector< TH2 *     > fhCmdDaqVsTrig;
