@@ -61,7 +61,7 @@ void BuildEventStar2018( TString inFile = "",
    etofEventBuilder->SetEventBuildingMode( bEventBuildingMode );
    etofEventBuilder->SetTimeSortOutput( bTimeSort );
    etofEventBuilder->SetHistoryHistoSize( 600. );
-   etofEventBuilder->SetHistoryHistoSizeLong( 600. );
+   etofEventBuilder->SetHistoryHistoSizeLong( 1200. );
 
   // --- Source task
   CbmTofStar2018Source* source = new CbmTofStar2018Source();
