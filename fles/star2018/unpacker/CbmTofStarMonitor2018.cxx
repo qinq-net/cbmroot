@@ -721,15 +721,18 @@ void CbmTofStarMonitor2018::CreateHistograms()
 
   for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++) {
     name = Form("Raw_Tot_gDPB_%02u_0", uGdpb);
-    title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
+    title = Form("Raw TOT gDPB %02u RPC 0; channel; TOT [bin]", uGdpb);
     fHM->Add(name.Data(),
         new TH2F(name.Data(), title.Data(),
-                 uNbFeetPlot*fNrOfChannelsPerFeet, 0, uNbFeetPlot*fNrOfChannelsPerFeet,
+                 uNbFeetPlot*fNrOfChannelsPerFeet,
+		 0*uNbFeetPlot*fNrOfChannelsPerFeet,
+		 1*uNbFeetPlot*fNrOfChannelsPerFeet,
                  256, 0, 256));
 #ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
+
     if( uNbFeetPlot < fNrOfFebsPerGdpb )
     {
       name = Form("Raw_Tot_gDPB_%02u_1", uGdpb);
@@ -737,7 +740,7 @@ void CbmTofStarMonitor2018::CreateHistograms()
       fHM->Add(name.Data(),
                new TH2F(name.Data(), title.Data(),
                   uNbFeetPlot*fNrOfChannelsPerFeet,
-                  uNbFeetPlot*fNrOfChannelsPerFeet,
+                  1*uNbFeetPlot*fNrOfChannelsPerFeet,
                   2*uNbFeetPlot*fNrOfChannelsPerFeet,
                   256, 0, 256));
 #ifdef USE_HTTP_SERVER
@@ -745,6 +748,7 @@ void CbmTofStarMonitor2018::CreateHistograms()
          server->Register("/TofRaw", fHM->H2(name.Data()));
 #endif
     } // if( uNbFeetPlot < fNrOfFebsPerGdpb  )
+
     if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
     {
       name = Form("Raw_Tot_gDPB_%02u_2", uGdpb);
@@ -2175,9 +2179,58 @@ Bool_t CbmTofStarMonitor2018::DoUnpack(const fles::Timeslice& ts,
 
 void CbmTofStarMonitor2018::FillHitInfo(ngdpb::Message mess)
 {
-  Int_t channel = mess.getGdpbHitChanId();
+  // DE
+  Int_t paditoget4[64] = {  4,  3,  2,  1,  // provided by Jochen
+                           24, 23, 22, 21,
+                            8,  7,  6,  5,
+                           28, 27, 26, 25,
+                           12, 11, 10,  9,
+                           32, 31, 30, 29,
+                           16, 15, 14, 13,
+                           20, 19, 18, 17,
+
+			    0,  0,  0,  0,
+			    0,  0,  0,  0,
+			    0,  0,  0,  0,
+			    0,  0,  0,  0,
+
+			    0,  0,  0,  0,
+			    0,  0,  0,  0,
+			    0,  0,  0,  0,
+			    0,  0,  0,  0  };
+
+  Int_t get4topadi[64] = {  4,  3,  2,  1,  // provided by Jochen
+                           12, 11, 10,  9,
+                           20, 19, 18, 17,
+                           28, 27, 26, 25,
+
+			   32, 31, 30, 29,
+                            8,  7,  6,  5,
+                           16, 15, 14, 13,
+			   24, 23, 22, 21,
+
+			    0,  0,  0,  0,
+			    0,  0,  0,  0,
+			    0,  0,  0,  0,
+			    0,  0,  0,  0,
+
+			    0,  0,  0,  0,
+			    0,  0,  0,  0,
+			    0,  0,  0,  0,
+			    0,  0,  0,  0  };
+ 
+  for (Int_t i = 0; i < 32; i++)
+    {
+      paditoget4[i+32] = paditoget4[i]+32;  // compute 2nd half of mapping matrix
+      get4topadi[i+32] = get4topadi[i]+32;  // compute 2nd half of mapping matrix
+    }
+      
+  Int_t channel_us = mess.getGdpbHitChanId();  // unsorted
+  Int_t channel = paditoget4[channel_us];      // resorted
+  // DE  Int_t channel = get4topadi[channel_us];      // resorted
+
   Int_t tot = mess.getGdpbHit32Tot();
-  Int_t Fts  = mess.getGdpbHitFineTs();
+  Int_t Fts = mess.getGdpbHitFineTs();
 
   Long64_t curEpochGdpbGet4 = fCurrentEpoch[fGet4Nr];
 
