@@ -88,8 +88,8 @@ CbmTofStarMonitorShift2018::CbmTofStarMonitorShift2018() :
     fdTsLastPulserHit(),
     dMinDt(-1.*(kuNbBinsDt*get4v2x::kdBinSize/2.) - get4v2x::kdBinSize/2.),
     dMaxDt(1.*(kuNbBinsDt*get4v2x::kdBinSize/2.) + get4v2x::kdBinSize/2.),
-    uNbFeetPlot(2),
-    uNbFeetPlotsPerGdpb(0),
+    fuNbFeetPlot(2),
+    fuNbFeetPlotsPerGdpb(0),
     fdStartTime(-1.),
     fdStartTimeLong(-1.),
     fdStartTimeMsSz(-1.),
@@ -294,8 +294,8 @@ Bool_t CbmTofStarMonitorShift2018::ReInitContainers()
 
    for( UInt_t uChan = 0; uChan < fuNrOfChannelsPerFeet; ++uChan )
    {
-      fvuPadiToGet4[ uChan ] = uPaditoget4[ uChan ];
-      fvuGet4ToPadi[ uChan ] = uGet4topadi[ uChan ];
+      fvuPadiToGet4[ uChan ] = uPaditoget4[ uChan ] - 1;
+      fvuGet4ToPadi[ uChan ] = uGet4topadi[ uChan ] - 1;
    } // for( UInt_t uChan = 0; uChan < fuNrOfChannelsPerFeet; ++uChan )
 
 	return kTRUE;
@@ -316,6 +316,7 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
    // Full Fee time difference test
    UInt_t uNbBinsDt = kuNbBinsDt + 1; // To account for extra bin due to shift by 1/2 bin of both ranges
 
+   fuNbFeetPlotsPerGdpb = fuNrOfFebsPerGdpb/fuNbFeetPlot + ( 0 != fuNrOfFebsPerGdpb%fuNbFeetPlot ? 1 : 0 );
    Double_t dBinSzG4v2 = (6250. / 112.);
    dMinDt     = -1.*(kuNbBinsDt*dBinSzG4v2/2.) - dBinSzG4v2/2.;
    dMaxDt     =  1.*(kuNbBinsDt*dBinSzG4v2/2.) + dBinSzG4v2/2.;
@@ -444,27 +445,27 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
       title = Form("Raw TOT gDPB %02u RPC 0; channel; TOT [bin]", uGdpb);
       fvhRawTot_gDPB.push_back(
          new TH2F(name.Data(), title.Data(),
-            uNbFeetPlot*fuNrOfChannelsPerFeet, 0*uNbFeetPlot*fuNrOfChannelsPerFeet, 1*uNbFeetPlot*fuNrOfChannelsPerFeet,
+            fuNbFeetPlot*fuNrOfChannelsPerFeet, 0*fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet,
             256, 0, 256 ) );
 
-      if( uNbFeetPlot < fuNrOfFebsPerGdpb )
+      if( fuNbFeetPlot < fuNrOfFebsPerGdpb )
       {
          name = Form("RawTot_gDPB_%02u_1", uGdpb);
          title = Form("Raw TOT gDPB %02u RPC 1; channel; TOT [bin]", uGdpb);
          fvhRawTot_gDPB.push_back(
             new TH2F(name.Data(), title.Data(),
-               uNbFeetPlot*fuNrOfChannelsPerFeet, 1*uNbFeetPlot*fuNrOfChannelsPerFeet, 2*uNbFeetPlot*fuNrOfChannelsPerFeet,
+               fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet,
                256, 0, 256));
-      } // if( uNbFeetPlot < fuNrOfFebsPerGdpb )
-      if( 2 * uNbFeetPlot < fuNrOfFebsPerGdpb )
+      } // if( fuNbFeetPlot < fuNrOfFebsPerGdpb )
+      if( 2 * fuNbFeetPlot < fuNrOfFebsPerGdpb )
       {
          name = Form("RawTot_gDPB_%02u_2", uGdpb);
          title = Form("Raw TOT gDPB %02u RPC 2; channel; TOT [bin]", uGdpb);
          fvhRawTot_gDPB.push_back(
             new TH2F(name.Data(), title.Data(),
-               uNbFeetPlot*fuNrOfChannelsPerFeet, 2*uNbFeetPlot*fuNrOfChannelsPerFeet, 3*uNbFeetPlot*fuNrOfChannelsPerFeet,
+               fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet, 3*fuNbFeetPlot*fuNrOfChannelsPerFeet,
                256, 0, 256));
-      } // if( 2 * uNbFeetPlot < fuNrOfFebsPerGdpb )
+      } // if( 2 * fuNbFeetPlot < fuNrOfFebsPerGdpb )
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
        name = Form("ChCount_gDPB_%02u", uGdpb);
@@ -481,27 +482,27 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
       title = Form("Raw TOT gDPB %02u remapped; PADI channel; TOT [bin]", uGdpb);
       fvhRemapTot_gDPB.push_back(
          new TH2F(name.Data(), title.Data(),
-            uNbFeetPlot*fuNrOfChannelsPerFeet, 0*uNbFeetPlot*fuNrOfChannelsPerFeet, 1*uNbFeetPlot*fuNrOfChannelsPerFeet,
+            fuNbFeetPlot*fuNrOfChannelsPerFeet, 0*fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet,
             256, 0, 256 ) );
 
-      if( uNbFeetPlot < fuNrOfFebsPerGdpb )
+      if( fuNbFeetPlot < fuNrOfFebsPerGdpb )
       {
          name = Form("RemapTot_gDPB_%02u_1", uGdpb);
          title = Form("Raw TOT gDPB %02u remapped; PADI channel; TOT [bin]", uGdpb);
          fvhRemapTot_gDPB.push_back(
             new TH2F(name.Data(), title.Data(),
-               uNbFeetPlot*fuNrOfChannelsPerFeet, 1*uNbFeetPlot*fuNrOfChannelsPerFeet, 2*uNbFeetPlot*fuNrOfChannelsPerFeet,
+               fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet,
                256, 0, 256));
-      } // if( uNbFeetPlot < fuNrOfFebsPerGdpb )
-      if( 2 * uNbFeetPlot < fuNrOfFebsPerGdpb )
+      } // if( fuNbFeetPlot < fuNrOfFebsPerGdpb )
+      if( 2 * fuNbFeetPlot < fuNrOfFebsPerGdpb )
       {
          name = Form("RemapTot_gDPB_%02u_2", uGdpb);
          title = Form("Raw TOT gDPB %02u remapped; PADI channel; TOT [bin]", uGdpb);
          fvhRemapTot_gDPB.push_back(
             new TH2F(name.Data(), title.Data(),
-               uNbFeetPlot*fuNrOfChannelsPerFeet, 2*uNbFeetPlot*fuNrOfChannelsPerFeet, 3*uNbFeetPlot*fuNrOfChannelsPerFeet,
+               fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet, 3*fuNbFeetPlot*fuNrOfChannelsPerFeet,
                256, 0, 256));
-      } // if( 2 * uNbFeetPlot < fuNrOfFebsPerGdpb )
+      } // if( 2 * fuNbFeetPlot < fuNrOfFebsPerGdpb )
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
        name = Form("RemapChCount_gDPB_%02u", uGdpb);
@@ -1086,11 +1087,11 @@ void CbmTofStarMonitorShift2018::FillHitInfo(gdpb::Message mess)
    uFts = mess.getGdpbHitFullTs() % 112;
 
    fvhChCount_gDPB[fuGdpbNr]->Fill(uChannelNr);
-   fvhRawTot_gDPB[ fuGdpbNr * uNbFeetPlotsPerGdpb + uFeetNr/uNbFeetPlot ]->Fill(uChannelNr, uTot);
+   fvhRawTot_gDPB[ fuGdpbNr * fuNbFeetPlotsPerGdpb + uFeetNr/fuNbFeetPlot ]->Fill(uChannelNr, uTot);
 
    /// Remapped for PADI to GET4
    fvhRemapChCount_gDPB[fuGdpbNr]->Fill( uRemappedChannelNr );
-   fvhRemapTot_gDPB[ fuGdpbNr * uNbFeetPlotsPerGdpb + uFeetNr/uNbFeetPlot ]->Fill(  uRemappedChannelNr , uTot);
+   fvhRemapTot_gDPB[ fuGdpbNr * fuNbFeetPlotsPerGdpb + uFeetNr/fuNbFeetPlot ]->Fill(  uRemappedChannelNr , uTot);
 
    // Save last hist time if channel rate histos or pulser mode enabled
 /*

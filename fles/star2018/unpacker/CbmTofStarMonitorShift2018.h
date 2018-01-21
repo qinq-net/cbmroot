@@ -141,8 +141,8 @@ class CbmTofStarMonitorShift2018: public CbmTSUnpack {
       Double_t dMinDt;
       Double_t dMaxDt;
          // Default number of FEET per channels histograms
-      UInt_t uNbFeetPlot;
-      UInt_t uNbFeetPlotsPerGdpb;
+      UInt_t fuNbFeetPlot;
+      UInt_t fuNbFeetPlotsPerGdpb;
          // Evolution plots control
       Double_t fdStartTime; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
       Double_t fdStartTimeLong; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
