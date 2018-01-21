@@ -569,7 +569,7 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
 
       name = Form( "hTriggerRate_gDPB_%02u", uGdpb);
       title = Form( "STAR trigger signals per second gDPB %02u; Time[s] ; Counts", uGdpb);
-      fvhTriggerRate[ uGdpb ] =  new TH1F(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize);
+      fvhTriggerRate.push_back(  new TH1F(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize) );
 #ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fvhTriggerRate[ uGdpb ] );
