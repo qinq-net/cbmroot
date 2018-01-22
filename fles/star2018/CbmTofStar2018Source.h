@@ -29,6 +29,7 @@
 #include <map>
 
 class TH1I;
+class TProfile;
 
 class CbmTofStar2018Source : public FairSource
 {
@@ -93,7 +94,8 @@ class CbmTofStar2018Source : public FairSource
 
     Bool_t fBufferFillNeeded; /** True if the input buffer has to be filled again **/
 
-    TH1I* fHistoMissedTS;
+    TH1I*     fHistoMissedTS;
+    TProfile* fHistoMissedTSEvo;
     Int_t fNofTSSinceLastTS;
 
     UInt_t fuTsReduction;

@@ -19,6 +19,7 @@
 
 #include "TH1.h"
 #include "THttpServer.h"
+#include "TProfile.h"
 
 #include <iostream>
 #include <fstream>
@@ -39,6 +40,7 @@ CbmTofStar2018Source::CbmTofStar2018Source()
     fTimer(),
     fBufferFillNeeded(kTRUE),
     fHistoMissedTS(NULL),
+    fHistoMissedTSEvo(NULL),
     fNofTSSinceLastTS(0),
     fuTsReduction(1),
     fSource(NULL)
@@ -60,6 +62,7 @@ CbmTofStar2018Source::CbmTofStar2018Source(const CbmTofStar2018Source& source)
     fTimer(),
     fBufferFillNeeded(kTRUE),
     fHistoMissedTS(NULL),
+    fHistoMissedTSEvo(NULL),
     fNofTSSinceLastTS(0),
     fuTsReduction(1),
     fSource(NULL)
@@ -101,10 +104,14 @@ Bool_t CbmTofStar2018Source::Init()
 #endif
 
   fHistoMissedTS = new TH1I("Missed_TS", "Missed TS", 2, 0., 2.);
+  fHistoMissedTSEvo  = new TProfile("Missed_TS_Evo", "Missed TS evolution; TS Idx []", 2400, 0., 240000.);
 
 #ifdef USE_HTTP_SERVER
   if (server)
+  {
     server->Register("/TofRaw", fHistoMissedTS);
+    server->Register("/TofRaw", fHistoMissedTSEvo);
+  } // if (server)
 #endif
 
 
@@ -207,6 +214,7 @@ void CbmTofStar2018Source::Close()
     it->second->Finish();
   }
   fHistoMissedTS->Write();
+  fHistoMissedTSEvo->Write();
 }
 
 void CbmTofStar2018Source::Reset()
@@ -231,9 +239,11 @@ Int_t CbmTofStar2018Source::FillBuffer()
         LOG(DEBUG) << "Missed Timeslices. Old TS Number was " << fTSNumber
                      << " New TS Number is " << tsIndex << FairLogger::endl;
         fHistoMissedTS->Fill(1, tsIndex-fTSNumber);
+        fHistoMissedTSEvo->Fill( tsIndex, 1, tsIndex-fTSNumber);
         fNofTSSinceLastTS=tsIndex-fTSNumber;
       } else {
         fHistoMissedTS->Fill(0);
+        fHistoMissedTSEvo->Fill( tsIndex, 0, 1);
         fNofTSSinceLastTS=1;
       }
       fTSNumber=tsIndex;
