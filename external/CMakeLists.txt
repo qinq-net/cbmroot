@@ -73,6 +73,7 @@ set(Vc_LIBRARIES Vc)
 set(Vc_INCLUDE_DIR "${Vc_ROOTDIR}/include")
 set(Vc_CMAKE_MODULES_DIR "${Vc_ROOTDIR}/${_LIBDIR_DEFAULT}/cmake/Vc")
 
+Include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Vc
   FOUND_VAR Vc_FOUND
   REQUIRED_VARS Vc_INCLUDE_DIR Vc_LIBRARIES Vc_CMAKE_MODULES_DIR
