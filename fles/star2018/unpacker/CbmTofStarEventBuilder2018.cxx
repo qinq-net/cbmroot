@@ -1012,11 +1012,13 @@ void CbmTofStarEventBuilder2018::FillHitInfo( gdpb::Message mess )
          /// Reset the evolution Histogram and the start time when we reach the end of the range
       if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
       {
+         ResetEvolutionHistograms();
          fdStartTime = dHitTime;
       } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
           /// Reset the long evolution Histogram and the start time when we reach the end of the range
       if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) / 60.0 )
       {
+         ResetLongEvolutionHistograms();
          fdStartTimeLong = dHitTime;
       } // if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) / 60.0 )
 
@@ -1277,6 +1279,7 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
                /// Reset the evolution Histogram and the start time when we reach the end of the range
                if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime) )
                {
+                  ResetEvolutionHistograms();
                   fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
                } // if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * get4v2x::kdClockCycleSizeNs - fdStartTime) )
 
@@ -1289,6 +1292,19 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
                                                fulStarTsFullLast[fuGdpbNr] );
             } // if( 0 < fdStartTime )
                else fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
+
+            /// In Run rate long evolution
+            if( 0 <= fdStartTimeLong )
+            {
+               /// Reset the evolution Histogram and the start time when we reach the end of the range
+               if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime) / 60.0 )
+               {
+                  ResetLongEvolutionHistograms();
+                  fdStartTimeLong = fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
+               } // if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * get4v2x::kdClockCycleSizeNs - fdStartTime) / 60.0 )
+            } // if( 0 < fdStartTimeLong )
+               else fdStartTimeLong = fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
+
             fhCmdDaqVsTrig[fuGdpbNr]->Fill( fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
          } // if( fuCurrentMs < fuCoreMs  )
 
@@ -1455,6 +1471,45 @@ void CbmTofStarEventBuilder2018::ResetAllHistos()
    fdStartTime = -1;
    fdStartTimeLong = -1;
    fdStartTimeMsSz = -1;
+}
+void CbmTofStarEventBuilder2018::ResetEvolutionHistograms()
+{
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      fhTriggerRate[ uGdpb ]->Reset();
+      fhStarTokenEvo[ uGdpb ]->Reset();
+      fhStarTrigGdpbTsEvo[ uGdpb ]->Reset();
+      fhStarTrigStarTsEvo[ uGdpb ]->Reset();
+
+      if( kFALSE == fbEventBuilding )
+      {
+         fhStarEventSizeTime_gDPB[ uGdpb ]->Reset();
+      } // if( kFALSE == fbEventBuilding )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   if( kTRUE == fbEventBuilding )
+   {
+      fhStarEventSizeTime->Reset();
+   } // if( kTRUE == fbEventBuilding )
+
+   fdStartTime = -1;
+}
+void CbmTofStarEventBuilder2018::ResetLongEvolutionHistograms()
+{
+
+   if( kFALSE == fbEventBuilding )
+   {
+      for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+      {
+         fhStarEventSizeTimeLong_gDPB[ uGdpb ]->Reset();
+      } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+   } // if( kFALSE == fbEventBuilding )
+      else
+      {
+         fhStarEventSizeTimeLong->Reset();
+      } // else of if( kFALSE == fbEventBuilding )
+
+   fdStartTimeLong = -1;
 }
 
 void CbmTofStarEventBuilder2018::BuildStarEventsSingleLink()

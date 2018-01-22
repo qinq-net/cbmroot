@@ -1374,22 +1374,7 @@ void CbmTofStarMonitorShift2018::FillHitInfo(gdpb::Message mess)
    // Reset the evolution Histogram and the start time when we reach the end of the range
    if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
    {
-      for (UInt_t uGdpbLoop = 0; uGdpbLoop < fuNrOfGdpbs; uGdpbLoop++)
-      {
-         fvhChannelRate_gDPB[ uGdpbLoop ]->Reset();
-         fvhRemapChRate_gDPB[ uGdpbLoop ]->Reset();
-         for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
-         {
-            fvhFeetRate_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
-            fvhFeetErrorRate_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
-            fvhFeetErrorRatio_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
-         } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
-         fvhTriggerRate[ uGdpbLoop ]->Reset();
-         fvhStarTokenEvo[ uGdpbLoop ]->Reset();
-         fvhStarTrigGdpbTsEvo[ uGdpbLoop ]->Reset();
-         fvhStarTrigStarTsEvo[ uGdpbLoop ]->Reset();
-      } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
-
+      ResetEvolutionHistograms();
       fdStartTime = dHitTime;
    } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
 
@@ -1400,16 +1385,7 @@ void CbmTofStarMonitorShift2018::FillHitInfo(gdpb::Message mess)
    // Reset the evolution Histogram and the start time when we reach the end of the range
    if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) / 60.0 )
    {
-      for (UInt_t uGdpbLoop = 0; uGdpbLoop < fuNrOfGdpbs; uGdpbLoop++)
-      {
-         for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
-         {
-            fvhFeetRateLong_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
-            fvhFeetErrorRateLong_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
-            fvhFeetErrorRatioLong_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
-         } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
-      } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
-
+      ResetLongEvolutionHistograms();
       fdStartTimeLong = dHitTime;
    } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) / 60.0 )
 
@@ -1723,6 +1699,7 @@ void CbmTofStarMonitorShift2018::FillStarTrigInfo(gdpb::Message mess)
                /// Reset the evolution Histogram and the start time when we reach the end of the range
                if( fuHistoryHistoSize < 1e-9 * (fvulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime) )
                {
+                  ResetEvolutionHistograms();
                   fdStartTime = fvulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
                } // if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * get4v2x::kdClockCycleSizeNs - fdStartTime) )
 
@@ -1978,18 +1955,54 @@ void CbmTofStarMonitorShift2018::ResetAllHistos()
    for( UInt_t uPulsPlot = 0; uPulsPlot < fvhTimeDiffPulser.size(); ++uPulsPlot )
       fvhTimeDiffPulser[ uPulsPlot ]->Reset();
 
-
    for( UInt_t uLinks = 0; uLinks < fvhMsSzPerLink.size(); uLinks++ )
    {
+      if( NULL == fvhMsSzPerLink[ uLinks ] )
+         continue;
+
       fvhMsSzPerLink[ uLinks ]->Reset();
       fvhMsSzTimePerLink[ uLinks ]->Reset();
    } // for( UInt_t uLinks = 0; uLinks < fvhMsSzPerLink.size(); uLinks++ )
 
-
-  fdStartTime = -1;
-  fdStartTimeLong = -1;
-  fdStartTimeMsSz = -1;
+   fdStartTime = -1;
+   fdStartTimeLong = -1;
+   fdStartTimeMsSz = -1;
 }
+void CbmTofStarMonitorShift2018::ResetEvolutionHistograms()
+{
+   for( UInt_t uGdpbLoop = 0; uGdpbLoop < fuNrOfGdpbs; ++uGdpbLoop )
+   {
+      fvhChannelRate_gDPB[ uGdpbLoop ]->Reset();
+      fvhRemapChRate_gDPB[ uGdpbLoop ]->Reset();
+      for( UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; ++uFeetLoop )
+      {
+         fvhFeetRate_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+         fvhFeetErrorRate_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+         fvhFeetErrorRatio_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+      } // for( UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; ++uFeetLoop )
+      fvhTriggerRate[ uGdpbLoop ]->Reset();
+      fvhStarTokenEvo[ uGdpbLoop ]->Reset();
+      fvhStarTrigGdpbTsEvo[ uGdpbLoop ]->Reset();
+      fvhStarTrigStarTsEvo[ uGdpbLoop ]->Reset();
+   } // for( UInt_t uGdpbLoop = 0; uGdpbLoop < fuNrOfGdpbs; ++uGdpbLoop )
+
+   fdStartTime = -1;
+}
+void CbmTofStarMonitorShift2018::ResetLongEvolutionHistograms()
+{
+   for (UInt_t uGdpbLoop = 0; uGdpbLoop < fuNrOfGdpbs; uGdpbLoop++)
+   {
+      for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
+      {
+         fvhFeetRateLong_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+         fvhFeetErrorRateLong_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+         fvhFeetErrorRatioLong_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+      } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
+   } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
+
+   fdStartTimeLong = -1;
+}
+
 void CbmTofStarMonitorShift2018::UpdateZoomedFit()
 {
    // Only do something is the user defined the width he want for the zoom

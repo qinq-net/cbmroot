@@ -66,6 +66,8 @@ class CbmTofStarMonitorShift2018: public CbmTSUnpack {
 
       void SaveAllHistos( TString sFileName = "" );
       void ResetAllHistos();
+      void ResetEvolutionHistograms();
+      void ResetLongEvolutionHistograms();
       void UpdateNormedFt();
       void UpdateZoomedFit();
 

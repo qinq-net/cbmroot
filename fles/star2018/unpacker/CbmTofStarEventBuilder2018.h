@@ -75,6 +75,8 @@ public:
    // Output control methods
    void SaveAllHistos( TString sFileName = "" );
    void ResetAllHistos();
+   void ResetEvolutionHistograms();
+   void ResetLongEvolutionHistograms();
 
 private:
 
