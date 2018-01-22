@@ -40,7 +40,6 @@
 
 Bool_t bResetTofStarMoniShiftHistos = kFALSE;
 Bool_t bSaveTofStarMoniShiftHistos  = kFALSE;
-Bool_t bTofUpdateNormedFtMoniShift  = kFALSE;
 Bool_t bTofUpdateZoomedFitMoniShift = kFALSE;
 
 CbmTofStarMonitorShift2018::CbmTofStarMonitorShift2018() :
@@ -55,7 +54,7 @@ CbmTofStarMonitorShift2018::CbmTofStarMonitorShift2018() :
     fuCurrNbGdpb( 0 ),
     fUnpackPar(),
     fuNrOfGdpbs(0),
-    fuNrOfFebsPerGdpb(0),
+    fuNrOfFeetPerGdpb(0),
     fuNrOfGet4PerFeb(0),
     fuNrOfChannelsPerGet4(0),
     fuNrOfChannelsPerFeet(0),
@@ -98,6 +97,8 @@ CbmTofStarMonitorShift2018::CbmTofStarMonitorShift2018() :
     fdLastRmsUpdateTime(0.0),
     fdFitZoomWidthPs(0.0),
     fcMsSizeAll(NULL),
+    fvhMsSzPerLink(12, NULL),
+    fvhMsSzTimePerLink(12, NULL),
     fhMessType(NULL),
     fhSysMessType(NULL),
     fhGet4MessType(NULL),
@@ -124,6 +125,8 @@ CbmTofStarMonitorShift2018::CbmTofStarMonitorShift2018() :
     fvhTriggerRate(NULL),
     fvhCmdDaqVsTrig(NULL),
     fvhStarTokenEvo(NULL),
+    fvhStarTrigGdpbTsEvo(),
+    fvhStarTrigStarTsEvo(),
     fvhTimeDiffPulser(),
     fhTimeRmsPulser(NULL),
     fhTimeRmsZoomFitPuls(NULL),
@@ -189,8 +192,8 @@ Bool_t CbmTofStarMonitorShift2018::ReInitContainers()
    LOG(INFO) << "Nr. of Tof GDPBs: " << fuNrOfGdpbs << FairLogger::endl;
    fuMinNbGdpb = fuNrOfGdpbs;
 
-   fuNrOfFebsPerGdpb = fUnpackPar->GetNrOfFebsPerGdpb();
-   LOG(INFO) << "Nr. of FEBS per Tof GDPB: " << fuNrOfFebsPerGdpb
+   fuNrOfFeetPerGdpb = fUnpackPar->GetNrOfFebsPerGdpb();
+   LOG(INFO) << "Nr. of FEBS per Tof GDPB: " << fuNrOfFeetPerGdpb
                << FairLogger::endl;
 
    fuNrOfGet4PerFeb = fUnpackPar->GetNrOfGet4PerFeb();
@@ -205,10 +208,10 @@ Bool_t CbmTofStarMonitorShift2018::ReInitContainers()
    LOG(INFO) << "Nr. of channels per FEET: " << fuNrOfChannelsPerFeet
                << FairLogger::endl;
 
-   fuNrOfGet4 = fuNrOfGdpbs * fuNrOfFebsPerGdpb * fuNrOfGet4PerFeb;
+   fuNrOfGet4 = fuNrOfGdpbs * fuNrOfFeetPerGdpb * fuNrOfGet4PerFeb;
    LOG(INFO) << "Nr. of GET4s: " << fuNrOfGet4 << FairLogger::endl;
 
-   fuNrOfGet4PerGdpb = fuNrOfFebsPerGdpb * fuNrOfGet4PerFeb;
+   fuNrOfGet4PerGdpb = fuNrOfFeetPerGdpb * fuNrOfGet4PerFeb;
    LOG(INFO) << "Nr. of GET4s per GDPB: " << fuNrOfGet4PerGdpb
                << FairLogger::endl;
 
@@ -269,6 +272,9 @@ Bool_t CbmTofStarMonitorShift2018::ReInitContainers()
 
    fvmEpSupprBuffer.resize( fuNrOfGet4 );
 
+   ///* Pulser monitoring *///
+   fdTsLastPulserHit.resize( fuNrOfFeetPerGdpb * fuNrOfGdpbs, 0.0 );
+
 /// TODO: move these constants somewhere shared, e.g the parameter file
    fvuPadiToGet4.resize( fuNrOfChannelsPerFeet );
    fvuGet4ToPadi.resize( fuNrOfChannelsPerFeet );
@@ -316,7 +322,7 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
    // Full Fee time difference test
    UInt_t uNbBinsDt = kuNbBinsDt + 1; // To account for extra bin due to shift by 1/2 bin of both ranges
 
-   fuNbFeetPlotsPerGdpb = fuNrOfFebsPerGdpb/fuNbFeetPlot + ( 0 != fuNrOfFebsPerGdpb%fuNbFeetPlot ? 1 : 0 );
+   fuNbFeetPlotsPerGdpb = fuNrOfFeetPerGdpb/fuNbFeetPlot + ( 0 != fuNrOfFeetPerGdpb%fuNbFeetPlot ? 1 : 0 );
    Double_t dBinSzG4v2 = (6250. / 112.);
    dMinDt     = -1.*(kuNbBinsDt*dBinSzG4v2/2.) - dBinSzG4v2/2.;
    dMaxDt     =  1.*(kuNbBinsDt*dBinSzG4v2/2.) + dBinSzG4v2/2.;
@@ -377,6 +383,10 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
    fhGet4ChanScm =  new TH2I(name, title,
          2 * fuNrOfGet4 * fuNrOfChannelsPerGet4, 0., fuNrOfGet4 * fuNrOfChannelsPerGet4,
          4, 0., 4.);
+   fhGet4ChanScm->GetYaxis()->SetBinLabel( 1, "Hit Scal" );
+   fhGet4ChanScm->GetYaxis()->SetBinLabel( 2, "Deadtime" );
+   fhGet4ChanScm->GetYaxis()->SetBinLabel( 3, "SPI" );
+   fhGet4ChanScm->GetYaxis()->SetBinLabel( 4, "SEU Scal" );
 
    /*******************************************************************/
    name = "hGet4ChanErrors";
@@ -442,92 +452,98 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
   {
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
       name = Form("RawTot_gDPB_%02u_0", uGdpb);
-      title = Form("Raw TOT gDPB %02u RPC 0; channel; TOT [bin]", uGdpb);
+      title = Form("Raw TOT gDPB %02u Plot 0; channel; TOT [bin]", uGdpb);
       fvhRawTot_gDPB.push_back(
          new TH2F(name.Data(), title.Data(),
             fuNbFeetPlot*fuNrOfChannelsPerFeet, 0*fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet,
             256, 0, 256 ) );
 
-      if( fuNbFeetPlot < fuNrOfFebsPerGdpb )
+      if( fuNbFeetPlot < fuNrOfFeetPerGdpb )
       {
          name = Form("RawTot_gDPB_%02u_1", uGdpb);
-         title = Form("Raw TOT gDPB %02u RPC 1; channel; TOT [bin]", uGdpb);
+         title = Form("Raw TOT gDPB %02u Plot 1; channel; TOT [bin]", uGdpb);
          fvhRawTot_gDPB.push_back(
             new TH2F(name.Data(), title.Data(),
                fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet,
                256, 0, 256));
-      } // if( fuNbFeetPlot < fuNrOfFebsPerGdpb )
-      if( 2 * fuNbFeetPlot < fuNrOfFebsPerGdpb )
+      } // if( fuNbFeetPlot < fuNrOfFeetPerGdpb )
+      if( 2 * fuNbFeetPlot < fuNrOfFeetPerGdpb )
       {
          name = Form("RawTot_gDPB_%02u_2", uGdpb);
-         title = Form("Raw TOT gDPB %02u RPC 2; channel; TOT [bin]", uGdpb);
+         title = Form("Raw TOT gDPB %02u Plot 2; channel; TOT [bin]", uGdpb);
          fvhRawTot_gDPB.push_back(
             new TH2F(name.Data(), title.Data(),
                fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet, 3*fuNbFeetPlot*fuNrOfChannelsPerFeet,
                256, 0, 256));
-      } // if( 2 * fuNbFeetPlot < fuNrOfFebsPerGdpb )
+      } // if( 2 * fuNbFeetPlot < fuNrOfFeetPerGdpb )
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
        name = Form("ChCount_gDPB_%02u", uGdpb);
        title = Form("Channel counts gDPB %02u; channel; Hits", uGdpb);
        fvhChCount_gDPB.push_back( new TH1I(name.Data(), title.Data(),
-                fuNrOfFebsPerGdpb * fuNrOfChannelsPerFeet, 0, fuNrOfFebsPerGdpb * fuNrOfChannelsPerFeet) );
+                fuNrOfFeetPerGdpb * fuNrOfChannelsPerFeet, 0, fuNrOfFeetPerGdpb * fuNrOfChannelsPerFeet) );
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
-      /// TODO: Channel rate plots!
-//      std::vector< TH2      * > fvhChannelRate_gDPB;
+       name = Form("ChRate_gDPB_%02u", uGdpb);
+       title = Form("Channel rate gDPB %02u; Time in run [s]; channel; Rate [1/s]", uGdpb);
+       fvhChannelRate_gDPB.push_back( new TH2D(name.Data(), title.Data(),
+                fuHistoryHistoSize, 0, fuHistoryHistoSize,
+                fuNrOfFeetPerGdpb * fuNrOfChannelsPerFeet, 0, fuNrOfFeetPerGdpb * fuNrOfChannelsPerFeet ) );
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
       name = Form("RemapTot_gDPB_%02u_0", uGdpb);
-      title = Form("Raw TOT gDPB %02u remapped; PADI channel; TOT [bin]", uGdpb);
+      title = Form("Raw TOT gDPB %02u remapped Plot 0; PADI channel; TOT [bin]", uGdpb);
       fvhRemapTot_gDPB.push_back(
          new TH2F(name.Data(), title.Data(),
             fuNbFeetPlot*fuNrOfChannelsPerFeet, 0*fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet,
             256, 0, 256 ) );
 
-      if( fuNbFeetPlot < fuNrOfFebsPerGdpb )
+      if( fuNbFeetPlot < fuNrOfFeetPerGdpb )
       {
          name = Form("RemapTot_gDPB_%02u_1", uGdpb);
-         title = Form("Raw TOT gDPB %02u remapped; PADI channel; TOT [bin]", uGdpb);
+         title = Form("Raw TOT gDPB %02u remapped Plot 1; PADI channel; TOT [bin]", uGdpb);
          fvhRemapTot_gDPB.push_back(
             new TH2F(name.Data(), title.Data(),
                fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet,
                256, 0, 256));
-      } // if( fuNbFeetPlot < fuNrOfFebsPerGdpb )
-      if( 2 * fuNbFeetPlot < fuNrOfFebsPerGdpb )
+      } // if( fuNbFeetPlot < fuNrOfFeetPerGdpb )
+      if( 2 * fuNbFeetPlot < fuNrOfFeetPerGdpb )
       {
          name = Form("RemapTot_gDPB_%02u_2", uGdpb);
-         title = Form("Raw TOT gDPB %02u remapped; PADI channel; TOT [bin]", uGdpb);
+         title = Form("Raw TOT gDPB %02u remapped Plot 2; PADI channel; TOT [bin]", uGdpb);
          fvhRemapTot_gDPB.push_back(
             new TH2F(name.Data(), title.Data(),
                fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet, 3*fuNbFeetPlot*fuNrOfChannelsPerFeet,
                256, 0, 256));
-      } // if( 2 * fuNbFeetPlot < fuNrOfFebsPerGdpb )
+      } // if( 2 * fuNbFeetPlot < fuNrOfFeetPerGdpb )
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
        name = Form("RemapChCount_gDPB_%02u", uGdpb);
        title = Form("Channel counts gDPB %02u remapped; PADI channel; Hits", uGdpb);
        fvhRemapChCount_gDPB.push_back( new TH1I(name.Data(), title.Data(),
-                fuNrOfFebsPerGdpb * fuNrOfChannelsPerFeet, 0, fuNrOfFebsPerGdpb * fuNrOfChannelsPerFeet) );
+                fuNrOfFeetPerGdpb * fuNrOfChannelsPerFeet, 0, fuNrOfFeetPerGdpb * fuNrOfChannelsPerFeet) );
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
-      /// TODO: Channel rate plots!
-//      std::vector< TH2      * > fvhRemapChRate_gDPB;
+       name = Form("RemapChRate_gDPB_%02u", uGdpb);
+       title = Form("PADI channel rate gDPB %02u; Time in run [s]; PADI channel; Rate [1/s]", uGdpb);
+       fvhRemapChRate_gDPB.push_back( new TH2D(name.Data(), title.Data(),
+                fuHistoryHistoSize, 0, fuHistoryHistoSize,
+                fuNrOfFeetPerGdpb * fuNrOfChannelsPerFeet, 0, fuNrOfFeetPerGdpb * fuNrOfChannelsPerFeet ) );
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
-      for (UInt_t uFeet = 0; uFeet < fuNrOfFebsPerGdpb; ++ uFeet)
+      for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++ uFeet)
       {
          name = Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
              "Counts per second in Feet %1u of gDPB %02u; Time[s] ; Counts", uFeet,
              uGdpb);
-         fvhFeetRate_gDPB.push_back( new TH1F(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize) );
+         fvhFeetRate_gDPB.push_back( new TH1D(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize) );
 
          name = Form("FeetErrorRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
              "Error Counts per second in Feet %1u of gDPB %02u; Time[s] ; Error Counts", uFeet,
              uGdpb);
-         fvhFeetErrorRate_gDPB.push_back( new TH1F(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize) );
+         fvhFeetErrorRate_gDPB.push_back( new TH1D(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize) );
 
          name = Form("FeetErrorRatio_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -539,20 +555,20 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
          title = Form(
              "Counts per minutes in Feet %1u of gDPB %02u; Time[min] ; Counts", uFeet,
              uGdpb);
-         fvhFeetRateLong_gDPB.push_back( new TH1F(name.Data(), title.Data(), fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong) );
+         fvhFeetRateLong_gDPB.push_back( new TH1D(name.Data(), title.Data(), fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong) );
 
          name = Form("FeetErrorRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
              "Error Counts per minutes in Feet %1u of gDPB %02u; Time[min] ; Error Counts", uFeet,
              uGdpb);
-         fvhFeetErrorRateLong_gDPB.push_back( new TH1F(name.Data(), title.Data(), fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong) );
+         fvhFeetErrorRateLong_gDPB.push_back( new TH1D(name.Data(), title.Data(), fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong) );
 
          name = Form("FeetErrorRatioLong_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
              "Error to data ratio per minutes in Feet %1u of gDPB %02u; Time[min] ; Error ratio[]", uFeet,
              uGdpb);
          fvhFeetErrorRatioLong_gDPB.push_back( new TProfile(name.Data(), title.Data(), fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong) );
-      } // for (UInt_t uFeet = 0; uFeet < fuNrOfFebsPerGdpb; uFeet++)
+      } // for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; uFeet++)
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
       /// STAR Trigger decoding and monitoring
@@ -619,17 +635,26 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
       name = Form( "hStarTokenEvo_gDPB_%02u", uGdpb);
       title = Form( "STAR token value VS time gDPB %02u; Time in Run [s] ; STAR Token; Counts", uGdpb);
       fvhStarTokenEvo.push_back( new TH2I(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize, 410, 0, 4100 ) );
+
+
+      name = Form( "hStarTrigGdpbTsEvo_gDPB_%02u", uGdpb);
+      title = Form( "gDPB TS in STAR triger tokens for gDPB %02u; Time in Run [s] ; gDPB TS;", uGdpb);
+      fvhStarTrigGdpbTsEvo.push_back( new TProfile(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize ) );
+
+      name = Form( "hStarTrigStarTsEvo_gDPB_%02u", uGdpb);
+      title = Form( "STAR TS in STAR triger tokens for gDPB %02u; Time in Run [s] ; STAR TS;", uGdpb);
+      fvhStarTrigStarTsEvo.push_back( new TProfile(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize ) );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
    /*******************************************************************/
    /// FEET pulser test channels
-   fvhTimeDiffPulser.resize( fuNrOfFebsPerGdpb * fuNrOfGdpbs - 1 );
-   for( UInt_t uChan = 0; uChan < fuNrOfFebsPerGdpb * fuNrOfGdpbs - 1; uChan++)
+   fvhTimeDiffPulser.resize( fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1 );
+   for( UInt_t uChan = 0; uChan < fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1; uChan++)
    {
-      UInt_t uGdpbA = uChan / ( fuNrOfFebsPerGdpb );
-      UInt_t uFeetA = uChan - ( fuNrOfFebsPerGdpb * uGdpbA );
-      UInt_t uGdpbB = ( uChan + 1 ) / ( fuNrOfFebsPerGdpb );
-      UInt_t uFeetB = ( uChan + 1 ) - ( fuNrOfFebsPerGdpb * uGdpbB );
+      UInt_t uGdpbA = uChan / ( fuNrOfFeetPerGdpb );
+      UInt_t uFeetA = uChan - ( fuNrOfFeetPerGdpb * uGdpbA );
+      UInt_t uGdpbB = ( uChan + 1 ) / ( fuNrOfFeetPerGdpb );
+      UInt_t uFeetB = ( uChan + 1 ) - ( fuNrOfFeetPerGdpb * uGdpbB );
       fvhTimeDiffPulser[uChan]  = new TH1I(
          Form("hTimeDiffPulser_g%02u_f%1u_g%02u_f%1u", uGdpbA, uFeetA, uGdpbB, uFeetB),
          Form("Time difference for pulser on gDPB %02u FEE %1u and gDPB %02u FEE %1u; DeltaT [ps]; Counts",
@@ -640,17 +665,17 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
    name = "hTimeRmsPulser";
    fhTimeRmsPulser = new TH1D( name.Data(),
          "Time difference RMS for each FEE pairs; Pair # ; [ps]",
-         fuNrOfFebsPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFebsPerGdpb * fuNrOfGdpbs - 1.5);
+         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1.5);
 
    name = "hTimeRmsZoomFitPuls";
    fhTimeRmsZoomFitPuls = new TH1D( name.Data(),
          "Time difference RMS after zoom for each FEE pairs; Pair # ; RMS [ps]",
-         fuNrOfFebsPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFebsPerGdpb * fuNrOfGdpbs - 1.5);
+         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1.5);
 
    name = "hTimeResFitPuls";
    fhTimeResFitPuls = new TH1D( name.Data(),
          "Time difference Res from fit for each FEE pairs; Pair # ; Sigma [ps]",
-         fuNrOfFebsPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFebsPerGdpb * fuNrOfGdpbs - 1.5);
+         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1.5);
 
 #ifdef USE_HTTP_SERVER
    if( server )
@@ -675,24 +700,26 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
       for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
       {
          server->Register("/TofRaw", fvhChCount_gDPB[ uGdpb ] );
-//         server->Register("/TofRaw", fvhChannelRate_gDPB[ uGdpb ] );
+         server->Register("/TofRates", fvhChannelRate_gDPB[ uGdpb ] );
          server->Register("/TofRaw", fvhRemapChCount_gDPB[ uGdpb ] );
-//         server->Register("/TofRaw", fvhRemapChRate_gDPB[ uGdpb ] );
+         server->Register("/TofRates", fvhRemapChRate_gDPB[ uGdpb ] );
 
-         for (UInt_t uFeet = 0; uFeet < fuNrOfFebsPerGdpb; ++ uFeet)
+         for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++ uFeet)
          {
-            server->Register("/TofRates", fvhFeetRate_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ] );
-            server->Register("/TofRates", fvhFeetErrorRate_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ] );
-            server->Register("/TofRates", fvhFeetErrorRatio_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ] );
-            server->Register("/TofRates", fvhFeetRateLong_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ] );
-            server->Register("/TofRates", fvhFeetErrorRateLong_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ] );
-            server->Register("/TofRates", fvhFeetErrorRatioLong_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ] );
-         } // for (UInt_t uFeet = 0; uFeet < fuNrOfFebsPerGdpb; ++ uFeet)
+            server->Register("/TofRates", fvhFeetRate_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ] );
+            server->Register("/TofRates", fvhFeetErrorRate_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ] );
+            server->Register("/TofRates", fvhFeetErrorRatio_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ] );
+            server->Register("/TofRates", fvhFeetRateLong_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ] );
+            server->Register("/TofRates", fvhFeetErrorRateLong_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ] );
+            server->Register("/TofRates", fvhFeetErrorRatioLong_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ] );
+         } // for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++ uFeet)
 
          server->Register("/StarRaw", fvhTokenMsgType[ uGdpb ] );
          server->Register("/StarRaw", fvhTriggerRate[ uGdpb ] );
          server->Register("/StarRaw", fvhCmdDaqVsTrig[ uGdpb ] );
          server->Register("/StarRaw", fvhStarTokenEvo[ uGdpb ] );
+         server->Register("/StarRaw", fvhStarTrigGdpbTsEvo[ uGdpb ] );
+         server->Register("/StarRaw", fvhStarTrigStarTsEvo[ uGdpb ] );
       } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
       for( UInt_t uPulsPlot = 0; uPulsPlot < fvhTimeDiffPulser.size(); ++uPulsPlot )
@@ -701,8 +728,280 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
       server->Register("/TofRaw", fhTimeRmsPulser );
       server->Register("/TofRaw", fhTimeRmsZoomFitPuls );
       server->Register("/TofRaw", fhTimeResFitPuls );
+
+
+      server->RegisterCommand("/Reset_All_eTOF", "bResetTofStarMoniShiftHistos=kTRUE");
+      server->RegisterCommand("/Save_All_eTof",  "bSaveTofStarMoniShiftHistos=kTRUE");
+      server->RegisterCommand("/Update_PulsFit", "bTofUpdateZoomedFitMoniShift=kTRUE");
+
+      server->Restrict("/Reset_All_eTof", "allow=admin");
+      server->Restrict("/Save_All_eTof",  "allow=admin");
+      server->Restrict("/Update_PulsFit", "allow=admin");
    } // if( server )
 #endif
+
+   /** Create summary Canvases for STAR 2018 **/
+   Double_t w = 10;
+   Double_t h = 10;
+   TCanvas* cSummary = new TCanvas("cSummary", "gDPB Monitoring Summary", w, h);
+   cSummary->Divide(2, 3);
+
+   // 1st Column: Messages types
+   cSummary->cd(1);
+   gPad->SetLogy();
+   fhMessType->Draw();
+
+   cSummary->cd(2);
+   gPad->SetLogy();
+   fhSysMessType->Draw();
+
+   cSummary->cd(3);
+   gPad->SetLogz();
+   fhGet4MessType->Draw("colz");
+
+   // 2nd Column: GET4 Errors + Epoch flags + SCm
+   cSummary->cd(4);
+   gPad->SetLogz();
+   fhGet4ChanErrors->Draw("colz");
+
+   cSummary->cd(5);
+   gPad->SetLogz();
+   fhGet4EpochFlags->Draw("colz");
+
+   cSummary->cd(6);
+   fhGet4ChanScm->Draw("colz");
+   /*****************************/
+
+   /** Create FEET rates Canvas for STAR 2018 **/
+   TCanvas* cFeeRates = new TCanvas("cFeeRates", "gDPB Monitoring FEET rates", w, h);
+   cFeeRates->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )
+      {
+         cFeeRates->cd( 1 + uGdpb * fuNrOfFeetPerGdpb + uFeet );
+         gPad->SetLogy();
+         fvhFeetRate_gDPB[uGdpb * fuNrOfFeetPerGdpb + uFeet]->Draw("hist");
+
+         fvhFeetErrorRate_gDPB[uGdpb * fuNrOfFeetPerGdpb + uFeet]->SetLineColor( kRed );
+         fvhFeetErrorRate_gDPB[uGdpb * fuNrOfFeetPerGdpb + uFeet]->Draw("same hist");
+      } // for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create FEET error ratio Canvas for STAR 2018 **/
+   TCanvas* cFeeErrRatio = new TCanvas("cFeeErrRatio", "gDPB Monitoring FEET error ratios", w, h);
+   cFeeErrRatio->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )
+      {
+         cFeeErrRatio->cd( 1 + uGdpb * fuNrOfFeetPerGdpb + uFeet );
+         gPad->SetLogy();
+         fvhFeetErrorRatio_gDPB[uGdpb * fuNrOfFeetPerGdpb + uFeet]->Draw( "hist le0");
+      } // for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+
+   /** Create FEET rates long Canvas for STAR 2018 **/
+   TCanvas* cFeeRatesLong = new TCanvas("cFeeRatesLong", "gDPB Monitoring FEET rates", w, h);
+   cFeeRatesLong->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )
+      {
+         cFeeRatesLong->cd( 1 + uGdpb * fuNrOfFeetPerGdpb + uFeet );
+         gPad->SetLogy();
+         fvhFeetRateLong_gDPB[uGdpb]->Draw( "hist" );
+
+         fvhFeetErrorRateLong_gDPB[uGdpb * fuNrOfFeetPerGdpb + uFeet]->SetLineColor( kRed );
+         fvhFeetErrorRateLong_gDPB[uGdpb * fuNrOfFeetPerGdpb + uFeet]->Draw("same hist");
+      } // for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create FEET error ratio long Canvas for STAR 2018 **/
+   TCanvas* cFeeErrRatioLong = new TCanvas("cFeeErrRatioLong", "gDPB Monitoring FEET error ratios", w, h);
+   cFeeErrRatioLong->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )
+      {
+         cFeeErrRatioLong->cd( 1 + uGdpb * fuNrOfFeetPerGdpb + uFeet );
+         gPad->SetLogy();
+         fvhFeetErrorRatioLong_gDPB[uGdpb * fuNrOfFeetPerGdpb + uFeet]->Draw( "hist le0");
+      } // for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create channel count Canvas for STAR 2018 **/
+   TCanvas* cGdpbChannelCount = new TCanvas("cGdpbChannelCount", "Integrated Get4 channel counts per gDPB", w, h);
+   cGdpbChannelCount->Divide( 1, fuNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      cGdpbChannelCount->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogy();
+      fvhChCount_gDPB[ uGdpb ]->Draw();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create remapped channel count Canvas for STAR 2018 **/
+   TCanvas* cGdpbRemapChCount = new TCanvas("cGdpbRemapChCount", "Integrated PADI channel counts per gDPB", w, h);
+   cGdpbRemapChCount->Divide( 1, fuNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      cGdpbRemapChCount->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogy();
+      fvhRemapChCount_gDPB[ uGdpb ]->Draw();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create channel rate Canvas for STAR 2018 **/
+   TCanvas* cGdpbChannelRate = new TCanvas("cGdpbChannelRate", "Get4 channel rate per gDPB", w, h);
+   cGdpbChannelRate->Divide( 1, fuNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      cGdpbChannelRate->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
+      fvhChannelRate_gDPB[ uGdpb ]->Draw( "colz" );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create remapped rate count Canvas for STAR 2018 **/
+   TCanvas* cGdpbRemapChRate = new TCanvas("cGdpbRemapChRate", "PADI channel rate per gDPB", w, h);
+   cGdpbRemapChRate->Divide( 1, fuNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      cGdpbRemapChRate->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
+      fvhRemapChRate_gDPB[ uGdpb ]->Draw( "colz" );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create TOT Canvas(es) for STAR 2018 **/
+   TCanvas* cTotPnt = NULL;
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      cTotPnt = new TCanvas( Form("cTot_g%02u", uGdpb),
+                             Form("gDPB %02u TOT distributions", uGdpb),
+                             w, h);
+      cTotPnt->Divide( fuNbFeetPlotsPerGdpb );
+
+      for( UInt_t uFeetPlot = 0; uFeetPlot < fuNbFeetPlotsPerGdpb; ++uFeetPlot )
+      {
+         cTotPnt->cd( 1 + uFeetPlot );
+         gPad->SetGridx();
+         gPad->SetGridy();
+         gPad->SetLogz();
+
+         fvhRawTot_gDPB[ uGdpb * fuNbFeetPlotsPerGdpb + uFeetPlot ]->Draw( "colz" );
+      } // for (UInt_t uFeet = 0; uFeet < fuNbFeetPlotsPerGdpb; ++uFeet )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   cTotPnt  = new TCanvas( "cTot_all", "TOT distributions", w, h);
+   cTotPnt->Divide( fuNrOfGdpbs, fuNbFeetPlotsPerGdpb );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+      for( UInt_t uFeetPlot = 0; uFeetPlot < fuNbFeetPlotsPerGdpb; ++uFeetPlot )
+      {
+         cTotPnt->cd( 1 + uGdpb + fuNrOfGdpbs * uFeetPlot );
+         gPad->SetGridx();
+         gPad->SetGridy();
+         gPad->SetLogz();
+
+         fvhRawTot_gDPB[ uGdpb * fuNbFeetPlotsPerGdpb + uFeetPlot]->Draw( "colz" );
+      } // for (UInt_t uFeet = 0; uFeet < fuNbFeetPlotsPerGdpb; ++uFeet )
+   /**************************************************/
+
+   /** Create PADI TOT Canvas(es) for STAR 2018 **/
+   cTotPnt = NULL;
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      cTotPnt = new TCanvas( Form("cTotRemap_g%02u", uGdpb),
+                             Form("PADI ch gDPB %02u TOT distributions", uGdpb),
+                             w, h);
+      cTotPnt->Divide( fuNbFeetPlotsPerGdpb );
+
+      for( UInt_t uFeetPlot = 0; uFeetPlot < fuNbFeetPlotsPerGdpb; ++uFeetPlot )
+      {
+         cTotPnt->cd( 1 + uFeetPlot );
+         gPad->SetGridx();
+         gPad->SetGridy();
+         gPad->SetLogz();
+
+         fvhRemapTot_gDPB[ uGdpb * fuNbFeetPlotsPerGdpb + uFeetPlot ]->Draw( "colz" );
+      } // for (UInt_t uFeet = 0; uFeet < fuNbFeetPlotsPerGdpb; ++uFeet )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   cTotPnt  = new TCanvas( "cTotRemap_all", "TOT distributions", w, h);
+   cTotPnt->Divide( fuNrOfGdpbs, fuNbFeetPlotsPerGdpb );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+      for( UInt_t uFeetPlot = 0; uFeetPlot < fuNbFeetPlotsPerGdpb; ++uFeetPlot )
+      {
+         cTotPnt->cd( 1 + uGdpb + fuNrOfGdpbs * uFeetPlot );
+         gPad->SetGridx();
+         gPad->SetGridy();
+         gPad->SetLogz();
+
+         fvhRemapTot_gDPB[ uGdpb * fuNbFeetPlotsPerGdpb + uFeetPlot]->Draw( "colz" );
+      } // for (UInt_t uFeet = 0; uFeet < fuNbFeetPlotsPerGdpb; ++uFeet )
+   /**************************************************/
+
+   /** Create STAR token Canvas for STAR 2018 **/
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+   {
+      TCanvas* cStarToken = new TCanvas( Form("cStarToken_g%02u", uGdpb),
+                                           Form("STAR token detection info for gDPB %02u", uGdpb),
+                                           w, h);
+      cStarToken->Divide( 2, 2 );
+
+      cStarToken->cd(1);
+      fvhTriggerRate[uGdpb]->Draw();
+
+      cStarToken->cd(2);
+      fvhCmdDaqVsTrig[uGdpb]->Draw( "colz" );
+
+      cStarToken->cd(3);
+      fvhStarTokenEvo[uGdpb]->Draw();
+
+      cStarToken->cd(4);
+      fvhStarTrigGdpbTsEvo[uGdpb]->Draw( "hist le0" );
+      fvhStarTrigStarTsEvo[uGdpb]->SetLineColor( kRed );
+      fvhStarTrigStarTsEvo[uGdpb]->Draw( "same hist le0" );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+   /*****************************/
+
+   /** Create Pulser check Canvas for STAR 2018 **/
+   TCanvas* cPulser = new TCanvas("cPulser", "Time difference RMS for pulser channels when FEE pulser mode is ON", w, h);
+   cPulser->Divide( 3 );
+
+   cPulser->cd(1);
+   fhTimeRmsPulser->Draw( "hist" );
+
+   cPulser->cd(2);
+   fhTimeRmsZoomFitPuls->Draw( "hist" );
+
+   cPulser->cd(3);
+   fhTimeResFitPuls->Draw( "hist" );
+   /*****************************/
+
+   /** Recovers/Create Ms Size Canvas for STAR 2018 **/
+   // Try to recover canvas in case it was created already by another monitor
+   // If not existing, create it
+   fcMsSizeAll = dynamic_cast<TCanvas *>( gROOT->FindObject( "cMsSizeAll" ) );
+   if( NULL == fcMsSizeAll )
+   {
+      fcMsSizeAll = new TCanvas("cMsSizeAll", "Evolution of MS size in last 300 s", w, h);
+      fcMsSizeAll->Divide( 4, 3 );
+      LOG(INFO) << "Created MS size canvas in TOF monitor" << FairLogger::endl;
+   } // if( NULL == fcMsSizeAll )
+      else LOG(INFO) << "Recovered MS size canvas in TOF monitor" << FairLogger::endl;
 
   LOG(INFO) << "Leaving CreateHistograms" << FairLogger::endl;
 }
@@ -710,105 +1009,56 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
 Bool_t CbmTofStarMonitorShift2018::DoUnpack(const fles::Timeslice& ts,
     size_t component)
 {
-#ifdef USE_HTTP_SERVER
-  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
-
-  if (bResetTofStarMoniShiftHistos) {
-    LOG(INFO) << "Reset TOF STAR histos " << FairLogger::endl;
-    ResetAllHistos();
-    bResetTofStarMoniShiftHistos = kFALSE;
-  }
+   if( bResetTofStarMoniShiftHistos )
+   {
+      LOG(INFO) << "Reset eTOF STAR histos " << FairLogger::endl;
+      ResetAllHistos();
+      bResetTofStarMoniShiftHistos = kFALSE;
+   } // if( bResetTofStarMoniShiftHistos )
    if( bSaveTofStarMoniShiftHistos )
    {
-      LOG(INFO) << "Start saving TOF STAR histos " << FairLogger::endl;
+      LOG(INFO) << "Start saving eTOF STAR histos " << FairLogger::endl;
       SaveAllHistos( "data/histos_StarTof.root" );
       bSaveTofStarMoniShiftHistos = kFALSE;
    } // if( bSaveStsHistos )
-  if (bTofUpdateNormedFtMoniShift) {
-     UpdateNormedFt();
-     bTofUpdateNormedFtMoniShift = kFALSE;
-  } // if (bTofUpdateNormedFtMoniShift)
-  if (bTofUpdateZoomedFitMoniShift) {
-     UpdateZoomedFit();
-     bTofUpdateZoomedFitMoniShift = kFALSE;
-  } // if (bTofUpdateZoomedFitMoniShift)
-
-  ///* ASIC coincidences & offsets mapping *///
-/*
-  if( 0 == component && fbHitsInLastTs )
-  {
-      for( UInt_t uAsicA = 0; uAsicA < fuNrOfGet4 - 1; uAsicA ++ )
-      {
-         for( UInt_t uHitA = 0; uHitA < fvulHitEpochBuffLastTs[uAsicA].size(); uHitA ++ )
-         {
-            for( UInt_t uAsicB = uAsicA; uAsicB < fuNrOfGet4; uAsicB ++ )
-            {
-               for( UInt_t uHitB = 0; uHitB < fvulHitEpochBuffLastTs[uAsicB].size(); uHitB ++ )
-               {
-                  fvhCoincOffsetEpochGet4[uAsicA]->Fill( uAsicB,
-                           fvulHitEpochBuffLastTs[uAsicB][uHitB]
-                         - fvulHitEpochBuffLastTs[uAsicA][uHitA] );
-               } // for( UInt_t uHitB = 0; uHitB < fvulHitEpochBuffLastTs[uAsicB].size(); uHitB ++ )
-            } // for( UInt_t uAsicA = 0; uAsicA < fuNrOfGet4 - 1; uAsicA ++ )
-         } // for( UInt_t uHitA = 0; uHitA < fvulHitEpochBuffLastTs[uAsicA].size(); uHitA ++ )
-         fvulHitEpochBuffLastTs[uAsicA].clear();
-      } // for( UInt_t uAsicA = 0; uAsicA < fuNrOfGet4 - 1; uAsicA ++ )
-      fvulHitEpochBuffLastTs[fuNrOfGet4 - 1].clear();
-      fbHitsInLastTs = kFALSE;
-  } // if( 0 == component && fbHitsInLastTs )
-*/
+   if( bTofUpdateZoomedFitMoniShift )
+   {
+      UpdateZoomedFit();
+      bTofUpdateZoomedFitMoniShift = kFALSE;
+   } // if (bTofUpdateZoomedFitMoniShift)
 
   LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
                  << "microslices." << FairLogger::endl;
 
-  // Getting the pointer to the correct histogram needs a lot more time then
-  // the actual filling procedure. If one gets the pointer in a loop this kills
-  // the performance. A test shows that extracting the pointer from the CbmHistManger
-  // is slower by a factor of 20-100 (depending on the number of histos managed by the
-  // CbmHistManager) compared to using the pointer directly
-  // So get the pointer once outside the loop and use it in the loop
-/*
-  TString sMsSzName = Form("MsSz_link_%02lu", component);
-  TH1* hMsSz = NULL;
-  TProfile* hMsSzTime = NULL;
-  if (fHM->Exists(sMsSzName.Data())) {
-    hMsSz = fHM->H1(sMsSzName.Data());
-    sMsSzName = Form("MsSzTime_link_%02lu", component);
-    hMsSzTime = fHM->P1(sMsSzName.Data());
-  } // if( fHM->Exists(sMsSzName.Data() ) )
-  else {
-    TString sMsSzTitle = Form(
-        "Size of MS for gDPB of link %02lu; Ms Size [bytes]", component);
-    fHM->Add(sMsSzName.Data(),
-        new TH1F(sMsSzName.Data(), sMsSzTitle.Data(), 160000, 0., 20000.));
-    hMsSz = fHM->H1(sMsSzName.Data());
+   // MS size monitoring
+   if( NULL == fvhMsSzPerLink[ component ] )
+   {
+      TString sMsSzName  = Form( "MsSz_link_%02lu", component );
+      TString sMsSzTitle = Form( "Size of MS from link %02lu; Ms Size [bytes]", component );
+      fvhMsSzPerLink[ component ] = new TH1F(sMsSzName.Data(), sMsSzTitle.Data(), 160000, 0., 20000. );
+
+      sMsSzName = Form("MsSzTime_link_%02lu", component);
+      sMsSzTitle = Form( "Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
+      fvhMsSzTimePerLink[ component ] =  new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
+                                                       100 * fuHistoryHistoSize, 0., 2 * fuHistoryHistoSize );
 #ifdef USE_HTTP_SERVER
-    if (server)
-      server->Register("/FlibRaw", hMsSz);
+      THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
+      if( server )
+      {
+         server->Register("/FlibRaw", fvhMsSzPerLink[ component ]);
+         server->Register("/FlibRaw", fvhMsSzTimePerLink[ component ]);
+      } // if( server )
 #endif
-    sMsSzName = Form("MsSzTime_link_%02lu", component);
-    sMsSzTitle = Form(
-        "Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]",
-        component);
-    fHM->Add(sMsSzName.Data(),
-        new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
-                      100 * fuHistoryHistoSize, 0., 2 * fuHistoryHistoSize ) );
-    hMsSzTime = fHM->P1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
-    if (server)
-      server->Register("/FlibRaw", hMsSzTime);
-#endif
-    if( NULL != fcMsSizeAll )
-    {
-      fcMsSizeAll->cd( 1 + component );
-      gPad->SetLogy();
-      hMsSzTime->Draw("hist le0");
-    } // if( NULL != fcMsSizeAll )
-    LOG(INFO) << "Added MS size histo for component: " << component << " (gDPB)"
-                 << FairLogger::endl;
-  } // else of if( fHM->Exists(sMsSzName.Data() ) )
-*/
+      if( NULL != fcMsSizeAll )
+      {
+         fcMsSizeAll->cd( 1 + component );
+         gPad->SetLogy();
+         fvhMsSzTimePerLink[ component ]->Draw("hist le0");
+      } // if( NULL != fcMsSizeAll )
+      LOG(INFO) << "Added MS size histo for component (link): " << component
+                << FairLogger::endl;
+   } // if( NULL == fvhMsSzPerLink[ component ] )
+
    Int_t messageType = -111;
    Double_t dTsStartTime = -1;
    // Loop over microslices
@@ -839,18 +1089,18 @@ Bool_t CbmTofStarMonitorShift2018::DoUnpack(const fles::Timeslice& ts,
 
       if( 0 == m )
          dTsStartTime = (1e-9) * fdMsIndex;
-/*
+
       if( fdStartTimeMsSz < 0 )
          fdStartTimeMsSz = (1e-9) * fdMsIndex;
-      hMsSz->Fill(size);
+      fvhMsSzPerLink[ component ]->Fill(size);
       if( 2 * fuHistoryHistoSize < (1e-9) * fdMsIndex - fdStartTimeMsSz )
       {
          // Reset the evolution Histogram and the start time when we reach the end of the range
-         hMsSzTime->Reset();
+         fvhMsSzTimePerLink[ component ]->Reset();
          fdStartTimeMsSz = (1e-9) * fdMsIndex;
       } // if( 2 * fuHistoryHistoSize < (1e-9) * fdMsIndex - fdStartTimeMsSz )
-      hMsSzTime->Fill((1e-9) * fdMsIndex - fdStartTimeMsSz, size);
-*/
+      fvhMsSzTimePerLink[ component ]->Fill((1e-9) * fdMsIndex - fdStartTimeMsSz, size);
+
       // If not integer number of message in input buffer, print warning/error
       if (0 != (size % kuBytesPerMessage))
          LOG(ERROR) << "The input microslice buffer does NOT "
@@ -946,16 +1196,16 @@ Bool_t CbmTofStarMonitorShift2018::DoUnpack(const fles::Timeslice& ts,
                   UInt_t uFeetNr   = (fuGet4Id / fuNrOfGet4PerFeb);
                   if (0 <= fdStartTime)
                   {
-                     fvhFeetErrorRate_gDPB[(fuGdpbNr * fuNrOfFebsPerGdpb) + uFeetNr]->Fill(
+                     fvhFeetErrorRate_gDPB[(fuGdpbNr * fuNrOfFeetPerGdpb) + uFeetNr]->Fill(
                         1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime));
-                     fvhFeetErrorRatio_gDPB[(fuGdpbNr * fuNrOfFebsPerGdpb) + uFeetNr]->Fill(
+                     fvhFeetErrorRatio_gDPB[(fuGdpbNr * fuNrOfFeetPerGdpb) + uFeetNr]->Fill(
                         1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime), 1, 1 );
                   } // if (0 <= fdStartTime)
                   if (0 <= fdStartTimeLong)
                   {
-                     fvhFeetErrorRateLong_gDPB[(fuGdpbNr * fuNrOfFebsPerGdpb) + uFeetNr]->Fill(
+                     fvhFeetErrorRateLong_gDPB[(fuGdpbNr * fuNrOfFeetPerGdpb) + uFeetNr]->Fill(
                         1e-9 / 60.0 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTimeLong), 1 / 60.0);
-                     fvhFeetErrorRatioLong_gDPB[(fuGdpbNr * fuNrOfFebsPerGdpb) + uFeetNr]->Fill(
+                     fvhFeetErrorRatioLong_gDPB[(fuGdpbNr * fuNrOfFeetPerGdpb) + uFeetNr]->Fill(
                         1e-9 / 60.0 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTimeLong), 1, 1 / 60.0);
                   } // if (0 <= fdStartTime)
 
@@ -1049,7 +1299,6 @@ Bool_t CbmTofStarMonitorShift2018::DoUnpack(const fles::Timeslice& ts,
       // Reset summary histograms for safety
       fhTimeRmsPulser->Reset();
 
-      UInt_t uHistoFeeIdx = 0;
       for( UInt_t uChan = 0; uChan < fvhTimeDiffPulser.size(); uChan++)
       {
          fhTimeRmsPulser->Fill( uChan, fvhTimeDiffPulser[uChan]->GetRMS() );
@@ -1076,6 +1325,7 @@ void CbmTofStarMonitorShift2018::FillHitInfo(gdpb::Message mess)
    UInt_t uChannelNr = fuGet4Id * fuNrOfChannelsPerGet4 + uChannel;
    UInt_t uChannelNrInFeet = (fuGet4Id % fuNrOfGet4PerFeb) * fuNrOfChannelsPerGet4 + uChannel;
    UInt_t uFeetNr   = (fuGet4Id / fuNrOfGet4PerFeb);
+   UInt_t uFeetNrInSys = fuGdpbNr * fuNrOfFeetPerGdpb + uFeetNr;
    UInt_t uRemappedChannelNr = uFeetNr * fuNrOfChannelsPerFeet + fvuGet4ToPadi[ uChannelNrInFeet ];
 
    ULong_t  ulHitTime = mess.getMsgFullTime(ulCurEpochGdpbGet4);
@@ -1093,11 +1343,29 @@ void CbmTofStarMonitorShift2018::FillHitInfo(gdpb::Message mess)
    fvhRemapChCount_gDPB[fuGdpbNr]->Fill( uRemappedChannelNr );
    fvhRemapTot_gDPB[ fuGdpbNr * fuNbFeetPlotsPerGdpb + uFeetNr/fuNbFeetPlot ]->Fill(  uRemappedChannelNr , uTot);
 
-   // Save last hist time if channel rate histos or pulser mode enabled
-/*
+   ///* Pulser monitoring *///
+   /// Save last hist time if pulser channel
+   /// Fill the corresponding histos if the time difference is reasonnable
    if( get4v2x::kuFeePulserChannel == uChannelNrInFeet )
-      fTsLastHit[ uFeetNr ] = dHitTime;
-*/
+   {
+      fdTsLastPulserHit[ uFeetNrInSys ] = dHitTime;
+
+      /// If not first FEE, update the difference to previous FEE
+      if( 0 < uFeetNrInSys )
+      {
+         Double_t dDtPrev = 1e3 * ( fdTsLastPulserHit[ uFeetNrInSys ] - fdTsLastPulserHit[ uFeetNrInSys - 1 ] );
+         if( TMath::Abs( dDtPrev ) < kdMaxDtPulserPs )
+            fvhTimeDiffPulser[ uFeetNrInSys - 1 ]->Fill( dDtPrev );
+      } // if( 0 < uFeetNrInSys )
+
+      /// If not last FEE, update difference to next FEE
+      if( uFeetNrInSys < fvhTimeDiffPulser.size() )
+      {
+         Double_t dDtNext = 1e3 * ( fdTsLastPulserHit[ uFeetNrInSys + 1 ] - fdTsLastPulserHit[ uFeetNrInSys ] );
+         if( TMath::Abs( dDtNext ) < kdMaxDtPulserPs )
+            fvhTimeDiffPulser[ uFeetNrInSys ]->Fill( dDtNext );
+      } // if( uFeetNrInSys < fvhTimeDiffPulser.size() )
+   } // if( get4v2x::kuFeePulserChannel == uChannelNrInFeet )
 
    // In Run rate evolution
    if (fdStartTime < 0)
@@ -1108,15 +1376,19 @@ void CbmTofStarMonitorShift2018::FillHitInfo(gdpb::Message mess)
    {
       for (UInt_t uGdpbLoop = 0; uGdpbLoop < fuNrOfGdpbs; uGdpbLoop++)
       {
-         for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFebsPerGdpb; uFeetLoop++)
+         fvhChannelRate_gDPB[ uGdpbLoop ]->Reset();
+         fvhRemapChRate_gDPB[ uGdpbLoop ]->Reset();
+         for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
          {
-            fvhFeetRate_gDPB[(uGdpbLoop * fuNrOfFebsPerGdpb) + uFeetLoop]->Reset();
-            fvhFeetErrorRate_gDPB[(uGdpbLoop * fuNrOfFebsPerGdpb) + uFeetLoop]->Reset();
-            fvhFeetErrorRatio_gDPB[(uGdpbLoop * fuNrOfFebsPerGdpb) + uFeetLoop]->Reset();
-         } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFebsPerGdpb; uFeetLoop++)
+            fvhFeetRate_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+            fvhFeetErrorRate_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+            fvhFeetErrorRatio_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+         } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
          fvhTriggerRate[ uGdpbLoop ]->Reset();
          fvhStarTokenEvo[ uGdpbLoop ]->Reset();
-      } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFebsPerGdpb; uFeetLoop++)
+         fvhStarTrigGdpbTsEvo[ uGdpbLoop ]->Reset();
+         fvhStarTrigStarTsEvo[ uGdpbLoop ]->Reset();
+      } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
 
       fdStartTime = dHitTime;
    } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
@@ -1126,32 +1398,34 @@ void CbmTofStarMonitorShift2018::FillHitInfo(gdpb::Message mess)
       fdStartTimeLong = dHitTime;
 
    // Reset the evolution Histogram and the start time when we reach the end of the range
-   if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) )
+   if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) / 60.0 )
    {
       for (UInt_t uGdpbLoop = 0; uGdpbLoop < fuNrOfGdpbs; uGdpbLoop++)
       {
-         for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFebsPerGdpb; uFeetLoop++)
+         for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
          {
-            fvhFeetRateLong_gDPB[(uGdpbLoop * fuNrOfFebsPerGdpb) + uFeetLoop]->Reset();
-            fvhFeetErrorRateLong_gDPB[(uGdpbLoop * fuNrOfFebsPerGdpb) + uFeetLoop]->Reset();
-            fvhFeetErrorRatioLong_gDPB[(uGdpbLoop * fuNrOfFebsPerGdpb) + uFeetLoop]->Reset();
-         } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFebsPerGdpb; uFeetLoop++)
-      } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFebsPerGdpb; uFeetLoop++)
+            fvhFeetRateLong_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+            fvhFeetErrorRateLong_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+            fvhFeetErrorRatioLong_gDPB[(uGdpbLoop * fuNrOfFeetPerGdpb) + uFeetLoop]->Reset();
+         } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
+      } // for (UInt_t uFeetLoop = 0; uFeetLoop < fuNrOfFeetPerGdpb; uFeetLoop++)
 
       fdStartTimeLong = dHitTime;
-   } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
+   } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) / 60.0 )
 
    if (0 <= fdStartTime)
    {
-      fvhFeetRate_gDPB[(fuGdpbNr * fuNrOfFebsPerGdpb) + uFeetNr]->Fill( 1e-9 * (dHitTime - fdStartTime));
-      fvhFeetErrorRatio_gDPB[(fuGdpbNr * fuNrOfFebsPerGdpb) + uFeetNr]->Fill( 1e-9 * (dHitTime - fdStartTime), 0, 1);
+      fvhChannelRate_gDPB[ fuGdpbNr ]->Fill( 1e-9 * (dHitTime - fdStartTime), uChannelNr );
+      fvhRemapChRate_gDPB[ fuGdpbNr ]->Fill( 1e-9 * (dHitTime - fdStartTime), uRemappedChannelNr );
+      fvhFeetRate_gDPB[(fuGdpbNr * fuNrOfFeetPerGdpb) + uFeetNr]->Fill( 1e-9 * (dHitTime - fdStartTime));
+      fvhFeetErrorRatio_gDPB[(fuGdpbNr * fuNrOfFeetPerGdpb) + uFeetNr]->Fill( 1e-9 * (dHitTime - fdStartTime), 0, 1);
    } // if (0 <= fdStartTime)
 
    if (0 <= fdStartTimeLong)
    {
-      fvhFeetRateLong_gDPB[(fuGdpbNr * fuNrOfFebsPerGdpb) + uFeetNr]->Fill(
+      fvhFeetRateLong_gDPB[(fuGdpbNr * fuNrOfFeetPerGdpb) + uFeetNr]->Fill(
             1e-9 / 60.0 * (dHitTime - fdStartTimeLong), 1 / 60.0 );
-      fvhFeetErrorRatioLong_gDPB[(fuGdpbNr * fuNrOfFebsPerGdpb) + uFeetNr]->Fill(
+      fvhFeetErrorRatioLong_gDPB[(fuGdpbNr * fuNrOfFeetPerGdpb) + uFeetNr]->Fill(
             1e-9 / 60.0 * (dHitTime - fdStartTimeLong), 0, 1 / 60.0 );
    } // if (0 <= fdStartTimeLong)
 }
@@ -1192,32 +1466,6 @@ void CbmTofStarMonitorShift2018::FillEpochInfo(gdpb::Message mess)
 
       fvmEpSupprBuffer[fuGet4Nr].clear();
    } // if( 0 < fvmEpSupprBuffer[fuGet4Nr] )
-
-/*
-   // Fill Pulser test histos if needed
-   if( fbPulserMode && 0 == fuGet4Nr )
-   {
-      // Fill the time difference for the chosen channel pairs
-      for( UInt_t uChan = 0; uChan < fuNrOfFebsPerGdpb * fuNrOfGdpbs - 1; uChan++)
-      {
-         UInt_t uGdpbA = uChan / ( fuNrOfFebsPerGdpb );
-         UInt_t uFeetA = uChan - ( fuNrOfFebsPerGdpb * uGdpb );
-         UInt_t uGdpbB = ( uChan + 1 ) / ( fuNrOfFebsPerGdpb );
-         UInt_t uFeetB = ( uChan + 1 ) - ( fuNrOfFebsPerGdpb * uGdpb );
-
-         Double_t dTimeDiff =
-               fTsLastHit[uChan ]
-             - fTsLastHit[uChan + 1 ];
-            dTimeDiff *= 1e3;  // ns -> ps
-         if( ( 10.0 * dMinDt < dTimeDiff ) && ( dTimeDiff < 10.0 * dMaxDt ) &&
-             ( 0 < fTsLastHit[uGdpbA][uChipA][ uChanA ] ) &&
-             ( 0 < fTsLastHit[uGdpbB][uChipB][ uChanB ] ) )
-         {
-            fhTimeDiffPulserChosenChPairs[uChan]->Fill( dTimeDiff );
-         } // if both channels have already 1 hit and these are not too far away
-      } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
-   } // if( fbPulserMode && First GET4 on chosen FEET )
-*/
 }
 
 void CbmTofStarMonitorShift2018::PrintSlcInfo(gdpb::Message mess)
@@ -1481,6 +1729,10 @@ void CbmTofStarMonitorShift2018::FillStarTrigInfo(gdpb::Message mess)
                fvhTriggerRate[fuGdpbNr]->Fill( 1e-9 * ( fvulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ) );
                fvhStarTokenEvo[fuGdpbNr]->Fill( 1e-9 * ( fvulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ),
                                                fvuStarTokenLast[fuGdpbNr] );
+               fvhStarTrigGdpbTsEvo[fuGdpbNr]->Fill( 1e-9 * ( fvulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ),
+                                                     fvulGdpbTsFullLast[fuGdpbNr] );
+               fvhStarTrigStarTsEvo[fuGdpbNr]->Fill( 1e-9 * ( fvulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ),
+                                                     fvulStarTsFullLast[fuGdpbNr] );
             } // if( 0 < fdStartTime )
                else fdStartTime = fvulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
             fvhCmdDaqVsTrig[fuGdpbNr]->Fill( fvuStarDaqCmdLast[fuGdpbNr], fvuStarTrigCmdLast[fuGdpbNr] );
@@ -1601,19 +1853,19 @@ void CbmTofStarMonitorShift2018::SaveAllHistos( TString sFileName )
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       fvhChCount_gDPB[ uGdpb ]->Write();
-//      fvhChannelRate_gDPB[ uGdpb ]->Write();
+      fvhChannelRate_gDPB[ uGdpb ]->Write();
       fvhRemapChCount_gDPB[ uGdpb ]->Write();
-//      fvhRemapChRate_gDPB[ uGdpb ]->Write();
+      fvhRemapChRate_gDPB[ uGdpb ]->Write();
 
-      for (UInt_t uFeet = 0; uFeet < fuNrOfFebsPerGdpb; ++ uFeet)
+      for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++ uFeet)
       {
-         fvhFeetRate_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Write();
-         fvhFeetErrorRate_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Write();
-         fvhFeetErrorRatio_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Write();
-         fvhFeetRateLong_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Write();
-         fvhFeetErrorRateLong_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Write();
-         fvhFeetErrorRatioLong_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Write();
-      } // for (UInt_t uFeet = 0; uFeet < fuNrOfFebsPerGdpb; ++ uFeet)
+         fvhFeetRate_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Write();
+         fvhFeetErrorRate_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Write();
+         fvhFeetErrorRatio_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Write();
+         fvhFeetRateLong_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Write();
+         fvhFeetErrorRateLong_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Write();
+         fvhFeetErrorRatioLong_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Write();
+      } // for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++ uFeet)
 
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    fhTimeRmsPulser->Write();
@@ -1630,6 +1882,8 @@ void CbmTofStarMonitorShift2018::SaveAllHistos( TString sFileName )
       fvhTriggerRate[ uGdpb ]->Write();
       fvhCmdDaqVsTrig[ uGdpb ]->Write();
       fvhStarTokenEvo[ uGdpb ]->Write();
+      fvhStarTrigGdpbTsEvo[ uGdpb ]->Write();
+      fvhStarTrigStarTsEvo[ uGdpb ]->Write();
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    gDirectory->cd("..");
 
@@ -1640,20 +1894,16 @@ void CbmTofStarMonitorShift2018::SaveAllHistos( TString sFileName )
       fvhTimeDiffPulser[ uPulsPlot ]->Write();
    gDirectory->cd("..");
 
-/*
-  gDirectory->mkdir("Flib_Raw");
-  gDirectory->cd("Flib_Raw");
-  for (UInt_t uLinks = 0; uLinks < 16; uLinks++) {
-    TString sMsSzName = Form("MsSz_link_%02u", uLinks);
-    if (fHM->Exists(sMsSzName.Data()))
-      fHM->H1(sMsSzName.Data())->Write();
 
-    sMsSzName = Form("MsSzTime_link_%02u", uLinks);
-    if (fHM->Exists(sMsSzName.Data()))
-      fHM->P1(sMsSzName.Data())->Write();
-  } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
-  gDirectory->cd("..");
-*/
+   gDirectory->mkdir("Flib_Raw");
+   gDirectory->cd("Flib_Raw");
+   for( UInt_t uLinks = 0; uLinks < fvhMsSzPerLink.size(); uLinks++ )
+   {
+      fvhMsSzPerLink[ uLinks ]->Write();
+      fvhMsSzTimePerLink[ uLinks ]->Write();
+   } // for( UInt_t uLinks = 0; uLinks < fvhMsSzPerLink.size(); uLinks++ )
+   gDirectory->cd("..");
+
 
   if( "" != sFileName )
   {
@@ -1694,19 +1944,19 @@ void CbmTofStarMonitorShift2018::ResetAllHistos()
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       fvhChCount_gDPB[ uGdpb ]->Reset();
-//      fvhChannelRate_gDPB[ uGdpb ]->Reset();
+      fvhChannelRate_gDPB[ uGdpb ]->Reset();
       fvhRemapChCount_gDPB[ uGdpb ]->Reset();
-//      fvhRemapChRate_gDPB[ uGdpb ]->Reset();
+      fvhRemapChRate_gDPB[ uGdpb ]->Reset();
 
-      for (UInt_t uFeet = 0; uFeet < fuNrOfFebsPerGdpb; ++ uFeet)
+      for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++ uFeet)
       {
-         fvhFeetRate_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Reset();
-         fvhFeetErrorRate_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Reset();
-         fvhFeetErrorRatio_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Reset();
-         fvhFeetRateLong_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Reset();
-         fvhFeetErrorRateLong_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Reset();
-         fvhFeetErrorRatioLong_gDPB[ uGdpb * fuNrOfFebsPerGdpb + uFeet ]->Reset();
-      } // for (UInt_t uFeet = 0; uFeet < fuNrOfFebsPerGdpb; ++ uFeet)
+         fvhFeetRate_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Reset();
+         fvhFeetErrorRate_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Reset();
+         fvhFeetErrorRatio_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Reset();
+         fvhFeetRateLong_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Reset();
+         fvhFeetErrorRateLong_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Reset();
+         fvhFeetErrorRatioLong_gDPB[ uGdpb * fuNrOfFeetPerGdpb + uFeet ]->Reset();
+      } // for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++ uFeet)
 
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    fhTimeRmsPulser->Reset();
@@ -1720,23 +1970,21 @@ void CbmTofStarMonitorShift2018::ResetAllHistos()
       fvhTriggerRate[ uGdpb ]->Reset();
       fvhCmdDaqVsTrig[ uGdpb ]->Reset();
       fvhStarTokenEvo[ uGdpb ]->Reset();
+      fvhStarTrigGdpbTsEvo[ uGdpb ]->Reset();
+      fvhStarTrigStarTsEvo[ uGdpb ]->Reset();
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
    ///* Pulser monitoring *///
    for( UInt_t uPulsPlot = 0; uPulsPlot < fvhTimeDiffPulser.size(); ++uPulsPlot )
       fvhTimeDiffPulser[ uPulsPlot ]->Reset();
 
-/*
-  for (UInt_t uLinks = 0; uLinks < 16; uLinks++) {
-    TString sMsSzName = Form("MsSz_link_%02u", uLinks);
-    if (fHM->Exists(sMsSzName.Data()))
-      fHM->H1(sMsSzName.Data())->Reset();
 
-    sMsSzName = Form("MsSzTime_link_%02u", uLinks);
-    if (fHM->Exists(sMsSzName.Data()))
-      fHM->P1(sMsSzName.Data())->Reset();
-  } // for( UInt_t uLinks = 0; uLinks < 16; uLinks ++)
-*/
+   for( UInt_t uLinks = 0; uLinks < fvhMsSzPerLink.size(); uLinks++ )
+   {
+      fvhMsSzPerLink[ uLinks ]->Reset();
+      fvhMsSzTimePerLink[ uLinks ]->Reset();
+   } // for( UInt_t uLinks = 0; uLinks < fvhMsSzPerLink.size(); uLinks++ )
+
 
   fdStartTime = -1;
   fdStartTimeLong = -1;
@@ -1744,7 +1992,7 @@ void CbmTofStarMonitorShift2018::ResetAllHistos()
 }
 void CbmTofStarMonitorShift2018::UpdateZoomedFit()
 {
-   // Only do something is the user defined the width a want for the zoom
+   // Only do something is the user defined the width he want for the zoom
    if( 0.0 < fdFitZoomWidthPs )
    {
       // Reset summary histograms for safety
@@ -1809,9 +2057,16 @@ void CbmTofStarMonitorShift2018::UpdateZoomedFit()
          // Fill summary
          fhTimeResFitPuls->Fill( uChan,  dRes / TMath::Sqrt2() );
 
+
+         LOG(INFO) << "CbmTofStarMonitorShift2018::UpdateZoomedFit => "
+                      << "For channels pair " << uChan
+                      << " we have zoomed RMS = " << fvhTimeDiffPulser[uChan]->GetRMS()
+                      << " and a resolution of " << dRes / TMath::Sqrt2()
+                      << FairLogger::endl;
+
          // Restore original axis state?
          fvhTimeDiffPulser[uChan]->GetXaxis()->UnZoom();
-      } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+      } // for( UInt_t uChan = 0; uChan < fvhTimeDiffPulser.size(); uChan++)
    } // if( 0.0 < fdFitZoomWidthPs )
       else
       {

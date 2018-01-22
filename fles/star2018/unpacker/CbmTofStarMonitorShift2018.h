@@ -83,7 +83,7 @@ class CbmTofStarMonitorShift2018: public CbmTSUnpack {
       /** Settings from parameter file **/
       CbmTofStar2018Par* fUnpackPar;      //!
       UInt_t fuNrOfGdpbs;           // Total number of GDPBs in the system
-      UInt_t fuNrOfFebsPerGdpb;     // Number of FEBs per GDPB
+      UInt_t fuNrOfFeetPerGdpb;     // Number of FEBs per GDPB
       UInt_t fuNrOfGet4PerFeb;      // Number of GET4s per FEB
       UInt_t fuNrOfChannelsPerGet4; // Number of channels in each GET4
 
@@ -154,6 +154,8 @@ class CbmTofStarMonitorShift2018: public CbmTSUnpack {
       Double_t fdFitZoomWidthPs;
          // Flesnet
       TCanvas* fcMsSizeAll;
+      std::vector< TH1      * > fvhMsSzPerLink;
+      std::vector< TProfile * > fvhMsSzTimePerLink;
          // Messages types and flags
       TH1* fhMessType;
       TH1* fhSysMessType;
@@ -182,12 +184,15 @@ class CbmTofStarMonitorShift2018: public CbmTSUnpack {
       std::vector< TProfile * > fvhFeetErrorRatioLong_gDPB;
 
       ///* STAR TRIGGER detection *///
-      std::vector< TH1 *     > fvhTokenMsgType;
-      std::vector< TH1 *     > fvhTriggerRate;
-      std::vector< TH2 *     > fvhCmdDaqVsTrig;
-      std::vector< TH2 *     > fvhStarTokenEvo;
+      std::vector< TH1 *      > fvhTokenMsgType;
+      std::vector< TH1 *      > fvhTriggerRate;
+      std::vector< TH2 *      > fvhCmdDaqVsTrig;
+      std::vector< TH2 *      > fvhStarTokenEvo;
+      std::vector< TProfile * > fvhStarTrigGdpbTsEvo;
+      std::vector< TProfile * > fvhStarTrigStarTsEvo;
 
       ///* Pulser monitoring *///
+      const Double_t kdMaxDtPulserPs = 100e3;
       std::vector< TH1 * > fvhTimeDiffPulser;
       TH1 * fhTimeRmsPulser;
       TH1 * fhTimeRmsZoomFitPuls;

@@ -525,7 +525,7 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
                server->Register("/StarRaw", fhStarTrigTimeToMeanTrig_gDPB[ uGdpb ] );
 #endif
          } // else of if( kFALSE == fbEventBuilding )
-   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
 
    /// Check if we are in "single sub-event for all links" building mode
    if( kTRUE == fbEventBuilding )
@@ -571,7 +571,7 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
 
 
    /** Create STAR token Canvas for STAR 2017 **/
-   for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
    {
       TCanvas* cStarToken = new TCanvas( Form("cStarToken_g%02u", uGdpb),
                                            Form("STAR token detection info for gDPB %02u", uGdpb),
@@ -589,7 +589,7 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
 
       cStarToken->cd(4);
       fhStarTrigStarTsEvo[uGdpb]->Draw( "hist" );
-   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
    /*****************************/
 
    /** Create Event building mode Canvas(es) for STAR 2017 **/
@@ -616,7 +616,7 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       fhStarEventSizeTimeLong->Draw( "colz" );
    } // if( kTRUE == fbEventBuilding )
 
-   for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
    {
       TCanvas* cStarEvtBuild = new TCanvas( Form("cStarEvt_g%02u", uGdpb),
                                            Form("STAR SubEvent Building for gDPB %02u", uGdpb),
@@ -649,7 +649,7 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
             gPad->SetLogy();
             fhStarTrigTimeToMeanTrig_gDPB[uGdpb]->Draw();
          } // else of if( kFALSE == fbEventBuilding )
-   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
    /*****************************/
 
 }
@@ -1393,7 +1393,7 @@ void CbmTofStarEventBuilder2018::SaveAllHistos( TString sFileName )
          fhStarEventSizeTimeLong_gDPB[ uGdpb ]->Write();
       } // if( kFALSE == fbEventBuilding )
          else fhStarTrigTimeToMeanTrig_gDPB[ uGdpb ]->Write();
-   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
 
    if( kTRUE == fbEventBuilding )
    {
@@ -1443,7 +1443,7 @@ void CbmTofStarEventBuilder2018::ResetAllHistos()
          fhStarEventSizeTimeLong_gDPB[ uGdpb ]->Reset();
       } // if( kFALSE == fbEventBuilding )
          else fhStarTrigTimeToMeanTrig_gDPB[ uGdpb ]->Reset();
-   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
 
    if( kTRUE == fbEventBuilding )
    {
