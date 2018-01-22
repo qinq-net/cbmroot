@@ -28,6 +28,7 @@ class CbmTofStar2018Par;
 class TCanvas;
 class TH1;
 class TH2;
+class TProfile;
 
 #ifdef STAR_SUBEVT_BUILDER
    /*
@@ -159,6 +160,8 @@ private:
    std::vector< TH1 *     > fhTriggerRate;
    std::vector< TH2 *     > fhCmdDaqVsTrig;
    std::vector< TH2 *     > fhStarTokenEvo;
+   std::vector< TProfile * > fhStarTrigGdpbTsEvo;
+   std::vector< TProfile * > fhStarTrigStarTsEvo;
 
    ///* STAR event building *///
    Bool_t fbEventBuilding; //! If false => build subevents in each MS => M1, if true => store data for full TS, then build subevents in TS => M2

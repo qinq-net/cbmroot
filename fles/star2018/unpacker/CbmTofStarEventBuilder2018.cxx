@@ -23,6 +23,7 @@
 #include "TClonesArray.h"
 #include "TString.h"
 #include "THttpServer.h"
+#include "TProfile.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -93,6 +94,8 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fhTriggerRate(),
     fhCmdDaqVsTrig(),
     fhStarTokenEvo(),
+    fhStarTrigGdpbTsEvo(),
+    fhStarTrigStarTsEvo(),
     fbEventBuilding( kFALSE ),
     fbTimeSortOutput( kFALSE ),
     fStarSubEvent(),
@@ -278,6 +281,8 @@ Bool_t CbmTofStarEventBuilder2018::ReInitContainers()
    fhTriggerRate.resize(  fuNrOfGdpbs );
    fhCmdDaqVsTrig.resize(  fuNrOfGdpbs );
    fhStarTokenEvo.resize(  fuNrOfGdpbs );
+   fhStarTrigGdpbTsEvo.resize(  fuNrOfGdpbs );
+   fhStarTrigStarTsEvo.resize(  fuNrOfGdpbs );
    for (UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb)
    {
       fulGdpbTsMsb[ uGdpb ] = 0;
@@ -298,6 +303,8 @@ Bool_t CbmTofStarEventBuilder2018::ReInitContainers()
       fhTriggerRate[ uGdpb ]  = NULL;
       fhCmdDaqVsTrig[ uGdpb ] = NULL;
       fhStarTokenEvo[ uGdpb ] = NULL;
+      fhStarTrigGdpbTsEvo[ uGdpb ] = NULL;
+      fhStarTrigStarTsEvo[ uGdpb ] = NULL;
    } // for (Int_t iGdpb = 0; iGdpb < fuNrOfGdpbs; ++iGdpb)
 
    /// STAR subevent building
@@ -447,6 +454,22 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
          server->Register("/StarRaw", fhStarTokenEvo[ uGdpb ] );
 #endif
 
+      name = Form( "hStarTrigGdpbTsEvo_gDPB_%02u", uGdpb);
+      title = Form( "gDPB TS in STAR triger tokens for gDPB %02u; Time in Run [s] ; gDPB TS;", uGdpb);
+      fhStarTrigGdpbTsEvo[ uGdpb ] =  new TProfile(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize );
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhStarTrigGdpbTsEvo[ uGdpb ] );
+#endif
+
+      name = Form( "hStarTrigStarTsEvo_gDPB_%02u", uGdpb);
+      title = Form( "STAR TS in STAR triger tokens for gDPB %02u; Time in Run [s] ; STAR TS;", uGdpb);
+      fhStarTrigStarTsEvo[ uGdpb ] =  new TProfile(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize );
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhStarTrigStarTsEvo[ uGdpb ] );
+#endif
+
       /// Check if we are in "single link per sub-event" building mode
       if( kFALSE == fbEventBuilding )
       {
@@ -563,6 +586,9 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
 
       cStarToken->cd(3);
       fhStarTokenEvo[uGdpb]->Draw();
+
+      cStarToken->cd(4);
+      fhStarTrigStarTsEvo[uGdpb]->Draw( "hist" );
    } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
    /*****************************/
 
@@ -1257,6 +1283,10 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
                fhTriggerRate[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ) );
                fhStarTokenEvo[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ),
                                                fuStarTokenLast[fuGdpbNr] );
+               fhStarTrigGdpbTsEvo[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ),
+                                               fulGdpbTsFullLast[fuGdpbNr] );
+               fhStarTrigStarTsEvo[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ),
+                                               fulStarTsFullLast[fuGdpbNr] );
             } // if( 0 < fdStartTime )
                else fdStartTime = fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs;
             fhCmdDaqVsTrig[fuGdpbNr]->Fill( fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
@@ -1349,6 +1379,8 @@ void CbmTofStarEventBuilder2018::SaveAllHistos( TString sFileName )
       fhTriggerRate[ uGdpb ]->Write();
       fhCmdDaqVsTrig[ uGdpb ]->Write();
       fhStarTokenEvo[ uGdpb ]->Write();
+      fhStarTrigGdpbTsEvo[ uGdpb ]->Write();
+      fhStarTrigStarTsEvo[ uGdpb ]->Write();
 
       /// Event building
       fhStarHitToTrigAll_gDPB[ uGdpb ]->Write();
@@ -1397,6 +1429,8 @@ void CbmTofStarEventBuilder2018::ResetAllHistos()
       fhTriggerRate[ uGdpb ]->Reset();
       fhCmdDaqVsTrig[ uGdpb ]->Reset();
       fhStarTokenEvo[ uGdpb ]->Reset();
+      fhStarTrigGdpbTsEvo[ uGdpb ]->Reset();
+      fhStarTrigStarTsEvo[ uGdpb ]->Reset();
 
       /// Event building
       fhStarHitToTrigAll_gDPB[ uGdpb ]->Reset();
