@@ -195,10 +195,10 @@ class CbmTofStarMonitorShift2018: public CbmTSUnpack {
 
       ///* Pulser monitoring *///
       const Double_t kdMaxDtPulserPs = 100e3;
-      std::vector< TH1 * > fvhTimeDiffPulser;
-      TH1 * fhTimeRmsPulser;
-      TH1 * fhTimeRmsZoomFitPuls;
-      TH1 * fhTimeResFitPuls;
+      std::vector< std::vector< TH1 * > > fvhTimeDiffPulser;
+      TH2 * fhTimeRmsPulser;
+      TH2 * fhTimeRmsZoomFitPuls;
+      TH2 * fhTimeResFitPuls;
 
       void CreateHistograms();
 

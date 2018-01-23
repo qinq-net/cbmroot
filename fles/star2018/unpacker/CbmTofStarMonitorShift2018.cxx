@@ -382,11 +382,12 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
    title = "SC messages per GET4 channel; GET4 channel # ; SC type";
    fhGet4ChanScm =  new TH2I(name, title,
          2 * fuNrOfGet4 * fuNrOfChannelsPerGet4, 0., fuNrOfGet4 * fuNrOfChannelsPerGet4,
-         4, 0., 4.);
+         5, 0., 5.);
    fhGet4ChanScm->GetYaxis()->SetBinLabel( 1, "Hit Scal" );
    fhGet4ChanScm->GetYaxis()->SetBinLabel( 2, "Deadtime" );
    fhGet4ChanScm->GetYaxis()->SetBinLabel( 3, "SPI" );
    fhGet4ChanScm->GetYaxis()->SetBinLabel( 4, "SEU Scal" );
+   fhGet4ChanScm->GetYaxis()->SetBinLabel( 5, "START" );
 
    /*******************************************************************/
    name = "hGet4ChanErrors";
@@ -648,34 +649,45 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
 
    /*******************************************************************/
    /// FEET pulser test channels
-   fvhTimeDiffPulser.resize( fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1 );
-   for( UInt_t uChan = 0; uChan < fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1; uChan++)
+   fvhTimeDiffPulser.resize( fuNrOfFeetPerGdpb * fuNrOfGdpbs );
+   for( UInt_t uFeeA = 0; uFeeA < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeA++)
    {
-      UInt_t uGdpbA = uChan / ( fuNrOfFeetPerGdpb );
-      UInt_t uFeetA = uChan - ( fuNrOfFeetPerGdpb * uGdpbA );
-      UInt_t uGdpbB = ( uChan + 1 ) / ( fuNrOfFeetPerGdpb );
-      UInt_t uFeetB = ( uChan + 1 ) - ( fuNrOfFeetPerGdpb * uGdpbB );
-      fvhTimeDiffPulser[uChan]  = new TH1I(
-         Form("hTimeDiffPulser_g%02u_f%1u_g%02u_f%1u", uGdpbA, uFeetA, uGdpbB, uFeetB),
-         Form("Time difference for pulser on gDPB %02u FEE %1u and gDPB %02u FEE %1u; DeltaT [ps]; Counts",
-               uGdpbA, uFeetA, uGdpbB, uFeetB ),
-         uNbBinsDt, dMinDt, dMaxDt);
-   } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+      fvhTimeDiffPulser[uFeeA].resize( fuNrOfFeetPerGdpb * fuNrOfGdpbs );
+      for( UInt_t uFeeB = 0; uFeeB < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeB++)
+      {
+         if( uFeeA < uFeeB )
+         {
+            UInt_t uGdpbA = uFeeA / ( fuNrOfFeetPerGdpb );
+            UInt_t uFeetA = uFeeA - ( fuNrOfFeetPerGdpb * uGdpbA );
+            UInt_t uGdpbB = uFeeB / ( fuNrOfFeetPerGdpb );
+            UInt_t uFeetB = uFeeB - ( fuNrOfFeetPerGdpb * uGdpbB );
+            fvhTimeDiffPulser[uFeeA][uFeeB] = new TH1I(
+               Form("hTimeDiffPulser_g%02u_f%1u_g%02u_f%1u", uGdpbA, uFeetA, uGdpbB, uFeetB),
+               Form("Time difference for pulser on gDPB %02u FEE %1u and gDPB %02u FEE %1u; DeltaT [ps]; Counts",
+                     uGdpbA, uFeetA, uGdpbB, uFeetB ),
+               uNbBinsDt, dMinDt, dMaxDt);
+         } // if( uFeeA < uFeeB )
+            else fvhTimeDiffPulser[uFeeA][uFeeB] = NULL;
+      } // for( UInt_t uFeeB = uFeeA; uFeeB < fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1; uFeeB++)
+   } // for( UInt_t uFeeA = 0; uFeeA < kuNbChanTest - 1; uFeeA++)
 
    name = "hTimeRmsPulser";
-   fhTimeRmsPulser = new TH1D( name.Data(),
-         "Time difference RMS for each FEE pairs; Pair # ; [ps]",
-         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1.5);
+   fhTimeRmsPulser = new TH2D( name.Data(),
+         "Time difference RMS for each FEE pairs; FEE A; FEE B ; [ps]",
+         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1.5,
+         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1,  0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 0.5 );
 
    name = "hTimeRmsZoomFitPuls";
-   fhTimeRmsZoomFitPuls = new TH1D( name.Data(),
-         "Time difference RMS after zoom for each FEE pairs; Pair # ; RMS [ps]",
-         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1.5);
+   fhTimeRmsZoomFitPuls = new TH2D( name.Data(),
+         "Time difference RMS after zoom for each FEE pairs; FEE A; FEE B ; RMS [ps]",
+         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1.5,
+         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1,  0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 0.5 );
 
    name = "hTimeResFitPuls";
-   fhTimeResFitPuls = new TH1D( name.Data(),
-         "Time difference Res from fit for each FEE pairs; Pair # ; Sigma [ps]",
-         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1.5);
+   fhTimeResFitPuls = new TH2D( name.Data(),
+         "Time difference Res from fit for each FEE pairs; FEE A; FEE B ; Sigma [ps]",
+         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1.5,
+         fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1,  0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 0.5 );
 
 #ifdef USE_HTTP_SERVER
    if( server )
@@ -722,8 +734,10 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
          server->Register("/StarRaw", fvhStarTrigStarTsEvo[ uGdpb ] );
       } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
-      for( UInt_t uPulsPlot = 0; uPulsPlot < fvhTimeDiffPulser.size(); ++uPulsPlot )
-         server->Register("/TofDt", fvhTimeDiffPulser[ uPulsPlot ] );
+      for( UInt_t uFeeA = 0; uFeeA < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeA++)
+         for( UInt_t uFeeB = 0; uFeeB < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeB++)
+            if( NULL != fvhTimeDiffPulser[uFeeA][uFeeB] )
+               server->Register("/TofDt", fvhTimeDiffPulser[uFeeA][uFeeB] );
 
       server->Register("/TofRaw", fhTimeRmsPulser );
       server->Register("/TofRaw", fhTimeRmsZoomFitPuls );
@@ -982,13 +996,19 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
    cPulser->Divide( 3 );
 
    cPulser->cd(1);
-   fhTimeRmsPulser->Draw( "hist" );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   fhTimeRmsPulser->Draw( "colz" );
 
    cPulser->cd(2);
-   fhTimeRmsZoomFitPuls->Draw( "hist" );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   fhTimeRmsZoomFitPuls->Draw( "colz" );
 
    cPulser->cd(3);
-   fhTimeResFitPuls->Draw( "hist" );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   fhTimeResFitPuls->Draw( "colz" );
    /*****************************/
 
    /** Recovers/Create Ms Size Canvas for STAR 2018 **/
@@ -1299,10 +1319,12 @@ Bool_t CbmTofStarMonitorShift2018::DoUnpack(const fles::Timeslice& ts,
       // Reset summary histograms for safety
       fhTimeRmsPulser->Reset();
 
-      for( UInt_t uChan = 0; uChan < fvhTimeDiffPulser.size(); uChan++)
-      {
-         fhTimeRmsPulser->Fill( uChan, fvhTimeDiffPulser[uChan]->GetRMS() );
-      } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
+      for( UInt_t uFeeA = 0; uFeeA < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeA++)
+         for( UInt_t uFeeB = 0; uFeeB < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeB++)
+            if( NULL != fvhTimeDiffPulser[uFeeA][uFeeB] )
+            {
+               fhTimeRmsPulser->Fill( uFeeA, uFeeB, fvhTimeDiffPulser[uFeeA][uFeeB]->GetRMS() );
+            } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
       fdLastRmsUpdateTime = dTsStartTime;
    } // if( 10.0 < dTsStartTime - fdLastRmsUpdateTime )
 
@@ -1350,21 +1372,23 @@ void CbmTofStarMonitorShift2018::FillHitInfo(gdpb::Message mess)
    {
       fdTsLastPulserHit[ uFeetNrInSys ] = dHitTime;
 
-      /// If not first FEE, update the difference to previous FEE
-      if( 0 < uFeetNrInSys )
-      {
-         Double_t dDtPrev = 1e3 * ( fdTsLastPulserHit[ uFeetNrInSys ] - fdTsLastPulserHit[ uFeetNrInSys - 1 ] );
-         if( TMath::Abs( dDtPrev ) < kdMaxDtPulserPs )
-            fvhTimeDiffPulser[ uFeetNrInSys - 1 ]->Fill( dDtPrev );
-      } // if( 0 < uFeetNrInSys )
+      /// Update the difference to all other FEE with lower indices
+      for( UInt_t uFeeB = 0; uFeeB < uFeetNrInSys; uFeeB++)
+         if( NULL != fvhTimeDiffPulser[uFeeB][uFeetNrInSys] )
+         {
+            Double_t dTimeDiff = 1e3 * ( fdTsLastPulserHit[ uFeetNrInSys ] - fdTsLastPulserHit[ uFeeB ] );
+            if( TMath::Abs( dTimeDiff ) < kdMaxDtPulserPs )
+               fvhTimeDiffPulser[uFeeB][uFeetNrInSys]->Fill( dTimeDiff );
+         } // if( NULL != fvhTimeDiffPulser[uFeeB][uFeeB] )
 
-      /// If not last FEE, update difference to next FEE
-      if( uFeetNrInSys < fvhTimeDiffPulser.size() )
-      {
-         Double_t dDtNext = 1e3 * ( fdTsLastPulserHit[ uFeetNrInSys + 1 ] - fdTsLastPulserHit[ uFeetNrInSys ] );
-         if( TMath::Abs( dDtNext ) < kdMaxDtPulserPs )
-            fvhTimeDiffPulser[ uFeetNrInSys ]->Fill( dDtNext );
-      } // if( uFeetNrInSys < fvhTimeDiffPulser.size() )
+      /// Update the difference to all other FEE with higher indices
+      for( UInt_t uFeeB = uFeetNrInSys + 1; uFeeB < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeB++)
+         if( NULL != fvhTimeDiffPulser[uFeetNrInSys][uFeeB] )
+         {
+            Double_t dTimeDiff = 1e3 * ( fdTsLastPulserHit[ uFeeB ] - fdTsLastPulserHit[ uFeetNrInSys ] );
+            if( TMath::Abs( dTimeDiff ) < kdMaxDtPulserPs )
+               fvhTimeDiffPulser[uFeetNrInSys][uFeeB]->Fill( dTimeDiff );
+         } // if( NULL != fvhTimeDiffPulser[uFeetNrInSys][uFeeB] )
    } // if( get4v2x::kuFeePulserChannel == uChannelNrInFeet )
 
    // In Run rate evolution
@@ -1453,18 +1477,21 @@ void CbmTofStarMonitorShift2018::PrintSlcInfo(gdpb::Message mess)
       UInt_t uEdge = mess.getGdpbSlcEdge();
       UInt_t uData = mess.getGdpbSlcData();
       UInt_t uCRC  = mess.getGdpbSlcCrc();
+      UInt_t uType = mess.getGdpbSlcType();
       Double_t dFullChId =  fuGet4Nr * fuNrOfChannelsPerGet4 + mess.getGdpbSlcChan() + 0.5 * mess.getGdpbSlcEdge();
       Double_t dMessTime = static_cast< Double_t>( fulCurrentEpochTime ) * 1.e-9;
 
-      switch( mess.getGdpbSlcType() )
+      switch( uType )
       {
          case 0: // Scaler counter
          {
+            fhGet4ChanScm->Fill(dFullChId, uType );
             fhScmScalerCounters->Fill( uData, dFullChId);
             break;
          }
          case 1: // Deadtime counter
          {
+            fhGet4ChanScm->Fill(dFullChId, uType );
             fhScmDeadtimeCounters->Fill( uData, dFullChId);
             break;
          }
@@ -1484,6 +1511,7 @@ void CbmTofStarMonitorShift2018::PrintSlcInfo(gdpb::Message mess)
                        << std::dec << ", CRC = " << uCRC
 //                 << " RAW: " << Form( "%08x", mess.getGdpbSlcMess() )
                        << FairLogger::endl;
+            fhGet4ChanScm->Fill(dFullChId, uType );
             break;
          }
          case 3: // Start message or SEU counter
@@ -1508,6 +1536,7 @@ void CbmTofStarMonitorShift2018::PrintSlcInfo(gdpb::Message mess)
                     << std::dec << ", CRC = " << mess.getGdpbSlcCrc()
                     << FairLogger::endl;
 */
+               fhGet4ChanScm->Fill(dFullChId, uType + 1);
             } // if( 0 == mess.getGdpbSlcChan() && 0 == mess.getGdpbSlcEdge() )
             else if( 0 == mess.getGdpbSlcChan() && 1 == mess.getGdpbSlcEdge() ) // SEU counter message
             {
@@ -1526,6 +1555,7 @@ void CbmTofStarMonitorShift2018::PrintSlcInfo(gdpb::Message mess)
                  << std::dec << ", CRC = " << mess.getGdpbSlcCrc()
                  << FairLogger::endl;
 */
+               fhGet4ChanScm->Fill(dFullChId, uType );
                fhScmSeuCounters->Fill( uData, dFullChId);
                fhScmSeuCountersEvo->Fill( dMessTime - fdStartTime* 1.e-9, uData, dFullChId);
              } // else if( 0 == mess.getGdpbSlcChan() && 1 == mess.getGdpbSlcEdge() )
@@ -1534,7 +1564,6 @@ void CbmTofStarMonitorShift2018::PrintSlcInfo(gdpb::Message mess)
          default: // Should never happen
             break;
       } // switch( mess.getGdpbSlcType() )
-      fhGet4ChanScm->Fill(dFullChId, mess.getGdpbSlcType());
    }
 }
 
@@ -1867,8 +1896,10 @@ void CbmTofStarMonitorShift2018::SaveAllHistos( TString sFileName )
    ///* Pulser monitoring *///
    gDirectory->mkdir("TofDt");
    gDirectory->cd("TofDt");
-   for( UInt_t uPulsPlot = 0; uPulsPlot < fvhTimeDiffPulser.size(); ++uPulsPlot )
-      fvhTimeDiffPulser[ uPulsPlot ]->Write();
+   for( UInt_t uFeeA = 0; uFeeA < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeA++)
+      for( UInt_t uFeeB = 0; uFeeB < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeB++)
+         if( NULL != fvhTimeDiffPulser[uFeeA][uFeeB] )
+            fvhTimeDiffPulser[uFeeA][uFeeB]->Write();
    gDirectory->cd("..");
 
 
@@ -1876,6 +1907,9 @@ void CbmTofStarMonitorShift2018::SaveAllHistos( TString sFileName )
    gDirectory->cd("Flib_Raw");
    for( UInt_t uLinks = 0; uLinks < fvhMsSzPerLink.size(); uLinks++ )
    {
+      if( NULL == fvhMsSzPerLink[ uLinks ] )
+         continue;
+
       fvhMsSzPerLink[ uLinks ]->Write();
       fvhMsSzTimePerLink[ uLinks ]->Write();
    } // for( UInt_t uLinks = 0; uLinks < fvhMsSzPerLink.size(); uLinks++ )
@@ -1952,8 +1986,10 @@ void CbmTofStarMonitorShift2018::ResetAllHistos()
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
    ///* Pulser monitoring *///
-   for( UInt_t uPulsPlot = 0; uPulsPlot < fvhTimeDiffPulser.size(); ++uPulsPlot )
-      fvhTimeDiffPulser[ uPulsPlot ]->Reset();
+   for( UInt_t uFeeA = 0; uFeeA < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeA++)
+      for( UInt_t uFeeB = 0; uFeeB < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeB++)
+         if( NULL != fvhTimeDiffPulser[uFeeA][uFeeB] )
+            fvhTimeDiffPulser[uFeeA][uFeeB]->Reset();
 
    for( UInt_t uLinks = 0; uLinks < fvhMsSzPerLink.size(); uLinks++ )
    {
@@ -2013,73 +2049,76 @@ void CbmTofStarMonitorShift2018::UpdateZoomedFit()
       fhTimeResFitPuls->Reset();
 
       Double_t dRes = 0;
-      TF1 *fitFuncPairs[ fvhTimeDiffPulser.size() ];
-      for( UInt_t uChan = 0; uChan < fvhTimeDiffPulser.size(); uChan++)
+      TF1 *fitFuncPairs[ fuNrOfFeetPerGdpb * fuNrOfGdpbs ][ fuNrOfFeetPerGdpb * fuNrOfGdpbs ];
+
+      for( UInt_t uFeeA = 0; uFeeA < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeA++)
+         for( UInt_t uFeeB = 0; uFeeB < fuNrOfFeetPerGdpb * fuNrOfGdpbs; uFeeB++)
+            if( NULL != fvhTimeDiffPulser[uFeeA][uFeeB] )
       {
          // Check that we have at least 1 entry
-         if( 0 == fvhTimeDiffPulser[uChan]->GetEntries() )
+         if( 0 == fvhTimeDiffPulser[uFeeA][uFeeB]->GetEntries() )
          {
-            fhTimeRmsZoomFitPuls->Fill( uChan, 0.0 );
-            fhTimeResFitPuls->Fill( uChan, 0.0 );
+            fhTimeRmsZoomFitPuls->Fill( uFeeA, uFeeB, 0.0 );
+            fhTimeResFitPuls->Fill( uFeeA, uFeeB, 0.0 );
             LOG(INFO) << "CbmTofStarMonitorShift2018::UpdateZoomedFit => Empty input "
-                         << "for channels pair " << uChan << " !!! "
+                         << "for FEE pair " << uFeeA << " and " << uFeeB << " !!! "
                          << FairLogger::endl;
             continue;
-         } // if( 0 == fvhTimeDiffPulser[uChan]>GetEntries() )
+         } // if( 0 == fvhTimeDiffPulser[uFeeA][uFeeB]->GetEntries() )
 
          // Read the peak position (bin with max counts) + total nb of entries
-         Int_t    iBinWithMax = fvhTimeDiffPulser[uChan]->GetMaximumBin();
-         Double_t dNbCounts   = fvhTimeDiffPulser[uChan]->Integral();
+         Int_t    iBinWithMax = fvhTimeDiffPulser[uFeeA][uFeeB]->GetMaximumBin();
+         Double_t dNbCounts   = fvhTimeDiffPulser[uFeeA][uFeeB]->Integral();
 
          // Zoom the X axis to +/- ZoomWidth around the peak position
-         Double_t dPeakPos = fvhTimeDiffPulser[uChan]->GetXaxis()->GetBinCenter( iBinWithMax );
-         fvhTimeDiffPulser[uChan]->GetXaxis()->SetRangeUser( dPeakPos - fdFitZoomWidthPs,
-                                                                         dPeakPos + fdFitZoomWidthPs );
+         Double_t dPeakPos = fvhTimeDiffPulser[uFeeA][uFeeB]->GetXaxis()->GetBinCenter( iBinWithMax );
+         fvhTimeDiffPulser[uFeeA][uFeeB]->GetXaxis()->SetRangeUser( dPeakPos - fdFitZoomWidthPs,
+                                                                    dPeakPos + fdFitZoomWidthPs );
 
          // Read integral and check how much we lost due to the zoom (% loss allowed)
-         Double_t dZoomCounts = fvhTimeDiffPulser[uChan]->Integral();
+         Double_t dZoomCounts = fvhTimeDiffPulser[uFeeA][uFeeB]->Integral();
          if( ( dZoomCounts / dNbCounts ) < 0.99 )
          {
-            fhTimeRmsZoomFitPuls->Fill( uChan, 0.0 );
-            fhTimeResFitPuls->Fill( uChan, 0.0 );
+            fhTimeRmsZoomFitPuls->Fill( uFeeA, uFeeB, 0.0 );
+            fhTimeResFitPuls->Fill( uFeeA, uFeeB, 0.0 );
             LOG(WARNING) << "CbmTofStarMonitorShift2018::UpdateZoomedFit => Zoom too strong, "
-                         << "more than 1% loss for channels pair " << uChan << " !!!"
+                         << "more than 1% loss for FEE pair " << uFeeA << " and " << uFeeB << " !!! "
                          << FairLogger::endl;
             continue;
          } // if( ( dZoomCounts / dNbCounts ) < 0.99 )
 
          // Fill new RMS after zoom into summary histo
-         fhTimeRmsZoomFitPuls->Fill( uChan, fvhTimeDiffPulser[uChan]->GetRMS() );
+         fhTimeRmsZoomFitPuls->Fill( uFeeA, uFeeB, fvhTimeDiffPulser[uFeeA][uFeeB]->GetRMS() );
 
 
          // Fit using zoomed boundaries + starting gaussian width, store into summary histo
          dRes = 0;
-         fitFuncPairs[uChan] = new TF1( Form("fPair_%02d", uChan ), "gaus",
+         fitFuncPairs[uFeeA][uFeeB] = new TF1( Form("fPair_%02d_%02d", uFeeA, uFeeB ), "gaus",
                                         dPeakPos - fdFitZoomWidthPs ,
                                         dPeakPos + fdFitZoomWidthPs);
          // Fix the Mean fit value around the Histogram Mean
-         fitFuncPairs[uChan]->SetParameter( 0, dZoomCounts );
-         fitFuncPairs[uChan]->SetParameter( 1, dPeakPos );
-         fitFuncPairs[uChan]->SetParameter( 2, 200.0 ); // Hardcode start with ~4*BinWidth, do better later
+         fitFuncPairs[uFeeA][uFeeB]->SetParameter( 0, dZoomCounts );
+         fitFuncPairs[uFeeA][uFeeB]->SetParameter( 1, dPeakPos );
+         fitFuncPairs[uFeeA][uFeeB]->SetParameter( 2, 200.0 ); // Hardcode start with ~4*BinWidth, do better later
          // Using integral instead of bin center seems to lead to unrealistic values => no "I"
-         fvhTimeDiffPulser[uChan]->Fit( Form("fPair_%02d", uChan ), "QRM0");
+         fvhTimeDiffPulser[uFeeA][uFeeB]->Fit( Form("fPair_%02d_%02d", uFeeA, uFeeB ), "QRM0");
          // Get Sigma
-         dRes = fitFuncPairs[uChan]->GetParameter(2);
+         dRes = fitFuncPairs[uFeeA][uFeeB]->GetParameter(2);
          // Cleanup memory
-         delete fitFuncPairs[uChan];
+         delete fitFuncPairs[uFeeA][uFeeB];
          // Fill summary
-         fhTimeResFitPuls->Fill( uChan,  dRes / TMath::Sqrt2() );
+         fhTimeResFitPuls->Fill( uFeeA, uFeeB,  dRes / TMath::Sqrt2() );
 
 
          LOG(INFO) << "CbmTofStarMonitorShift2018::UpdateZoomedFit => "
-                      << "For channels pair " << uChan
-                      << " we have zoomed RMS = " << fvhTimeDiffPulser[uChan]->GetRMS()
+                      << "For FEE pair " << uFeeA << " and " << uFeeB
+                      << " we have zoomed RMS = " << fvhTimeDiffPulser[uFeeA][uFeeB]->GetRMS()
                       << " and a resolution of " << dRes / TMath::Sqrt2()
                       << FairLogger::endl;
 
          // Restore original axis state?
-         fvhTimeDiffPulser[uChan]->GetXaxis()->UnZoom();
-      } // for( UInt_t uChan = 0; uChan < fvhTimeDiffPulser.size(); uChan++)
+         fvhTimeDiffPulser[uFeeA][uFeeB]->GetXaxis()->UnZoom();
+      } // loop on uFeeA and uFeeB + check if corresponding fvhTimeDiffPulser exists
    } // if( 0.0 < fdFitZoomWidthPs )
       else
       {
