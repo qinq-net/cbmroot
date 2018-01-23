@@ -63,7 +63,7 @@ void MonitorShiftStar2018(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_
   test_monitor_tof->SetHistoryHistoSizeLong( 1200. );
 
   // --- Source task
-  CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
+  CbmTofStar2018Source* source = new CbmTofStar2018Source();
   if( "" != inFile )
       source->SetFileName(inFile);
       else
