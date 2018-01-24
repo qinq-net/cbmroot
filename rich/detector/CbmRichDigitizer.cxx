@@ -83,6 +83,9 @@ void CbmRichDigitizer::Exec(
 	if (fRichDigis != NULL) {
 	   fRichDigis->Delete();
 	}
+        for(auto itr = fDigisMap.begin(); itr !=fDigisMap.end(); itr++) {
+          delete itr->second;
+        }
 	fDigisMap.clear();
 
 	Int_t eventNumber = FairRootManager::Instance()->GetEntryNr();
@@ -209,7 +212,8 @@ void CbmRichDigitizer::AddDigisToOutputArray()
       for(auto const &dm : fDigisMap) {
          CbmRichDigi* digi = new CbmRichDigi();
          digi->SetAddress(dm.second->GetAddress());
-         digi->SetMatch(dm.second->GetMatch());
+         CbmMatch* digiMatch = new CbmMatch(*dm.second->GetMatch());
+         digi->SetMatch(digiMatch);
          digi->SetTime(dm.second->GetTime());
          CbmDaqBuffer::Instance()->InsertData(digi);
          nofDigis++;
@@ -219,7 +223,8 @@ void CbmRichDigitizer::AddDigisToOutputArray()
          new((*fRichDigis)[nofDigis]) CbmRichDigi();
          CbmRichDigi* digi = (CbmRichDigi*)fRichDigis->At(nofDigis);
          digi->SetAddress(dm.second->GetAddress());
-         digi->SetMatch(dm.second->GetMatch());
+         CbmMatch* digiMatch = new CbmMatch(*dm.second->GetMatch());
+         digi->SetMatch(digiMatch);
          digi->SetTime(dm.second->GetTime());
          nofDigis++;
       }
