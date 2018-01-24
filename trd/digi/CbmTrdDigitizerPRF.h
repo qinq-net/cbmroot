@@ -47,7 +47,7 @@ class CbmTrdDigitizerPRF : public FairTask {
   void SetTriangularPads(Bool_t triangles);
   void SetNCluster(Int_t nCluster);
   void SetNoiseLevel(Double_t sigma_keV);
-  void SetTriggerThreshold(Double_t minCharge); //only for debugging. has no impact on the output!!!!
+  void SetTriggerThreshold(Double_t minCharge); 
   void SetPadPlaneScanArea(Int_t column, Int_t row);
   void SetCbmLinkWeightDistance(Bool_t dist);
  private:
@@ -55,8 +55,10 @@ class CbmTrdDigitizerPRF : public FairTask {
   CbmTrdDigitizerPRF& operator=(const CbmTrdDigitizerPRF&);
   CbmTrdDigitizerPRF(const CbmTrdDigitizerPRF&);
 
+  //calculation of the PRF for the distribution of the MC charge over the pad plane
   Double_t CalcPRF(Double_t x, Double_t W, Double_t h);
 
+  //looping over the different channels and calculating the charge distribution on each pad 
   void ScanPadPlane(const Double_t* local_point, Double_t clusterELoss, Double_t clusterELossTR);
 
   void ScanPadPlaneTriangle(const Double_t* local_point, Double_t clusterELoss, Double_t clusterELossTR);
@@ -65,14 +67,28 @@ class CbmTrdDigitizerPRF : public FairTask {
 
   Double_t TriangleIteration(Bool_t even, Int_t step, Double_t displacement_x, Double_t W, Double_t displacement_y, Double_t H, Double_t h);
 
+  //calculation of the charge positions
   void SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss, Double_t ELossTR);
 
+  //adding the digis to the TClonesAray in event based mode
   void AddDigi(Int_t pointId, Int_t address, Double_t charge, Double_t chargeTR, Double_t time, Int_t up=1);
+
+  //adding the digis to a map, where they are stored until the collection time has passed and following charges can not interfer any more
   void AddDigitoBuffer(Int_t pointId, Int_t address, Double_t charge, Double_t chargeTR, Double_t time, Int_t up=1);
-  void ProcessBuffer(Int_t address,Double_t weighting);
+
+  //processing the stored digis to the daq class
+  void ProcessBuffer(Int_t address);
+  
+  //adding a gaussian distributed noise value to the charge in the digi 
   Double_t AddNoise(Double_t charge);
-  Double_t CheckTime(Int_t address);
+
+  //checking the time between the last digi in the channel and actual one; processing the buffer in the channel, if enough time is in between
+  void     CheckTime(Int_t address);
+
+  //random time in between events for the addition of noise digis
   void     NoiseTime();
+
+  //adding drifttime based on values of a Garfield simulation; Drifttime is position dependant so it is random until the charge is distributed inside the gas volume
   Double_t AddDrifttime(Double_t x);
 
   void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
@@ -118,6 +134,7 @@ class CbmTrdDigitizerPRF : public FairTask {
   Int_t fnCol;
   Int_t fdtlow;
   Int_t fdthigh;
+  Int_t fnoDigis;
   Int_t fpoints;
   Int_t fLayerId;
   Int_t fModuleId;
@@ -142,7 +159,6 @@ class CbmTrdDigitizerPRF : public FairTask {
 
   std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>>                      fDigiMap; // Temporary storage for digis.
   std::map<Int_t, std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>>         fAnalogBuffer;
-  std::map<Int_t, std::vector<std::pair<Double_t,Double_t>>>              fChargeBuffer;
   std::map<Int_t, Double_t>                                               fTimeBuffer;
 
   ClassDef(CbmTrdDigitizerPRF, 4);

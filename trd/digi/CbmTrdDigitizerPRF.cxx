@@ -47,7 +47,7 @@ CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
   :FairTask("CbmTrdDigitizerPRF"),
    fDebug(false),
    fStream(false),
-   fNoiseDigis(true),
+   fNoiseDigis(false),
    fTrianglePads(false),
    fCbmLinkWeightDistance(false),
    fSigma_noise_keV(0.1),
@@ -56,13 +56,14 @@ CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
    fCurrentTime(-1.),
    fAddress(-1.),
    fLastEventTime(-1),
-   fCollectTime(100),
+   fCollectTime(300.),
    fnClusterConst(0),
    fnScanRowConst(0),
    fnScanColConst(0),
    fnRow(-1),
    fnCol(-1),
    fdtlow(0),
+   fnoDigis(0),
    fdthigh(0),
    fpoints(0),
    fLayerId(-1),
@@ -79,7 +80,6 @@ CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
    fTriangleBinning(NULL),
    fDigiMap(),
    fAnalogBuffer(),
-   fChargeBuffer(),
    fTimeBuffer()
 {
 }
@@ -104,11 +104,7 @@ InitStatus CbmTrdDigitizerPRF::Init()
   fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
   if (fMCTracks == NULL) LOG(FATAL) << "CbmTrdDigitizerPRF::Init: No MCTrack array" << FairLogger::endl;
 
-  fDigis = new TClonesArray("CbmTrdDigi", 100);
-  ioman->Register("TrdDigi", "TRD Digis", fDigis, IsOutputBranchPersistent("TrdDigi"));
 
-  fDigiMatches = new TClonesArray("CbmMatch", 100);
-  ioman->Register("TrdDigiMatch", "TRD Digis", fDigiMatches, IsOutputBranchPersistent("TrdDigiMatch"));
   if (fRadiator != NULL)
     fRadiator->Init();
 
@@ -129,6 +125,16 @@ InitStatus CbmTrdDigitizerPRF::Init()
     fStream = false;
   }
 
+
+  Bool_t persistency=IsOutputBranchPersistent("TrdDigi");
+  if(fStream)  persistency=kFALSE;
+
+  fDigis = new TClonesArray("CbmTrdDigi", 100); 
+  ioman->Register("TrdDigi", "TRD Digis", fDigis, persistency);
+  
+  fDigiMatches = new TClonesArray("CbmMatch", 100);
+  ioman->Register("TrdDigiMatch", "TRD Digis", fDigiMatches, persistency);
+
   
   return kSUCCESS;
 }
@@ -147,6 +153,7 @@ void CbmTrdDigitizerPRF::Exec(Option_t*)
   /// get event info (once per event, used later in the matching)
   GetEventInfo(fInputNr, fEventNr, fEventTime);
 
+  fnoDigis=0;
   Int_t nofLatticeHits = 0;
   Int_t nofElectrons = 0;
   Int_t nofBackwardTracks = 0;
@@ -189,7 +196,7 @@ void CbmTrdDigitizerPRF::Exec(Option_t*)
     ELossdEdX = point->GetEnergyLoss();
     ELoss = ELossTR + ELossdEdX;
     if (ELoss > fMinimumChargeTH)  nofPointsAboveThreshold++;
-    fCurrentTime =fEventTime + point->GetTime()+ AddDrifttime(gRandom->Integer(240))*1000;  //convert to ns;
+    fCurrentTime =fEventTime + point->GetTime()+ AddDrifttime(fNoise->Uniform(0,239))*1000;  //convert to ns; Drifttime is still random, but could get position dependant;
     
     // Find node corresponding to the point in the center between entrance and exit MC-point coordinates
     Double_t meanX = (point->GetXOut() + point->GetXIn()) / 2.;
@@ -212,10 +219,10 @@ void CbmTrdDigitizerPRF::Exec(Option_t*)
     fTrianglePads=fModuleInfo->GetPadGeoTriangular();
     if(VERBOSE_TRIANG) printf("\ni[%3d] point[%7.2f %7.2f %7.2f] ly[%d] ModuleId[%d] cols[%2d] rows[%2d]\n", iPoint, point->GetXIn(), point->GetYIn(), point->GetZIn(), fLayerId, fModuleId, fnCol, fnRow);
     if(fTrianglePads) SplitTrackPathTriang(point, ELoss, ELossTR);
-    else SplitTrackPath(point, ELoss, ELossTR);
+    else              SplitTrackPath(point, ELoss, ELossTR);
   }
 
-  // Fill data from internally used stl map into output TClonesArray
+  // Fill data from internally used stl map into output TClonesArray; used in event based mode
   if(!fStream){
     Int_t iDigi = 0;
     std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it;
@@ -225,17 +232,18 @@ void CbmTrdDigitizerPRF::Exec(Option_t*)
       delete it->second.first;
       delete it->second.second;
       iDigi++;
+      fnoDigis++;
     }
     fDigiMap.clear();
   }
 
   fLastEventTime=fEventTime;
 
-  Double_t digisOverPoints = (nofPoints > 0) ? fDigis->GetEntriesFast() / nofPoints : 0;
+  Double_t digisOverPoints = (nofPoints > 0) ? fnoDigis / nofPoints : 0;
   Double_t latticeHitsOverElectrons = (nofElectrons > 0) ? (Double_t) nofLatticeHits / (Double_t) nofElectrons : 0;
   LOG(INFO) << "CbmTrdDigitizerPRF::Exec Points:               " << nofPoints << FairLogger::endl;
   LOG(INFO) << "CbmTrdDigitizerPRF::Exec PointsAboveThreshold: " << nofPointsAboveThreshold << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizerPRF::Exec Digis:                " << fDigis->GetEntriesFast() << FairLogger::endl;
+  LOG(INFO) << "CbmTrdDigitizerPRF::Exec Digis:                " << fnoDigis << FairLogger::endl;
   LOG(INFO) << "CbmTrdDigitizerPRF::Exec digis/points:         " << digisOverPoints << FairLogger::endl;
   LOG(INFO) << "CbmTrdDigitizerPRF::Exec BackwardTracks:       " << nofBackwardTracks << FairLogger::endl;
   LOG(INFO) << "CbmTrdDigitizerPRF::Exec LatticeHits:          " << nofLatticeHits  << FairLogger::endl;
@@ -247,81 +255,6 @@ void CbmTrdDigitizerPRF::Exec(Option_t*)
 }
 
 
-void CbmTrdDigitizerPRF::ScanPadPlane(const Double_t* local_point, Double_t clusterELoss, Double_t clusterELossTR)
-{
-  Int_t sectorId(-1), columnId(-1), rowId(-1);
-  fModuleInfo->GetPadInfo( local_point, sectorId, columnId, rowId);
-  if (sectorId < 0 && columnId < 0 && rowId < 0) {
-    return;
-  }
-  else {
-    for (Int_t i = 0; i < sectorId; i++) {
-      rowId += fModuleInfo->GetNofRowsInSector(i); // local -> global row
-    }
-
-    Double_t displacement_x(0), displacement_y(0);//mm
-    Double_t h = fModuleInfo->GetAnodeWireToPadPlaneDistance();
-    Double_t W(fModuleInfo->GetPadSizeX(sectorId)), H(fModuleInfo->GetPadSizeY(sectorId));
-    fModuleInfo->TransformToLocalPad(local_point, displacement_x, displacement_y);
-
-    Int_t maxCol(5/W+0.5), maxRow(6);//5/H+3);// 7 and 3 in orig. minimum 5 times 5 cm area has to be scanned
-    if (fnScanRowConst > 0)
-      maxRow = fnScanRowConst;
-    if (fnScanColConst > 0)
-      maxCol = fnScanColConst;
-
-    Int_t startCol(columnId-maxCol/2), startRow(rowId-maxRow/2);
-    Double_t sum = 0;
-    Int_t secRow(-1), targCol(-1), targRow(-1), targSec(-1), address(-1);
-    for (Int_t iRow = startRow; iRow <= rowId+maxRow/2; iRow++) {
-      for (Int_t iCol = startCol; iCol <= columnId+maxCol/2; iCol++) {
-	if (((iCol >= 0) && (iCol <= fnCol-1)) && ((iRow >= 0) && (iRow <= fnRow-1))){// real adress
-	  targSec = fModuleInfo->GetSector(iRow, secRow);
-	  address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, iCol);
-	  fAddress = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, iCol);
-	}
-	else {
-	  targRow = iRow;
-	  targCol = iCol;
-	  if (iCol < 0) {
-	    targCol = 0;
-	  }
-	  else if (iCol > fnCol-1) {
-	    targCol = fnCol-1;
-	  }
-	  if (iRow < 0) {
- 	    targRow = 0;
-	  }
-	  else if (iRow > fnRow-1) {
-	    targRow = fnRow-1;
-	  }
-	  
-	  targSec = fModuleInfo->GetSector(targRow, secRow);
-	  address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, targCol);
-	}
-
-	Double_t chargeFraction = 0;
-	if (rowId == iRow && columnId == iCol) { // if pad in center of 7x3 arrayxs
-	  chargeFraction = CalcPRF(displacement_x, W, h) * CalcPRF(displacement_y, H, h);
-	}
-	else {
-	  chargeFraction = CalcPRF((iCol - columnId) * W - displacement_x, W, h) * CalcPRF((iRow - rowId) * H - displacement_y, H, h);
-	}
-	if (fnScanRowConst == 1 && fnScanColConst == 1)
-	  chargeFraction = 1.0;
-
-	sum += chargeFraction;
-	
-	if(!fStream)            AddDigi(fMCPointId, address, Double_t(chargeFraction * clusterELoss), Double_t(chargeFraction * clusterELossTR), fCurrentTime);
-	if(fStream)             AddDigitoBuffer(fMCPointId, address, Double_t(chargeFraction * clusterELoss), Double_t(chargeFraction * clusterELossTR), fCurrentTime);
-      } // for iCol
-
-    } // for iRow
-    if (sum < 0.99 || sum > 1.01){
-      LOG(WARNING) << "CbmTrdDigitizerPRF::ScanPadPlane: Summed charge: " << std::setprecision(5) << sum << "  hit:(" << columnId << ", " << rowId <<")   max:(" << fnCol-1 << ", " << fnRow-1 << ")" << FairLogger::endl;
-    }
-  }
-}
 
 void CbmTrdDigitizerPRF::SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss, Double_t ELossTR)
 {
@@ -379,7 +312,7 @@ void CbmTrdDigitizerPRF::SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss
 
 
     //add noise digis between the actual and the last event
-    if(!fTrianglePads && fNoiseDigis){
+    if(fNoiseDigis){
       Int_t noiserate=fNoise->Uniform(0,3); //still in development
       Double_t simtime=fCurrentTime;
       for(Int_t ndigi=0; ndigi<noiserate; ndigi++){
@@ -389,12 +322,92 @@ void CbmTrdDigitizerPRF::SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss
       fCurrentTime=simtime;
     }
 
-    
     fModuleInfo->ProjectPositionToNextAnodeWire(cluster_pos);
     if (!fTrianglePads)                     ScanPadPlane(cluster_pos, clusterELoss, clusterELossTR);
     else                                    ScanPadPlaneTriangle(cluster_pos, clusterELoss, clusterELossTR);
   }
 }
+
+void CbmTrdDigitizerPRF::ScanPadPlane(const Double_t* local_point, Double_t clusterELoss, Double_t clusterELossTR)
+{
+  Int_t sectorId(-1), columnId(-1), rowId(-1);
+  fModuleInfo->GetPadInfo( local_point, sectorId, columnId, rowId);
+  if (sectorId < 0 && columnId < 0 && rowId < 0) {
+    return;
+  }
+  else {
+    for (Int_t i = 0; i < sectorId; i++) {
+      rowId += fModuleInfo->GetNofRowsInSector(i); // local -> global row
+    }
+
+    Double_t displacement_x(0), displacement_y(0);//mm
+    Double_t h = fModuleInfo->GetAnodeWireToPadPlaneDistance();
+    Double_t W(fModuleInfo->GetPadSizeX(sectorId)), H(fModuleInfo->GetPadSizeY(sectorId));
+    fModuleInfo->TransformToLocalPad(local_point, displacement_x, displacement_y);
+
+    Int_t maxCol(5/W+0.5), maxRow(6);//5/H+3);// 7 and 3 in orig. minimum 5 times 5 cm area has to be scanned
+    if (fnScanRowConst > 0)
+      maxRow = fnScanRowConst;
+    if (fnScanColConst > 0)
+      maxCol = fnScanColConst;
+
+    Int_t startCol(columnId-maxCol/2), startRow(rowId-maxRow/2);
+    Double_t sum = 0;
+    Int_t secRow(-1), targCol(-1), targRow(-1), targSec(-1), address(-1);
+    for (Int_t iRow = startRow; iRow <= rowId+maxRow/2; iRow++) {
+      for (Int_t iCol = startCol; iCol <= columnId+maxCol/2; iCol++) {
+	if (((iCol >= 0) && (iCol <= fnCol-1)) && ((iRow >= 0) && (iRow <= fnRow-1))){// real adress
+	  targSec = fModuleInfo->GetSector(iRow, secRow);
+	  address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, iCol);
+	  fAddress = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, iCol);
+	}
+	else {
+	  targRow = iRow;
+	  targCol = iCol;
+	  if (iCol < 0) {
+	    targCol = 0;
+	  }
+	  else if (iCol > fnCol-1) {
+	    targCol = fnCol-1;
+	  }
+	  if (iRow < 0) {
+ 	    targRow = 0;
+	  }
+	  else if (iRow > fnRow-1) {
+	    targRow = fnRow-1;
+	  }
+	  
+	  targSec = fModuleInfo->GetSector(targRow, secRow);
+	  address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, targCol);
+	}
+
+	//distribute the mc charge fraction over the channels wit the PRF
+	Double_t chargeFraction = 0;
+	if (rowId == iRow && columnId == iCol) { // if pad in center of 7x3 arrayxs
+	  chargeFraction = CalcPRF(displacement_x, W, h) * CalcPRF(displacement_y, H, h);
+	}
+	else {
+	  chargeFraction = CalcPRF((iCol - columnId) * W - displacement_x, W, h) * CalcPRF((iRow - rowId) * H - displacement_y, H, h);
+	}
+	if (fnScanRowConst == 1 && fnScanColConst == 1)
+	  chargeFraction = 1.0;
+
+	sum += chargeFraction;
+	Double_t clustercharge=chargeFraction * clusterELoss;
+	Double_t clusterchargeTR=chargeFraction * clusterELossTR;
+
+	//either give the digi information to a map for event based mode or to a buffer for time based mode; the PRF decreases quickly and the channel has to see a fraction of the trigger charge
+	if(!fStream && (clustercharge+clusterchargeTR)>fMinimumChargeTH/30.)             AddDigi(fMCPointId, address, clustercharge, clusterchargeTR, fCurrentTime);
+	if(fStream  && (clustercharge+clusterchargeTR)>fMinimumChargeTH/30.)             AddDigitoBuffer(fMCPointId, address, clustercharge, clusterchargeTR, fCurrentTime);
+      } // for iCol
+
+    } // for iRow
+    if (sum < 0.99 || sum > 1.01){
+      LOG(WARNING) << "CbmTrdDigitizerPRF::ScanPadPlane: Summed charge: " << std::setprecision(5) << sum << "  hit:(" << columnId << ", " << rowId <<")   max:(" << fnCol-1 << ", " << fnRow-1 << ")" << FairLogger::endl;
+    }
+  }
+}
+
 
 void CbmTrdDigitizerPRF::AddDigi(Int_t pointId, Int_t address, Double_t charge, Double_t chargeTR, Double_t time, Int_t up)
 {
@@ -442,23 +455,24 @@ void CbmTrdDigitizerPRF::AddDigitoBuffer(Int_t pointId, Int_t address, Double_t 
     weighting = 1. / distance;
   }
 
-  Bool_t process=CheckTime(address);
-
-  if(process)                                                 ProcessBuffer(address,weighting);
+  //compare times of the buffer content with the actual time and process the buffer if collecttime is over
+  Bool_t eventtime=false;
+  if(fEventTime>0.000) eventtime=true;
+  if(eventtime)        CheckTime(address);
 
   AddNoise(charge);
-  
-  std::map<Int_t, std::vector<pair<CbmTrdDigi*, CbmMatch*>>>::iterator it = fAnalogBuffer.find(address);
 
+  //fill digis in the buffer
   CbmMatch* digiMatch = new CbmMatch();
   digiMatch->AddLink(CbmLink(weighting, pointId, fEventNr, fInputNr));
   CbmTrdDigi* digi= new CbmTrdDigi(address, charge, time, fTrianglePads);
   digi->SetCharge(charge, up);
   digi->SetChargeTR(chargeTR, up);
   digi->SetMatch(digiMatch);
-  //CbmDaqBuffer::Instance()->InsertData(digi);
   fAnalogBuffer[address].push_back(make_pair(digi, digiMatch));
-  fChargeBuffer[address].push_back(make_pair(charge,chargeTR));
+  fTimeBuffer[address]=fCurrentTime;
+  if(!eventtime)   ProcessBuffer(address);
+  
 }
 
 
@@ -630,33 +644,30 @@ Double_t(chargeFractionTriangle * clusterELossTR), fCurrentTime);
   }  
 }
 
-void CbmTrdDigitizerPRF::ProcessBuffer(Int_t address,Double_t /*weighting*/){
+void CbmTrdDigitizerPRF::ProcessBuffer(Int_t address){
 
   Double_t digicharge=0;
   Double_t digiTRcharge=0;
-  std::map<Int_t,std::vector<pair<CbmTrdDigi*, CbmMatch*>>>:: iterator itana=fAnalogBuffer.find(address);
-  std::map<Int_t,std::vector<pair<Double_t,Double_t>>>::      iterator itcharge=fChargeBuffer.find(address);
-  std::vector<pair<Double_t,Double_t>>                        charge=itcharge->second;
-  std::vector<pair<CbmTrdDigi*, CbmMatch*>>                   analog=itana->second;
-  std::vector<pair<Double_t,Double_t>>::                      iterator it;
 
-  //preliminary implementation 
-  for (it=charge.begin() ; it != charge.end(); it++) {
-    digicharge+=it->first;
-    digiTRcharge+=it->second;
-  }
-  fChargeBuffer[address].clear();
+  std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>           analog=fAnalogBuffer[address];
+  std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>::         iterator it;
+
   
+  //very preliminary implementation;  
+  for (it=analog.begin() ; it != analog.end(); it++) {
+    digicharge+=it->first->GetCharge();
+    digiTRcharge+=it->first->GetChargeTR();
+  }
   // Copy match object. Will be deleted in the digi destructor.
   // TODO: check if move of object is possible
-  CbmMatch* digiMatch = new CbmMatch(*analog.begin()->second);
-//  CbmMatch* digiMatch = analog.begin()->second;
+  CbmMatch* digiMatch = new CbmMatch(*fAnalogBuffer[address][0].second);
   CbmTrdDigi* digi= new CbmTrdDigi(address, digicharge, fCurrentTime);
   digi->SetChargeTR(digiTRcharge);
   digi->SetMatch(digiMatch);
   CbmDaqBuffer::Instance()->InsertData(digi);
+  fnoDigis++;
 
-  fAnalogBuffer[address].clear();
+  fAnalogBuffer.erase(address);
 }
 
 
@@ -671,27 +682,44 @@ Double_t CbmTrdDigitizerPRF::AddNoise(Double_t charge){
 }
 
 
-Double_t CbmTrdDigitizerPRF::CheckTime(Int_t address){
- 
-  std::map<Int_t,Double_t>::                                  iterator timebuffer = fTimeBuffer.find(address);
+void CbmTrdDigitizerPRF::CheckTime(Int_t address){
+
+
+  //compare last entry in the actual channel with the current time
+  std::map<Int_t,Double_t>::                                  iterator timeit;
   Double_t dt=fCurrentTime-fTimeBuffer[address];
-  if(fCurrentTime>fTimeBuffer[address] && dt>0.0000000)                      fTimeBuffer[address]=fCurrentTime;
+  Bool_t go=false;
+  if(fCurrentTime>fTimeBuffer[address] && dt>0.0000000){
+    fTimeBuffer[address]=fCurrentTime;
+    if(dt>fCollectTime && dt!=fCurrentTime)        {ProcessBuffer(address);fTimeBuffer.erase(address);}
+    if(dt>3*fCollectTime && dt!=fCurrentTime)      go=true;
+  }
 
-
-  if(dt>fCollectTime && dt!=fCurrentTime)              return true;
-  else                                                 return false;
+  //also check other channels if collection time is far over in the actual channel
+  if(go){
+    for(timeit=fTimeBuffer.begin(); timeit !=fTimeBuffer.end();timeit++){
+      Int_t add=timeit->first;
+      dt=fCurrentTime-fTimeBuffer[add];
+      if(dt>fCollectTime && dt!=fCurrentTime){
+	ProcessBuffer(add);
+	fTimeBuffer.erase(add);
+      }
+    }
+  }
+  return;
 }
 
 
 void CbmTrdDigitizerPRF::NoiseTime(){
 
-  //Double_t dEventTime=fEventTime-fLastEventTime;
   fCurrentTime=fNoise->Uniform(fLastEventTime,fEventTime);
   
 }
 
-Double_t CbmTrdDigitizerPRF::AddDrifttime(Double_t /*x*/){
+Double_t CbmTrdDigitizerPRF::AddDrifttime(Double_t x){
 
+
+  //lookup table for drift times from a garfield simulation; will be moved outside in the future
   Double_t drifttime[240]={0.11829,0.11689,0.11549,0.11409,0.11268,0.11128,0.10988,0.10847,0.10707,0.10567,
 			   0.10427,0.10287,0.10146,0.10006,0.09866,0.09726,0.095859,0.094459,0.09306,0.091661,
 			   0.090262,0.088865,0.087467,0.086072,0.084677,0.083283,0.08189,0.080499,0.07911,0.077722,
@@ -718,9 +746,7 @@ Double_t CbmTrdDigitizerPRF::AddDrifttime(Double_t /*x*/){
 			   0.22486,0.22612,0.22737,0.22863,0.22989,0.23114,0.2324,0.23366,0.23491,0.23617};
 
   
-  Int_t xindex=0;
-
-  return drifttime[xindex];
+  return drifttime[(Int_t) x];
 
   
 }
