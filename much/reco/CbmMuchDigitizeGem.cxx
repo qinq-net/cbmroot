@@ -360,6 +360,7 @@ void CbmMuchDigitizeGem::ReadAndRegister(Double_t eventTime){
 	fNofDigis++;
       }
     }
+
   LOG(DEBUG) << GetName() << ": " << fNofDigis
 	     << ( fNofDigis == 1 ? " digi " :  " digis " )
 	     << "created and sent to DAQ ";
@@ -367,6 +368,12 @@ void CbmMuchDigitizeGem::ReadAndRegister(Double_t eventTime){
 			      << setprecision(3) << fTimeDigiFirst << " ns to "
 			      << fTimeDigiLast << " ns )";
   LOG(DEBUG) << FairLogger::endl;
+
+  // After digis are created from signals the signals have to be removed 
+  // Otherwise there is a huge memeory leak
+  for (auto signal : SignalList) {
+     delete (signal);
+  }
 
 }
 //----ReadAndRegister -------
@@ -385,7 +392,11 @@ CbmMuchDigi* CbmMuchDigitizeGem::ConvertSignalToDigi(CbmMuchSignal* signal){
 	
   digi->SetAdc((signal->GetCharge())*fNADCChannels/fQMax);//Charge should be computed as per Electronics Response.
   digi->SetTime(TimeStamp);
-  digi->SetMatch(signal->GetMatch());
+
+  // Create new match object. If one uses the pointer from the CbmMuchSignal
+  // it is not possible to remove the CbmMuchSignal
+  CbmMatch* digiMatch = new CbmMatch(*signal->GetMatch());
+  digi->SetMatch(digiMatch);
   // Update times of first and last digi
   fTimeDigiFirst = fNofDigis ? TMath::Min(fTimeDigiFirst, Double_t(TimeStamp)) : TimeStamp;
   fTimeDigiLast  = TMath::Max(fTimeDigiLast, Double_t(TimeStamp));
