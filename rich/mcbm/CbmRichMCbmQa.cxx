@@ -25,6 +25,9 @@
 #include "CbmRichGeoManager.h"
 #include "CbmRichPoint.h"
 #include "utils/CbmRichDraw.h"
+#include "CbmGlobalTrack.h"
+#include "CbmTrdTrack.h"
+#include "CbmTofHit.h"
 
 #include "CbmUtils.h"
 #include "CbmHistManager.h"
@@ -49,12 +52,13 @@ fRichRings(NULL),
 fRichRingMatches(NULL),
 fRefPlanePoints(NULL)
 {
+    cout << "CbmRichMCbmQa::CbmRichMCbmQa" << endl;
 }
 
 InitStatus CbmRichMCbmQa::Init()
 {
-    
-    cout << "CbmRichMCbmQa::Init"<<endl;
+    cout << "CbmRichMCbmQa::Init" << endl;
+
     FairRootManager* ioman = FairRootManager::Instance();
     if (NULL == ioman) { Fatal("CbmRichMCbmQa::Init","RootManager not instantised!"); }
     
@@ -74,17 +78,27 @@ InitStatus CbmRichMCbmQa::Init()
     fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
     if ( NULL == fRichRings) { Fatal("CbmRichMCbmQa::Init","No RichRings!"); }
     
+    fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
+    if ( NULL == fTofHits) { Fatal("CbmRichMCbmQa::Init","No TofHits!"); }
+    
     fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
     if ( NULL == fRichRingMatches) { Fatal("CbmRichMCbmQa::Init","No RichRingMatch array!"); }
     
+    fTofHitMatches = (TClonesArray*) ioman->GetObject("TofHitMatch");
+    if ( NULL == fTofHitMatches) { Fatal("CbmRichMCbmQa::Init", "No TofHitMatch array!"); }
+    
     fRefPlanePoints = (TClonesArray*) ioman->GetObject("RefPlanePoint");
     if ( NULL == fRefPlanePoints) { Fatal("CbmRichMCbmQa::Init","No RefPlanePoints!"); }
+    
+//    fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
+//    if ( NULL == fGlobalTracks) { Fatal("CbmRichMCbmQa::Init","No Global Tracks!");}
+    
     
     InitHistograms();
     
     return kSUCCESS;
 }
-
+/*
 vector<Double_t> CbmRichMCbmQa::GetHistBins(Bool_t isX)
 {
 	set<Double_t> setBins;
@@ -121,15 +135,17 @@ vector<Double_t> CbmRichMCbmQa::GetHistBins(Bool_t isX)
 
 	return bins;
 }
-
+*/
 
 void CbmRichMCbmQa::InitHistograms()
 {
+    cout << "CbmRichMCbmQa::InitHistograms" << endl;
+
     fHM = new CbmHistManager();
     
     //RICH
-    fHM->Create1<TH1D>("fh_nof_rich_points", "fh_nof_rich_points;Nof RICH Points per event;Yield (a.u.)", 250, -.5, 499.5);
-    fHM->Create1<TH1D>("fh_nof_rich_hits", "fh_nof_rich_hits;Nof RICH hits per event;Yield (a.u.)", 100, -.5, 99.5);
+    fHM->Create1<TH1D>("fh_nof_rich_points", "fh_nof_rich_points;Nof RICH Points per event;Yield (a.u.)", 20, -.5, 19.5);
+    fHM->Create1<TH1D>("fh_nof_rich_hits", "fh_nof_rich_hits;Nof RICH hits per event;Yield (a.u.)", 20, -.5, 19.5);
     fHM->Create1<TH1D>("fh_nof_rich_rings", "fh_nof_rich_rings;Nof RICH rings;# per event", 5, -0.5, 4.5);
     fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius;Ring radius [cm];Yield (a.u.)", 200, 1., 8.);
     
@@ -139,32 +155,37 @@ void CbmRichMCbmQa::InitHistograms()
 //    fHM->Add("fh_rich_hits_xy", new TH2D("fh_rich_hits_xy", "fh_rich_hits_xy;X [cm];Y [cm];Yield (a.u.)", xbins.size() - 1, &xbins[0], ybins.size() - 1, &ybins[0]));
 //	cout << "binsize: " << xbins.size()  << "bin Ende Anfang: " << &xbins[0] << endl;
 
-	const Double_t xMin = -60.5;
-	const Double_t xMax = -10.5;
+	const Double_t xMin = -35.5;  
+	const Double_t xMax = 35.5;
 	const Double_t yMin = -40.5;
 	const Double_t yMax = 40.5;
 
-    fHM->Create2<TH2D>("fh_rich_hits_xy","fh_rich_hits_xy;X [cm];Y [cm];Yield (a.u.)", 50, xMin, xMax, 80, yMin, yMax); 
+    fHM->Create2<TH2D>("fh_rich_hits_xy","fh_rich_hits_xy;X [cm];Y [cm];Yield (a.u.)", 71, xMin, xMax, 81, yMin, yMax); 
 
     fHM->Create2<TH2D>("fh_rich_points_xy", "fh_rich_points_xy;X [cm];Y [cm];Yield (a.u.)", 250, xMin, xMax, 250, yMin, yMax);    
 
-    fHM->Create1<TH1D>("fh_hits_per_ring", "fh_hits_per_ring;Hits per Ring;Yield (a.u.)", 58, 2.5, 60.5);
+    fHM->Create1<TH1D>("fh_hits_per_ring", "fh_hits_per_ring;Hits per Ring;Yield (a.u.)", 8, 2.5, 10.5);
 
     fHM->Create1<TH1D>("fh_dR","fh_dR;dR [cm];Yield (a.u.)", 80, -0.8, 0.8);
     
     fHM->Create1<TH1D>("fh_photon_energy", "fh_photon_energy;Momentum [eV]", 100, 0., 10.);
 
-    fHM->Create2<TH2D>("fh_radius_momentum", "fh_radius_momentum; Momentum [GeV];Radius [cm]; Yield (a.u.)", 500 , 0., 5., 500 , 0. , 5.);
+    fHM->Create2<TH2D>("fh_radius_momentum", "fh_radius_momentum; Momentum [GeV];Radius [cm]; Yield (a.u.)", 50 , 0., 5., 50 , 0. , 5.);
 
     fHM->Create2<TH2D>("fh_ring_center_xy","fh_ring_center_xy;X [cm];Y [cm];Yield (a.u.)", 100, xMin, xMax, 100, yMin, yMax);	
 
     fHM->Create2<TH2D>("fh_nonphoton_pmt_points_xy","fh_nonphoton_pmt_points_xy;X [cm]; Y [cm];Yield(a.u.)" , 250., xMin, xMax, 250, yMin, yMax);
+    
+//    fHM->Create1<TH1D>("fh_nof_trd_hits","fh_nof_trd_hits; Nof Trd Hits; Yield(a.u.)", 5., -0.5, 4.5);
+    
+//    fHM->Create1<TH1D>("fh_nof_sts_hits","fh_nof_sts_hits; Nof Sts Hits; Yield(a.u.)", 5., -0.5, 4.5);
+    
+    fHM->Create2<TH2D>("fh_eloss_tof", "fh_eloss_tof; time of flight [ns]; energy loss; Yield (a.u.)", 500 , 0., 5., 500 , 0. , 5.);
+    
+    fHM->Create2<TH2D>("fh_radius_mass2", "fh_radius_mass2; mass^2 [GeV]; Radius [cm]; Yield(a.u.)", 120 , 0., 1.2, 50, 0., 5.); 
 }
 
-
-
-void CbmRichMCbmQa::Exec(
-                                   Option_t* /*option*/)
+void CbmRichMCbmQa::Exec(Option_t* /*option*/)
 {
     fEventNum++;
     cout << "CbmRichMCbmQa, event No. " <<  fEventNum << endl;
@@ -175,12 +196,12 @@ void CbmRichMCbmQa::Exec(
     Int_t nofRichHits = fRichHits->GetEntriesFast();
     Int_t nofRichRings = fRichRings->GetEntriesFast();
     Int_t nofRefPlanePoints = fRefPlanePoints->GetEntriesFast();
+    Int_t nofTofHits = fTofHits->GetEntriesFast();
+//    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
 
-    
     fHM->H1("fh_nof_rich_points")->Fill(nofRichPoints);
     fHM->H1("fh_nof_rich_hits")->Fill(nofRichHits);
     fHM->H1("fh_nof_rich_rings")->Fill(nofRichRings);
-    
     
     for (int i = 0; i < nofRichHits; i++) {
         CbmRichHit* hit = static_cast<CbmRichHit*>(fRichHits->At(i));
@@ -197,8 +218,118 @@ void CbmRichMCbmQa::Exec(
 //	cout << "point x coordinate: " << point->GetX() << endl;
 //	cout << "point y coordinate: " << point->GetY() << endl;
     }
-
+    
+    
+    //-------------------------Tracking ---------------------------------------------------
+/*    
+    for(int iG = 0; iG < nofGlobalTracks; iG++){
+    //for(int iR = 0; iR < nofRichRings; iR++){
+        
+        CbmGlobalTrack* globalTrack = static_cast<CbmGlobalTrack*>(fGlobalTracks->At(iG));
+        if(NULL == globalTrack) continue;
   
+        Int_t trdId = globalTrack->GetTrdTrackIndex();
+        if(trdId <0) continue;
+        CbmTrdTrack* trdTrack = static_cast<CbmTrdTrack*>(fTrdTracks->At(trdId));
+        if(trdTrack == NULL) continue;
+        Double_t energyLoss = trdTrack->GetELoss();
+        
+        Double_t trackLength = globalTrack->GetLength() / 100.; //trackLength in m
+        
+        
+        Int_t tofId = globalTrack->GetTofHitIndex();
+        if(tofId < 0) continue;
+        CbmTofHit* tofHit = static_cast<CbmTofHit*>(fTofHits->At(tofId));
+        if(tofHit == NULL) continue;
+        Double_t time = tofHit->GetTime();
+        Double_t timect = 0.2998*time;          //time in ns, timect in m                                           
+        
+        Int_t ringId = globalTrack->GetRichRingIndex();
+        if(ringId < 0) continue;
+        CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(ringId));
+        if(ring == NULL) continue;
+        
+        CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iG);
+        if (NULL == ringMatch) continue;
+        Int_t mcTrackId = ringMatch->GetMatchedLink().GetIndex();
+        if (mcTrackId < 0) continue;
+        CbmMCTrack* mcTrack = (CbmMCTrack*)fMCTracks->At(mcTrackId);
+         
+        
+        
+        TVector3 vec;
+	    mcTrack->GetMomentum(vec);
+	    Double_t momTotal = sqrt(vec.Px()*vec.Px() + vec.Py()*vec.Py() + vec.Pz()*vec.Pz()); // GeV
+	    Double_t radius = ring->GetRadius();
+	    
+//        Double_t mass2 = TMath::Power(momTotal, 2.) * (TMath::Power(timect/ trackLength, 2) - 1);     //m² = p²*((1/beta)²-1)
+        
+        fHM->H2("fh_radius_momentum")->Fill(momTotal, radius);
+//        fHM->H2("fh_eloss_tof")->Fill(time,energyLoss);
+        
+    }
+ */   
+    
+    
+    //--------------------TofHits properties -----------------------------------
+    
+    
+   
+        
+        for(int iR = 0; iR < nofRichRings; iR++){
+       
+           
+            
+            CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(iR));
+            if (NULL == ring) continue;
+            CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR);
+            if (NULL == ringMatch) continue;
+            Int_t mcTrackIdRing = ringMatch->GetMatchedLink().GetIndex();
+            if (mcTrackIdRing < 0) continue;
+            CbmMCTrack* mcTrackRing = (CbmMCTrack*)fMCTracks->At(mcTrackIdRing);
+            
+            Double_t radius = ring->GetRadius();
+            
+             for(int iT = 0; iT < nofTofHits; iT++){
+                CbmTofHit* tofHit = static_cast<CbmTofHit*>(fTofHits->At(iT));
+                if(NULL == tofHit) continue;
+        
+                //mcTrackId aus Hit ziehen
+        
+                CbmTrackMatchNew* tofHitMatch = (CbmTrackMatchNew*) fTofHitMatches->At(iT);
+        
+                if(NULL == tofHitMatch) continue;
+         
+                Int_t mcTrackIdTofHit = tofHitMatch->GetMatchedLink().GetIndex();
+                if(mcTrackIdTofHit < 0) continue;
+                CbmMCTrack* mcTrackTof = (CbmMCTrack*)fMCTracks->At(mcTrackIdTofHit);
+     
+        
+        
+                TVector3 vec;
+	            mcTrackTof->GetMomentum(vec);
+	            Double_t momTotal = sqrt(vec.Px()*vec.Px() + vec.Py()*vec.Py() + vec.Pz()*vec.Pz()); // GeV
+	            Double_t time = tofHit->GetTime();
+                Double_t timect = 0.2998*time;          //time in ns, timect in m
+                Double_t trackLength = tofHit->GetR()/100;  
+                Double_t mass2 = TMath::Power(momTotal, 2.) * (TMath::Power(timect/ trackLength, 2) - 1);     //m² = p²*((1/beta)²-1)
+//                cout << "mass2: " << mass2 << endl;
+            
+//                cout << "mcTrackIdRing: " << mcTrackIdRing << endl;
+//                cout << "mcTrackIdTofHit: " << mcTrackIdTofHit << endl;
+       
+                if(mcTrackIdTofHit == mcTrackIdRing){
+                 fHM->H2("fh_radius_mass2")->Fill(mass2, radius);
+                }
+        
+        }
+        
+        
+	    
+    }
+    
+    
+
     for(int iR = 0; iR < nofRichRings; iR++) {
         CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(iR));
         if (NULL == ring) continue;
@@ -211,22 +342,24 @@ void CbmRichMCbmQa::Exec(
         if (mcTrack == NULL) continue;
         Int_t motherId = mcTrack->GetMotherId();
         Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
-	cout << "pdg" << pdg << endl;
+	    cout << "pdg" << pdg << endl;
         //select only primary protons/pions/kaons
         if (!(motherId == -1 &&( pdg == 2212 || pdg == 321 || pdg == 211))) continue;
+        
+        
         
         Double_t cX = ring->GetCenterX();
         Double_t cY = ring->GetCenterY();
         fHM->H2("fh_ring_center_xy")->Fill(cX,cY);
         fHM->H1("fh_hits_per_ring")->Fill(nofHits);
 
-	TVector3 vec;
-	mcTrack->GetMomentum(vec);
-	Double_t momTotal = sqrt(vec.Px()*vec.Px() + vec.Py()*vec.Py() + vec.Pz()*vec.Pz()); // GeV 
+	    TVector3 vec;
+	    mcTrack->GetMomentum(vec);
+	    Double_t momTotal = sqrt(vec.Px()*vec.Px() + vec.Py()*vec.Py() + vec.Pz()*vec.Pz()); // GeV 
 			
         Double_t radius = ring->GetRadius();
         fHM->H1("fh_rich_ring_radius")->Fill(radius);
-	fHM->H2("fh_radius_momentum")->Fill(momTotal, radius);
+	    fHM->H2("fh_radius_momentum")->Fill(momTotal, radius);
         for (int iH = 0; iH < nofHits; iH++) {
             Int_t hitInd = ring->GetHit(iH);
             CbmRichHit* hit = (CbmRichHit*) fRichHits->At(hitInd);
@@ -238,16 +371,16 @@ void CbmRichMCbmQa::Exec(
             fHM->H1("fh_dR")->Fill(dR);
         }
 	
-	if(ring){
+/*	
+	if (ring) {
 	    DrawEvent();
+            cout << "DrawEvent() called" << endl;
 	}
+*/
+	
+
     }
-
-
-   
-
 }
-
 
 void CbmRichMCbmQa::DrawHist()
 {
@@ -257,8 +390,24 @@ void CbmRichMCbmQa::DrawHist()
     fHM->ScaleByPattern("fh_.*", 1./fEventNum);
     
     {
-	TCanvas* c = fHM->CreateCanvas("richsp_radius_momentum","richsp_radius_momentum", 1200 , 600);
-	DrawH2(fHM->H2("fh_radius_momentum"));
+	    TCanvas* c = fHM->CreateCanvas("richsp_radius_momentum","richsp_radius_momentum", 1200 , 600);
+	    DrawH2(fHM->H2("fh_radius_momentum"));
+    }
+    
+    {
+	    TCanvas* c = fHM->CreateCanvas("richsp_radius_mass2","richsp_radius_mass2", 1200 , 600);
+	    DrawH2(fHM->H2("fh_radius_mass2"));
+    }
+    
+    {
+	    TCanvas* c = fHM->CreateCanvas("fh_nof_rich_rings","fh_nof_rich_rings", 1200 , 600);
+	    DrawH1(fHM->H1("fh_nof_rich_rings"));
+    }
+        
+           
+    {
+	    TCanvas* c = fHM->CreateCanvas("richsp_eloss_tof","richsp_eloss_tof", 1200 , 600);
+    	DrawH2(fHM->H2("fh_eloss_tof"));
     }
     
     {
@@ -314,10 +463,14 @@ void CbmRichMCbmQa::DrawHist()
 
 void CbmRichMCbmQa::DrawEvent()
 {
+    cout << "CbmRichMCbmQa::DrawEvent" << endl;
+
     stringstream ss;
     ss << "richsp_event_display_event_"<< fEventNum;
     TCanvas *c = fHM->CreateCanvas(ss.str().c_str(), ss.str().c_str(), 705, 800);
-    TH2D* pad = new TH2D("event_display_pad", ";X [cm];Y [cm]", 1, -60., -10., 1, -40., 40.);
+
+    TH2D* pad = new TH2D("event_display_pad", ";X [cm];Y [cm]", 1, -65., 5., 1, -40., 40.);
+
     DrawH2(pad);
     pad->GetYaxis()->SetTitleOffset(0.9);
     gPad->SetLeftMargin(0.13);
@@ -363,7 +516,7 @@ void CbmRichMCbmQa::DrawEvent()
 
     // Draw rings
     int nofRings = fRichRings->GetEntriesFast();
-    for (int iR = 0; iR < nofRings; iR++){
+    for (int iR = 0; iR < nofRings; iR++) {
         CbmRichRing* ring = (CbmRichRing*) fRichRings->At(iR);
         if (NULL == ring) continue;
         DrawCircle(ring);
@@ -371,8 +524,7 @@ void CbmRichMCbmQa::DrawEvent()
     
 }
 
-void CbmRichMCbmQa::DrawCircle(
-                                         CbmRichRing* ring)
+void CbmRichMCbmQa::DrawCircle(CbmRichRing* ring)
 {
     TEllipse* circle = new TEllipse(ring->GetCenterX(), ring->GetCenterY(), ring->GetRadius());
     circle->SetFillStyle(0);
@@ -386,7 +538,6 @@ void CbmRichMCbmQa::DrawCircle(
     center->Draw();
 }
 
-
 void CbmRichMCbmQa::Finish()
 {
     DrawHist();
@@ -395,7 +546,4 @@ void CbmRichMCbmQa::Finish()
 }
 
 ClassImp(CbmRichMCbmQa)
-
-
-
 

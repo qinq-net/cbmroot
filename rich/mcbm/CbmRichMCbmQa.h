@@ -87,14 +87,19 @@ private:
     
   
 
-    	TClonesArray* fMCTracks;
+    TClonesArray* fMCTracks;
 	TClonesArray* fRichPoints;
 	TClonesArray* fRichDigis;
 	TClonesArray* fRichHits;
 	TClonesArray* fRichRings;
-    	TClonesArray* fRichRingMatches;
+   	TClonesArray* fRichRingMatches;
 	TClonesArray* fRefPlanePoints;
-    
+	TClonesArray* fGlobalTracks;
+	TClonesArray* fTrdTracks;
+	TClonesArray* fTofHits;
+	TClonesArray* fTofPoints;
+	TClonesArray* fTofHitMatches;
+	
     ClassDef(CbmRichMCbmQa,1)
 };
 
