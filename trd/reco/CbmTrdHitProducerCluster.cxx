@@ -30,8 +30,8 @@ CbmTrdHitProducerCluster::CbmTrdHitProducerCluster()
    fDigiPar(NULL),
    fModule(NULL),
    fModuleHits(NULL),
-   fTriangularSignal(NULL),
-   fTriangularPRF(NULL),
+   fTriangularSignal(new TGraphErrors()),
+   fTriangularPRF(new TF1("TriangularPRF", "gaus", -3.5, 3.5)),
    fTrianglePads(false),
    fRecoTriangular(0)
 {
@@ -246,7 +246,12 @@ void CbmTrdHitProducerCluster::TriangularFinalizeModule()
       (*im)=kTRUE;
     }
   } 
-  
+
+  // After hits are created the objects have to be deleted from the vector  
+  // Otherwise there is a huge memeory leak
+  for (auto hit : *fModuleHits) {
+     delete (hit);
+  }
   fModuleHits->clear();
 }
 
@@ -459,10 +464,13 @@ Double_t CbmTrdHitProducerCluster::TriangularGetX(Int_t n, Double_t *sgn, Int_t 
  * x0 = col+0.5+an*dw/h\n
  * with dw the anode wire pitch and h the pad row height
  */
+/*
   if(!fTriangularPRF){ 
     fTriangularPRF = new TF1("TriangularPRF", "gaus", -3.5, 3.5);
     fTriangularSignal = new TGraphErrors();
-  } else if(an==-5){
+  } else 
+*/
+  if(an==-5){
     Int_t N(fTriangularSignal->GetN());
     for(Int_t ip(N); ip>=n; --ip) fTriangularSignal->RemovePoint(ip);
   }
