@@ -17,7 +17,7 @@
 
 
 
-void mcbm_mc_gp(Int_t nEvents = 100,
+void mcbm_mc_gp(Int_t nEvents = 10000,
 //	     const char* setupName = "sis18_mcbm_25deg",
 //           const char* setupName = "sis18_mcbm_20deg_short",
              const char* setupName = "sis18_mcbm_20deg_long",

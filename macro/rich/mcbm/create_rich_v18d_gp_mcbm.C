@@ -241,12 +241,11 @@ void create_rich_v18d_gp_mcbm()
 	//	TGeoVolume *caveVol = gGeoMan->MakeBox("rich_smallprototype_v17a", medAl, (boxWidth + boxThickness)/2. , (boxHeight + boxThickness)/2., (boxLength + boxThickness)/2.);
 	TGeoVolume *caveVol = gGeoMan->MakeBox("rich_smallprototype", medAl, (boxWidth + boxThickness)/2. , (boxHeight + boxThickness)/2., (boxLength + boxThickness)/2.);
 	TGeoVolume *boxVol = gGeoMan->MakeBox("Box", medNitrogen, boxWidth/2., boxHeight/2., boxLength/2.);
-	TGeoVolume *gasVol = gGeoMan->MakeBox("Gas", medNitrogen , boxWidth/2 - wallWidth, boxHeight/2 - wallWidth, boxLength/2 - wallWidth);
+//	TGeoVolume *gasVol = gGeoMan->MakeBox("Gas", medNitrogen , boxWidth/2 - wallWidth, boxHeight/2 - wallWidth, boxLength/2 - wallWidth);
+    TGeoVolume *gasVol = new TGeoVolumeAssembly("gas_vol");
 //	TGeoVolume *pmtContVol = gGeoMan->MakeBox("PmtContainer", medCsI , 3 * pmtSizeHalf + pmtGap, 2 * pmtSizeHalf + pmtGap / 2., pmtThickness / 2.);
-//	TGeoVolume *pmtContVol = gGeoMan->MakeBox("PmtContainer", medNitrogen , 3 * pmtSizeHalf + pmtGap, 2 * pmtSizeHalf + pmtGap / 2., pmtThickness / 2.);
     TGeoVolume *pmtContVol = new TGeoVolumeAssembly("pmt_cont_vol");
 //	TGeoVolume *pmtVol = gGeoMan->MakeBox("Pmt", medCsI , pmtSizeHalf, pmtSizeHalf, pmtThickness / 2.);
-//	TGeoVolume *pmtVol = gGeoMan->MakeBox("Pmt", medNitrogen , pmtSizeHalf, pmtSizeHalf, pmtThickness / 2.);
     TGeoVolume *pmtVol = new TGeoVolumeAssembly("pmt_vol");
 	TGeoVolume *pmtPixelVol = gGeoMan->MakeBox("pmt_pixel", medCsI, pmtPixelSize/2., pmtPixelSize/2., pmtThickness / 2.);
 
@@ -324,9 +323,9 @@ void create_rich_v18d_gp_mcbm()
 	//Draw
 	lenseCoatingCompVol->SetLineColor(kCyan);
 	lenseCompVol->SetLineColor(kGreen);
-	boxVol->SetLineColor(kBlack);
-	gasVol->SetLineColor(kBlue);
-	pmtVol->SetLineColor(kOrange);
+//	boxVol->SetLineColor(kBlack);
+//	gasVol->SetLineColor(kBlue);
+//	pmtVol->SetLineColor(kOrange);
 	pmtPixelVol->SetLineColor(kYellow+4);
 	aerogelVol->SetLineColor(kCyan);
 	aerogelVol->SetTransparency(70);
@@ -335,7 +334,7 @@ void create_rich_v18d_gp_mcbm()
 
 	//	boxVol->Draw("ogl");
 	top->Draw("ogl");
-        gGeoMan->SetVisLevel(6);
+        gGeoMan->SetVisLevel(7);
 	  
 //	rich->Export(geoFileName);   // an alternative way of writing the trd volume
 	TFile* geoFile = new TFile(geoFileName, "RECREATE");

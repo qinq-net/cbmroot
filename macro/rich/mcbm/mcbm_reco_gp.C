@@ -18,7 +18,7 @@
 // --------------------------------------------------------------------------
 
 
-void mcbm_reco_gp(Int_t nEvents = 100, 
+void mcbm_reco_gp(Int_t nEvents = 10000, 
                TString cSys="nini", 
                TString cEbeam="1.93gev",
                TString cCentr="mbias",
