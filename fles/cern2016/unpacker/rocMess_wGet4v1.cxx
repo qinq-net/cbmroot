@@ -103,7 +103,7 @@ uint64_t ngdpb::Message::getMsgFullTime(uint32_t epoch) const
 //! Returns expanded and adjusted time of message in double (in ns)
 //! epoch should correspond to the message type - epoch2 for Get4, epoch for all others
 
-double ngdpb::Message::getMsgFullTimeD(uint64_t epoch) const
+double ngdpb::Message::getMsgFullTimeD(uint32_t epoch) const
 {
    switch (getMessageType()) {
       case MSG_HIT:
@@ -143,7 +143,7 @@ uint64_t ngdpb::Message::getMsgG4v2FullTime(uint32_t epoch) const
 //----------------------------------------------------------------------------
 //! Same as getMsgFullTimeD with Get4 v2.0 and higher fine time calculation
 //! Harcoded constants should be implemented better as soon as their value is fixed
-double ngdpb::Message::getMsgG4v2FullTimeD(uint64_t epoch) const
+double ngdpb::Message::getMsgG4v2FullTimeD(uint32_t epoch) const
 {
    switch (getMessageType()) {
       case MSG_HIT:
@@ -761,6 +761,7 @@ double ngdpb::Message::CalcGet4V10R32HitTimeDiff(
 }
 */
 //----------------------------------------------------------------------------
+/*
 //! strict weak ordering operator, including epoch for both messages
 bool ngdpb::FullMessage::operator<(const FullMessage& other) const
 {
@@ -770,4 +771,4 @@ bool ngdpb::FullMessage::operator<(const FullMessage& other) const
       else return this->fuExtendedEpoch < other.fuExtendedEpoch;
 
 }
-
+*/
