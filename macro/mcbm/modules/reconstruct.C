@@ -180,9 +180,10 @@ Bool_t reconstruct()
     CbmRichHitProducer* richHitProd	= new CbmRichHitProducer();
     run->AddTask(richHitProd);
 
-//    CbmRichReconstruction* richReco = new CbmRichReconstruction();
-//    run->AddTask(richReco);
-//    std::cout << "-I- : Added task " << richReco->GetName() << std::endl;
+    CbmRichReconstruction* richReco = new CbmRichReconstruction();
+    richReco->UseMCbmSetup();
+    run->AddTask(richReco);
+    std::cout << "-I- : Added task " << richReco->GetName() << std::endl;
 
   }
   // ------------------------------------------------------------------------
