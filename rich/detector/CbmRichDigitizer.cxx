@@ -34,7 +34,7 @@ CbmRichDigitizer::CbmRichDigitizer()
    fMcTracks(NULL),
    fPmt(),
    fCrossTalkProbability(0.02),
-   fNofNoiseDigis(200),
+   fNoiseHitRate(0.2),
    fDigisMap(),
    fEventTime(0.),
    fTimeResolution(2.)
@@ -238,7 +238,10 @@ void CbmRichDigitizer::AddNoiseDigis(
         Int_t eventNum,
         Int_t inputNum)
 {
-	for(Int_t j = 0; j < fNofNoiseDigis; j++) {
+    Int_t nofPixels = CbmRichDigiMapManager::GetInstance().GetAddresses().size();
+    Int_t nofNoiseDigis = fNoiseHitRate * nofPixels / 100.;
+    LOG(INFO) << "CbmRichDigitizer NofAllPixels:" << nofPixels << " nofNoiseDigis:" << nofNoiseDigis << FairLogger::endl;
+	for(Int_t j = 0; j < nofNoiseDigis; j++) {
 		Int_t address = CbmRichDigiMapManager::GetInstance().GetRandomAddress();
 		CbmLink link(1., -1, eventNum, inputNum);
 		// TODO: what time to assign for noise hits

@@ -8,9 +8,6 @@
 #ifndef RICH_DETECTOR_CBMRICHPMTTYPE_H_
 #define RICH_DETECTOR_CBMRICHPMTTYPE_H_
 
-#include "TObject.h"
-#include <vector>
-
 enum CbmRichPmtTypeEnum {
     // COSY 2017 measurements, NO WLS
     CbmRichPmtTypeCosy17NoWls = 20,

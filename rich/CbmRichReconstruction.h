@@ -79,6 +79,12 @@ public:
     */
    void SetZTrackExtrapolation(Double_t z){fZTrackExtrapolation = z;}
 
+   void UseMCbmSetup() {
+       this->SetRunExtrapolation(false);
+       this->SetRunProjection(false);
+       this->SetRunTrackAssign(false);
+   }
+
 private:
    TClonesArray* fRichHits;
    TClonesArray* fRichRings;

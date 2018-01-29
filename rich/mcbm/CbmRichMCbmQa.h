@@ -15,91 +15,101 @@ class CbmRichMCbmQa : public FairTask
 {
 
 public:
-	/**
-         * \brief Standard constructor.
-         */
-	CbmRichMCbmQa();
+    /**
+     * \brief Standard constructor.
+     */
+    CbmRichMCbmQa();
 
-	/**
-         * \brief Standard destructor.
-         */
-	virtual ~CbmRichMCbmQa() {};
+    /**
+     * \brief Standard destructor.
+     */
+    virtual ~CbmRichMCbmQa() {};
 
-	/**
-         * \brief Inherited from FairTask.
-         */
-	virtual InitStatus Init();
+    /**
+     * \brief Inherited from FairTask.
+     */
+    virtual InitStatus Init();
 
-	/**
-         * \brief Inherited from FairTask.
-         */
-	virtual void Exec(Option_t* option);
-	
-	/**
-         * \brief Inherited from FairTask.
-         */
-	virtual void Finish();
+    /**
+     * \brief Inherited from FairTask.
+     */
+    virtual void Exec(Option_t* option);
 
-	/**
-         * \brief Set output directory where you want to write results (figures and json).
-         * \param[in] dir Path to the output directory.
-         */
-	void SetOutputDir(const string& dir) {fOutputDir = dir;}
+    /**
+     * \brief Inherited from FairTask.
+     */
+    virtual void Finish();
+
+    /**
+     * \brief Set output directory where you want to write results (figures and json).
+     * \param[in] dir Path to the output directory.
+     */
+    void SetOutputDir(const string& dir) {fOutputDir = dir;}
+
+
+    /**
+     * \brief Draw histogram from file
+     */
+    void DrawFromFile(
+            const string& fileName,
+            const string& outputDir);
 
 private:
-	
-	/**
+
+    /**
      * \brief Initialize histograms.
      */
     void InitHistograms();
-    
+
     /**
      *  \brief Draw histograms.
      */
     void DrawHist();
-    
+
     /**
      * Return low edges of the histogram bins which matches pixel structure.
      */
     vector<Double_t> GetHistBins(Bool_t isX);
 
     void DrawCircle(
-                    CbmRichRing* ring);
-    
+            CbmRichRing* ring);
+
     void DrawEvent();
 
-    
+
     /**
      * \brief Copy constructor.
      */
     CbmRichMCbmQa(const CbmRichMCbmQa&);
-    
+
     /**
      * \brief Assignment operator.
      */
     CbmRichMCbmQa& operator=(const CbmRichMCbmQa&);
-    
+
+
+
     CbmHistManager* fHM;
-    
+
     Int_t fEventNum;
-    
+
     string fOutputDir; // output dir for results
-    
-  
+
+
 
     TClonesArray* fMCTracks;
-	TClonesArray* fRichPoints;
-	TClonesArray* fRichDigis;
-	TClonesArray* fRichHits;
-	TClonesArray* fRichRings;
-   	TClonesArray* fRichRingMatches;
-	TClonesArray* fRefPlanePoints;
-	TClonesArray* fGlobalTracks;
-	TClonesArray* fTrdTracks;
-	TClonesArray* fTofHits;
-	TClonesArray* fTofPoints;
-	TClonesArray* fTofHitMatches;
-	
+    TClonesArray* fRichPoints;
+    TClonesArray* fRichDigis;
+    TClonesArray* fRichHits;
+    TClonesArray* fRichRings;
+    TClonesArray* fRichRingMatches;
+    TClonesArray* fRefPlanePoints;
+    TClonesArray* fGlobalTracks;
+    TClonesArray* fTrdTracks;
+    TClonesArray* fTofHits;
+    TClonesArray* fTofPoints;
+    TClonesArray* fTofHitMatches;
+
     ClassDef(CbmRichMCbmQa,1)
 };
 
