@@ -11,7 +11,7 @@ using namespace std;
 
 enum RichGeomType{kGlassLense, kQuarzPlate, kAerogel};
 
-void create_rich_v18d_gp_mcbm()
+void create_geo_rich_mcbm()
 {
 	gSystem->Load("libGeom");
 	//gGeoMan = gGeoManager;// (TGeoManager*)gROOT->FindObject("FAIRGeom");
@@ -23,13 +23,13 @@ void create_rich_v18d_gp_mcbm()
 
 	FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
 	FairGeoInterface* geoFace = geoLoad->getGeoInterface();
-//	TString geoPath = gSystem->Getenv("VMCWORKDIR");
-//	TString medFile = geoPath + "/geometry/media.geo";
-	TString medFile = "/home/aghoehne/Documents/CbmRoot/trunkNew/geometry/media.geo";
+	TString geoPath = gSystem->Getenv("VMCWORKDIR");
+	TString medFile = geoPath + "/geometry/media.geo";
+//	TString medFile = "/home/aghoehne/Documents/CbmRoot/trunkNew/geometry/media.geo";
 
 	geoFace->setMediaFile(medFile);
 	geoFace->readMedia();
-	gGeoMan = gGeoManager;
+	TGeoManager* gGeoMan = gGeoManager;
 
 	FairGeoMedia*   geoMedia = geoFace->getMedia();
 	FairGeoBuilder* geoBuild = geoLoad->getGeoBuilder();
@@ -156,34 +156,34 @@ void create_rich_v18d_gp_mcbm()
   	Double_t xPos[4] =/* {-48, -18, -48, -18};{-20,  20, -20,  20};*/ {-(boxWidth+wallWidth+boxThickness)/2, (boxWidth+wallWidth+boxThickness)/2, -(boxWidth+wallWidth+boxThickness)/2, (boxWidth+wallWidth+boxThickness)/2};
   	Double_t yPos[4] =/* {-24, -24,  24,  24};{-20, -20,  20,  20};*/ {-(boxHeight+2*wallWidth+2*boxThickness)/2, -(boxHeight+2*wallWidth+2*boxThickness)/2, (boxHeight+2*wallWidth+2*boxThickness)/2, (boxHeight+2*wallWidth+2*boxThickness)/2};
   	Double_t zPos[4] = {355, 355, 355, 355};   // { 50,  50,  50,  50};
-        Double_t proto_angle[4];
-      	TGeoRotation* proto_rotation[4];
-        TGeoCombiTrans* trCave[4];
-	//	TGeoTranslation* trCave[4];
-	//	TGeoTranslation *trCave= new TGeoTranslation(-48., 0., 280.);   // miniCBM position
+  	Double_t proto_angle[4];
+  	TGeoRotation* proto_rotation[4];
+  	TGeoCombiTrans* trCave[4];
+  	//	TGeoTranslation* trCave[4];
+  	//	TGeoTranslation *trCave= new TGeoTranslation(-48., 0., 280.);   // miniCBM position
 
-        for (i=0;i<4;i++)
-	{
-	  //          trCave[i]= new TGeoTranslation(xPos[i], yPos[i], zPos[i]);
-          proto_rotation[i] = new TGeoRotation();
+  	for (int i=0;i<4;i++)
+  	{
+  	    //          trCave[i]= new TGeoTranslation(xPos[i], yPos[i], zPos[i]);
+  	    proto_rotation[i] = new TGeoRotation();
 
-          // rotate around x axis
-          proto_angle[i] = atan( yPos[i] / sqrt( xPos[i]*xPos[i] + zPos[i]*zPos[i] ) ) * 180 / acos(-1);
-	  proto_rotation[i]->RotateX(-proto_angle[i]);
-  
-          cout << "angle x" << i << " " << proto_angle[i] << " deg" << endl;
-          cout << "y " << yPos[i] << " t " << sqrt( xPos[i]*xPos[i] + zPos[i]*zPos[i] ) << " cm" << endl;
+  	    // rotate around x axis
+  	    proto_angle[i] = atan( yPos[i] / sqrt( xPos[i]*xPos[i] + zPos[i]*zPos[i] ) ) * 180 / acos(-1);
+  	    proto_rotation[i]->RotateX(-proto_angle[i]);
 
-          // rotate around y axis
-          proto_angle[i] = atan( xPos[i] / zPos[i] ) * 180 / acos(-1);
-	  proto_rotation[i]->RotateY(proto_angle[i]);
+  	    cout << "angle x" << i << " " << proto_angle[i] << " deg" << endl;
+  	    cout << "y " << yPos[i] << " t " << sqrt( xPos[i]*xPos[i] + zPos[i]*zPos[i] ) << " cm" << endl;
 
-          cout << "angle y" << i << " " << proto_angle[i] << " deg" << endl;
-          cout << "x " << xPos[i] << " y " << yPos[i] << " cm" << endl;
+  	    // rotate around y axis
+  	    proto_angle[i] = atan( xPos[i] / zPos[i] ) * 180 / acos(-1);
+  	    proto_rotation[i]->RotateY(proto_angle[i]);
 
-          cout << endl;
-          trCave[i] = new TGeoCombiTrans(xPos[i], yPos[i], zPos[i], proto_rotation[i]);
-        }
+  	    cout << "angle y" << i << " " << proto_angle[i] << " deg" << endl;
+  	    cout << "x " << xPos[i] << " y " << yPos[i] << " cm" << endl;
+
+  	    cout << endl;
+  	    trCave[i] = new TGeoCombiTrans(xPos[i], yPos[i], zPos[i], proto_rotation[i]);
+  	}
 
 	TGeoTranslation *trBox= new TGeoTranslation(0., 0., 0.); //Gasbox/Box Translation
 	TGeoTranslation *trSensPlane= new TGeoTranslation(0., 0., boxLength / 2. + sensPlaneBoxDistance);
