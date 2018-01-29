@@ -9,28 +9,23 @@ void run_sim_geotest(Int_t nEvents = 100)
     TString myName = "run_sim_geotest";  // this macro's name for screen output
     TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100.C";
+    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100_v18a_ver3.C";
 
     TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/geotest/";
     TString parFile =  outDir + "param.00000.root";
     TString mcFile = outDir + "mc.00000.root";
-    TString geoFile = outDir + "geo_file.root";
+    TString geoFile = outDir + "geosim.00000.root";
 
     remove(parFile.Data());
     remove(mcFile.Data());
     remove(geoFile.Data());
 
-//    if (script == "yes") {
-//        mcFile = TString(gSystem->Getenv("MC_FILE"));
-//        parFile = TString(gSystem->Getenv("PAR_FILE"));
-//        caveGeom = TString(gSystem->Getenv("CAVE_GEOM"));
-//        pipeGeom = TString(gSystem->Getenv("PIPE_GEOM"));
-//        stsGeom = TString(gSystem->Getenv("STS_GEOM"));
-//        richGeom = TString(gSystem->Getenv("RICH_GEOM"));
-//        fieldMap = TString(gSystem->Getenv("FIELD_MAP"));
-//        magnetGeom = TString(gSystem->Getenv("MAGNET_GEOM"));
-//        fieldScale = TString(gSystem->Getenv("FIELD_MAP_SCALE")).Atof();
-//    }
+    if (script == "yes") {
+        mcFile = TString(gSystem->Getenv("MC_FILE"));
+        parFile = TString(gSystem->Getenv("PAR_FILE"));
+        geoFile = TString(gSystem->Getenv("GEOSIM_FILE"));
+        geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+    }
 
     // Target geometry
     TString  targetElement   = "Gold";

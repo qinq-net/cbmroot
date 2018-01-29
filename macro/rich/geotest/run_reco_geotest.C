@@ -1,5 +1,5 @@
 
-void run_reco_geotest(Int_t nEvents = 100)
+void run_reco_geotest(Int_t nEvents = 25000)
 {
    TTree::SetMaxTreeSize(90000000000);
    TString script = TString(gSystem->Getenv("SCRIPT"));
@@ -7,20 +7,21 @@ void run_reco_geotest(Int_t nEvents = 100)
    TString myName = "run_reco_geotest";
    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-   TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100.C";
+   TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100_v18a_ver3.C";
 
    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/geotest/";
    TString mcFile = outDir + "mc.00000.root";
    TString parFile = outDir + "param.00000.root";
    TString recoFile = outDir + "reco.00000.root";
-   std::string resultDir = "results_geotest/";
+   std::string resultDir = "results_geotest_v18a_ver3/";
 
-//   if (script == "yes") {
-//      mcFile = TString(gSystem->Getenv("MC_FILE"));
-//      recoFile = TString(gSystem->Getenv("RECO_FILE"));
-//      parFile = TString(gSystem->Getenv("PAR_FILE"));
-//      resultDir = TString(gSystem->Getenv("RESULT_DIR"));
-//   }
+   if (script == "yes") {
+      mcFile = TString(gSystem->Getenv("MC_FILE"));
+      recoFile = TString(gSystem->Getenv("RECO_FILE"));
+      parFile = TString(gSystem->Getenv("PAR_FILE"));
+      resultDir = TString(gSystem->Getenv("RESULT_DIR"));
+      geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+   }
 
     remove(recoFile.Data());
 
@@ -54,6 +55,7 @@ void run_reco_geotest(Int_t nEvents = 100)
 	run->AddTask(mcManager);
 
 	CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
+	richDigitizer->SetNoiseHitRate(0.);
 	run->AddTask(richDigitizer);
 
 	CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
