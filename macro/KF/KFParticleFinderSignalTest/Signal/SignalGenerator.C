@@ -22,10 +22,10 @@ void SignalGenerator(Int_t iParticle = 0, Int_t NEvent = 1000 )
   double pBeam = TMath::Sqrt(eBeam*eBeam - kProtonMass*kProtonMass);
   double fYcm = 0.25*TMath::Log( (eBeam+pBeam) / (eBeam-pBeam) );
   
-  fThermal = new TF1("thermal", "x*exp(-1.*sqrt(x*x+[1]*[1]) / [0])", 0., 10.);
+  TF1* fThermal = new TF1("thermal", "x*exp(-1.*sqrt(x*x+[1]*[1]) / [0])", 0., 10.);
   fThermal->SetParameter(0, fSlope);
   fThermal->SetParameter(1, kSignalMass);
-  fRandGen = new TRandom(0);
+  TRandom* fRandGen = new TRandom(0);
   
   // Open output file
   ofstream outputfile;
