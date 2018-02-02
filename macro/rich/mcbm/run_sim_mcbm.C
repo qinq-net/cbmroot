@@ -8,13 +8,16 @@ void run_sim_mcbm(Int_t nEvents = 100)
     TString myName = "run_sim_mcbm";  // this macro's name for screen output
     TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis18_mcbm_20deg_long.C";
+//    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis18_mcbm_20deg_long.C";
+    TString geoSetupFile = srcDir +"/geometry/setup/setup_sis18_mcbm_20deg_long.C";
 
-    TString inFile = srcDir + "/input/urqmd.agag.1.65gev.centr.00001.root";
-    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/mcbm/";
+    TString inFile = srcDir + "/input/urqmd.auau.1.24gev.centr.00000.root";
+    TString outDir = "/home/aghoehne/Documents/CbmRoot/Gregor/";	
+//    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/mcbm/";
     TString parFile = outDir + "param.00000.root";
     TString mcFile = outDir + "mc.00000.root";
-    TString geoFile = outDir + "geosim.00000.root";
+    TString geoFile = outDir + "sis18_mcbm_20deg_long_geofile_full.root";
+//    TString geoFile = outDir + "geosim.00000.root";
 
     remove(parFile.Data());
     remove(mcFile.Data());
@@ -60,12 +63,21 @@ void run_sim_mcbm(Int_t nEvents = 100)
     FairLogger::GetLogger()->SetLogScreenLevel("INFO");
     FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
-
+/*
     TString setupFunct = "do_setup()";
     std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
     gROOT->LoadMacro(geoSetupFile);
     gROOT->ProcessLine(setupFunct);
-
+*/
+ // -----   Load the geometry setup   -------------------------------------
+  std::cout << std::endl;
+  TString setupFile = srcDir + "/geometry/setup/setup_sis18_mcbm_20deg_long.C";
+  TString setupFunct = "setup_";
+  setupFunct = setupFunct + "sis18_mcbm_20deg_long()";
+  std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
+  gROOT->LoadMacro(setupFile);
+  gROOT->ProcessLine(setupFunct);
+  // ------------------------------------------------------------------------
 
     std::cout << std:: endl << "-I- " << myName << ": Setting media file" << std::endl;
     run->SetMaterials("media.geo"); // Materials
@@ -146,7 +158,7 @@ void run_sim_mcbm(Int_t nEvents = 100)
 
 
     // Store trajectories for event display
-    run->SetStoreTraj(kTRUE);
+    //run->SetStoreTraj(kTRUE);
 //  // Set cuts for storing the trajectories.
 //   FairTrajFilter* trajFilter = FairTrajFilter::Instance();
 //   if ( trajFilter ) {

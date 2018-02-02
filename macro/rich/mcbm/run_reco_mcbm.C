@@ -7,13 +7,16 @@ void run_reco_mcbm(Int_t nEvents = 100)
     TString myName = "run_reco_mcbm";
     TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis18_mcbm_20deg_long.C";
+ //   TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis18_mcbm_20deg_long.C";
+    TString geoSetupFile = srcDir +"/geometry/setup/setup_sis18_mcbm_20deg_long.C";
 
-    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/mcbm/";
+//    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/mcbm/";
+    TString outDir = "/home/aghoehne/Documents/CbmRoot/Gregor/";	
     TString mcFile = outDir + "mc.00000.root";
     TString parFile = outDir + "param.00000.root";
     TString recoFile = outDir + "reco.00000.root";
-    TString geoFile = outDir + "geosim.00000.root";
+    TString geoFile = outDir + "sis18_mcbm_20deg_long_geofile_full.root";
+ //   TString geoFile = outDir + "geosim.00000.root";
     std::string resultDir = "results_mcbm_rich/";
 
     if (script == "yes") {
@@ -26,13 +29,26 @@ void run_reco_mcbm(Int_t nEvents = 100)
     }
 
     remove(recoFile.Data());
-
+/*
     //Load geometry setup
     TString setupFunct = "do_setup()";
     std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
     gROOT->LoadMacro(geoSetupFile);
     gROOT->ProcessLine(setupFunct);
     CbmSetup* setup = CbmSetup::Instance();
+    
+    */
+    
+    // -----   Load the geometry setup   -------------------------------------
+  std::cout << std::endl;
+  TString setupFile = srcDir + "/geometry/setup/setup_sis18_mcbm_20deg_long.C";
+  TString setupFunct = "setup_";
+  setupFunct = setupFunct + "sis18_mcbm_20deg_long()";
+  std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
+  gROOT->LoadMacro(setupFile);
+  gROOT->ProcessLine(setupFunct);
+  CbmSetup* setup = CbmSetup::Instance();
+  // ------------------------------------------------------------------------
 
 
     // Parameter files
