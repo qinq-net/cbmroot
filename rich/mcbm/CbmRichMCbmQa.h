@@ -91,8 +91,10 @@ private:
 
     CbmHistManager* fHM;
 
+    
     Int_t fEventNum;
-
+    
+    
     string fOutputDir; // output dir for results
 
 
