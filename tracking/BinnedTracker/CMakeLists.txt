@@ -33,6 +33,7 @@ Set(SRCS
   CbmBinnedTrackerQA.cxx
   ContFactory.cxx
   Settings.cxx
+  CbmTrackParam2.cxx
 )
 
 Set(NO_DICT_SRCS

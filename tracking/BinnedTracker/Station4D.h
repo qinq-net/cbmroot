@@ -221,34 +221,36 @@ public:
         CbmBinnedStation::Init();
     }
     
-    void SearchHits(const KFParams& stateVec, Double_t stateZ, std::function<void(CbmTBin::HitHolder&)> handleHit)
+    void SearchHits(const CbmTrackParam2& stateVec, Double_t stateZ, std::function<void(CbmTBin::HitHolder&)> handleHit)
     {
         Double_t deltaZmin = stateZ - fMinZ;
-        Double_t tx = stateVec.xParams.tg;
-        Double_t ty = stateVec.yParams.tg;
-        Double_t wTx = cbmBinnedSigma * std::sqrt(stateVec.xParams.C22 + fDtxSq);
+        Double_t tx = stateVec.GetTx();
+        Double_t ty = stateVec.GetTy();
+        //Double_t C[21];
+        //stateVec.CovMatrix(C);
+        Double_t wTx = cbmBinnedSigma * std::sqrt(stateVec.GetCov(2, 2) + fDtxSq);
         Double_t minTx = tx - wTx;
         Double_t maxTx = tx + wTx;
-        Double_t wTy = cbmBinnedSigma * std::sqrt(stateVec.yParams.C22 + fDtySq);
+        Double_t wTy = cbmBinnedSigma * std::sqrt(stateVec.GetCov(3, 3) + fDtySq);
         Double_t minTy = ty - wTy;
         Double_t maxTy = ty + wTy;
         
-        if (minTy > 0 && stateVec.yParams.coord + minTy * deltaZmin >= fMaxY)
+        if (minTy > 0 && stateVec.GetY() + minTy * deltaZmin >= fMaxY)
             return;
-        else if (maxTy < 0 && stateVec.yParams.coord + maxTy * deltaZmin < fMinY)
+        else if (maxTy < 0 && stateVec.GetY() + maxTy * deltaZmin < fMinY)
             return;
         
-        if (minTx > 0 && stateVec.xParams.coord + minTx * deltaZmin >= fMaxX)
+        if (minTx > 0 && stateVec.GetX() + minTx * deltaZmin >= fMaxX)
             return;
-        else if (maxTx < 0 && stateVec.xParams.coord + minTx * deltaZmin < fMinX)
+        else if (maxTx < 0 && stateVec.GetX() + minTx * deltaZmin < fMinX)
             return;
         
         Double_t minZ = fMinZ;
         Double_t maxZ = fMaxZ;
         
         Double_t searchZ = stateZ;
-        Double_t searchX = stateVec.xParams.coord;
-        Double_t searchY = stateVec.yParams.coord;
+        Double_t searchX = stateVec.GetX();
+        Double_t searchY = stateVec.GetY();
         
         if (minTy > 0)
         {

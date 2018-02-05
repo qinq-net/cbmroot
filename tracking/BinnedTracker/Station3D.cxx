@@ -9,22 +9,24 @@
 #include "Station3D.h"
 #include "Tracker.h"
 
-void CbmBinned3DStation::SearchHits(const KFParams& stateVec, Double_t stateZ, std::function<void(CbmTBin::HitHolder&)> handleHit)
+void CbmBinned3DStation::SearchHits(const CbmTrackParam2& stateVec, Double_t stateZ, std::function<void(CbmTBin::HitHolder&)> handleHit)
 {
-   Double_t deltaZmin = fMinZ - stateZ;
-   Double_t deltaZmax = fMaxZ - stateZ;
-   KFParams minParams = Extrapolate(stateVec, deltaZmin);
-   KFParams maxParams = Extrapolate(stateVec, deltaZmax);
-   Double_t wXmin = fNofSigmasX * std::sqrt(minParams.xParams.C11 + fDxSq + fScatXSq);
-   Double_t wXmax = fNofSigmasX * std::sqrt(maxParams.xParams.C11 + fDxSq + fScatXSq);
-   Double_t wYmin = fNofSigmasY * std::sqrt(minParams.yParams.C11 + fDySq + fScatYSq);
-   Double_t wYmax = fNofSigmasY * std::sqrt(maxParams.yParams.C11 + fDySq + fScatYSq);
+   CbmTrackParam2 minParams = Extrapolate(stateVec, fMinZ);
+   //Double_t minC[21];
+   //minParams.CovMatrix(minC);
+   CbmTrackParam2 maxParams = Extrapolate(stateVec, fMaxZ);
+   //Double_t maxC[21];
+   //maxParams.CovMatrix(maxC);
+   Double_t wXmin = fNofSigmasX * std::sqrt(minParams.GetCov(0, 0) + fDxSq + fScatXSq);
+   Double_t wXmax = fNofSigmasX * std::sqrt(maxParams.GetCov(0, 0) + fDxSq + fScatXSq);
+   Double_t wYmin = fNofSigmasY * std::sqrt(minParams.GetCov(1, 1) + fDySq + fScatYSq);
+   Double_t wYmax = fNofSigmasY * std::sqrt(maxParams.GetCov(1, 1) + fDySq + fScatYSq);
 
-   Double_t xMin = stateVec.xParams.tg > 0 ? minParams.xParams.coord - wXmin : maxParams.xParams.coord - wXmax;
-   Double_t xMax = stateVec.xParams.tg > 0 ? maxParams.xParams.coord + wXmax : minParams.xParams.coord + wXmin;
+   Double_t xMin = stateVec.GetTx() > 0 ? minParams.GetX() - wXmin : maxParams.GetX() - wXmax;
+   Double_t xMax = stateVec.GetTx() > 0 ? maxParams.GetX() + wXmax : minParams.GetX() + wXmin;
 
-   Double_t yMin = stateVec.yParams.tg > 0 ? minParams.yParams.coord - wYmin : maxParams.yParams.coord - wYmax;
-   Double_t yMax = stateVec.yParams.tg > 0 ? maxParams.yParams.coord + wYmax : minParams.yParams.coord + wYmin;
+   Double_t yMin = stateVec.GetTy() > 0 ? minParams.GetY() - wYmin : maxParams.GetY() - wYmax;
+   Double_t yMax = stateVec.GetTy() > 0 ? maxParams.GetY() + wYmax : minParams.GetY() + wYmin;
 
    int lowerXind = GetXInd(xMin);
    int upperXind = GetXInd(xMax);

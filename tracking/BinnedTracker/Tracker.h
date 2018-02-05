@@ -33,8 +33,8 @@ public:
     int fNofWrongSegments;
     struct Track
     {
-        Track(CbmTBin::HitHolder** hits, int length, const CbmBinnedStation::KFParams& lastParam) :
-            fHits(new CbmTBin::HitHolder*[length]), fLength(length), fParams(new CbmBinnedStation::KFParams[length]), fIsClone(false), fChiSq(lastParam.chi2)
+        Track(CbmTBin::HitHolder** hits, int length, const CbmTrackParam2& lastParam, Double_t chiSq) :
+            fHits(new CbmTBin::HitHolder*[length]), fLength(length), fParams(new CbmTrackParam2[length]), fIsClone(false), fChiSq(chiSq)
         {
             for (int i = 0; i < fLength; ++i)
             {
@@ -43,13 +43,12 @@ public:
             }
             
             fParams[fLength - 1] = lastParam;
+            Double_t chiSq2 = chiSq;
                                 
             for (int i = fLength - 2; i >= 0; --i)
             {
-                fParams[i] = fParams[i + 1];
-                Double_t m[2] = { hits[i]->hit->GetX(), hits[i]->hit->GetY() };
-                Double_t V[2] = { hits[i]->hit->GetDx() * hits[i]->hit->GetDx(), hits[i]->hit->GetDy() * hits[i]->hit->GetDy() };
-                CbmBinnedTracker::Instance()->KFAddPoint(i, fParams[i], fParams[i + 1], m, V, hits[i]->hit->GetZ(), hits[i + 1]->hit->GetZ());
+                fParams[i] = CbmBinnedStation::Extrapolate(fParams[i + 1], hits[i]->hit->GetZ());
+                CbmBinnedStation::Update(fParams[i], hits[i]->hit, chiSq2);
             }
         }
         
@@ -63,7 +62,8 @@ public:
         Track& operator=(const Track&) = delete;        
         CbmTBin::HitHolder** fHits;
         int fLength;
-        CbmBinnedStation::KFParams* fParams;
+        //CbmBinnedStation::KFParams* fParams;
+        CbmTrackParam2* fParams;
         bool fIsClone;
         Double_t fChiSq;
     };
@@ -87,7 +87,7 @@ public:
         fVertex.SetDxy(0);
         fVertex.SetZ(0);
         fVertex.SetTime(0);
-        fVertex.SetTimeError(0);
+        fVertex.SetTimeError(1000000000000);
     }
     
     ~CbmBinnedTracker()
@@ -521,7 +521,7 @@ private:
     
     //KFStation fKFStations[6];
 
-    void KFAddPointCoord(int stationNumber, CbmBinnedStation::KFParamsCoord& param, const CbmBinnedStation::KFParamsCoord& prevParam,
+    /*void KFAddPointCoord(int stationNumber, CbmBinnedStation::KFParamsCoord& param, const CbmBinnedStation::KFParamsCoord& prevParam,
         Double_t m, Double_t V, Double_t& chi2, Double_t z, Double_t prevZ, int coordNumber)
     {
         //const KFStation& station = fKFStations[stationNumber];
@@ -556,22 +556,22 @@ private:
     {
         KFAddPointCoord(stationNumber, param.xParams, prevParam.xParams, m[0], V[0], param.chi2, z, prevZ, 0);
         KFAddPointCoord(stationNumber, param.yParams, prevParam.yParams, m[1], V[1], param.chi2, z, prevZ, 1);
-    }
+    }*/
     
-    void TraverseTrackCandidates(int level, CbmBinnedStation::Segment** trackStart, CbmTBin::HitHolder** hhs, std::list<Track*>& candidates, CbmBinnedStation::KFParams kfParamsPrev)
+    void TraverseTrackCandidates(int level, CbmBinnedStation::Segment** trackStart, CbmTBin::HitHolder** hhs, std::list<Track*>& candidates,
+      CbmTrackParam2 kfParamsPrev, Double_t chiSqPrev)
     {              
         CbmBinnedStation::Segment* segment = trackStart[level];
         const CbmPixelHit* hit = segment->end->hit;
-        CbmBinnedStation::KFParams kfParams = kfParamsPrev;
-        Double_t m[2] = { hit->GetX(), hit->GetY() };
-        Double_t V[2] = { hit->GetDx() * hit->GetDx(), hit->GetDy() * hit->GetDy() };
-        KFAddPoint(level, kfParams, kfParamsPrev, m, V, hit->GetZ(), 0 == level ? 0 : hhs[level - 1]->hit->GetZ());
+        CbmTrackParam2 kfParams = CbmBinnedStation::Extrapolate(kfParamsPrev, hit->GetZ());
+        Double_t chiSq = chiSqPrev;
+        CbmBinnedStation::Update(kfParams, hit, chiSq);
         
         CbmBinnedSettings* settings = CbmBinnedSettings::Instance();
         
         if (level == fNofStations - 1)
         {
-            Track* aCandidate = new Track(hhs, fNofStations, kfParams);
+            Track* aCandidate = new Track(hhs, fNofStations, kfParams, chiSq);
             candidates.push_back(aCandidate);
             return;
         }
@@ -581,7 +581,7 @@ private:
             CbmBinnedStation::Segment* childSegment = *i;         
             trackStart[level + 1] = childSegment;
             hhs[level + 1] = childSegment->end;
-            TraverseTrackCandidates(level + 1, trackStart, hhs, candidates, kfParams);
+            TraverseTrackCandidates(level + 1, trackStart, hhs, candidates, kfParams, chiSq);
         }
     }
 
@@ -601,20 +601,37 @@ private:
                 //TraverseTrackCandidates(0, segments, trackHolders, 0, candidates, scatXSqs, scatYSqs);
                 const CbmPixelHit* p1 = segment.begin->hit;
                 const CbmPixelHit* p2 = segment.end->hit;
-                CbmBinnedStation::KFParams kfParams =
-                {
-                    { p1->GetX(), 0, p1->GetDx() * p1->GetDx(), 0, 0, 1.0 },
-                    { p1->GetY(), 0, p1->GetDy() * p1->GetDy(), 0, 0, 1.0 },
-                    0
-                };
-                TraverseTrackCandidates(0, segments, trackHolders, candidates, kfParams);
+                CbmTrackParam2 kfParams;
+                kfParams.SetX(p1->GetX());
+                kfParams.SetTx(0);
+                kfParams.SetY(p1->GetY());
+                kfParams.SetTy(0);
+                //kfParams.SetQp(1);
+                kfParams.SetZ(p1->GetZ());
+                kfParams.SetTime(p1->GetTime());
+                /*Double_t C[21];
+                std::fill_n(C, 21, 0);
+                C[0] = p1->GetDx() * p1->GetDx();// Cxx
+                C[6] = p1->GetDy() * p1->GetDy();// Cyy
+                C[11] = 1;// Ctxtx
+                C[15] = 1;// Ctyty
+                C[18] = 1;// Cqpqp
+                C[20] = p1->GetTimeError() * p1->GetTimeError();// Ctt
+                kfParams.SetCovMatrix(C);*/
+                kfParams.SetCov(0, 0, p1->GetDx() * p1->GetDx());
+                kfParams.SetCov(1, 1, p1->GetDy() * p1->GetDy());
+                kfParams.SetCov(2, 2, 1);
+                kfParams.SetCov(3, 3, 1);
+                kfParams.SetCov(4, 4, p1->GetTimeError() * p1->GetTimeError());
+                Double_t chiSq = 0;
+                TraverseTrackCandidates(0, segments, trackHolders, candidates, kfParams, chiSq);
                 Track* bestCandidate = 0;
 
                 for (std::list<Track*>::iterator i = candidates.begin(); i != candidates.end(); ++i)
                 {
                     Track* aCandidate = *i;
 
-                    if (0 == bestCandidate || aCandidate->fParams[aCandidate->fLength - 1].chi2 < bestCandidate->fParams[bestCandidate->fLength - 1].chi2)
+                    if (0 == bestCandidate || aCandidate->fChiSq < bestCandidate->fChiSq)
                     {
                         delete bestCandidate;
                         bestCandidate = aCandidate;
@@ -673,31 +690,53 @@ private:
 #endif//CBM_BINNED_DEBUG
     }
     
-    bool FindBestPath(int stationNo, CbmBinnedStation::KFParams kfParams, CbmTBin::HitHolder** trackHolders, CbmTBin::HitHolder** bestTrackHolders, CbmBinnedStation::KFParams& bestEndParams)
+    bool FindBestPath(int stationNo, CbmTrackParam2 kfParams, Double_t chiSq, CbmTBin::HitHolder** trackHolders, CbmTBin::HitHolder** bestTrackHolders,
+      CbmTrackParam2& bestEndParams, Double_t& bestChiSq)
     {
         bool pathResult = false;
         Double_t previousZ = trackHolders[stationNo - 1]->hit->GetZ();
         CbmBinnedStation* aStation = fStationArray[stationNo];
         aStation->SearchHits(kfParams, previousZ,
-            [this, &stationNo, &kfParams, &trackHolders, &bestTrackHolders, &previousZ, &bestEndParams, &pathResult](CbmTBin::HitHolder& hitHolder)->void
+            [this, &stationNo, &kfParams, &chiSq, &trackHolders, &bestTrackHolders, &previousZ, &bestEndParams, &bestChiSq, &pathResult](CbmTBin::HitHolder& hitHolder)->void
             {
                 trackHolders[stationNo] = &hitHolder;
                 const CbmPixelHit* hit = hitHolder.hit;
-                CbmBinnedStation::KFParams updKFParams = kfParams;
-                Double_t m[2] = { hit->GetX(), hit->GetY() };
-                Double_t V[2] = { hit->GetDx() * hit->GetDx(), hit->GetDy() * hit->GetDy() };
-                KFAddPoint(stationNo, updKFParams, kfParams, m, V, hit->GetZ(), previousZ);
+                CbmTrackParam2 updKFParams = CbmBinnedStation::Extrapolate(kfParams, hit->GetZ());
                 
-                if (updKFParams.chi2 > fChiSqCut || updKFParams.chi2 > bestEndParams.chi2)
+                Double_t xA0 = updKFParams.GetX();
+                Double_t yA0 = updKFParams.GetY();
+                Double_t txA0 = updKFParams.GetTx();
+                Double_t tyA0 = updKFParams.GetTy();
+                Double_t timeA0 = updKFParams.GetTime();
+                    
+                Double_t updChiSq = chiSq;
+                CbmBinnedStation::Update(updKFParams, hit, updChiSq);
+                
+                if (updChiSq > fChiSqCut || updChiSq > bestChiSq)
+                {
+                    Double_t xB = kfParams.GetX();
+                    Double_t yB = kfParams.GetY();
+                    Double_t txB = kfParams.GetTx();
+                    Double_t tyB = kfParams.GetTy();
+                    Double_t timeB = kfParams.GetTime();
+                    
+                    Double_t xA = updKFParams.GetX();
+                    Double_t yA = updKFParams.GetY();
+                    Double_t txA = updKFParams.GetTx();
+                    Double_t tyA = updKFParams.GetTy();
+                    Double_t timeA = updKFParams.GetTime();
+                    
                     return;
+                }
                 
                 bool result = false;
                 
                 if (stationNo < fNofStations - 1)
-                    result = FindBestPath(stationNo + 1, updKFParams, trackHolders, bestTrackHolders, bestEndParams);
+                    result = FindBestPath(stationNo + 1, updKFParams, updChiSq, trackHolders, bestTrackHolders, bestEndParams, bestChiSq);
                 else
                 {
                     bestEndParams = updKFParams;
+                    bestChiSq = updChiSq;
                     result = true;
                 }
                 
@@ -728,20 +767,33 @@ private:
                 CbmTBin::HitHolder* tmpTrackHolders[fNofStations];
 #endif//__MACH__
                 const CbmPixelHit* leftHit = leftHitHolder.hit;
-                CbmBinnedStation::KFParams kfParams =
-                {
-                    { leftHit->GetX(), 0, leftHit->GetDx() * leftHit->GetDx(), 0, 0, 1.0 },
-                    { leftHit->GetY(), 0, leftHit->GetDy() * leftHit->GetDy(), 0, 0, 1.0 },
-                    0
-                };
+                CbmTrackParam2 kfParams;
+                kfParams.SetX(leftHit->GetX());
+                kfParams.SetTx(0);
+                kfParams.SetY(leftHit->GetY());
+                kfParams.SetTy(0);
+                //kfParams.SetQp(1);
+                kfParams.SetZ(leftHit->GetZ());
+                kfParams.SetTime(leftHit->GetTime());
+                /*Double_t C[21];
+                std::fill_n(C, 21, 0);
+                C[0] = leftHit->GetDx() * leftHit->GetDx();// Cxx
+                C[6] = leftHit->GetDy() * leftHit->GetDy();// Cyy
+                C[11] = 2;// Ctxtx
+                C[15] = 2;// Ctyty
+                C[18] = 1;// Cqpqp
+                C[20] = startStationNo < 0 ? 1.e7 : leftHit->GetTimeError() * leftHit->GetTimeError();// Ctt
+                kfParams.SetCovMatrix(C);*/
+                kfParams.SetCov(0, 0, leftHit->GetDx() * leftHit->GetDx());
+                kfParams.SetCov(1, 1, leftHit->GetDy() * leftHit->GetDy());
+                kfParams.SetCov(2, 2, 1);
+                kfParams.SetCov(3, 3, 1);
+                kfParams.SetCov(4, 4, leftHit->GetTimeError() * leftHit->GetTimeError());
+                Double_t chiSq = 0;
                 
                 CbmTBin::HitHolder* startHitHolder = 0;
-                CbmBinnedStation::KFParams bestEndParams =
-                {
-                    { leftHit->GetX(), 0, leftHit->GetDx() * leftHit->GetDx(), 0, 0, 1.0 },
-                    { leftHit->GetY(), 0, leftHit->GetDy() * leftHit->GetDy(), 0, 0, 1.0 },
-                    cbmBinnedCrazyChiSq
-                };
+                CbmTrackParam2 bestEndParams = kfParams;
+                Double_t bestEndChiSq = cbmBinnedCrazyChiSq;
                 bool hasFoundPathLeft = false;
                 
                 if (startStationNo >= 0)
@@ -751,28 +803,28 @@ private:
                 }
                 
                 rightStation->IterateHits(
-                    [this, &startStationNo, &leftHitHolder, &trackHolders, &tmpTrackHolders, &leftHit, &kfParams, &startHitHolder,
-                        &bestEndParams, &hasFoundPathLeft](CbmTBin::HitHolder& rightHitHolder)->void
+                    [this, &startStationNo, &leftHitHolder, &trackHolders, &tmpTrackHolders, &leftHit, &kfParams, &chiSq, &startHitHolder,
+                        &bestEndParams, &bestEndChiSq, &hasFoundPathLeft](CbmTBin::HitHolder& rightHitHolder)->void
                     {                        
                         if (startStationNo < 0)
                         {
                             startHitHolder = &rightHitHolder;
                             tmpTrackHolders[0] = &rightHitHolder;
-                            bestEndParams.chi2 = cbmBinnedCrazyChiSq;
+                            bestEndParams = kfParams;
+                            bestEndChiSq = cbmBinnedCrazyChiSq;
                         }
                         else
                             tmpTrackHolders[1] = &rightHitHolder;
                         
                         const CbmPixelHit* rightHit = rightHitHolder.hit;
-                        CbmBinnedStation::KFParams updKFParams = kfParams;
-                        Double_t m[2] = {rightHit->GetX(), rightHit->GetY()};
-                        Double_t V[2] = {rightHit->GetDx() * rightHit->GetDx(), rightHit->GetDy() * rightHit->GetDy()};
-                        KFAddPoint(startStationNo + 1, updKFParams, kfParams, m, V, rightHit->GetZ(), leftHit->GetZ());
+                        CbmTrackParam2 updKFParams = CbmBinnedStation::Extrapolate(kfParams, rightHit->GetZ());
+                        Double_t updChiSq = chiSq;
+                        CbmBinnedStation::Update(updKFParams, rightHit, updChiSq);
 
-                        if (updKFParams.chi2 > fChiSqCut)
+                        if (updChiSq > fChiSqCut)
                             return;
                         
-                        bool hasFoundPathRight = FindBestPath(startStationNo + 2, updKFParams, tmpTrackHolders, trackHolders, bestEndParams);
+                        bool hasFoundPathRight = FindBestPath(startStationNo + 2, updKFParams, updChiSq, tmpTrackHolders, trackHolders, bestEndParams, bestEndChiSq);
                         
                         if (hasFoundPathRight)
                         {
@@ -786,7 +838,7 @@ private:
                             
                             if (startStationNo < 0)
                             {                                
-                                Track* aTrack = new Track(trackHolders, fNofStations, bestEndParams);
+                                Track* aTrack = new Track(trackHolders, fNofStations, bestEndParams, bestEndChiSq);
                                 fTracks.push_back(aTrack);
                                 
                                 for (int i = 0; i < fNofStations; ++i)
@@ -798,7 +850,7 @@ private:
                 
                 if (startStationNo >= 0 && hasFoundPathLeft)
                 {                                
-                    Track* aTrack = new Track(trackHolders, fNofStations, bestEndParams);
+                    Track* aTrack = new Track(trackHolders, fNofStations, bestEndParams, bestEndChiSq);
                     fTracks.push_back(aTrack);
                 }
             }
@@ -818,11 +870,11 @@ private:
             
             for (int j = 0; j < track->fLength; ++j)
             {
-                Double_t x = track->fParams[j].xParams.coord;
+                /*Double_t x = track->fParams[j].xParams.coord;
                 Double_t dxSq = track->fParams[j].xParams.C11;
                 Double_t y = track->fParams[j].yParams.coord;
                 Double_t dySq = track->fParams[j].yParams.C11;
-                Double_t t = 0;// TODO!
+                Double_t t = 0;// TODO!*/
                 CbmTBin::HitHolder* hit = track->fHits[j];
                 std::set<Track*> neighbourTracks;
                 
@@ -838,7 +890,8 @@ private:
                 
                 CbmBinnedStation* aStation = fStationArray[j];
                 aStation->SearchHits(track->fParams[j], hit->hit->GetZ(),
-                    [&track, &cloneNofs, j, x, dxSq, y, dySq, t, &neighbourTracks](CbmTBin::HitHolder& hitHolder)->void
+                    //[&track, &cloneNofs, j, x, dxSq, y, dySq, t, &neighbourTracks](CbmTBin::HitHolder& hitHolder)->void
+                   [&track, &cloneNofs, j, &neighbourTracks](CbmTBin::HitHolder& hitHolder)->void
                     {
                         for (std::list<void*>::iterator k = hitHolder.tracks.begin(); k != hitHolder.tracks.end(); ++k)
                         {
@@ -847,14 +900,14 @@ private:
                             if (track2 == track || track2->fIsClone)
                                 continue;
                             
-                            Double_t x2 = track2->fParams[j].xParams.coord;
+                            /*Double_t x2 = track2->fParams[j].xParams.coord;
                             Double_t dx2Sq = track2->fParams[j].xParams.C11;
                             Double_t y2 = track2->fParams[j].yParams.coord;
                             Double_t dy2Sq = track2->fParams[j].yParams.C11;
                             Double_t t2 = 0;// TODO!
                             
                             if ((x2 - x) * (x2 - x) > cbmBinnedSigmaSq * (dxSq + dx2Sq) || (y2 - y) * (y2 - y) > cbmBinnedSigmaSq * (dySq + dy2Sq))// TODO: add check for the time
-                                continue;
+                                continue;*/
                             
                             neighbourTracks.insert(track2);
                         }

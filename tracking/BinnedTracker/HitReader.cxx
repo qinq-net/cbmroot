@@ -488,24 +488,28 @@ public:
 
 class CbmBinnedMuchHitReader : public CbmBinnedHitReader
 {
-/*private:
+private:
    TClonesArray* fMuchClusters;
    TClonesArray* fMuchDigis;
    TClonesArray* fMuchPoints;
    TH1F* fHitResidualXHisto;
-   TH1F* fHitResidualYHisto;*/
+   TH1F* fHitResidualYHisto;
+   TH1F* fHitResidualTHisto;
+   TH1F* fHitPullTHisto;
    
 public:
    CbmBinnedMuchHitReader() : CbmBinnedHitReader()
    {
       FairRootManager* ioman = FairRootManager::Instance();
       fHitArray = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
-      /*
+      
       fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
       fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
       fMuchPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
       fHitResidualXHisto = new TH1F("muchHitResidualXHisto", "muchHitResidualXHisto", 200, -10., 10.);
-      fHitResidualYHisto = new TH1F("muchHitResidualYHisto", "muchHitResidualYHisto", 200, -10., 10.);*/
+      fHitResidualYHisto = new TH1F("muchHitResidualYHisto", "muchHitResidualYHisto", 200, -10., 10.);
+      fHitResidualTHisto = new TH1F("muchHitResidualTHisto", "muchHitResidualTHisto", 1000, -20., 80.);
+      fHitPullTHisto = new TH1F("muchHitPullTHisto", "muchHitPullTHisto", 200, -10., 10.);
    }
    
    void SaveHisto(TH1* histo)
@@ -520,11 +524,13 @@ public:
       TFile::CurrentFile() = curFile;
    }
    
-   /*void Finish()
+   void Finish()
    {
       SaveHisto(fHitResidualXHisto);
       SaveHisto(fHitResidualYHisto);
-   }*/
+      SaveHisto(fHitResidualTHisto);
+      SaveHisto(fHitPullTHisto);
+   }
    
    CbmBinnedMuchHitReader(const CbmBinnedMuchHitReader&) = delete;
    CbmBinnedMuchHitReader& operator=(const CbmBinnedMuchHitReader&) = delete;
@@ -540,7 +546,7 @@ public:
          int layerNumber = CbmMuchGeoScheme::GetLayerIndex(hit->GetAddress());
          int stationNumber = muchStationNumber * 3 + layerNumber;
          
-         /*Double_t t = 0;
+         Double_t t = 0;
          int cnt = 0;
          Int_t clusterId = hit->GetRefId();
          const CbmMuchCluster* cluster = static_cast<const CbmMuchCluster*> (fMuchClusters->At(clusterId));
@@ -559,16 +565,20 @@ public:
                const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->At(link.GetIndex()));
                fHitResidualXHisto->Fill(hit->GetX() - (muchPoint->GetXIn() + muchPoint->GetXOut()) / 2);
                fHitResidualYHisto->Fill(hit->GetY() - (muchPoint->GetYIn() + muchPoint->GetYOut()) / 2);
+               fHitResidualTHisto->Fill(hit->GetTime() - muchPoint->GetTime());
+               fHitPullTHisto->Fill((hit->GetTime() - muchPoint->GetTime() - 17.23) / hit->GetTimeError());
                t += muchPoint->GetTime();
                ++cnt;
             }
          }
       
          if (0 < cnt)
-            t /= cnt;*/
+            t /= cnt;
          
-         hit->SetTime(0);
+         //hit->SetTime(0);
          
+         hit->SetTime(hit->GetTime() - 17.23);
+         //hit->SetTimeError(10);
          fStations[stationNumber]->AddHit(hit, i);
 #ifdef DO_ERROR_STAT
          UpdateMax("Much", stationNumber, hit);
