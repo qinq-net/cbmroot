@@ -252,9 +252,13 @@ InitStatus CbmBinnedTrackerQA::Init()
    fSettings = CbmBinnedSettings::Instance();
    fIsOnlyPrimary = fSettings->IsOnlyPrimary();
    TrackDesc::nofStsStations = fSettings->Use(kSts) ? fSettings->GetNofStsStations() : 0;
+   LOG(INFO) << "The number of STS stations: " << TrackDesc::nofStsStations << FairLogger::endl;
    TrackDesc::nofMuchStations = fSettings->Use(kMuch) ? fSettings->GetNofMuchStations() : 0;
+   LOG(INFO) << "The number of MuCh stations: " << TrackDesc::nofMuchStations << FairLogger::endl;
    TrackDesc::nofTrdStations = fSettings->Use(kTrd) ? fSettings->GetNofTrdStations() : 0;
+   LOG(INFO) << "The number of TRD stations: " << TrackDesc::nofTrdStations << FairLogger::endl;
    TrackDesc::hasTof = fSettings->Use(kTof);
+   LOG(INFO) << "Use ToF station: " << (TrackDesc::hasTof ? "true" : "false") << FairLogger::endl;
    
    TrackDesc::firstMuchStationNo = TrackDesc::nofStsStations;
    TrackDesc::firstTrdStationNo = TrackDesc::firstMuchStationNo + TrackDesc::nofMuchStations;
@@ -407,6 +411,8 @@ InitStatus CbmBinnedTrackerQA::Init()
             lambdaList.push_back(&track);
       }
    }
+   
+   LOG(INFO) << "The number of MC events in the input: " << gTracks.size() << FairLogger::endl;
    
    fGlobalTracks = static_cast<TClonesArray*> (ioman->GetObject("GlobalTrack"));
    
