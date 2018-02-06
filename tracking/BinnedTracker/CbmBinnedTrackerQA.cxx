@@ -1818,29 +1818,54 @@ void CbmBinnedTrackerQA::Finish()
    cout << "Total tracks: " << nofAllTracks << endl;
    
    double eff = 100 * nofMatchedRefTracks;
-   eff /= nofRefTracks;
+   
+   if (0 == nofRefTracks)
+       eff = 100;
+   else
+       eff /= nofRefTracks;
+   
    cout << "The track reconstruction efficiency: " << eff << "%: " << nofMatchedRefTracks << "/" << nofRefTracks << endl;
    NumberToFile("nofRefTracks", nofRefTracks);
    NumberToFile("nofMatchedRefTracks", nofMatchedRefTracks);
    
    eff = 100 * nofMatchedRefPrimTracks;
-   eff /= nofRefPrimTracks;
+   
+   if (0 == nofRefPrimTracks)
+       eff = 100;
+   else
+       eff /= nofRefPrimTracks;
+   
    cout << "The track reconstruction efficiency for primary tracks: " << eff << "%: " << nofMatchedRefPrimTracks << "/" << nofRefPrimTracks << endl;
    NumberToFile("nofMatchedRefPrimTracks", nofMatchedRefPrimTracks);
    
    eff = 100 * nofMatchedRefNonPrimTracks;
-   eff /= nofRefNonPrimTracks;
+   
+   if (0 == nofRefNonPrimTracks)
+       eff = 100;
+   else
+       eff /= nofRefNonPrimTracks;
+   
    cout << "The track reconstruction efficiency for non primary tracks: " << eff << "%: " << nofMatchedRefNonPrimTracks << "/" << nofRefNonPrimTracks << endl;
    NumberToFile("nofMatchedRefNonPrimTracks", nofMatchedRefNonPrimTracks);
    
    eff = 100 * (gNofRecoTracks - gNofNonGhosts);
-   eff /= gNofRecoTracks;
+   
+   if (0 == gNofRecoTracks)
+       eff = 100;
+   else
+       eff /= gNofRecoTracks;
+   
    cout << "The number of ghosts: " << eff << "%: " << gNofRecoTracks - gNofNonGhosts << "/" << gNofRecoTracks << endl;
    NumberToFile("nofRecoTracks", gNofRecoTracks);
    NumberToFile("nofGhosts", gNofRecoTracks - gNofNonGhosts);
    
    eff = 100 * gNofClones;
-   eff /= gNofRecoTracks;
+   
+   if (0 == gNofRecoTracks)
+       eff = 100;
+   else
+        eff /= gNofRecoTracks;
+   
    cout << "The number of clones: " << eff << "%: " << gNofClones << "/" << gNofRecoTracks << endl;
    NumberToFile("nofClones", gNofClones);
    //cout << "Nof STS[0]: " << nofSts[0] << endl;
@@ -1902,15 +1927,30 @@ void CbmBinnedTrackerQA::Finish()
    }
    
    eff = 100 * nofLambdasInAcc;
-   eff /= nofLambdas;
+   
+   if (0 == nofLambdas)
+       eff = 100;
+   else
+       eff /= nofLambdas;
+   
    cout << "Lambda baryons in the acceptance: " << eff << "% " << nofLambdasInAcc << "/" << nofLambdas << endl;
    
    eff = 100 * nofRecoLambdas;
-   eff /= nofLambdas;
+   
+   if (0 == nofLambdas)
+       eff = 100;
+   else
+       eff /= nofLambdas;
+   
    cout << "Reconstructed of all the Lambda baryons: " << eff << "% " << nofRecoLambdas << "/" << nofLambdas << endl;
    
    eff = 100 * nofRecoLambdas;
-   eff /= nofLambdasInAcc;
+   
+   if (0 == nofLambdasInAcc)
+       eff = 100;
+   else
+       eff /= nofLambdasInAcc;
+   
    cout << "Reconstructed of the Lambda baryons in the acceptance: " << eff << "% " << nofRecoLambdas << "/" << nofLambdasInAcc << endl;
    
    SaveHisto(effByMom);

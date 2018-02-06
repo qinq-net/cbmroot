@@ -26,7 +26,7 @@ static inline std::ostream& operator<< (std::ostream& os, const TMatrixD& matrix
     return os;
 }
 
-class CbmTrackParam2// : public FairTrackParam
+class CbmTrackParam2
 {
 public:
    CbmTrackParam2() : fZ(0), fVector(5, 1), fCovMatrix(5, 5) {}
@@ -62,7 +62,6 @@ private:
     Double_t fZ;
     TMatrixD fVector;
     TMatrixD fCovMatrix;
-    ClassDef(CbmTrackParam2, 1);
 };
 
 #endif//CBM_TRACK_PARAM2

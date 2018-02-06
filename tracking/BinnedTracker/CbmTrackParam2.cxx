@@ -5,5 +5,3 @@
  */
 
 #include "CbmTrackParam2.h"
-
-ClassImp(CbmTrackParam2)
