@@ -84,6 +84,14 @@ InitStatus CbmBinnedTrackerTask::Init()
    fGlobalTracks = new TClonesArray("CbmGlobalTrack", 100);
    ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
    
+   LOG(INFO) << "Use STS detector: " << (fSettings->Use(kSts) ? "true" : "false") << FairLogger::endl;
+   LOG(INFO) << "The number of STS stations: " << fSettings->GetNofStsStations() << FairLogger::endl;
+   LOG(INFO) << "Use MuCh detector: " << (fSettings->Use(kMuch) ? "true" : "false") << FairLogger::endl;
+   LOG(INFO) << "The number of MuCh stations: " << fSettings->GetNofMuchStations() << FairLogger::endl;
+   LOG(INFO) << "Use TRD detector: " << (fSettings->Use(kTrd) ? "true" : "false") << FairLogger::endl;
+   LOG(INFO) << "The number of TRD stations: " << fSettings->GetNofTrdStations() << FairLogger::endl;
+   LOG(INFO) << "Use ToF detector: " << (fSettings->Use(kTof) ? "true" : "false") << FairLogger::endl;
+   
    if (fSettings->Use(kSts))
    {
       fStsTracks = new TClonesArray("CbmStsTrack", 100);

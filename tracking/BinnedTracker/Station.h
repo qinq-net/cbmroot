@@ -331,7 +331,9 @@ public:
         
         TMatrixD R(3, 3);
         R(0, 0) = hit->GetDx() * hit->GetDx();
+        R(0, 1) = hit->GetDxy();
         R(1, 1) = hit->GetDy() * hit->GetDy();
+        R(1, 0) = hit->GetDxy();
         R(2, 2) = hit->GetTimeError() * hit->GetTimeError();
         
         TMatrixD HP(3, 5);
@@ -385,7 +387,6 @@ public:
         Y_tV_1Y.Mult(Y_t, V_1Y);
         
         chiSq += Y_tV_1Y(0, 0);
-        int qq = 0;
     }
     
 public:
