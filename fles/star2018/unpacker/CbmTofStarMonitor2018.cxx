@@ -2218,13 +2218,13 @@ void CbmTofStarMonitor2018::FillHitInfo(ngdpb::Message mess)
 			    0,  0,  0,  0,
 			    0,  0,  0,  0,
 			    0,  0,  0,  0  };
- 
+
   for (Int_t i = 0; i < 32; i++)
     {
       paditoget4[i+32] = paditoget4[i]+32;  // compute 2nd half of mapping matrix
       get4topadi[i+32] = get4topadi[i]+32;  // compute 2nd half of mapping matrix
     }
-      
+
   Int_t channel_us = mess.getGdpbHitChanId();  // unsorted
   Int_t channel = paditoget4[channel_us];      // resorted
   // DE  Int_t channel = get4topadi[channel_us];      // resorted
@@ -2545,6 +2545,10 @@ void CbmTofStarMonitor2018::FillEpochInfo(ngdpb::Message mess)
       {
          LOG(DEBUG) << "Now processing stored messages for for get4 " << fGet4Nr << " with epoch number "
                     << (fCurrentEpoch[fGet4Nr] - 1) << FairLogger::endl;
+
+         /// Data are sorted between epochs, not inside => Epoch level ordering
+         /// Sorting at lower bin precision level
+         std::stable_sort( fvmEpSupprBuffer[fGet4Nr].begin(), fvmEpSupprBuffer[fGet4Nr].begin() );
 
          for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
          {

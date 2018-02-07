@@ -1062,6 +1062,10 @@ void CbmTofStarEventBuilder2018::FillEpochInfo( gdpb::Message mess )
       LOG(DEBUG) << "Now processing stored messages for for get4 " << fuGet4Nr << " with epoch number "
                  << (fvulCurrentEpoch[ fuGet4Nr ] - 1) << FairLogger::endl;
 
+      /// Data are sorted between epochs, not inside => Epoch level ordering
+      /// Sorting at lower bin precision level
+      std::stable_sort( fvmEpSupprBuffer[fuGet4Nr].begin(), fvmEpSupprBuffer[fuGet4Nr].begin() );
+
       for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
       {
          FillHitInfo( fvmEpSupprBuffer[ fuGet4Nr ][ iMsgIdx ] );
