@@ -156,7 +156,7 @@ void CbmRichMCbmQa::InitHistograms()
     
 
     //RICH
-    fHM->Create1<TH1D>("fh_nof_rich_points", "fh_nof_rich_points;Nof RICH Points per event;Yield (a.u.)", 100, -.5, 99.5);
+    fHM->Create1<TH1D>("fh_nof_rich_points", "fh_nof_rich_points;Nof RICH Points per event;Yield (a.u.)", 1000, -.5, 999.5);
     fHM->Create1<TH1D>("fh_nof_rich_hits", "fh_nof_rich_hits;Nof RICH hits per event;Yield (a.u.)", 100, -.5, 99.5);
     fHM->Create1<TH1D>("fh_nof_rich_rings", "fh_nof_rich_rings;Nof RICH rings;# per event", 20, -0.5, 19.5);
     fHM->Create1<TH1D>("fh_rich_ring_radius","fh_rich_ring_radius;Ring radius [cm];Yield (a.u.)", 200, 1., 8.);
@@ -183,7 +183,7 @@ void CbmRichMCbmQa::InitHistograms()
     fHM->Create2<TH2D>("fh_radius_momentum", "fh_radius_momentum; Momentum [GeV];Radius [cm]; Yield", 500 , 0., 5., 500 , 0. , 5.);
     fHM->Create2<TH2D>("fh_ring_center_xy","fh_ring_center_xy;X [cm];Y [cm];Yield (a.u.)", 100, xMin, xMax, 100, yMin, yMax);	
     fHM->Create2<TH2D>("fh_nonphoton_pmt_points_xy","fh_nonphoton_pmt_points_xy;X [cm]; Y [cm];Yield" , 250., xMin, xMax, 250, yMin, yMax);
-    fHM->Create2<TH2D>("fh_radius_beta","fh_radius_beta; beta; Radius [cm]; Yield", 300, 0.7, 1., 500, 0., 5.);
+    fHM->Create2<TH2D>("fh_radius_beta","fh_radius_beta; beta; Radius [cm]; Yield", 400, 0.7, 1.1, 500, 0., 5.);
     fHM->Create1<TH1D>("fh_beta_dis_all", "fh_beta_dis_all;beta;Yield; ", 300, 0.7, 1.);
     fHM->Create1<TH1D>("fh_beta_dis_ring", "fh_beta_dis_ring;beta;Yield;", 300, 0.7, 1.);
     
@@ -193,7 +193,7 @@ void CbmRichMCbmQa::InitHistograms()
 
     // TOF hists
     fHM->Create2<TH2D>("fh_eloss_tof", "fh_eloss_tof; time of flight [ns]; energy loss; Yield", 500 , 0., 5., 500 , 0. , 5.);
-    fHM->Create2<TH2D>("fh_radius_mass2", "fh_radius_mass2; mass^2 [GeV^2]; Radius [cm]; Yield", 360 , 0., 1.2, 500, 0., 5.); 
+    fHM->Create2<TH2D>("fh_radius_mass2", "fh_radius_mass2; mass^2 [GeV^2]; Radius [cm]; Yield", 450 , -0.3, 1.2, 500, 0., 5.); 
     
     fHM->Create1<TH1D>("number_of_events","number_of_events; something", 1, 0.5, 1.5);
 }
@@ -204,6 +204,7 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
     fHM->H1("number_of_events")->Fill(1);
    
     cout << "CbmRichMCbmQa, event No. " <<  fEventNum << endl;
+    
 
     Int_t nofMCTracks = fMCTracks->GetEntriesFast();
     Int_t nofRichPoints = fRichPoints->GetEntriesFast();
@@ -238,6 +239,7 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
         Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
        // cout << "pdg: " << pdg << endl;
         fHM->H2("fh_rich_points_xy")->Fill(point->GetX(), point->GetY());   
+        
         
         for(int iT = 0; iT < nofTofHits; iT++){
             CbmTofHit* tofHit = static_cast<CbmTofHit*>(fTofHits->At(iT));
@@ -280,7 +282,10 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
         if (NULL == ringMatch) continue;
         Int_t mcTrackIdRing = ringMatch->GetMatchedLink().GetIndex();
         if (mcTrackIdRing < 0) continue;
+        
+        
         CbmMCTrack* mcTrackRing = (CbmMCTrack*)fMCTracks->At(mcTrackIdRing);
+        if(mcTrackRing == NULL) continue;
         Double_t radius = ring->GetRadius();
         
         Int_t motherId = mcTrackRing->GetMotherId();
@@ -298,7 +303,8 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
         fHM->H2("fh_ring_center_xy")->Fill(cX,cY);
         fHM->H1("fh_hits_per_ring")->Fill(nofHits);
         fHM->H1("fh_rich_ring_radius")->Fill(radius);
-        fHM->H2("fh_radius_momentum")->Fill(momTotal1, radius);
+        //fHM->H2("fh_radius_momentum")->Fill(momTotal1, radius);
+        cout << "richRingId: " << mcTrackIdRing << endl;
         
         for (int iH = 0; iH < nofHits; iH++) {
             Int_t hitInd = ring->GetHit(iH);
@@ -313,6 +319,7 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
      
 
         for(int iT = 0; iT < nofTofHits; iT++){
+            
             CbmTofHit* tofHit = static_cast<CbmTofHit*>(fTofHits->At(iT));
             if(NULL == tofHit) continue;
             CbmTrackMatchNew* tofHitMatch = (CbmTrackMatchNew*) fTofHitMatches->At(iT);
@@ -335,12 +342,15 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
            
             Double_t mass2 = TMath::Power(momTotal, 2.) * (TMath::Power(1/beta, 2) - 1);     //m² = p²*((1/beta)²-1)
 
+            
             if(mcTrackIdTofHit == mcTrackIdRing){
                 Int_t pdg = TMath::Abs(mcTrackRing->GetPdgCode());
                 if(pdg != 50000050){
                     fHM->H2("fh_radius_mass2")->Fill(mass2, radius);
                     fHM->H2("fh_radius_beta")->Fill(beta, radius);
                     fHM->H1("fh_beta_dis_ring")->Fill(beta);
+                    fHM->H2("fh_radius_momentum")->Fill(momTotal, radius);
+                    
                 }
             }
         }
@@ -453,9 +463,9 @@ void CbmRichMCbmQa::DrawHist()
         TCanvas* c = fHM->CreateCanvas("richsp_nof_rich_hits_points", "richsp_nof_rich_hits_points", 1800, 600);
         c->Divide(3,1);
         c->cd(1);
-        DrawH1andFitGauss(fHM->H1("fh_nof_rich_points"), true, false);
+        DrawH1(fHM->H1("fh_nof_rich_points"));
         c->cd(2);
-        DrawH1andFitGauss(fHM->H1("fh_nof_rich_hits"), true, false);
+        DrawH1(fHM->H1("fh_nof_rich_hits"));
         c->cd(3);
         DrawH1(fHM->H1("fh_hits_per_ring"));
 
