@@ -12,6 +12,7 @@
 #include <iterator>
 #include <algorithm>
 #include <type_traits>
+#include <iostream>
 
 static inline std::ostream& operator<< (std::ostream& os, const TMatrixD& matrix)
 {
