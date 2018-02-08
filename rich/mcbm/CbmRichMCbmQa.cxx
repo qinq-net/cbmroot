@@ -252,25 +252,25 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
         Double_t beta = trackLength/timect;
         Double_t mass2 = TMath::Power(momTotal, 2.) * (TMath::Power(1/beta, 2) - 1);     //m² = p²*((1/beta)²-1)
         
-        bool flag = false;
-            
-            
+
         for(int i = 0; i < nofRichPoints; i++) {
             CbmRichPoint* point= static_cast<CbmRichPoint*>(fRichPoints->At(i));
             if (point == NULL) continue;
 
             Int_t mcTrackIdPoint = point->GetTrackID();
-      
             if (mcTrackIdPoint == NULL) continue;
             CbmMCTrack* mcTrack = (CbmMCTrack*)fMCTracks->At(mcTrackIdPoint);
             if (mcTrack == NULL) continue;
+
+            if ( mcTrack->GetPdgCode() != 50000050) continue; // select only Cherenkov photons
+            Int_t motherId = mcTrack->GetMotherId();
+            CbmMCTrack* mcTrackMother = (CbmMCTrack*)fMCTracks->At(motherId);
+            if (mcTrackMother == NULL) continue;
        
-        
-            Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
-            // cout << "pdg: " << pdg << endl;
-       
-            if(mcTrackIdPoint == mcTrackIdTofHit){
+            if(motherId == mcTrackIdTofHit){
                 fHM->H1("fh_beta_dis_all")->Fill(beta);
+                // one entry per tof hit only
+                break;
             }
         }   
         
@@ -281,24 +281,18 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
             if (NULL == ringMatch) continue;
             Int_t mcTrackIdRing = ringMatch->GetMatchedLink().GetIndex();
             if (mcTrackIdRing < 0) continue;
-        
-        
+
             CbmMCTrack* mcTrackRing = (CbmMCTrack*)fMCTracks->At(mcTrackIdRing);
             if(mcTrackRing == NULL) continue;
             Double_t radius = ring->GetRadius();
             
             if(mcTrackIdTofHit == mcTrackIdRing){
-               // cout << "mcTrackIdTofHit: " << mcTrackIdTofHit << endl;
-               // cout << "mcTrackIdRing: " << mcTrackIdRing << endl;
-                if(flag == true) break;
-                Int_t pdg = TMath::Abs(mcTrackRing->GetPdgCode());
-                if(pdg != 50000050){
-                    fHM->H2("fh_radius_mass2")->Fill(mass2, radius);
-                    fHM->H2("fh_radius_beta")->Fill(beta, radius);
-                    fHM->H1("fh_beta_dis_ring")->Fill(beta);
-                    fHM->H2("fh_radius_momentum")->Fill(momTotal, radius);
-                }
-                flag = true;
+                fHM->H2("fh_radius_mass2")->Fill(mass2, radius);
+                fHM->H2("fh_radius_beta")->Fill(beta, radius);
+                fHM->H1("fh_beta_dis_ring")->Fill(beta);
+                fHM->H2("fh_radius_momentum")->Fill(momTotal, radius);
+                // one entry per tof hit only
+                break;
             }
         }             
     }              
