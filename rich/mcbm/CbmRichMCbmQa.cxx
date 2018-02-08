@@ -224,7 +224,91 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
         if(hit == NULL) continue;
         fHM->H2("fh_rich_hits_xy")->Fill(hit->GetX(), hit->GetY());
     }
+    
+    
+    
+    //--------------------TofHits properties -----------------------------------
+    
+    for(int iT = 0; iT < nofTofHits; iT++){
+        CbmTofHit* tofHit = static_cast<CbmTofHit*>(fTofHits->At(iT));
+        if(NULL == tofHit) continue;
+        CbmTrackMatchNew* tofHitMatch = (CbmTrackMatchNew*) fTofHitMatches->At(iT);
+        if(NULL == tofHitMatch) continue;
+        Int_t tofPointIndex = tofHitMatch->GetMatchedLink().GetIndex();
+        const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->At(tofPointIndex));
+        if(NULL == tofPoint) continue;
+        Int_t mcTrackIdTofHit = tofPoint->GetTrackID();
+        if(mcTrackIdTofHit < 0) continue;
+        CbmMCTrack* mcTrackTof = (CbmMCTrack*)fMCTracks->At(mcTrackIdTofHit);
+        if (NULL == mcTrackTof) continue;
 
+           
+        TVector3 vec;
+        mcTrackTof->GetMomentum(vec);
+        Double_t momTotal = sqrt(vec.Px()*vec.Px() + vec.Py()*vec.Py() + vec.Pz()*vec.Pz()); // GeV
+        Double_t time = tofHit->GetTime();
+        Double_t timect = 0.2998*time;          //time in ns, timect in m
+        Double_t trackLength = tofHit->GetR()/100;
+        Double_t beta = trackLength/timect;
+        Double_t mass2 = TMath::Power(momTotal, 2.) * (TMath::Power(1/beta, 2) - 1);     //m² = p²*((1/beta)²-1)
+        
+        bool flag = false;
+            
+            
+        for(int i = 0; i < nofRichPoints; i++) {
+            CbmRichPoint* point= static_cast<CbmRichPoint*>(fRichPoints->At(i));
+            if (point == NULL) continue;
+
+            Int_t mcTrackIdPoint = point->GetTrackID();
+      
+            if (mcTrackIdPoint == NULL) continue;
+            CbmMCTrack* mcTrack = (CbmMCTrack*)fMCTracks->At(mcTrackIdPoint);
+            if (mcTrack == NULL) continue;
+       
+        
+            Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
+            // cout << "pdg: " << pdg << endl;
+       
+            if(mcTrackIdPoint == mcTrackIdTofHit){
+                fHM->H1("fh_beta_dis_all")->Fill(beta);
+            }
+        }   
+        
+        for(int iRing = 0; iRing < nofRichRings; iRing++){
+            CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(iRing));
+            if (NULL == ring) continue;
+            CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iRing);
+            if (NULL == ringMatch) continue;
+            Int_t mcTrackIdRing = ringMatch->GetMatchedLink().GetIndex();
+            if (mcTrackIdRing < 0) continue;
+        
+        
+            CbmMCTrack* mcTrackRing = (CbmMCTrack*)fMCTracks->At(mcTrackIdRing);
+            if(mcTrackRing == NULL) continue;
+            Double_t radius = ring->GetRadius();
+            
+            if(mcTrackIdTofHit == mcTrackIdRing){
+               // cout << "mcTrackIdTofHit: " << mcTrackIdTofHit << endl;
+               // cout << "mcTrackIdRing: " << mcTrackIdRing << endl;
+                if(flag == true) break;
+                Int_t pdg = TMath::Abs(mcTrackRing->GetPdgCode());
+                if(pdg != 50000050){
+                    fHM->H2("fh_radius_mass2")->Fill(mass2, radius);
+                    fHM->H2("fh_radius_beta")->Fill(beta, radius);
+                    fHM->H1("fh_beta_dis_ring")->Fill(beta);
+                    fHM->H2("fh_radius_momentum")->Fill(momTotal, radius);
+                }
+                flag = true;
+            }
+        }             
+    }              
+    
+    
+    
+    
+
+
+/*
     for(int i = 0; i < nofRichPoints; i++) {
         CbmRichPoint* point= static_cast<CbmRichPoint*>(fRichPoints->At(i));
         if (point == NULL) continue;
@@ -264,17 +348,41 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
             if(mcTrackIdPoint == mcTrackIdTofHit){
                 fHM->H1("fh_beta_dis_all")->Fill(beta);
             }
-
-           
+        }
+     
+        for(int iRing = 0; iRing < nofRichRings; iRing++){
+            CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(iRing));
+            if (NULL == ring) continue;
+            CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iRing);
+            if (NULL == ringMatch) continue;
+            Int_t mcTrackIdRing = ringMatch->GetMatchedLink().GetIndex();
+            if (mcTrackIdRing < 0) continue;
+        
+        
+            CbmMCTrack* mcTrackRing = (CbmMCTrack*)fMCTracks->At(mcTrackIdRing);
+            if(mcTrackRing == NULL) continue;
+            
+            if(mcTrackIdTofHit == mcTrackIdRing){
+               // cout << "mcTrackIdTofHit: " << mcTrackIdTofHit << endl;
+               // cout << "mcTrackIdRing: " << mcTrackIdRing << endl;
+                Int_t pdg = TMath::Abs(mcTrackRing->GetPdgCode());
+                if(pdg != 50000050){
+                    fHM->H2("fh_radius_mass2")->Fill(mass2, radius);
+                    fHM->H2("fh_radius_beta")->Fill(beta, radius);
+                    fHM->H1("fh_beta_dis_ring")->Fill(beta);
+                    fHM->H2("fh_radius_momentum")->Fill(momTotal, radius);
+                    
+                }
+            }
         }              
     }           
 
-
+*/
    
 
 
     //--------------------TofHits properties -----------------------------------
-
+/*
     for(int iRing = 0; iRing < nofRichRings; iRing++){
         CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(iRing));
         if (NULL == ring) continue;
@@ -344,63 +452,20 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
 
             
             if(mcTrackIdTofHit == mcTrackIdRing){
+                //cout << "mcTrackIdTofHit: " << mcTrackIdTofHit << endl;
+                //cout << "mcTrackIdRing: " << mcTrackIdRing << endl;
                 Int_t pdg = TMath::Abs(mcTrackRing->GetPdgCode());
                 if(pdg != 50000050){
-                    fHM->H2("fh_radius_mass2")->Fill(mass2, radius);
-                    fHM->H2("fh_radius_beta")->Fill(beta, radius);
-                    fHM->H1("fh_beta_dis_ring")->Fill(beta);
-                    fHM->H2("fh_radius_momentum")->Fill(momTotal, radius);
+                  //  fHM->H2("fh_radius_mass2")->Fill(mass2, radius);
+                  //  fHM->H2("fh_radius_beta")->Fill(beta, radius);
+                  //  fHM->H1("fh_beta_dis_ring")->Fill(beta);
+                  //  fHM->H2("fh_radius_momentum")->Fill(momTotal, radius);
                     
                 }
             }
-        }
-    
-    
-
-
-        /*
-        for(int iR = 0; iR < nofRichRings; iR++) {
-            CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(iR));
-            if (NULL == ring) continue;
-            int nofHits = ring->GetNofHits();
-            CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR);
-            if (NULL == ringMatch) continue;
-            Int_t mcTrackId = ringMatch->GetMatchedLink().GetIndex();
-            if (mcTrackId < 0) continue;
-            CbmMCTrack* mcTrack = (CbmMCTrack*)fMCTracks->At(mcTrackId);
-            if (mcTrack == NULL) continue;
-            Int_t motherId = mcTrack->GetMotherId();
-            Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
-            cout << "pdg" << pdg << endl;
-            //select only primary protons/pions/kaons
-            if (!(motherId == -1 &&( pdg == 2212 || pdg == 321 || pdg == 211))) continue;
-
-            Double_t cX = ring->GetCenterX();
-            Double_t cY = ring->GetCenterY();
-            fHM->H2("fh_ring_center_xy")->Fill(cX,cY);
-            fHM->H1("fh_hits_per_ring")->Fill(nofHits);
-
-            TVector3 vec;
-            mcTrack->GetMomentum(vec);
-            Double_t momTotal = sqrt(vec.Px()*vec.Px() + vec.Py()*vec.Py() + vec.Pz()*vec.Pz()); // GeV
-
-            Double_t radius = ring->GetRadius();
-            fHM->H1("fh_rich_ring_radius")->Fill(radius);
-            fHM->H2("fh_radius_momentum")->Fill(momTotal, radius);
-        
-            for (int iH = 0; iH < nofHits; iH++) {
-                Int_t hitInd = ring->GetHit(iH);
-                CbmRichHit* hit = (CbmRichHit*) fRichHits->At(hitInd);
-                if (NULL == hit) continue;
-                Double_t hitX = hit->GetX();
-                Double_t hitY = hit->GetY();
-
-                Double_t dR = radius - TMath::Sqrt( (cX - hitX)*( cX - hitX) + (cY - hitY)*(cY - hitY) );
-                fHM->H1("fh_dR")->Fill(dR);
-            }
-  
-        }*/
+        }    
     }
+    */
 }
 
 /*
