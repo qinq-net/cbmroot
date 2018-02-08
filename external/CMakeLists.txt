@@ -27,7 +27,7 @@ set(KFPARTICLE_DESTDIR "${CMAKE_BINARY_DIR}/external/KFPARTICLE-prefix")
 
 download_project(PROJ            kfparticle_source
                  GIT_REPOSITORY  ${KFPARTICLE_SRC_URL}
-                 GIT_TAG         ${KFPARTICLE_VERSION}
+                 GIT_TAG         "07cc3c11e648d89ddfbe40ba28dba9850806369b"
                  SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/KFParticle
 )
 
