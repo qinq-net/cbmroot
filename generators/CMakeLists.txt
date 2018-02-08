@@ -5,6 +5,7 @@
 Set(INCLUDE_DIRECTORIES
  ${CBMROOT_SOURCE_DIR}/data
  ${CBMROOT_SOURCE_DIR}/generators
+ ${CBMROOT_SOURCE_DIR}/generators/pluto
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -38,16 +39,22 @@ CbmHsdLvmGenerator.cxx
 CbmHsdGenerator.cxx
 CbmShieldGenerator.cxx
 CbmUnigenGenerator.cxx
+CbmIonGenerator.cxx
+CbmPlutoGenerator.cxx
 URun.cxx
 UEvent.cxx
 UParticle.cxx
-CbmIonGenerator.cxx
+pluto/PDataBase.cxx
+pluto/PMesh.cxx
+pluto/PParticle.cxx
+pluto/PStaticData.cxx
+pluto/PStdData.cxx
+pluto/PValues.cxx
 )
 
 If(PLUTO_FOUND)
   Set(SRCS 
     ${SRCS}
-    CbmPlutoGenerator.cxx
     CbmPlutoReactionGenerator.cxx
     CbmDYMuonGenerator.cxx
     CbmSemiMuonGenerator.cxx

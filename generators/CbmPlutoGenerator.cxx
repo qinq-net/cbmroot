@@ -11,7 +11,7 @@
 #include "PDataBase.h"                  // for PDataBase
 #include "PParticle.h"                  // for PParticle
 
-#include "Riosfwd.h"                    // for ostream
+#include <iosfwd>                       // for ostream
 #include "TClonesArray.h"               // for TClonesArray
 #include "TDatabasePDG.h"               // for TDatabasePDG
 #include "TFile.h"                      // for TFile, gFile

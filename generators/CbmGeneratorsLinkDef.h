@@ -15,8 +15,15 @@
 #pragma link C++ class UParticle+;
 #pragma link C++ class CbmIonGenerator+;
 
-#ifdef HAS_PLUTO
 #pragma link C++ class CbmPlutoGenerator+;
+#pragma link C++ class PDataBase;
+#pragma link C++ class PMesh;
+#pragma link C++ class PParticle;
+#pragma link C++ class PStaticData;
+#pragma link C++ class PStdData;
+#pragma link C++ class PValues;
+
+#ifdef HAS_PLUTO
 #pragma link C++ class CbmPlutoReactionGenerator+;
 #pragma link C++ class CbmDYMuonGenerator;
 #pragma link C++ class CbmSemiMuonGenerator;
