@@ -125,9 +125,9 @@ set_target_properties(KFParticle PROPERTIES IMPORTED_LOCATION ${KFPARTICLE_LIBRA
 add_custom_command(TARGET KFPARTICLE POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
                    ${KFPARTICLE_LIBRARY} ${CMAKE_BINARY_DIR}/lib)
-add_custom_command(TARGET KFPARTICLE POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                   ${KFPARTICLE_PCMFILE} ${CMAKE_BINARY_DIR}/lib)
+#add_custom_command(TARGET KFPARTICLE POST_BUILD
+#                   COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#                   ${KFPARTICLE_PCMFILE} ${CMAKE_BINARY_DIR}/lib)
 add_dependencies(KFParticle KFPARTICLE)
 
 set(KFParticle_LIB_DIR ${KFPARTICLE_ROOTDIR}/lib PARENT_SCOPE)
