@@ -29,6 +29,7 @@ CbmRichDigitizer::CbmRichDigitizer()
  : FairTask("CbmRichDigitizer"),
    fEventNum(0),
    fMode(CbmRichDigitizerModeEvents),
+   fDetectorType(CbmRichPmtTypeCosy17NoWls),
    fRichPoints(NULL),
    fRichDigis(NULL),
    fMcTracks(NULL),
@@ -153,7 +154,7 @@ void CbmRichDigitizer::ProcessPoint(CbmRichPoint* point, Int_t pointId, Int_t ev
 		TVector3 mom;
 		point->Momentum(mom);
 		Double_t momTotal = sqrt(mom.Px()*mom.Px() + mom.Py()*mom.Py() + mom.Pz()*mom.Pz());
-		isDetected = fPmt.isPhotonDetected(momTotal);
+		isDetected = fPmt.isPhotonDetected(fDetectorType, momTotal);
 	} else { // if not photon
 		// worst case: assume that all charged particles crossing
 		// the PMTplane leave Cherenkov light in the PMTglass which will be detected

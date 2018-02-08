@@ -17,6 +17,7 @@
 //detector
 #pragma link C++ class CbmRichHitProducer+;
 #pragma link C++ class CbmRichDigitizer+;
+#pragma link C++ class CbmRichPmt+;
 
 //reconstruction
 #pragma link C++ class CbmRichReconstruction+;

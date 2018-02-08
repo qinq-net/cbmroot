@@ -9,37 +9,43 @@
 #define RICH_DETECTOR_CBMRICHPMT_H_
 
 #include "TObject.h"
+#include "TGraph.h"
 #include <vector>
+#include <map>
 #include "CbmRichPmtType.h"
+using namespace std;
 
-class CbmRichPmt {
+class CbmRichPmtQEData {
+public:
+
+    CbmRichPmtTypeEnum fDetectorType; // pmt type
+    Double_t fLambdaMin; // minimum wavelength in QE table
+    Double_t fLambdaMax; // maximum wavelength in QE table
+    Double_t fLambdaStep; // wavelaength in QE table
+    vector<Double_t> fEfficiency; // Array of QE
+};
+
+class CbmRichPmt : public TObject {
 public:
 	CbmRichPmt();
 
 	virtual ~CbmRichPmt();
 
-	Bool_t isPhotonDetected(Double_t momentum);
-
-	/**
-	* \brief Set detector type
-	*/
-	void SetDetectorType(CbmRichPmtTypeEnum detType){
-		fDetectorType = detType;
-		InitQE();
-	}
+	Bool_t isPhotonDetected(CbmRichPmtTypeEnum detType, Double_t momentum);
 
 	/**
 	* \brief Set collection efficiency for photoelectrons in PMT optics.
 	*/
 	void SetCollectionEfficiency(Double_t collEff){fCollectionEfficiency = collEff;}
 
+	/*
+	 * Get QE curve as TGraph for specified detector type
+	 */
+	TGraph* getQEGraph(CbmRichPmtTypeEnum detType);
+
 private:
 	Double_t fCollectionEfficiency; // collection efficiency. Final QE = QE * fCollectionEfficiency
-	CbmRichPmtTypeEnum fDetectorType; // pmt type, See CbmRichPmtType.h for on details about each Pmt detector type
-    Double_t fLambdaMin; // minimum wavwlength in QE table
-    Double_t fLambdaMax; // maximum wavelength in QE table
-    Double_t fLambdaStep; // waelangth in QE table
-    std::vector<Double_t> fEfficiency; // Array of QE
+	map<CbmRichPmtTypeEnum, CbmRichPmtQEData*> fPmtDataMap; // store QE for specific PMT type
 
     static const Double_t c; // speed of light
     static const Double_t h; // Planck constant
@@ -47,6 +53,8 @@ private:
     Double_t fRefractiveIndex; // refractive index of the gas. Set in the constructor from CbmRichGeoManager
 
 	void InitQE();
+
+	void ClearMap();
 
 
 	/**
@@ -58,6 +66,8 @@ private:
 	 * \brief Assignment operator.
 	 */
 	CbmRichPmt& operator=(const CbmRichPmt&);
+
+	ClassDef(CbmRichPmt,1)
 };
 
 #endif /* RICH_DETECTOR_CBMRICHPMT_H_ */

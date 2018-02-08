@@ -71,7 +71,7 @@ public:
    /**
     * \brief Set detector type
     */
-   void SetDetectorType(CbmRichPmtTypeEnum detType){ fPmt.SetDetectorType(detType);}
+   void SetDetectorType(CbmRichPmtTypeEnum detType){ fDetectorType = detType;}
 
    /**
     * \brief Set noise hit rate in [%]. nofNoiseDigitsPerEvent = fNoiseHitRate * NofAllPixels / 100.
@@ -110,6 +110,7 @@ private:
    CbmRichPmt fPmt;
    Double_t fCrossTalkProbability; // probability of the crosstalk for direct neighbor for one pixel
    Double_t fNoiseHitRate; // in [%] nofNoiseDigitsPerEvent = fNoiseHitRate * NofAllPixels / 100.
+   CbmRichPmtTypeEnum fDetectorType;
 
    map<Int_t, CbmRichDigi*> fDigisMap; //map which contains all fired digis, one digi per pixel
 
