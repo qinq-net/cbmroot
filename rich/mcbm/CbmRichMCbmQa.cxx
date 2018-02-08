@@ -262,8 +262,16 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
             CbmMCTrack* mcTrack = (CbmMCTrack*)fMCTracks->At(mcTrackIdPoint);
             if (mcTrack == NULL) continue;
 
-            if ( mcTrack->GetPdgCode() != 50000050) continue; // select only Cherenkov photons
-            Int_t motherId = mcTrack->GetMotherId();
+            //if ( mcTrack->GetPdgCode() != 50000050) continue; // select only Cherenkov photons
+            
+            if ( mcTrack->GetPdgCode() != 50000050) {                       // fill in non photons
+                if(mcTrackIdPoint == mcTrackIdTofHit){
+                    fHM->H1("fh_beta_dis_all")->Fill(beta);
+                    break; 
+                }
+            }
+            
+            Int_t motherId = mcTrack->GetMotherId();                            //fill in mothers of Cherenkov photons
             CbmMCTrack* mcTrackMother = (CbmMCTrack*)fMCTracks->At(motherId);
             if (mcTrackMother == NULL) continue;
        
