@@ -40,25 +40,25 @@ const TString DiamondMedium           = "silicon";  // to get active material
 //  2 HD ref	
 //  3 Buc ref
 //  4 Ceramic
-//  5 Diamond (4-segment mosaic pcCVD-DD)
+//  5 Diamond (16-strip pcCVD-DD)
 //  6 Buc 2015a
 //  7 Buc 2015b
 //  8 THU Pad 
 //  9 THU strip 
-// 10 Diamond (16-strip pcCVD-DD)
+// 10 Diamond (4-segment mosaic pcCVD-DD)
 const Int_t NumberOfDifferentCounterTypes = 11;
-const Float_t Glass_X[NumberOfDifferentCounterTypes] = { 32., 52., 15.04, 18.,   2.,   1., 40.4, 28.8, 17.4,  25.,  2.};
-const Float_t Glass_Y[NumberOfDifferentCounterTypes] = {26.9, 53.,    4., 4.6,   2.,   1.,  9.6,  9.6,  2.0, 26.7,  2.};
+const Float_t Glass_X[NumberOfDifferentCounterTypes] = { 32., 52., 15.04, 18.,   2.,   2., 40.4, 28.8, 17.4,  25.,  1.};
+const Float_t Glass_Y[NumberOfDifferentCounterTypes] = {26.9, 53.,    4., 4.6,   2.,   2.,  9.6,  9.6,  2.0, 26.7,  1.};
 const Float_t Glass_Z[NumberOfDifferentCounterTypes] = { 0.1, 0.1,   0.1, 0.1, 0.01,  0.1, 0.05, 0.05, 0.07,  0.1, 0.1};
 
-const Float_t GasGap_X[NumberOfDifferentCounterTypes] = { 32.,    52., 15.04,   18.,   2.,    1.,  40.4,  28.8,  17.4,   25.,   2.};
-const Float_t GasGap_Y[NumberOfDifferentCounterTypes] = { 26.9,   53.,    4.,   4.6,   2.,    1.,   9.6,   9.6,   2.0,  26.7,   2.};
-const Float_t GasGap_Z[NumberOfDifferentCounterTypes] = {0.022, 0.022, 0.022, 0.014, 0.02, 0.018, 0.014, 0.014, 0.025, 0.025, 0.03};
+const Float_t GasGap_X[NumberOfDifferentCounterTypes] = { 32.,    52., 15.04,   18.,   2.,    2.,  40.4,  28.8,  17.4,   25.,    1.};
+const Float_t GasGap_Y[NumberOfDifferentCounterTypes] = { 26.9,   53.,    4.,   4.6,   2.,    2.,   9.6,   9.6,   2.0,  26.7,    1.};
+const Float_t GasGap_Z[NumberOfDifferentCounterTypes] = {0.022, 0.022, 0.022, 0.014, 0.02,  0.03, 0.014, 0.014, 0.025, 0.025, 0.018};
 
-const Int_t NumberOfGaps[NumberOfDifferentCounterTypes] = {8,8,6,10,6,1,10,8,10,10,1};
-const Int_t NumberOfReadoutStrips[NumberOfDifferentCounterTypes] = {32,56,16,72,1,4,40,40,8,24,16};
+const Int_t NumberOfGaps[NumberOfDifferentCounterTypes] = {8, 8, 6, 10, 6, 1, 10, 8, 10, 10, 1};
+const Int_t NumberOfReadoutStrips[NumberOfDifferentCounterTypes] = {32, 56, 16, 72, 1, 16, 40, 40, 8, 24, 4};
 
-const Float_t Electronics_X[NumberOfDifferentCounterTypes] = {34.0, 53.0, 15.5, 18.5,  2.,  1., 30.5, 30.5, 0.2, 26.,  2.};
+const Float_t Electronics_X[NumberOfDifferentCounterTypes] = {34.0, 53.0, 15.5, 18.5,  2.,  2., 30.5, 30.5, 0.2, 26.,  1.};
 const Float_t Electronics_Y[NumberOfDifferentCounterTypes] = { 5.0,  5.0,  1.0,   1., 0.5, 0.1,  0.5,  0.5, 0.2,  5., 0.1};
 const Float_t Electronics_Z[NumberOfDifferentCounterTypes] = { 0.3,  0.3,  0.3,  0.3, 0.3, 0.1,  0.3,  0.3, 0.3, 0.3, 0.1};
 
@@ -69,27 +69,28 @@ const Int_t NofModuleTypes = 11;
 //  2 Ceramic
 //  3 HD small (P2) 
 //  4 HD ref   (P5)
-//  5 Diamond (4-segment mosaic pcCVD-DD)
+//  5 Diamond (16-strip pcCVD-DD)
 //  6 Buc 2015
 //  7 Buc 2012
 //  8 THU Pad
 //  9 Star 2-counter module
-// 10 Diamond (16-strip pcCVD-DD)
-const Float_t Module_Size_X[NofModuleTypes] = {120., 35., 9., 50., 30., 8., 50., 70., 29., 100., 9.};
+// 10 Diamond (4-segment mosaic pcCVD-DD)
+const Float_t Module_Size_X[NofModuleTypes] = {120., 35., 9., 50., 30., 9., 50., 70., 29., 100., 8.};
 const Float_t Module_Size_Y[NofModuleTypes] = { 74., 18., 7., 49., 16., 5., 30., 35., 33.,  49., 5.};
-const Float_t Module_Over_Y[NofModuleTypes] = { 11., 11., 0.,  4.,  0., 0.,  0.,  0.,  0.,   0., 0.};
 const Float_t Module_Size_Z[NofModuleTypes] = { 10., 10., 2., 10., 10., 1., 15., 20., 10.,  11., 1.};
-const Float_t Module_Thick_Alu_X_left = 5.;
-const Float_t Module_Thick_Alu_X_right = 1.;
-const Float_t Module_Thick_Alu_Y = 1.;
-const Float_t Module_Thick_Alu_Z = 0.1;
+
+const Float_t Module_Thick_Alu_X_left[NofModuleTypes]  = {0.1, 0.1, 0.1, 0.1,  1., 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+const Float_t Module_Thick_Alu_X_right[NofModuleTypes] = { 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.};
+const Float_t Module_Thick_Alu_Y[NofModuleTypes]       = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+const Float_t Module_Thick_Alu_Z[NofModuleTypes]       = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
 //Type of Counter for module 
-const Int_t CounterTypeInModule[NofModuleTypes] = {1,3,4,0,2,5,6,7,8,0,10};
-const Int_t NCounterInModule[NofModuleTypes]    = {1,1,1,1,1,1,2,4,6,2,1};
+const Int_t CounterTypeInModule[NofModuleTypes] = {1, 3, 4, 0, 2, 5, 6, 7, 8, 0, 10};
+const Int_t NCounterInModule[NofModuleTypes]    = {1, 1, 1, 1, 1, 1, 2, 4, 6, 2, 1};
 
-// Placement of the counter inside the module
-const Float_t CounterXStartPosition[NofModuleTypes] = {-10.0,  0.0, 0.0,  0.0, 0.0, 0., 0., -15., 0.,  0., 0.};
+// Placement of the counter inside the gas box
+//const Float_t CounterXStartPosition[NofModuleTypes] = {-10.0,  0.0, 0.0,  0.0, 0.0, 0., 0., -15., 0.,  0., 0.};
+const Float_t CounterXStartPosition[NofModuleTypes] = {-12.45,  -2.45, -2.45,  -2.45, -2., -2.45, -2.45, -17.45, -2.45,  -2.45, -2.45};
 const Float_t CounterXDistance[NofModuleTypes]      = { 30.0, 30.6, 0.0, 30.0, 0.0, 0., 3.4, 30., 0.,  0., 0.};
 const Float_t CounterYStartPosition[NofModuleTypes] = {  0.0,  0.0, 0.0,  0.0, 0.0, 0., 0.,  -4.,-7.,  0., 0.};
 const Float_t CounterYDistance[NofModuleTypes]      = {  0.0,  0.0, 0.0,  0.0, 0.0, 0., 0.,   8., 2.2, 0., 0.};
@@ -122,7 +123,7 @@ const Int_t   Dia_NTypes = 3;
 const Float_t Dia_X_Position[Dia_NTypes] = {2.,2.,0.};
 const Float_t Dia_Y_Position[Dia_NTypes] = {0.,0.,-2.};
 const Float_t Dia_rotate_Z[Dia_NTypes] = {0.,0.,-90.};
-const Float_t Dia_Types[Dia_NTypes]  = {5.,10.,10.};
+const Float_t Dia_Types[Dia_NTypes]  = {5.,5.,5.};
 const Float_t Dia_Number[Dia_NTypes] = {1.,1.,1.};
 
 const Float_t BucRef_Z_Position=492.;
@@ -369,7 +370,7 @@ TGeoVolume* create_new_counter(Int_t iCounterType)
     gas_gap_vol = new TGeoVolume("Gap", gas_gap, activeGasVolMed);
   }
 
-  if( 5 == iCounterType )
+  if( 10 == iCounterType )
   {
     // place 4 pad daughter volumes in the gap volume
     Float_t fPadX = ggdx/(Float_t)(nstrips);
@@ -445,12 +446,12 @@ TGeoVolume* create_new_tof_module(Int_t modType)
   Float_t dx=Module_Size_X[modType];
   Float_t dy=Module_Size_Y[modType];
   Float_t dz=Module_Size_Z[modType];
-  Float_t width_aluxl=Module_Thick_Alu_X_left;
-  Float_t width_aluxr=Module_Thick_Alu_X_right;
-  Float_t width_aluy=Module_Thick_Alu_Y;
-  Float_t width_aluz=Module_Thick_Alu_Z;
+  Float_t width_aluxl=Module_Thick_Alu_X_left[modType];
+  Float_t width_aluxr=Module_Thick_Alu_X_right[modType];
+  Float_t width_aluy=Module_Thick_Alu_Y[modType];
+  Float_t width_aluz=Module_Thick_Alu_Z[modType];
 
-  Float_t shift_gas_box = (Module_Thick_Alu_X_right - Module_Thick_Alu_X_left)/2;
+  Float_t shift_gas_box = (width_aluxr - width_aluxl)/2;
 
   Float_t dxpos=CounterXDistance[modType];
   Float_t startxpos=CounterXStartPosition[modType];
@@ -654,14 +655,14 @@ void position_Dia(Int_t modNType)
     module_rot->RotateZ(Dia_rotate_Z[j]);
     module_combi_trans = new TGeoCombiTrans(*module_trans, *module_rot);
     gGeoMan->GetVolume(geoVersion)->AddNode(gModules[modType], modNum, module_combi_trans);
-
+/*
     // use node name "module_5" for both pad and strip diamond detectors
     if( 10 == modType )
     {
       TGeoNode* tModule = gGeoMan->GetVolume(geoVersion)->GetNode(gGeoMan->GetVolume(geoVersion)->GetNdaughters() - 1);
       tModule->SetName(TString::Format("module_5_%d", modNum));
     }
-
+*/
     modNum++;
   }
  }
