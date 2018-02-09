@@ -93,57 +93,65 @@ public:
         return result;
     }*/
     
-    /*static CbmTrackParam2 Extrapolate(const CbmTrackParam2& parIn, Double_t zOut)
+    static CbmTrackParam2 Extrapolate(const CbmTrackParam2& parIn, Double_t zOut)
     {
-        CbmTrackParam2 parOut = parIn;
-        
-        Double_t X[6] = { parIn.GetX(), parIn.GetY(), parIn.GetTx(), parIn.GetTy(), parIn.GetQp(), parIn.GetTime() };
-        Double_t dz = zOut - parIn.GetZ();
-
-        //transport state vector F*X*F.T()
-        X[0] = X[0] + dz * X[2];
-        X[1] = X[1] + dz * X[3];
-
-        parOut.SetX(X[0]);
-        parOut.SetY(X[1]);
-
-        Double_t C[21];
-        parIn.CovMatrix(C);
-        Double_t txSq = std::pow(X[2], 2);
-        Double_t tySq = std::pow(X[3], 2);
-        Double_t timeCoeff = dz / std::sqrt(1 + txSq + tySq) / cbmBinnedSOL;
-        Double_t dttx = X[2] * timeCoeff;
-        Double_t dttxz = dttx * dz;
-        Double_t dtty = X[3] * timeCoeff;
-        Double_t dttyz = dtty * dz;
-        //transport covariance matrix F*C*F.T()
-        Double_t t3 = C[2] + dz * C[11];
-        Double_t t7 = dz * C[12];
-        Double_t t8 = C[3] + t7;
-        Double_t t19 = C[8] + dz * C[15];
-        C[0] = C[0] + dz * C[2] + t3 * dz;
-        C[1] = C[1] + dz * C[7] + t8 * dz;
-        C[2] = t3;
-        C[3] = t8;
-        //C[4] = C[4] + dz * C[13];
-        C[5] = C[5] + dz * C[14] + dttx * dttxz * C[11] + dttyz * C[12] + dttx * C[2] + dtty * C[3];
-        C[6] = C[6] + dz * C[8] + t19 * dz;
-        C[7] = C[7] + t7;
-        C[8] = t19;
-        //C[9] = C[9] + dz * C[16];
-        C[10] = C[10] + dz * C[17] + dttxz * C[12] + dttyz * C[15] + dttx * C[7] + dtty * C[8];
-        C[14] = C[14] + dttx * C[11] + dtty * C[12];
-        C[17] = C[17] + dttx * C[12] + dtty * C[15];
-        //C[19] = C[19] + dttx * C[13] + dtty * C[16];
-        C[20] = C[20] + 2 * dttx * dtty * C[12] + dttx * C[14] + dtty * C[17] + dttx * dttx * C[11] + dtty * dtty * C[15];
-
-        parOut.SetCovMatrix(C);
+        CbmTrackParam2 parOut;
         parOut.SetZ(zOut);
-        parOut.SetTime(parIn.GetTime() + std::sqrt(1 + std::pow(X[2], 2) + std::pow(X[3], 2)) * dz / cbmBinnedSOL);
+        Double_t dz = zOut - parIn.GetZ();
+        Double_t tx = parIn.GetTx();
+        Double_t ty = parIn.GetTy();
+        Double_t timeCoeff = dz / std::sqrt(1 + tx * tx + ty * ty) / cbmBinnedSOL;
+        
+        parOut.SetX(parIn.GetX() + tx * dz);
+        parOut.SetY(parIn.GetY() + ty * dz);
+        parOut.SetTx(parIn.GetTx());
+        parOut.SetTy(parIn.GetTy());
+        parOut.SetTime(parIn.GetTime() + tx * timeCoeff + ty * timeCoeff);
+
+        Double_t covIn[15];
+        parIn.CovMatrix(covIn);
+        
+        Double_t covOut[15];
+        
+        Double_t t1 = covIn[2];
+        Double_t t4 = covIn[9];
+        Double_t t6 = dz * t4 + t1;
+        covOut[0] = dz * t1 + t6 * dz + covIn[0];
+        Double_t t8 = covIn[6];
+        Double_t t11 = covIn[10];
+        Double_t t12 = dz * t11;
+        Double_t t14 = t12 + covIn[3];
+        Double_t covOut2 = t6;
+        Double_t covOut3 = t14;
+        Double_t t18 = covIn[11];
+        covOut[1] = t14 * dz + dz * t8 + covIn[1];
+        Double_t t21 = covIn[7];
+        Double_t t24 = covIn[12];
+        Double_t t26 = dz * t24 + t21;
+        covOut[5] = dz * t21 + t26 * dz + covIn[5];
+        Double_t covOut5 = t12 + t8;
+        Double_t covOut6 = t26;
+        Double_t t30 = covIn[13];
+        covOut[2] = covOut2;
+        covOut[6] = covOut5;
+        covOut[9] = t4;
+        Double_t covOut8 = t11;
+        Double_t t34 = timeCoeff * covOut8;
+        covOut[3] = covOut3;
+        covOut[7] = covOut6;
+        covOut[10] = covOut8;
+        covOut[12] = t24;
+        covOut[4] = covOut2 * timeCoeff + covOut3 * timeCoeff + dz * t18 + covIn[4];
+        covOut[8] = covOut5 * timeCoeff + covOut6 * timeCoeff + dz * t30 + covIn[8];
+        covOut[11] = timeCoeff * covOut[9] + t18 + t34;
+        covOut[13] = timeCoeff * covOut[12] + t30 + t34;
+        covOut[14] = timeCoeff * t18 + timeCoeff * t30 + covOut[11] * timeCoeff + covOut[13] * timeCoeff + covIn[14];
+
+        parOut.SetCovMatrix(covOut);
    
         return parOut;
-    }*/
-    static CbmTrackParam2 Extrapolate(const CbmTrackParam2& parIn, Double_t zOut)
+    }
+    /*static CbmTrackParam2 Extrapolate(const CbmTrackParam2& parIn, Double_t zOut)
     {
         CbmTrackParam2 parOut = parIn;
         
@@ -155,7 +163,7 @@ public:
             { 0, 1, 0, dz, 0 },
             { 0, 0, 1, 0, 0 },
             { 0, 0, 0, 1, 0 },
-            { 0, 0, parIn.GetTx() * timeCoeff, parIn.GetTy() * timeCoeff, 1 }
+            { 0, 0, timeCoeff, timeCoeff, 1 }
         };
         
         TMatrixD F(5, 5);
@@ -181,133 +189,149 @@ public:
         parOut.SetZ(zOut);
         
         return parOut;
-    }
-    
-    /*static void Update(CbmTrackParam2& par, const CbmPixelHit* hit, Double_t& chiSq)
-    {
-        Double_t cIn[21];
-        par.CovMatrix(cIn);
-
-        static const Double_t ONE = 1., TWO = 2.;
-
-        Double_t dxx = hit->GetDx() * hit->GetDx();
-        Double_t dxy = hit->GetDxy();
-        Double_t dyy = hit->GetDy() * hit->GetDy();
-        Double_t dtt = hit->GetTimeError() * hit->GetTimeError();
-
-        // calculate residuals
-        Double_t dx = hit->GetX() - par.GetX();
-        Double_t dy = hit->GetY() - par.GetY();
-        Double_t dt = hit->GetTime() - par.GetTime();
-
-        // Calculate and inverse residual covariance matrix
-        Double_t t = ONE / (
-                (cIn[0] + dxx) * ((cIn[6] + dyy) * (cIn[20] + dtt) - cIn[10] * cIn[10]) -
-                (cIn[1] + dxy) * ((cIn[1] + dxy) * (cIn[20] + dtt) - cIn[5] * cIn[10]) +
-                cIn[5] * ((cIn[1] + dxy) * cIn[10] - (cIn[6] + dyy) * cIn[5])
-                );
-        Double_t R00 = ((cIn[6] + dyy) * (cIn[20] + dtt) - cIn[10] * cIn[10]) * t;
-        Double_t R01 = (cIn[5] * cIn[10] - (cIn[1] + dxy) * (cIn[20] + dtt)) * t;
-        Double_t R02 = ((cIn[1] + dxy) * cIn[10] - (cIn[6] + dyy) * cIn[5]) * t;
-        Double_t R11 = ((cIn[0] + dxx) * (cIn[20] + dtt) - cIn[5] * cIn[5]) * t;
-        Double_t R12 = ((cIn[1] + dxy) * cIn[5] - (cIn[0] + dxx) * cIn[10]) * t;
-        Double_t R22 = ((cIn[0] + dxx) * (cIn[6] + dyy) - (cIn[1] + dxy) * (cIn[1] + dxy)) * t;
-
-        // Calculate Kalman gain matrix
-        Double_t K00 = cIn[0] * R00 + cIn[1] * R01 + cIn[5] * R02;
-        Double_t K01 = cIn[0] * R01 + cIn[1] * R11 + cIn[5] * R12;
-        Double_t K02 = cIn[0] * R02 + cIn[1] * R12 + cIn[5] * R22;
-        Double_t K10 = cIn[1] * R00 + cIn[6] * R01 + cIn[10] * R02;
-        Double_t K11 = cIn[1] * R01 + cIn[6] * R11 + cIn[10] * R12;
-        Double_t K12 = cIn[1] * R02 + cIn[6] * R12 + cIn[10] * R22;
-        Double_t K20 = cIn[2] * R00 + cIn[7] * R01 + cIn[14] * R02;
-        Double_t K21 = cIn[2] * R01 + cIn[7] * R11 + cIn[14] * R12;
-        Double_t K22 = cIn[2] * R02 + cIn[7] * R12 + cIn[14] * R22;
-        Double_t K30 = cIn[3] * R00 + cIn[8] * R01 + cIn[17] * R02;
-        Double_t K31 = cIn[3] * R01 + cIn[8] * R11 + cIn[17] * R12;
-        Double_t K32 = cIn[3] * R02 + cIn[8] * R12 + cIn[17] * R22;
-        //Double_t K40 = cIn[4] * R00 + cIn[9] * R01 + cIn[19] * R02;
-        //Double_t K41 = cIn[4] * R01 + cIn[9] * R11 + cIn[19] * R12;
-        //Double_t K42 = cIn[4] * R02 + cIn[9] * R12 + cIn[19] * R22;
-        Double_t K50 = cIn[5] * R00 + cIn[10] * R01 + cIn[20] * R02;
-        Double_t K51 = cIn[5] * R01 + cIn[10] * R11 + cIn[20] * R12;
-        Double_t K52 = cIn[5] * R02 + cIn[10] * R12 + cIn[20] * R22;
-
-        // Calculate filtered state vector
-        Double_t xOut[6] = { par.GetX(), par.GetY(), par.GetTx(), par.GetTy(), par.GetQp(), par.GetTime() };
-        xOut[0] += K00 * dx + K01 * dy + K02 * dt;
-        xOut[1] += K10 * dx + K11 * dy + K12 * dt;
-        xOut[2] += K20 * dx + K21 * dy + K22 * dt;
-        xOut[3] += K30 * dx + K31 * dy + K32 * dt;
-        //xOut[4] += K40 * dx + K41 * dy + K42 * dt;
-        xOut[5] += K50 * dx + K51 * dy + K52 * dt;
-
-        // Calculate filtered covariance matrix
-        Double_t cOut[21];
-        std::copy(std::begin(cIn), std::end(cIn), std::begin(cOut));
-
-        cOut[0] -= K00 * cIn[0] + K01 * cIn[1] + K02 * cIn[5];
-        cOut[1] -= K00 * cIn[1] + K01 * cIn[6] + K02 * cIn[10];
-        cOut[2] -= K00 * cIn[2] + K01 * cIn[7] + K02 * cIn[14];
-        cOut[3] -= K00 * cIn[3] + K01 * cIn[8] + K02 * cIn[17];
-        //cOut[4] -= K00 * cIn[4] + K01 * cIn[9] + K02 * cIn[19];
-        cOut[5] -= K00 * cIn[5] + K01 * cIn[10] + K02 * cIn[20];
-
-        cOut[6] -= K10 * cIn[1] + K11 * cIn[6] + K12 * cIn[10];
-        cOut[7] -= K10 * cIn[2] + K11 * cIn[7] + K12 * cIn[14];
-        cOut[8] -= K10 * cIn[3] + K11 * cIn[8] + K12 * cIn[17];
-        //cOut[9] -= K10 * cIn[4] + K11 * cIn[9] + K12 * cIn[19];
-        cOut[10] -= K10 * cIn[5] + K11 * cIn[10] + K12 * cIn[20];
-
-        cOut[11] -= K20 * cIn[2] + K21 * cIn[7] + K22 * cIn[14];
-        cOut[12] -= K20 * cIn[3] + K21 * cIn[8] + K22 * cIn[17];
-        //cOut[13] -= K20 * cIn[4] + K21 * cIn[9] + K22 * cIn[19];
-        cOut[14] -= K20 * cIn[5] + K21 * cIn[10] + K22 * cIn[20];
-
-        cOut[15] -= K30 * cIn[3] + K31 * cIn[8] + K32 * cIn[17];
-        //cOut[16] -= K30 * cIn[4] + K31 * cIn[9] + K32 * cIn[19];
-        cOut[17] -= K30 * cIn[5] + K31 * cIn[10] + K32 * cIn[20];
-
-        //cOut[18] -= K40 * cIn[4] + K41 * cIn[9] + K42 * cIn[19];
-        //cOut[19] -= K40 * cIn[5] + K41 * cIn[10] + K42 * cIn[20];
-
-        cOut[20] -= K50 * cIn[5] + K51 * cIn[10] + K52 * cIn[20];
-
-        // Copy filtered state to output
-        par.SetX(xOut[0]);
-        par.SetY(xOut[1]);
-        par.SetTx(xOut[2]);
-        par.SetTy(xOut[3]);
-        //par.SetQp(xOut[4]);
-        par.SetTime(xOut[5]);
-        par.SetCovMatrix(cOut);
-
-        // Calculate chi-square
-        Double_t xmx = hit->GetX() - par.GetX();
-        Double_t ymy = hit->GetY() - par.GetY();
-        Double_t tmt = hit->GetTime() - par.GetTime();
-        Double_t C0 = cOut[0];
-        Double_t C1 = cOut[1];
-        Double_t C5 = cOut[6];
-        
-        Double_t norm = (dxx - cOut[0]) * ((dyy - cOut[6]) * (dtt - cOut[20]) - cOut[10] * cOut[10]) +
-                (dxy - cOut[1]) * (cOut[5] * cOut[10] - (dxy - cOut[1]) * (dtt - cOut[20])) +
-                cOut[5] * ((dxy - cOut[1]) * cOut[10] - (dyy - cOut[6]) * cOut[5]);
-
-        if (norm == 0.)
-            norm = 1e-10;
-
-        // Mij is the (symmetric) inverse of the residual matrix
-        Double_t M00 = ((dyy - cOut[6]) * (dtt - cOut[20]) - cOut[10] * cOut[10]) / norm;
-        Double_t M01 = ((dxy - cOut[1]) * (dtt - cOut[20]) - cOut[5] * cOut[10]) / norm;
-        Double_t M02 = ((dxy - cOut[1]) * cOut[10] - (dyy - cOut[6]) * cOut[5]) / norm;
-        Double_t M11 = ((dxx - cOut[0]) * (dtt - cOut[20]) - cOut[5] * cOut[5]) / norm;
-        Double_t M12 = ((dxx - cOut[0]) * cOut[10] - (dxy - cOut[1]) * cOut[5]) / norm;
-        Double_t M22 = ((dxx - cOut[0]) * (dyy - cOut[6]) - (dxy - cOut[1]) * (dxy - cOut[1])) / norm;
-
-        chiSq = xmx * (xmx * M00 + ymy * M01 + tmt * M02) + ymy * (xmx * M01 + ymy * M11 + tmt * M12) + tmt * (xmx * M02 + ymy * M12 + tmt * M22);
     }*/
+    
     static void Update(CbmTrackParam2& par, const CbmPixelHit* hit, Double_t& chiSq)
+    {
+        Double_t xIn = par.GetX();
+        Double_t yIn = par.GetY();
+        Double_t txIn = par.GetTx();
+        Double_t tyIn = par.GetTy();
+        Double_t timeIn = par.GetTime();
+        
+        Double_t covIn[15];
+        par.CovMatrix(covIn);
+        
+        Double_t xMes = hit->GetX();
+        Double_t yMes = hit->GetY();
+        Double_t timeMes = hit->GetTime();
+        
+        Double_t dx = hit->GetDx();
+        Double_t dy = hit->GetDy();
+        Double_t dxy = hit->GetDxy();
+        Double_t dt = hit->GetTimeError();
+        
+        Double_t xOut;
+        Double_t yOut;
+        Double_t txOut;
+        Double_t tyOut;
+        Double_t timeOut;
+        Double_t covOut[15];
+
+        Double_t t1 = covIn[0];
+        Double_t t2 = dt * dt;
+        Double_t t3 = dy * dy;
+        Double_t t4 = t2 * t3;
+        Double_t t5 = covIn[5];
+        Double_t t7 = covIn[14];
+        Double_t t10 = covIn[8];
+        Double_t t11 = t10 * t10;
+        Double_t t12 = t2 * t5 + t3 * t7 + t5 * t7 - t11 + t4;
+        Double_t t14 = dx * dx;
+        Double_t t15 = t2 * t14;
+        Double_t t19 = t14 * t3;
+        Double_t t21 = dxy * dxy;
+        Double_t t23 = t2 * dxy;
+        Double_t t24 = covIn[1];
+        Double_t t27 = t2 * t1;
+        Double_t t29 = t24 * t24;
+        Double_t t31 = t14 * t5;
+        Double_t t34 = t3 * t1;
+        Double_t t36 = covIn[4];
+        Double_t t37 = t36 * t36;
+        Double_t t40 = dxy * t24;
+        Double_t t43 = dxy * t36;
+        Double_t t46 = t1 * t5;
+        Double_t t50 = t24 * t36;
+        Double_t t54 = -t1 * t11 + t4 * t1 + 2 * t43 * t10 + 2 * t50 * t10 - t14 * t11 + t15 * t3 + t15 * t5 + t19 * t7 - t2 * t21 - t2 * t29 - t21 * t7 - 2 * t23 * t24 + t27 * t5 - t29 * t7 - t3 * t37 + t31 * t7 + t34 * t7 - t37 * t5 - 2 * t40 * t7 + t46 * t7;
+        Double_t t55 = 1 / t54;
+        Double_t t61 = dxy * t7 - t36 * t10 + t2 * t24 + t24 * t7 + t23;
+        Double_t t63 = t24 * t61 * t55;
+        Double_t t68 = dxy * t10 + t24 * t10 - t3 * t36 - t36 * t5;
+        Double_t t70 = t36 * t68 * t55;
+        Double_t t71 = t1 * t12 * t55 - t63 + t70;
+        Double_t t72 = xMes - xIn;
+        Double_t t78 = t1 * t7 + t14 * t7 + t15 + t27 - t37;
+        Double_t t83 = t1 * t10 + t14 * t10 - t43 - t50;
+        Double_t t86 = -t1 * t61 * t55 + t24 * t78 * t55 - t36 * t83 * t55;
+        Double_t t87 = yMes - yIn;
+        Double_t t94 = t19 + t31 + t34 - t21 - 2 * t40 + t46 - t29;
+        Double_t t97 = t1 * t68 * t55 - t24 * t83 * t55 + t36 * t94 * t55;
+        Double_t t98 = timeMes - timeIn;
+        xOut = t71 * t72 + t86 * t87 + t97 * t98 + xIn;
+        Double_t t106 = t10 * t68 * t55 + t24 * t12 * t55 - t5 * t61 * t55;
+        Double_t t111 = t10 * t83 * t55;
+        Double_t t112 = t5 * t78 * t55 - t111 - t63;
+        Double_t t120 = t10 * t94 * t55 + t24 * t68 * t55 - t5 * t83 * t55;
+        yOut = t106 * t72 + t112 * t87 + t120 * t98 + yIn;
+        Double_t t122 = covIn[2];
+        Double_t t125 = covIn[6];
+        Double_t t128 = covIn[11];
+        Double_t t131 = t122 * t12 * t55 - t125 * t61 * t55 + t128 * t68 * t55;
+        Double_t t139 = -t122 * t61 * t55 + t125 * t78 * t55 - t128 * t83 * t55;
+        Double_t t147 = t122 * t68 * t55 - t125 * t83 * t55 + t128 * t94 * t55;
+        txOut = t131 * t72 + t139 * t87 + t147 * t98 + txIn;
+        Double_t t149 = covIn[3];
+        Double_t t152 = covIn[7];
+        Double_t t155 = covIn[13];
+        Double_t t158 = t149 * t12 * t55 - t152 * t61 * t55 + t155 * t68 * t55;
+        Double_t t166 = -t149 * t61 * t55 + t152 * t78 * t55 - t155 * t83 * t55;
+        Double_t t174 = t149 * t68 * t55 - t152 * t83 * t55 + t155 * t94 * t55;
+        tyOut = t158 * t72 + t166 * t87 + t174 * t98 + tyIn;
+        Double_t t182 = -t10 * t61 * t55 + t36 * t12 * t55 + t7 * t68 * t55;
+        Double_t t190 = t10 * t78 * t55 - t36 * t61 * t55 - t7 * t83 * t55;
+        Double_t t194 = t7 * t94 * t55 - t111 + t70;
+        timeOut = t182 * t72 + t190 * t87 + t194 * t98 + timeIn;
+        covOut[0] = -t71 * t1 - t86 * t24 - t97 * t36 + t1;
+        covOut[1] = -t97 * t10 - t71 * t24 - t86 * t5 + t24;
+        covOut[5] = -t120 * t10 - t106 * t24 - t112 * t5 + t5;
+        covOut[2] = -t71 * t122 - t86 * t125 - t97 * t128 + t122;
+        covOut[6] = -t106 * t122 - t112 * t125 - t120 * t128 + t125;
+        covOut[9] = -t131 * t122 - t139 * t125 - t147 * t128 + covIn[9];
+        covOut[3] = -t71 * t149 - t86 * t152 - t97 * t155 + t149;
+        covOut[7] = -t106 * t149 - t112 * t152 - t120 * t155 + t152;
+        covOut[10] = -t131 * t149 - t139 * t152 - t147 * t155 + covIn[10];
+        covOut[12] = -t158 * t149 - t166 * t152 - t174 * t155 + covIn[12];
+        covOut[4] = -t86 * t10 - t71 * t36 - t97 * t7 + t36;
+        covOut[8] = -t112 * t10 - t106 * t36 - t120 * t7 + t10;
+        covOut[11] = -t139 * t10 - t131 * t36 - t147 * t7 + t128;
+        covOut[13] = -t166 * t10 - t158 * t36 - t174 * t7 + t155;
+        covOut[14] = -t190 * t10 - t182 * t36 - t194 * t7 + t7;
+        
+        t1 = xMes - xOut;
+        t2 = dy * dy - covOut[5];
+        t3 = dt * dt;
+        t4 = covOut[8] * covOut[8];
+        t5 = dxy * dxy;
+        Double_t t6 = dx * dx;
+        t7 = covOut[1] * covOut[1];
+        Double_t t8 = t2 * t6;
+        Double_t t9 = t2 * covOut[0];
+        t10 = -t8 + t7 + t9 + t5;
+        t6 = -covOut[0] + t6;
+        t11 = covOut[4] * covOut[4];
+        t12 = -dxy + covOut[1];
+        Double_t t13 = dxy * covOut[1];
+        t14 = t12 * covOut[8];
+        t15 = 2;
+        t5 = -t15 * (t14 * covOut[4] + t13 * (covOut[14] - t3)) - t10 * t3 - t11 * t2 - t4 * t6 - (t8 - t7 - t9 - t5) * covOut[14];
+        t7 = yMes - yOut;
+        t8 = -t12 * t3 + t12 * covOut[14] - covOut[4] * covOut[8];
+        t9 = timeMes - timeOut;
+        t14 = -t2 * covOut[4] - t14;
+        t5 = 1 / t5;
+        t12 = -t12 * covOut[4] - t6 * covOut[8];
+        
+        par.SetX(xOut);
+        par.SetY(yOut);
+        par.SetTx(txOut);
+        par.SetTy(tyOut);
+        par.SetTime(timeOut);
+        par.SetCovMatrix(covOut);
+        
+        chiSq += t1 * (t1 * (t2 * t3 - t2 * covOut[14] - t4) - t7 * t8 - t9 * t14) * t5 - t7 * (t1 * t8 - t7 * (t3 * t6 - t6 * covOut[14] - t11) + t9 * t12) * t5 - t9 * (t1 * t14 + t12 * t7 - t9 * (t13 * t15 - t10)) * t5;
+    }
+    /*static void Update(CbmTrackParam2& par, const CbmPixelHit* hit, Double_t& chiSq)
     {
         TMatrixD& X = par.GetVector();
         TMatrixD& P = par.GetCovMatrix();
@@ -387,7 +411,7 @@ public:
         Y_tV_1Y.Mult(Y_t, V_1Y);
         
         chiSq += Y_tV_1Y(0, 0);
-    }
+    }*/
     
 public:
     CbmBinnedStation(Double_t minZ, Double_t maxZ, int nofYBins, int nofXBins, int nofTBins);

@@ -169,8 +169,8 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
          trackParam.SetTx(recoTrack->fParams[stationNumber].GetTx());
          trackParam.SetTy(recoTrack->fParams[stationNumber].GetTy());
          //recoTrack->fParams[stationNumber].CovMatrix(parCov);
-         cov[0] = recoTrack->fParams[stationNumber].GetCov(0, 0);//parCov[0];
-         cov[5] = recoTrack->fParams[stationNumber].GetCov(1, 1);//parCov[6];
+         cov[0] = recoTrack->fParams[stationNumber].GetCovXX();//parCov[0];
+         cov[5] = recoTrack->fParams[stationNumber].GetCovYY();//parCov[6];
          trackParam.SetCovMatrix(cov);
          stsTrack->SetParamFirst(&trackParam);
 
@@ -180,8 +180,8 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
          trackParam.SetTx(recoTrack->fParams[nofStations - 1].GetTx());
          trackParam.SetTy(recoTrack->fParams[nofStations - 1].GetTy());
          //recoTrack->fParams[stationNumber - 1].CovMatrix(parCov);
-         cov[0] = recoTrack->fParams[nofStations - 1].GetCov(0, 0);//parCov[0];
-         cov[5] = recoTrack->fParams[nofStations - 1].GetCov(1, 1);//parCov[6];
+         cov[0] = recoTrack->fParams[nofStations - 1].GetCovXX();//parCov[0];
+         cov[5] = recoTrack->fParams[nofStations - 1].GetCovYY();//parCov[6];
          stsTrack->SetParamLast(&trackParam);
          
          for (; stationNumber < nofStations; ++stationNumber)
@@ -207,8 +207,8 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
          trackParam.SetTx(recoTrack->fParams[stationNumber].GetTx());
          trackParam.SetTy(recoTrack->fParams[stationNumber].GetTy());
          //recoTrack->fParams[stationNumber].CovMatrix(parCov);
-         cov[0] = recoTrack->fParams[stationNumber].GetCov(0, 0);//parCov[0];
-         cov[5] = recoTrack->fParams[stationNumber].GetCov(1, 1);//parCov[6];
+         cov[0] = recoTrack->fParams[stationNumber].GetCovXX();//parCov[0];
+         cov[5] = recoTrack->fParams[stationNumber].GetCovYY();//parCov[6];
          trackParam.SetCovMatrix(cov);
          muchTrack->SetParamFirst(&trackParam);
 
@@ -218,8 +218,8 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
          trackParam.SetTx(recoTrack->fParams[nofStations - 1].GetTx());
          trackParam.SetTy(recoTrack->fParams[nofStations - 1].GetTy());
          //recoTrack->fParams[stationNumber - 1].CovMatrix(parCov);
-         cov[0] = recoTrack->fParams[nofStations - 1].GetCov(0, 0);//parCov[0];
-         cov[5] = recoTrack->fParams[nofStations - 1].GetCov(1, 1);//parCov[6];
+         cov[0] = recoTrack->fParams[nofStations - 1].GetCovXX();//parCov[0];
+         cov[5] = recoTrack->fParams[nofStations - 1].GetCovYY();//parCov[6];
          trackParam.SetCovMatrix(cov);
          muchTrack->SetParamLast(&trackParam);
       
@@ -246,8 +246,8 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
          trackParam.SetTx(recoTrack->fParams[stationNumber].GetTx());
          trackParam.SetTy(recoTrack->fParams[stationNumber].GetTy());
          //recoTrack->fParams[stationNumber].CovMatrix(parCov);
-         cov[0] = recoTrack->fParams[stationNumber].GetCov(0, 0);//parCov[0];
-         cov[5] = recoTrack->fParams[stationNumber].GetCov(1, 1);//parCov[6];
+         cov[0] = recoTrack->fParams[stationNumber].GetCovXX();//parCov[0];
+         cov[5] = recoTrack->fParams[stationNumber].GetCovYY();//parCov[6];
          trackParam.SetCovMatrix(cov);
          trdTrack->SetParamFirst(&trackParam);
 
@@ -257,8 +257,8 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
          trackParam.SetTx(recoTrack->fParams[nofStations - 1].GetTx());
          trackParam.SetTy(recoTrack->fParams[nofStations - 1].GetTy());
          //recoTrack->fParams[stationNumber - 1].CovMatrix(parCov);
-         cov[0] = recoTrack->fParams[nofStations - 1].GetCov(0, 0);//parCov[0];
-         cov[5] = recoTrack->fParams[nofStations - 1].GetCov(1, 1);//parCov[6];
+         cov[0] = recoTrack->fParams[nofStations - 1].GetCovXX();//parCov[0];
+         cov[5] = recoTrack->fParams[nofStations - 1].GetCovYY();//parCov[6];
          trackParam.SetCovMatrix(cov);
          trdTrack->SetParamLast(&trackParam);
       
@@ -278,8 +278,8 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
       trackParam.SetTx(recoTrack->fParams[0].GetTx());
       trackParam.SetTy(recoTrack->fParams[0].GetTy());
       //recoTrack->fParams[stationNumber].CovMatrix(parCov);
-      cov[0] = recoTrack->fParams[0].GetCov(0, 0);//parCov[0];
-      cov[5] = recoTrack->fParams[0].GetCov(1, 1);//parCov[6];
+      cov[0] = recoTrack->fParams[0].GetCovXX();//parCov[0];
+      cov[5] = recoTrack->fParams[0].GetCovYY();//parCov[6];
       trackParam.SetCovMatrix(cov);
       globalTrack->SetParamFirst(&trackParam);
       
@@ -289,8 +289,8 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
       trackParam.SetTx(recoTrack->fParams[nofStations - 1].GetTx());
       trackParam.SetTy(recoTrack->fParams[nofStations - 1].GetTy());
       //recoTrack->fParams[stationNumber - 1].CovMatrix(parCov);
-      cov[0] = recoTrack->fParams[nofStations - 1].GetCov(0, 0);//parCov[0];
-      cov[5] = recoTrack->fParams[nofStations - 1].GetCov(1, 1);//parCov[6];
+      cov[0] = recoTrack->fParams[nofStations - 1].GetCovXX();//parCov[0];
+      cov[5] = recoTrack->fParams[nofStations - 1].GetCovYY();//parCov[6];
       trackParam.SetCovMatrix(cov);
       globalTrack->SetParamLast(&trackParam);
       

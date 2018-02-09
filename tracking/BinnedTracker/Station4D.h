@@ -228,10 +228,10 @@ public:
         Double_t ty = stateVec.GetTy();
         //Double_t C[21];
         //stateVec.CovMatrix(C);
-        Double_t wTx = cbmBinnedSigma * std::sqrt(stateVec.GetCov(2, 2) + fDtxSq);
+        Double_t wTx = cbmBinnedSigma * std::sqrt(stateVec.GetCovTxTx() + fDtxSq);
         Double_t minTx = tx - wTx;
         Double_t maxTx = tx + wTx;
-        Double_t wTy = cbmBinnedSigma * std::sqrt(stateVec.GetCov(3, 3) + fDtySq);
+        Double_t wTy = cbmBinnedSigma * std::sqrt(stateVec.GetCovTyTy() + fDtySq);
         Double_t minTy = ty - wTy;
         Double_t maxTy = ty + wTy;
         

@@ -7,14 +7,14 @@
 #ifndef CBM_TRACK_PARAM2
 #define CBM_TRACK_PARAM2
 
-//#include "FairTrackParam.h"
-#include "TMatrixD.h"
+#include "FairTrackParam.h"
+//#include "TMatrixD.h"
 #include <iterator>
 #include <algorithm>
 #include <type_traits>
 #include <iostream>
 
-static inline std::ostream& operator<< (std::ostream& os, const TMatrixD& matrix)
+/*static inline std::ostream& operator<< (std::ostream& os, const TMatrixD& matrix)
 {
     for (int i = 0; i < matrix.GetNrows(); ++i)
     {
@@ -25,9 +25,9 @@ static inline std::ostream& operator<< (std::ostream& os, const TMatrixD& matrix
     }
     
     return os;
-}
+}*/
 
-class CbmTrackParam2
+/*class CbmTrackParam2
 {
 public:
    CbmTrackParam2() : fZ(0), fVector(5, 1), fCovMatrix(5, 5) {}
@@ -63,6 +63,33 @@ private:
     Double_t fZ;
     TMatrixD fVector;
     TMatrixD fCovMatrix;
+};*/
+
+class CbmTrackParam2 : public FairTrackParam
+{
+public:   
+   Double_t GetTime() const { return GetQp(); }
+   void SetTime(Double_t time) { SetQp(time); }
+   
+   Double_t GetCovXX() const { return GetCovariance(0, 0); }
+   void SetCovXX(Double_t v) { SetCovariance(0, 0, v); }
+   Double_t GetCovYY() const { return GetCovariance(1, 1); }
+   void SetCovYY(Double_t v) { SetCovariance(1, 1, v); }
+   Double_t GetCovXY() const { return GetCovariance(0, 1); }
+   void SetCovXY(Double_t v) { SetCovariance(0, 1, v); }
+   Double_t GetCovTxTx() const { return GetCovariance(2, 2); }
+   void SetCovTxTx(Double_t v) { SetCovariance(2, 2, v); }
+   Double_t GetCovTyTy() const { return GetCovariance(3, 3); }
+   void SetCovTyTy(Double_t v) { SetCovariance(3, 3, v); }
+   Double_t GetCovTT() const { return GetCovariance(4, 4); }
+   void SetCovTT(Double_t v) { SetCovariance(4, 4, v); }
+   
+private:
+   Double_t GetCovariance(Int_t i, Int_t j) const { return FairTrackParam::GetCovariance(i, j); }
+   void SetCovariance(Int_t i, Int_t j, Double_t val) { FairTrackParam::SetCovariance(i, j, val); }
+  
+private:
+    ClassDef(CbmTrackParam2, 1);
 };
 
 #endif//CBM_TRACK_PARAM2

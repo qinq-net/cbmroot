@@ -17,10 +17,10 @@ void CbmBinned3DStation::SearchHits(const CbmTrackParam2& stateVec, Double_t sta
    CbmTrackParam2 maxParams = Extrapolate(stateVec, fMaxZ);
    //Double_t maxC[21];
    //maxParams.CovMatrix(maxC);
-   Double_t wXmin = fNofSigmasX * std::sqrt(minParams.GetCov(0, 0) + fDxSq + fScatXSq);
-   Double_t wXmax = fNofSigmasX * std::sqrt(maxParams.GetCov(0, 0) + fDxSq + fScatXSq);
-   Double_t wYmin = fNofSigmasY * std::sqrt(minParams.GetCov(1, 1) + fDySq + fScatYSq);
-   Double_t wYmax = fNofSigmasY * std::sqrt(maxParams.GetCov(1, 1) + fDySq + fScatYSq);
+   Double_t wXmin = fNofSigmasX * std::sqrt(minParams.GetCovXX() + fDxSq + fScatXSq);
+   Double_t wXmax = fNofSigmasX * std::sqrt(maxParams.GetCovXX() + fDxSq + fScatXSq);
+   Double_t wYmin = fNofSigmasY * std::sqrt(minParams.GetCovYY() + fDySq + fScatYSq);
+   Double_t wYmax = fNofSigmasY * std::sqrt(maxParams.GetCovYY() + fDySq + fScatYSq);
 
    Double_t xMin = stateVec.GetTx() > 0 ? minParams.GetX() - wXmin : maxParams.GetX() - wXmax;
    Double_t xMax = stateVec.GetTx() > 0 ? maxParams.GetX() + wXmax : minParams.GetX() + wXmin;

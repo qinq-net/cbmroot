@@ -618,11 +618,11 @@ private:
                 C[18] = 1;// Cqpqp
                 C[20] = p1->GetTimeError() * p1->GetTimeError();// Ctt
                 kfParams.SetCovMatrix(C);*/
-                kfParams.SetCov(0, 0, p1->GetDx() * p1->GetDx());
-                kfParams.SetCov(1, 1, p1->GetDy() * p1->GetDy());
-                kfParams.SetCov(2, 2, 1);
-                kfParams.SetCov(3, 3, 1);
-                kfParams.SetCov(4, 4, p1->GetTimeError() * p1->GetTimeError());
+                kfParams.SetCovXX(p1->GetDx() * p1->GetDx());
+                kfParams.SetCovYY(p1->GetDy() * p1->GetDy());
+                kfParams.SetCovTxTx(1);
+                kfParams.SetCovTyTy(1);
+                kfParams.SetCovTT(p1->GetTimeError() * p1->GetTimeError());
                 Double_t chiSq = 0;
                 TraverseTrackCandidates(0, segments, trackHolders, candidates, kfParams, chiSq);
                 Track* bestCandidate = 0;
@@ -784,11 +784,11 @@ private:
                 C[18] = 1;// Cqpqp
                 C[20] = startStationNo < 0 ? 1.e7 : leftHit->GetTimeError() * leftHit->GetTimeError();// Ctt
                 kfParams.SetCovMatrix(C);*/
-                kfParams.SetCov(0, 0, leftHit->GetDx() * leftHit->GetDx());
-                kfParams.SetCov(1, 1, leftHit->GetDy() * leftHit->GetDy());
-                kfParams.SetCov(2, 2, 1);
-                kfParams.SetCov(3, 3, 1);
-                kfParams.SetCov(4, 4, leftHit->GetTimeError() * leftHit->GetTimeError());
+                kfParams.SetCovXX(leftHit->GetDx() * leftHit->GetDx());
+                kfParams.SetCovYY(leftHit->GetDy() * leftHit->GetDy());
+                kfParams.SetCovTxTx(1);
+                kfParams.SetCovTyTy(1);
+                kfParams.SetCovTT(leftHit->GetTimeError() * leftHit->GetTimeError());
                 Double_t chiSq = 0;
                 
                 CbmTBin::HitHolder* startHitHolder = 0;
