@@ -77,7 +77,7 @@ private:
   Int_t fFlag;
   TClonesArray *fPoints;
   TClonesArray *fDigis;
-  TClonesArray *fDigiMatches;
+  //TClonesArray *fDigiMatches;
   TClonesArray *fClusters;
   TClonesArray *fHits;
   TClonesArray *fMCTracks;

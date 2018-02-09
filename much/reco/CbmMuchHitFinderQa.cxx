@@ -6,7 +6,7 @@
 #include "FairRootManager.h"
 #include "CbmMuchPoint.h"
 #include "CbmMuchDigi.h"
-#include "CbmMuchDigiMatch.h"
+//#include "CbmMuchDigiMatch.h"
 #include "CbmMuchCluster.h"
 #include "CbmMuchPixelHit.h"
 
@@ -17,6 +17,7 @@
 #include "CbmMuchPad.h"
 
 #include "CbmMCTrack.h"
+#include "CbmMatch.h"
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
 #include "FairLogger.h"
@@ -36,6 +37,7 @@
 #include "CbmGeoMuchPar.h"
 #include "TGraph.h"
 
+#include <cassert>
 #include <map>
 #include <vector>
 #include <algorithm>
@@ -57,7 +59,7 @@ CbmMuchHitFinderQa::CbmMuchHitFinderQa(const char* name, Int_t verbose)
     fFlag(0),
     fPoints(NULL),
     fDigis(NULL),
-    fDigiMatches(NULL),
+    //fDigiMatches(NULL),
     fClusters(NULL),
     fHits(NULL),
     fMCTracks(NULL),
@@ -138,7 +140,7 @@ InitStatus CbmMuchHitFinderQa::Init()
   fPoints      = (TClonesArray*) fManager->GetObject("MuchPoint");
   fHits        = (TClonesArray*) fManager->GetObject("MuchPixelHit");
   fDigis       = (TClonesArray*) fManager->GetObject("MuchDigi");
-  fDigiMatches = (TClonesArray*) fManager->GetObject("MuchDigiMatch");
+  //fDigiMatches = (TClonesArray*) fManager->GetObject("MuchDigiMatch");
   fClusters    = (TClonesArray*) fManager->GetObject("MuchCluster");
 
 //  printf(" %i",fMCTracks);
@@ -913,16 +915,27 @@ void CbmMuchHitFinderQa::DigitizerQa(){
 
 
   // Filling generated charge for each point
-  for (Int_t i=0;i<fDigiMatches->GetEntriesFast();i++){
-    CbmMuchDigiMatch* match = (CbmMuchDigiMatch*) fDigiMatches->At(i);
-    // Get pad area
+  // Changing below loop from DigiMatches to Digis 
+
+ //for (Int_t i=0;i<fDigiMatches->GetEntriesFast();i++){
+ for (Int_t i=0;i<fDigis->GetEntriesFast();i++){
+	// Get pad area
     CbmMuchDigi* digi = (CbmMuchDigi*) fDigis->At(i);
+    assert(digi);
+    //Below getting Match object from CbmDigi GetMatch. No need of CbmMuchDigiMatch
+    CbmMatch* match = digi->GetMatch();
+    assert(match);
     CbmMuchModule* module = fGeoScheme->GetModuleByDetId(digi->GetAddress());
+    assert(module);
     if(!module) continue;
     Double_t area=0;
     if (module->GetDetectorType()!=1 && module->GetDetectorType()!=3) continue;
+    LOG(DEBUG) << GetName() << " Processing MuchDigi " << i << " at address "<< digi->GetAddress()<<" Module number "<< module->GetDetectorType()<<FairLogger::endl;
+
     CbmMuchModuleGem* module1 = (CbmMuchModuleGem*) module;
+    assert(module1);
     CbmMuchPad* pad = module1->GetPad(digi->GetAddress());
+    assert(pad);
     area = pad->GetDx()*pad->GetDy();
     Int_t nofLinks = match->GetNofLinks();
     for (Int_t pt = 0; pt < nofLinks; pt++) {
@@ -1024,7 +1037,9 @@ void CbmMuchHitFinderQa::StatisticsQa(){
     fhDigisInCluster->Fill(nDigis);
     for(Int_t digiId=0;digiId<nDigis;digiId++){
       Int_t index = cluster->GetDigi(digiId);
-      CbmMuchDigiMatch* match = (CbmMuchDigiMatch*) fDigiMatches->At(index);
+      //Access Match from CbmDigi only
+      CbmMuchDigi* digi= (CbmMuchDigi*) fDigis->At(index);
+      CbmMatch* match = (CbmMatch*) digi->GetMatch();
       Int_t nPoints = match->GetNofLinks();
       for (Int_t iRefPoint=0;iRefPoint<nPoints;iRefPoint++){
         Int_t pointId = match->GetLink(iRefPoint).GetIndex();
@@ -1088,7 +1103,10 @@ void CbmMuchHitFinderQa::PullsQa(){
     for(Int_t digiId=0;digiId<cluster->GetNofDigis();digiId++){
       Int_t index = cluster->GetDigi(digiId);
 //      printf("%i\n",index);
-      CbmMuchDigiMatch* match = (CbmMuchDigiMatch*) fDigiMatches->At(index);
+      CbmMuchDigi* digi= (CbmMuchDigi*) fDigis->At(index);
+      CbmMatch* match = (CbmMatch*) digi->GetMatch();
+
+      //CbmMuchDigiMatch* match = (CbmMuchDigiMatch*) fDigiMatches->At(index);
       // Not unique if the pad has several mcPoint references
       if (verbose) printf(" n=%i",match->GetNofLinks());
       if (match->GetNofLinks()==0) {
@@ -1098,7 +1116,7 @@ void CbmMuchHitFinderQa::PullsQa(){
       }
       if (match->GetNofLinks()>1) { point_unique=0; break; }
       Int_t currentPointId = match->GetLink(0).GetIndex();
-      CbmMuchDigi* digi = (CbmMuchDigi*) fDigis->At(index);
+      //CbmMuchDigi* digi = (CbmMuchDigi*) fDigis->At(index);
       CbmMuchModuleGem* module = (CbmMuchModuleGem*)fGeoScheme->GetModuleByDetId(digi->GetAddress());
       if(!module) continue;
       CbmMuchPad* pad = module->GetPad(digi->GetAddress());//fGeoScheme->GetPadByDetId(digi->GetDetectorId(), digi->GetChannelId());
@@ -1193,7 +1211,10 @@ void CbmMuchHitFinderQa::ClusterDeconvQa(){
     Int_t nDigis = cluster->GetNofDigis();
     for(Int_t id=0; id < nDigis; ++id){
       Int_t iDigi = cluster->GetDigi(id);
-      CbmMuchDigiMatch* match = (CbmMuchDigiMatch*) fDigiMatches->At(iDigi);
+      CbmMuchDigi* digi= (CbmMuchDigi*) fDigis->At(iDigi);
+      CbmMatch* match = (CbmMatch*) digi->GetMatch();
+ 
+     //CbmMuchDigiMatch* match = (CbmMuchDigiMatch*) fDigiMatches->At(iDigi);
       if(!match) continue;
       for(Int_t ip=0; ip<match->GetNofLinks();++ip){
         Int_t iPoint = match->GetLink(ip).GetIndex();
