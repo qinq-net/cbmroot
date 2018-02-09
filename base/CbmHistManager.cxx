@@ -128,23 +128,43 @@ void CbmHistManager::WriteToFile()
 }
 
 void CbmHistManager::ReadFromFile(
-      TFile* file)
+       TFile* file)
 {
-   assert(file != NULL);
-   LOG(INFO) << "CbmHistManager::ReadFromFile" << FairLogger::endl;
-   TDirectory* dir = gDirectory;
-   TIter nextkey(dir->GetListOfKeys());
-   TKey *key;
-//   Int_t c = 0;
-   while ((key = (TKey*) nextkey())) {
-      TObject* obj = key->ReadObj();
-      if (obj->IsA()->InheritsFrom (TH1::Class()) || obj->IsA()->InheritsFrom (TGraph::Class()) || obj->IsA()->InheritsFrom (TGraph2D::Class())) {
-         TNamed* h = (TNamed*) obj;
-         TNamed* h1 = (TNamed*)file->Get(h->GetName());
-         Add(string(h->GetName()), h1);
-         //LOG(INFO) << c++ << " " << h->GetName()<< FairLogger::endl;
-      }
-   }
+    assert(file != NULL);
+    LOG(INFO) << "CbmHistManager::ReadFromFile" << FairLogger::endl;
+    TDirectory* dir = gDirectory;
+    TIter nextkey(dir->GetListOfKeys());
+    TKey *key;
+    while ((key = (TKey*) nextkey())) {
+        TObject* obj = key->ReadObj();
+        AddTNamedObject(obj);
+        AddTDirectoryObject(obj);
+    }
+}
+
+void CbmHistManager::AddTNamedObject(
+         TObject* obj)
+{
+    if (obj->IsA()->InheritsFrom (TH1::Class()) || obj->IsA()->InheritsFrom (TGraph::Class()) || obj->IsA()->InheritsFrom (TGraph2D::Class())) {
+        TNamed* h = (TNamed*) obj;
+        //TNamed* h1 = (TNamed*)file->Get(h->GetName());
+        Add(string(h->GetName()), h);
+    }
+}
+
+void CbmHistManager::AddTDirectoryObject(
+         TObject* obj)
+{
+    if (obj->IsA()->InheritsFrom (TDirectoryFile::Class())) {
+        TDirectoryFile* fileDir = (TDirectoryFile*)obj;
+        TIter nextkey(fileDir->GetListOfKeys());
+        TKey *key2;
+        while ((key2 = (TKey*) nextkey())) {
+            TObject* obj2 = key2->ReadObj();
+            AddTNamedObject(obj2);
+            AddTDirectoryObject(obj2);
+        }
+    }
 }
 
 void CbmHistManager::Clear(Option_t*)

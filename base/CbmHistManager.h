@@ -59,8 +59,14 @@ public:
    void Add(
          const std::string& name,
          TNamed* object) {
-         std::pair<std::string, TNamed*> newpair = std::make_pair(name, object);
-      fMap.insert(newpair);
+
+       std::map<std::string, TNamed*>::iterator it = fMap.find(name);
+       if (it != fMap.end()){
+           LOG(WARNING) << "CbmHistManager::Add Object with name:" << name << " was already added. Set new object." << FairLogger::endl;
+       }
+
+       std::pair<std::string, TNamed*> newpair = std::make_pair(name, object);
+       fMap.insert(newpair);
    }
 
    /**
@@ -308,6 +314,18 @@ public:
     */
    void ReadFromFile(
          TFile* file);
+
+   /**
+    * \brief Add TName object to map. Used in ReadFromFile method.
+    */
+   void AddTNamedObject(
+            TObject* obj);
+
+   /**
+    * \brief Add all TName objects to map in directory. Used in ReadFromFile method.
+    */
+   void AddTDirectoryObject(
+            TObject* obj);
 
    /**
     * \brief Clear memory. Remove all histograms.
