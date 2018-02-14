@@ -26,6 +26,8 @@ CbmTrdSimpleDigitizer::Init ()
                     << FairLogger::endl;
       return kERROR;
     }
+  //Set Outputbranch to false:
+  SetOutputBranchPersistent("TrdDigi",false);
 
   fDigis = new TClonesArray ("CbmTrdDigi", 100);
   ioman->Register ("TrdDigi", "TRD Digis", fDigis,
@@ -87,6 +89,8 @@ CbmTrdSimpleDigitizer::Exec (Option_t*)
         {
           continue;
         }
+      if(raw->GetTriggerType()==1 && (raw->GetSamples()[0]>-200 || raw->GetSamples()[4] >= raw->GetSamples()[5])/*(raw->GetSamples()[0]> raw->GetSamples()[4] || raw->GetSamples()[8]< raw->GetSamples()[4])*/)
+	continue;
       Int_t Baseline = raw->GetSamples ()[0];
       if (Baseline < -150)
         Hitmaps.at (GetLayerID (raw))->Fill (GetColumnID (raw), GetRowID (raw),Baseline);
@@ -105,7 +109,7 @@ CbmTrdSimpleDigitizer::Exec (Option_t*)
       if (CurrentBuffer == BaselineMap.end ())
         {
           auto& TempBuffer = BaselineMap[fBT->GetAddress (raw)];
-          TempBuffer.set_capacity (30);
+          TempBuffer.set_capacity (10);
           CurrentBuffer = BaselineMap.find (fBT->GetAddress (raw));
         }
       if (CurrentBuffer->second.full ())
@@ -124,64 +128,59 @@ CbmTrdSimpleDigitizer::Exec (Option_t*)
       ++iSpadicMessage)
     {
       CbmSpadicRawMessage *raw = static_cast<CbmSpadicRawMessage*> (fRaw->At (
-          iSpadicMessage));
-      if (!(raw->GetHit () || raw->GetHitAborted ()))
-        {
-          continue;
-        }
+	  iSpadicMessage));
+      if (!(raw->GetHit ()))
+	{
+	  continue;
+	}
+      if (raw->GetTriggerType () == 1
+	  && (raw->GetSamples ()[0] > -200
+	      || raw->GetSamples ()[4] >= raw->GetSamples ()[5])/*(raw->GetSamples()[0]> raw->GetSamples()[4] || raw->GetSamples()[8]< raw->GetSamples()[4])*/)
+	continue;
       Float_t BaselineEstimate =
-        { 0 };
-      if (!raw->GetHitAborted ())
-        {
-          auto CurrentBuffer = BaselineMap.find (fBT->GetAddress (raw));
-          int16_t BaselineMeasure = fBT->GetBaseline (raw);
-          if (BaselineMeasure < -170)
-            {
-              CurrentBuffer->second.push_back (BaselineMeasure);
-              BaselineEstimate = static_cast<Float_t> (BaselineMeasure);
-            }
-          else
-            {
-              BaselineEstimate = std::accumulate (
-                  CurrentBuffer->second.begin (), CurrentBuffer->second.end (),
-                  0L);
-              //Div-by-Zero Check, should NEVER occur.
-              if (!CurrentBuffer->second.empty ())
-                BaselineEstimate /= CurrentBuffer->second.size ();
-              //std::cout << BaselineEstimate << std::endl;
-            }
-        }
-      else
-        {
-          auto CurrentBuffer = BaselineMap.find (fBT->GetAddress (raw));
-          if(CurrentBuffer==BaselineMap.end())BaselineEstimate = fBT->GetBaseline(raw);
-          else
-            if (!CurrentBuffer->second.empty ()){
-        	BaselineEstimate = std::accumulate(CurrentBuffer->second.begin(),CurrentBuffer->second.end(),0);
-        	BaselineEstimate /= CurrentBuffer->second.size ();
-            }
-          //for (auto x : CurrentBuffer->second)
-            //BaselineEstimate+=x;
-          //Div-by-Zero Check, should NEVER occur.
-        }
+	  { 0 };
+      auto CurrentBuffer = BaselineMap.find (fBT->GetAddress (raw));
+      int16_t BaselineMeasure = fBT->GetBaseline (raw);
+      if (BaselineMeasure < -200)
+	{
+	  CurrentBuffer->second.push_back (BaselineMeasure);
+	}
+      BaselineEstimate = std::accumulate (CurrentBuffer->second.begin (),
+					  CurrentBuffer->second.end (), 0L);
+      //Div-by-Zero Check, should NEVER occur.
+      if (!CurrentBuffer->second.empty ())
+	BaselineEstimate /= CurrentBuffer->second.size ();
+      //std::cout << BaselineEstimate << std::endl;
+
       //BaselineEstimate=(fBT->GetBaseline(raw)<BaselineEstimate)?fBT->GetBaseline(raw):BaselineEstimate;
       for (UInt_t i = 0; i < 32; i++)
-        {
-          if (i < raw->GetNrSamples ())
-            Samples[i] = static_cast<Float_t> (raw->GetSamples ()[i])
-                - BaselineEstimate;
-          else
-            Samples[i] = 0.0;
-        }
+	{
+	  if (i < raw->GetNrSamples ())
+	    Samples[i] = static_cast<Float_t> (raw->GetSamples ()[i])
+	    - BaselineEstimate;
+	  else
+	    Samples[i] = 0.0;
+	}
       new ((*fDigis)[NrDigis]) CbmTrdDigi (
-          static_cast<Int_t> (fBT->GetAddress (raw)),
-          raw->GetFullTime () * 1E3 / 16, //65 ns per timestamp
-          raw->GetTriggerType (), raw->GetInfoType (), raw->GetStopType (),
-          raw->GetNrSamples (), Samples/*&Samples[32]*/);
+	  static_cast<Int_t> (fBT->GetAddress (raw)),
+	  raw->GetFullTime () * 1E3 / 16, //65 ns per timestamp
+	  raw->GetTriggerType (), raw->GetInfoType (), raw->GetStopType (),
+	  raw->GetNrSamples (), Samples/*&Samples[32]*/);
       static_cast<CbmTrdDigi*> (fDigis->At (NrDigis++))->SetCharge (
-          fBT->GetMaximumAdc(
-              raw,
-              BaselineEstimate)-BaselineEstimate);
+	  fBT->GetMaximumAdc (raw,BaselineEstimate));
+      //std::cout<< fBT->GetMaximumAdc (raw,BaselineEstimate)<< std::endl;
+      if(fBT->GetMaximumAdc (raw,BaselineEstimate)>512)
+	{
+	  LOG(INFO)<< "CbmTrdSimpleDigitizer unusual maxADC";
+	  for (int i=0;i<raw->GetNrSamples();i++)
+	    {
+	      std::cout << raw->GetSamples()[i] << " ";
+	    }
+	  LOG(INFO)<< FairLogger::endl;
+	  LOG(FATAL)<<" KILL"<<FairLogger::endl;
+	}
+      /*std::cout << BaselineEstimate << " "<<fBT->GetMaximumAdc(raw,BaselineEstimate)<< " "<<
+	  fBT->GetIntegratedCharge (raw, BaselineEstimate)  << std::endl;*/
     }
   delete Samples;
   fHm->G1 (GraphName.Data ())->SetPoint (fHm->G1 (GraphName.Data ())->GetN (),

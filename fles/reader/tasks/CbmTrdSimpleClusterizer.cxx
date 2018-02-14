@@ -35,10 +35,14 @@ CbmTrdSimpleClusterizer::Init ()
                     << " will be inactive" << FairLogger::endl;
       return kERROR;
     }
+
+  SetOutputBranchPersistent("TrdCluster",false);
+
   fBT->SetDigisArray(fDigis);
   fClusters = new TClonesArray ("CbmTrdCluster", 100);
   ioman->Register ("TrdCluster", "TRD Clusters", fClusters,
                    IsOutputBranchPersistent ("TrdCluster"));
+		   //false);
 
   // Do whatever else is needed at the initilization stage
   // Create histograms to be filled
@@ -97,7 +101,9 @@ CbmTrdSimpleClusterizer::Exec (Option_t*)
                << nSpadicDigis << " Digis" << FairLogger::endl;
   CbmTrdCluster*CurrentCluster = nullptr;
   Bool_t newCluster = true;
+  Bool_t SplitCluster=false;
   CbmTrdDigi *CurrentDigi = nullptr;
+  std::vector<int>TriggerCounter;
   for (UInt_t iSpadicDigi = 0; iSpadicDigi < nSpadicDigis; ++iSpadicDigi)
     {
       CbmTrdDigi *previousDigi = CurrentDigi;
@@ -146,6 +152,21 @@ CbmTrdSimpleClusterizer::Exec (Option_t*)
               //Large Gap between Clusters found, create new Cluster.
               newCluster++;
             }
+          if (CurrentDigi->GetTriggerType()==2)
+            {
+              if(!TriggerCounter.empty())
+        	if(TriggerCounter.back()==2)
+        	  newCluster++;
+             }
+          if (!newCluster&&!TriggerCounter.empty()&&CurrentDigi->GetTriggerType()%2!=0)
+            {
+              if(TriggerCounter.back()%2!=0
+        	  && *(TriggerCounter.rbegin()--)%2!=0)
+        	{
+        	  newCluster++;
+        	  SplitCluster++;
+        	}
+             }
         }
       //Done Checking for abort conditions, create new Cluster if necessary.
       if (newCluster)
@@ -156,13 +177,23 @@ CbmTrdSimpleClusterizer::Exec (Option_t*)
               //TODO: Accurately set number of Columns.
               CurrentCluster->SetNCols (fBT->GetColumnWidth(CurrentCluster));
               CurrentCluster->SetNRows (fBT->GetRowWidth(CurrentCluster));
+              if(fBT->GetColumnWidth(CurrentCluster)==1)
+                if(previousDigi&&CurrentDigi)
+                std::cout << previousDigi->ToString()<<CurrentDigi->ToString()<<std::endl;
             }
           CurrentCluster = static_cast<CbmTrdCluster*>(fClusters->ConstructedAt(NrClusters++));
           CurrentCluster->SetDigis(std::vector<int>());
+          if(SplitCluster)
+            {
+              CurrentCluster->AddDigi(fDigis->IndexOf(previousDigi));
+	      SplitCluster=false;
+            }
           newCluster = false;
+          TriggerCounter.clear();
         }
       //We can now add the Current Digi to the current Cluster.
       //TODO: Filter for Hit Type Pattern. Currently planned for V2, the advanced Clusterizer.
+      TriggerCounter.push_back(CurrentDigi->GetTriggerType());
       CurrentCluster->AddDigi (iSpadicDigi);
       //Done with loop.
       //TODO: IMPORTANT: cluster tools for charge, displacement and so on.

@@ -49,7 +49,7 @@ Bool_t CbmTSUnpackSpadic::Init()
   if (ioman == NULL) {
     LOG(FATAL) << "No FairRootManager instance" << FairLogger::endl;
   }
-  ioman->Register("SpadicRawMessage", "spadic raw data", fSpadicRaw, kTRUE);
+  ioman->Register("SpadicRawMessage", "spadic raw data", fSpadicRaw, kFALSE);
 
   return kTRUE;
 }

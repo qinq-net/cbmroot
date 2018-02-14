@@ -37,9 +37,12 @@ CbmTrdAdvDigitizer::Init ()
       return kERROR;
     }
 
+  SetOutputBranchPersistent("TrdDigi",false);
+
   fDigis = new TClonesArray ("CbmTrdDigi", 100);
   ioman->Register ("TrdDigi", "TRD Digis", fDigis,
                    IsOutputBranchPersistent ("TrdDigi"));
+
 
   // Do whatever else is needed at the initilization stage
   // Create histograms to be filled
