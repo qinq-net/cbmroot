@@ -57,8 +57,8 @@ void Cern2017Monitor(TString inFile = "")
   CbmCern2017MonitorSts* monitorSts = new CbmCern2017MonitorSts();
 //  monitorSts->SetPrintMessage();
   monitorSts->EnableChanHitDtPlot();
-  monitorSts->SetPulserChannels( 0,  95, 1, 95,
-                                 2,  27, 5, 27);
+  monitorSts->SetPulserChannels( 0,  91, 1, 27,
+                                 1,  91, 6, 27);
   monitorSts->SetLongDurationLimits( 3600, 10 );
 //  monitorSts->SetBetaFormatMode();
 

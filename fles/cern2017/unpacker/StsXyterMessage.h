@@ -77,7 +77,7 @@ namespace stsxyter {
    static const uint16_t kusLenHitAdc     =  5;
    static const uint16_t kusLenHitTsFull  =  9; // Includes 1 bit overlap with TS message ?
    static const uint16_t kusLenHitTsOver  =  0; // 0 bit overlap with TS message
-   static const uint16_t kusLenHitTs      =  8;
+   static const uint16_t kusLenHitTs      =  9; // No overlap in this version of FW
    static const uint16_t kusLenHitEmFlag  =  1;
       // Other message
    static const uint16_t kusLenSubtype    =  2;
@@ -104,10 +104,10 @@ namespace stsxyter {
    static const MessField kFieldEpochVal  ( kusPosEpochVal,   kusLenEpochVal );
 
       /// Status/properties constants
-   static const uint32_t  kuHitNbAdcBins   = 1 << kusLenHitAdc;
-   static const uint32_t  kuHitNbTsBins    = 1 << kusLenHitTs;
-   static const uint32_t  kuHitNbOverBins  = 1 << kusLenHitTsOver;
-   static const uint32_t  kuTsMsbNbTsBins  = 1 << kusLenTsMsbVal;
+   static const uint32_t  kuHitNbAdcBins   = ( 0 < kusLenHitAdc ?    1 << kusLenHitAdc : 0 );
+   static const uint32_t  kuHitNbTsBins    = ( 0 < kusLenHitTs ?     1 << kusLenHitTs : 0 );
+   static const uint32_t  kuHitNbOverBins  = ( 0 < kusLenHitTsOver ? 1 << kusLenHitTsOver : 0 );
+   static const uint32_t  kuTsMsbNbTsBins  = ( 0 < kusLenTsMsbVal ?  1 << kusLenTsMsbVal : 0 );
    static const uint32_t  kuTsCycleNbBins  = kuTsMsbNbTsBins * kuHitNbTsBins;
    static const uint16_t  kusMaskTsMsbOver = (1 << kusLenHitTsOver) - 1;
    static const double    kdClockCycleNs   = 3.125; // ns, equivalent to 2*160 MHz clock

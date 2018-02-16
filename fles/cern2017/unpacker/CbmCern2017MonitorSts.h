@@ -93,6 +93,9 @@ private:
    Bool_t                fbPrintMessages;
    stsxyter::MessagePrintMask fPrintMessCtrl;
    Bool_t                fbChanHitDtEna;
+      // TS/MS info
+   ULong64_t             fulCurrentTsIdx;
+   ULong64_t             fulCurrentMsIdx;
       // Current data properties
    std::map< stsxyter::MessType, UInt_t > fmMsgCounter;
    UInt_t                fuCurrentEquipmentId;  //! Current equipment ID, tells from which DPB the current MS is originating
@@ -123,6 +126,9 @@ private:
    TH1* fhStsSysMessType;
    TH2* fhStsMessTypePerDpb;
    TH2* fhStsSysMessTypePerDpb;
+   TH2* fhStsDpbRawTsMsb;
+   TH2* fhStsDpbRawTsMsbSx;
+   TH2* fhStsDpbRawTsMsbDpb;
    TH2* fhStsMessTypePerElink;
    TH2* fhStsSysMessTypePerElink;
 
@@ -131,7 +137,6 @@ private:
    std::vector<TProfile*> fhStsChanRawAdcProf;
    std::vector<TH2*> fhStsChanRawTs;
    std::vector<TH2*> fhStsChanMissEvt;
-   std::vector<TH2*> fhStsChanOverDiff;
    std::vector<TH2*> fhStsChanHitRateEvo;
    std::vector<TH1*> fhStsXyterRateEvo;
    std::vector<TH2*> fhStsChanHitRateEvoLong;
@@ -149,6 +154,7 @@ private:
    std::vector<UInt_t> fvuPulserChan;
    std::vector<TH1*> fhStsPulserChansTimeDiff;
    std::vector<TH2*> fhStsPulserChansTimeDiffEvo;
+   std::vector<TH2*> fhStsPulserChansTimeDiffAdc;
 
    TH2* fhStsAsicTsMsb;
    TH2* fhStsAsicTsMsbMaj;
@@ -172,7 +178,8 @@ private:
    void CreateHistograms();
 
    void FillHitInfo(   stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx, const UInt_t & uMsIdx );
-   void FillTsMsbInfo( stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx );
+   void FillTsMsbInfo( stsxyter::Message mess, UInt_t uMessIdx = 0, UInt_t uMsIdx = 0);
+   void FillEpochInfo( stsxyter::Message mess );
 
    CbmCern2017MonitorSts(const CbmCern2017MonitorSts&);
    CbmCern2017MonitorSts operator=(const CbmCern2017MonitorSts&);
