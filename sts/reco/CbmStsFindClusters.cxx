@@ -503,35 +503,47 @@ void CbmStsFindClusters::SetModuleParameters()
 
     assert( fDigiPar );
 
+    // TODO: Here, the default parameters are hard-coded. This can only be
+    // a temporary solution, since consistency with those used in
+    // digitisation is not assured. Have to find a way to pass this
+    // information through parameter handling.
+    Double_t dynRange = 75000.;
+    Double_t threshold = 3000.;
+    Int_t nAdc = 32;
+    Double_t tResol = 5.;
+    Double_t tDead  = 800.;
+    Double_t noise = 1000.;
+    Double_t zeroNoiseRate = 3.9789e-3;
+
 	// --- Control output of parameters
 	LOG(INFO) << GetName() << ": Digitisation parameters :"
 			      << FairLogger::endl;
-	LOG(INFO) << "\t Dynamic range   " << fDigiPar->GetDynRange()
+	LOG(INFO) << "\t Dynamic range   " << dynRange
 	          << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t Threshold       " << fDigiPar->GetThreshold()
+	LOG(INFO) << "\t Threshold       " << threshold
 	          << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t ADC channels    " << fDigiPar->GetNofAdc()
+	LOG(INFO) << "\t ADC channels    " << nAdc
 	          << FairLogger::endl;
-	LOG(INFO) << "\t Time resolution " << fDigiPar->GetTimeResolution()
+	LOG(INFO) << "\t Time resolution " << tResol
 	          << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t Dead time       " << fDigiPar->GetDeadTime()
+	LOG(INFO) << "\t Dead time       " << tDead
 	          << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t ENC             " << fDigiPar->GetNoise()
+	LOG(INFO) << "\t ENC             " << noise
 	    << " e" << FairLogger::endl;
-    LOG(INFO) << "\t Zero noise rate " << fDigiPar->GetZeroNoiseRate()
+    LOG(INFO) << "\t Zero noise rate " << zeroNoiseRate
         << " e" << FairLogger::endl;
 
 	// --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {
 		fSetup->GetModule(iModule)->SetParameters(2048,
-		                                          fDigiPar->GetDynRange(),
-		                                          fDigiPar->GetThreshold(),
-		                                          fDigiPar->GetNofAdc(),
-		                                          fDigiPar->GetTimeResolution(),
-		                                          fDigiPar->GetDeadTime(),
-		                                          fDigiPar->GetNoise(),
-		                                          fDigiPar->GetZeroNoiseRate());
+		                                          dynRange,
+		                                          threshold,
+		                                          nAdc,
+		                                          tResol,
+		                                          tDead,
+		                                          noise,
+		                                          zeroNoiseRate);
 	}
 	LOG(INFO) << GetName() << ": Set parameters for " << nModules
 			      << " modules " << FairLogger::endl;

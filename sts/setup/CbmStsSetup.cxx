@@ -800,6 +800,13 @@ Int_t CbmStsSetup::SetSensorConditions() {
   Double_t cCoup = fSettings->GetCcoup();         // Coupling capacitance
   Double_t cIs = fSettings->GetCis();             // Inter-strip capacitance
 
+  // Workaround for separate reconstruction and digitisation
+  vDep = 70.;
+  vBias = 140.;
+  temperature = 268.;
+  cCoup = 17.5;
+  cIs = 1.;
+
   // --- Control output of parameters
   LOG(INFO) << GetName() << ": Set conditions for all sensors:"
             << FairLogger::endl;
