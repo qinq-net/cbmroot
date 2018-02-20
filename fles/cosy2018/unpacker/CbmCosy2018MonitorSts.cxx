@@ -1,11 +1,11 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                     CbmCern2017MonitorSts                         -----
-// -----                Created 24/11/17  by P.-A. Loizeau                 -----
+// -----                     CbmCosy2018MonitorSts                         -----
+// -----                Created 15/02/18  by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#include "CbmCern2017MonitorSts.h"
+#include "CbmCosy2018MonitorSts.h"
 
 // Data
 
@@ -35,10 +35,10 @@
 #include <stdint.h>
 #include <iomanip>
 
-Bool_t bCern2017ResetStsHistos = kFALSE;
-Bool_t bCern2017WriteStsHistos = kFALSE;
+Bool_t bCosy2018ResetStsHistos = kFALSE;
+Bool_t bCosy2018WriteStsHistos = kFALSE;
 
-CbmCern2017MonitorSts::CbmCern2017MonitorSts() :
+CbmCosy2018MonitorSts::CbmCosy2018MonitorSts() :
    CbmTSUnpack(),
    fuOverlapMsNb(0),
    fUnpackPar(NULL),
@@ -117,11 +117,11 @@ CbmCern2017MonitorSts::CbmCern2017MonitorSts() :
 {
 }
 
-CbmCern2017MonitorSts::~CbmCern2017MonitorSts()
+CbmCosy2018MonitorSts::~CbmCosy2018MonitorSts()
 {
 }
 
-Bool_t CbmCern2017MonitorSts::Init()
+Bool_t CbmCosy2018MonitorSts::Init()
 {
   LOG(INFO) << "Initializing flib StsXyter unpacker for STS" << FairLogger::endl;
 
@@ -133,7 +133,7 @@ Bool_t CbmCern2017MonitorSts::Init()
   return kTRUE;
 }
 
-void CbmCern2017MonitorSts::SetParContainers()
+void CbmCosy2018MonitorSts::SetParContainers()
 {
    LOG(INFO) << "Setting parameter containers for " << GetName()
          << FairLogger::endl;
@@ -141,7 +141,7 @@ void CbmCern2017MonitorSts::SetParContainers()
 }
 
 
-Bool_t CbmCern2017MonitorSts::InitContainers()
+Bool_t CbmCosy2018MonitorSts::InitContainers()
 {
    LOG(INFO) << "Init parameter containers for " << GetName()
          << FairLogger::endl;
@@ -152,7 +152,7 @@ Bool_t CbmCern2017MonitorSts::InitContainers()
    return bReInit;
 }
 
-Bool_t CbmCern2017MonitorSts::ReInitContainers()
+Bool_t CbmCosy2018MonitorSts::ReInitContainers()
 {
    LOG(INFO) << "ReInit parameter containers for " << GetName()
          << FairLogger::endl;
@@ -256,19 +256,19 @@ Bool_t CbmCern2017MonitorSts::ReInitContainers()
          } // for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
       } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-   LOG(INFO) << "CbmCern2017MonitorSts::ReInitContainers => Changed fvuChanNbHitsInMs size "
+   LOG(INFO) << "CbmCosy2018MonitorSts::ReInitContainers => Changed fvuChanNbHitsInMs size "
                 << fvuChanNbHitsInMs.size() << " VS " << fuNbStsXyters
                 << FairLogger::endl;
-   LOG(INFO) << "CbmCern2017MonitorSts::ReInitContainers =>  Changed fvuChanNbHitsInMs size "
+   LOG(INFO) << "CbmCosy2018MonitorSts::ReInitContainers =>  Changed fvuChanNbHitsInMs size "
                 << fvuChanNbHitsInMs[ 0 ].size() << " VS " << fuNbChanPerAsic
                 << FairLogger::endl;
-   LOG(INFO) << "CbmCern2017MonitorSts::ReInitContainers =>  Changed fvuChanNbHitsInMs size "
+   LOG(INFO) << "CbmCosy2018MonitorSts::ReInitContainers =>  Changed fvuChanNbHitsInMs size "
                 << fvuChanNbHitsInMs[ 0 ][ 0 ].size() << " VS " << fuPulserMaxNbMicroslices
                 << FairLogger::endl;
    return kTRUE;
 }
 
-void CbmCern2017MonitorSts::CreateHistograms()
+void CbmCosy2018MonitorSts::CreateHistograms()
 {
 #ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
@@ -734,8 +734,8 @@ void CbmCern2017MonitorSts::CreateHistograms()
 #ifdef USE_HTTP_SERVER
    if( server )
    {
-      server->RegisterCommand("/Reset_All_Sts", "bCern2017ResetStsHistos=kTRUE");
-      server->RegisterCommand("/Write_All_Sts", "bCern2017WriteStsHistos=kTRUE");
+      server->RegisterCommand("/Reset_All_Sts", "bCosy2018ResetStsHistos=kTRUE");
+      server->RegisterCommand("/Write_All_Sts", "bCosy2018WriteStsHistos=kTRUE");
 
       server->Restrict("/Reset_All_Sts", "allow=admin");
       server->Restrict("/Write_All_Sts", "allow=admin");
@@ -903,22 +903,22 @@ void CbmCern2017MonitorSts::CreateHistograms()
   /*****************************/
 }
 
-Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
+Bool_t CbmCosy2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
 #ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
 #endif
 
-   if( bCern2017ResetStsHistos )
+   if( bCosy2018ResetStsHistos )
    {
       ResetAllHistos();
-      bCern2017ResetStsHistos = kFALSE;
-   } // if( bCern2017ResetStsHistos )
-   if( bCern2017WriteStsHistos )
+      bCosy2018ResetStsHistos = kFALSE;
+   } // if( bCosy2018ResetStsHistos )
+   if( bCosy2018WriteStsHistos )
    {
       SaveAllHistos( "data/StsHistos.root" );
-      bCern2017WriteStsHistos = kFALSE;
-   } // if( bCern2017WriteStsHistos )
+      bCosy2018WriteStsHistos = kFALSE;
+   } // if( bCosy2018WriteStsHistos )
 
    LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
               << "microslices." << FairLogger::endl;
@@ -986,13 +986,13 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
             } // for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
          } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
       } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-      LOG(INFO) << "CbmCern2017MonitorSts::DoUnpack => Changed fvuChanNbHitsInMs size "
+      LOG(INFO) << "CbmCosy2018MonitorSts::DoUnpack => Changed fvuChanNbHitsInMs size "
                    << fvuChanNbHitsInMs.size() << " VS " << fuNbStsXyters
                    << FairLogger::endl;
-      LOG(INFO) << "CbmCern2017MonitorSts::DoUnpack =>  Changed fvuChanNbHitsInMs size "
+      LOG(INFO) << "CbmCosy2018MonitorSts::DoUnpack =>  Changed fvuChanNbHitsInMs size "
                    << fvuChanNbHitsInMs[ 0 ].size() << " VS " << fuNbChanPerAsic
                    << FairLogger::endl;
-      LOG(INFO) << "CbmCern2017MonitorSts::DoUnpack =>  Changed fvuChanNbHitsInMs size "
+      LOG(INFO) << "CbmCosy2018MonitorSts::DoUnpack =>  Changed fvuChanNbHitsInMs size "
                    << fvuChanNbHitsInMs[ 0 ][ 0 ].size() << " VS " << fuPulserMaxNbMicroslices
                    << FairLogger::endl;
    } // if( fuPulserMaxNbMicroslices < numCompMsInTs )
@@ -1073,7 +1073,6 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
          if( fbPrintMessages )
             mess.PrintMess( std::cout, fPrintMessCtrl );
 
-
          stsxyter::MessType typeMess = mess.GetMessType();
          fmMsgCounter[ typeMess ] ++;
          fhStsMessType->Fill( static_cast< uint16_t > (typeMess) );
@@ -1087,7 +1086,7 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                UShort_t usElinkIdx = mess.GetLinkIndex();
                if( fuNbElinksPerDpb <= usElinkIdx )
                {
-                  LOG(FATAL) << "CbmCern2017MonitorSts::DoUnpack => "
+                  LOG(FATAL) << "CbmCosy2018MonitorSts::DoUnpack => "
                              << "eLink index out of bounds!"
                              << usElinkIdx << " VS " << fuNbElinksPerDpb
                              << FairLogger::endl;
@@ -1111,7 +1110,7 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                FillEpochInfo( mess );
 
                if( 0 < uIdx )
-                  LOG(INFO) << "CbmCern2017MonitorSts::DoUnpack => "
+                  LOG(INFO) << "CbmCosy2018MonitorSts::DoUnpack => "
                             << "EPOCH message at unexpected position in MS: message "
                             << uIdx << " VS message 0 expected!"
                             << FairLogger::endl;
@@ -1121,14 +1120,14 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
             {
 //               FillTsMsbInfo( mess );
                break;
-            } // case stsxyter::MessType::TsMsb :
+            } // case stsxyter::MessType::Empty :
             case stsxyter::MessType::Dummy :
             {
                break;
             } // case stsxyter::MessType::Dummy / ReadDataAck / Ack :
             default:
             {
-               LOG(FATAL) << "CbmCern2017MonitorSts::DoUnpack => "
+               LOG(FATAL) << "CbmCosy2018MonitorSts::DoUnpack => "
                           << "Unknown message type, should never happen, stopping here!"
                           << FairLogger::endl;
             }
@@ -1167,7 +1166,7 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                                       - static_cast< Short_t >( fvusChanLastHitAdcInMs[ fvuPulserAsic[uChA] ][ fvuPulserChan[uChA] ][ uMsIdx ] );
 
                      if( dTimeDiff < -102406.25 || 102406.25 < dTimeDiff )
-                        LOG(INFO) << "CbmCern2017MonitorSts::DoUnpack =>"
+                        LOG(INFO) << "CbmCosy2018MonitorSts::DoUnpack =>"
                                   << " ASIC A" << fvuPulserAsic[uChA] << " chan A " << fvuPulserChan[uChA]
                                   << " tA " << fvdChanLastHitTimeInMs[ fvuPulserAsic[uChA] ][ fvuPulserChan[uChA] ][ uMsIdx ]
                                   << " ASIC B" << fvuPulserAsic[uChB] << " chan B " << fvuPulserChan[uChB]
@@ -1316,7 +1315,7 @@ Bool_t CbmCern2017MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
   return kTRUE;
 }
 
-void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx, const UInt_t & uMsIdx )
+void CbmCosy2018MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx, const UInt_t & uMsIdx )
 {
    UShort_t usChan   = mess.GetHitChannel();
    UShort_t usRawAdc = mess.GetHitAdc();
@@ -1331,15 +1330,12 @@ void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
    fhStsChanMissEvt[ uAsicIdx ]->Fill( usChan, mess.IsHitMissedEvts() );
 
    // Compute the Full time stamp
-
    Long64_t ulOldHitTime = fvulChanLastHitTime[ uAsicIdx ][ usChan ];
    Double_t dOldHitTime  = fvdChanLastHitTime[ uAsicIdx ][ usChan ];
 
       // Use TS w/o overlap bits as they will anyway come from the TS_MSB
    fvulChanLastHitTime[ uAsicIdx ][ usChan ] = usRawTs;
 
-//         if( usRawTs < fvuElinkLastTsHit[fuCurrDpbIdx] )
-//            fvulCurrentTsMsb[fuCurrDpbIdx]++;
    fvulChanLastHitTime[ uAsicIdx ][ usChan ] +=
                static_cast<ULong64_t>( stsxyter::kuHitNbTsBins )
              * static_cast<ULong64_t>( fvulCurrentTsMsb[fuCurrDpbIdx])
@@ -1351,7 +1347,6 @@ void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
 
    // Convert the Hit time in bins to Hit time in ns
    Double_t dHitTimeNs = fvulChanLastHitTime[ uAsicIdx ][ usChan ] * stsxyter::kdClockCycleNs;
-
 
    // If needed fill the hit interval plots
    if( fbChanHitDtEna )
@@ -1416,7 +1411,7 @@ void CbmCern2017MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
 
 }
 
-void CbmCern2017MonitorSts::FillTsMsbInfo( stsxyter::Message mess, UInt_t uMessIdx, UInt_t uMsIdx )
+void CbmCosy2018MonitorSts::FillTsMsbInfo( stsxyter::Message mess, UInt_t uMessIdx, UInt_t uMsIdx )
 {
    UInt_t uVal    = mess.GetTsMsbVal();
 /*
@@ -1472,9 +1467,9 @@ void CbmCern2017MonitorSts::FillTsMsbInfo( stsxyter::Message mess, UInt_t uMessI
 //   fhStsAsicTsMsb->Fill( fvulCurrentTsMsb[fuCurrDpbIdx], uAsicIdx );
 }
 
-void CbmCern2017MonitorSts::FillEpochInfo( stsxyter::Message mess )
+void CbmCosy2018MonitorSts::FillEpochInfo( stsxyter::Message mess )
 {
-   UShort_t usVal    = mess.GetTsMsbVal();
+   UInt_t uVal    = mess.GetTsMsbVal();
 /*
    // Update Status counters
    if( usVal < fvulCurrentTsMsb[fuCurrDpbIdx] )
@@ -1485,15 +1480,15 @@ void CbmCern2017MonitorSts::FillEpochInfo( stsxyter::Message mess )
 */
 }
 
-void CbmCern2017MonitorSts::Reset()
+void CbmCosy2018MonitorSts::Reset()
 {
 }
 
-void CbmCern2017MonitorSts::Finish()
+void CbmCosy2018MonitorSts::Finish()
 {
 
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
-   LOG(INFO) << "CbmCern2017MonitorSts statistics are " << FairLogger::endl;
+   LOG(INFO) << "CbmCosy2018MonitorSts statistics are " << FairLogger::endl;
    LOG(INFO) << " Hit      messages: " << fmMsgCounter[ stsxyter::MessType::Hit   ] << FairLogger::endl
              << " Ts MSB   messages: " << fmMsgCounter[ stsxyter::MessType::TsMsb ] << FairLogger::endl
              << " Dummy    messages: " << fmMsgCounter[ stsxyter::MessType::Dummy ] << FairLogger::endl
@@ -1507,11 +1502,11 @@ void CbmCern2017MonitorSts::Finish()
 }
 
 
-void CbmCern2017MonitorSts::FillOutput(CbmDigi* /*digi*/)
+void CbmCosy2018MonitorSts::FillOutput(CbmDigi* /*digi*/)
 {
 }
 
-void CbmCern2017MonitorSts::SaveAllHistos( TString sFileName )
+void CbmCosy2018MonitorSts::SaveAllHistos( TString sFileName )
 {
    TDirectory * oldDir = NULL;
    TFile * histoFile = NULL;
@@ -1610,7 +1605,7 @@ void CbmCern2017MonitorSts::SaveAllHistos( TString sFileName )
    } // if( "" != sFileName )
 
 }
-void CbmCern2017MonitorSts::ResetAllHistos()
+void CbmCosy2018MonitorSts::ResetAllHistos()
 {
    LOG(INFO) << "Reseting all STS histograms." << FairLogger::endl;
 
@@ -1688,7 +1683,7 @@ void CbmCern2017MonitorSts::ResetAllHistos()
   fdStartTimeMsSz = -1;
 }
 
-void CbmCern2017MonitorSts::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )
+void CbmCosy2018MonitorSts::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )
 {
    TDatime * fRunStartDateTime     = new TDatime( dateIn, timeIn);
    fiRunStartDateTimeSec = fRunStartDateTime->Convert();
@@ -1696,7 +1691,7 @@ void CbmCern2017MonitorSts::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinS
 
    LOG(INFO) << "Assigned new MUCH Run Start Date-Time: " << fRunStartDateTime->AsString() << FairLogger::endl;
 }
-void CbmCern2017MonitorSts::SetPulserChannels( UInt_t uAsicA, UInt_t uChanA, UInt_t uAsicB, UInt_t uChanB,
+void CbmCosy2018MonitorSts::SetPulserChannels( UInt_t uAsicA, UInt_t uChanA, UInt_t uAsicB, UInt_t uChanB,
                                                UInt_t uAsicC, UInt_t uChanC, UInt_t uAsicD, UInt_t uChanD,
                                                UInt_t uMaxNbMicroslices )
 {
@@ -1756,11 +1751,11 @@ void CbmCern2017MonitorSts::SetPulserChannels( UInt_t uAsicA, UInt_t uChanA, UIn
    fbPulserTimeDiffOn = kTRUE;
 }
 
-void CbmCern2017MonitorSts::SetLongDurationLimits( UInt_t uDurationSeconds, UInt_t uBinSize )
+void CbmCosy2018MonitorSts::SetLongDurationLimits( UInt_t uDurationSeconds, UInt_t uBinSize )
 {
    fbLongHistoEnable     = kTRUE;
    fuLongHistoNbSeconds  = uDurationSeconds;
    fuLongHistoBinSizeSec = uBinSize;
 }
 
-ClassImp(CbmCern2017MonitorSts)
+ClassImp(CbmCosy2018MonitorSts)
