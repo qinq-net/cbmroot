@@ -139,6 +139,7 @@ class CbmTofCosmicClusterizer : public FairTask
       inline void SetEnableMatchPosScaling(Bool_t bval) { fEnableMatchPosScaling = bval; }
       inline void SetEnableAvWalk(Bool_t bval)          { fEnableAvWalk = bval; }
       inline void SetPs2Ns(Bool_t bval)                 { fbPs2Ns = bval; }
+      inline void SetTimePeriod(Double_t dval)          { fdTimePeriod = dval; }
 
       //static Double_t  f1_xboxe(double *x, double *par); // Fit function 
       virtual void fit_ybox(const char *hname);                      // Fit
@@ -148,6 +149,7 @@ class CbmTofCosmicClusterizer : public FairTask
       virtual void CleanLHMemory();                    // Cleanup
       virtual Bool_t AddNextChan(Int_t iSmType, Int_t iSm, Int_t iRpc, Int_t iLastChan, Double_t dLastPosX,  Double_t dLastPosY, Double_t dLastTime, Double_t dLastTot); // needed for time based data  
       virtual void LH_store(Int_t iSmType, Int_t iSm,  Int_t iRpc, Int_t iChm, CbmTofHit *pHit);
+      virtual Double_t TimeInPeriod(Double_t dTime);
 
    protected:
 
@@ -371,6 +373,7 @@ class CbmTofCosmicClusterizer : public FairTask
       Double_t fdChannelDeadtime;
       Double_t fdMemoryTime;
       Double_t fdYFitMin;
+      Double_t fdTimePeriod;
       
       Bool_t fEnableMatchPosScaling;
       Bool_t fEnableAvWalk;
