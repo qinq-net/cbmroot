@@ -105,7 +105,7 @@ private:
    std::vector< UInt_t    > fvuElinkLastTsHit;                  //! TS from last hit for DPB
 
    std::vector< std::vector< ULong64_t > > fvulChanLastHitTime;   //! Last hit time in bins for each Channel
-   std::vector< std::vector<Double_t> >    fvdChanLastHitTime;    //! Last hit time in ns   for each Channel
+   std::vector< std::vector< Double_t  > > fvdChanLastHitTime;    //! Last hit time in ns   for each Channel
    std::vector< Double_t >                               fvdMsTime;                  //! Header time of each MS
    std::vector< std::vector< std::vector< UInt_t > > >   fvuChanNbHitsInMs;          //! Number of hits in each MS for each Channel
    std::vector< std::vector< std::vector< Double_t > > > fvdChanLastHitTimeInMs;     //! Last hit time in bins in each MS for each Channel

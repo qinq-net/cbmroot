@@ -881,7 +881,7 @@ void CbmCosy2018MonitorHodo::CreateHistograms()
 #endif
 
    sHistName = "fhHodoSortedMapX1Y1";
-   title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
+   title = "Sorted hits in coincidence for hodoscope 1 axis X and Y; X channel Hodo 1 []; Y channel Hodo 1 []; MS []";
    fhHodoSortedMapX1Y1 = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
@@ -891,7 +891,7 @@ void CbmCosy2018MonitorHodo::CreateHistograms()
 #endif
 
    sHistName = "fhHodoSortedMapX2Y2";
-   title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
+   title = "Sorted hits in coincidence for hodoscope 2 axis X and Y; X channel Hodo 2 []; Y channel Hodo 2 []; MS []";
    fhHodoSortedMapX2Y2 = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
@@ -901,7 +901,7 @@ void CbmCosy2018MonitorHodo::CreateHistograms()
 #endif
 
    sHistName = "fhHodoSortedMapX1X2";
-   title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
+   title = "Sorted hits in coincidence for hodoscope 1 axis X and 2 axis X; X channel Hodo 1 []; X channel Hodo 2 []; MS []";
    fhHodoSortedMapX1X2 = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
@@ -911,7 +911,7 @@ void CbmCosy2018MonitorHodo::CreateHistograms()
 #endif
 
    sHistName = "fhHodoSortedMapY1Y2";
-   title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
+   title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis Y; Y channel Hodo 1 []; Y channel Hodo 2 []; MS []";
    fhHodoSortedMapY1Y2 = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
@@ -921,7 +921,7 @@ void CbmCosy2018MonitorHodo::CreateHistograms()
 #endif
 
    sHistName = "fhHodoSortedMapX1Y2";
-   title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
+   title = "Sorted hits in coincidence for hodoscope 1 axis X and 2 axis Y; X channel Hodo 1 []; Y channel Hodo 2 []; MS []";
    fhHodoSortedMapX1Y2 = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );

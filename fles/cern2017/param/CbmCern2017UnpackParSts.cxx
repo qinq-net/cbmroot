@@ -23,7 +23,11 @@ CbmCern2017UnpackParSts::CbmCern2017UnpackParSts(const char* name,
    fuNbElinksPerDpb( 0 ),
    fuNbStsXyters( 0 ),
    fuNbChanPerAsic( 0 ),
-   fiElinkToAsicMap()
+   fiElinkToAsicMap(),
+   fuAsicIdxSts1N( 0 ),
+   fuAsicIdxSts1P( 0 ),
+   fuAsicIdxSts2N( 0 ),
+   fuAsicIdxSts2P( 0 )
 {
   detName="Much";
 }
@@ -59,6 +63,11 @@ void CbmCern2017UnpackParSts::putParams(FairParamList* l)
    l->add("NbStsXyters",    fuNbStsXyters );
    l->add("NbChanPerAsic",  fuNbChanPerAsic );
    l->add("ElinkToAsicMap", fiElinkToAsicMap);
+   
+   l->add("AsicIdxSts1N", fuAsicIdxSts1N);
+   l->add("AsicIdxSts1P", fuAsicIdxSts1P);
+   l->add("AsicIdxSts2N", fuAsicIdxSts2N);
+   l->add("AsicIdxSts2P", fuAsicIdxSts2P);
 #else
    Int_t iNrOfDpbs       = fuNrOfDpbs;
    Int_t iNbElinksPerDpb = fuNbElinksPerDpb;
@@ -71,6 +80,15 @@ void CbmCern2017UnpackParSts::putParams(FairParamList* l)
    l->add("NbStsXyters",    iNbStsXyters );
    l->add("NbChanPerAsic",  iNbChanPerAsic );
    l->add("ElinkToAsicMap", fiElinkToAsicMap);
+   
+   Int_t iAsicIdxSts1N = fuAsicIdxSts1N;
+   Int_t iAsicIdxSts1P = fuAsicIdxSts1P;
+   Int_t iAsicIdxSts2N = fuAsicIdxSts2N;
+   Int_t iAsicIdxSts2P = fuAsicIdxSts2P;
+   l->add("AsicIdxSts1N", iAsicIdxSts1N);
+   l->add("AsicIdxSts1P", iAsicIdxSts1P);
+   l->add("AsicIdxSts2N", iAsicIdxSts2N);
+   l->add("AsicIdxSts2P", iAsicIdxSts2P);
 #endif // VERSION_GREATER_160601
 }
 
@@ -94,6 +112,11 @@ Bool_t CbmCern2017UnpackParSts::getParams(FairParamList* l) {
 
    fiElinkToAsicMap.Set( fuNrOfDpbs * fuNbElinksPerDpb );
    if ( ! l->fill("ElinkToAsicMap", &fiElinkToAsicMap ) ) return kFALSE;
+   
+   if ( ! l->fill("fuAsicIdxSts1N", &fuAsicIdxSts1N ) ) return kFALSE;
+   if ( ! l->fill("fuAsicIdxSts1P", &fuAsicIdxSts1P ) ) return kFALSE;
+   if ( ! l->fill("fuAsicIdxSts2N", &fuAsicIdxSts2N ) ) return kFALSE;
+   if ( ! l->fill("fuAsicIdxSts2P", &fuAsicIdxSts2P ) ) return kFALSE;
 #else
    Int_t iNrOfDpbs       = 0;
    Int_t iNbElinksPerDpb = 0;
@@ -117,6 +140,19 @@ Bool_t CbmCern2017UnpackParSts::getParams(FairParamList* l) {
 
    fiElinkToAsicMap.Set( fuNrOfDpbs * fuNbElinksPerDpb );
    if ( ! l->fill("ElinkToAsicMap", &fiElinkToAsicMap ) ) return kFALSE;
+
+   Int_t iAsicIdxSts1N = 0;
+   Int_t iAsicIdxSts1P = 0;
+   Int_t iAsicIdxSts2N = 0;
+   Int_t iAsicIdxSts12 = 0;
+   if ( ! l->fill("AsicIdxSts1N", &iAsicIdxSts1N ) ) return kFALSE;
+   if ( ! l->fill("AsicIdxSts1P", &iAsicIdxSts1P ) ) return kFALSE;
+   if ( ! l->fill("AsicIdxSts2N", &iAsicIdxSts2N ) ) return kFALSE;
+   if ( ! l->fill("AsicIdxSts2P", &iAsicIdxSts2P ) ) return kFALSE;
+   fuAsicIdxSts1N = iAsicIdxSts1N;
+   fuAsicIdxSts1P = iAsicIdxSts1P;
+   fuAsicIdxSts2N = iAsicIdxSts2N;
+   fuAsicIdxSts2P = iAsicIdxSts1P;
 #endif // VERSION_GREATER_160601
 
   return kTRUE;

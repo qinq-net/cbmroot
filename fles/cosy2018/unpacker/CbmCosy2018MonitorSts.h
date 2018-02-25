@@ -67,6 +67,7 @@ public:
                                                            stsxyter::MessagePrintMask::msg_print_Human )
                         { fbPrintMessages = bPrintMessOn; fPrintMessCtrl = ctrl; }
    void EnableChanHitDtPlot( Bool_t bEnable = kTRUE ) { fbChanHitDtEna = bEnable; }
+   void EnableDualStsMode( Bool_t bEnable = kTRUE ) { fbDualStsEna = bEnable; }
    void SetPulserChannels( UInt_t uAsicA, UInt_t uChanA, UInt_t uAsicB, UInt_t uChanB,
                            UInt_t uAsicC, UInt_t uChanC, UInt_t uAsicD, UInt_t uChanD,
                            UInt_t uMaxNbMicroslices = 100 );
@@ -93,6 +94,7 @@ private:
    Bool_t                fbPrintMessages;
    stsxyter::MessagePrintMask fPrintMessCtrl;
    Bool_t                fbChanHitDtEna;
+   Bool_t                fbDualStsEna;
       // TS/MS info
    ULong64_t             fulCurrentTsIdx;
    ULong64_t             fulCurrentMsIdx;
@@ -110,8 +112,9 @@ private:
    std::vector< UInt_t    > fvuElinkLastTsHit;                  //! TS from last hit for DPB
       // Hits comparison
    std::vector< std::vector< ULong64_t > > fvulChanLastHitTime; //! Last hit time in bins for each Channel
-   std::vector< std::vector<Double_t> > fvdChanLastHitTime;    //! Last hit time in ns   for each Channel
-   std::vector< std::vector< std::vector< UInt_t > > > fvuChanNbHitsInMs;    //! Number of hits in each MS for each Channel
+   std::vector< std::vector< Double_t  > > fvdChanLastHitTime;  //! Last hit time in ns   for each Channel
+   std::vector< Double_t >                               fvdMsTime;              //! Header time of each MS
+   std::vector< std::vector< std::vector< UInt_t > > >   fvuChanNbHitsInMs;      //! Number of hits in each MS for each Channel
    std::vector< std::vector< std::vector< Double_t > > > fvdChanLastHitTimeInMs; //! Last hit time in bins in each MS for each Channel
    std::vector< std::vector< std::vector< UShort_t > > > fvusChanLastHitAdcInMs; //! Last hit ADC in bins in each MS for each Channel
    std::vector< std::vector< std::multiset< stsxyter::FinalHit > > > fvmChanHitsInTs; //! All hits (time & ADC) in bins in last TS for each Channel
@@ -119,6 +122,15 @@ private:
    Double_t              fdStartTime;           /** Time of first valid hit (TS_MSB available), used as reference for evolution plots**/
    Double_t              fdStartTimeMsSz;       /** Time of first microslice, used as reference for evolution plots**/
    std::chrono::steady_clock::time_point ftStartTimeUnix; /** Time of run Start from UNIX system, used as reference for long evolution plots against reception time **/
+
+      // Hits time-sorting
+   std::multiset< stsxyter::FinalHit > fvmHitsInTs; //! All hits (time in bins, ADC in bins, asic, channel) in last TS, sorted by multiset with "<" operator
+   stsxyter::FinalHit fLastSortedHit1N; //! Last sorted hit for STS 1 N
+   stsxyter::FinalHit fLastSortedHit1P; //! Last sorted hit for STS 1 P
+   stsxyter::FinalHit fLastSortedHit2N; //! Last sorted hit for STS 2 N
+   stsxyter::FinalHit fLastSortedHit2P; //! Last sorted hit for STS 2 P
+      // Coincidence histos
+   UInt_t fuMaxNbMicroslices;
 
    // Histograms
    CbmHistManager* fHM;                 //! Histogram manager
@@ -157,9 +169,6 @@ private:
    std::vector<TH2*> fhStsPulserChansTimeDiffAdc;
 
    TH2* fhStsAsicTsMsb;
-   TH2* fhStsAsicTsMsbMaj;
-   std::vector<TH2*> fhStsElinkTsMsbCrc;
-   std::vector<TH2*> fhStsElinkTsMsbMaj;
 
    Bool_t fbLongHistoEnable;
    UInt_t fuLongHistoNbSeconds;
@@ -170,6 +179,35 @@ private:
 /*
    std::vector<TH1*> fhFebRateEvoDate;
 */
+      // Coincidences in same MS (unsorted hits)
+   TH2 * fhStsSameMs1NP;
+   TH2 * fhStsSameMs2NP;
+   TH2 * fhStsSameMsN1N2;
+   TH2 * fhStsSameMsP1P2;
+   TH2 * fhStsSameMsN1P2;
+   TH2 * fhStsSameMsP1N2;
+
+   TH1 * fhStsSameMsCntEvoN1P1;
+   TH1 * fhStsSameMsCntEvoN2P2;
+   TH1 * fhStsSameMsCntEvoN1N2;
+   TH1 * fhStsSameMsCntEvoP1P2;
+   TH1 * fhStsSameMsCntEvoN1P2;
+   TH1 * fhStsSameMsCntEvoP1N2;
+   TH1 * fhStsSameMsCntEvoN1P1N2P2;
+
+      // Coincidences in sorted hits
+   TH1 * fhStsSortedDtN1P1;
+   TH1 * fhStsSortedDtN2P2;
+   TH1 * fhStsSortedDtN1N2;
+   TH1 * fhStsSortedDtP1P2;
+   TH1 * fhStsSortedDtN1P2;
+   TH1 * fhStsSortedDtP1N2;
+   TH2 * fhStsSortedMapN1P1;
+   TH2 * fhStsSortedMapN2P2;
+   TH2 * fhStsSortedMapN1N2;
+   TH2 * fhStsSortedMapP1P2;
+   TH2 * fhStsSortedMapN1P2;
+   TH2 * fhStsSortedMapP1N2;
 
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
