@@ -144,7 +144,7 @@ Bool_t CbmCern2017UnpackParSts::getParams(FairParamList* l) {
    Int_t iAsicIdxSts1N = 0;
    Int_t iAsicIdxSts1P = 0;
    Int_t iAsicIdxSts2N = 0;
-   Int_t iAsicIdxSts12 = 0;
+   Int_t iAsicIdxSts2P = 0;
    if ( ! l->fill("AsicIdxSts1N", &iAsicIdxSts1N ) ) return kFALSE;
    if ( ! l->fill("AsicIdxSts1P", &iAsicIdxSts1P ) ) return kFALSE;
    if ( ! l->fill("AsicIdxSts2N", &iAsicIdxSts2N ) ) return kFALSE;
@@ -152,7 +152,7 @@ Bool_t CbmCern2017UnpackParSts::getParams(FairParamList* l) {
    fuAsicIdxSts1N = iAsicIdxSts1N;
    fuAsicIdxSts1P = iAsicIdxSts1P;
    fuAsicIdxSts2N = iAsicIdxSts2N;
-   fuAsicIdxSts2P = iAsicIdxSts1P;
+   fuAsicIdxSts2P = iAsicIdxSts2P;
 #endif // VERSION_GREATER_160601
 
   return kTRUE;
