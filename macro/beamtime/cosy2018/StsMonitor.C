@@ -13,10 +13,10 @@ FairRunOnline *run = NULL;
 void StsMonitor(TString inFile = "",
                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080)
 {
-  TString srcDir = gSystem->Getenv("VMCWORKDIR");
-  TString inDir  = srcDir + "/input/";
-  if( "" != inFile )
-   inFile = inDir + inFile;
+//  TString srcDir = gSystem->Getenv("VMCWORKDIR");
+//  TString inDir  = srcDir + "/input/";
+//  if( "" != inFile )
+//   inFile = inDir + inFile;
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
@@ -58,6 +58,7 @@ void StsMonitor(TString inFile = "",
   CbmCosy2018MonitorSts* monitorSts = new CbmCosy2018MonitorSts();
 //  monitorSts->SetPrintMessage();
   monitorSts->SetMsOverlap();
+  monitorSts->EnableDualStsMode( kFALSE );
   /*
   monitorSts->EnableChanHitDtPlot();
   monitorSts->SetPulserChannels( 0,  91, 1, 27,
