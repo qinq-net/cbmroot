@@ -93,7 +93,7 @@ public:
         return result;
     }*/
     
-    static CbmTrackParam2 Extrapolate(const CbmTrackParam2& parIn, Double_t zOut)
+    CbmTrackParam2 Extrapolate(const CbmTrackParam2& parIn, Double_t zOut)
     {
         CbmTrackParam2 parOut;
         parOut.SetZ(zOut);
@@ -116,7 +116,7 @@ public:
         Double_t t1 = covIn[2];
         Double_t t4 = covIn[9];
         Double_t t6 = dz * t4 + t1;
-        covOut[0] = dz * t1 + t6 * dz + covIn[0];
+        covOut[0] = dz * t1 + t6 * dz + covIn[0] + fScatXSq;
         Double_t t8 = covIn[6];
         Double_t t11 = covIn[10];
         Double_t t12 = dz * t11;
@@ -128,7 +128,7 @@ public:
         Double_t t21 = covIn[7];
         Double_t t24 = covIn[12];
         Double_t t26 = dz * t24 + t21;
-        covOut[5] = dz * t21 + t26 * dz + covIn[5];
+        covOut[5] = dz * t21 + t26 * dz + covIn[5] + fScatYSq;
         Double_t covOut5 = t12 + t8;
         Double_t covOut6 = t26;
         Double_t t30 = covIn[13];

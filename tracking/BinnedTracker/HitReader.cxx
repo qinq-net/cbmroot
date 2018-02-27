@@ -676,7 +676,7 @@ public:
          
          //hit->SetTime(t);
          hit->SetTime(0);
-         hit->SetTimeError(4);
+         hit->SetTimeError(10000);
          //hit->SetDx(hit->GetDx() * 4);
          //hit->SetDy(hit->GetDy() * 4);
          fStations[stationNumber]->AddHit(hit, i);
@@ -732,8 +732,11 @@ public:
       for (Int_t i = 0; i < nofHits; ++i)
       {
          /*const */CbmPixelHit* hit = static_cast</*const */CbmPixelHit*> (fHitArray->At(i));
+         
+         if (hit->GetTimeError() <= 0)
+            hit->SetTimeError(4);
+         
          fStations[0]->AddHit(hit, i);
-         hit->SetTimeError(4);
 #ifdef DO_ERROR_STAT
          UpdateMax("Tof", 0, hit);
 #endif//DO_ERROR_STAT
