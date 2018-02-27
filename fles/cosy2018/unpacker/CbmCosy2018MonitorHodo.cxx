@@ -230,9 +230,9 @@ Bool_t CbmCosy2018MonitorHodo::ReInitContainers()
       LOG(INFO) << FairLogger::endl;
    } // for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
 
-   LOG(INFO) << "ASCIC Idx for Hodo 1: " << fUnpackPar->GetAsicIndexHodo1()
+   LOG(INFO) << "ASIC Idx for Hodo 1: " << fUnpackPar->GetAsicIndexHodo1()
              << FairLogger::endl;
-   LOG(INFO) << "ASCIC Idx for Hodo 2: " << fUnpackPar->GetAsicIndexHodo2()
+   LOG(INFO) << "ASIC Idx for Hodo 2: " << fUnpackPar->GetAsicIndexHodo2()
              << FairLogger::endl;
 
    LOG(INFO) << "XY swapped in Hodo 1: " << fUnpackPar->IsXySwappedHodo1()
@@ -1426,6 +1426,9 @@ Bool_t CbmCosy2018MonitorHodo::DoUnpack(const fles::Timeslice& ts, size_t compon
                                             static_cast< uint16_t > (typeMess) );
 
                UInt_t   uAsicIdx   = fvuElinkToAsic[fuCurrDpbIdx][usElinkIdx];
+               if( ! ( fUnpackPar->GetAsicIndexHodo1() == uAsicIdx ||
+                       fUnpackPar->GetAsicIndexHodo2() == uAsicIdx ) )
+                  continue;
 
                FillHitInfo( mess, usElinkIdx, uAsicIdx, m );
                break;
