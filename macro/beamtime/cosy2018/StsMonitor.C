@@ -67,7 +67,7 @@ void StsMonitor(TString inFile = "",
   monitorSts->SetLongDurationLimits( 3600, 10 );
 
   // --- Source task
-  CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
+  CbmTofStar2018Source* source = new CbmTofStar2018Source();
   if( "" != inFile )
       source->SetFileName(inFile);
       else

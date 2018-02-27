@@ -13,11 +13,12 @@ FairRunOnline *run = NULL;
 void HodoMonitor(TString inFile = "",
                  Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080)
 {
+  /*
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
   TString inDir  = srcDir + "/input/";
   if( "" != inFile )
    inFile = inDir + inFile;
-
+*/
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
 //  Int_t nEvents = 10000;
@@ -60,7 +61,7 @@ void HodoMonitor(TString inFile = "",
   monitorHodo->SetLongDurationLimits( 3600, 10 );
 
   // --- Source task
-  CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
+  CbmTofStar2018Source* source = new CbmTofStar2018Source();
   if( "" != inFile )
       source->SetFileName(inFile);
       else

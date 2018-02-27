@@ -48,10 +48,10 @@ ChannelToPlaneMap: Int_t \
  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
 AsicIdxHodo1: Int_t 2
 AsicIdxHodo2: Int_t 3
-SwapHodo1XY:  Int_t 0
-SwapHodo2XY:  Int_t 1
-InvertHodo1X: Int_t 0
+SwapHodo1XY:  Int_t 1
+SwapHodo2XY:  Int_t 0
+InvertHodo1X: Int_t 1
 InvertHodo1Y: Int_t 0
-InvertHodo2X: Int_t 0
+InvertHodo2X: Int_t 1
 InvertHodo2Y: Int_t 0
 #######################
