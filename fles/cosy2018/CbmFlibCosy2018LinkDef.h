@@ -6,5 +6,6 @@
 
 #pragma link C++ class CbmCosy2018MonitorSts;
 #pragma link C++ class CbmCosy2018MonitorHodo;
+#pragma link C++ class CbmCosy2018MonitorSetup;
 
 #endif
