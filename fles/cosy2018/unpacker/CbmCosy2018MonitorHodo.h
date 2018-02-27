@@ -198,6 +198,12 @@ private:
    TH2 * fhHodoSortedMapY1Y2;
    TH2 * fhHodoSortedMapX1Y2;
    TH2 * fhHodoSortedMapY1X2;
+   TH1 * fhHodoSortedCntEvoX1Y1;
+   TH1 * fhHodoSortedCntEvoX2Y2;
+   TH1 * fhHodoSortedCntEvoX1X2;
+   TH1 * fhHodoSortedCntEvoY1Y2;
+   TH1 * fhHodoSortedCntEvoX1Y2;
+   TH1 * fhHodoSortedCntEvoY1X2;
 
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
