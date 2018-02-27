@@ -205,6 +205,12 @@ private:
    TH2 * fhStsSortedMapP1P2;
    TH2 * fhStsSortedMapN1P2;
    TH2 * fhStsSortedMapP1N2;
+   TH1 * fhStsSortedCntEvoN1P1;
+   TH1 * fhStsSortedCntEvoN2P2;
+   TH1 * fhStsSortedCntEvoN1N2;
+   TH1 * fhStsSortedCntEvoP1P2;
+   TH1 * fhStsSortedCntEvoN1P2;
+   TH1 * fhStsSortedCntEvoP1N2;
 
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];

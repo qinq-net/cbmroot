@@ -67,6 +67,7 @@ public:
                                                            stsxyter::MessagePrintMask::msg_print_Human )
                         { fbPrintMessages = bPrintMessOn; fPrintMessCtrl = ctrl; }
    void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
+   void SetCoincidenceBorder( Double_t dNewValue ){ fdCoincBorder = dNewValue;}
 
 private:
    size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
@@ -186,6 +187,7 @@ private:
    TH1 * fhHodoSameMsCntEvoX1Y1X2Y2;
 
       // Coincidences in sorted hits
+   Double_t fdCoincBorder; // ns, +/-
    TH1 * fhHodoSortedDtX1Y1;
    TH1 * fhHodoSortedDtX2Y2;
    TH1 * fhHodoSortedDtX1X2;
