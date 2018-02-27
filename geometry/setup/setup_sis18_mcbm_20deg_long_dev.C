@@ -6,6 +6,7 @@
  **
  **/
 
+// 2018-02-27 - DE - use mTRD v18o to fix redmine issue #1046 with tracking
 // 2017-12-11 - DE - enable mBUCH v18m
 // 2017-12-04 - DE - add mPSD to mCBM setup
 // 2017-11-03 - DE - add long setup, (acceptance matching +-12 degrees from mSTS)
@@ -36,7 +37,7 @@ void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 901111111)
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";
   TString stsGeoTag       = "v18g_mcbm";    // 1-1-1-2 ladder configuration
   TString muchGeoTag      = "v18g_mcbm";    // 11 o'clock, Mv2 size
-  TString buchGeoTag      = "v18m_mcbm";    // long, with mBUCH
+  TString buchGeoTag      = "v18o_mcbm";    // long, with mBUCH
 					    
   TString trdGeoTag       = "v18n_mcbm";    // long, without mBUCH
   TString tofGeoTag       = "v18i_mcbm";    // long distance
