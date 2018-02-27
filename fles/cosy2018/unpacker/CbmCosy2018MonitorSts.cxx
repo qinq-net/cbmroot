@@ -65,6 +65,7 @@ CbmCosy2018MonitorSts::CbmCosy2018MonitorSts() :
    fvuElinkLastTsHit(),
    fvulChanLastHitTime(),
    fvdChanLastHitTime(),
+   fvdMsTime(),
    fvuChanNbHitsInMs(),
    fvdChanLastHitTimeInMs(),
    fvusChanLastHitAdcInMs(),
@@ -72,6 +73,12 @@ CbmCosy2018MonitorSts::CbmCosy2018MonitorSts() :
    fdStartTime(-1.0),
    fdStartTimeMsSz(-1.0),
    ftStartTimeUnix( std::chrono::steady_clock::now() ),
+   fvmHitsInTs(),
+   fLastSortedHit1N(),
+   fLastSortedHit1P(),
+   fLastSortedHit2N(),
+   fLastSortedHit2P(),
+   fuMaxNbMicroslices(100),
    fHM(new CbmHistManager()),
    fhStsMessType(NULL),
    fhStsSysMessType(NULL),
@@ -97,6 +104,7 @@ CbmCosy2018MonitorSts::CbmCosy2018MonitorSts() :
    fhStsChanSameMs(),
    fpStsChanSameMsTimeDiff(),
    fhStsChanSameMsTimeDiff(),
+/*
    fbPulserTimeDiffOn(kFALSE),
    fuPulserMaxNbMicroslices(100),
    fvuPulserAsic(),
@@ -104,6 +112,7 @@ CbmCosy2018MonitorSts::CbmCosy2018MonitorSts() :
    fhStsPulserChansTimeDiff(),
    fhStsPulserChansTimeDiffEvo(),
    fhStsPulserChansTimeDiffAdc(),
+*/
    fhStsAsicTsMsb(NULL),
    fbLongHistoEnable( kFALSE ),
    fuLongHistoNbSeconds( 0 ),
@@ -237,6 +246,15 @@ Bool_t CbmCosy2018MonitorSts::ReInitContainers()
    LOG(INFO) << "Counter size for cycles: " << stsxyter::kuTsCycleNbBins
              << FairLogger::endl;
 
+   LOG(INFO) << "ASIC Idx for STS 1 N: " << fUnpackPar->GetAsicIndexSts1N()
+             << FairLogger::endl;
+   LOG(INFO) << "ASIC Idx for STS 1 P: " << fUnpackPar->GetAsicIndexSts1P()
+             << FairLogger::endl;
+   LOG(INFO) << "ASIC Idx for STS 2 N: " << fUnpackPar->GetAsicIndexSts2N()
+             << FairLogger::endl;
+   LOG(INFO) << "ASIC Idx for STS 2 P: " << fUnpackPar->GetAsicIndexSts2P()
+             << FairLogger::endl;
+
    // Internal status initialization
    fvulCurrentTsMsb.resize( fuNrOfDpbs );
    fvuCurrentTsMsbCycle.resize( fuNrOfDpbs );
@@ -267,16 +285,16 @@ Bool_t CbmCosy2018MonitorSts::ReInitContainers()
          fvulChanLastHitTime[ uXyterIdx ][ uChan ] = 0;
          fvdChanLastHitTime[ uXyterIdx ][ uChan ] = -1.0;
 
-         fvuChanNbHitsInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
-         fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
-         fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
+         fvuChanNbHitsInMs[ uXyterIdx ][ uChan ].resize( fuMaxNbMicroslices );
+         fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ].resize( fuMaxNbMicroslices );
+         fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ].resize( fuMaxNbMicroslices );
          fvmChanHitsInTs[ uXyterIdx ][ uChan ].clear();
-         for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
+         for( UInt_t uMsIdx = 0; uMsIdx < fuMaxNbMicroslices; ++uMsIdx )
          {
             fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
             fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = -1.0;
             fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
-         } // for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
+         } // for( UInt_t uMsIdx = 0; uMsIdx < fuMaxNbMicroslices; ++uMsIdx )
       } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    LOG(INFO) << "CbmCosy2018MonitorSts::ReInitContainers => Changed fvuChanNbHitsInMs size "
@@ -286,7 +304,7 @@ Bool_t CbmCosy2018MonitorSts::ReInitContainers()
                 << fvuChanNbHitsInMs[ 0 ].size() << " VS " << fuNbChanPerAsic
                 << FairLogger::endl;
    LOG(INFO) << "CbmCosy2018MonitorSts::ReInitContainers =>  Changed fvuChanNbHitsInMs size "
-                << fvuChanNbHitsInMs[ 0 ][ 0 ].size() << " VS " << fuPulserMaxNbMicroslices
+                << fvuChanNbHitsInMs[ 0 ][ 0 ].size() << " VS " << fuMaxNbMicroslices
                 << FairLogger::endl;
    return kTRUE;
 }
@@ -641,7 +659,7 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       } // if( kTRUE == fbLongHistoEnable )
 
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-
+/*
    if( kTRUE == fbPulserTimeDiffOn )
    {
       UInt_t uNbPulserChans = fvuPulserAsic.size();
@@ -702,13 +720,13 @@ void CbmCosy2018MonitorSts::CreateHistograms()
 #endif
          } // Loop on pairs of channels
    } // if( kTRUE == fbPulserTimeDiffOn )
-
+*/
    // Coincidence map for each hodoscope
    sHistName = "hStsSameMs1NP";
    title = "MS with hits in both channels for Sts 1 axis N and P; N channel []; P channel []; MS []";
    fhStsSameMs1NP = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
    fHM->Add(sHistName.Data(), fhStsSameMs1NP );
 #ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsSameMs1NP );
@@ -719,8 +737,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       sHistName = "hStsSameMs2NP";
       title = "MS with hits in both channels for Sts 2 axis N and P; N channel []; P channel []; MS []";
       fhStsSameMs2NP = new TH2I( sHistName, title,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
       fHM->Add(sHistName.Data(), fhStsSameMs2NP );
    #ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsSameMs2NP );
@@ -730,8 +748,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       sHistName = "hStsSameMsN1N2";
       title = "MS with hits in both channels for Sts 1 and 2 axis N; N channel Sts 1 []; N channel Sts 2 []; MS []";
       fhStsSameMsN1N2 = new TH2I( sHistName, title,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
       fHM->Add(sHistName.Data(), fhStsSameMsN1N2 );
    #ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsSameMsN1N2 );
@@ -739,8 +757,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       sHistName = "fhStsSameMsP1P2";
       title = "MS with hits in both channels for Sts 1 and 2 axis P; P channel Sts 1 []; P channel Sts 2 []; MS []";
       fhStsSameMsP1P2 = new TH2I( sHistName, title,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
       fHM->Add(sHistName.Data(), fhStsSameMsP1P2 );
    #ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsSameMsP1P2 );
@@ -748,8 +766,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       sHistName = "hStsSameMsN1P2";
       title = "MS with hits in both channels for Sts 1 axis N and 2 axis P; N channel Sts 1 []; P channel Sts 2 []; MS []";
       fhStsSameMsN1P2 = new TH2I( sHistName, title,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
       fHM->Add(sHistName.Data(), fhStsSameMsN1P2 );
    #ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsSameMsN1P2 );
@@ -757,8 +775,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       sHistName = "fhStsSameMsP1N2";
       title = "MS with hits in both channels for Sts 1 axis P and 2 axis N; P channel Sts 1 []; N channel Sts 2 []; MS []";
       fhStsSameMsP1N2 = new TH2I( sHistName, title,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
       fHM->Add(sHistName.Data(), fhStsSameMsP1N2 );
    #ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsSameMsP1N2 );
@@ -886,8 +904,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
    sHistName = "fhStsSortedMapN1P1";
    title = "Sorted hits in coincidence for Sts 1 axis N and P; N channel Sts 1 []; P channel Sts 1 []; MS []";
    fhStsSortedMapN1P1 = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
    fHM->Add(sHistName.Data(), fhStsSortedMapN1P1 );
 #ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsSortedMapN1P1 );
@@ -898,8 +916,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       sHistName = "fhStsSortedMapN2P2";
       title = "Sorted hits in coincidence for Sts 2 axis N and P; N channel Sts 2 []; P channel Sts 2 []; MS []";
       fhStsSortedMapN2P2 = new TH2I( sHistName, title,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
       fHM->Add(sHistName.Data(), fhStsSortedMapN2P2 );
    #ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsSortedMapN2P2 );
@@ -908,8 +926,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       sHistName = "fhStsSortedMapN1N2";
       title = "Sorted hits in coincidence for Sts 1 axis N and 2 axis N; N channel Sts 1 []; N channel Sts 2 []; MS []";
       fhStsSortedMapN1N2 = new TH2I( sHistName, title,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
       fHM->Add(sHistName.Data(), fhStsSortedMapN1N2 );
    #ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsSortedMapN1N2 );
@@ -918,8 +936,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       sHistName = "fhStsSortedMapP1P2";
       title = "Sorted hits in coincidence for Sts 1 axis P and 2 axis P; P channel Sts 1 []; P channel Sts 2 []; MS []";
       fhStsSortedMapP1P2 = new TH2I( sHistName, title,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
       fHM->Add(sHistName.Data(), fhStsSortedMapP1P2 );
    #ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsSortedMapP1P2 );
@@ -928,8 +946,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       sHistName = "fhStsSortedMapN1P2";
       title = "Sorted hits in coincidence for Sts 1 axis N and 2 axis P; N channel Sts 1 []; P channel Sts 2 []; MS []";
       fhStsSortedMapN1P2 = new TH2I( sHistName, title,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
       fHM->Add(sHistName.Data(), fhStsSortedMapN1P2 );
    #ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsSortedMapN1P2 );
@@ -938,8 +956,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       sHistName = "fhStsSortedMapP1N2";
       title = "Sorted hits in coincidence for Sts 1 axis P and 2 axis N; P channel Sts 1 []; N channel Sts 2 []; MS []";
       fhStsSortedMapP1N2 = new TH2I( sHistName, title,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                     fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                     fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
       fHM->Add(sHistName.Data(), fhStsSortedMapP1N2 );
    #ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsSortedMapP1N2 );
@@ -1005,7 +1023,7 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       gPad->SetLogy();
       fhStsXyterRateEvo[ uXyterIdx ]->Draw();
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-
+/*
       // Pulser testing
    if( kTRUE == fbPulserTimeDiffOn )
    {
@@ -1042,7 +1060,7 @@ void CbmCosy2018MonitorSts::CreateHistograms()
          } // for( UInt_t uPulserPlot = 0; uPulserPlot < uNbPulserPlots; ++uPulserPlot)
       } // if( kTRUE == fbLongHistoEnable )
    } // if( kTRUE == fbPulserTimeDiffOn )
-
+*/
       // Long duration rate monitoring
    if( kTRUE == fbLongHistoEnable )
    {
@@ -1075,7 +1093,7 @@ void CbmCosy2018MonitorSts::CreateHistograms()
    {
       cStsMaps->Divide( 2, 3 );
    } // if( kTRUE == fbDualStsEna )
-   
+
    cStsMaps->cd(1);
    gPad->SetLogz();
    fhStsSameMs1NP->Draw( "colz" );
@@ -1112,7 +1130,7 @@ void CbmCosy2018MonitorSts::CreateHistograms()
    {
       cStsCoincEvo->Divide( 2, 4 );
    } // if( kTRUE == fbDualStsEna )
-   
+
    cStsCoincEvo->cd(1);
    gPad->SetLogz();
    fhStsSameMsCntEvoN1P1->Draw( "colz" );
@@ -1275,10 +1293,11 @@ Bool_t CbmCosy2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
 */
    fulCurrentTsIdx = ts.index();
 
-   if( fuPulserMaxNbMicroslices < numCompMsInTs )
+   if( fuMaxNbMicroslices < numCompMsInTs )
    {
-      fuPulserMaxNbMicroslices = numCompMsInTs;
+      fuMaxNbMicroslices = numCompMsInTs;
 
+      fvdMsTime.resize( fuMaxNbMicroslices );
       fvuChanNbHitsInMs.resize( fuNbStsXyters );
       fvdChanLastHitTimeInMs.resize( fuNbStsXyters );
       fvusChanLastHitAdcInMs.resize( fuNbStsXyters );
@@ -1289,15 +1308,15 @@ Bool_t CbmCosy2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
          fvusChanLastHitAdcInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
          for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
          {
-            fvuChanNbHitsInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
-            fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
-            fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ].resize( fuPulserMaxNbMicroslices );
-            for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
+            fvuChanNbHitsInMs[ uXyterIdx ][ uChan ].resize( fuMaxNbMicroslices );
+            fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ].resize( fuMaxNbMicroslices );
+            fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ].resize( fuMaxNbMicroslices );
+            for( UInt_t uMsIdx = 0; uMsIdx < fuMaxNbMicroslices; ++uMsIdx )
             {
                fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
                fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = -1.0;
                fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
-            } // for( UInt_t uMsIdx = 0; uMsIdx < fuPulserMaxNbMicroslices; ++uMsIdx )
+            } // for( UInt_t uMsIdx = 0; uMsIdx < fuMaxNbMicroslices; ++uMsIdx )
          } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
       } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
       LOG(INFO) << "CbmCosy2018MonitorSts::DoUnpack => Changed fvuChanNbHitsInMs size "
@@ -1307,9 +1326,9 @@ Bool_t CbmCosy2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                    << fvuChanNbHitsInMs[ 0 ].size() << " VS " << fuNbChanPerAsic
                    << FairLogger::endl;
       LOG(INFO) << "CbmCosy2018MonitorSts::DoUnpack =>  Changed fvuChanNbHitsInMs size "
-                   << fvuChanNbHitsInMs[ 0 ][ 0 ].size() << " VS " << fuPulserMaxNbMicroslices
+                   << fvuChanNbHitsInMs[ 0 ][ 0 ].size() << " VS " << fuMaxNbMicroslices
                    << FairLogger::endl;
-   } // if( fuPulserMaxNbMicroslices < numCompMsInTs )
+   } // if( fuMaxNbMicroslices < numCompMsInTs )
 
    for( size_t m = 0; m < numCompMsInTs; ++m )
    {
@@ -1409,6 +1428,16 @@ Bool_t CbmCosy2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                                             static_cast< uint16_t > (typeMess) );
 
                UInt_t   uAsicIdx   = fvuElinkToAsic[fuCurrDpbIdx][usElinkIdx];
+               if( ! ( fUnpackPar->GetAsicIndexSts1N() == uAsicIdx ||
+                       fUnpackPar->GetAsicIndexSts1P() == uAsicIdx ) )
+               {
+                  if( kFALSE == fbDualStsEna )
+                     continue;
+
+                  if( ! ( fUnpackPar->GetAsicIndexSts2N() == uAsicIdx ||
+                          fUnpackPar->GetAsicIndexSts2P() == uAsicIdx ) )
+                     continue;
+               } // If neither P nor n side of STS sensor 1
 
                FillHitInfo( mess, usElinkIdx, uAsicIdx, m );
                break;
@@ -1616,10 +1645,10 @@ Bool_t CbmCosy2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                {
                   Double_t dDtN1N2 = ( fLastSortedHit2N.GetTs() - ulHitTs ) * stsxyter::kdClockCycleNs;
                   Double_t dDtN1P2 = ( fLastSortedHit2P.GetTs() - ulHitTs ) * stsxyter::kdClockCycleNs;
-                  
+
                   fhStsSortedDtN1N2->Fill( dDtN1N2 );
                   fhStsSortedDtN1P2->Fill( dDtN1P2 );
-               
+
                   if( TMath::Abs( dDtN1N2 ) < dCoincBorder )
                      fhStsSortedMapN1N2->Fill( usChanIdx, fLastSortedHit2N.GetChan() );
                   if( TMath::Abs( dDtN1P2 ) < dCoincBorder )
@@ -1634,7 +1663,7 @@ Bool_t CbmCosy2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                fhStsSortedDtN1P1->Fill( dDtN1P1 );
                if( TMath::Abs( dDtN1P1 ) < dCoincBorder )
                   fhStsSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), usChanIdx );
-                  
+
                if( kTRUE == fbDualStsEna )
                {
                   Double_t dDtP1P2 = ( fLastSortedHit2P.GetTs() - ulHitTs ) * stsxyter::kdClockCycleNs;
@@ -1963,7 +1992,7 @@ void CbmCosy2018MonitorSts::SaveAllHistos( TString sFileName )
          fhFebChRateEvoLong[ uXyterIdx ]->Write();
       } // if( kTRUE == fbLongHistoEnable )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-
+/*
    if( kTRUE == fbPulserTimeDiffOn )
    {
       UInt_t uNbPulserChans = fvuPulserAsic.size();
@@ -1975,7 +2004,7 @@ void CbmCosy2018MonitorSts::SaveAllHistos( TString sFileName )
             uHistoIdx ++;
          } // Loop on channel pairs
    } // if( kTRUE == fbPulserTimeDiffOn )
-
+*/
    fhStsAsicTsMsb->Write();
 
    gDirectory->cd("..");
@@ -2013,7 +2042,7 @@ void CbmCosy2018MonitorSts::SaveAllHistos( TString sFileName )
       fhStsSortedMapP1N2->Write();
    } // if( kTRUE == fbDualStsEna )
    gDirectory->cd("..");
-   
+
    // Flib Histos
    gDirectory->mkdir("Flib_Raw");
    gDirectory->cd("Flib_Raw");
@@ -2078,7 +2107,7 @@ void CbmCosy2018MonitorSts::ResetAllHistos()
          fhFebChRateEvoLong[ uXyterIdx ]->Reset();
       } // if( kTRUE == fbLongHistoEnable )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-
+/*
    if( kTRUE == fbPulserTimeDiffOn )
    {
       UInt_t uNbPulserChans = fvuPulserAsic.size();
@@ -2090,9 +2119,9 @@ void CbmCosy2018MonitorSts::ResetAllHistos()
             uHistoIdx ++;
          } // Loop on channel pairs
    } // if( kTRUE == fbPulserTimeDiffOn )
-
+*/
    fhStsAsicTsMsb->Reset();
-   
+
    // Coincidences in same MS (unsorted hits)
       // Coincidences in sorted hits
    fhStsSameMs1NP->Reset();
@@ -2147,65 +2176,6 @@ void CbmCosy2018MonitorSts::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinS
    fiBinSizeDatePlots    = iBinSize;
 
    LOG(INFO) << "Assigned new MUCH Run Start Date-Time: " << fRunStartDateTime->AsString() << FairLogger::endl;
-}
-void CbmCosy2018MonitorSts::SetPulserChannels( UInt_t uAsicA, UInt_t uChanA, UInt_t uAsicB, UInt_t uChanB,
-                                               UInt_t uAsicC, UInt_t uChanC, UInt_t uAsicD, UInt_t uChanD,
-                                               UInt_t uMaxNbMicroslices )
-{
-/*
-#ifdef USE_HTTP_SERVER
-   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
-   TString sHistName{""};
-   TString title{""};
-*/
-   fuPulserMaxNbMicroslices = uMaxNbMicroslices;
-
-   UInt_t uNbChans = 4;
-
-   fvuPulserAsic.resize( uNbChans );
-   fvuPulserChan.resize( uNbChans );
-   fvuPulserAsic[0] = uAsicA;
-   fvuPulserChan[0] = uChanA;
-   fvuPulserAsic[1] = uAsicB;
-   fvuPulserChan[1] = uChanB;
-   fvuPulserAsic[2] = uAsicC;
-   fvuPulserChan[2] = uChanC;
-   fvuPulserAsic[3] = uAsicD;
-   fvuPulserChan[3] = uChanD;
-/*
-   // Remove old histos
-   if( kTRUE == fbPulserTimeDiffOn )
-   {
-      for( Int_t iIdx = 0; iIdx < fhStsPulserChansTimeDiff.size(); ++iIdx )
-         delete fhStsPulserChansTimeDiff[ iIdx ];
-   } // if( kTRUE == fbPulserTimeDiffOn )
-   fhStsPulserChansTimeDiff.clear();
-
-   for( UInt_t uChA = 0; uChA < uNbChans; ++uChA )
-      for( UInt_t uChB = uChA + 1; uChB < uNbChans; ++uChB )
-      {
-         sHistName = Form( "hStsPulserTimeDiff_%02u_%03u_%02u_%03u",
-                           fvuPulserAsic[uChA], fvuPulserChan[uChA],
-                           fvuPulserAsic[uChB], fvuPulserChan[uChB] );
-         title = "Time diff for hits in same MS from ASIC %02d ch %03d and ASIC %02d ch %03d; tB - tA [ns]; Counts";
-         TH1 * pHist = new TH1I(sHistName, title, 16385, -51203.125, 51203.125);
-
-         fHM->Add(sHistName.Data(), pHist);
-#ifdef USE_HTTP_SERVER
-         if( server ) server->Register("/StsRaw", pHist );
-#endif
-         fhStsPulserChansTimeDiff.push_back( pHist );
-      } // Loop on pairs of channels
-*/
-   LOG(INFO) << "Set pulser channels to: "
-             << "( " << fvuPulserAsic[0] << "' " << fvuPulserChan[0] <<") "
-             << "( " << fvuPulserAsic[1] << "' " << fvuPulserChan[1] <<") "
-             << "( " << fvuPulserAsic[2] << "' " << fvuPulserChan[2] <<") "
-             << "( " << fvuPulserAsic[3] << "' " << fvuPulserChan[3] <<") "
-             << FairLogger::endl;
-
-   fbPulserTimeDiffOn = kTRUE;
 }
 
 void CbmCosy2018MonitorSts::SetLongDurationLimits( UInt_t uDurationSeconds, UInt_t uBinSize )

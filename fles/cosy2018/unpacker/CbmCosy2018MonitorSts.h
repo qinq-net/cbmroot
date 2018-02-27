@@ -68,9 +68,6 @@ public:
                         { fbPrintMessages = bPrintMessOn; fPrintMessCtrl = ctrl; }
    void EnableChanHitDtPlot( Bool_t bEnable = kTRUE ) { fbChanHitDtEna = bEnable; }
    void EnableDualStsMode( Bool_t bEnable = kTRUE ) { fbDualStsEna = bEnable; }
-   void SetPulserChannels( UInt_t uAsicA, UInt_t uChanA, UInt_t uAsicB, UInt_t uChanB,
-                           UInt_t uAsicC, UInt_t uChanC, UInt_t uAsicD, UInt_t uChanD,
-                           UInt_t uMaxNbMicroslices = 100 );
    void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
 
 private:
@@ -159,7 +156,7 @@ private:
    std::vector<TH2*> fhStsChanSameMs;
    std::vector<TProfile2D*> fpStsChanSameMsTimeDiff;
    std::vector<TH2*> fhStsChanSameMsTimeDiff;
-
+/*
    Bool_t fbPulserTimeDiffOn;
    UInt_t fuPulserMaxNbMicroslices;
    std::vector<UInt_t> fvuPulserAsic;
@@ -167,7 +164,7 @@ private:
    std::vector<TH1*> fhStsPulserChansTimeDiff;
    std::vector<TH2*> fhStsPulserChansTimeDiffEvo;
    std::vector<TH2*> fhStsPulserChansTimeDiffAdc;
-
+*/
    TH2* fhStsAsicTsMsb;
 
    Bool_t fbLongHistoEnable;
