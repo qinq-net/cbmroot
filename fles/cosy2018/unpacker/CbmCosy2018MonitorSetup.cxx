@@ -11,6 +11,7 @@
 
 // CbmRoot
 #include "CbmCern2017UnpackParHodo.h"
+#include "CbmCern2017UnpackParSts.h"
 #include "CbmHistManager.h"
 
 // FairRoot
@@ -35,13 +36,14 @@
 #include <stdint.h>
 #include <iomanip>
 
-Bool_t bCosy2018ResetSetupHistos = kFALSE;
-Bool_t bCosy2018WriteSetupHistos = kFALSE;
+Bool_t bCosy2018ResetSetupHistos_H = kFALSE;
+Bool_t bCosy2018WriteSetupHistos_H = kFALSE;
 
 CbmCosy2018MonitorSetup::CbmCosy2018MonitorSetup() :
    CbmTSUnpack(),
    fuOverlapMsNb(0),
-   fUnpackPar(NULL),
+   fUnpackParHodo(NULL),
+   fUnpackParSts(NULL),
    fuNrOfDpbs(0),
    fDpbIdIndexMap(),
    fuNbElinksPerDpb(0),
@@ -76,6 +78,10 @@ CbmCosy2018MonitorSetup::CbmCosy2018MonitorSetup() :
    fLastSortedHit1Y(),
    fLastSortedHit2X(),
    fLastSortedHit2Y(),
+   fLastSortedHit1N(),
+   fLastSortedHit1P(),
+   fLastSortedHit2N(),
+   fLastSortedHit2P(),
    fuMaxNbMicroslices(100),
    fbLongHistoEnable( kFALSE ),
    fuLongHistoNbSeconds( 0 ),
@@ -97,54 +103,37 @@ CbmCosy2018MonitorSetup::CbmCosy2018MonitorSetup() :
    fhHodoFebRateEvo(),
    fhHodoChanHitRateEvoLong(),
    fhHodoFebRateEvoLong(),
-   fhHodoChanCounts1X(NULL),
-   fhHodoChanCounts1Y(NULL),
-   fhHodoChanCounts2X(NULL),
-   fhHodoChanCounts2Y(NULL),
-   fhHodoChanAdcRaw1X(NULL),
-   fhHodoChanAdcRaw1Y(NULL),
-   fhHodoChanAdcRaw2X(NULL),
-   fhHodoChanAdcRaw2Y(NULL),
-   fhHodoChanHitRateEvo1X(NULL),
-   fhHodoChanHitRateEvo1Y(NULL),
-   fhHodoChanHitRateEvo2X(NULL),
-   fhHodoChanHitRateEvo2Y(NULL),
-   fhHodoRateEvo1X(NULL),
-   fhHodoRateEvo1Y(NULL),
-   fhHodoRateEvo2X(NULL),
-   fhHodoRateEvo2Y(NULL),
-   fhHodoSameMs1XY(NULL),
-   fhHodoSameMs2XY(NULL),
-   fhHodoSameMsX1X2(NULL),
-   fhHodoSameMsY1Y2(NULL),
-   fhHodoSameMsX1Y2(NULL),
-   fhHodoSameMsY1X2(NULL),
-   fhHodoSameMsCntEvoX1Y1(NULL),
-   fhHodoSameMsCntEvoX2Y2(NULL),
-   fhHodoSameMsCntEvoX1X2(NULL),
-   fhHodoSameMsCntEvoY1Y2(NULL),
-   fhHodoSameMsCntEvoX1Y2(NULL),
-   fhHodoSameMsCntEvoY1X2(NULL),
-   fhHodoSameMsCntEvoX1Y1X2Y2(NULL),
-   fhHodoSortedDtX1Y1(NULL),
-   fhHodoSortedDtX2Y2(NULL),
-   fhHodoSortedDtX1X2(NULL),
-   fhHodoSortedDtY1Y2(NULL),
-   fhHodoSortedDtX1Y2(NULL),
-   fhHodoSortedDtY1X2(NULL),
-   fhHodoSortedMapX1Y1(NULL),
-   fhHodoSortedMapX2Y2(NULL),
-   fhHodoSortedMapX1X2(NULL),
-   fhHodoSortedMapY1Y2(NULL),
-   fhHodoSortedMapX1Y2(NULL),
-   fhHodoSortedMapY1X2(NULL),
-   fhHodoSortedCntEvoX1Y1(NULL),
-   fhHodoSortedCntEvoX2Y2(NULL),
-   fhHodoSortedCntEvoX1X2(NULL),
-   fhHodoSortedCntEvoY1Y2(NULL),
-   fhHodoSortedCntEvoX1Y2(NULL),
-   fhHodoSortedCntEvoY1X2(NULL),
-//   fhHodoFebTsMsb(NULL),
+   fdCoincBorderHodo(  50.0 ),
+   fdCoincBorderSts(   75.0 ),
+   fdCoincBorder(     150.0 ),
+   fhSetupSortedDtX1Y1(NULL),
+   fhSetupSortedDtX2Y2(NULL),
+   fhSetupSortedDtN1P1(NULL),
+   fhSetupSortedDtX1Y1X2Y2(NULL),
+   fhSetupSortedDtX1Y1X2Y2N1P1(NULL),
+   fhSetupSortedMapX1Y1(NULL),
+   fhSetupSortedMapX2Y2(NULL),
+   fhSetupSortedMapN1P1(NULL),
+   fhSetupSortedCntEvoX1Y1(NULL),
+   fhSetupSortedCntEvoX2Y2(NULL),
+   fhSetupSortedCntEvoN1P1(NULL),
+   fhBothHodoSortedDtX1Y1(NULL),
+   fhBothHodoSortedDtX2Y2(NULL),
+   fhBothHodoSortedDtX1Y1X2Y2N1P1(NULL),
+   fhBothHodoSortedMapX1Y1(NULL),
+   fhBothHodoSortedMapX2Y2(NULL),
+   fhBothHodoSortedCntEvoX1Y1(NULL),
+   fhBothHodoSortedCntEvoX2Y2(NULL),
+   fhSystSortedDtX1Y1(NULL),
+   fhSystSortedDtX2Y2(NULL),
+   fhSystSortedDtN1P1(NULL),
+   fhSystSortedDtX1Y1X2Y2(NULL),
+   fhSystSortedMapX1Y1(NULL),
+   fhSystSortedMapX2Y2(NULL),
+   fhSystSortedMapN1P1(NULL),
+   fhSystSortedCntEvoX1Y1(NULL),
+   fhSystSortedCntEvoX2Y2(NULL),
+   fhSystSortedCntEvoN1P1(NULL),
    fcMsSizeAll(NULL)
 {
 }
@@ -169,7 +158,8 @@ void CbmCosy2018MonitorSetup::SetParContainers()
 {
    LOG(INFO) << "Setting parameter containers for " << GetName()
          << FairLogger::endl;
-   fUnpackPar = (CbmCern2017UnpackParHodo*)(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmCern2017UnpackParHodo"));
+   fUnpackParHodo = (CbmCern2017UnpackParHodo*)(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmCern2017UnpackParHodo"));
+   fUnpackParSts  = (CbmCern2017UnpackParSts*)(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmCern2017UnpackParSts"));
 }
 
 
@@ -189,10 +179,10 @@ Bool_t CbmCosy2018MonitorSetup::ReInitContainers()
    LOG(INFO) << "ReInit parameter containers for " << GetName()
          << FairLogger::endl;
 
-   fuNrOfDpbs       = fUnpackPar->GetNrOfDpbs();
-   fuNbElinksPerDpb = fUnpackPar->GetNbElinksPerDpb();
-   fuNbStsXyters    = fUnpackPar->GetNbStsXyters();
-   fuNbChanPerAsic  = fUnpackPar->GetNbChanPerAsic();
+   fuNrOfDpbs       = fUnpackParHodo->GetNrOfDpbs();
+   fuNbElinksPerDpb = fUnpackParHodo->GetNbElinksPerDpb();
+   fuNbStsXyters    = fUnpackParHodo->GetNbStsXyters();
+   fuNbChanPerAsic  = fUnpackParHodo->GetNbChanPerAsic();
 
 
    LOG(INFO) << "Nr. of STS DPBs:       " << fuNrOfDpbs
@@ -202,16 +192,16 @@ Bool_t CbmCosy2018MonitorSetup::ReInitContainers()
    fvuElinkToAsic.resize( fuNrOfDpbs );
    for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
    {
-      fDpbIdIndexMap[ fUnpackPar->GetDpbId( uDpb )  ] = uDpb;
+      fDpbIdIndexMap[ fUnpackParHodo->GetDpbId( uDpb )  ] = uDpb;
       LOG(INFO) << "Eq. ID for DPB #" << std::setw(2) << uDpb << " = "
-                << std::setw(4) << std::hex << fUnpackPar->GetDpbId( uDpb )
+                << std::setw(4) << std::hex << fUnpackParHodo->GetDpbId( uDpb )
                 << std::dec
-                << " => " << fDpbIdIndexMap[ fUnpackPar->GetDpbId( uDpb )  ]
+                << " => " << fDpbIdIndexMap[ fUnpackParHodo->GetDpbId( uDpb )  ]
                 << FairLogger::endl;
 
       fvuElinkToAsic[uDpb].resize( fuNbElinksPerDpb );
       for( UInt_t uElink = 0; uElink < fuNbElinksPerDpb; ++uElink )
-         fvuElinkToAsic[uDpb][uElink] = fUnpackPar->GetElinkToAsicIdx( uDpb * fuNbElinksPerDpb + uElink );
+         fvuElinkToAsic[uDpb][uElink] = fUnpackParHodo->GetElinkToAsicIdx( uDpb * fuNbElinksPerDpb + uElink );
    } // for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
 
    LOG(INFO) << "Nr. eLinks per DPB:    " << fuNbElinksPerDpb
@@ -236,23 +226,23 @@ Bool_t CbmCosy2018MonitorSetup::ReInitContainers()
       LOG(INFO) << FairLogger::endl;
    } // for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
 
-   LOG(INFO) << "ASIC Idx for Hodo 1: " << fUnpackPar->GetAsicIndexHodo1()
+   LOG(INFO) << "ASIC Idx for Hodo 1: " << fUnpackParHodo->GetAsicIndexHodo1()
              << FairLogger::endl;
-   LOG(INFO) << "ASIC Idx for Hodo 2: " << fUnpackPar->GetAsicIndexHodo2()
-             << FairLogger::endl;
-
-   LOG(INFO) << "XY swapped in Hodo 1: " << fUnpackPar->IsXySwappedHodo1()
-             << FairLogger::endl;
-   LOG(INFO) << "XY swapped in Hodo 2: " << fUnpackPar->IsXySwappedHodo2()
+   LOG(INFO) << "ASIC Idx for Hodo 2: " << fUnpackParHodo->GetAsicIndexHodo2()
              << FairLogger::endl;
 
-   LOG(INFO) << "X axis inverted in Hodo 1: " << fUnpackPar->IsXInvertedHodo1()
+   LOG(INFO) << "XY swapped in Hodo 1: " << fUnpackParHodo->IsXySwappedHodo1()
              << FairLogger::endl;
-   LOG(INFO) << "X axis inverted in Hodo 1: " << fUnpackPar->IsYInvertedHodo1()
+   LOG(INFO) << "XY swapped in Hodo 2: " << fUnpackParHodo->IsXySwappedHodo2()
              << FairLogger::endl;
-   LOG(INFO) << "X axis inverted in Hodo 2: " << fUnpackPar->IsXInvertedHodo2()
+
+   LOG(INFO) << "X axis inverted in Hodo 1: " << fUnpackParHodo->IsXInvertedHodo1()
              << FairLogger::endl;
-   LOG(INFO) << "X axis inverted in Hodo 2: " << fUnpackPar->IsYInvertedHodo2()
+   LOG(INFO) << "X axis inverted in Hodo 1: " << fUnpackParHodo->IsYInvertedHodo1()
+             << FairLogger::endl;
+   LOG(INFO) << "X axis inverted in Hodo 2: " << fUnpackParHodo->IsXInvertedHodo2()
+             << FairLogger::endl;
+   LOG(INFO) << "X axis inverted in Hodo 2: " << fUnpackParHodo->IsYInvertedHodo2()
              << FairLogger::endl;
 
    // Internal status initialization
@@ -532,183 +522,6 @@ void CbmCosy2018MonitorSetup::CreateHistograms()
 */
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 
-   // Channel counts for each of the hodoscope planes
-   sHistName = "hHodoChanCounts1X";
-   title = "Channel counts for hodoscope 1 axis X; X channel []; Hits []";
-   fhHodoChanCounts1X = new TH1I( sHistName, title,  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanCounts1X );
-
-   sHistName = "hHodoChanCounts1Y";
-   title = "Channel counts for hodoscope 1 axis Y; Y channel []; Hits []";
-   fhHodoChanCounts1Y = new TH1I( sHistName, title,  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanCounts1Y );
-
-   sHistName = "hHodoChanCounts2X";
-   title = "Channel counts for hodoscope 2 axis X; X channel []; Hits []";
-   fhHodoChanCounts2X = new TH1I( sHistName, title,  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanCounts2X );
-
-   sHistName = "hHodoChanCounts2Y";
-   title = "Channel counts for hodoscope 2 axis Y; Y channel []; Hits []";
-   fhHodoChanCounts2Y = new TH1I( sHistName, title,  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanCounts2Y );
-
-   // Raw ADC distributions for each of the hodoscope planes
-   sHistName = "hHodoChanAdcRaw1X";
-   title = "Raw ADC distributions for hodoscope 1 axis X; X channel []; ADC [bin]; Hits []";
-   fhHodoChanAdcRaw1X = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanAdcRaw1X );
-
-   sHistName = "hHodoChanAdcRaw1Y";
-   title = "Raw ADC distributions for hodoscope 1 axis Y; Y channel []; ADC [bin]; Hits []";
-   fhHodoChanAdcRaw1Y = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanAdcRaw1Y );
-
-   sHistName = "hHodoChanAdcRaw2X";
-   title = "Raw ADC distributions for hodoscope 2 axis X; X channel []; ADC [bin]; Hits []";
-   fhHodoChanAdcRaw2X = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanAdcRaw2X );
-
-   sHistName = "hHodoChanAdcRaw2Y";
-   title = "Raw ADC distributions for hodoscope 2 axis Y; Y channel []; ADC [bin]; Hits []";
-   fhHodoChanAdcRaw2Y = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanAdcRaw2Y );
-
-   // Hit rate Evo for each channel of each of the hodoscope planes
-   sHistName = "hHodoChanHitRateEvo1X";
-   title = "Hits per second & channel in Hodo 1 X axis; Time [s]; Channel []; Hits []";
-   fhHodoChanHitRateEvo1X = new TH2I( sHistName, title,
-                                      1800, 0, 1800,
-                                      fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanHitRateEvo1X );
-
-   sHistName = "hHodoChanHitRateEvo1Y";
-   title = "Hits per second & channel in Hodo 1 Y axis; Time [s]; Channel []; Hits []";
-   fhHodoChanHitRateEvo1Y = new TH2I( sHistName, title,
-                                      1800, 0, 1800,
-                                      fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanHitRateEvo1Y );
-
-   sHistName = "hHodoChanHitRateEvo2X";
-   title = "Hits per second & channel in Hodo 2 X axis; Time [s]; Channel []; Hits []";
-   fhHodoChanHitRateEvo2X = new TH2I( sHistName, title,
-                                      1800, 0, 1800,
-                                      fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanHitRateEvo2X );
-
-   sHistName = "hHodoChanHitRateEvo2Y";
-   title = "Hits per second & channel in Hodo 2 Y axis; Time [s]; Channel []; Hits []";
-   fhHodoChanHitRateEvo2Y = new TH2I( sHistName, title,
-                                      1800, 0, 1800,
-                                      fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoChanHitRateEvo2Y );
-
-   // Hit rate Evo for each channel of each of the hodoscope planes
-   sHistName = "fhHodoRateEvo1X";
-   title = "Hits per second in Hodoscope 1 X axis; Time [s]; Hits []";
-   fhHodoRateEvo1X = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoRateEvo1X );
-
-   sHistName = "hHodoRateEvo1Y";
-   title = "Hits per second in Hodoscope 1 Y axis; Time [s]; Hits []";
-   fhHodoRateEvo1Y = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoRateEvo1Y );
-
-   sHistName = "fhHodoRateEvo2X";
-   title = "Hits per second in Hodoscope 2 X axis; Time [s]; Hits []";
-   fhHodoRateEvo2X = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoRateEvo2X );
-
-   sHistName = "hHodoRateEvo2Y";
-   title = "Hits per second in Hodoscope 2 Y axis; Time [s]; Hits []";
-   fhHodoRateEvo2Y = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoRateEvo2Y );
-
-   // Coincidence map for each hodoscope
-   sHistName = "hHodoSameMs1XY";
-   title = "MS with hits in both channels for hodoscope 1 axis X and Y; X channel []; Y channel []; MS []";
-   fhHodoSameMs1XY = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSameMs1XY );
-
-   sHistName = "hHodoSameMs2XY";
-   title = "MS with hits in both channels for hodoscope 2 axis X and Y; X channel []; Y channel []; MS []";
-   fhHodoSameMs2XY = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSameMs2XY );
-
-   // Coincidence map between some axis of the hodoscopes
-   sHistName = "hHodoSameMsX1X2";
-   title = "MS with hits in both channels for hodoscope 1 and 2 axis X; X channel Hodo 1 []; X channel Hodo 2 []; MS []";
-   fhHodoSameMsX1X2 = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSameMsX1X2 );
-   sHistName = "fhHodoSameMsY1Y2";
-   title = "MS with hits in both channels for hodoscope 1 and 2 axis Y; Y channel Hodo 1 []; Y channel Hodo 2 []; MS []";
-   fhHodoSameMsY1Y2 = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSameMsY1Y2 );
-   sHistName = "hHodoSameMsX1Y2";
-   title = "MS with hits in both channels for hodoscope 1 axis X and 2 axis Y; X channel Hodo 1 []; Y channel Hodo 2 []; MS []";
-   fhHodoSameMsX1Y2 = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSameMsX1Y2 );
-   sHistName = "fhHodoSameMsY1X2";
-   title = "MS with hits in both channels for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
-   fhHodoSameMsY1X2 = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSameMsY1X2 );
-
-   // Coincidence counts evolution between some axis of the hodoscopes
-   sHistName = "hHodoSameMsCntEvoX1Y1";
-   title = "Nb of MS with hits in both X1 and Y1 per s; Time [s]; MS with both []";
-   fhHodoSameMsCntEvoX1Y1 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoX1Y1 );
-
-   sHistName = "hHodoSameMsCntEvoX2Y2";
-   title = "Nb of MS with hits in both X2 and Y2 per s; Time [s]; MS with both []";
-   fhHodoSameMsCntEvoX2Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoX2Y2 );
-
-   sHistName = "fhHodoSameMsCntEvoX1X2";
-   title = "Nb of MS with hits in both X1 and X2 per s; Time [s]; MS with both []";
-   fhHodoSameMsCntEvoX1X2 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoX1X2 );
-
-   sHistName = "fhHodoSameMsCntEvoY1Y2";
-   title = "Nb of MS with hits in both Y1 and Y2 per s; Time [s]; MS with both []";
-   fhHodoSameMsCntEvoY1Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoY1Y2 );
-
-   sHistName = "hHodoSameMsCntEvoX1Y2";
-   title = "Nb of MS with hits in both X1 and Y2 per s; Time [s]; MS with both []";
-   fhHodoSameMsCntEvoX1Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoX1Y2 );
-
-   sHistName = "hHodoSameMsCntEvoY1X2";
-   title = "Nb of MS with hits in both Y1 and X2 per s; Time [s]; MS with both []";
-   fhHodoSameMsCntEvoY1X2 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoY1X2 );
-
-   sHistName = "hHodoSameMsCntEvoX1Y1X2Y2";
-   title = "Nb of MS with hits in both X1, Y1, X2 and Y2 per s; Time [s]; MS with both []";
-   fhHodoSameMsCntEvoX1Y1X2Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoX1Y1X2Y2 );
-
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
    UInt_t uNbBinEvo = 32768 + 1;
@@ -716,108 +529,167 @@ void CbmCosy2018MonitorSetup::CreateHistograms()
                          * static_cast< Double_t >( uNbBinEvo ) / 2.0;
    Double_t dMinEdgeEvo = dMaxEdgeEvo * -1.0;
 
-   sHistName = "fhHodoSortedDtX1Y1";
+   /// Coincidences inside each detector ----------------------------///
+   sHistName = "fhSetupSortedDtX1Y1";
    title =  "Time diff for hits Hodo 1 X and Hodo 1 Y; tY1 - tX1 [ns]; Counts";
-   fhHodoSortedDtX1Y1 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
-   fHM->Add(sHistName.Data(), fhHodoSortedDtX1Y1);
+   fhSetupSortedDtX1Y1 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhSetupSortedDtX1Y1);
 
-   sHistName = "fhHodoSortedDtX2Y2";
+   sHistName = "fhSetupSortedDtX2Y2";
    title =  "Time diff for hits Hodo 2 X and Hodo 2 Y; tY2 - tX2 [ns]; Counts";
-   fhHodoSortedDtX2Y2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
-   fHM->Add(sHistName.Data(), fhHodoSortedDtX2Y2);
+   fhSetupSortedDtX2Y2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhSetupSortedDtX2Y2);
 
-   sHistName = "fhHodoSortedDtX1X2";
-   title =  "Time diff for hits Hodo 1 X and Hodo 2 X; tX2 - tX1 [ns]; Counts";
-   fhHodoSortedDtX1X2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
-   fHM->Add(sHistName.Data(), fhHodoSortedDtX1X2);
+   sHistName = "fhSetupSortedDtN1P1";
+   title =  "Time diff for hits Sts 1 N and Hodo 1 P; tP1 - tN1 [ns]; Counts";
+   fhSetupSortedDtN1P1 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhSetupSortedDtX2Y2);
 
-   sHistName = "fhHodoSortedDtY1Y2";
-   title =  "Time diff for hits Hodo 1 Y and Hodo 2 Y; tY2 - tY1 [ns]; Counts";
-   fhHodoSortedDtY1Y2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
-   fHM->Add(sHistName.Data(), fhHodoSortedDtY1Y2);
+   sHistName = "fhSetupSortedDtX1Y1X2Y2";
+   title =  "Time diff for hits Hodo 1 (X,Y) vs Hodo 2 (X,Y); t<X2,Y2> - t<X1,Y1> [ns]; Counts";
+   fhSetupSortedDtX1Y1X2Y2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhSetupSortedDtX1Y1X2Y2);
 
-   sHistName = "fhHodoSortedDtX1Y2";
-   title =  "Time diff for hits Hodo 1 X and Hodo 2 Y; tY2 - tX1 [ns]; Counts";
-   fhHodoSortedDtX1Y2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
-   fHM->Add(sHistName.Data(), fhHodoSortedDtX1Y2);
+   sHistName = "fhSetupSortedDtX1Y1X2Y2N1P1";
+   title =  "Time diff for hits Hodo (X1,Y1,X2,Y2) vs Sts 1 (N,P); t<N1,P1> - t<X1,Y1,X2,Y2> [ns]; Counts";
+   fhSetupSortedDtX1Y1X2Y2N1P1 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhSetupSortedDtX1Y1X2Y2N1P1);
 
-   sHistName = "fhHodoSortedDtY1X2";
-   title =  "Time diff for hits Hodo 1 Y and Hodo 2 X; tY2 - tY1 [ns]; Counts";
-   fhHodoSortedDtY1X2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
-   fHM->Add(sHistName.Data(), fhHodoSortedDtY1X2);
-
-   sHistName = "fhHodoSortedMapX1Y1";
-   title = "Sorted hits in coincidence for hodoscope 1 axis X and Y; X channel Hodo 1 []; Y channel Hodo 1 []; MS []";
-   fhHodoSortedMapX1Y1 = new TH2I( sHistName, title,
+   sHistName = "fhSetupSortedMapX1Y1";
+   title = "Sorted hits in coincidence for hodoscope 1 axis X and Y; X channel Hodo 1 []; Y channel Hodo 1 []; hits []";
+   fhSetupSortedMapX1Y1 = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSortedMapX1Y1 );
+   fHM->Add(sHistName.Data(), fhSetupSortedMapX1Y1 );
 
-   sHistName = "fhHodoSortedMapX2Y2";
-   title = "Sorted hits in coincidence for hodoscope 2 axis X and Y; X channel Hodo 2 []; Y channel Hodo 2 []; MS []";
-   fhHodoSortedMapX2Y2 = new TH2I( sHistName, title,
+   sHistName = "fhSetupSortedMapX2Y2";
+   title = "Sorted hits in coincidence for hodoscope 2 axis X and Y; X channel Hodo 2 []; Y channel Hodo 2 []; hits []";
+   fhSetupSortedMapX2Y2 = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSortedMapX2Y2 );
+   fHM->Add(sHistName.Data(), fhSetupSortedMapX2Y2 );
 
-   sHistName = "fhHodoSortedMapX1X2";
-   title = "Sorted hits in coincidence for hodoscope 1 axis X and 2 axis X; X channel Hodo 1 []; X channel Hodo 2 []; MS []";
-   fhHodoSortedMapX1X2 = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSortedMapX1X2 );
-
-   sHistName = "fhHodoSortedMapY1Y2";
-   title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis Y; Y channel Hodo 1 []; Y channel Hodo 2 []; MS []";
-   fhHodoSortedMapY1Y2 = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSortedMapY1Y2 );
-
-   sHistName = "fhHodoSortedMapX1Y2";
-   title = "Sorted hits in coincidence for hodoscope 1 axis X and 2 axis Y; X channel Hodo 1 []; Y channel Hodo 2 []; MS []";
-   fhHodoSortedMapX1Y2 = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSortedMapX1Y2 );
-
-   sHistName = "fhHodoSortedMapY1X2";
-   title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
-   fhHodoSortedMapY1X2 = new TH2I( sHistName, title,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
-                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
-   fHM->Add(sHistName.Data(), fhHodoSortedMapY1X2 );
+   sHistName = "fhSetupSortedMapN1P1";
+   title = "Sorted hits in coincidence for Sts 1 sides N and P; N channel Sts 1 []; P channel Sts 1 []; hits []";
+   fhSetupSortedMapN1P1 = new TH2I( sHistName, title,
+                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+   fHM->Add(sHistName.Data(), fhSetupSortedMapX2Y2 );
 
    // Coincidence counts evolution between some axis of the hodoscopes
-   sHistName = "hHodoSortedCntEvoX1Y1";
+   sHistName = "hSetupSortedCntEvoX1Y1";
    title = "Nb of coincidences in both X1 and Y1 per s; Time [s]; X1-Y1 coincidences []";
-   fhHodoSortedCntEvoX1Y1 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSortedCntEvoX1Y1 );
+   fhSetupSortedCntEvoX1Y1 = new TH1I(sHistName, title, 1800, 0, 1800 );
+   fHM->Add(sHistName.Data(), fhSetupSortedCntEvoX1Y1 );
 
-   sHistName = "hHodoSortedCntEvoX2Y2";
+   sHistName = "hSetupSortedCntEvoX2Y2";
    title = "Nb of coincidences in both X2 and Y2 per s; Time [s]; X2-Y2 coincidences []";
-   fhHodoSortedCntEvoX2Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSortedCntEvoX2Y2 );
+   fhSetupSortedCntEvoX2Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
+   fHM->Add(sHistName.Data(), fhSetupSortedCntEvoX2Y2 );
 
-   sHistName = "fhHodoSortedCntEvoX1X2";
-   title = "Nb of coincidences in both X1 and X2 per s; Time [s]; X1-X2 coincidences []";
-   fhHodoSortedCntEvoX1X2 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSortedCntEvoX1X2 );
+   sHistName = "hSetupSortedCntEvoN1P1";
+   title = "Nb of coincidences in both N1 and P1 per s; Time [s]; N1-P1 coincidences []";
+   fhSetupSortedCntEvoN1P1 = new TH1I(sHistName, title, 1800, 0, 1800 );
+   fHM->Add(sHistName.Data(), fhSetupSortedCntEvoX2Y2 );
 
-   sHistName = "fhHodoSortedCntEvoY1Y2";
-   title = "Nb of coincidences in both Y1 and Y2 per s; Time [s]; Y1-Y2 coincidences []";
-   fhHodoSortedCntEvoY1Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSortedCntEvoY1Y2 );
+   /// Coincidences between hodoscopes ------------------------------///
+   sHistName = "fhBothHodoSortedDtX1Y1";
+   title =  "Time diff for hits Hodo 1 X and Hodo 1 Y; tY1 - tX1 [ns]; Counts";
+   fhBothHodoSortedDtX1Y1 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhBothHodoSortedDtX1Y1);
 
-   sHistName = "hHodoSortedCntEvoX1Y2";
-   title = "Nb of coincidences in both X1 and Y2 per s; Time [s]; X1-Y2 coincidences []";
-   fhHodoSortedCntEvoX1Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSortedCntEvoX1Y2 );
+   sHistName = "fhBothHodoSortedDtX2Y2";
+   title =  "Time diff for hits Hodo 2 X and Hodo 2 Y; tY2 - tX2 [ns]; Counts";
+   fhBothHodoSortedDtX2Y2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhBothHodoSortedDtX2Y2);
 
-   sHistName = "hHodoSortedCntEvoY1X2";
-   title = "Nb of coincidences in both Y1 and X2 per s; Time [s]; Y1-X2 coincidences []";
-   fhHodoSortedCntEvoY1X2 = new TH1I(sHistName, title, 1800, 0, 1800 );
-   fHM->Add(sHistName.Data(), fhHodoSortedCntEvoY1X2 );
+   sHistName = "fhBothHodoSortedDtX1Y1X2Y2N1P1";
+   title =  "Time diff for hits Hodo (X1,Y1,X2,Y2) vs Sts 1 (N,P); t<N1,P1> - t<X1,Y1,X2,Y2> [ns]; Counts";
+   fhBothHodoSortedDtX1Y1X2Y2N1P1 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhBothHodoSortedDtX1Y1X2Y2N1P1);
+
+   sHistName = "fhBothHodoSortedMapX1Y1";
+   title = "Sorted hits in coincidence for hodoscope 1 axis X and Y; X channel Hodo 1 []; Y channel Hodo 1 []; hits []";
+   fhBothHodoSortedMapX1Y1 = new TH2I( sHistName, title,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+   fHM->Add(sHistName.Data(), fhBothHodoSortedMapX1Y1 );
+
+   sHistName = "fhBothHodoSortedMapX2Y2";
+   title = "Sorted hits in coincidence for hodoscope 2 axis X and Y; X channel Hodo 2 []; Y channel Hodo 2 []; hits []";
+   fhBothHodoSortedMapX2Y2 = new TH2I( sHistName, title,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+   fHM->Add(sHistName.Data(), fhBothHodoSortedMapX2Y2 );
+
+   // Coincidence counts evolution between some axis of the hodoscopes
+   sHistName = "hBothHodoSortedCntEvoX1Y1";
+   title = "Nb of coincidences in both X1 and Y1 per s; Time [s]; X1-Y1 coincidences []";
+   fhBothHodoSortedCntEvoX1Y1 = new TH1I(sHistName, title, 1800, 0, 1800 );
+   fHM->Add(sHistName.Data(), fhBothHodoSortedCntEvoX1Y1 );
+
+   sHistName = "hBothHodoSortedCntEvoX2Y2";
+   title = "Nb of coincidences in both X2 and Y2 per s; Time [s]; X2-Y2 coincidences []";
+   fhBothHodoSortedCntEvoX2Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
+   fHM->Add(sHistName.Data(), fhBothHodoSortedCntEvoX2Y2 );
+
+   /// Coincidences between hodoscopes ans STS ----------------------///
+   sHistName = "fhSystSortedDtX1Y1";
+   title =  "Time diff for hits Hodo 1 X and Hodo 1 Y; tY1 - tX1 [ns]; Counts";
+   fhSystSortedDtX1Y1 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhSystSortedDtX1Y1);
+
+   sHistName = "fhSystSortedDtX2Y2";
+   title =  "Time diff for hits Hodo 2 X and Hodo 2 Y; tY2 - tX2 [ns]; Counts";
+   fhSystSortedDtX2Y2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhSystSortedDtX2Y2);
+
+   sHistName = "fhSystSortedDtN1P1";
+   title =  "Time diff for hits Sts 1 N and Hodo 1 P; tP1 - tN1 [ns]; Counts";
+   fhSystSortedDtN1P1 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhSystSortedDtX2Y2);
+
+   sHistName = "fhSystSortedDtX1Y1X2Y2";
+   title =  "Time diff for hits Hodo 1 (X,Y) vs Hodo 2 (X,Y); t<X2,Y2> - t<X1,Y1> [ns]; Counts";
+   fhSystSortedDtX1Y1X2Y2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
+   fHM->Add(sHistName.Data(), fhSystSortedDtX1Y1X2Y2);
+
+   sHistName = "fhSystSortedMapX1Y1";
+   title = "Sorted hits in coincidence for hodoscope 1 axis X and Y; X channel Hodo 1 []; Y channel Hodo 1 []; hits []";
+   fhSystSortedMapX1Y1 = new TH2I( sHistName, title,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+   fHM->Add(sHistName.Data(), fhSystSortedMapX1Y1 );
+
+   sHistName = "fhSystSortedMapX2Y2";
+   title = "Sorted hits in coincidence for hodoscope 2 axis X and Y; X channel Hodo 2 []; Y channel Hodo 2 []; hits []";
+   fhSystSortedMapX2Y2 = new TH2I( sHistName, title,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+   fHM->Add(sHistName.Data(), fhSystSortedMapX2Y2 );
+
+   sHistName = "fhSystSortedMapN1P1";
+   title = "Sorted hits in coincidence for Sts 1 sides N and P; N channel Sts 1 []; P channel Sts 1 []; hits []";
+   fhSystSortedMapN1P1 = new TH2I( sHistName, title,
+                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+   fHM->Add(sHistName.Data(), fhSystSortedMapX2Y2 );
+
+   // Coincidence counts evolution between some axis of the hodoscopes
+   sHistName = "hSystSortedCntEvoX1Y1";
+   title = "Nb of coincidences in both X1 and Y1 per s; Time [s]; X1-Y1 coincidences []";
+   fhSystSortedCntEvoX1Y1 = new TH1I(sHistName, title, 1800, 0, 1800 );
+   fHM->Add(sHistName.Data(), fhSystSortedCntEvoX1Y1 );
+
+   sHistName = "hSystSortedCntEvoX2Y2";
+   title = "Nb of coincidences in both X2 and Y2 per s; Time [s]; X2-Y2 coincidences []";
+   fhSystSortedCntEvoX2Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
+   fHM->Add(sHistName.Data(), fhSystSortedCntEvoX2Y2 );
+
+   sHistName = "hSystSortedCntEvoN1P1";
+   title = "Nb of coincidences in both N1 and P1 per s; Time [s]; N1-P1 coincidences []";
+   fhSystSortedCntEvoN1P1 = new TH1I(sHistName, title, 1800, 0, 1800 );
+   fHM->Add(sHistName.Data(), fhSystSortedCntEvoX2Y2 );
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 /*
@@ -861,56 +733,39 @@ void CbmCosy2018MonitorSetup::CreateHistograms()
          server->Register("/HodoRaw", fhHodoChanHitRateEvoLong[ uXyterIdx ] );
          server->Register("/HodoRaw", fhHodoFebRateEvoLong[ uXyterIdx ] );
       } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-      server->Register("/HodoRaw", fhHodoChanCounts1X );
-      server->Register("/HodoRaw", fhHodoChanCounts1Y );
-      server->Register("/HodoRaw", fhHodoChanCounts2X );
-      server->Register("/HodoRaw", fhHodoChanCounts2Y );
-      server->Register("/HodoRaw", fhHodoChanAdcRaw1X );
-      server->Register("/HodoRaw", fhHodoChanAdcRaw1Y );
-      server->Register("/HodoRaw", fhHodoChanAdcRaw2X );
-      server->Register("/HodoRaw", fhHodoChanAdcRaw2Y );
-      server->Register("/HodoRaw", fhHodoChanHitRateEvo1X );
-      server->Register("/HodoRaw", fhHodoChanHitRateEvo1Y );
-      server->Register("/HodoRaw", fhHodoChanHitRateEvo2X );
-      server->Register("/HodoRaw", fhHodoChanHitRateEvo2Y );
-      server->Register("/HodoRaw", fhHodoRateEvo1X );
-      server->Register("/HodoRaw", fhHodoRateEvo1Y );
-      server->Register("/HodoRaw", fhHodoRateEvo2X );
-      server->Register("/HodoRaw", fhHodoRateEvo2Y );
-      server->Register("/HodoRaw", fhHodoSameMs1XY );
-      server->Register("/HodoRaw", fhHodoSameMs2XY );
-      server->Register("/HodoRaw", fhHodoSameMsX1X2 );
-      server->Register("/HodoRaw", fhHodoSameMsY1Y2 );
-      server->Register("/HodoRaw", fhHodoSameMsX1Y2 );
-      server->Register("/HodoRaw", fhHodoSameMsY1X2 );
-      server->Register("/HodoRaw", fhHodoSameMsCntEvoX1Y1 );
-      server->Register("/HodoRaw", fhHodoSameMsCntEvoX2Y2 );
-      server->Register("/HodoRaw", fhHodoSameMsCntEvoX1X2 );
-      server->Register("/HodoRaw", fhHodoSameMsCntEvoY1Y2 );
-      server->Register("/HodoRaw", fhHodoSameMsCntEvoX1Y2 );
-      server->Register("/HodoRaw", fhHodoSameMsCntEvoY1X2 );
-      server->Register("/HodoRaw", fhHodoSameMsCntEvoX1Y1X2Y2 );
-      server->Register("/HodoRaw", fhHodoSortedDtX1Y1 );
-      server->Register("/HodoRaw", fhHodoSortedDtX2Y2 );
-      server->Register("/HodoRaw", fhHodoSortedDtX1X2 );
-      server->Register("/HodoRaw", fhHodoSortedDtY1Y2 );
-      server->Register("/HodoRaw", fhHodoSortedDtX1Y2 );
-      server->Register("/HodoRaw", fhHodoSortedDtY1X2 );
-      server->Register("/HodoRaw", fhHodoSortedMapX1Y1 );
-      server->Register("/HodoRaw", fhHodoSortedMapX2Y2 );
-      server->Register("/HodoRaw", fhHodoSortedMapX1X2 );
-      server->Register("/HodoRaw", fhHodoSortedMapY1Y2 );
-      server->Register("/HodoRaw", fhHodoSortedMapX1Y2 );
-      server->Register("/HodoRaw", fhHodoSortedMapY1X2 );
-      server->Register("/HodoRaw", fhHodoSortedCntEvoX1Y1 );
-      server->Register("/HodoRaw", fhHodoSortedCntEvoX2Y2 );
-      server->Register("/HodoRaw", fhHodoSortedCntEvoX1X2 );
-      server->Register("/HodoRaw", fhHodoSortedCntEvoY1Y2 );
-      server->Register("/HodoRaw", fhHodoSortedCntEvoX1Y2 );
-      server->Register("/HodoRaw", fhHodoSortedCntEvoY1X2 );
+      server->Register("/Setup", fhSetupSortedDtX1Y1 );
+      server->Register("/Setup", fhSetupSortedDtX2Y2 );
+      server->Register("/Setup", fhSetupSortedDtN1P1 );
+      server->Register("/Setup", fhSetupSortedDtX1Y1X2Y2 );
+      server->Register("/Setup", fhSetupSortedDtX1Y1X2Y2N1P1 );
+      server->Register("/Setup", fhSetupSortedMapX1Y1 );
+      server->Register("/Setup", fhSetupSortedMapX2Y2 );
+      server->Register("/Setup", fhSetupSortedMapN1P1 );
+      server->Register("/Setup", fhSetupSortedCntEvoX1Y1 );
+      server->Register("/Setup", fhSetupSortedCntEvoX2Y2 );
+      server->Register("/Setup", fhSetupSortedCntEvoN1P1 );
 
-      server->RegisterCommand("/Reset_All_Hodo", "bCosy2018ResetSetupHistos=kTRUE");
-      server->RegisterCommand("/Write_All_Hodo", "bCosy2018WriteSetupHistos=kTRUE");
+      server->Register("/HodoBoth", fhBothHodoSortedDtX1Y1 );
+      server->Register("/HodoBoth", fhBothHodoSortedDtX2Y2 );
+      server->Register("/HodoBoth", fhBothHodoSortedDtX1Y1X2Y2N1P1 );
+      server->Register("/HodoBoth", fhBothHodoSortedMapX1Y1 );
+      server->Register("/HodoBoth", fhBothHodoSortedMapX2Y2 );
+      server->Register("/HodoBoth", fhBothHodoSortedCntEvoX1Y1 );
+      server->Register("/HodoBoth", fhBothHodoSortedCntEvoX2Y2 );
+
+      server->Register("/Syst", fhSystSortedDtX1Y1 );
+      server->Register("/Syst", fhSystSortedDtX2Y2 );
+      server->Register("/Syst", fhSystSortedDtN1P1 );
+      server->Register("/Syst", fhSystSortedDtX1Y1X2Y2 );
+      server->Register("/Syst", fhSystSortedMapX1Y1 );
+      server->Register("/Syst", fhSystSortedMapX2Y2 );
+      server->Register("/Syst", fhSystSortedMapN1P1 );
+      server->Register("/Syst", fhSystSortedCntEvoX1Y1 );
+      server->Register("/Syst", fhSystSortedCntEvoX2Y2 );
+      server->Register("/Syst", fhSystSortedCntEvoN1P1 );
+
+      server->RegisterCommand("/Reset_All_Hodo", "bCosy2018ResetSetupHistos_H=kTRUE");
+      server->RegisterCommand("/Write_All_Hodo", "bCosy2018WriteSetupHistos_H=kTRUE");
 
       server->Restrict("/Reset_All_Hodo", "allow=admin");
       server->Restrict("/Write_All_Hodo", "allow=admin");
@@ -947,229 +802,143 @@ void CbmCosy2018MonitorSetup::CreateHistograms()
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 
 //====================================================================//
-   TCanvas* cHodoCounts = new TCanvas( "cHodoCounts",
-                                    "Hodoscopes counts per axis",
-                                    w, h);
-   cHodoCounts->Divide( 2, 2 );
-
-   cHodoCounts->cd(1);
-   gPad->SetLogz();
-   fhHodoChanCounts1X->Draw( "" );
-
-   cHodoCounts->cd(2);
-   gPad->SetLogz();
-   fhHodoChanCounts1Y->Draw( "" );
-
-   cHodoCounts->cd(3);
-   gPad->SetLogz();
-   fhHodoChanCounts2X->Draw( "" );
-
-   cHodoCounts->cd(4);
-   gPad->SetLogz();
-   fhHodoChanCounts2Y->Draw( "" );
-//====================================================================//
 
 //====================================================================//
-   TCanvas* cHodoAdc = new TCanvas( "cHodoAdc",
-                                    "Hodoscopes ADC distributions per axis",
-                                    w, h);
-   cHodoAdc->Divide( 2, 2 );
-
-   cHodoAdc->cd(1);
-   gPad->SetLogz();
-   fhHodoChanAdcRaw1X->Draw( "colz" );
-
-   cHodoAdc->cd(2);
-   gPad->SetLogz();
-   fhHodoChanAdcRaw1Y->Draw( "colz" );
-
-   cHodoAdc->cd(3);
-   gPad->SetLogz();
-   fhHodoChanAdcRaw2X->Draw( "colz" );
-
-   cHodoAdc->cd(4);
-   gPad->SetLogz();
-   fhHodoChanAdcRaw2Y->Draw( "colz" );
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cHodoRates = new TCanvas( "cHodoRates",
-                                    "Hodoscopes rates per axis",
-                                    w, h);
-   cHodoRates->Divide( 2, 2 );
-
-   cHodoRates->cd(1);
-   gPad->SetLogz();
-   fhHodoRateEvo1X->Draw( "" );
-
-   cHodoRates->cd(2);
-   gPad->SetLogz();
-   fhHodoRateEvo1Y->Draw( "" );
-
-   cHodoRates->cd(3);
-   gPad->SetLogz();
-   fhHodoRateEvo2X->Draw( "" );
-
-   cHodoRates->cd(4);
-   gPad->SetLogz();
-   fhHodoRateEvo2Y->Draw( "" );
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cHodoRatesEvo = new TCanvas( "cHodoRatesEvo",
-                                    "Hodoscopes rates evolutionper axis",
-                                    w, h);
-   cHodoRatesEvo->Divide( 2, 2 );
-
-   cHodoRatesEvo->cd(1);
-   gPad->SetLogz();
-   fhHodoChanHitRateEvo1X->Draw( "colz" );
-
-   cHodoRatesEvo->cd(2);
-   gPad->SetLogz();
-   fhHodoChanHitRateEvo1Y->Draw( "colz" );
-
-   cHodoRatesEvo->cd(3);
-   gPad->SetLogz();
-   fhHodoChanHitRateEvo2X->Draw( "colz" );
-
-   cHodoRatesEvo->cd(4);
-   gPad->SetLogz();
-   fhHodoChanHitRateEvo2Y->Draw( "colz" );
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cHodoMaps = new TCanvas( "cHodoMaps",
+   TCanvas* cSetupSortedDt = new TCanvas( "cSetupSortedDt",
                                     "Hodoscopes coincidence maps",
                                     w, h);
-   cHodoMaps->Divide( 2, 3 );
+   cSetupSortedDt->Divide( 3, 3 );
 
-   cHodoMaps->cd(1);
-   gPad->SetLogz();
-   fhHodoSameMs1XY->Draw( "colz" );
+   cSetupSortedDt->cd(1);
+   gPad->SetLogy();
+   fhSetupSortedDtX1Y1->Draw( "" );
 
-   cHodoMaps->cd(2);
-   gPad->SetLogz();
-   fhHodoSameMs2XY->Draw( "colz" );
+   cSetupSortedDt->cd(2);
+   gPad->SetLogy();
+   fhSetupSortedDtX2Y2->Draw( "" );
 
-   cHodoMaps->cd(3);
-   gPad->SetLogz();
-   fhHodoSameMsX1X2->Draw( "colz" );
+   cSetupSortedDt->cd(3);
+   gPad->SetLogy();
+   fhSetupSortedDtN1P1->Draw( "" );
 
-   cHodoMaps->cd(4);
-   gPad->SetLogz();
-   fhHodoSameMsY1Y2->Draw( "colz" );
+   cSetupSortedDt->cd(4);
+   gPad->SetLogy();
+   fhBothHodoSortedDtX1Y1->Draw( "" );
 
-   cHodoMaps->cd(5);
-   gPad->SetLogz();
-   fhHodoSameMsX1Y2->Draw( "colz" );
+   cSetupSortedDt->cd(5);
+   gPad->SetLogy();
+   fhBothHodoSortedDtX2Y2->Draw( "" );
+/*
+   cSetupSortedDt->cd(6);
+   gPad->SetLogy();
+   fhSetupSortedDtN1P1->Draw( "" );
+*/
+   cSetupSortedDt->cd(7);
+   gPad->SetLogy();
+   fhSystSortedDtX1Y1->Draw( "" );
 
-   cHodoMaps->cd(6);
-   gPad->SetLogz();
-   fhHodoSameMsY1X2->Draw( "colz" );
+   cSetupSortedDt->cd(8);
+   gPad->SetLogy();
+   fhSystSortedDtX2Y2->Draw( "" );
+
+   cSetupSortedDt->cd(9);
+   gPad->SetLogy();
+   fhSystSortedDtN1P1->Draw( "" );
 //====================================================================//
 
 //====================================================================//
-   TCanvas* cHodoCoincEvo = new TCanvas( "cHodoCoincEvo",
-                                    "Hodoscopes coincidence rate evolution",
-                                    w, h);
-   cHodoCoincEvo->Divide( 2, 4 );
-
-   cHodoCoincEvo->cd(1);
-   gPad->SetLogz();
-   fhHodoSameMsCntEvoX1Y1->Draw( "colz" );
-
-   cHodoCoincEvo->cd(2);
-   gPad->SetLogz();
-   fhHodoSameMsCntEvoX2Y2->Draw( "colz" );
-
-   cHodoCoincEvo->cd(3);
-   gPad->SetLogz();
-   fhHodoSameMsCntEvoX1X2->Draw( "colz" );
-
-   cHodoCoincEvo->cd(4);
-   gPad->SetLogz();
-   fhHodoSameMsCntEvoY1Y2->Draw( "colz" );
-
-   cHodoCoincEvo->cd(5);
-   gPad->SetLogz();
-   fhHodoSameMsCntEvoX1Y2->Draw( "colz" );
-
-   cHodoCoincEvo->cd(6);
-   gPad->SetLogz();
-   fhHodoSameMsCntEvoY1X2->Draw( "colz" );
-
-   cHodoCoincEvo->cd(7);
-   gPad->SetLogz();
-   fhHodoSameMsCntEvoX1Y1X2Y2->Draw( "colz" );
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cHodoSortedMaps = new TCanvas( "cHodoSortedMaps",
+   TCanvas* cSetupSortedMaps = new TCanvas( "cSetupSortedMaps",
                                     "Hodoscopes coincidence maps",
                                     w, h);
-   cHodoSortedMaps->Divide( 2, 3 );
+   cSetupSortedMaps->Divide( 3, 3 );
 
-   cHodoSortedMaps->cd(1);
+   cSetupSortedMaps->cd(1);
    gPad->SetLogz();
-   fhHodoSortedMapX1Y1->Draw( "colz" );
+   fhSetupSortedMapX1Y1->Draw( "colz" );
 
-   cHodoSortedMaps->cd(2);
+   cSetupSortedMaps->cd(2);
    gPad->SetLogz();
-   fhHodoSortedMapX2Y2->Draw( "colz" );
+   fhSetupSortedMapX2Y2->Draw( "colz" );
 
-   cHodoSortedMaps->cd(3);
+   cSetupSortedMaps->cd(3);
    gPad->SetLogz();
-   fhHodoSortedMapX1X2->Draw( "colz" );
+   fhSetupSortedMapN1P1->Draw( "colz" );
 
-   cHodoSortedMaps->cd(4);
+   cSetupSortedMaps->cd(4);
    gPad->SetLogz();
-   fhHodoSortedMapY1Y2->Draw( "colz" );
+   fhBothHodoSortedMapX1Y1->Draw( "colz" );
 
-   cHodoSortedMaps->cd(5);
+   cSetupSortedMaps->cd(5);
    gPad->SetLogz();
-   fhHodoSortedMapX1Y2->Draw( "colz" );
+   fhBothHodoSortedMapX2Y2->Draw( "colz" );
+/*
+   cSetupSortedMaps->cd(6);
+   gPad->SetLogz();
+   fhBothHodoSortedMapN1P1->Draw( "colz" );
+*/
+   cSetupSortedMaps->cd(7);
+   gPad->SetLogz();
+   fhSystSortedMapX1Y1->Draw( "colz" );
 
-   cHodoSortedMaps->cd(6);
+   cSetupSortedMaps->cd(8);
    gPad->SetLogz();
-   fhHodoSortedMapY1X2->Draw( "colz" );
+   fhSystSortedMapX2Y2->Draw( "colz" );
+
+   cSetupSortedMaps->cd(9);
+   gPad->SetLogz();
+   fhSystSortedMapN1P1->Draw( "colz" );
 //====================================================================//
 
 //====================================================================//
-   TCanvas* cHodoSortedCoincEvo = new TCanvas( "cHodoSortedCoincEvo",
+   TCanvas* cSetupSortedCoincEvo = new TCanvas( "cSetupSortedCoincEvo",
                                     "Hodoscopes coincidence rate evolution",
                                     w, h);
-   cHodoSortedCoincEvo->Divide( 2, 3 );
+   cSetupSortedCoincEvo->Divide( 3, 3 );
 
-   cHodoSortedCoincEvo->cd(1);
+   cSetupSortedCoincEvo->cd(1);
    gPad->SetGridy();
    gPad->SetLogy();
-   fhHodoSortedCntEvoX1Y1->Draw( "colz" );
+   fhSetupSortedCntEvoX1Y1->Draw( "" );
 
-   cHodoSortedCoincEvo->cd(2);
+   cSetupSortedCoincEvo->cd(2);
    gPad->SetGridy();
    gPad->SetLogy();
-   fhHodoSortedCntEvoX2Y2->Draw( "colz" );
+   fhSetupSortedCntEvoX2Y2->Draw( "" );
 
-   cHodoSortedCoincEvo->cd(3);
+   cSetupSortedCoincEvo->cd(3);
    gPad->SetGridy();
    gPad->SetLogy();
-   fhHodoSortedCntEvoX1X2->Draw( "colz" );
+   fhSetupSortedCntEvoN1P1->Draw( "" );
 
-   cHodoSortedCoincEvo->cd(4);
+   cSetupSortedCoincEvo->cd(4);
    gPad->SetGridy();
    gPad->SetLogy();
-   fhHodoSortedCntEvoY1Y2->Draw( "colz" );
+   fhBothHodoSortedCntEvoX1Y1->Draw( "" );
 
-   cHodoSortedCoincEvo->cd(5);
+   cSetupSortedCoincEvo->cd(5);
    gPad->SetGridy();
    gPad->SetLogy();
-   fhHodoSortedCntEvoX1Y2->Draw( "colz" );
-
-   cHodoSortedCoincEvo->cd(6);
+   fhBothHodoSortedCntEvoX2Y2->Draw( "" );
+/*
+   cSetupSortedCoincEvo->cd(6);
    gPad->SetGridy();
    gPad->SetLogy();
-   fhHodoSortedCntEvoY1X2->Draw( "colz" );
+   fhSetupSortedCntEvoN1P1->Draw( "" );
+*/
+   cSetupSortedCoincEvo->cd(7);
+   gPad->SetGridy();
+   gPad->SetLogy();
+   fhSystSortedCntEvoX1Y1->Draw( "" );
+
+   cSetupSortedCoincEvo->cd(8);
+   gPad->SetGridy();
+   gPad->SetLogy();
+   fhSystSortedCntEvoX2Y2->Draw( "" );
+
+   cSetupSortedCoincEvo->cd(9);
+   gPad->SetGridy();
+   gPad->SetLogy();
+   fhSystSortedCntEvoN1P1->Draw( "" );
 //====================================================================//
 
       // Long duration rate monitoring
@@ -1207,14 +976,14 @@ void CbmCosy2018MonitorSetup::CreateHistograms()
    TH1* histPnt = NULL;
    for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
    {// looping on all the nDPBS IDs
-      if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+      if( dpbId < fUnpackParHodo->GetNrOfnDpbsModA() )
       {
-         sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdA(dpbId) );
-      } // if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+         sNdpbTag = Form("%04X", fUnpackParHodo->GetNdpbIdA(dpbId) );
+      } // if( dpbId < fUnpackParHodo->GetNrOfnDpbsModA() )
          else
          {
-            sNdpbTag = Form("%04X", fUnpackPar->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
-         } // else of if( dpbId < fUnpackPar->GetNrOfnDpbsModA() )
+            sNdpbTag = Form("%04X", fUnpackParHodo->GetNdpbIdB(dpbId - fNrOfNdpbsA) );
+         } // else of if( dpbId < fUnpackParHodo->GetNrOfnDpbsModA() )
 
       for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
       {// looping on all the FEB IDs
@@ -1274,16 +1043,16 @@ Bool_t CbmCosy2018MonitorSetup::DoUnpack(const fles::Timeslice& ts, size_t compo
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
 #endif
 
-   if( bCosy2018ResetSetupHistos )
+   if( bCosy2018ResetSetupHistos_H )
    {
       ResetAllHistos();
-      bCosy2018ResetSetupHistos = kFALSE;
-   } // if( bCosy2018ResetSetupHistos )
-   if( bCosy2018WriteSetupHistos )
+      bCosy2018ResetSetupHistos_H = kFALSE;
+   } // if( bCosy2018ResetSetupHistos_H )
+   if( bCosy2018WriteSetupHistos_H )
    {
       SaveAllHistos( "data/HodoHistos.root" );
-      bCosy2018WriteSetupHistos = kFALSE;
-   } // if( bCosy2018WriteSetupHistos )
+      bCosy2018WriteSetupHistos_H = kFALSE;
+   } // if( bCosy2018WriteSetupHistos_H )
 
    LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
               << "microslices." << FairLogger::endl;
@@ -1440,9 +1209,6 @@ Bool_t CbmCosy2018MonitorSetup::DoUnpack(const fles::Timeslice& ts, size_t compo
                                             static_cast< uint16_t > (typeMess) );
 
                UInt_t   uAsicIdx   = fvuElinkToAsic[fuCurrDpbIdx][usElinkIdx];
-               if( ! ( fUnpackPar->GetAsicIndexHodo1() == uAsicIdx ||
-                       fUnpackPar->GetAsicIndexHodo2() == uAsicIdx ) )
-                  continue;
 
                FillHitInfo( mess, usElinkIdx, uAsicIdx, m );
                break;
@@ -1481,216 +1247,24 @@ Bool_t CbmCosy2018MonitorSetup::DoUnpack(const fles::Timeslice& ts, size_t compo
             }
          } // switch( mess.GetMessType() )
       } // for( uint32_t uIdx = 0; uIdx < uNbMessages; ++uIdx )
-   } // for( size_t m = 0; m < numCompMsInTs; ++m )
 
-
-   // End of TS, check if stuff to do with the hits inside each MS
-   // Usefull for low rate pulser tests
-      // Need to do it only when last DPB is processed, as they are done one by one
-   if( fuCurrDpbIdx == fuNrOfDpbs - 1 )
-   {
-      for( UInt_t uMsIdx = 0; uMsIdx < fuMaxNbMicroslices; ++uMsIdx )
-      {
-         std::vector< Bool_t> bHodo1X( fuNbChanPerAsic/2, kFALSE);
-         std::vector< Bool_t> bHodo1Y( fuNbChanPerAsic/2, kFALSE);
-         std::vector< Bool_t> bHodo2X( fuNbChanPerAsic/2, kFALSE);
-         std::vector< Bool_t> bHodo2Y( fuNbChanPerAsic/2, kFALSE);
-         for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-         {
-            if( fUnpackPar->GetAsicIndexHodo1() == uXyterIdx )
-            {
-               // Hodo 1
-                  // Loop on one Axis
-               for( UInt_t uChan = 0; uChan < fuNbChanPerAsic/2; ++uChan )
-                  if( fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] )
-                  {
-                     UInt_t uFiberIdx = fUnpackPar->GetChannelToFiberMap( uChan  );
-                     if( fUnpackPar->IsXySwappedHodo1() )
-                     {
-                        if( fUnpackPar->IsYInvertedHodo1() )
-                           uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
-                        // Maybe add cross check for invalid mapping index!
-                        bHodo1Y[ uFiberIdx ] = kTRUE;
-                     } // if( fUnpackPar->IsXySwappedHodo1() )
-                        else
-                        {
-                           if( fUnpackPar->IsXInvertedHodo1() )
-                              uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
-                           // Maybe add cross check for invalid mapping index!
-                           bHodo1X[ uFiberIdx ] = kTRUE;
-                        } // else of if( fUnpackPar->IsXySwappedHodo1() )
-                  } // if( fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] )
-                  // Loop on Second axis
-               for( UInt_t uChanB = fuNbChanPerAsic/2; uChanB < fuNbChanPerAsic; ++uChanB )
-                  if( fvuChanNbHitsInMs[ uXyterIdx ][ uChanB ][ uMsIdx ] )
-                  {
-                     UInt_t uFiberIdx = fUnpackPar->GetChannelToFiberMap( uChanB  );
-                     if( fUnpackPar->IsXySwappedHodo1() )
-                     {
-                        if( fUnpackPar->IsXInvertedHodo1() )
-                           uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
-                        // Maybe add cross check for invalid mapping index!
-                        bHodo1X[ uFiberIdx ] = kTRUE;
-                     } // if( fUnpackPar->IsXySwappedHodo1() )
-                        else
-                        {
-                           if( fUnpackPar->IsYInvertedHodo1() )
-                              uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
-                           // Maybe add cross check for invalid mapping index!
-                           bHodo1Y[ uFiberIdx ] = kTRUE;
-                        } // else of if( fUnpackPar->IsXySwappedHodo1() )
-                  } // if( fvuChanNbHitsInMs[ uXyterIdx ][ uChanB ][ uMsIdx ] )
-            } // if( fUnpackPar->GetAsicIndexHodo1() == uXyterIdx )
-            else if( fUnpackPar->GetAsicIndexHodo2() == uXyterIdx )
-            {
-               // Hodo 2
-                  // Loop on one Axis
-               for( UInt_t uChan = 0; uChan < fuNbChanPerAsic/2; ++uChan )
-                  if( fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] )
-                  {
-                     UInt_t uFiberIdx = fUnpackPar->GetChannelToFiberMap( uChan  );
-                     if( fUnpackPar->IsXySwappedHodo2() )
-                     {
-                        if( fUnpackPar->IsYInvertedHodo2() )
-                           uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
-                        // Maybe add cross check for invalide mapping index!
-                        bHodo2Y[ uFiberIdx ] = kTRUE;
-                     } // if( fUnpackPar->IsXySwappedHodo2() )
-                        else
-                        {
-                           if( fUnpackPar->IsXInvertedHodo2() )
-                              uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
-                           // Maybe add cross check for invalide mapping index!
-                           bHodo2X[ uFiberIdx ] = kTRUE;
-                        } // else of if( fUnpackPar->IsXySwappedHodo2() )
-                  } // if( fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] )
-                  // Loop on Second axis
-               for( UInt_t uChanB = fuNbChanPerAsic/2; uChanB < fuNbChanPerAsic; ++uChanB )
-                  if( fvuChanNbHitsInMs[ uXyterIdx ][ uChanB ][ uMsIdx ] )
-                  {
-                     UInt_t uFiberIdx = fUnpackPar->GetChannelToFiberMap( uChanB  );
-                     if( fUnpackPar->IsXySwappedHodo2() )
-                     {
-                        if( fUnpackPar->IsXInvertedHodo2() )
-                           uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
-                        // Maybe add cross check for invalide mapping index!
-                        bHodo2X[ uFiberIdx ] = kTRUE;
-                     } // if( fUnpackPar->IsXySwappedHodo2() )
-                        else
-                        {
-                           if( fUnpackPar->IsYInvertedHodo2() )
-                              uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
-                           // Maybe add cross check for invalide mapping index!
-                           bHodo2Y[ uFiberIdx ] = kTRUE;
-                        } // else of if( fUnpackPar->IsXySwappedHodo2() )
-                  } // if( fvuChanNbHitsInMs[ uXyterIdx ][ uChanB ][ uMsIdx ] )
-            } // else if( fUnpackPar->GetAsicIndexHodo2() == uXyterIdx )
-/*
-            for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
-            {
-               fhHodoChanHitsPerMs[uXyterIdx]->Fill( fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ], uChan );
-
-               // Coincidences between
-               if( fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] )
-                  for( UInt_t uChanB = uChan + 1; uChanB < fuNbChanPerAsic; ++uChanB )
-                     if( fvuChanNbHitsInMs[ uXyterIdx ][ uChanB ][ uMsIdx ] )
-                     {
-                        fhHodoChanSameMs[ uXyterIdx ]->Fill( uChan, uChanB );
-                        Double_t dTimeDiff = fvdChanLastHitTimeInMs[ uXyterIdx ][ uChanB ][ uMsIdx ]
-                                           - fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ][ uMsIdx ];
-
-                        fpStsChanSameMsTimeDiff[ uXyterIdx ]->Fill( uChan, uChanB, dTimeDiff );
-                     } // if( fvuChanNbHitsInMs[ uXyterIdx ][ uChanB ] )
-               // Ok to reset as we only compare to channels with higher indices (or channels in ASICs with higher indices)
-               fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
-               fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = -1.0;
-               fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
-            } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
-*/
-            for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
-            {
-               // Reset counters
-               fvuChanNbHitsInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
-               fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = -1.0;
-               fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
-            } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
-         } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-
-         Bool_t bHitInHodo1X = kFALSE;
-         Bool_t bHitInHodo1Y = kFALSE;
-         Bool_t bHitInHodo2X = kFALSE;
-         Bool_t bHitInHodo2Y = kFALSE;
-         for( UInt_t uChan = 0; uChan < fuNbChanPerAsic/2; ++uChan )
-         {
-            if( bHodo1X[ uChan ] )
-               bHitInHodo1X = kTRUE;
-
-            if( bHodo1Y[ uChan ] )
-               bHitInHodo1Y = kTRUE;
-
-            if( bHodo2X[ uChan ] )
-               bHitInHodo2X = kTRUE;
-
-            if( bHodo2Y[ uChan ] )
-               bHitInHodo2Y = kTRUE;
-
-            for( UInt_t uChanB = 0; uChanB < fuNbChanPerAsic/2; ++uChanB )
-            {
-               if( bHodo1X[ uChan ] && bHodo1Y[ uChanB ] )
-                  fhHodoSameMs1XY->Fill( uChan, uChanB);
-
-               if( bHodo2X[ uChan ] && bHodo2Y[ uChanB ] )
-                  fhHodoSameMs2XY->Fill( uChan, uChanB );
-
-               if( bHodo1X[ uChan ] && bHodo2X[ uChanB ] )
-                  fhHodoSameMsX1X2->Fill( uChan, uChanB );
-
-               if( bHodo1Y[ uChan ] && bHodo2Y[ uChanB ] )
-                  fhHodoSameMsY1Y2->Fill( uChan, uChanB );
-
-               if( bHodo1X[ uChan ] && bHodo2Y[ uChanB ] )
-                  fhHodoSameMsX1Y2->Fill( uChan, uChanB );
-
-               if( bHodo1Y[ uChan ] && bHodo2X[ uChanB ] )
-                  fhHodoSameMsY1X2->Fill( uChan, uChanB );
-            } // for( UInt_t uChanB = 0; uChanB < fuNbChanPerAsic/2; ++uChanB )
-         } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic/2; ++uChan )
-
-         if( bHitInHodo1X && bHitInHodo1Y )
-            fhHodoSameMsCntEvoX1Y1->Fill( fvdMsTime[ uMsIdx ] - fdStartTimeMsSz );
-
-         if( bHitInHodo2X && bHitInHodo2Y )
-            fhHodoSameMsCntEvoX2Y2->Fill( fvdMsTime[ uMsIdx ] - fdStartTimeMsSz );
-
-         if( bHitInHodo1X && bHitInHodo2X )
-            fhHodoSameMsCntEvoX1X2->Fill( fvdMsTime[ uMsIdx ] - fdStartTimeMsSz );
-
-         if( bHitInHodo1Y && bHitInHodo2Y )
-            fhHodoSameMsCntEvoY1Y2->Fill( fvdMsTime[ uMsIdx ] - fdStartTimeMsSz );
-
-         if( bHitInHodo1X && bHitInHodo2Y )
-            fhHodoSameMsCntEvoX1Y2->Fill( fvdMsTime[ uMsIdx ] - fdStartTimeMsSz );
-
-         if( bHitInHodo1Y && bHitInHodo2X )
-            fhHodoSameMsCntEvoY1X2->Fill( fvdMsTime[ uMsIdx ] - fdStartTimeMsSz );
-
-         if( bHitInHodo1X && bHitInHodo1Y && bHitInHodo2X && bHitInHodo2Y)
-            fhHodoSameMsCntEvoX1Y1X2Y2->Fill( fvdMsTime[ uMsIdx ] - fdStartTimeMsSz );
-
-         fvdMsTime[ uMsIdx ] = 0.0;
-      } // for( UInt_t uMsIdx = 0; uMsIdx < fuMaxNbMicroslices; ++uMsIdx )
-
+      // Sort the buffer of hits
+      std::sort( fvmHitsInTs.begin(), fvmHitsInTs.end() );
 
       // Time differences plotting using the fully time sorted hits
+      Double_t dLastTimeX1 = -1e12;
+      Double_t dLastTimeY1 = -1e12;
+      Double_t dLastTimeX2 = -1e12;
+      Double_t dLastTimeY2 = -1e12;
+      Double_t dLastTimeN1 = -1e12;
+      Double_t dLastTimeP1 = -1e12;
       if( 0 < fvmHitsInTs.size() )
       {
          ULong64_t ulLastHitTime = ( *( fvmHitsInTs.rbegin() ) ).GetTs();
-         std::multiset< stsxyter::FinalHit >::iterator it;
+         std::vector< stsxyter::FinalHit >::iterator it;
 
          std::chrono::steady_clock::time_point tNow = std::chrono::steady_clock::now();
          Double_t dUnixTimeInRun = std::chrono::duration_cast< std::chrono::seconds >(tNow - ftStartTimeUnix).count();
-
-         Double_t dCoincBorder = 32.0; // ns, +/-
 
          for( it  = fvmHitsInTs.begin();
               it != fvmHitsInTs.end() && (*it).GetTs() < ulLastHitTime - 320; // 32 * 3.125 ns = 1000 ns
@@ -1701,191 +1275,627 @@ Bool_t CbmCosy2018MonitorSetup::DoUnpack(const fles::Timeslice& ts, size_t compo
             ULong64_t ulHitTs  = (*it).GetTs();
 
             Bool_t bHitInX = usChanIdx < fuNbChanPerAsic/2;
-            UInt_t uFiberIdx = fUnpackPar->GetChannelToFiberMap( usChanIdx  );
+            UInt_t uFiberIdx = fUnpackParHodo->GetChannelToFiberMap( usChanIdx  );
 
             Double_t dTimeSinceStartSec = (ulHitTs * stsxyter::kdClockCycleNs - fdStartTime)* 1e-9;
 
-            if( fUnpackPar->GetAsicIndexHodo1() == usAsicIdx )
+            if( fUnpackParHodo->GetAsicIndexHodo1() == usAsicIdx )
             {
-               if( fUnpackPar->IsXySwappedHodo1() )
+               if( fUnpackParHodo->IsXySwappedHodo1() )
                   bHitInX = !bHitInX;
 
                if( bHitInX )
                {
-                  if( fUnpackPar->IsXInvertedHodo1() )
+                  if( fUnpackParHodo->IsXInvertedHodo1() )
                      uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
 
                   fLastSortedHit1X = (*it);
+                  dLastTimeX1      = ulHitTs;
 
-                  Double_t dDtX1Y1 = ( fLastSortedHit1Y.GetTs() - ulHitTs ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtX1X2 = ( fLastSortedHit2X.GetTs() - ulHitTs ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtX1Y2 = ( fLastSortedHit2Y.GetTs() - ulHitTs ) * stsxyter::kdClockCycleNs;
+                  Double_t dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
+                  Double_t dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
+                                         * stsxyter::kdClockCycleNs / 2.0;
+                  Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                              - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                             ) * stsxyter::kdClockCycleNs;
 
-                  fhHodoSortedDtX1Y1->Fill( dDtX1Y1 );
-                  fhHodoSortedDtX1X2->Fill( dDtX1X2 );
-                  fhHodoSortedDtX1Y2->Fill( dDtX1Y2 );
+                  fhSetupSortedDtX1Y1->Fill(         dDtX1Y1 );
+                  fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+                  fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
 
-                  if( TMath::Abs( dDtX1Y1 ) < dCoincBorder )
+                  if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
                   {
-                     UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit1Y.GetChan() );
-                     if( fUnpackPar->IsYInvertedHodo1() )
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo1() )
                         uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                     fhHodoSortedMapX1Y1->Fill( uFiberIdx, uFiberIdxOther );
-                     fhHodoSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtX1Y1 ) < dCoincBorder )
-                  if( TMath::Abs( dDtX1X2 ) < dCoincBorder )
+                     fhSetupSortedMapX1Y1->Fill( uFiberIdx, uFiberIdxOther );
+                     fhSetupSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
+
+                  if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
                   {
-                     UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit2X.GetChan() );
-                     if( fUnpackPar->IsXInvertedHodo2() )
+                     fhBothHodoSortedDtX1Y1->Fill(         dDtX1Y1 );
+                     fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo1() )
                         uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                     fhHodoSortedMapX1X2->Fill( uFiberIdx, uFiberIdxOther );
-                     fhHodoSortedCntEvoX1X2->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtX1X2 ) < dCoincBorder )
-                  if( TMath::Abs( dDtX1Y2 ) < dCoincBorder )
+                     fhBothHodoSortedMapX1Y1->Fill( uFiberIdx, uFiberIdxOther );
+                     fhBothHodoSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+
+                  if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
                   {
-                     UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit2Y.GetChan() );
-                     if( fUnpackPar->IsYInvertedHodo2() )
+                     fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
+                     fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo1() )
                         uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                     fhHodoSortedMapX1Y2->Fill( uFiberIdx, uFiberIdxOther );
-                     fhHodoSortedCntEvoX1Y2->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtX1Y2 ) < dCoincBorder )
+                     fhSystSortedMapX1Y1->Fill( uFiberIdx, uFiberIdxOther );
+                     fhSystSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
                } // if( bHitInX )
                   else
                   {
-                     if( fUnpackPar->IsYInvertedHodo1() )
+                     if( fUnpackParHodo->IsYInvertedHodo1() )
                         uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
+
                      fLastSortedHit1Y = (*it);
+                     dLastTimeY1      = ulHitTs;
 
-                     Double_t dDtX1Y1 = ( ulHitTs - fLastSortedHit1X.GetTs() ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtY1Y2 = ( fLastSortedHit2Y.GetTs() - ulHitTs ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtY1X2 = ( fLastSortedHit2X.GetTs() - ulHitTs ) * stsxyter::kdClockCycleNs;
+                     Double_t dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
+                     Double_t dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
+                                            * stsxyter::kdClockCycleNs / 2.0;
+                     Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                                 - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                                ) * stsxyter::kdClockCycleNs;
 
-                     fhHodoSortedDtX1Y1->Fill( dDtX1Y1 );
-                     fhHodoSortedDtY1Y2->Fill( dDtY1Y2 );
-                     fhHodoSortedDtY1X2->Fill( dDtY1X2 );
+                     fhSetupSortedDtX1Y1->Fill(         dDtX1Y1 );
+                     fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+                     fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
 
-                     if( TMath::Abs( dDtX1Y1 ) < dCoincBorder )
+                     if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
                      {
-                        UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit1X.GetChan() );
-                        if( fUnpackPar->IsXInvertedHodo1() )
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo1() )
                            uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                        fhHodoSortedMapX1Y1->Fill( uFiberIdxOther, uFiberIdx );
-                        fhHodoSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
-                     } // if( TMath::Abs( dDtX1Y1 ) < dCoincBorder )
-                     if( TMath::Abs( dDtY1Y2 ) < dCoincBorder )
+                        fhSetupSortedMapX1Y1->Fill( uFiberIdxOther, uFiberIdx );
+                        fhSetupSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
+
+                     if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
                      {
-                        UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit2Y.GetChan() );
-                        if( fUnpackPar->IsYInvertedHodo2() )
+                        fhBothHodoSortedDtX1Y1->Fill(         dDtX1Y1 );
+                        fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo1() )
                            uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                        fhHodoSortedMapY1Y2->Fill( uFiberIdx, uFiberIdxOther );
-                        fhHodoSortedCntEvoY1Y2->Fill( dTimeSinceStartSec );
-                     } // if( TMath::Abs( dDtY1Y2 ) < dCoincBorder )
-                     if( TMath::Abs( dDtY1X2 ) < dCoincBorder )
+                        fhBothHodoSortedMapX1Y1->Fill( uFiberIdxOther, uFiberIdx );
+                        fhBothHodoSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+
+                     if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
                      {
-                        UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit2X.GetChan() );
-                        if( fUnpackPar->IsXInvertedHodo2() )
+                        fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
+                        fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo1() )
                            uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                        fhHodoSortedMapY1X2->Fill( uFiberIdx, uFiberIdxOther );
-                        fhHodoSortedCntEvoY1X2->Fill( dTimeSinceStartSec );
-                     } // if( TMath::Abs( dDtY1X2 ) < dCoincBorder )
+                        fhSystSortedMapX1Y1->Fill( uFiberIdxOther, uFiberIdx );
+                        fhSystSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
                   } // else of if( bHitInX )
-            } // if( fUnpackPar->GetAsicIndexHodo1() == usAsicIdx )
-            else if( fUnpackPar->GetAsicIndexHodo2() == usAsicIdx )
+            } // if( fUnpackParHodo->GetAsicIndexHodo1() == usAsicIdx )
+            else if( fUnpackParHodo->GetAsicIndexHodo2() == usAsicIdx )
             {
-               if( fUnpackPar->IsXySwappedHodo2() )
+               if( fUnpackParHodo->IsXySwappedHodo2() )
                   bHitInX = !bHitInX;
 
                if( bHitInX )
                {
-                  if( fUnpackPar->IsXInvertedHodo2() )
+                  if( fUnpackParHodo->IsXInvertedHodo2() )
                      uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
 
                   fLastSortedHit2X = (*it);
+                  dLastTimeX2      = ulHitTs;
 
-                  Double_t dDtX2Y2 = ( fLastSortedHit2Y.GetTs() - ulHitTs ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtX1X2 = ( ulHitTs - fLastSortedHit1X.GetTs() ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtY1X2 = ( ulHitTs - fLastSortedHit1Y.GetTs() ) * stsxyter::kdClockCycleNs;
+                  Double_t dDtX2Y2 = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
+                  Double_t dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
+                                         * stsxyter::kdClockCycleNs / 2.0;
+                  Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                              - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                             ) * stsxyter::kdClockCycleNs;
 
-                  fhHodoSortedDtX2Y2->Fill( dDtX2Y2 );
-                  fhHodoSortedDtX1X2->Fill( dDtX1X2 );
-                  fhHodoSortedDtY1X2->Fill( dDtY1X2 );
+                  fhSetupSortedDtX2Y2->Fill( dDtX2Y2 );
+                  fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+                  fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
 
-                  if( TMath::Abs( dDtX2Y2 ) < dCoincBorder )
+                  if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
                   {
-                     UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit2Y.GetChan() );
-                     if( fUnpackPar->IsYInvertedHodo2() )
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo2() )
                         uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                     fhHodoSortedMapX2Y2->Fill( uFiberIdx, uFiberIdxOther );
-                     fhHodoSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtX2Y2 ) < dCoincBorder )
-                  if( TMath::Abs( dDtX1X2 ) < dCoincBorder )
+                     fhSetupSortedMapX2Y2->Fill( uFiberIdx, uFiberIdxOther );
+                     fhSetupSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
+
+                  if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
                   {
-                     UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit1X.GetChan() );
-                     if( fUnpackPar->IsXInvertedHodo1() )
+                     fhBothHodoSortedDtX2Y2->Fill(         dDtX2Y2 );
+                     fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo2() )
                         uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                     fhHodoSortedMapX1X2->Fill( uFiberIdxOther, uFiberIdx );
-                     fhHodoSortedCntEvoX1X2->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtX1X2 ) < dCoincBorder )
-                  if( TMath::Abs( dDtY1X2 ) < dCoincBorder )
+                     fhBothHodoSortedMapX2Y2->Fill( uFiberIdx, uFiberIdxOther );
+                     fhBothHodoSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+
+                  if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
                   {
-                     UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit1Y.GetChan() );
-                     if( fUnpackPar->IsYInvertedHodo1() )
+                     fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
+                     fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo2() )
                         uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                     fhHodoSortedMapY1X2->Fill( uFiberIdxOther, uFiberIdx );
-                     fhHodoSortedCntEvoY1X2->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtY1X2 ) < dCoincBorder )
+                     fhSystSortedMapX2Y2->Fill( uFiberIdx, uFiberIdxOther );
+                     fhSystSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
                } // if( bHitInX )
                   else
                   {
-                     if( fUnpackPar->IsYInvertedHodo2() )
+                     if( fUnpackParHodo->IsYInvertedHodo2() )
                         uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
 
                      fLastSortedHit2Y = (*it);
+                     dLastTimeY2      = ulHitTs;
 
-                     Double_t dDtX2Y2 = ( ulHitTs - fLastSortedHit1X.GetTs() ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtY1Y2 = ( ulHitTs - fLastSortedHit1Y.GetTs() ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtX1Y2 = ( ulHitTs - fLastSortedHit2X.GetTs() ) * stsxyter::kdClockCycleNs;
+                     Double_t dDtX2Y2 = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
+                     Double_t dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
+                                            * stsxyter::kdClockCycleNs / 2.0;
+                     Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                                 - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                                ) * stsxyter::kdClockCycleNs;
 
-                     fhHodoSortedDtX2Y2->Fill( dDtX2Y2 );
-                     fhHodoSortedDtY1Y2->Fill( dDtY1Y2 );
-                     fhHodoSortedDtX1Y2->Fill( dDtX1Y2 );
+                     fhSetupSortedDtX2Y2->Fill( dDtX2Y2 );
+                     fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+                     fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
 
-                     if( TMath::Abs( dDtX2Y2 ) < dCoincBorder )
+                     if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
                      {
-                        UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit2X.GetChan() );
-                        if( fUnpackPar->IsXInvertedHodo2() )
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo2() )
                            uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                        fhHodoSortedMapX2Y2->Fill( uFiberIdxOther, uFiberIdx );
-                        fhHodoSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
-                     } // if( TMath::Abs( dDtX2Y2 ) < dCoincBorder )
-                     if( TMath::Abs( dDtY1Y2 ) < dCoincBorder )
+                        fhSetupSortedMapX2Y2->Fill( uFiberIdxOther, uFiberIdx );
+                        fhSetupSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
+
+                     if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
                      {
-                        UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit1Y.GetChan() );
-                        if( fUnpackPar->IsYInvertedHodo1() )
+                        fhBothHodoSortedDtX2Y2->Fill(         dDtX2Y2 );
+                        fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo2() )
                            uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                        fhHodoSortedMapY1Y2->Fill( uFiberIdxOther, uFiberIdx );
-                        fhHodoSortedCntEvoY1Y2->Fill( dTimeSinceStartSec );
-                     } // if( TMath::Abs( dDtY1Y2 ) < dCoincBorder )
-                     if( TMath::Abs( dDtX1Y2 ) < dCoincBorder )
+                        fhBothHodoSortedMapX2Y2->Fill( uFiberIdxOther, uFiberIdx );
+                        fhBothHodoSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+
+                     if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
                      {
-                        UInt_t uFiberIdxOther = fUnpackPar->GetChannelToFiberMap( fLastSortedHit1X.GetChan() );
-                        if( fUnpackPar->IsXInvertedHodo1() )
+                        fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
+                        fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo2() )
                            uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
-                        fhHodoSortedMapX1Y2->Fill( uFiberIdxOther, uFiberIdx );
-                        fhHodoSortedCntEvoX1Y2->Fill( dTimeSinceStartSec );
-                     } // if( TMath::Abs( dDtX1Y2 ) < dCoincBorder )
+                        fhSystSortedMapX2Y2->Fill( uFiberIdxOther, uFiberIdx );
+                        fhSystSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
                   } // else of if( bHitInX )
-            } // else if( fUnpackPar->GetAsicIndexHodo2() == usAsicIdx )
+            } // else if( fUnpackParHodo->GetAsicIndexHodo2() == usAsicIdx )
+            else if( fUnpackParSts->GetAsicIndexSts1N() == usAsicIdx )
+            {
+               fLastSortedHit1N = (*it);
+               dLastTimeN1      = ulHitTs;
+
+               // FIXME: Hack due to single side readout of noisy sensor
+               fLastSortedHit1P = (*it);
+               dLastTimeP1      = dLastTimeN1;
+
+               Double_t dDtN1P1 = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
+               Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                           - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                          ) * stsxyter::kdClockCycleNs;
+
+               fhSetupSortedDtN1P1->Fill( dDtN1P1 );
+               fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+               if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
+               {
+                  fhSetupSortedMapN1P1->Fill( usChanIdx, fLastSortedHit1P.GetChan() );
+                  fhSetupSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
+               } // if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
+
+               if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+               {
+                  fhSystSortedMapN1P1->Fill( usChanIdx, fLastSortedHit1P.GetChan() );
+                  fhSystSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
+               } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+            } // if( fUnpackParSts->GetAsicIndexSts1N() == usAsicIdx )
+            else if( fUnpackParSts->GetAsicIndexSts1P() == usAsicIdx )
+            {
+               fLastSortedHit1P = (*it);
+               dLastTimeP1      = ulHitTs;
+
+               // FIXME: Hack due to single side readout of noisy sensor
+               fLastSortedHit1N = (*it);
+               dLastTimeN1      = dLastTimeP1;
+
+               Double_t dDtN1P1 = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
+               Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                           - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                          ) * stsxyter::kdClockCycleNs;
+
+               fhSetupSortedDtN1P1->Fill( dDtN1P1 );
+               fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+               if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
+               {
+                  fhSetupSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), usChanIdx );
+                  fhSetupSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
+               } // if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
+
+               if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+               {
+                  fhSystSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), usChanIdx );
+                  fhSystSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
+               } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+            } // else if( fUnpackParSts->GetAsicIndexSts1P() == usAsicIdx )
          } // loop on hits untils hits within 100 ns of last one or last one itself are reached
 
          // Remove all hits which were already used
          fvmHitsInTs.erase( fvmHitsInTs.begin(), it );
       } // if( 0 < fvmHitsInTs.size() )
+   } // for( size_t m = 0; m < numCompMsInTs; ++m )
 
+
+   // End of TS, check if stuff to do with the hits inside each MS
+   // Usefull for low rate pulser tests
+      // Need to do it only when last DPB is processed, as they are done one by one
+   if( fuCurrDpbIdx == fuNrOfDpbs - 1 )
+   {
+      for( UInt_t uMsIdx = 0; uMsIdx < fuMaxNbMicroslices; ++uMsIdx )
+      {
+         fvdMsTime[ uMsIdx ] = 0.0;
+      } // for( UInt_t uMsIdx = 0; uMsIdx < fuMaxNbMicroslices; ++uMsIdx )
+/*
+      // Sort the buffer of hits
+      std::sort( fvmHitsInTs.begin(), fvmHitsInTs.end() );
+
+      // Time differences plotting using the fully time sorted hits
+      Double_t dLastTimeX1 = -1e12;
+      Double_t dLastTimeY1 = -1e12;
+      Double_t dLastTimeX2 = -1e12;
+      Double_t dLastTimeY2 = -1e12;
+      Double_t dLastTimeN1 = -1e12;
+      Double_t dLastTimeP1 = -1e12;
+      if( 0 < fvmHitsInTs.size() )
+      {
+         ULong64_t ulLastHitTime = ( *( fvmHitsInTs.rbegin() ) ).GetTs();
+         std::vector< stsxyter::FinalHit >::iterator it;
+
+         std::chrono::steady_clock::time_point tNow = std::chrono::steady_clock::now();
+         Double_t dUnixTimeInRun = std::chrono::duration_cast< std::chrono::seconds >(tNow - ftStartTimeUnix).count();
+
+         for( it  = fvmHitsInTs.begin();
+              it != fvmHitsInTs.end() && (*it).GetTs() < ulLastHitTime - 320; // 32 * 3.125 ns = 1000 ns
+              ++it )
+         {
+            UShort_t usAsicIdx = (*it).GetAsic();
+            UShort_t usChanIdx = (*it).GetChan();
+            ULong64_t ulHitTs  = (*it).GetTs();
+
+            Bool_t bHitInX = usChanIdx < fuNbChanPerAsic/2;
+            UInt_t uFiberIdx = fUnpackParHodo->GetChannelToFiberMap( usChanIdx  );
+
+            Double_t dTimeSinceStartSec = (ulHitTs * stsxyter::kdClockCycleNs - fdStartTime)* 1e-9;
+
+            if( fUnpackParHodo->GetAsicIndexHodo1() == usAsicIdx )
+            {
+               if( fUnpackParHodo->IsXySwappedHodo1() )
+                  bHitInX = !bHitInX;
+
+               if( bHitInX )
+               {
+                  if( fUnpackParHodo->IsXInvertedHodo1() )
+                     uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
+
+                  fLastSortedHit1X = (*it);
+                  dLastTimeX1      = ulHitTs;
+
+                  Double_t dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
+                  Double_t dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
+                                         * stsxyter::kdClockCycleNs / 2.0;
+                  Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                              - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                             ) * stsxyter::kdClockCycleNs;
+
+                  fhSetupSortedDtX1Y1->Fill(         dDtX1Y1 );
+                  fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+                  fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                  if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
+                  {
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo1() )
+                        uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                     fhSetupSortedMapX1Y1->Fill( uFiberIdx, uFiberIdxOther );
+                     fhSetupSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
+
+                  if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+                  {
+                     fhBothHodoSortedDtX1Y1->Fill(         dDtX1Y1 );
+                     fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo1() )
+                        uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                     fhBothHodoSortedMapX1Y1->Fill( uFiberIdx, uFiberIdxOther );
+                     fhBothHodoSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+
+                  if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+                  {
+                     fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
+                     fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo1() )
+                        uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                     fhSystSortedMapX1Y1->Fill( uFiberIdx, uFiberIdxOther );
+                     fhSystSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+               } // if( bHitInX )
+                  else
+                  {
+                     if( fUnpackParHodo->IsYInvertedHodo1() )
+                        uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
+
+                     fLastSortedHit1Y = (*it);
+                     dLastTimeY1      = ulHitTs;
+
+                     Double_t dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
+                     Double_t dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
+                                            * stsxyter::kdClockCycleNs / 2.0;
+                     Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                                 - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                                ) * stsxyter::kdClockCycleNs;
+
+                     fhSetupSortedDtX1Y1->Fill(         dDtX1Y1 );
+                     fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+                     fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                     if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
+                     {
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo1() )
+                           uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                        fhSetupSortedMapX1Y1->Fill( uFiberIdxOther, uFiberIdx );
+                        fhSetupSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
+
+                     if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+                     {
+                        fhBothHodoSortedDtX1Y1->Fill(         dDtX1Y1 );
+                        fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo1() )
+                           uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                        fhBothHodoSortedMapX1Y1->Fill( uFiberIdxOther, uFiberIdx );
+                        fhBothHodoSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+
+                     if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+                     {
+                        fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
+                        fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo1() )
+                           uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                        fhSystSortedMapX1Y1->Fill( uFiberIdxOther, uFiberIdx );
+                        fhSystSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+                  } // else of if( bHitInX )
+            } // if( fUnpackParHodo->GetAsicIndexHodo1() == usAsicIdx )
+            else if( fUnpackParHodo->GetAsicIndexHodo2() == usAsicIdx )
+            {
+               if( fUnpackParHodo->IsXySwappedHodo2() )
+                  bHitInX = !bHitInX;
+
+               if( bHitInX )
+               {
+                  if( fUnpackParHodo->IsXInvertedHodo2() )
+                     uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
+
+                  fLastSortedHit2X = (*it);
+                  dLastTimeX2      = ulHitTs;
+
+                  Double_t dDtX2Y2 = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
+                  Double_t dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
+                                         * stsxyter::kdClockCycleNs / 2.0;
+                  Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                              - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                             ) * stsxyter::kdClockCycleNs;
+
+                  fhSetupSortedDtX2Y2->Fill( dDtX2Y2 );
+                  fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+                  fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                  if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
+                  {
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo2() )
+                        uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                     fhSetupSortedMapX2Y2->Fill( uFiberIdx, uFiberIdxOther );
+                     fhSetupSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
+
+                  if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+                  {
+                     fhBothHodoSortedDtX2Y2->Fill(         dDtX2Y2 );
+                     fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo2() )
+                        uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                     fhBothHodoSortedMapX2Y2->Fill( uFiberIdx, uFiberIdxOther );
+                     fhBothHodoSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+
+                  if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+                  {
+                     fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
+                     fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+
+                     UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan() );
+                     if( fUnpackParHodo->IsYInvertedHodo2() )
+                        uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                     fhSystSortedMapX2Y2->Fill( uFiberIdx, uFiberIdxOther );
+                     fhSystSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                  } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+               } // if( bHitInX )
+                  else
+                  {
+                     if( fUnpackParHodo->IsYInvertedHodo2() )
+                        uFiberIdx = fuNbChanPerAsic/2 - 1 - uFiberIdx;
+
+                     fLastSortedHit2Y = (*it);
+                     dLastTimeY2      = ulHitTs;
+
+                     Double_t dDtX2Y2 = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
+                     Double_t dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
+                                            * stsxyter::kdClockCycleNs / 2.0;
+                     Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                                 - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                                ) * stsxyter::kdClockCycleNs;
+
+                     fhSetupSortedDtX2Y2->Fill( dDtX2Y2 );
+                     fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+                     fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                     if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
+                     {
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo2() )
+                           uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                        fhSetupSortedMapX2Y2->Fill( uFiberIdxOther, uFiberIdx );
+                        fhSetupSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
+
+                     if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+                     {
+                        fhBothHodoSortedDtX2Y2->Fill(         dDtX2Y2 );
+                        fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo2() )
+                           uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                        fhBothHodoSortedMapX2Y2->Fill( uFiberIdxOther, uFiberIdx );
+                        fhBothHodoSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
+
+                     if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+                     {
+                        fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
+                        fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
+
+                        UInt_t uFiberIdxOther = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan() );
+                        if( fUnpackParHodo->IsXInvertedHodo2() )
+                           uFiberIdxOther = fuNbChanPerAsic/2 - 1 - uFiberIdxOther;
+                        fhSystSortedMapX2Y2->Fill( uFiberIdxOther, uFiberIdx );
+                        fhSystSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
+                     } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+                  } // else of if( bHitInX )
+            } // else if( fUnpackParHodo->GetAsicIndexHodo2() == usAsicIdx )
+            else if( fUnpackParSts->GetAsicIndexSts1N() == usAsicIdx )
+            {
+               fLastSortedHit1N = (*it);
+               dLastTimeN1      = ulHitTs;
+
+               // FIXME: Hack due to single side readout of noisy sensor
+               fLastSortedHit1P = (*it);
+               dLastTimeP1      = dLastTimeN1;
+
+               Double_t dDtN1P1 = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
+               Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                           - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                          ) * stsxyter::kdClockCycleNs;
+
+               fhSetupSortedDtN1P1->Fill( dDtN1P1 );
+               fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+               if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
+               {
+                  fhSetupSortedMapN1P1->Fill( usChanIdx, fLastSortedHit1P.GetChan() );
+                  fhSetupSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
+               } // if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
+
+               if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+               {
+                  fhSystSortedMapN1P1->Fill( usChanIdx, fLastSortedHit1P.GetChan() );
+                  fhSystSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
+               } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+            } // if( fUnpackParSts->GetAsicIndexSts1N() == usAsicIdx )
+            else if( fUnpackParSts->GetAsicIndexSts1P() == usAsicIdx )
+            {
+               fLastSortedHit1P = (*it);
+               dLastTimeP1      = ulHitTs;
+
+               // FIXME: Hack due to single side readout of noisy sensor
+               fLastSortedHit1N = (*it);
+               dLastTimeN1      = dLastTimeP1;
+
+               Double_t dDtN1P1 = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
+               Double_t dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
+                                           - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
+                                          ) * stsxyter::kdClockCycleNs;
+
+               fhSetupSortedDtN1P1->Fill( dDtN1P1 );
+               fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
+
+               if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
+               {
+                  fhSetupSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), usChanIdx );
+                  fhSetupSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
+               } // if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
+
+               if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+               {
+                  fhSystSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), usChanIdx );
+                  fhSystSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
+               } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
+            } // else if( fUnpackParSts->GetAsicIndexSts1P() == usAsicIdx )
+         } // loop on hits untils hits within 100 ns of last one or last one itself are reached
+
+         // Remove all hits which were already used
+         fvmHitsInTs.erase( fvmHitsInTs.begin(), it );
+      } // if( 0 < fvmHitsInTs.size() )
+*/
+/*
       // Remove all hits from this TS
       for( UInt_t uAsicIdx = 0; uAsicIdx < fuNbStsXyters; ++uAsicIdx )
          for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
             fvmChanHitsInTs[ uAsicIdx ][ uChan ].clear();
+*/
    } // if( fuCurrDpbIdx == fuNrOfDpbs - 1 )
 
    if( 0 == ts.index() % 1000 && fuCurrDpbIdx == fuNrOfDpbs - 1 )
@@ -1968,9 +1978,11 @@ void CbmCosy2018MonitorSetup::FillHitInfo( stsxyter::Message mess, const UShort_
    fvuChanNbHitsInMs[      uAsicIdx ][ usChan ][ uMsIdx ] ++;
    fvdChanLastHitTimeInMs[ uAsicIdx ][ usChan ][ uMsIdx ] = dHitTimeNs;
    fvusChanLastHitAdcInMs[ uAsicIdx ][ usChan ][ uMsIdx ] = usRawAdc;
+/*
    fvmChanHitsInTs[        uAsicIdx ][ usChan ].insert( stsxyter::FinalHit( fvulChanLastHitTime[ uAsicIdx ][ usChan ],
                                                                             usRawAdc, uAsicIdx, usChan ) );
-   fvmHitsInTs.insert( stsxyter::FinalHit( fvulChanLastHitTime[ uAsicIdx ][ usChan ], usRawAdc, uAsicIdx, usChan ) );
+*/
+   fvmHitsInTs.push_back( stsxyter::FinalHit( fvulChanLastHitTime[ uAsicIdx ][ usChan ], usRawAdc, uAsicIdx, usChan ) );
 
 /*
       LOG(INFO) << " TS " << std::setw( 12 ) << fulCurrentTsIdx
@@ -2007,56 +2019,6 @@ void CbmCosy2018MonitorSetup::FillHitInfo( stsxyter::Message mess, const UShort_
       fhFebChRateEvoLong[ uAsicIdx ]->Fill( dUnixTimeInRun , usChan, 1.0 / fuLongHistoBinSizeSec );
    } // if( kTRUE == fbLongHistoEnable )
 */
-   // Fill histos for single Hodos
-   UInt_t uFiberInHodo = fUnpackPar->GetChannelToFiberMap( usChan );
-   if( fUnpackPar->GetAsicIndexHodo1() == uAsicIdx )
-   {
-      // Hodo 1
-      if( fUnpackPar->GetChannelToPlaneMapHodo1( usChan ) )
-      {
-         // Y
-         fhHodoChanCounts1Y->Fill( uFiberInHodo );
-         fhHodoChanAdcRaw1Y->Fill( uFiberInHodo, usRawAdc );
-         fhHodoChanHitRateEvo1Y->Fill( dTimeSinceStartSec, uFiberInHodo );
-         fhHodoRateEvo1Y->Fill(   dTimeSinceStartSec );
-//         fhHodoChanHitRateEvo1Y->Fill( dTimeSinceStartMin, uFiberInHodo, 1.0/60.0 );
-//         fhHodoRateEvo1Y->Fill(   dTimeSinceStartMin, 1.0/60.0 );
-      } // if( fUnpackPar->GetChannelToPlaneMapHodo1( usChan ) )
-         else
-         {
-            // X
-            fhHodoChanCounts1X->Fill( uFiberInHodo );
-            fhHodoChanAdcRaw1X->Fill( uFiberInHodo, usRawAdc );
-            fhHodoChanHitRateEvo1X->Fill( dTimeSinceStartSec, uFiberInHodo );
-            fhHodoRateEvo1X->Fill(   dTimeSinceStartSec );
-//            fhHodoChanHitRateEvo1X->Fill( dTimeSinceStartMin, uFiberInHodo, 1.0/60.0 );
-//            fhHodoRateEvo1X->Fill(   dTimeSinceStartMin, 1.0/60.0 );
-         } // else of if( fUnpackPar->GetChannelToPlaneMapHodo1( usChan ) )
-   } // if( fUnpackPar->GetAsicIndexHodo1() == uAsicIdx )
-   else if( fUnpackPar->GetAsicIndexHodo2() == uAsicIdx )
-   {
-      // Hodo 2
-      if( fUnpackPar->GetChannelToPlaneMapHodo2( usChan ) )
-      {
-         // Y
-         fhHodoChanCounts2Y->Fill( uFiberInHodo );
-         fhHodoChanAdcRaw2Y->Fill( uFiberInHodo, usRawAdc );
-         fhHodoChanHitRateEvo2Y->Fill( dTimeSinceStartSec, uFiberInHodo );
-         fhHodoRateEvo2Y->Fill(   dTimeSinceStartSec );
-//         fhHodoChanHitRateEvo2Y->Fill( dTimeSinceStartMin, uFiberInHodo, 1.0/60.0 );
-//         fhHodoRateEvo2Y->Fill(   dTimeSinceStartMin, 1.0/60.0 );
-      } // if( fUnpackPar->GetChannelToPlaneMapHodo2( usChan ) )
-         else
-         {
-            // X
-            fhHodoChanCounts2X->Fill( uFiberInHodo );
-            fhHodoChanAdcRaw2X->Fill( uFiberInHodo, usRawAdc );
-            fhHodoChanHitRateEvo2X->Fill( dTimeSinceStartSec, uFiberInHodo );
-            fhHodoRateEvo2X->Fill(   dTimeSinceStartSec );
-//            fhHodoChanHitRateEvo2X->Fill( dTimeSinceStartMin, uFiberInHodo, 1.0/60.0 );
-//            fhHodoRateEvo2X->Fill(   dTimeSinceStartMin, 1.0/60.0 );
-         } // else of if( fUnpackPar->GetChannelToPlaneMapHodo2( usChan ) )
-   } // else if( fUnpackPar->GetAsicIndexHodo2() == uAsicIdx )
 
 }
 
@@ -2198,49 +2160,32 @@ void CbmCosy2018MonitorSetup::SaveAllHistos( TString sFileName )
 */
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 
-   fhHodoChanCounts1X->Write();
-   fhHodoChanCounts1Y->Write();
-   fhHodoChanCounts2X->Write();
-   fhHodoChanCounts2Y->Write();
-   fhHodoChanAdcRaw1X->Write();
-   fhHodoChanAdcRaw1Y->Write();
-   fhHodoChanAdcRaw2X->Write();
-   fhHodoChanAdcRaw2Y->Write();
-   fhHodoChanHitRateEvo1X->Write();
-   fhHodoChanHitRateEvo1Y->Write();
-   fhHodoChanHitRateEvo2X->Write();
-   fhHodoChanHitRateEvo2Y->Write();
-   fhHodoRateEvo1X->Write();
-   fhHodoRateEvo1Y->Write();
-   fhHodoRateEvo1X->Write();
-   fhHodoRateEvo2Y->Write();
-   fhHodoSameMs1XY->Write();
-   fhHodoSameMs2XY->Write();
-   fhHodoSameMsX1X2->Write();
-   fhHodoSameMsY1Y2->Write();
-   fhHodoSameMsX1Y2->Write();
-   fhHodoSameMsY1X2->Write();
+   fhSetupSortedDtX1Y1->Write();
+   fhSetupSortedDtX2Y2->Write();
+   fhSetupSortedDtN1P1->Write();
+   fhSetupSortedMapX1Y1->Write();
+   fhSetupSortedMapX2Y2->Write();
+   fhSetupSortedMapN1P1->Write();
+   fhSetupSortedCntEvoX1Y1->Write();
+   fhSetupSortedCntEvoX2Y2->Write();
+   fhSetupSortedCntEvoN1P1->Write();
 
-   fhHodoSameMsCntEvoX1Y1->Write();
-   fhHodoSameMsCntEvoX2Y2->Write();
-   fhHodoSameMsCntEvoX1X2->Write();
-   fhHodoSameMsCntEvoY1Y2->Write();
-   fhHodoSameMsCntEvoX1Y2->Write();
-   fhHodoSameMsCntEvoY1X2->Write();
-   fhHodoSameMsCntEvoX1Y1X2Y2->Write();
+   fhBothHodoSortedDtX1Y1->Write();
+   fhBothHodoSortedDtX2Y2->Write();
+   fhBothHodoSortedMapX1Y1->Write();
+   fhBothHodoSortedMapX2Y2->Write();
+   fhBothHodoSortedCntEvoX1Y1->Write();
+   fhBothHodoSortedCntEvoX2Y2->Write();
 
-   fhHodoSortedDtX1Y1->Write();
-   fhHodoSortedDtX2Y2->Write();
-   fhHodoSortedDtX1X2->Write();
-   fhHodoSortedDtY1Y2->Write();
-   fhHodoSortedDtX1Y2->Write();
-   fhHodoSortedDtY1X2->Write();
-   fhHodoSortedMapX1Y1->Write();
-   fhHodoSortedMapX2Y2->Write();
-   fhHodoSortedMapX1X2->Write();
-   fhHodoSortedMapY1Y2->Write();
-   fhHodoSortedMapX1Y2->Write();
-   fhHodoSortedMapY1X2->Write();
+   fhSystSortedDtX1Y1->Write();
+   fhSystSortedDtX2Y2->Write();
+   fhSystSortedDtN1P1->Write();
+   fhSystSortedMapX1Y1->Write();
+   fhSystSortedMapX2Y2->Write();
+   fhSystSortedMapN1P1->Write();
+   fhSystSortedCntEvoX1Y1->Write();
+   fhSystSortedCntEvoX2Y2->Write();
+   fhSystSortedCntEvoN1P1->Write();
 
 //   fhHodoFebTsMsb->Write();
 
@@ -2301,49 +2246,32 @@ void CbmCosy2018MonitorSetup::ResetAllHistos()
 */
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 
-   fhHodoChanCounts1X->Reset();
-   fhHodoChanCounts1Y->Reset();
-   fhHodoChanCounts2X->Reset();
-   fhHodoChanCounts2Y->Reset();
-   fhHodoChanAdcRaw1X->Reset();
-   fhHodoChanAdcRaw1Y->Reset();
-   fhHodoChanAdcRaw2X->Reset();
-   fhHodoChanAdcRaw2Y->Reset();
-   fhHodoChanHitRateEvo1X->Reset();
-   fhHodoChanHitRateEvo1Y->Reset();
-   fhHodoChanHitRateEvo2X->Reset();
-   fhHodoChanHitRateEvo2Y->Reset();
-   fhHodoRateEvo1X->Reset();
-   fhHodoRateEvo1Y->Reset();
-   fhHodoRateEvo1X->Reset();
-   fhHodoRateEvo2Y->Reset();
-   fhHodoSameMs1XY->Reset();
-   fhHodoSameMs2XY->Reset();
-   fhHodoSameMsX1X2->Reset();
-   fhHodoSameMsY1Y2->Reset();
-   fhHodoSameMsX1Y2->Reset();
-   fhHodoSameMsY1X2->Reset();
+   fhSetupSortedDtX1Y1->Reset();
+   fhSetupSortedDtX2Y2->Reset();
+   fhSetupSortedDtN1P1->Reset();
+   fhSetupSortedMapX1Y1->Reset();
+   fhSetupSortedMapX2Y2->Reset();
+   fhSetupSortedMapN1P1->Reset();
+   fhSetupSortedCntEvoX1Y1->Reset();
+   fhSetupSortedCntEvoX2Y2->Reset();
+   fhSetupSortedCntEvoN1P1->Reset();
 
-   fhHodoSameMsCntEvoX1Y1->Reset();
-   fhHodoSameMsCntEvoX2Y2->Reset();
-   fhHodoSameMsCntEvoX1X2->Reset();
-   fhHodoSameMsCntEvoY1Y2->Reset();
-   fhHodoSameMsCntEvoX1Y2->Reset();
-   fhHodoSameMsCntEvoY1X2->Reset();
-   fhHodoSameMsCntEvoX1Y1X2Y2->Reset();
+   fhBothHodoSortedDtX1Y1->Reset();
+   fhBothHodoSortedDtX2Y2->Reset();
+   fhBothHodoSortedMapX1Y1->Reset();
+   fhBothHodoSortedMapX2Y2->Reset();
+   fhBothHodoSortedCntEvoX1Y1->Reset();
+   fhBothHodoSortedCntEvoX2Y2->Reset();
 
-   fhHodoSortedDtX1Y1->Reset();
-   fhHodoSortedDtX2Y2->Reset();
-   fhHodoSortedDtX1X2->Reset();
-   fhHodoSortedDtY1Y2->Reset();
-   fhHodoSortedDtX1Y2->Reset();
-   fhHodoSortedDtY1X2->Reset();
-   fhHodoSortedMapX1Y1->Reset();
-   fhHodoSortedMapX2Y2->Reset();
-   fhHodoSortedMapX1X2->Reset();
-   fhHodoSortedMapY1Y2->Reset();
-   fhHodoSortedMapX1Y2->Reset();
-   fhHodoSortedMapY1X2->Reset();
+   fhSystSortedDtX1Y1->Reset();
+   fhSystSortedDtX2Y2->Reset();
+   fhSystSortedDtN1P1->Reset();
+   fhSystSortedMapX1Y1->Reset();
+   fhSystSortedMapX2Y2->Reset();
+   fhSystSortedMapN1P1->Reset();
+   fhSystSortedCntEvoX1Y1->Reset();
+   fhSystSortedCntEvoX2Y2->Reset();
+   fhSystSortedCntEvoN1P1->Reset();
 
 //   fhHodoFebTsMsb->Reset();
 

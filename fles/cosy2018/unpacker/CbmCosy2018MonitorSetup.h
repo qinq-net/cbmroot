@@ -30,6 +30,7 @@
 
 class CbmDigi;
 class CbmCern2017UnpackParHodo;
+class CbmCern2017UnpackParSts;
 
 class CbmCosy2018MonitorSetup: public CbmTSUnpack
 {
@@ -66,13 +67,18 @@ public:
                          stsxyter::MessagePrintMask ctrl = stsxyter::MessagePrintMask::msg_print_Hex |
                                                            stsxyter::MessagePrintMask::msg_print_Human )
                         { fbPrintMessages = bPrintMessOn; fPrintMessCtrl = ctrl; }
+//   void EnableDualStsMode( Bool_t bEnable = kTRUE ) { fbDualStsEna = bEnable; }
    void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
+   void SetCoincidenceBorderHodo( Double_t dNewValue ){ fdCoincBorderHodo = dNewValue;}
+   void SetCoincidenceBorderSts( Double_t dNewValue ){  fdCoincBorderSts  = dNewValue;}
+   void SetCoincidenceBorder( Double_t dNewValue ){     fdCoincBorder     = dNewValue;}
 
 private:
    size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
 
    // Parameters
-   CbmCern2017UnpackParHodo* fUnpackPar; //!
+   CbmCern2017UnpackParHodo* fUnpackParHodo; //!
+   CbmCern2017UnpackParSts*  fUnpackParSts; //!
    UInt_t                   fuNrOfDpbs;       //! Total number of Sts DPBs in system
    std::map<UInt_t, UInt_t> fDpbIdIndexMap;   //! Map of DPB Identifier to DPB index
    UInt_t                   fuNbElinksPerDpb; //! Number of possible eLinks per DPB
@@ -88,6 +94,7 @@ private:
       // Task configuration values
    Bool_t                fbPrintMessages;
    stsxyter::MessagePrintMask fPrintMessCtrl;
+//   Bool_t                fbDualStsEna;
       // TS/MS info
    ULong64_t             fulCurrentTsIdx;
    ULong64_t             fulCurrentMsIdx;
@@ -103,7 +110,7 @@ private:
    std::vector< ULong64_t > fvulCurrentTsMsb;                   //! Current TS MSB for each DPB
    std::vector< UInt_t    > fvuCurrentTsMsbCycle;               //! Current TS MSB cycle for DPB
    std::vector< UInt_t    > fvuElinkLastTsHit;                  //! TS from last hit for DPB
-
+      // Hits comparison
    std::vector< std::vector< ULong64_t > > fvulChanLastHitTime;   //! Last hit time in bins for each Channel
    std::vector< std::vector< Double_t  > > fvdChanLastHitTime;    //! Last hit time in ns   for each Channel
    std::vector< Double_t >                               fvdMsTime;                  //! Header time of each MS
@@ -117,11 +124,15 @@ private:
    std::chrono::steady_clock::time_point ftStartTimeUnix; /** Time of run Start from UNIX system, used as reference for long evolution plots against reception time **/
 
       // Hits time-sorting
-   std::multiset< stsxyter::FinalHit > fvmHitsInTs; //! All hits (time in bins, ADC in bins, asic, channel) in last TS, sorted by multiset with "<" operator
+   std::vector< stsxyter::FinalHit > fvmHitsInTs; //! All hits (time in bins, ADC in bins, asic, channel) in last TS, sorted by multiset with "<" operator
    stsxyter::FinalHit fLastSortedHit1X; //! Last sorted hit for Hodo 1 X
    stsxyter::FinalHit fLastSortedHit1Y; //! Last sorted hit for Hodo 1 Y
    stsxyter::FinalHit fLastSortedHit2X; //! Last sorted hit for Hodo 2 X
    stsxyter::FinalHit fLastSortedHit2Y; //! Last sorted hit for Hodo 2 Y
+   stsxyter::FinalHit fLastSortedHit1N; //! Last sorted hit for STS 1 N
+   stsxyter::FinalHit fLastSortedHit1P; //! Last sorted hit for STS 1 P
+   stsxyter::FinalHit fLastSortedHit2N; //! Last sorted hit for STS 2 N
+   stsxyter::FinalHit fLastSortedHit2P; //! Last sorted hit for STS 2 P
       // Coincidence histos
    UInt_t fuMaxNbMicroslices;
       // Rate evolution histos
@@ -154,56 +165,43 @@ private:
    std::vector<TH2*> fhHodoChanHitRateEvoLong;
    std::vector<TH1*> fhHodoFebRateEvoLong;
 
-   TH1 * fhHodoChanCounts1X;
-   TH1 * fhHodoChanCounts1Y;
-   TH1 * fhHodoChanCounts2X;
-   TH1 * fhHodoChanCounts2Y;
-   TH2 * fhHodoChanAdcRaw1X;
-   TH2 * fhHodoChanAdcRaw1Y;
-   TH2 * fhHodoChanAdcRaw2X;
-   TH2 * fhHodoChanAdcRaw2Y;
-   TH2 * fhHodoChanHitRateEvo1X;
-   TH2 * fhHodoChanHitRateEvo1Y;
-   TH2 * fhHodoChanHitRateEvo2X;
-   TH2 * fhHodoChanHitRateEvo2Y;
-   TH1 * fhHodoRateEvo1X;
-   TH1 * fhHodoRateEvo1Y;
-   TH1 * fhHodoRateEvo2X;
-   TH1 * fhHodoRateEvo2Y;
-   TH2 * fhHodoSameMs1XY;
-   TH2 * fhHodoSameMs2XY;
-   TH2 * fhHodoSameMsX1X2;
-   TH2 * fhHodoSameMsY1Y2;
-   TH2 * fhHodoSameMsX1Y2;
-   TH2 * fhHodoSameMsY1X2;
-
-   TH1 * fhHodoSameMsCntEvoX1Y1;
-   TH1 * fhHodoSameMsCntEvoX2Y2;
-   TH1 * fhHodoSameMsCntEvoX1X2;
-   TH1 * fhHodoSameMsCntEvoY1Y2;
-   TH1 * fhHodoSameMsCntEvoX1Y2;
-   TH1 * fhHodoSameMsCntEvoY1X2;
-   TH1 * fhHodoSameMsCntEvoX1Y1X2Y2;
-
       // Coincidences in sorted hits
-   TH1 * fhHodoSortedDtX1Y1;
-   TH1 * fhHodoSortedDtX2Y2;
-   TH1 * fhHodoSortedDtX1X2;
-   TH1 * fhHodoSortedDtY1Y2;
-   TH1 * fhHodoSortedDtX1Y2;
-   TH1 * fhHodoSortedDtY1X2;
-   TH2 * fhHodoSortedMapX1Y1;
-   TH2 * fhHodoSortedMapX2Y2;
-   TH2 * fhHodoSortedMapX1X2;
-   TH2 * fhHodoSortedMapY1Y2;
-   TH2 * fhHodoSortedMapX1Y2;
-   TH2 * fhHodoSortedMapY1X2;
-   TH1 * fhHodoSortedCntEvoX1Y1;
-   TH1 * fhHodoSortedCntEvoX2Y2;
-   TH1 * fhHodoSortedCntEvoX1X2;
-   TH1 * fhHodoSortedCntEvoY1Y2;
-   TH1 * fhHodoSortedCntEvoX1Y2;
-   TH1 * fhHodoSortedCntEvoY1X2;
+   Double_t fdCoincBorderHodo; // ns, +/-
+   Double_t fdCoincBorderSts; // ns, +/-
+   Double_t fdCoincBorder; // ns, +/-
+         // Single detector maps
+   TH1 * fhSetupSortedDtX1Y1;
+   TH1 * fhSetupSortedDtX2Y2;
+   TH1 * fhSetupSortedDtN1P1;
+   TH1 * fhSetupSortedDtX1Y1X2Y2;
+   TH1 * fhSetupSortedDtX1Y1X2Y2N1P1;
+   TH2 * fhSetupSortedMapX1Y1;
+   TH2 * fhSetupSortedMapX2Y2;
+   TH2 * fhSetupSortedMapN1P1;
+   TH1 * fhSetupSortedCntEvoX1Y1;
+   TH1 * fhSetupSortedCntEvoX2Y2;
+   TH1 * fhSetupSortedCntEvoN1P1;
+
+         // Full Hodo maps
+   TH1 * fhBothHodoSortedDtX1Y1;
+   TH1 * fhBothHodoSortedDtX2Y2;
+   TH1 * fhBothHodoSortedDtX1Y1X2Y2N1P1;
+   TH2 * fhBothHodoSortedMapX1Y1;
+   TH2 * fhBothHodoSortedMapX2Y2;
+   TH1 * fhBothHodoSortedCntEvoX1Y1;
+   TH1 * fhBothHodoSortedCntEvoX2Y2;
+
+         // Full System maps
+   TH1 * fhSystSortedDtX1Y1;
+   TH1 * fhSystSortedDtX2Y2;
+   TH1 * fhSystSortedDtN1P1;
+   TH1 * fhSystSortedDtX1Y1X2Y2;
+   TH2 * fhSystSortedMapX1Y1;
+   TH2 * fhSystSortedMapX2Y2;
+   TH2 * fhSystSortedMapN1P1;
+   TH1 * fhSystSortedCntEvoX1Y1;
+   TH1 * fhSystSortedCntEvoX2Y2;
+   TH1 * fhSystSortedCntEvoN1P1;
 
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
