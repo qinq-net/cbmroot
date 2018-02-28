@@ -981,6 +981,8 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       cStsSumm->Divide( 2, 2 );
 
       cStsSumm->cd(1);
+      gPad->SetGridx();
+      gPad->SetGridy();
       gPad->SetLogy();
       fhStsChanCounts[ uXyterIdx ]->Draw();
 
@@ -989,10 +991,13 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       fhStsChanRawAdc[ uXyterIdx ]->Draw( "colz" );
 
       cStsSumm->cd(3);
+      gPad->SetGridx();
+      gPad->SetGridy();
       gPad->SetLogz();
-      fhStsChanRawTs[ uXyterIdx ]->Draw( "colz" );
+      fhStsChanHitRateEvo[ uXyterIdx ]->Draw( "colz" );
 
       cStsSumm->cd(4);
+      gPad->SetGridy();
       gPad->SetLogy();
       fhStsXyterRateEvo[ uXyterIdx ]->Draw();
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
@@ -1643,7 +1648,7 @@ Bool_t CbmCosy2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
             {
                fLastSortedHit1P = (*it);
 
-               Double_t dDtN1P1 = ( ulHitTs - fLastSortedHit1N.GetTs() ) * stsxyter::kdClockCycleNs;
+               Double_t dDtN1P1 = ( ulHitTs * stsxyter::kdClockCycleNs - fLastSortedHit1N.GetTs() * stsxyter::kdClockCycleNs );
                fhStsSortedDtN1P1->Fill( dDtN1P1 );
                if( TMath::Abs( dDtN1P1 ) < dCoincBorder )
                {
@@ -1735,6 +1740,11 @@ Bool_t CbmCosy2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
          // Remove all hits which were already used
          fvmHitsInTs.erase( fvmHitsInTs.begin(), it );
       } // if( 0 < fvmHitsInTs.size() )
+
+      // Remove all hits from this TS
+      for( UInt_t uAsicIdx = 0; uAsicIdx < fuNbStsXyters; ++uAsicIdx )
+         for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
+            fvmChanHitsInTs[ uAsicIdx ][ uChan ].clear();
    } // if( fuCurrDpbIdx == fuNrOfDpbs - 1 )
 
    if( 0 == ts.index() % 1000 && fuCurrDpbIdx == fuNrOfDpbs - 1 )
