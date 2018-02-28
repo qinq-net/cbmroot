@@ -3,7 +3,7 @@ Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/analysis
 ${CBMROOT_SOURCE_DIR}/analysis/papa
 
-${CBMROOT_SOURCE_DIR}/generators
+${CBMROOT_SOURCE_DIR}/generators/unigen
 
 ${CBMROOT_SOURCE_DIR}/base 
 ${CBMROOT_SOURCE_DIR}/base/draw

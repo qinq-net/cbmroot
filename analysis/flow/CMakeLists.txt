@@ -8,7 +8,7 @@ ${CBMROOT_SOURCE_DIR}/data/sts
 ${CBMROOT_SOURCE_DIR}/data/global
 ${CBMROOT_SOURCE_DIR}/data/psd
 
-${CBMROOT_SOURCE_DIR}/generators
+${CBMROOT_SOURCE_DIR}/generators/unigen
 
 ${CBMROOT_SOURCE_DIR}/KF
 ${CBMROOT_SOURCE_DIR}/KF/Interface 

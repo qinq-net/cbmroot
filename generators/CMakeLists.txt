@@ -6,6 +6,7 @@ Set(INCLUDE_DIRECTORIES
  ${CBMROOT_SOURCE_DIR}/data
  ${CBMROOT_SOURCE_DIR}/generators
  ${CBMROOT_SOURCE_DIR}/generators/pluto
+ ${CBMROOT_SOURCE_DIR}/generators/unigen
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -41,9 +42,9 @@ CbmShieldGenerator.cxx
 CbmUnigenGenerator.cxx
 CbmIonGenerator.cxx
 CbmPlutoGenerator.cxx
-URun.cxx
-UEvent.cxx
-UParticle.cxx
+unigen/URun.cxx
+unigen/UEvent.cxx
+unigen/UParticle.cxx
 pluto/PDataBase.cxx
 pluto/PMesh.cxx
 pluto/PParticle.cxx
