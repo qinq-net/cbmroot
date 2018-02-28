@@ -10,7 +10,7 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void HodoMonitor(TString inFile = "",
+void SetupMonitor(TString inFile = "",
                  Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080)
 {
   /*
@@ -42,6 +42,10 @@ void HodoMonitor(TString inFile = "",
   TObjString* tutDetDigiFileHodo = new TObjString(paramFileHodo);
   parFileList->Add(tutDetDigiFileHodo);
 
+  TString paramFileSts = paramDir + "StsUnpackPar.par";
+  TObjString* tutDetDigiFileSts = new TObjString(paramFileSts);
+  parFileList->Add(tutDetDigiFileSts);
+
   // --- Set debug level
   gDebug = 0;
 
@@ -55,11 +59,11 @@ void HodoMonitor(TString inFile = "",
   std::cout << ">>> Cern2017Monitor: Initialising..." << std::endl;
 
   // Hodoscopes Monitor
-  CbmCosy2018MonitorHodo* monitorHodo = new CbmCosy2018MonitorHodo();
-//  monitorHodo->SetPrintMessage();
-  monitorHodo->SetMsOverlap();
-  monitorHodo->SetLongDurationLimits( 3600, 10 );
-  monitorHodo->SetCoincidenceBorder( 50 );
+  CbmCosy2018MonitorSetup* monitorSetup = new CbmCosy2018MonitorSetup();
+//  monitorSetup->SetPrintMessage();
+  monitorSetup->SetMsOverlap();
+  monitorSetup->SetLongDurationLimits( 3600, 10 );
+  monitorSetup->SetCoincidenceBorder( 50 );
 
   // --- Source task
   CbmTofStar2018Source* source = new CbmTofStar2018Source();
@@ -71,7 +75,7 @@ void HodoMonitor(TString inFile = "",
          source->SetPortNumber( 5556 );
       }
 
-  source->AddUnpacker(monitorHodo,  0x10, 6); // stsXyter DPBs
+  source->AddUnpacker(monitorSetup,  0x10, 6); // stsXyter DPBs
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();
