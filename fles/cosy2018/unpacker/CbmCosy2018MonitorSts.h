@@ -70,6 +70,9 @@ public:
    void EnableDualStsMode( Bool_t bEnable = kTRUE ) { fbDualStsEna = bEnable; }
    void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
 
+   void SetStripsOffset1( Int_t iOffN, Int_t iOffP ) { fiStripsOffsetN1 = iOffN; fiStripsOffsetP1 = iOffP; }
+   void SetStripsOffset2( Int_t iOffN, Int_t iOffP ) { fiStripsOffsetN2 = iOffN; fiStripsOffsetP2 = iOffP; }
+
 private:
    size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
 
@@ -114,7 +117,7 @@ private:
    std::vector< std::vector< std::vector< UInt_t > > >   fvuChanNbHitsInMs;      //! Number of hits in each MS for each Channel
    std::vector< std::vector< std::vector< Double_t > > > fvdChanLastHitTimeInMs; //! Last hit time in bins in each MS for each Channel
    std::vector< std::vector< std::vector< UShort_t > > > fvusChanLastHitAdcInMs; //! Last hit ADC in bins in each MS for each Channel
-   std::vector< std::vector< std::multiset< stsxyter::FinalHit > > > fvmChanHitsInTs; //! All hits (time & ADC) in bins in last TS for each Channel
+//   std::vector< std::vector< std::multiset< stsxyter::FinalHit > > > fvmChanHitsInTs; //! All hits (time & ADC) in bins in last TS for each Channel
       // Starting state book-keeping
    Double_t              fdStartTime;           /** Time of first valid hit (TS_MSB available), used as reference for evolution plots**/
    Double_t              fdStartTimeMsSz;       /** Time of first microslice, used as reference for evolution plots**/
@@ -153,18 +156,6 @@ private:
    std::vector<TH2*> fhStsChanHitDt;
    std::vector<TH2*> fhStsChanHitDtNeg;
    std::vector<TH2*> fhStsChanHitsPerMs;
-   std::vector<TH2*> fhStsChanSameMs;
-   std::vector<TProfile2D*> fpStsChanSameMsTimeDiff;
-   std::vector<TH2*> fhStsChanSameMsTimeDiff;
-/*
-   Bool_t fbPulserTimeDiffOn;
-   UInt_t fuPulserMaxNbMicroslices;
-   std::vector<UInt_t> fvuPulserAsic;
-   std::vector<UInt_t> fvuPulserChan;
-   std::vector<TH1*> fhStsPulserChansTimeDiff;
-   std::vector<TH2*> fhStsPulserChansTimeDiffEvo;
-   std::vector<TH2*> fhStsPulserChansTimeDiffAdc;
-*/
    TH2* fhStsAsicTsMsb;
 
    Bool_t fbLongHistoEnable;
@@ -176,21 +167,6 @@ private:
 /*
    std::vector<TH1*> fhFebRateEvoDate;
 */
-      // Coincidences in same MS (unsorted hits)
-   TH2 * fhStsSameMs1NP;
-   TH2 * fhStsSameMs2NP;
-   TH2 * fhStsSameMsN1N2;
-   TH2 * fhStsSameMsP1P2;
-   TH2 * fhStsSameMsN1P2;
-   TH2 * fhStsSameMsP1N2;
-
-   TH1 * fhStsSameMsCntEvoN1P1;
-   TH1 * fhStsSameMsCntEvoN2P2;
-   TH1 * fhStsSameMsCntEvoN1N2;
-   TH1 * fhStsSameMsCntEvoP1P2;
-   TH1 * fhStsSameMsCntEvoN1P2;
-   TH1 * fhStsSameMsCntEvoP1N2;
-   TH1 * fhStsSameMsCntEvoN1P1N2P2;
 
       // Coincidences in sorted hits
    TH1 * fhStsSortedDtN1P1;
@@ -212,6 +188,19 @@ private:
    TH1 * fhStsSortedCntEvoN1P2;
    TH1 * fhStsSortedCntEvoP1N2;
 
+   const Double_t kdStereoAngle =    7.5; // [Deg]
+   Double_t       fdStereoAngleTan;
+   const Double_t kdPitchMm     =    0.058; // [mm]
+   const Int_t    kiNbStrips    = 1024;
+   const Double_t kdSensorsSzX  =   60; // [mm], active is 59.570 mm (kiNbStrips*kdPitchMm)
+   const Double_t kdSensorsSzY  =   40; // [mm], active is 39.703 mm
+   Int_t fiStripsOffsetN1; // of channel 0 relative to center strip
+   Int_t fiStripsOffsetP1; // of channel 0 relative to center strip
+   Int_t fiStripsOffsetN2; // of channel 0 relative to center strip
+   Int_t fiStripsOffsetP2; // of channel 0 relative to center strip
+   TH2 * fhStsSortedMapX1Y1;
+   TH2 * fhStsSortedMapX2Y2;
+
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
    TProfile* fhMsSzTime[kiMaxNbFlibLinks];
@@ -221,6 +210,9 @@ private:
    void FillHitInfo(   stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx, const UInt_t & uMsIdx );
    void FillTsMsbInfo( stsxyter::Message mess, UInt_t uMessIdx = 0, UInt_t uMsIdx = 0);
    void FillEpochInfo( stsxyter::Message mess );
+
+   void ComputeCoordinatesSensor1( Int_t iChanN, Int_t iChanP, Double_t & dPosX, Double_t & dPosY );
+   void ComputeCoordinatesSensor2( Int_t iChanN, Int_t iChanP, Double_t & dPosX, Double_t & dPosY );
 
    CbmCosy2018MonitorSts(const CbmCosy2018MonitorSts&);
    CbmCosy2018MonitorSts operator=(const CbmCosy2018MonitorSts&);
