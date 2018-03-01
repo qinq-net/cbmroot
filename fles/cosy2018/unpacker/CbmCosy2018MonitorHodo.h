@@ -111,7 +111,7 @@ private:
    std::vector< std::vector< std::vector< UInt_t > > >   fvuChanNbHitsInMs;          //! Number of hits in each MS for each Channel
    std::vector< std::vector< std::vector< Double_t > > > fvdChanLastHitTimeInMs;     //! Last hit time in bins in each MS for each Channel
    std::vector< std::vector< std::vector< UShort_t > > > fvusChanLastHitAdcInMs;     //! Last hit ADC in bins in each MS for each Channel
-   std::vector< std::vector< std::multiset< stsxyter::FinalHit > > > fvmChanHitsInTs; //! All hits (time & ADC) in bins in last TS for each Channel
+//   std::vector< std::vector< std::multiset< stsxyter::FinalHit > > > fvmChanHitsInTs; //! All hits (time & ADC) in bins in last TS for each Channel
       // Starting state book-keeping
    Double_t              fdStartTime;           /** Time of first valid hit (TS_MSB available), used as reference for evolution plots**/
    Double_t              fdStartTimeMsSz;       /** Time of first microslice, used as reference for evolution plots**/
@@ -171,20 +171,6 @@ private:
    TH1 * fhHodoRateEvo1Y;
    TH1 * fhHodoRateEvo2X;
    TH1 * fhHodoRateEvo2Y;
-   TH2 * fhHodoSameMs1XY;
-   TH2 * fhHodoSameMs2XY;
-   TH2 * fhHodoSameMsX1X2;
-   TH2 * fhHodoSameMsY1Y2;
-   TH2 * fhHodoSameMsX1Y2;
-   TH2 * fhHodoSameMsY1X2;
-
-   TH1 * fhHodoSameMsCntEvoX1Y1;
-   TH1 * fhHodoSameMsCntEvoX2Y2;
-   TH1 * fhHodoSameMsCntEvoX1X2;
-   TH1 * fhHodoSameMsCntEvoY1Y2;
-   TH1 * fhHodoSameMsCntEvoX1Y2;
-   TH1 * fhHodoSameMsCntEvoY1X2;
-   TH1 * fhHodoSameMsCntEvoX1Y1X2Y2;
 
       // Coincidences in sorted hits
    Double_t fdCoincBorder; // ns, +/-
