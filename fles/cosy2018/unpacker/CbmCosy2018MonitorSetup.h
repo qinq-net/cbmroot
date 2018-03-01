@@ -117,7 +117,7 @@ private:
    std::vector< std::vector< std::vector< UInt_t > > >   fvuChanNbHitsInMs;          //! Number of hits in each MS for each Channel
    std::vector< std::vector< std::vector< Double_t > > > fvdChanLastHitTimeInMs;     //! Last hit time in bins in each MS for each Channel
    std::vector< std::vector< std::vector< UShort_t > > > fvusChanLastHitAdcInMs;     //! Last hit ADC in bins in each MS for each Channel
-   std::vector< std::vector< std::multiset< stsxyter::FinalHit > > > fvmChanHitsInTs; //! All hits (time & ADC) in bins in last TS for each Channel
+//   std::vector< std::vector< std::multiset< stsxyter::FinalHit > > > fvmChanHitsInTs; //! All hits (time & ADC) in bins in last TS for each Channel
       // Starting state book-keeping
    Double_t              fdStartTime;           /** Time of first valid hit (TS_MSB available), used as reference for evolution plots**/
    Double_t              fdStartTimeMsSz;       /** Time of first microslice, used as reference for evolution plots**/
@@ -202,6 +202,10 @@ private:
    TH1 * fhSystSortedCntEvoX1Y1;
    TH1 * fhSystSortedCntEvoX2Y2;
    TH1 * fhSystSortedCntEvoN1P1;
+   TH2 * fhSystSortedDtN1X1vsN1X2;
+   TH2 * fhSystSortedDtP1X1vsP1X2;
+   TH2 * fhSystSortedDtAllVsMapX1;
+   TH2 * fhSystSortedDtAllVsMapX2;
 
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
