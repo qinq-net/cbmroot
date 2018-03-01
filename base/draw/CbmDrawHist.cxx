@@ -273,13 +273,14 @@ void DrawH1andFitGauss(
     if (hist == NULL) return;
     
     hist->GetYaxis()->SetTitle("Yield (a.u.)");
-    DrawH1(hist);
+    DrawH1(hist, kLinear, kLinear, "hist");
     if (doScale) hist->Scale(1./ hist->Integral());
     if (!(userRangeMin == 0. && userRangeMax == 0.)) hist->GetXaxis()->SetRangeUser(userRangeMin, userRangeMax);
     hist->Fit("gaus", "Q");
     TF1* func = hist->GetFunction("gaus");
     if (func == NULL) return;
     func->SetLineColor(kBlack);
+    func->Draw("same");
     
     if (drawResults) {
         double m = func->GetParameter(1);

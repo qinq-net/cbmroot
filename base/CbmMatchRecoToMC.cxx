@@ -793,7 +793,7 @@ void CbmMatchRecoToMC::MatchRichRings(
 
             vector<pair<Int_t, Int_t> > motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
             for (UInt_t i = 0; i < motherIds.size(); i++) {
-                ringMatch->AddLink(1., motherIds[i].second, motherIds[i].second);
+                ringMatch->AddLink(1., motherIds[i].second, motherIds[i].first);
             }
         }
 
