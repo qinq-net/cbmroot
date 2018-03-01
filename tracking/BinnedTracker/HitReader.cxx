@@ -498,7 +498,15 @@ private:
    TH1F* fHitPullTHisto;
    
 public:
-   CbmBinnedMuchHitReader() : CbmBinnedHitReader()
+   CbmBinnedMuchHitReader() 
+   : CbmBinnedHitReader()
+   , fMuchClusters(nullptr)
+   , fMuchDigis(nullptr)
+   , fMuchPoints(nullptr)
+   , fHitResidualXHisto(nullptr)
+   , fHitResidualYHisto(nullptr)
+   , fHitResidualTHisto(nullptr)
+   , fHitPullTHisto(nullptr)
    {
       FairRootManager* ioman = FairRootManager::Instance();
       fHitArray = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
