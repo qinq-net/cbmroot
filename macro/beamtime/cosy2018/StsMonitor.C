@@ -59,12 +59,8 @@ void StsMonitor(TString inFile = "",
 //  monitorSts->SetPrintMessage();
   monitorSts->SetMsOverlap();
   monitorSts->EnableDualStsMode( kFALSE );
-  /*
-  monitorSts->EnableChanHitDtPlot();
-  monitorSts->SetPulserChannels( 0,  91, 1, 27,
-                                 1,  91, 6, 27);
-  */
   monitorSts->SetLongDurationLimits( 3600, 10 );
+  monitorSts->SetStripsOffset1( 69, -67 );
 
   // --- Source task
   CbmTofStar2018Source* source = new CbmTofStar2018Source();

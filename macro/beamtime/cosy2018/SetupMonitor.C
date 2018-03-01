@@ -63,7 +63,7 @@ void SetupMonitor(TString inFile = "",
 //  monitorSetup->SetPrintMessage();
   monitorSetup->SetMsOverlap();
   monitorSetup->SetLongDurationLimits( 3600, 10 );
-  monitorSetup->SetCoincidenceBorder( 50 );
+  monitorSetup->SetCoincidenceBorder( 150 );
 
   // --- Source task
   CbmTofStar2018Source* source = new CbmTofStar2018Source();
