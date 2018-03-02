@@ -235,11 +235,12 @@ static TH1F* trdNearestHitDistHistos[] = { 0, 0, 0, 0 };
 
 static list<TrackDesc*> lambdaList;
 
-CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fIsOnlyPrimary(false), fSettings(0), fGlobalTracks(0), fStsTracks(0), fMuchTracks(0), fTrdTracks(0),
-   fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
+CbmBinnedTrackerQA::CbmBinnedTrackerQA() : fPrimaryParticleIds(), fIsOnlyPrimary(false), fSettings(0), fGlobalTracks(0), fStsTracks(0), fMuchTracks(0),
+   fTrdTracks(0), fStsHits(0), fMuchHits(0), fTrdHits(0), fTofHits(0),
    fStsClusters(0), fMuchClusters(0), fTrdClusters(0), fTrdDigiMatches(0), fTofHitDigiMatches(0), fTofDigiPointMatches(0),
    fStsDigis(0), fMuchDigis(0), fTrdDigis(0), fTofDigis(0), fMCTracks(0), fStsPoints(0), fMuchPoints(0), fTrdPoints(0), fTofPoints(0)
 {
+    fPrimaryParticleIds.push_back(ppiNone);
 }
 
 InitStatus CbmBinnedTrackerQA::Init()
@@ -390,7 +391,31 @@ InitStatus CbmBinnedTrackerQA::Init()
          const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (fMCTracks->Get(0, i, j));
          track.ptr = mcTrack;
          
-         if (mcTrack->GetMotherId() < 0)
+         bool isPrimary = false;
+         Int_t motherId = mcTrack->GetMotherId();
+         TrackDesc* motherTrack = 0 > motherId ? 0 : &eventTracks[motherId];
+         
+         for (EPrimaryParticleId ppi : fPrimaryParticleIds)
+         {
+             switch (ppi)
+             {
+                 case ppiJpsi:
+                 {
+                     if (motherId >= 0)
+                        isPrimary = 443 == motherTrack->ptr->GetPdgCode();
+                     
+                     break;
+                 }
+                     
+                 default:
+                     isPrimary = motherId < 0;
+             }
+             
+             if (isPrimary)
+                 break;
+         }
+         
+         if (isPrimary)
          {
             track.isPrimary = true;
 #ifdef CBM_BINNED_QA_FILL_HISTOS
@@ -399,12 +424,10 @@ InitStatus CbmBinnedTrackerQA::Init()
             vtxZHisto->Fill(mcTrack->GetStartZ());
 #endif//CBM_BINNED_QA_FILL_HISTOS
          }
-         else
-         {
-            TrackDesc& motherTrack = eventTracks[mcTrack->GetMotherId()];
-            
-            if (motherTrack.ptr->GetPdgCode() == 3122)// Mother particle is a Lambda baryon
-               motherTrack.children.push_back(&track);
+         else if (motherId >= 0)
+         {            
+            if (motherTrack->ptr->GetPdgCode() == 3122)// Mother particle is a Lambda baryon
+               motherTrack->children.push_back(&track);
          }
          
          if (mcTrack->GetPdgCode() == 3122)// Lambda baryon

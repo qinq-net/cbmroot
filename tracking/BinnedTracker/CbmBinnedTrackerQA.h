@@ -37,6 +37,17 @@ public:
     void Finish();// Overridden from FairTask
     void SetParContainers();
     
+    void SetPrimaryParticle(EPrimaryParticleId v)
+    {
+        fPrimaryParticleIds.clear();
+        fPrimaryParticleIds.push_back(v);
+    }
+    
+    void AddPrimaryParticle(EPrimaryParticleId v)
+    {
+        fPrimaryParticleIds.push_back(v);
+    }
+    
 private:
     void HandleSts(Int_t stsTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds, std::set<Int_t>* globalTrackMCRefs, Int_t* globalTracksHitInds);
     void HandleMuch(Int_t muchTrackIndex, std::map<Int_t, std::set<Int_t> >& mcTrackIds, std::set<Int_t>* globalTrackMCRefs, Int_t* globalTracksHitInds);
@@ -45,6 +56,7 @@ private:
     void IterateTrdHits(std::function<void(const CbmTrdHit*, const CbmTrdPoint*)> handleData);
     
 private:
+    std::list<EPrimaryParticleId> fPrimaryParticleIds;
     bool fIsOnlyPrimary;
     CbmBinnedSettings* fSettings;
     TClonesArray* fGlobalTracks;

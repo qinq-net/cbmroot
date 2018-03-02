@@ -12,10 +12,11 @@
 #include "GeoReader.h"
 #include "setup/CbmStsSetup.h"
 
-CbmBinnedTrackerConfigurator::CbmBinnedTrackerConfigurator(bool useAllDetectors) : fUseAllDetectors(useAllDetectors), fTracker(0), fSettings(0), fMCTracks(0),
-   fStsPoints(0), fMuchPoints(0), fTrdPoints(0), fTofPoints(0)
+CbmBinnedTrackerConfigurator::CbmBinnedTrackerConfigurator(bool useAllDetectors) : fUseAllDetectors(useAllDetectors), fTracker(0), fSettings(0), fPrimaryParticleIds(),
+        fMCTracks(0), fStsPoints(0), fMuchPoints(0), fTrdPoints(0), fTofPoints(0)
 {
    fill_n(fUseModules, int(kLastModule), fUseAllDetectors);
+   fPrimaryParticleIds.push_back(ppiNone);
    //fUseModules[kMuch] = false;// Temporary hack
    fUseModules[kRich] = false;// Temporary hack
 }
@@ -33,6 +34,7 @@ InitStatus CbmBinnedTrackerConfigurator::Init()
       stsSetup->Init();
    
    fSettings->SetConfiguring(true);
+   fSettings->SetPrimaryParticles(fPrimaryParticleIds);
    fSettings->SetUse(fUseModules);
    fSettings->SetNofStsStations(0);
    fSettings->SetNofMuchStations(0);

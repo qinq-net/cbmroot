@@ -19,6 +19,13 @@
 #include "FairParamList.h"
 #include "TArrayD.h"
 #include <tuple>
+#include <list>
+
+enum EPrimaryParticleId
+{
+    ppiNone,
+    ppiJpsi
+};
 
 class CbmBinnedSettings : public FairParGenericSet
 {
@@ -35,9 +42,10 @@ public:
     
 public:
     CbmBinnedSettings() : FairParGenericSet("CbmBinnedSettings", "Binned tracker reconstruction parameters", "Default"), fIsConfiguring(false), fIsOnlyPrimary(true),
-            fNofStsStations(0), fNofMuchStations(0), fNofTrdStations(0)/*, fStationErrors()*/, fNofStations(0), fXScats(), fYScats()
+            fNofStsStations(0), fNofMuchStations(0), fNofTrdStations(0)/*, fStationErrors()*/, fNofStations(0), fXScats(), fYScats(), fPrimaryParticleIds()
     {
         std::fill_n(fUseModules, int(kLastModule), true);
+        fPrimaryParticleIds.push_back(ppiNone);
     }
     
     CbmBinnedSettings(const CbmBinnedSettings&) = delete;
@@ -198,6 +206,22 @@ public:
         fYScats.clear();
     }
     
+    const std::list<EPrimaryParticleId> GetPrimaryParticles() const { return fPrimaryParticleIds; }
+    
+    void SetPrimaryParticle(EPrimaryParticleId v)
+    {
+        fPrimaryParticleIds.clear();
+        fPrimaryParticleIds.push_back(v);
+    }
+    
+    void AddPrimaryParticle(EPrimaryParticleId v)
+    {
+        fPrimaryParticleIds.push_back(v);
+    }
+    
+    void SetPrimaryParticles(const std::list<EPrimaryParticleId> v) { fPrimaryParticleIds = v; }
+    void AddPrimaryParticles(const std::list<EPrimaryParticleId> v) { fPrimaryParticleIds.insert(fPrimaryParticleIds.end(), v.begin(), v.end()); }
+    
 private:
     bool fIsConfiguring;
     bool fIsOnlyPrimary;
@@ -209,6 +233,7 @@ private:
     Int_t fNofStations;
     std::vector<Double_t> fXScats;
     std::vector<Double_t> fYScats;
+    std::list<EPrimaryParticleId> fPrimaryParticleIds;
     
     ClassDef(CbmBinnedSettings, 8)
 };

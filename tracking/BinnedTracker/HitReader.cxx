@@ -143,16 +143,18 @@ private:
    
    struct Track
    {
+      Int_t pdg;
       Int_t motherInd;
       Double_t x;
       Double_t y;
       Double_t z;
       map<Double_t, list<Point> > points;
       
-      Track() : motherInd(-1), x(0), y(0), z(0), points() {}
+      Track() : pdg(-1), motherInd(-1), x(0), y(0), z(0), points() {}
       
-      void Init(Int_t mi, Double_t vx, Double_t vy, Double_t vz, const set<Double_t>& stationZs)
+      void Init(Int_t pdgCode, Int_t mi, Double_t vx, Double_t vy, Double_t vz, const set<Double_t>& stationZs)
       {
+         pdg = pdgCode;
          motherInd = mi;
          x = vx;
          y = vy;
@@ -204,17 +206,41 @@ public:
          Double_t x = mcTrack->GetStartX();
          Double_t y = mcTrack->GetStartY();
          Double_t z = mcTrack->GetStartZ();
-         fTracks[i].Init(motherInd, x, y, z, fStationZs);
+         fTracks[i].Init(mcTrack->GetPdgCode(), motherInd, x, y, z, fStationZs);
       }
    }
    
    void Handle()
-   {      
+   {
+      const list<EPrimaryParticleId> ppids = CbmBinnedSettings::Instance()->GetPrimaryParticles();
+      
       for (vector<Track>::const_iterator i = fTracks.begin(); i != fTracks.end(); ++i)
       {
          const Track& track = *i;
          
-         if (track.motherInd >= 0)
+         bool isPrimary = false;
+         
+         for (EPrimaryParticleId ppi : ppids)
+         {
+             switch (ppi)
+             {
+                 case ppiJpsi:
+                 {
+                     if (track.motherInd >= 0)
+                        isPrimary = 443 == fTracks[track.motherInd].pdg;
+                     
+                     break;
+                 }
+                     
+                 default:
+                     isPrimary = track.motherInd < 0;
+             }
+             
+             if (isPrimary)
+                 break;
+         }
+         
+         if (!isPrimary)
             continue;
          
          bool isRef = true;

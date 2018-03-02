@@ -35,11 +35,23 @@ public:
     bool Use(ECbmModuleId m) const { return fUseModules[m]; }
     void SetUse(ECbmModuleId m, bool v) { fUseModules[m] = v; }
     
+    void SetPrimaryParticle(EPrimaryParticleId v)
+    {
+        fPrimaryParticleIds.clear();
+        fPrimaryParticleIds.push_back(v);
+    }
+    
+    void AddPrimaryParticle(EPrimaryParticleId v)
+    {
+        fPrimaryParticleIds.push_back(v);
+    }
+    
 private:
     bool fUseAllDetectors;
     bool fUseModules[kLastModule];
     CbmBinnedTracker* fTracker;
     CbmBinnedSettings* fSettings;
+    std::list<EPrimaryParticleId> fPrimaryParticleIds;
     
     TClonesArray* fMCTracks;
     TClonesArray* fStsPoints;
