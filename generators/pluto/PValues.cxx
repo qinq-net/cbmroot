@@ -65,7 +65,7 @@ int  PValues::StringToValueID(char * st) {
     return -1;
 }
 
-void PValues::Print(const Option_t* delme) const {
+void PValues::Print(const Option_t* /*delme*/) const {
     for (int i=0;i<pointer;i++) {
 	cout << "Value #"<< array_id[i] <<" is: " << array_val[i] << endl;
     }

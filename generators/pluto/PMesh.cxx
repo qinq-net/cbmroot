@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////
+#////////////////////////////////////////////////////////
 //  Small linear mesh to substitute the array from PData
 //  The mesh is inherited from TF1, and allow to use
 //  mesh->Draw()
@@ -46,11 +46,11 @@ PMesh::~PMesh() {
     if (td) delete[] td;
 };
 
-Double_t PMesh::EvalPar(const Double_t *x, const Double_t *params) {
+Double_t PMesh::EvalPar(const Double_t *x, const Double_t* /*params*/) {
     return Eval(x[0]);
 }
  
-Double_t PMesh::Eval(Double_t x, Double_t y , Double_t z , Double_t t ) const
+Double_t PMesh::Eval(Double_t x, Double_t /*y*/ , Double_t /*z*/ , Double_t /*t*/ ) const
 {
     return GetLinearIP(x);
 }
@@ -67,7 +67,7 @@ Double_t PMesh::GetNode(Int_t node){
     return td[node];
 };
 
-void PMesh::Print(const Option_t* delme) const {
+void PMesh::Print(const Option_t* /*delme*/) const {
     cout << "Min:  " << min << endl;
     cout << "Max:  " << max << endl;
     cout << "Size: " << size << endl;

@@ -45,7 +45,7 @@ void PParticle::defaults(void) {
     ResetDaughters();
 }
 
-PParticle::PParticle(int id, Double_t T, Double_t w):
+PParticle::PParticle(int /*id*/, Double_t /*T*/, Double_t /*w*/):
     TLorentzVector()
 {		   
   defaults();

@@ -60,7 +60,7 @@ PDataBase::PDataBase() {
 }
 
 
-void    PDataBase::Print(const Option_t* delme) const {
+void    PDataBase::Print(const Option_t* /*delme*/) const {
     cout << param_int_pointer << " INT's booked (out of " << PDATABASE_MAX_INT_PARAM <<")" << endl;
     for (int i=0;i<param_int_pointer;i++)
 	cout << "INT:" << param_int_name[i] << ":" << param_int_descr[i] << endl;

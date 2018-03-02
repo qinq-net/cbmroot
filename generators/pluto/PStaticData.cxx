@@ -498,7 +498,8 @@ int PStaticData::GetParticleKF(const int id) {
 int PStaticData::GetParticleIDbyKF(const int kf) {
     // return Id corresponding to Pythia6 kf code
     if (!kf) return 0;
-    int *id,key;
+    int *id=nullptr;
+    int key;
     
     if ((key=makeDataBase()->GetEntryInt(pkf_param, kf)) <0) {
 	Warning("GetParticleIDbyKF","invalid kf code %i",*id);
@@ -1159,7 +1160,7 @@ bool PStaticData:: NormParticleBRbyKey(Int_t key) {
 }
 
 
-void PStaticData::FreezeDecayBR(Int_t id, Int_t brn) { // set BR static
+void PStaticData::FreezeDecayBR(Int_t /*id*/, Int_t /*brn*/) { // set BR static
     Fatal("FreezeDecayBR","not implemented");
 
     //TODO
