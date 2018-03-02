@@ -225,7 +225,7 @@ void CbmMuch::BeginEvent() {
 
 // -------------------------------------------------------------------------
 void CbmMuch::EndOfEvent() {
-  if (fVerboseLevel) Print();
+  if (fVerboseLevel) Print("");
   fMuchCollection->Delete();
   ResetParameters();
 }
@@ -245,7 +245,7 @@ TClonesArray* CbmMuch::GetCollection(Int_t iColl) const {
 
 
 // -------------------------------------------------------------------------
-void CbmMuch::Print() const {
+void CbmMuch::Print(Option_t*) const {
   Int_t nHits = fMuchCollection->GetEntriesFast();
   LOG(INFO) << fName << ": " << nHits << " points registered in this event." << FairLogger::endl;
 }

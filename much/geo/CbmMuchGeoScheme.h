@@ -143,7 +143,7 @@ Double_t GetSizeX(const TString& path);
     Int_t GetLayerSideNr(Int_t detId) const;
 
     void ReadGeoFile(const char* geoName);
-    void Print();
+//    void Print();
     void CreateMuchCave();
     void ExtractGeoParameter(TGeoNode* muchNode, const char* volumeName);
     void StationNode(TGeoNode* MuchObjNode, TString MuchObjPath);

@@ -151,21 +151,14 @@ CbmMuchDigitizeGem::~CbmMuchDigitizeGem() {
     fDigiMatches->Delete();
     delete fDigiMatches;
   }
-  if (fSigma) {
-    //    fSigma->Delete();
-    delete fSigma[0];
-    delete fSigma[1];
-    delete fSigma[2];
-    //delete[] fSigma;
-  }
-  if (fMPV) {
-    //    fMPV->Delete();
-    delete fMPV[0];
-    delete fMPV[1];
-    delete fMPV[2];
-    //delete[] fMPV;
-  }
-  Reset();
+
+  delete fSigma[0];
+  delete fSigma[1];
+  delete fSigma[2];
+  delete fMPV[0];
+  delete fMPV[1];
+  delete fMPV[2];
+
 }
 // -------------------------------------------------------------------------
 
