@@ -169,6 +169,7 @@ private:
 */
 
       // Coincidences in sorted hits
+   Double_t fdCoincBorder = 50.0; // ns, +/-
    TH1 * fhStsSortedDtN1P1;
    TH1 * fhStsSortedDtN2P2;
    TH1 * fhStsSortedDtN1N2;
@@ -188,6 +189,12 @@ private:
    TH1 * fhStsSortedCntEvoN1P2;
    TH1 * fhStsSortedCntEvoP1N2;
 
+   TH1 * fhStsSortedDtN1P1N2P2;
+   TH2 * fhStsSortedMapN1P1Coinc;
+   TH2 * fhStsSortedMapN2P2Coinc;
+   TH2 * fhStsSortedDtVsDiffN;
+   TH2 * fhStsSortedDtVsDiffP;
+
    const Double_t kdStereoAngle =    7.5; // [Deg]
    Double_t       fdStereoAngleTan;
    const Double_t kdPitchMm     =    0.058; // [mm]
@@ -200,6 +207,8 @@ private:
    Int_t fiStripsOffsetP2; // of channel 0 relative to center strip
    TH2 * fhStsSortedMapX1Y1;
    TH2 * fhStsSortedMapX2Y2;
+   TH2 * fhStsSortedMapX1Y1Coinc;
+   TH2 * fhStsSortedMapX2Y2Coinc;
 
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
