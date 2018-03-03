@@ -160,8 +160,10 @@ private:
    std::vector<TProfile*> fhHodoChanAdcRawProf;
    std::vector<TH2*> fhHodoChanRawTs;
    std::vector<TH2*> fhHodoChanMissEvt;
+   std::vector<TH2*> fhHodoChanMissEvtEvo;
    std::vector<TH2*> fhHodoChanHitRateEvo;
    std::vector<TH1*> fhHodoFebRateEvo;
+   std::vector<TH1*> fhHodoFebMissEvtEvo;
    std::vector<TH2*> fhHodoChanHitRateEvoLong;
    std::vector<TH1*> fhHodoFebRateEvoLong;
 
@@ -202,10 +204,15 @@ private:
    TH1 * fhSystSortedCntEvoX1Y1;
    TH1 * fhSystSortedCntEvoX2Y2;
    TH1 * fhSystSortedCntEvoN1P1;
+
    TH2 * fhSystSortedDtN1X1vsN1X2;
    TH2 * fhSystSortedDtP1X1vsP1X2;
+   TH2 * fhSystSortedDtN1X1vsP1X1;
+   TH2 * fhSystSortedDtSts1Hodo1vsSts1Hodo2;
    TH2 * fhSystSortedDtAllVsMapX1;
+   TH2 * fhSystSortedDtAllVsMapY1;
    TH2 * fhSystSortedDtAllVsMapX2;
+   TH2 * fhSystSortedDtAllVsMapY2;
 
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];

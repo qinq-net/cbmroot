@@ -11,7 +11,8 @@
 FairRunOnline *run = NULL;
 
 void SetupMonitor(TString inFile = "",
-                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080)
+                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
+                 Int_t iStartFile = -1, Int_t iStopFile = -1 )
 {
   /*
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
@@ -68,7 +69,18 @@ void SetupMonitor(TString inFile = "",
   // --- Source task
   CbmTofStar2018Source* source = new CbmTofStar2018Source();
   if( "" != inFile )
-      source->SetFileName(inFile);
+  {
+      if( 0 <= iStartFile && iStartFile < iStopFile )
+      {
+         for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
+         {
+            TString sFilePath = Form( "%s_%04u.tsa", inFile.Data(), iFileIdx );
+            source->AddFile( sFilePath  );
+            std::cout << "Added " << sFilePath <<std::endl;
+         } // for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
+      } // if( 0 < iStartFile && 0 < iStopFile )
+         else source->SetFileName(inFile);
+  } // if( "" != inFile )
       else
       {
          source->SetHostName( "cbmin002");
