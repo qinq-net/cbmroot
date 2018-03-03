@@ -11,7 +11,8 @@
 FairRunOnline *run = NULL;
 
 void StsMonitor(TString inFile = "",
-                Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080)
+                Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
+                 Int_t iStartFile = -1, Int_t iStopFile = -1 )
 {
 //  TString srcDir = gSystem->Getenv("VMCWORKDIR");
 //  TString inDir  = srcDir + "/input/";
@@ -24,8 +25,8 @@ void StsMonitor(TString inFile = "",
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/test.root";
-  TString parFile = "data/testparam.root";
+  TString outFile = "data/sts_out.root";
+  TString parFile = "data/sts_param.root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -58,14 +59,26 @@ void StsMonitor(TString inFile = "",
   CbmCosy2018MonitorSts* monitorSts = new CbmCosy2018MonitorSts();
 //  monitorSts->SetPrintMessage();
   monitorSts->SetMsOverlap();
-  monitorSts->EnableDualStsMode( kFALSE );
+  monitorSts->EnableDualStsMode( kTRUE );
   monitorSts->SetLongDurationLimits( 3600, 10 );
   monitorSts->SetStripsOffset1( 69, -67 );
+  monitorSts->SetStripsOffset2( 69, -67 );
 
   // --- Source task
   CbmTofStar2018Source* source = new CbmTofStar2018Source();
   if( "" != inFile )
-      source->SetFileName(inFile);
+  {
+      if( 0 <= iStartFile && iStartFile < iStopFile )
+      {
+         for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
+         {
+            TString sFilePath = Form( "%s_%04u.tsa", inFile.Data(), iFileIdx );
+            source->AddFile( sFilePath  );
+            std::cout << "Added " << sFilePath <<std::endl;
+         } // for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
+      } // if( 0 < iStartFile && 0 < iStopFile )
+         else source->SetFileName(inFile);
+  } // if( "" != inFile )
       else
       {
          source->SetHostName( "cbmin002");

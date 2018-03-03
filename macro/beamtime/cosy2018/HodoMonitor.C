@@ -11,7 +11,8 @@
 FairRunOnline *run = NULL;
 
 void HodoMonitor(TString inFile = "",
-                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080)
+                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
+                 Int_t iStartFile = -1, Int_t iStopFile = -1 )
 {
   /*
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
@@ -25,8 +26,8 @@ void HodoMonitor(TString inFile = "",
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/test.root";
-  TString parFile = "data/testparam.root";
+  TString outFile = "data/hodo_out.root";
+  TString parFile = "data/hodo_param.root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -64,7 +65,18 @@ void HodoMonitor(TString inFile = "",
   // --- Source task
   CbmTofStar2018Source* source = new CbmTofStar2018Source();
   if( "" != inFile )
-      source->SetFileName(inFile);
+  {
+      if( 0 <= iStartFile && iStartFile < iStopFile )
+      {
+         for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
+         {
+            TString sFilePath = Form( "%s_%04u.tsa", inFile.Data(), iFileIdx );
+            source->AddFile( sFilePath  );
+            std::cout << "Added " << sFilePath <<std::endl;
+         } // for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
+      } // if( 0 < iStartFile && 0 < iStopFile )
+         else source->SetFileName(inFile);
+  } // if( "" != inFile )
       else
       {
          source->SetHostName( "cbmin002");

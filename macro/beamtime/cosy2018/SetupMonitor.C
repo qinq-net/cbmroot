@@ -26,8 +26,8 @@ void SetupMonitor(TString inFile = "",
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/test.root";
-  TString parFile = "data/testparam.root";
+  TString outFile = "data/setup_out.root";
+  TString parFile = "data/setup_param.root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
