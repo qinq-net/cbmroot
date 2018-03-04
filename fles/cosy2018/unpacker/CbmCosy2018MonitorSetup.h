@@ -280,6 +280,17 @@ private:
    TH2 * fhSetupSortedSameTsAdcChanN2;
    TH2 * fhSetupSortedSameTsAdcChanP2;
 
+   TH2 * fhHodoX1SpillEvo;
+   TH2 * fhHodoY1SpillEvo;
+   TH2 * fhHodoX2SpillEvo;
+   TH2 * fhHodoY2SpillEvo;
+
+   Double_t   fdSpillEvoLength;
+   TProfile * fhHodoX1SpillEvoProf;
+   TProfile * fhHodoY1SpillEvoProf;
+   TProfile * fhHodoX2SpillEvoProf;
+   TProfile * fhHodoY2SpillEvoProf;
+
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
    TProfile* fhMsSzTime[kiMaxNbFlibLinks];

@@ -205,6 +205,15 @@ CbmCosy2018MonitorSetup::CbmCosy2018MonitorSetup() :
    fhSetupSortedSameTsAdcChanP1(NULL),
    fhSetupSortedSameTsAdcChanN2(NULL),
    fhSetupSortedSameTsAdcChanP2(NULL),
+   fhHodoX1SpillEvo(NULL),
+   fhHodoY1SpillEvo(NULL),
+   fhHodoX2SpillEvo(NULL),
+   fhHodoY2SpillEvo(NULL),
+   fdSpillEvoLength( 700.0 ),
+   fhHodoX1SpillEvoProf(NULL),
+   fhHodoY1SpillEvoProf(NULL),
+   fhHodoX2SpillEvoProf(NULL),
+   fhHodoY2SpillEvoProf(NULL),
    fcMsSizeAll(NULL)
 {
 }
@@ -1074,6 +1083,48 @@ void CbmCosy2018MonitorSetup::CreateHistograms()
                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                               stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5 );
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
+   sHistName = "fhHodoX1SpillEvo";
+   title = "Hodo X1 counts vs time in spill; time [s]; X1 channel []; Hits []";
+   fhHodoX1SpillEvo = new TH2I(sHistName, title,
+                              70000, 0, 70.0,
+                              fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+
+   sHistName = "fhHodoY1SpillEvo";
+   title = "Hodo Y1 counts vs time in spill; time [s]; Y1 channel []; Hits []";
+   fhHodoY1SpillEvo = new TH2I(sHistName, title,
+                              70000, 0, 70.0,
+                              fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+   sHistName = "fhHodoX2SpillEvo";
+   title = "Hodo X2 counts vs time in spill; time [s]; X2 channel []; Hits []";
+   fhHodoX2SpillEvo = new TH2I(sHistName, title,
+                              70000, 0, 70.0,
+                              fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+   sHistName = "fhHodoY2SpillEvo";
+   title = "Hodo Y2 counts vs time in spill; time [s]; Y2 channel []; Hits []";
+   fhHodoY2SpillEvo = new TH2I(sHistName, title,
+                              70000, 0, 70.0,
+                              fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+
+   sHistName = "fhHodoX1SpillEvoProf";
+   title = "Hodo X1 counts vs time in spill; time [s]; X1 channel []; Hits []";
+   fhHodoX1SpillEvoProf = new TProfile(sHistName, title,
+                              10*fdSpillEvoLength, 0, fdSpillEvoLength);
+
+   sHistName = "fhHodoY1SpillEvoProf";
+   title = "Hodo Y1 counts vs time in spill; time [s]; Y1 channel []; Hits []";
+   fhHodoY1SpillEvoProf = new TProfile(sHistName, title,
+                              10*fdSpillEvoLength, 0, fdSpillEvoLength);
+   sHistName = "fhHodoX2SpillEvoProf";
+   title = "Hodo X2 counts vs time in spill; time [s]; X2 channel []; Hits []";
+   fhHodoX2SpillEvoProf = new TProfile(sHistName, title,
+                              10*fdSpillEvoLength, 0, fdSpillEvoLength);
+   sHistName = "fhHodoY2SpillEvoProf";
+   title = "Hodo Y2 counts vs time in spill; time [s]; Y2 channel []; Hits []";
+   fhHodoY2SpillEvoProf = new TProfile(sHistName, title,
+                              10*fdSpillEvoLength, 0, fdSpillEvoLength);
+
+///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
+
 /*
    // Distribution of the TS_MSB per StsXyter
    sHistName = "hHodoFebTsMsb";
@@ -1220,6 +1271,15 @@ void CbmCosy2018MonitorSetup::CreateHistograms()
       server->Register("/FebDt", fhSetupSortedSameTsAdcChanP1 );
       server->Register("/FebDt", fhSetupSortedSameTsAdcChanN2 );
       server->Register("/FebDt", fhSetupSortedSameTsAdcChanP2 );
+
+      server->Register("/Spill", fhHodoX1SpillEvo );
+      server->Register("/Spill", fhHodoY1SpillEvo );
+      server->Register("/Spill", fhHodoX2SpillEvo );
+      server->Register("/Spill", fhHodoY2SpillEvo );
+      server->Register("/Spill", fhHodoX1SpillEvoProf );
+      server->Register("/Spill", fhHodoY1SpillEvoProf );
+      server->Register("/Spill", fhHodoX2SpillEvoProf );
+      server->Register("/Spill", fhHodoY2SpillEvoProf );
 
       server->RegisterCommand("/Reset_All_Hodo", "bCosy2018ResetSetupHistos_H=kTRUE");
       server->RegisterCommand("/Write_All_Hodo", "bCosy2018WriteSetupHistos_H=kTRUE");
@@ -1986,6 +2046,12 @@ Bool_t CbmCosy2018MonitorSetup::DoUnpack(const fles::Timeslice& ts, size_t compo
                   if( fUnpackParHodo->IsYInvertedHodo2() )
                      uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
 
+                  if( dTimeSinceStartSec < fdSpillEvoLength )
+                  {
+                     fhHodoX1SpillEvo->Fill( dTimeSinceStartSec, uFiberIdxX1 );
+                     fhHodoX1SpillEvoProf->Fill( dTimeSinceStartSec, uFiberIdxX1 );
+                  } // if( dTimeSinceStartSec < fdSpillEvoLength )
+
                   dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
                   dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
                   dDtN1P1     = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
@@ -2114,6 +2180,12 @@ Bool_t CbmCosy2018MonitorSetup::DoUnpack(const fles::Timeslice& ts, size_t compo
                      UInt_t uFiberIdxY2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan()  );
                      if( fUnpackParHodo->IsYInvertedHodo2() )
                         uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
+
+                     if( dTimeSinceStartSec < fdSpillEvoLength )
+                     {
+                        fhHodoY1SpillEvo->Fill( dTimeSinceStartSec, uFiberIdxY1 );
+                        fhHodoY1SpillEvoProf->Fill( dTimeSinceStartSec, uFiberIdxY1 );
+                     } // if( dTimeSinceStartSec < fdSpillEvoLength )
 
                      dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
                      dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
@@ -2250,6 +2322,12 @@ Bool_t CbmCosy2018MonitorSetup::DoUnpack(const fles::Timeslice& ts, size_t compo
                   if( fUnpackParHodo->IsYInvertedHodo2() )
                      uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
 
+                  if( dTimeSinceStartSec < fdSpillEvoLength )
+                  {
+                     fhHodoX2SpillEvo->Fill( dTimeSinceStartSec, uFiberIdxX2 );
+                     fhHodoX2SpillEvoProf->Fill( dTimeSinceStartSec, uFiberIdxX2 );
+                  } // if( dTimeSinceStartSec < fdSpillEvoLength )
+
                   dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
                   dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
                   dDtN1P1     = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
@@ -2378,6 +2456,12 @@ Bool_t CbmCosy2018MonitorSetup::DoUnpack(const fles::Timeslice& ts, size_t compo
                      UInt_t uFiberIdxY2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan()  );
                      if( fUnpackParHodo->IsYInvertedHodo2() )
                         uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
+
+                     if( dTimeSinceStartSec < fdSpillEvoLength )
+                     {
+                        fhHodoY2SpillEvo->Fill( dTimeSinceStartSec, uFiberIdxY2 );
+                        fhHodoY2SpillEvoProf->Fill( dTimeSinceStartSec, uFiberIdxY2 );
+                     } // if( dTimeSinceStartSec < fdSpillEvoLength )
 
                      dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
                      dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
