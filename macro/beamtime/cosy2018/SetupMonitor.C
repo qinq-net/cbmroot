@@ -63,6 +63,7 @@ void SetupMonitor(TString inFile = "",
   CbmCosy2018MonitorSetup* monitorSetup = new CbmCosy2018MonitorSetup();
 //  monitorSetup->SetPrintMessage();
   monitorSetup->SetMsOverlap();
+  monitorSetup->EnableDualStsMode( kTRUE );
   monitorSetup->SetLongDurationLimits( 3600, 10 );
   monitorSetup->SetCoincidenceBorder( 150 );
 

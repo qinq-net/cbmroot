@@ -67,7 +67,7 @@ public:
                          stsxyter::MessagePrintMask ctrl = stsxyter::MessagePrintMask::msg_print_Hex |
                                                            stsxyter::MessagePrintMask::msg_print_Human )
                         { fbPrintMessages = bPrintMessOn; fPrintMessCtrl = ctrl; }
-//   void EnableDualStsMode( Bool_t bEnable = kTRUE ) { fbDualStsEna = bEnable; }
+   void EnableDualStsMode( Bool_t bEnable = kTRUE ) { fbDualStsEna = bEnable; }
    void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
    void SetCoincidenceBorderHodo( Double_t dNewValue ){ fdCoincBorderHodo = dNewValue;}
    void SetCoincidenceBorderSts( Double_t dNewValue ){  fdCoincBorderSts  = dNewValue;}
@@ -94,7 +94,7 @@ private:
       // Task configuration values
    Bool_t                fbPrintMessages;
    stsxyter::MessagePrintMask fPrintMessCtrl;
-//   Bool_t                fbDualStsEna;
+   Bool_t                fbDualStsEna;
       // TS/MS info
    ULong64_t             fulCurrentTsIdx;
    ULong64_t             fulCurrentMsIdx;
@@ -175,44 +175,110 @@ private:
    TH1 * fhSetupSortedDtX1Y1;
    TH1 * fhSetupSortedDtX2Y2;
    TH1 * fhSetupSortedDtN1P1;
+   TH1 * fhSetupSortedDtN2P2;
    TH1 * fhSetupSortedDtX1Y1X2Y2;
+   TH1 * fhSetupSortedDtN1P1N2P2;
    TH1 * fhSetupSortedDtX1Y1X2Y2N1P1;
+   TH1 * fhSetupSortedDtX1Y1X2Y2N2P2;
+   TH1 * fhSetupSortedDtH1H2S1S2;
    TH2 * fhSetupSortedMapX1Y1;
    TH2 * fhSetupSortedMapX2Y2;
    TH2 * fhSetupSortedMapN1P1;
+   TH2 * fhSetupSortedMapN2P2;
    TH1 * fhSetupSortedCntEvoX1Y1;
    TH1 * fhSetupSortedCntEvoX2Y2;
    TH1 * fhSetupSortedCntEvoN1P1;
+   TH1 * fhSetupSortedCntEvoN2P2;
 
          // Full Hodo maps
    TH1 * fhBothHodoSortedDtX1Y1;
    TH1 * fhBothHodoSortedDtX2Y2;
    TH1 * fhBothHodoSortedDtX1Y1X2Y2N1P1;
+   TH1 * fhBothHodoSortedDtX1Y1X2Y2N2P2;
+   TH1 * fhBothHodoSortedDtH1H2S1S2;
    TH2 * fhBothHodoSortedMapX1Y1;
    TH2 * fhBothHodoSortedMapX2Y2;
    TH1 * fhBothHodoSortedCntEvoX1Y1;
    TH1 * fhBothHodoSortedCntEvoX2Y2;
 
+         // H + Sn maps
+   TH1 * fhH1H2S1SortedDtX1Y1;
+   TH1 * fhH1H2S1SortedDtX2Y2;
+   TH1 * fhH1H2S1SortedDtN1P1;
+   TH1 * fhH1H2S1SortedDtN2P2;
+   TH2 * fhH1H2S1SortedMapX1Y1;
+   TH2 * fhH1H2S1SortedMapX2Y2;
+   TH2 * fhH1H2S1SortedMapN1P1;
+   TH2 * fhH1H2S1SortedMapN2P2;
+   TH1 * fhH1H2S1SortedCntEvoX1Y1;
+   TH1 * fhH1H2S1SortedCntEvoX2Y2;
+   TH1 * fhH1H2S1SortedCntEvoN1P1;
+   TH1 * fhH1H2S1SortedCntEvoN2P2;
+
+   TH1 * fhH1H2S2SortedDtX1Y1;
+   TH1 * fhH1H2S2SortedDtX2Y2;
+   TH1 * fhH1H2S2SortedDtN1P1;
+   TH1 * fhH1H2S2SortedDtN2P2;
+   TH2 * fhH1H2S2SortedMapX1Y1;
+   TH2 * fhH1H2S2SortedMapX2Y2;
+   TH2 * fhH1H2S2SortedMapN1P1;
+   TH2 * fhH1H2S2SortedMapN2P2;
+   TH1 * fhH1H2S2SortedCntEvoX1Y1;
+   TH1 * fhH1H2S2SortedCntEvoX2Y2;
+   TH1 * fhH1H2S2SortedCntEvoN1P1;
+   TH1 * fhH1H2S2SortedCntEvoN2P2;
+
          // Full System maps
    TH1 * fhSystSortedDtX1Y1;
    TH1 * fhSystSortedDtX2Y2;
    TH1 * fhSystSortedDtN1P1;
+   TH1 * fhSystSortedDtN2P2;
    TH1 * fhSystSortedDtX1Y1X2Y2;
    TH2 * fhSystSortedMapX1Y1;
    TH2 * fhSystSortedMapX2Y2;
    TH2 * fhSystSortedMapN1P1;
+   TH2 * fhSystSortedMapN2P2;
    TH1 * fhSystSortedCntEvoX1Y1;
    TH1 * fhSystSortedCntEvoX2Y2;
    TH1 * fhSystSortedCntEvoN1P1;
+   TH1 * fhSystSortedCntEvoN2P2;
 
    TH2 * fhSystSortedDtN1X1vsN1X2;
    TH2 * fhSystSortedDtP1X1vsP1X2;
    TH2 * fhSystSortedDtN1X1vsP1X1;
    TH2 * fhSystSortedDtSts1Hodo1vsSts1Hodo2;
+   TH2 * fhSystSortedDtSts2Hodo1vsSts2Hodo2;
    TH2 * fhSystSortedDtAllVsMapX1;
    TH2 * fhSystSortedDtAllVsMapY1;
    TH2 * fhSystSortedDtAllVsMapX2;
    TH2 * fhSystSortedDtAllVsMapY2;
+
+   TH1 * fhSetupSortedDtX1;
+   TH1 * fhSetupSortedDtY1;
+   TH1 * fhSetupSortedDtX2;
+   TH1 * fhSetupSortedDtY2;
+   TH1 * fhSetupSortedDtN1;
+   TH1 * fhSetupSortedDtP1;
+   TH1 * fhSetupSortedDtN2;
+   TH1 * fhSetupSortedDtP2;
+
+   TH2 * fhSetupSortedNbSameTsChanX1;
+   TH2 * fhSetupSortedNbSameTsChanY1;
+   TH2 * fhSetupSortedNbSameTsChanX2;
+   TH2 * fhSetupSortedNbSameTsChanY2;
+   TH2 * fhSetupSortedNbSameTsChanN1;
+   TH2 * fhSetupSortedNbSameTsChanP1;
+   TH2 * fhSetupSortedNbSameTsChanN2;
+   TH2 * fhSetupSortedNbSameTsChanP2;
+
+   TH2 * fhSetupSortedSameTsAdcChanX1;
+   TH2 * fhSetupSortedSameTsAdcChanY1;
+   TH2 * fhSetupSortedSameTsAdcChanX2;
+   TH2 * fhSetupSortedSameTsAdcChanY2;
+   TH2 * fhSetupSortedSameTsAdcChanN1;
+   TH2 * fhSetupSortedSameTsAdcChanP1;
+   TH2 * fhSetupSortedSameTsAdcChanN2;
+   TH2 * fhSetupSortedSameTsAdcChanP2;
 
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
