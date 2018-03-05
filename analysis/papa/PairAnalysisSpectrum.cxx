@@ -521,7 +521,7 @@ void  PairAnalysisSpectrum::Draw(const char* varexp, const char* selection, Opti
     TGraphErrors *gr = 0x0;
     if(ndim>1) gr = new TGraphErrors(fTree->GetSelectedRows(),fTree->GetV2(),fTree->GetV1(),0,fTree->GetV3());
     else       gr = new TGraphErrors(fTree->GetSelectedRows(),fTree->GetV1(),xval,fTree->GetV2(),0);
-    delete xval;
+    delete [] xval;
 
     if(!gr) { delete carr; return; }
 
