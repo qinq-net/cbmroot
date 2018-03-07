@@ -142,6 +142,8 @@ void recoSignal(Int_t nEvents = 1000, const char* setupName = "sis100_electron")
   // -----   MVD Hit Finder   ------------------------------------------------
   if( setup->IsActive(kMvd) )
   {
+    CbmMvdClusterfinder* mvdClusterFinder = new CbmMvdClusterfinder("MVD Cluster Finder", 0, iVerbose);
+    run->AddTask(mvdClusterFinder);
     CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
     run->AddTask(mvdHitfinder);
   }
