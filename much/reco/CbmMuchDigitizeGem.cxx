@@ -212,8 +212,34 @@ InitStatus CbmMuchDigitizeGem::Init() {
   // Get input array of MC tracks
   fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
   assert( fMCTracks );
-  //For event by event mode output will be stored via ioman 
-  if(!fDaq){
+  
+  // If the task CbmDaq is found, run in stream mode; else in event mode.
+  FairTask* daq = FairRun::Instance()->GetTask("Daq");
+  if ( daq ) {
+    LOG(INFO) << GetName() << ": Using stream mode."
+        << FairLogger::endl;
+    fDaq = 1;
+    //For time based mode output will be stored via CbmDaq  
+    if (!CbmDaqBuffer::Instance() )  {
+      fLogger->Fatal(MESSAGE_ORIGIN, "No CbmDaqBuffer present for building TimeSlice!");
+      return kFATAL;
+	}
+  }  //? stream mode
+  else {
+    LOG(INFO) << GetName() << ": Using event mode."
+        << FairLogger::endl;
+    fDaq = 0;
+    //For event by event mode output will be stored via ioman 
+    // Register output array MuchDigi
+    fDigis = new TClonesArray("CbmMuchDigi", 1000);
+    ioman->Register("MuchDigi", "Digital response in MUCH", fDigis, kTRUE);
+    // Register output array MuchDigiMatches
+    fDigiMatches = new TClonesArray("CbmMuchDigiMatch", 1000);
+    ioman->Register("MuchDigiMatch", "Digi Match in MUCH", fDigiMatches, kTRUE);
+    //SetGenerateNoise(kFALSE);  // Noise can be generated only in stream mode
+  }
+  
+/*  if(!fDaq){
     // Register output array MuchDigi
     fDigis = new TClonesArray("CbmMuchDigi", 1000);
     ioman->Register("MuchDigi", "Digital response in MUCH", fDigis, kTRUE);
@@ -221,21 +247,12 @@ InitStatus CbmMuchDigitizeGem::Init() {
     fDigiMatches = new TClonesArray("CbmMuchDigiMatch", 1000);
     ioman->Register("MuchDigiMatch", "Digi Match in MUCH", fDigiMatches, kTRUE);
   }
-  //For time based mode output will be stored via CbmDaq  
   else{
-    FairTask* daq     = FairRun::Instance()->GetTask("Daq");
-    if ( daq ) {
-      LOG(INFO) << GetName() << ": Using stream mode."
-		<< FairLogger::endl;
-      //fMode = 0;
-    }  //? stream mode
-
     if (!CbmDaqBuffer::Instance() )  {
       fLogger->Fatal(MESSAGE_ORIGIN, "No CbmDaqBuffer present for building TimeSlice!");
       return kFATAL;
     } 
-    //    fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-  }
+  }*/
 
 
   //fgDeltaResponse is used in the CbmMuchSignal for analysing the Signal Shape,
