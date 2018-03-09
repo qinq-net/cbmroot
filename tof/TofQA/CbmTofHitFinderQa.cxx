@@ -174,6 +174,12 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhSinglePointHitPullY(NULL),
     fhSinglePointHitPullZ(NULL),
     fhSinglePointHitPullR(NULL),
+    fhSinglePointHitPullT(NULL),
+    fhCltSzSinglePointHitPullX(NULL),
+    fhCltSzSinglePointHitPullY(NULL),
+    fhCltSzSinglePointHitPullZ(NULL),
+    fhCltSzSinglePointHitPullR(NULL),
+    fhCltSzSinglePointHitPullT(NULL),
     fhMultiPntHitClosestDeltaX(NULL),
     fhMultiPntHitClosestDeltaY(NULL),
     fhMultiPntHitClosestDeltaZ(NULL),
@@ -183,6 +189,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhMultiPntHitClosestPullY(NULL),
     fhMultiPntHitClosestPullZ(NULL),
     fhMultiPntHitClosestPullR(NULL),
+    fhMultiPntHitClosestPullT(NULL),
     fhMultiPntHitFurthestDeltaX(NULL),
     fhMultiPntHitFurthestDeltaY(NULL),
     fhMultiPntHitFurthestDeltaZ(NULL),
@@ -192,6 +199,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhMultiPntHitFurthestPullY(NULL),
     fhMultiPntHitFurthestPullZ(NULL),
     fhMultiPntHitFurthestPullR(NULL),
+    fhMultiPntHitFurthestPullT(NULL),
     fhMultiPntHitMeanDeltaX(NULL),
     fhMultiPntHitMeanDeltaY(NULL),
     fhMultiPntHitMeanDeltaZ(NULL),
@@ -201,6 +209,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhMultiPntHitMeanPullY(NULL),
     fhMultiPntHitMeanPullZ(NULL),
     fhMultiPntHitMeanPullR(NULL),
+    fhMultiPntHitMeanPullT(NULL),
     fhMultiPntHitBestDeltaX(NULL),
     fhMultiPntHitBestDeltaY(NULL),
     fhMultiPntHitBestDeltaZ(NULL),
@@ -210,6 +219,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhMultiPntHitBestPullY(NULL),
     fhMultiPntHitBestPullZ(NULL),
     fhMultiPntHitBestPullR(NULL),
+    fhMultiPntHitBestPullT(NULL),
     fhSingleTrackHitDeltaX(NULL),
     fhSingleTrackHitDeltaY(NULL),
     fhSingleTrackHitDeltaZ(NULL),
@@ -219,6 +229,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhSingleTrackHitPullY(NULL),
     fhSingleTrackHitPullZ(NULL),
     fhSingleTrackHitPullR(NULL),
+    fhSingleTrackHitPullT(NULL),
     fhSingTrkMultiPntHitDeltaX(NULL),
     fhSingTrkMultiPntHitDeltaY(NULL),
     fhSingTrkMultiPntHitDeltaZ(NULL),
@@ -228,6 +239,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhSingTrkMultiPntHitPullY(NULL),
     fhSingTrkMultiPntHitPullZ(NULL),
     fhSingTrkMultiPntHitPullR(NULL),
+    fhSingTrkMultiPntHitPullT(NULL),
     fhMultiTrkHitClosestDeltaX(NULL),
     fhMultiTrkHitClosestDeltaY(NULL),
     fhMultiTrkHitClosestDeltaZ(NULL),
@@ -237,6 +249,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhMultiTrkHitClosestPullY(NULL),
     fhMultiTrkHitClosestPullZ(NULL),
     fhMultiTrkHitClosestPullR(NULL),
+    fhMultiTrkHitClosestPullT(NULL),
     fhMultiTrkHitFurthestDeltaX(NULL),
     fhMultiTrkHitFurthestDeltaY(NULL),
     fhMultiTrkHitFurthestDeltaZ(NULL),
@@ -246,6 +259,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhMultiTrkHitFurthestPullY(NULL),
     fhMultiTrkHitFurthestPullZ(NULL),
     fhMultiTrkHitFurthestPullR(NULL),
+    fhMultiTrkHitFurthestPullT(NULL),
     fhMultiTrkHitMeanDeltaX(NULL),
     fhMultiTrkHitMeanDeltaY(NULL),
     fhMultiTrkHitMeanDeltaZ(NULL),
@@ -255,6 +269,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhMultiTrkHitMeanPullY(NULL),
     fhMultiTrkHitMeanPullZ(NULL),
     fhMultiTrkHitMeanPullR(NULL),
+    fhMultiTrkHitMeanPullT(NULL),
     fhMultiTrkHitBestDeltaX(NULL),
     fhMultiTrkHitBestDeltaY(NULL),
     fhMultiTrkHitBestDeltaZ(NULL),
@@ -264,6 +279,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhMultiTrkHitBestPullY(NULL),
     fhMultiTrkHitBestPullZ(NULL),
     fhMultiTrkHitBestPullR(NULL),
+    fhMultiTrkHitBestPullT(NULL),
     fvhPtmRapGenTrk(),
     fvhPtmRapStsPnt(),
     fvhPtmRapTofPnt(),
@@ -438,6 +454,12 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhSinglePointHitPullY(NULL),
     fhSinglePointHitPullZ(NULL),
     fhSinglePointHitPullR(NULL),
+    fhSinglePointHitPullT(NULL),
+    fhCltSzSinglePointHitPullX(NULL),
+    fhCltSzSinglePointHitPullY(NULL),
+    fhCltSzSinglePointHitPullZ(NULL),
+    fhCltSzSinglePointHitPullR(NULL),
+    fhCltSzSinglePointHitPullT(NULL),
     fhMultiPntHitClosestDeltaX(NULL),
     fhMultiPntHitClosestDeltaY(NULL),
     fhMultiPntHitClosestDeltaZ(NULL),
@@ -447,6 +469,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhMultiPntHitClosestPullY(NULL),
     fhMultiPntHitClosestPullZ(NULL),
     fhMultiPntHitClosestPullR(NULL),
+    fhMultiPntHitClosestPullT(NULL),
     fhMultiPntHitFurthestDeltaX(NULL),
     fhMultiPntHitFurthestDeltaY(NULL),
     fhMultiPntHitFurthestDeltaZ(NULL),
@@ -456,6 +479,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhMultiPntHitFurthestPullY(NULL),
     fhMultiPntHitFurthestPullZ(NULL),
     fhMultiPntHitFurthestPullR(NULL),
+    fhMultiPntHitFurthestPullT(NULL),
     fhMultiPntHitMeanDeltaX(NULL),
     fhMultiPntHitMeanDeltaY(NULL),
     fhMultiPntHitMeanDeltaZ(NULL),
@@ -465,6 +489,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhMultiPntHitMeanPullY(NULL),
     fhMultiPntHitMeanPullZ(NULL),
     fhMultiPntHitMeanPullR(NULL),
+    fhMultiPntHitMeanPullT(NULL),
     fhMultiPntHitBestDeltaX(NULL),
     fhMultiPntHitBestDeltaY(NULL),
     fhMultiPntHitBestDeltaZ(NULL),
@@ -474,6 +499,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhMultiPntHitBestPullY(NULL),
     fhMultiPntHitBestPullZ(NULL),
     fhMultiPntHitBestPullR(NULL),
+    fhMultiPntHitBestPullT(NULL),
     fhSingleTrackHitDeltaX(NULL),
     fhSingleTrackHitDeltaY(NULL),
     fhSingleTrackHitDeltaZ(NULL),
@@ -483,6 +509,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhSingleTrackHitPullY(NULL),
     fhSingleTrackHitPullZ(NULL),
     fhSingleTrackHitPullR(NULL),
+    fhSingleTrackHitPullT(NULL),
     fhSingTrkMultiPntHitDeltaX(NULL),
     fhSingTrkMultiPntHitDeltaY(NULL),
     fhSingTrkMultiPntHitDeltaZ(NULL),
@@ -492,6 +519,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhSingTrkMultiPntHitPullY(NULL),
     fhSingTrkMultiPntHitPullZ(NULL),
     fhSingTrkMultiPntHitPullR(NULL),
+    fhSingTrkMultiPntHitPullT(NULL),
     fhMultiTrkHitClosestDeltaX(NULL),
     fhMultiTrkHitClosestDeltaY(NULL),
     fhMultiTrkHitClosestDeltaZ(NULL),
@@ -501,6 +529,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhMultiTrkHitClosestPullY(NULL),
     fhMultiTrkHitClosestPullZ(NULL),
     fhMultiTrkHitClosestPullR(NULL),
+    fhMultiTrkHitClosestPullT(NULL),
     fhMultiTrkHitFurthestDeltaX(NULL),
     fhMultiTrkHitFurthestDeltaY(NULL),
     fhMultiTrkHitFurthestDeltaZ(NULL),
@@ -510,6 +539,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhMultiTrkHitFurthestPullY(NULL),
     fhMultiTrkHitFurthestPullZ(NULL),
     fhMultiTrkHitFurthestPullR(NULL),
+    fhMultiTrkHitFurthestPullT(NULL),
     fhMultiTrkHitMeanDeltaX(NULL),
     fhMultiTrkHitMeanDeltaY(NULL),
     fhMultiTrkHitMeanDeltaZ(NULL),
@@ -519,6 +549,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhMultiTrkHitMeanPullY(NULL),
     fhMultiTrkHitMeanPullZ(NULL),
     fhMultiTrkHitMeanPullR(NULL),
+    fhMultiTrkHitMeanPullT(NULL),
     fhMultiTrkHitBestDeltaX(NULL),
     fhMultiTrkHitBestDeltaY(NULL),
     fhMultiTrkHitBestDeltaZ(NULL),
@@ -528,6 +559,7 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhMultiTrkHitBestPullY(NULL),
     fhMultiTrkHitBestPullZ(NULL),
     fhMultiTrkHitBestPullR(NULL),
+    fhMultiTrkHitBestPullT(NULL),
     fvhPtmRapGenTrk(),
     fvhPtmRapStsPnt(),
     fvhPtmRapTofPnt(),
@@ -1128,6 +1160,29 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
    fhSinglePointHitPullR = new TH1D("TofTests_SinglePointHitPullR",
                               "Quality of the Tof Hits position error, for hit coming from a single MC Point; Pull R(Hit -> Point) []; # [Hits]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSinglePointHitPullT = new TH1D("TofTests_SinglePointHitPullT",
+                              "Quality of the Tof Hits time error, for hit coming from a single MC Point; Pull T(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhCltSzSinglePointHitPullX = new TH2D("TofTests_CltSzSinglePointHitPullX",
+                              "Quality of the Tof Hits position error on X axis, for hit coming from a single MC Point; Pull X(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              32, 1, 33 );
+   fhCltSzSinglePointHitPullY = new TH2D("TofTests_CltSzSinglePointHitPullY",
+                              "Quality of the Tof Hits position error on Y axis, for hit coming from a single MC Point; Pull Y(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              32, 1, 33 );
+   fhCltSzSinglePointHitPullZ = new TH2D("TofTests_CltSzSinglePointHitPullZ",
+                              "Quality of the Tof Hits position error on Z axis, for hit coming from a single MC Point; Pull Z(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              32, 1, 33 );
+   fhCltSzSinglePointHitPullR = new TH2D("TofTests_CltSzSinglePointHitPullR",
+                              "Quality of the Tof Hits position error, for hit coming from a single MC Point; Pull R(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              32, 1, 33 );
+   fhCltSzSinglePointHitPullT = new TH2D("TofTests_CltSzSinglePointHitPullT",
+                              "Quality of the Tof Hits time error, for hit coming from a single MC Point; Pull T(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              32, 1, 33 );
 
    // Hit Quality for Hits coming from a multiple MC Points
       // To Point closest to Hit
@@ -1167,6 +1222,10 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                 "Quality of the Tof Hits position error relative to closest Point, for hit coming from multiple MC Point; Pull R(Hit -> Point) []; # [Hits]; Multi [Pnt]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange,
                               iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitClosestPullT  = new TH2D("TofTests_MultiPntHitClosestPullT",
+                "Quality of the Tof Hits time error relative to closest Point, for hit coming from multiple MC Point; Pull T(Hit -> Point) []; # [Hits]; Multi [Pnt]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
       // To Point furthest from Hit
    fhMultiPntHitFurthestDeltaX  = new TH2D("TofTests_MultiPntHitFurthestDeltaX",
                 "Quality of the Tof Hits position on X axis relative to furthest Point, for hit coming from multiple MC Point; X(Hit) - X(Point) [cm]; # [Hits]; Multi [Pnt]",
@@ -1202,6 +1261,10 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                               iNbBinsMulti, iMinMulti, iMaxMulti );
    fhMultiPntHitFurthestPullR  = new TH2D("TofTests_MultiPntHitFurthestPullR",
                 "Quality of the Tof Hits position error relative to furthest Point, for hit coming from multiple MC Point; Pull R(Hit -> Point) []; # [Hits]; Multi [Pnt]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitFurthestPullT  = new TH2D("TofTests_MultiPntHitFurthestPullT",
+                "Quality of the Tof Hits time error relative to furthest Point, for hit coming from multiple MC Point; Pull T(Hit -> Point) []; # [Hits]; Multi [Pnt]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange,
                               iNbBinsMulti, iMinMulti, iMaxMulti );
       // To mean Point position
@@ -1241,6 +1304,10 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                 "Quality of the Tof Hits position error relative to mean Point position, for hit coming from multiple MC Point; Pull R(Hit -> Point) []; # [Hits]; Multi [Pnt]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange,
                               iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitMeanPullT  = new TH2D("TofTests_MultiPntHitMeanPullT",
+                "Quality of the Tof Hits time error relative to mean Point time, for hit coming from multiple MC Point; Pull T(Hit -> Point) []; # [Hits]; Multi [Pnt]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
       // To best Point (highest TOT contribution
    fhMultiPntHitBestDeltaX  = new TH2D("TofTests_MultiPntHitBestDeltaX",
                 "Quality of the Tof Hits position on X axis relative to best Point position, for hit coming from multiple MC Point; X(Hit) - X(Point) [cm]; # [Hits]; Multi [Pnt]",
@@ -1278,6 +1345,10 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                 "Quality of the Tof Hits position error relative to best Point position, for hit coming from multiple MC Point; Pull R(Hit -> Point) []; # [Hits]; Multi [Pnt]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange,
                               iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitBestPullT  = new TH2D("TofTests_MultiPntHitBestPullT",
+                "Quality of the Tof Hits time error relative to best Point time, for hit coming from multiple MC Point; Pull T(Hit -> Point) []; # [Hits]; Multi [Pnt]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
 
    // Hit Quality for Hits coming from a single MC Track
    fhSingleTrackHitDeltaX = new TH1D("TofTests_SingleTrackHitDeltaX",
@@ -1307,6 +1378,9 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
    fhSingleTrackHitPullR = new TH1D("TofTests_SingleTrackHitPullR",
                               "Quality of the Tof Hits position error, for hit coming from a single MC Track; Pull R(Hit -> Track) []; # [Hits]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSingleTrackHitPullT = new TH1D("TofTests_SingleTrackHitPullT",
+                              "Quality of the Tof Hits time error, for hit coming from a single MC Track; Pull T(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
 
    // Hit Quality for Hits coming from a single MC Track but multiple points
    fhSingTrkMultiPntHitDeltaX = new TH1D("TofTests_SingTrkMultiPntHitDeltaX",
@@ -1335,6 +1409,9 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange);
    fhSingTrkMultiPntHitPullR  = new TH1D("TofTests_SingTrkMultiPntHitPullR",
                               "Quality of the Tof Hits position error, for hit coming from a single MC Track; Pull R(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSingTrkMultiPntHitPullT  = new TH1D("TofTests_SingTrkMultiPntHitPullT",
+                              "Quality of the Tof Hits time error, for hit coming from a single MC Track; Pull T(Hit -> Track) []; # [Hits]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange);
 
    // Hit Quality for Hits coming from a multiple MC Tracks
@@ -1375,6 +1452,10 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                 "Quality of the Tof Hits position error relative to closest Track, for hit coming from multiple MC Track; Pull R(Hit -> Track) []; # [Hits]; Multi [Trk]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange,
                               iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitClosestPullT  = new TH2D("TofTests_MultiTrkHitClosestPullT",
+                "Quality of the Tof Hits time error relative to closest Track, for hit coming from multiple MC Track; Pull T(Hit -> Track) []; # [Hits]; Multi [Trk]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
       // To Track furthest from Hit
    fhMultiTrkHitFurthestDeltaX  = new TH2D("TofTests_MultiTrkHitFurthestDeltaX",
                 "Quality of the Tof Hits position on X axis relative to furthest Track, for hit coming from multiple MC Track; X(Hit) - X(Track) [cm]; # [Hits]; Multi [Trk]",
@@ -1410,6 +1491,10 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                               iNbBinsMulti, iMinMulti, iMaxMulti );
    fhMultiTrkHitFurthestPullR  = new TH2D("TofTests_MultiTrkHitFurthestPullR",
                 "Quality of the Tof Hits position error relative to furthest Track, for hit coming from multiple MC Track; Pull R(Hit -> Track) []; # [Hits]; Multi [Trk]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitFurthestPullT  = new TH2D("TofTests_MultiTrkHitFurthestPullT",
+                "Quality of the Tof Hits time error relative to furthest Track, for hit coming from multiple MC Track; Pull T(Hit -> Track) []; # [Hits]; Multi [Trk]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange,
                               iNbBinsMulti, iMinMulti, iMaxMulti );
       // To mean Track position
@@ -1449,6 +1534,10 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                 "Quality of the Tof Hits position error relative to mean Track position, for hit coming from multiple MC Track; Pull R(Hit -> Track) []; # [Hits]; Multi [Trk]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange,
                               iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitMeanPullT  = new TH2D("TofTests_MultiTrkHitMeanPullT",
+                "Quality of the Tof Hits time error relative to mean Track position, for hit coming from multiple MC Track; Pull T(Hit -> Track) []; # [Hits]; Multi [Trk]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
       // To best Track (Highest TOT contribution)
    fhMultiTrkHitBestDeltaX  = new TH2D("TofTests_MultiTrkHitBestDeltaX",
                 "Quality of the Tof Hits position on X axis relative to best Track position, for hit coming from multiple MC Track; X(Hit) - X(Track) [cm]; # [Hits]; Multi [Trk]",
@@ -1484,6 +1573,10 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                               iNbBinsMulti, iMinMulti, iMaxMulti );
    fhMultiTrkHitBestPullR  = new TH2D("TofTests_MultiTrkHitBestPullR",
                 "Quality of the Tof Hits position error relative to best Track position, for hit coming from multiple MC Track; Pull R(Hit -> Track) []; # [Hits]; Multi [Trk]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitBestPullT  = new TH2D("TofTests_MultiTrkHitBestPullT",
+                "Quality of the Tof Hits time error relative to best Track position, for hit coming from multiple MC Track; Pull T(Hit -> Track) []; # [Hits]; Multi [Trk]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange,
                               iNbBinsMulti, iMinMulti, iMaxMulti );
 
@@ -2225,9 +2318,18 @@ Bool_t CbmTofHitFinderQa::FillHistos()
       Double_t dErrX = pTofHit->GetDx();
       Double_t dErrY = pTofHit->GetDy();
       Double_t dErrZ = pTofHit->GetDz();
+      Double_t dErrT = pTofHit->GetTimeError() * 1000.0;
 //      Double_t dErrR = TMath::Sqrt( dErrX*dErrX + dErrY*dErrY + dErrZ*dErrZ );
       Double_t dErrR = TMath::Sqrt( dErrX*dErrX + dErrY*dErrY );
 
+      Int_t    iClusterSize = pTofHit->GetClusterSize();
+/*
+      LOG(INFO) << "Hit errors = X "
+                << dErrX << " Y " << dErrY << " Z " << dErrZ
+                << " T " << dErrT
+                << " R " << dErrR
+                << FairLogger::endl;
+*/
       fhHitMapXY->Fill(   dX, dY );
       fhHitMapXZ->Fill(   dX, dZ );
       fhHitMapYZ->Fill(   dY, dZ );
@@ -2250,7 +2352,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             if( 0 != iNbDigisHit%2 )
                LOG(FATAL)<<"CbmTofHitFinderQa::FillHistos => Nb of digis matching Hit #"
                          <<iHitInd<<" in event #"<<fEvents
-                         <<" is not a multiple of 2 => should not happen as both ends of strp required!!!"<<FairLogger::endl;
+                         <<" is not a multiple of 2 => should not happen as both ends of strp required!!!"
+                         <<FairLogger::endl;
 
             // Nb different TOF digis in Hit
             fhNbDigisInHit->Fill( iNbDigisHit );
@@ -2608,16 +2711,24 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             Double_t dDeltaZ = dZ - vPntPos.Z();
             Double_t dDeltaR = TMath::Sqrt(   dDeltaX*dDeltaX
                                             + dDeltaY*dDeltaY );
+            Double_t dDeltaT = 1000.0 * ( pTofHit->GetTime() - pTofPoint->GetTime() );
 
             fhSinglePointHitDeltaX->Fill( dDeltaX );
             fhSinglePointHitDeltaY->Fill( dDeltaY );
             fhSinglePointHitDeltaZ->Fill( dDeltaZ );
             fhSinglePointHitDeltaR->Fill( dDeltaR );
-            fhSinglePointHitDeltaT->Fill( 1000.0*(pTofHit->GetTime() - pTofPoint->GetTime()) );
+            fhSinglePointHitDeltaT->Fill( dDeltaT );
             fhSinglePointHitPullX->Fill( dDeltaX/dErrX );
             fhSinglePointHitPullY->Fill( dDeltaY/dErrY );
             fhSinglePointHitPullZ->Fill( dDeltaZ/dErrZ ); // Offset(s) bec. hit assigned to middle of det.
             fhSinglePointHitPullR->Fill( dDeltaR/dErrR );
+            fhSinglePointHitPullT->Fill( dDeltaT/dErrT );
+
+             fhCltSzSinglePointHitPullX->Fill( dDeltaX/dErrX, iClusterSize);
+             fhCltSzSinglePointHitPullY->Fill( dDeltaY/dErrY, iClusterSize );
+             fhCltSzSinglePointHitPullZ->Fill( dDeltaZ/dErrZ, iClusterSize ); // Offset(s) bec. hit assigned to middle of det.
+             fhCltSzSinglePointHitPullR->Fill( dDeltaR/dErrR, iClusterSize );
+             fhCltSzSinglePointHitPullT->Fill( dDeltaT/dErrT, iClusterSize );
          } // if( 1 == vTofPointsId.size() )
          // For Hits with multiple MC Points
             else
@@ -2641,16 +2752,18 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaMeanZ = dZ - dPntMeanPosZ;
                Double_t dDeltaMeanR = TMath::Sqrt(   dDeltaMeanX*dDeltaMeanX
                                                    + dDeltaMeanY*dDeltaMeanY );
+               Double_t dDeltaMeanT = 1000.0 * ( pTofHit->GetTime() - dPntMeanTime );
 
                fhMultiPntHitMeanDeltaX->Fill( dDeltaMeanX, uNbPointsInHit );
                fhMultiPntHitMeanDeltaY->Fill( dDeltaMeanY, uNbPointsInHit );
                fhMultiPntHitMeanDeltaZ->Fill( dDeltaMeanZ, uNbPointsInHit );
                fhMultiPntHitMeanDeltaR->Fill( dDeltaMeanR, uNbPointsInHit );
-               fhMultiPntHitMeanDeltaT->Fill( 1000.0*(pTofHit->GetTime() - dPntMeanTime), uNbPointsInHit );
+               fhMultiPntHitMeanDeltaT->Fill( dDeltaMeanT, uNbPointsInHit );
                fhMultiPntHitMeanPullX->Fill( dDeltaMeanX/dErrX, uNbPointsInHit );
                fhMultiPntHitMeanPullY->Fill( dDeltaMeanY/dErrY, uNbPointsInHit );
                fhMultiPntHitMeanPullZ->Fill( dDeltaMeanZ/dErrZ, uNbPointsInHit ); // Offset(s) bec. hit assigned to middle of det.
                fhMultiPntHitMeanPullR->Fill( dDeltaMeanR/dErrR, uNbPointsInHit );
+               fhMultiPntHitMeanPullT->Fill( dDeltaMeanT/dErrT, uNbPointsInHit );
 
                // Check Hit Quality relative to closest MC Point
 //               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iClosestPntIdx);
@@ -2667,16 +2780,18 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaCloZ = dZ - vPntPosClo.Z();
                Double_t dDeltaCloR = TMath::Sqrt(   dDeltaCloX*dDeltaCloX
                                                   + dDeltaCloY*dDeltaCloY );
+               Double_t dDeltaCloT = 1000.0 * ( pTofHit->GetTime() - pTofPoint->GetTime() );
 
                fhMultiPntHitClosestDeltaX->Fill( dDeltaCloX, uNbPointsInHit );
                fhMultiPntHitClosestDeltaY->Fill( dDeltaCloY, uNbPointsInHit );
                fhMultiPntHitClosestDeltaZ->Fill( dDeltaCloZ, uNbPointsInHit );
                fhMultiPntHitClosestDeltaR->Fill( dDeltaCloR, uNbPointsInHit );
-               fhMultiPntHitClosestDeltaT->Fill( 1000.0*(pTofHit->GetTime() - pTofPoint->GetTime()), uNbPointsInHit );
+               fhMultiPntHitClosestDeltaT->Fill( dDeltaCloT, uNbPointsInHit );
                fhMultiPntHitClosestPullX->Fill( dDeltaCloX/dErrX, uNbPointsInHit );
                fhMultiPntHitClosestPullY->Fill( dDeltaCloY/dErrY, uNbPointsInHit );
                fhMultiPntHitClosestPullZ->Fill( dDeltaCloZ/dErrZ, uNbPointsInHit ); // Offset(s) bec. hit assigned to middle of det.
                fhMultiPntHitClosestPullR->Fill( dDeltaCloR/dErrR, uNbPointsInHit );
+               fhMultiPntHitClosestPullT->Fill( dDeltaCloT/dErrT, uNbPointsInHit );
 
                // Check Hit Quality relative to furthest MC Point
 //               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iFurthestPntIdx);
@@ -2693,16 +2808,18 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaFarZ = dZ - vPntPosFar.Z();
                Double_t dDeltaFarR = TMath::Sqrt(   dDeltaFarX*dDeltaFarX
                                                   + dDeltaFarY*dDeltaFarY );
+               Double_t dDeltaFarT = 1000.0 * ( pTofHit->GetTime() - pTofPoint->GetTime() );
 
                fhMultiPntHitFurthestDeltaX->Fill( dDeltaFarX, uNbPointsInHit );
                fhMultiPntHitFurthestDeltaY->Fill( dDeltaFarY, uNbPointsInHit );
                fhMultiPntHitFurthestDeltaZ->Fill( dDeltaFarZ, uNbPointsInHit );
                fhMultiPntHitFurthestDeltaR->Fill( dDeltaFarR, uNbPointsInHit );
-               fhMultiPntHitFurthestDeltaT->Fill( 1000.0*(pTofHit->GetTime() - pTofPoint->GetTime()), uNbPointsInHit );
+               fhMultiPntHitFurthestDeltaT->Fill( dDeltaFarT, uNbPointsInHit );
                fhMultiPntHitFurthestPullX->Fill( dDeltaFarX/dErrX, uNbPointsInHit );
                fhMultiPntHitFurthestPullY->Fill( dDeltaFarY/dErrY, uNbPointsInHit );
                fhMultiPntHitFurthestPullZ->Fill( dDeltaFarZ/dErrZ, uNbPointsInHit ); // Offset(s) bec. hit assigned to middle of det.
                fhMultiPntHitFurthestPullR->Fill( dDeltaFarR/dErrR, uNbPointsInHit );
+               fhMultiPntHitFurthestPullT->Fill( dDeltaFarT/dErrT, uNbPointsInHit );
 
                // Check Quality to best Point match (highest sum of TOT)
                // Do not fill it in Hit producer case as both strip ends receive a same weigth of 1/2
@@ -2730,16 +2847,18 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   Double_t dDeltaBestZ = dZ - vPntPosBest.Z();
                   Double_t dDeltaBestR = TMath::Sqrt(   dDeltaBestX*dDeltaBestX
                                                       + dDeltaBestY*dDeltaBestY );
+                  Double_t dDeltaBestT = 1000.0 * ( pTofHit->GetTime() - pTofPoint->GetTime() );
 
                   fhMultiPntHitBestDeltaX->Fill( dDeltaBestX, uNbPointsInHit );
                   fhMultiPntHitBestDeltaY->Fill( dDeltaBestY, uNbPointsInHit );
                   fhMultiPntHitBestDeltaZ->Fill( dDeltaBestZ, uNbPointsInHit );
                   fhMultiPntHitBestDeltaR->Fill( dDeltaBestR, uNbPointsInHit );
-                  fhMultiPntHitBestDeltaT->Fill( 1000.0*(pTofHit->GetTime() - pTofPoint->GetTime()), uNbPointsInHit );
+                  fhMultiPntHitBestDeltaT->Fill( dDeltaBestT, uNbPointsInHit );
                   fhMultiPntHitBestPullX->Fill( dDeltaBestX/dErrX, uNbPointsInHit );
                   fhMultiPntHitBestPullY->Fill( dDeltaBestY/dErrY, uNbPointsInHit );
                   fhMultiPntHitBestPullZ->Fill( dDeltaBestZ/dErrZ, uNbPointsInHit ); // Offset(s) bec. hit assigned to middle of det.
                   fhMultiPntHitBestPullR->Fill( dDeltaBestR/dErrR, uNbPointsInHit );
+                  fhMultiPntHitBestPullT->Fill( dDeltaBestT/dErrT, uNbPointsInHit );
                } // if( kFALSE == fbHitProducerSource )
             } // else of if( 1 == vTofPointsId.size() )
 
@@ -2770,16 +2889,18 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             Double_t dDeltaZ = dZ - vPntPos.Z();
             Double_t dDeltaR = TMath::Sqrt(   dDeltaX*dDeltaX
                                             + dDeltaY*dDeltaY );
+            Double_t dDeltaT = 1000.0 * ( pTofHit->GetTime() - pTofPoint->GetTime() );
 
             fhSingleTrackHitDeltaX->Fill( dDeltaX );
             fhSingleTrackHitDeltaY->Fill( dDeltaY );
             fhSingleTrackHitDeltaZ->Fill( dDeltaZ );
             fhSingleTrackHitDeltaR->Fill( dDeltaR );
-            fhSingleTrackHitDeltaT->Fill( 1000.0*(pTofHit->GetTime() - pTofPoint->GetTime()) );
+            fhSingleTrackHitDeltaT->Fill( dDeltaT );
             fhSingleTrackHitPullX->Fill( dDeltaX/dErrX );
             fhSingleTrackHitPullY->Fill( dDeltaY/dErrY );
             fhSingleTrackHitPullZ->Fill( dDeltaZ/dErrZ ); // Offset(s) bec. hit assigned to middle of det.
             fhSingleTrackHitPullR->Fill( dDeltaR/dErrR );
+            fhSingleTrackHitPullT->Fill( dDeltaT/dErrT );
 
             if( 1 < uNbPointsInHit )
             {
@@ -2792,6 +2913,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                fhSingTrkMultiPntHitPullY->Fill( dDeltaY/dErrY );
                fhSingTrkMultiPntHitPullZ->Fill( dDeltaZ/dErrZ ); // Offset(s) bec. hit assigned to middle of det.
                fhSingTrkMultiPntHitPullR->Fill( dDeltaR/dErrR );
+               fhSingTrkMultiPntHitPullT->Fill( dDeltaT/dErrT );
             } // if( 1 < uNbPointsInHit )
 
             // Get the MC track and fill its length up to the TOF point in the proper histo
@@ -2833,15 +2955,18 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaMeanZ = dZ - dTrkMeanPosZ;
                Double_t dDeltaMeanR = TMath::Sqrt(   dDeltaMeanX*dDeltaMeanX
                                                    + dDeltaMeanY*dDeltaMeanY );
+               Double_t dDeltaMeanT = 1000.0 * ( pTofHit->GetTime() - dTrkMeanTime );
+
                fhMultiTrkHitMeanDeltaX->Fill( dDeltaMeanX, uNbTracksInHit );
                fhMultiTrkHitMeanDeltaY->Fill( dDeltaMeanY, uNbTracksInHit );
                fhMultiTrkHitMeanDeltaZ->Fill( dDeltaMeanZ, uNbTracksInHit );
                fhMultiTrkHitMeanDeltaR->Fill( dDeltaMeanR, uNbTracksInHit );
-               fhMultiTrkHitMeanDeltaT->Fill( 1000.0*(pTofHit->GetTime() - dTrkMeanTime), uNbTracksInHit );
+               fhMultiTrkHitMeanDeltaT->Fill( dDeltaMeanT, uNbTracksInHit );
                fhMultiTrkHitMeanPullX->Fill( dDeltaMeanX/dErrX, uNbTracksInHit );
                fhMultiTrkHitMeanPullY->Fill( dDeltaMeanY/dErrY, uNbTracksInHit );
                fhMultiTrkHitMeanPullZ->Fill( dDeltaMeanZ/dErrZ, uNbTracksInHit ); // Offset(s) bec. hit assigned to middle of det.
                fhMultiTrkHitMeanPullR->Fill( dDeltaMeanR/dErrR, uNbTracksInHit );
+               fhMultiTrkHitMeanPullT->Fill( dDeltaMeanT/dErrT, uNbTracksInHit );
 
                // Check Hit Quality relative to closest MC Tracks
                   // Obtain Point position (Consider 1st Pnt of each Trk is approximate coord)
@@ -2858,16 +2983,18 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaCloZ = dZ - vPntPosClo.Z();
                Double_t dDeltaCloR = TMath::Sqrt(   dDeltaCloX*dDeltaCloX
                                                   + dDeltaCloY*dDeltaCloY );
+               Double_t dDeltaCloT = 1000.0 * ( pTofHit->GetTime() - pTofPoint->GetTime() );
 
                fhMultiTrkHitClosestDeltaX->Fill( dDeltaCloX, uNbTracksInHit );
                fhMultiTrkHitClosestDeltaY->Fill( dDeltaCloY, uNbTracksInHit );
                fhMultiTrkHitClosestDeltaZ->Fill( dDeltaCloZ, uNbTracksInHit );
                fhMultiTrkHitClosestDeltaR->Fill( dDeltaCloR, uNbTracksInHit );
-               fhMultiTrkHitClosestDeltaT->Fill( 1000.0*(pTofHit->GetTime() - pTofPoint->GetTime()), uNbTracksInHit );
+               fhMultiTrkHitClosestDeltaT->Fill( dDeltaCloT, uNbTracksInHit );
                fhMultiTrkHitClosestPullX->Fill( dDeltaCloX/dErrX, uNbTracksInHit );
                fhMultiTrkHitClosestPullY->Fill( dDeltaCloY/dErrY, uNbTracksInHit );
                fhMultiTrkHitClosestPullZ->Fill( dDeltaCloZ/dErrZ, uNbTracksInHit ); // Offset(s) bec. hit assigned to middle of det.
                fhMultiTrkHitClosestPullR->Fill( dDeltaCloR/dErrR, uNbTracksInHit );
+               fhMultiTrkHitClosestPullT->Fill( dDeltaCloT/dErrT, uNbTracksInHit );
 
                // Check Hit Quality relative to furthest MC Tracks
                   // Obtain Point position (Consider 1st Pnt of each Trk is approximate coord)
@@ -2884,16 +3011,18 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaFarZ = dZ - vPntPosFar.Z();
                Double_t dDeltaFarR = TMath::Sqrt(   dDeltaFarX*dDeltaFarX
                                                   + dDeltaFarY*dDeltaFarY );
+               Double_t dDeltaFarT = 1000.0 * ( pTofHit->GetTime() - pTofPoint->GetTime() );
 
                fhMultiTrkHitFurthestDeltaX->Fill( dDeltaFarX, uNbTracksInHit );
                fhMultiTrkHitFurthestDeltaY->Fill( dDeltaFarY, uNbTracksInHit );
                fhMultiTrkHitFurthestDeltaZ->Fill( dDeltaFarZ, uNbTracksInHit );
                fhMultiTrkHitFurthestDeltaR->Fill( dDeltaFarR, uNbTracksInHit );
-               fhMultiTrkHitFurthestDeltaT->Fill( 1000.0*(pTofHit->GetTime() - pTofPoint->GetTime()), uNbTracksInHit );
+               fhMultiTrkHitFurthestDeltaT->Fill( dDeltaFarT, uNbTracksInHit );
                fhMultiTrkHitFurthestPullX->Fill( dDeltaFarX/dErrX, uNbTracksInHit );
                fhMultiTrkHitFurthestPullY->Fill( dDeltaFarY/dErrY, uNbTracksInHit );
                fhMultiTrkHitFurthestPullZ->Fill( dDeltaFarZ/dErrZ, uNbTracksInHit ); // Offset(s) bec. hit assigned to middle of det.
                fhMultiTrkHitFurthestPullR->Fill( dDeltaFarR/dErrR, uNbTracksInHit );
+               fhMultiTrkHitFurthestPullT->Fill( dDeltaFarT/dErrT, uNbTracksInHit );
 
                // Check Quality to best Track match (highest sum of TOT)
                // Do not fill it in Hit producer case as both strip ends receive a same weigth of 1/2
@@ -2923,16 +3052,18 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   Double_t dDeltaBestZ = dZ - vPntPosBest.Z();
                   Double_t dDeltaBestR = TMath::Sqrt(   dDeltaBestX*dDeltaBestX
                                                       + dDeltaBestY*dDeltaBestY );
+                  Double_t dDeltaBestT = 1000.0 * ( pTofHit->GetTime() - pTofPoint->GetTime() );
 
                   fhMultiTrkHitBestDeltaX->Fill( dDeltaBestX, uNbTracksInHit );
                   fhMultiTrkHitBestDeltaY->Fill( dDeltaBestY, uNbTracksInHit );
                   fhMultiTrkHitBestDeltaZ->Fill( dDeltaBestZ, uNbTracksInHit );
                   fhMultiTrkHitBestDeltaR->Fill( dDeltaBestR, uNbTracksInHit );
-                  fhMultiTrkHitBestDeltaT->Fill( 1000.0*(pTofHit->GetTime() - pTofPoint->GetTime()), uNbTracksInHit );
+                  fhMultiTrkHitBestDeltaT->Fill( dDeltaBestT, uNbTracksInHit );
                   fhMultiTrkHitBestPullX->Fill( dDeltaBestX/dErrX, uNbTracksInHit );
                   fhMultiTrkHitBestPullY->Fill( dDeltaBestY/dErrY, uNbTracksInHit );
                   fhMultiTrkHitBestPullZ->Fill( dDeltaBestZ/dErrZ, uNbTracksInHit ); // Offset(s) bec. hit assigned to middle of det.
                   fhMultiTrkHitBestPullR->Fill( dDeltaBestR/dErrR, uNbTracksInHit );
+                  fhMultiTrkHitBestPullT->Fill( dDeltaBestT/dErrT, uNbTracksInHit );
                } // if( kFALSE == fbHitProducerSource )
 
                // Get each  MC track and fill its length up to the 1at TOF point in the proper histo
@@ -3558,6 +3689,13 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhSinglePointHitPullY->Write();
       fhSinglePointHitPullZ->Write();
       fhSinglePointHitPullR->Write();
+      fhSinglePointHitPullT->Write();
+
+      fhCltSzSinglePointHitPullX->Write();
+      fhCltSzSinglePointHitPullY->Write();
+      fhCltSzSinglePointHitPullZ->Write();
+      fhCltSzSinglePointHitPullR->Write();
+      fhCltSzSinglePointHitPullT->Write();
          // Hit Quality for Hits coming from a multiple MC Points
             // To Point closest to Hit
       fhMultiPntHitClosestDeltaX->Write();
@@ -3569,6 +3707,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhMultiPntHitClosestPullY->Write();
       fhMultiPntHitClosestPullZ->Write();
       fhMultiPntHitClosestPullR->Write();
+      fhMultiPntHitClosestPullT->Write();
             // To Point furthest from Hit
       fhMultiPntHitFurthestDeltaX->Write();
       fhMultiPntHitFurthestDeltaY->Write();
@@ -3579,6 +3718,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhMultiPntHitFurthestPullY->Write();
       fhMultiPntHitFurthestPullZ->Write();
       fhMultiPntHitFurthestPullR->Write();
+      fhMultiPntHitFurthestPullT->Write();
             // To mean Point position
       fhMultiPntHitMeanDeltaX->Write();
       fhMultiPntHitMeanDeltaY->Write();
@@ -3589,6 +3729,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhMultiPntHitMeanPullY->Write();
       fhMultiPntHitMeanPullZ->Write();
       fhMultiPntHitMeanPullR->Write();
+      fhMultiPntHitMeanPullT->Write();
             // To best Point position
       fhMultiPntHitBestDeltaX->Write();
       fhMultiPntHitBestDeltaY->Write();
@@ -3599,6 +3740,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhMultiPntHitBestPullY->Write();
       fhMultiPntHitBestPullZ->Write();
       fhMultiPntHitBestPullR->Write();
+      fhMultiPntHitBestPullT->Write();
          // Hit Quality for Hits coming from a single MC Track
       fhSingleTrackHitDeltaX->Write();
       fhSingleTrackHitDeltaY->Write();
@@ -3609,6 +3751,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhSingleTrackHitPullY->Write();
       fhSingleTrackHitPullZ->Write();
       fhSingleTrackHitPullR->Write();
+      fhSingleTrackHitPullT->Write();
          // Hit Quality for Hits coming from a single MC Track but multiple points
       fhSingTrkMultiPntHitDeltaX->Write();
       fhSingTrkMultiPntHitDeltaY->Write();
@@ -3619,6 +3762,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhSingTrkMultiPntHitPullY->Write();
       fhSingTrkMultiPntHitPullZ->Write();
       fhSingTrkMultiPntHitPullR->Write();
+      fhSingTrkMultiPntHitPullT->Write();
          // Hit Quality for Hits coming from a multiple MC Points
             // To Track closest to Hit
       fhMultiTrkHitClosestDeltaX->Write();
@@ -3630,6 +3774,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhMultiTrkHitClosestPullY->Write();
       fhMultiTrkHitClosestPullZ->Write();
       fhMultiTrkHitClosestPullR->Write();
+      fhMultiTrkHitClosestPullT->Write();
             // To Track furthest from Hit
       fhMultiTrkHitFurthestDeltaX->Write();
       fhMultiTrkHitFurthestDeltaY->Write();
@@ -3640,6 +3785,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhMultiTrkHitFurthestPullY->Write();
       fhMultiTrkHitFurthestPullZ->Write();
       fhMultiTrkHitFurthestPullR->Write();
+      fhMultiTrkHitFurthestPullT->Write();
             // To mean Track position
       fhMultiTrkHitMeanDeltaX->Write();
       fhMultiTrkHitMeanDeltaY->Write();
@@ -3650,6 +3796,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhMultiTrkHitMeanPullY->Write();
       fhMultiTrkHitMeanPullZ->Write();
       fhMultiTrkHitMeanPullR->Write();
+      fhMultiTrkHitMeanPullT->Write();
             // To best Track position
       fhMultiTrkHitBestDeltaX->Write();
       fhMultiTrkHitBestDeltaY->Write();
@@ -3660,6 +3807,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhMultiTrkHitBestPullY->Write();
       fhMultiTrkHitBestPullZ->Write();
       fhMultiTrkHitBestPullR->Write();
+      fhMultiTrkHitBestPullT->Write();
 
       TDirectory *cdPhysMap = fHist->mkdir( "PhysMap" );
       cdPhysMap->cd();    // make the "PhysMap" directory the current directory
@@ -3840,6 +3988,13 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhSinglePointHitPullY;
    delete fhSinglePointHitPullZ;
    delete fhSinglePointHitPullR;
+   delete fhSinglePointHitPullT;
+
+   delete fhCltSzSinglePointHitPullX;
+   delete fhCltSzSinglePointHitPullY;
+   delete fhCltSzSinglePointHitPullZ;
+   delete fhCltSzSinglePointHitPullR;
+   delete fhCltSzSinglePointHitPullT;
       // Hit Quality for Hits coming from a multiple MC Points
          // To Point closest to Hit
    delete fhMultiPntHitClosestDeltaX;
@@ -3851,6 +4006,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhMultiPntHitClosestPullY;
    delete fhMultiPntHitClosestPullZ;
    delete fhMultiPntHitClosestPullR;
+   delete fhMultiPntHitClosestPullT;
          // To Point furthest from Hit
    delete fhMultiPntHitFurthestDeltaX;
    delete fhMultiPntHitFurthestDeltaY;
@@ -3861,6 +4017,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhMultiPntHitFurthestPullY;
    delete fhMultiPntHitFurthestPullZ;
    delete fhMultiPntHitFurthestPullR;
+   delete fhMultiPntHitFurthestPullT;
          // To mean Point position
    delete fhMultiPntHitMeanDeltaX;
    delete fhMultiPntHitMeanDeltaY;
@@ -3871,6 +4028,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhMultiPntHitMeanPullY;
    delete fhMultiPntHitMeanPullZ;
    delete fhMultiPntHitMeanPullR;
+   delete fhMultiPntHitMeanPullT;
          // To best Point position
    delete fhMultiPntHitBestDeltaX;
    delete fhMultiPntHitBestDeltaY;
@@ -3881,6 +4039,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhMultiPntHitBestPullY;
    delete fhMultiPntHitBestPullZ;
    delete fhMultiPntHitBestPullR;
+   delete fhMultiPntHitBestPullT;
       // Hit Quality for Hits coming from a single MC Track
    delete fhSingleTrackHitDeltaX;
    delete fhSingleTrackHitDeltaY;
@@ -3891,6 +4050,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhSingleTrackHitPullY;
    delete fhSingleTrackHitPullZ;
    delete fhSingleTrackHitPullR;
+   delete fhSingleTrackHitPullT;
          // Hit Quality for Hits coming from a single MC Track but multiple points
    delete fhSingTrkMultiPntHitDeltaX;
    delete fhSingTrkMultiPntHitDeltaY;
@@ -3901,6 +4061,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhSingTrkMultiPntHitPullY;
    delete fhSingTrkMultiPntHitPullZ;
    delete fhSingTrkMultiPntHitPullR;
+   delete fhSingTrkMultiPntHitPullT;
 
       // Hit Quality for Hits coming from a multiple MC Points
          // To Track closest to Hit
@@ -3913,6 +4074,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhMultiTrkHitClosestPullY;
    delete fhMultiTrkHitClosestPullZ;
    delete fhMultiTrkHitClosestPullR;
+   delete fhMultiTrkHitClosestPullT;
          // To Track furthest from Hit
    delete fhMultiTrkHitFurthestDeltaX;
    delete fhMultiTrkHitFurthestDeltaY;
@@ -3923,6 +4085,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhMultiTrkHitFurthestPullY;
    delete fhMultiTrkHitFurthestPullZ;
    delete fhMultiTrkHitFurthestPullR;
+   delete fhMultiTrkHitFurthestPullT;
          // To mean Track position
    delete fhMultiTrkHitMeanDeltaX;
    delete fhMultiTrkHitMeanDeltaY;
@@ -3933,6 +4096,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhMultiTrkHitMeanPullY;
    delete fhMultiTrkHitMeanPullZ;
    delete fhMultiTrkHitMeanPullR;
+   delete fhMultiTrkHitMeanPullT;
          // To best Track position
    delete fhMultiTrkHitBestDeltaX;
    delete fhMultiTrkHitBestDeltaY;
@@ -3943,6 +4107,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhMultiTrkHitBestPullY;
    delete fhMultiTrkHitBestPullZ;
    delete fhMultiTrkHitBestPullR;
+   delete fhMultiTrkHitBestPullT;
 
       // Physics coord mapping, 1 per particle type
    for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)

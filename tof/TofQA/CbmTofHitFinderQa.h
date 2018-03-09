@@ -198,6 +198,13 @@ class CbmTofHitFinderQa : public FairTask {
       TH1 * fhSinglePointHitPullY;
       TH1 * fhSinglePointHitPullZ;
       TH1 * fhSinglePointHitPullR;
+      TH1 * fhSinglePointHitPullT;
+
+      TH1 * fhCltSzSinglePointHitPullX;
+      TH1 * fhCltSzSinglePointHitPullY;
+      TH1 * fhCltSzSinglePointHitPullZ;
+      TH1 * fhCltSzSinglePointHitPullR;
+      TH1 * fhCltSzSinglePointHitPullT;
          // Hit Quality for Hits coming from multiple MC Points
             // To Point closest to Hit
       TH2 * fhMultiPntHitClosestDeltaX;
@@ -209,6 +216,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhMultiPntHitClosestPullY;
       TH2 * fhMultiPntHitClosestPullZ;
       TH2 * fhMultiPntHitClosestPullR;
+      TH2 * fhMultiPntHitClosestPullT;
             // To Point furthest from Hit
       TH2 * fhMultiPntHitFurthestDeltaX;
       TH2 * fhMultiPntHitFurthestDeltaY;
@@ -219,6 +227,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhMultiPntHitFurthestPullY;
       TH2 * fhMultiPntHitFurthestPullZ;
       TH2 * fhMultiPntHitFurthestPullR;
+      TH2 * fhMultiPntHitFurthestPullT;
             // To mean Point position
       TH2 * fhMultiPntHitMeanDeltaX;
       TH2 * fhMultiPntHitMeanDeltaY;
@@ -229,6 +238,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhMultiPntHitMeanPullY;
       TH2 * fhMultiPntHitMeanPullZ;
       TH2 * fhMultiPntHitMeanPullR;
+      TH2 * fhMultiPntHitMeanPullT;
             // To best Point position
       TH2 * fhMultiPntHitBestDeltaX;
       TH2 * fhMultiPntHitBestDeltaY;
@@ -239,6 +249,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhMultiPntHitBestPullY;
       TH2 * fhMultiPntHitBestPullZ;
       TH2 * fhMultiPntHitBestPullR;
+      TH2 * fhMultiPntHitBestPullT;
          // Hit Quality for Hits coming from a single MC Track
       TH1 * fhSingleTrackHitDeltaX;
       TH1 * fhSingleTrackHitDeltaY;
@@ -249,6 +260,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH1 * fhSingleTrackHitPullY;
       TH1 * fhSingleTrackHitPullZ;
       TH1 * fhSingleTrackHitPullR;
+      TH1 * fhSingleTrackHitPullT;
          // Hit Quality for Hits coming from a single MC Track but multi Pnt
       TH1 * fhSingTrkMultiPntHitDeltaX;
       TH1 * fhSingTrkMultiPntHitDeltaY;
@@ -259,6 +271,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH1 * fhSingTrkMultiPntHitPullY;
       TH1 * fhSingTrkMultiPntHitPullZ;
       TH1 * fhSingTrkMultiPntHitPullR;
+      TH1 * fhSingTrkMultiPntHitPullT;
          // Hit Quality for Hits coming from multiple MC Tracks
             // To Track closest to Hit
       TH2 * fhMultiTrkHitClosestDeltaX;
@@ -270,6 +283,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhMultiTrkHitClosestPullY;
       TH2 * fhMultiTrkHitClosestPullZ;
       TH2 * fhMultiTrkHitClosestPullR;
+      TH2 * fhMultiTrkHitClosestPullT;
             // To Track furthest from Hit
       TH2 * fhMultiTrkHitFurthestDeltaX;
       TH2 * fhMultiTrkHitFurthestDeltaY;
@@ -280,6 +294,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhMultiTrkHitFurthestPullY;
       TH2 * fhMultiTrkHitFurthestPullZ;
       TH2 * fhMultiTrkHitFurthestPullR;
+      TH2 * fhMultiTrkHitFurthestPullT;
             // To mean Track position
       TH2 * fhMultiTrkHitMeanDeltaX;
       TH2 * fhMultiTrkHitMeanDeltaY;
@@ -290,6 +305,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhMultiTrkHitMeanPullY;
       TH2 * fhMultiTrkHitMeanPullZ;
       TH2 * fhMultiTrkHitMeanPullR;
+      TH2 * fhMultiTrkHitMeanPullT;
             // To best Track position
       TH2 * fhMultiTrkHitBestDeltaX;
       TH2 * fhMultiTrkHitBestDeltaY;
@@ -300,6 +316,7 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhMultiTrkHitBestPullY;
       TH2 * fhMultiTrkHitBestPullZ;
       TH2 * fhMultiTrkHitBestPullR;
+      TH2 * fhMultiTrkHitBestPullT;
 
          // Physics coord mapping, 1 per particle type
             // Phase space
