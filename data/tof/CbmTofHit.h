@@ -22,6 +22,11 @@ public:
   CbmTofHit();
 
   /**
+   * \brief Constructor with hit parameters (1b).
+   **/
+  CbmTofHit(Int_t address, TVector3 pos, TVector3 dpos, Int_t refIndex, Double_t time, Double_t dtime, Int_t flag, Int_t channel);
+
+  /**
    * \brief Constructor with hit parameters (1a).
    **/
   CbmTofHit(Int_t address, TVector3 pos, TVector3 dpos, Int_t refIndex, Double_t tof, Int_t flag, Int_t channel);
@@ -65,10 +70,12 @@ public:
   /** Modifiers **/
   void SetFlag(Int_t flag) { fFlag = flag; };
 
-  // Make this method otherwise inherited from CbmHit through CbmPixelHit 
+  // Make this method otherwise inherited from CbmHit through CbmPixelHit
   // private to prevent its usage
   Int_t GetRefId() const __attribute__ ((deprecated)) { return -1; }
-  
+  // Field is instead used to store the number of strips used to generate the hit
+  Int_t GetClusterSize() { return CbmHit::GetRefId(); }
+
 private:
 
   Int_t fFlag; ///< Flag for general purposes [TDC, event tagging...]

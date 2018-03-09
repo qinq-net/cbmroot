@@ -19,6 +19,14 @@ CbmTofHit::CbmTofHit()
   SetTime(0.);
 }
 
+CbmTofHit::CbmTofHit(Int_t address, TVector3 pos, TVector3 dpos, Int_t index, Double_t time, Double_t dtime, Int_t flag, Int_t channel)
+  : CbmPixelHit(address, pos, dpos, 0., index, time, dtime),
+    fFlag(flag),
+    fChannel(channel)
+{
+  SetType(kTOFHIT);
+}
+
 CbmTofHit::CbmTofHit(Int_t address, TVector3 pos, TVector3 dpos, Int_t index, Double_t time, Int_t flag, Int_t channel)
   : CbmPixelHit(address, pos, dpos, 0., index),
     fFlag(flag),
@@ -40,7 +48,7 @@ CbmTofHit::CbmTofHit(Int_t address, TVector3 pos, TVector3 dpos, Int_t index, Do
 CbmTofHit::CbmTofHit(Int_t address, TVector3 pos, TVector3 dpos, Int_t index, Double_t time)
   : CbmPixelHit(address, pos, dpos, 0., index),
     fFlag(1),
-    fChannel(0)    
+    fChannel(0)
 {
     SetType(kTOFHIT);
     SetTime(time);
