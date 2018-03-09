@@ -90,7 +90,7 @@ class CbmTofSimpClusterizer : public FairTask
 
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
       Bool_t   SetHistoFileName( TString sFilenameIn = "./tofSimpClust.hst.root" );
-      
+
       void UseMcTrackMonitoring(Bool_t bMcTrkMonitor = kTRUE) { fbMcTrkMonitor = bMcTrkMonitor; }
 
    protected:
@@ -144,7 +144,7 @@ class CbmTofSimpClusterizer : public FairTask
 
       /**
        ** @brief Retrieve event info from run manager to properly fill the CbmLink objects.
-       **/      
+       **/
       void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
 
       // ToF geometry variables
@@ -153,6 +153,8 @@ class CbmTofSimpClusterizer : public FairTask
       CbmTofDigiPar         * fDigiPar;
       CbmTofCell            * fChannelInfo;
       CbmTofDigiBdfPar      * fDigiBdfPar;
+      Double_t                fdParFeeTimeRes;
+      Double_t                fdParSystTimeRes;
 
       // Input variables
       TClonesArray          * fTofPointsColl; // TOF MC points
@@ -190,7 +192,7 @@ class CbmTofSimpClusterizer : public FairTask
       std::vector< std::vector< std::vector< Double_t > > > fvdDifCh; //[nbType][nbRpc][nClusters]
 
       // Output file name and path
-      TString fsHistoOutFilename;   
+      TString fsHistoOutFilename;
       // Histograms
       TH1* fhClustBuildTime;
       TH1* fhHitsPerTracks;
@@ -218,8 +220,8 @@ class CbmTofSimpClusterizer : public FairTask
       std::vector< TH1* > fhRpcCluMul;      //[nbDet]
       std::vector< TH1* > fhRpcSigPropSpeed;//[nbDet]
       std::vector< TH2* > fhRpcCluPosition; //[nbDet]
-      std::vector< TH2* > fhRpcCluTOff;     //[nbDet] 
-      std::vector< TH2* > fhRpcCluTrms;     //[nbDet] 
+      std::vector< TH2* > fhRpcCluTOff;     //[nbDet]
+      std::vector< TH2* > fhRpcCluTrms;     //[nbDet]
       std::vector< TH2* > fhRpcCluTot;      // [nbDet]
       std::vector< TH2* > fhRpcCluSize;     // [nbDet]
       std::vector< TH2* > fhRpcCluAvWalk;   // [nbDet]
@@ -235,7 +237,7 @@ class CbmTofSimpClusterizer : public FairTask
       std::vector< std::vector< TH2* > > fhTRpcCludXdY;     // [nbDet][nbTrg]
       std::vector< std::vector< std::vector< std::vector<TH2 *> > > >fhTRpcCluWalk; // [nbDet][nbTrg][nbCh][nSide]
 
-      std::vector< TH1* > fhTrgdT;  //[nbTrg] 
+      std::vector< TH1* > fhTrgdT;  //[nbTrg]
 
       std::vector< std::vector< Double_t > > fvCPSigPropSpeed;                           //[nSMT][nRpc]
       std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPDelTof;   //[nSMT][nRpc][nbClDelTofBinX][nbTrg]
@@ -251,7 +253,7 @@ class CbmTofSimpClusterizer : public FairTask
       // Control
       TTimeStamp fStart;
       TTimeStamp fStop;
-      
+
       // --- Run counters
       TStopwatch fTimer;       ///< ROOT timer
       Int_t      fiNofEvents;   ///< Total number of events processed
@@ -276,7 +278,7 @@ class CbmTofSimpClusterizer : public FairTask
 
       TString       fCalParFileName;      // name of the file name with Calibration Parameters
       TFile*        fCalParFile;          // pointer to Calibration Parameter file
-       
+
       Bool_t fbMcTrkMonitor;
 
    ClassDef(CbmTofSimpClusterizer, 2);

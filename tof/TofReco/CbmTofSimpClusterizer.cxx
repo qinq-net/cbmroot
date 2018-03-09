@@ -76,6 +76,8 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer():
    fDigiPar(NULL),
    fChannelInfo(NULL),
    fDigiBdfPar(NULL),
+   fdParFeeTimeRes(0.0),
+   fdParSystTimeRes(0.0),
    fTofPointsColl(NULL),
    fMcTracksColl(NULL),
    fTofDigisColl(NULL),
@@ -177,6 +179,8 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer(const char *name, Int_t verbose):
    fDigiPar(NULL),
    fChannelInfo(NULL),
    fDigiBdfPar(NULL),
+   fdParFeeTimeRes(0.0),
+   fdParSystTimeRes(0.0),
    fTofPointsColl(NULL),
    fMcTracksColl(NULL),
    fTofDigisColl(NULL),
@@ -317,6 +321,7 @@ void CbmTofSimpClusterizer::SetParContainers()
 
    LOG(INFO)<<"  CbmTofSimpClusterizer::SetParContainers found "
             << fDigiPar->GetNrOfModules() << " cells " <<FairLogger::endl;
+
    fDigiBdfPar = (CbmTofDigiBdfPar*)
               (rtdb->getContainer("CbmTofDigiBdfPar"));
 }
@@ -447,6 +452,15 @@ Bool_t   CbmTofSimpClusterizer::InitParameters()
       return kFALSE;
      }
    }
+
+   fdParFeeTimeRes  = fDigiBdfPar->GetFeeTimeRes();
+   fdParSystTimeRes = 0.080;
+
+   LOG(INFO)<<"  CbmTofSimpClusterizer::InitParameters found Tres FEE  = "
+            << fdParFeeTimeRes << " ns " <<FairLogger::endl;
+   LOG(INFO)<<"  CbmTofSimpClusterizer::InitParameters found Tres Syst = "
+            << fdParSystTimeRes << " ns " <<FairLogger::endl;
+
    return kTRUE;
 }
 /************************************************************************************/
@@ -1294,6 +1308,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
    Double_t dWeightedPosX = 0.0;
    Double_t dWeightedPosY = 0.0;
    Double_t dWeightedPosZ = 0.0;
+   Double_t dWeightedTimeErr = 0.0;
    Double_t dWeightsSum   = 0.0;
    std::vector< CbmTofPoint* > vPtsRef;
    std::vector< Int_t > vDigiIndRef;
@@ -1338,6 +1353,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                   dWeightedPosX = 0.0;
                   dWeightedPosY = 0.0;
                   dWeightedPosZ = 0.0;
+                  dWeightedTimeErr = 0.0;
                   dWeightsSum   = 0.0;
                   iNbChanInHit  = 0;
                   vPtsRef.clear();
@@ -1521,6 +1537,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     dWeightedPosX += dPosX*dTotS;
                                     dWeightedPosY += dPosY*dTotS;
                                     dWeightedPosZ += dPosZ*dTotS;
+                                    dWeightedTimeErr += dTotS * dTotS;
                                     dWeightsSum   += dTotS;
                                     iNbChanInHit  += 1;
                                     // if one of the side digi comes from a CbmTofPoint not already found
@@ -1575,6 +1592,10 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     dWeightedPosX /= dWeightsSum;
                                     dWeightedPosY /= dWeightsSum;
                                     dWeightedPosZ /= dWeightsSum;
+                                    // simple error scaling with TOT
+//                                    dWeightedTimeErr = TMath::Sqrt( dWeightedTimeErr ) * fdParSystTimeRes / dWeightsSum;
+                                    // OR harcoded value
+                                    dWeightedTimeErr = fdParSystTimeRes;
 
                                     Double_t hitpos_local[3];
                                     Double_t hitpos[3];
@@ -1583,10 +1604,9 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                       gGeoManager->FindNode(fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ());
                                     TGeoNode *cNode =
                                       gGeoManager->GetCurrentNode();
-                                    //cNode->Print();
-                                    //TGeoHMatrix* cMatrix =
-                                    gGeoManager->GetCurrentMatrix();
-                                    //cMatrix->Print();
+
+                                    TGeoRotation rotMatrix ( *gGeoManager->GetCurrentMatrix() );
+
                                     hitpos[0]=fTrafoCell->GetX();
                                     hitpos[1]=fTrafoCell->GetY();
                                     hitpos[2]=fTrafoCell->GetZ();
@@ -1612,11 +1632,18 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     // Simple errors, not properly done at all for now
                                     // Right way of doing it should take into account the weight distribution
                                     // and real system time resolution
-                                    TVector3 hitPosErr( fChannelInfo->GetSizex()/TMath::Sqrt(12.0),   // Single strips approximation
-                                                        fDigiBdfPar->GetFeeTimeRes() * fvCPSigPropSpeed[iSmType][iRpc], // Use the electronics resolution
-                                                        fDigiBdfPar->GetNbGaps( iSmType, iRpc)*
-                                                        fDigiBdfPar->GetGapSize( iSmType, iRpc)/10.0 / // Change gap size in cm
-                                                        TMath::Sqrt(12.0) ); // Use full RPC thickness as "Channel" Z size
+                                    Double_t hiterr_local[3];
+                                    Double_t hiterr[3];
+
+                                    hiterr_local[0] = fChannelInfo->GetSizex()/TMath::Sqrt(12.0);   // Single strips approximation
+                                    hiterr_local[1] = fdParFeeTimeRes * fvCPSigPropSpeed[iSmType][iRpc]; // Use the electronics resolution
+                                    hiterr_local[2] =   fDigiBdfPar->GetNbGaps( iSmType, iRpc)
+                                                      * fDigiBdfPar->GetGapSize( iSmType, iRpc)/10.0 // Change gap size in cm
+                                                      / TMath::Sqrt(12.0); // Use full RPC thickness as "Channel" Z size
+
+                                    rotMatrix.LocalToMaster(hiterr_local, hiterr);
+//                                    TVector3 hitPosErr( hiterr_local[0], hiterr_local[1], hiterr_local[2] );
+                                    TVector3 hitPosErr( hiterr[0], hiterr[1], hiterr[2] );
 
                                     // Int_t iDetId = vPtsRef[0]->GetDetectorID();// detID = pt->GetDetectorID() <= from TofPoint
                                     // calc mean ch from dPosX=((Double_t)(-iNbCh/2 + iCh)+0.5)*fChannelInfo->GetSizex();
@@ -1644,6 +1671,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                                         hitPos, hitPosErr,  //local detector coordinates
                                                         fiNbHits,
                                                         dWeightedTime*fOutTimeFactor,
+                                                        dWeightedTimeErr,
                                                         vPtsRef.size(), // flag  = number of TofPoints generating the cluster
                                                         0) ; //channel
                                       //                vDigiIndRef);
@@ -1677,6 +1705,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     dWeightedPosX = dPosX*dTotS;
                                     dWeightedPosY = dPosY*dTotS;
                                     dWeightedPosZ = dPosZ*dTotS;
+                                    dWeightedTimeErr = dTotS * dTotS;
                                     dWeightsSum   = dTotS;
                                     iNbChanInHit  = 1;
                                     // Save pointer on CbmTofPoint
@@ -1724,6 +1753,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     dWeightedPosX = dPosX*dTotS;
                                     dWeightedPosY = dPosY*dTotS;
                                     dWeightedPosZ = dPosZ*dTotS;
+                                    dWeightedTimeErr = dTotS * dTotS;
                                     dWeightsSum   = dTotS;
                                     iNbChanInHit  = 1;
                                     // Save pointer on CbmTofPoint
@@ -1793,6 +1823,10 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                      dWeightedPosX /= dWeightsSum;
                      dWeightedPosY /= dWeightsSum;
                      dWeightedPosZ /= dWeightsSum;
+                     // simple error scaling with TOT
+//                     dWeightedTimeErr = TMath::Sqrt( dWeightedTimeErr ) * fdParSystTimeRes / dWeightsSum;
+                     // OR harcoded value
+                     dWeightedTimeErr = fdParSystTimeRes;
 
                      Double_t hitpos_local[3];
                      Double_t hitpos[3];
@@ -1801,10 +1835,9 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                      gGeoManager->FindNode(fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ());
                      //TGeoNode *cNode =
                               gGeoManager->GetCurrentNode();
-                     //cNode->Print();
-                     //TGeoHMatrix* cMatrix =
-                     gGeoManager->GetCurrentMatrix();
-                              //cMatrix->Print();
+
+                     TGeoRotation rotMatrix ( *gGeoManager->GetCurrentMatrix() );
+
                      hitpos[0]=fTrafoCell->GetX();
                      hitpos[1]=fTrafoCell->GetY();
                      hitpos[2]=fTrafoCell->GetZ();
@@ -1828,11 +1861,31 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                      // TestBeam errors, not properly done at all for now
                      // Right way of doing it should take into account the weight distribution
                      // and real system time resolution
-                     TVector3 hitPosErr( fChannelInfo->GetSizex()/TMath::Sqrt(12.0),   // Single strips approximation
-                                         fDigiBdfPar->GetFeeTimeRes() * fvCPSigPropSpeed[iSmType][iRpc], // Use the electronics resolution
-                                         fDigiBdfPar->GetNbGaps( iSmType, iRpc)*
-                                         fDigiBdfPar->GetGapSize( iSmType, iRpc)/10.0 / // Change gap size in cm
-                                         TMath::Sqrt(12.0) );                           // Use full RPC thickness as "Channel" Z size
+                     Double_t hiterr_local[3];
+                     Double_t hiterr[3];
+
+                     hiterr_local[0] = fTrafoCell->GetSizex()/TMath::Sqrt(12.0);   // Single strips approximation
+                     hiterr_local[1] = fdParFeeTimeRes * fvCPSigPropSpeed[iSmType][iRpc]; // Use the electronics resolution
+                     hiterr_local[2] =   fDigiBdfPar->GetNbGaps( iSmType, iRpc)
+                                       * fDigiBdfPar->GetGapSize( iSmType, iRpc)/10.0 // Change gap size in cm
+                                       / TMath::Sqrt(12.0); // Use full RPC thickness as "Channel" Z size
+
+                     rotMatrix.LocalToMaster(hiterr_local, hiterr);
+//                     TVector3 hitPosErr( hiterr_local[0], hiterr_local[1], hiterr_local[2] );
+                     TVector3 hitPosErr( hiterr[0], hiterr[1], hiterr[2] );
+/*
+                     LOG(INFO)<< " Size X " << fTrafoCell->GetSizex()
+                              << FairLogger::endl;
+                     LOG(INFO)<< " Nb gaps " << fDigiBdfPar->GetNbGaps( iSmType, iRpc)
+                              << " gap size " << fDigiBdfPar->GetGapSize( iSmType, iRpc)
+                              << FairLogger::endl;
+                     LOG(INFO)<<"CbmTofSimpClusterizer::BuildClusters: Errors in local  "
+                              << hiterr_local[0] << " "<< hiterr_local[1] << " " << hiterr_local[2]
+                              << FairLogger::endl;
+                     LOG(INFO)<<"CbmTofSimpClusterizer::BuildClusters: Errors in master "
+                              << hiterr[0] << " "<< hiterr[1] << " " << hiterr[2]
+                              << FairLogger::endl;
+*/
 //                     cout<<"a "<<vPtsRef.size()<<endl;
 //                     cout<<"b "<<vPtsRef[0]<<endl;
 //                     cout<<"c "<<vPtsRef[0]->GetDetectorID()<<endl;
@@ -1865,6 +1918,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                          hitPos, hitPosErr,
                                          fiNbHits, //iRefId
                                          dWeightedTime*fOutTimeFactor,
+                                         dWeightedTimeErr,
                                          vPtsRef.size(),
                                          0);
                      //                                         vDigiIndRef);
