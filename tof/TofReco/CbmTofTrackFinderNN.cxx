@@ -276,7 +276,8 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	    fvTrkVec[iHit1].push_back(pTrk);
 
 	    pTrk->SetTime(pHit->GetTime());          // define reference time from 1. plane   
-	    Double_t dR  = pHit1->GetR() - pHit->GetR();
+	    //Double_t dR  = pHit1->GetR() - pHit->GetR();
+	    Double_t dR  = pTrk->Dist3D(pHit1,pHit);
 	    Double_t dTt = fFindTracks->GetTtTarg(); // assume calibration target value 
 	    if( 0 == iSmType) {
 	      Double_t T0Fake = pHit->GetTime();
@@ -286,7 +287,9 @@ Int_t CbmTofTrackFinderNN::DoFind(
 			  <<FairLogger::endl; 
 	      pHit->SetTime(T0Fake);
 	    }
-	    dTt = (pHit1->GetTime() - pHit->GetTime())/dR;
+	    Double_t dSign=1.;
+	    if(pHit1->GetZ() < pHit->GetZ()) dSign=-1.; 
+	    dTt = dSign * dDT / dR;
 	    pTrk->SetTt(dTt);                        // store inverse velocity    
 	    pTrk->UpdateT0();
 	    CbmTofTrackletParam *tPar = pTrk->GetTrackParameter();
@@ -297,9 +300,9 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	    tPar->SetTx(dTx);
 	    tPar->SetTy(dTy);
 
-	    LOG(DEBUG) << Form("<I> TofTracklet %d, %p,%p Hits %d, %d initialized, add 0x%08x,0x%08x, time %6.1f,%6.1f ",
-			       fiNtrks,pTrk,fTracks.back(),iHit,iHit1,
-			       pHit->GetAddress(), pHit1->GetAddress(), pTrk->GetT0(), pTrk->GetTt())
+	    LOG(DEBUG) << Form("<I> TofTracklet %d, Hits %d, %d initialized, add 0x%08x,0x%08x, DT %6.3f, Sgn %2.0f, DR %6.3f, T0 %6.2f, Tt %6.4f ",
+			       fiNtrks,iHit,iHit1,pHit->GetAddress(), pHit1->GetAddress(), 
+			       dDT, dSign, dR, pTrk->GetT0(), pTrk->GetTt())
 	      //		      << tPar->ToString()
 	   	      <<FairLogger::endl; 
 	  }
@@ -538,6 +541,10 @@ Int_t CbmTofTrackFinderNN::DoFind(
     if(fTracks[iTr]->GetNofHits() < 3) continue;            // request minimum number of hits (3) 
     if(fTracks[iTr]->GetChiSq() > fChiMaxAccept) continue;  // request minimum ChiSq (3) 
     CbmTofTracklet* pTrk = new((*fTofTracks)[fiNtrks++]) CbmTofTracklet (*fTracks[iTr]);
+    if(gLogger->IsLogNeeded( DEBUG )) {
+      LOG(INFO)<<"Found Trkl "<<iTr<<", ";
+      pTrk->PrintInfo();
+    }
     for(Int_t iHit=0; iHit<pTrk->GetNofHits(); iHit++){ // mark used Hit
       CbmTofHit* pHit = (CbmTofHit*) fHits->At( pTrk->GetHitIndex(iHit) );
       pHit->SetFlag(pHit->GetFlag()+100.);

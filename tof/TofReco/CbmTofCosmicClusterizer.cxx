@@ -209,6 +209,7 @@ CbmTofCosmicClusterizer::CbmTofCosmicClusterizer(const char *name, Int_t verbose
    fdMemoryTime(0.),
    fdYFitMin(1.E6),
    fdTimePeriod(0.),
+   fiCorMode(0),
    fEnableMatchPosScaling(kTRUE),
    fEnableAvWalk(kFALSE),
    fbPs2Ns(kFALSE),
@@ -1985,7 +1986,8 @@ Bool_t   CbmTofCosmicClusterizer::FillHistos()
                               +TMath::Power(pHit->GetY()-pTrig[iSel]->GetY(),2.)
 	       	              +TMath::Power(pHit->GetZ()-pTrig[iSel]->GetZ(),2.));
 	     dDelTof = dDist / cLight; // correct to first order for speed of light
-	     pHit->GetZ() < pTrig[iSel]->GetZ() ? dZsign[iSel]=-1. : dZsign[iSel] = 1.;       
+	     pHit->GetZ() < pTrig[iSel]->GetZ() ? dZsign[iSel]=-1. : dZsign[iSel] = 1.;     
+	     if( (pHit->GetAddress() & DetMask) == (pTrig[iSel]->GetAddress() & DetMask) ) dZsign[iSel] = 0.; 
 	     dTTcor[iSel] = dDelTof*dZsign[iSel];   // store timing correction
 	   }
 	   //// look for geometrical match  with selector hit
@@ -2759,7 +2761,7 @@ Bool_t   CbmTofCosmicClusterizer::WriteHistos()
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc(  iSmType);
         Int_t iNbCh  = fDigiBdfPar->GetNbChan( iSmType, iRpc );
         if((fCalSmAddr < 0) || (fCalSmAddr != iSmAddr) ){     // select detectors for updating offsets
-         LOG(INFO)<<"WriteHistos (calMode==3): update Offsets and Gains, keep Walk and DelTof for "
+	  LOG(INFO)<<Form("calMode==3: update Offsets and Gains, keep Walk and DelTof for 0x%08x, ",iSmAddr)
                   <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with " <<  iNbCh << " channels "
                    <<" using selector "<<fCalSel
                   <<FairLogger::endl;
@@ -2903,18 +2905,19 @@ Bool_t   CbmTofCosmicClusterizer::WriteHistos()
           Double_t TMean=((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1);
           Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) ;
 
-	  
+	  /*
 	  if (fSel2Addr == iSmAddr) {
 	    //if (fSel2Id == iSmType && fSel2Sm == iSm && fSel2Rpc == iRpc) {
 	    // don't shift reference counter on average
             //TMean-=((TProfile *)hAvTOff_pfx)->GetBinContent(iSm+1); 
           }
-	  
+	  */
 
           if(htempTOff_px->GetBinContent(iCh+1)>WalkNHmin){
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean;
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean;
-	    LOG(DEBUG)<<Form("Calib: TSRC %d%d%d%d, hits %6.0f, dTY  %8.3f, TM %8.3f -> new Off %8.3f,%8.3f ",
+	    if(iCh == 10)
+	    LOG(INFO)<<Form("Calib: TSRC %d%d%d%d, hits %6.0f, dTY  %8.3f, TM %8.3f -> new Off %8.3f,%8.3f ",
 			  iSmType,iSm,iRpc,iCh,htempTOff_px->GetBinContent(iCh+1),
 			  dTYOff,TMean,
 			  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
@@ -2994,11 +2997,11 @@ Bool_t   CbmTofCosmicClusterizer::WriteHistos()
          }
          htempTOff_pfx->Fill(iCh,TMean); 
 
-          for(Int_t iSide=0; iSide<2; iSide++){
+	 for(Int_t iSide=0; iSide<2; iSide++){
            htempTot_Mean->SetBinContent(iCh*2+1+iSide,
                           fdTTotMean/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] );
            htempTot_Off->SetBinContent(iCh*2+1+iSide,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]);
-          }
+	 }
           //         htempTot_pfx->Fill(iCh,fdTTotMean/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]);
         } // for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
 
@@ -3055,6 +3058,7 @@ Bool_t   CbmTofCosmicClusterizer::WriteHistos()
         }
      }
      break;
+
      case 4 :   //update DelTof, save offsets, gains and walks 
      {    
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
@@ -3527,8 +3531,8 @@ Bool_t   CbmTofCosmicClusterizer::BuildClusters()
 		 }
 		 if(iDigI3 == iNbTofDigi) // same side neighbour did not fire 
 		 {
-		   Int_t iCorMode=2; // Missing hit correction mode 
-		   switch(iCorMode){
+		   //Int_t fiCorMode=2; // Missing hit correction mode 
+		   switch(fiCorMode){
 		   case 0:  // no action 
 		     break;
 		   case 1: // shift found hit

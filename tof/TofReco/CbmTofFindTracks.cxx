@@ -96,6 +96,7 @@ CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
     vhPullZ(),
     vhPullT(),
     vhPullTB(),
+    vhXY_AllTracks(),
     vhXY_AllStations(),
     vhXY_MissedStation(),
     vhXY_DX(),
@@ -104,6 +105,7 @@ CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
     vhXY_TOT(),
     vhXY_CSZ(),
     vhUDXDY_DT(),
+    vhUCDXDY_DT(),
     fhVTXNorm(NULL),
     fhVTX_XY0(NULL),
     fhVTX_DT0_Norm(NULL),
@@ -203,6 +205,7 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     vhPullZ(),
     vhPullT(),
     vhPullTB(),
+    vhXY_AllTracks(),
     vhXY_AllStations(),
     vhXY_MissedStation(),
     vhXY_DX(),
@@ -210,7 +213,8 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     vhXY_DT(),
     vhXY_TOT(),
     vhXY_CSZ(),
-    vhUDXDY_DT(),
+    vhUDXDY_DT(),    
+    vhUCDXDY_DT(),
     fhVTXNorm(NULL),
     fhVTX_XY0(NULL),
     fhVTX_DT0_Norm(NULL),
@@ -482,7 +486,7 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
 
     if(NULL == fhPullT_Smt_Width) { // provide default TWidth histogram
       fhPullT_Smt_Width = new TH1F( Form("hPullT_Smt_Width"),
-				  Form("Tracklet PullT Width vs RpcInd ; RpcInd ; RMS(T) (ns)"),
+				  Form("Tracklet ResiT Width vs RpcInd ; RpcInd ; RMS(T) (ns)"),
 				  nSmt, 0, nSmt);
 
       // Initialize Parameter
@@ -495,11 +499,11 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
 
     if(NULL == fhPullX_Smt_Off)  // provide default XOffset histogram
       fhPullX_Smt_Off = new TH1F( Form("hPullX_Smt_Off"),
-				  Form("Tracklet PullX vs RpcInd ; RpcInd ; #DeltaX (cm)"),
+				  Form("Tracklet ResiX vs RpcInd ; RpcInd ; #DeltaX (cm)"),
 				  nSmt, 0, nSmt);
     if(NULL == fhPullX_Smt_Width) {
       fhPullX_Smt_Width = new TH1F( Form("hPullX_Smt_Width"),
-				  Form("Tracklet PullX Width vs RpcInd ; RpcInd ; RMS(X) (cm)"),
+				  Form("Tracklet ResiX Width vs RpcInd ; RpcInd ; RMS(X) (cm)"),
 				  nSmt, 0, nSmt);
       // Initialize Parameter
       for (Int_t iDet=0; iDet<nSmt; iDet++) {
@@ -509,11 +513,11 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
     
     if(NULL == fhPullY_Smt_Off)  // provide default YOffset histogram
       fhPullY_Smt_Off = new TH1F( Form("hPullY_Smt_Off"),
-				  Form("Tracklet PullY vs RpcInd ; RpcInd ; #DeltaY (cm)"),
+				  Form("Tracklet ResiY vs RpcInd ; RpcInd ; #DeltaY (cm)"),
 				  nSmt, 0, nSmt);
     if(NULL == fhPullY_Smt_Width) {
       fhPullY_Smt_Width = new TH1F( Form("hPullY_Smt_Width"),
-				  Form("Tracklet PullY Width vs RpcInd ; RpcInd ; RMS(Y) (cm)"),
+				  Form("Tracklet ResiY Width vs RpcInd ; RpcInd ; RMS(Y) (cm)"),
 				  nSmt, 0, nSmt);
       // Initialize Parameter
       for (Int_t iDet=0; iDet<nSmt; iDet++) {
@@ -523,11 +527,11 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
     
     if(NULL == fhPullZ_Smt_Off)   // provide default TOffset histogram
       fhPullZ_Smt_Off = new TH1F( Form("hPullZ_Smt_Off"),
-				  Form("Tracklet PullZ vs RpcInd ; RpcInd ; #DeltaZ (cm)"),
+				  Form("Tracklet ResiZ vs RpcInd ; RpcInd ; #DeltaZ (cm)"),
 				  nSmt, 0, nSmt);
     if(NULL == fhPullZ_Smt_Width) {
       fhPullZ_Smt_Width = new TH1F( Form("hPullZ_Smt_Width"),
-				  Form("Tracklet PullZ Width vs RpcInd ; RpcInd ; RMS(Z) (cm)"),
+				  Form("Tracklet ResiZ Width vs RpcInd ; RpcInd ; RMS(Z) (cm)"),
 				  nSmt, 0, nSmt);
       // Initialize Parameter
       for (Int_t iDet=0; iDet<nSmt; iDet++) {
@@ -1061,7 +1065,7 @@ void CbmTofFindTracks::CreateHistograms(){
 
   fhTrklChi2 =  new TH2F(  Form("hTrklChi2"),
 			  Form("Tracklet Chi;  HMul_{Tracklet}; #chi"),
-			  fNTofStations-1, 2, fNTofStations+1, 100, 0, ((CbmTofTrackFinderNN *)fFinder)->GetSIGLIM());  
+			  fNTofStations-1, 2, fNTofStations+1, 100, 0, ((CbmTofTrackFinderNN *)fFinder)->GetChiMaxAccept());  
   
   fhTrackingTimeNhits  =  new TH2F(  Form("hTrackingTimeNhits"),
 			       Form("Tracking Time; NHits; #Deltat (s)"),
@@ -1130,19 +1134,19 @@ void CbmTofFindTracks::CreateHistograms(){
   Double_t DT0MAX=5.;
   if(fT0MAX == 0) fT0MAX = DT0MAX;
   fhPullT_Smt = new TH2F( Form("hPullT_Smt"),
-			  Form("Tracklet PullT vs RpcInd ; RpcInd ; #DeltaT (ns)"),
+			  Form("Tracklet ResiT vs RpcInd ; RpcInd ; #DeltaT (ns)"),
 			  nSmt, 0, nSmt, 5001, -fT0MAX, fT0MAX);
   Double_t DX0MAX=5.;
   fhPullX_Smt = new TH2F( Form("hPullX_Smt"),
-			  Form("Tracklet PullX vs RpcInd ; RpcInd ; #DeltaX (cm)"),
+			  Form("Tracklet ResiX vs RpcInd ; RpcInd ; #DeltaX (cm)"),
 			  nSmt, 0, nSmt, 100, -DX0MAX, DX0MAX);
   Double_t DY0MAX=5.;
   fhPullY_Smt = new TH2F( Form("hPullY_Smt"),
-			  Form("Tracklet PullY vs RpcInd ; RpcInd ; #DeltaY (cm)"),
+			  Form("Tracklet ResiY vs RpcInd ; RpcInd ; #DeltaY (cm)"),
 			  nSmt, 0, nSmt, 100, -DY0MAX, DY0MAX);
   Double_t DZ0MAX=5.;
   fhPullZ_Smt = new TH2F( Form("hPullZ_Smt"),
-			  Form("Tracklet PullZ vs RpcInd ; RpcInd ; #DeltaZ (cm)"),
+			  Form("Tracklet ResiZ vs RpcInd ; RpcInd ; #DeltaZ (cm)"),
 			  nSmt, 0, nSmt, 100, -DZ0MAX, DZ0MAX);
 
   fhTOff_Smt = new TH2F( Form("hTOff_Smt"),
@@ -1162,6 +1166,7 @@ void CbmTofFindTracks::CreateHistograms(){
   vhPullZ.resize( fNTofStations );
   vhPullT.resize( fNTofStations );
   vhPullTB.resize(fNTofStations );
+  vhXY_AllTracks.resize(fNTofStations );
   vhXY_AllStations.resize(fNTofStations );
   vhXY_MissedStation.resize(fNTofStations );
   vhXY_DX.resize(fNTofStations );
@@ -1170,25 +1175,29 @@ void CbmTofFindTracks::CreateHistograms(){
   vhXY_TOT.resize(fNTofStations );
   vhXY_CSZ.resize(fNTofStations );
   vhUDXDY_DT.resize(fNTofStations );
+  vhUCDXDY_DT.resize(fNTofStations );
 
   for (Int_t iSt=0; iSt<fNTofStations; iSt++){
     vhPullX[iSt]=new TH1F(  Form("hPullX_Station_%d",iSt),
-			    Form("hPullX_Station_%d;  #DeltaX",iSt),
+			    Form("hResiX_Station_%d;  #DeltaX (cm)",iSt),
 			    100, -DX0MAX, DX0MAX);  
     vhPullY[iSt]=new TH1F(  Form("hPullY_Station_%d",iSt),
-			    Form("hPullY_Station_%d;  #DeltaY",iSt),
+			    Form("hResiY_Station_%d;  #DeltaY (cm)",iSt),
 			    100, -DY0MAX, DY0MAX);  
     vhPullZ[iSt]=new TH1F(  Form("hPullZ_Station_%d",iSt),
-			    Form("hPullZ_Station_%d;  #DeltaZ",iSt),
+			    Form("hResiZ_Station_%d;  #DeltaZ (cm)",iSt),
 			    100, -50., 50.);  
     vhPullT[iSt]=new TH1F(  Form("hPullT_Station_%d",iSt),
-			    Form("hPullT_Station_%d;  #DeltaT",iSt),
+			    Form("hResiT_Station_%d;  #DeltaT (ns)",iSt),
 			    200, -fT0MAX, fT0MAX); 
     vhPullTB[iSt]=new TH1F( Form("hPullTB_Station_%d",iSt),
-			    Form("hPullTB_Station_%d;  #DeltaT",iSt),
+			    Form("hResiTB_Station_%d;  #DeltaT (ns)",iSt),
 			    250, -1.25*fT0MAX, 1.25*fT0MAX); 
     Double_t XSIZ=16.; 
     Int_t Nbins=32.;
+    vhXY_AllTracks[iSt]   = new TH2F( Form("hXY_AllTracks_%d",iSt),
+			    Form("hXY_AllTracks_%d;  x(cm); y (cm)",iSt),
+			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
     vhXY_AllStations[iSt] = new TH2F( Form("hXY_AllStations_%d",iSt),
 			    Form("hXY_AllStations_%d;  x(cm); y (cm)",iSt),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
@@ -1211,7 +1220,10 @@ void CbmTofFindTracks::CreateHistograms(){
 			     Form("hXY_CSZ_%d;  x(cm); y (cm); CSZ ()",iSt),
 			     Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, 6, 1., 7.); 
     vhUDXDY_DT[iSt] = new TH3F(Form("hUDXDY_DT_%d",iSt),
-			     Form("hUDXDY_DT_%d;  x(cm); y (cm); #DeltaT (ns)",iSt),
+			     Form("Unused missing hit - DXDY_DT_%d;  #Deltax (cm); #Deltay (cm); #DeltaT (ns)",iSt),
+			     11, -3., 3., 11, -3., 3., 101, -50., 50.); 
+    vhUCDXDY_DT[iSt] = new TH3F(Form("hUCDXDY_DT_%d",iSt),
+			     Form("Unused close hit - DXDY_DT_%d;  #Deltax (cm); #Deltay (cm); #DeltaT (ns)",iSt),
 			     11, -3., 3., 11, -3., 3., 101, -50., 50.); 
   }
 
@@ -1272,8 +1284,9 @@ void CbmTofFindTracks::FillHistograms(){
   for (Int_t iHit=0; iHit<fTofHitArray->GetEntries(); iHit++){ // loop over Hits 
     CbmTofHit* pHit = (CbmTofHit*) fTofHitArray->At( iHit );	
     Int_t iAddr   = ( pHit->GetAddress() & DetMask );
-    if(iAddr == fiBeamCounter) {
-      if(pHit->GetTime()<RefMinTime) {
+    if( fiBeamCounter != 0 )
+    { if (iAddr == fiBeamCounter) 
+      if (pHit->GetTime()<RefMinTime) {
 	pRefHit=pHit;
 	RefMinTime=pRefHit->GetTime();
       }
@@ -1373,13 +1386,13 @@ void CbmTofFindTracks::FillHistograms(){
 	Double_t dDZ = pHit->GetZ() - tPar->GetZ();    // z- Distance to reference point 
 	Double_t dDX = pHit->GetX() - pTrk->GetFitX(pHit->GetZ());    // - tPar->GetX() - tPar->GetTx()*dDZ;
 	Double_t dDY = pHit->GetY() - pTrk->GetFitY(pHit->GetZ());    // - tPar->GetTy()*dDZ;
-	Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetR()); //pTrk->GetTdif(fMapStationRpcId[iSt]);
-	Double_t dDTB= pTrk->GetTdif(fMapStationRpcId[iSt], pHit);  // ignore pHit in calc of reference
+	Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetZ()); //pTrk->GetTdif(fMapStationRpcId[iSt]);
+	Double_t dDTB= pTrk->GetTdif(fMapStationRpcId[iSt], pHit);    // ignore pHit in calc of reference
 
 	Double_t dZZ = pHit->GetZ() - tPar->GetZy(pHit->GetY());
-	LOG(DEBUG)<<Form("  St %d Id 0x%08x Hit %2d - DX %6.2f, DY %6.2f, Z %6.2f, DT %6.2f, %6.2f, ZZ %6.2f, Tt %6.2f ",
-			 iSt, fMapStationRpcId[iSt], iH, dDX, dDY, dDZ, dDT, dDTB, dZZ, dTt)
-		 <<pHit->ToString()
+	LOG(DEBUG)<<Form("  St %d Id 0x%08x Hit %2d, Z %6.2f - DX %6.2f, DY %6.2f, Z %6.2f, DT %6.2f, %6.2f, ZZ %6.2f, Tt %6.4f ",
+			 iSt, fMapStationRpcId[iSt], iH, pHit->GetZ(), dDX, dDY, dDZ, dDT, dDTB, dZZ, dTt)
+		 <<tPar->ToString()
 		 <<FairLogger::endl; 
 
 	vhPullX[iSt]->Fill(dDX);
@@ -1410,13 +1423,32 @@ void CbmTofFindTracks::FillHistograms(){
       //      FairTrackParam paramExtr;
       //      fFitter->Extrapolate(pTrk->GetParamFirst(),0.,&paramExtr);
     } // condition on NofHits>2 end 
+    // monitoring of tracklet hits
+    for (Int_t iH=0; iH < pTrk->GetNofHits();iH++){
+      CbmTofHit* pHit = pTrk->GetTofHitPointer(iH);
+      Int_t iChId = pHit->GetAddress();
+      CbmTofCell* fChannelInfo = fDigiPar->GetCell( iChId );
+      if(NULL == fChannelInfo) continue;
+      Int_t iAddr = iChId & DetMask;
+      Int_t iSt=GetStationOfAddr(iAddr);
+      Double_t hitpos[3]={3*0.};
+      Double_t hitpos_local[3]={3*0.};
+      gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+      hitpos[0]=pHit->GetX();
+      hitpos[1]=pHit->GetY();
+      hitpos[2]=pHit->GetZ();
+      gGeoManager->MasterToLocal(hitpos, hitpos_local);
+      vhXY_AllTracks[iSt]->Fill(hitpos_local[0],hitpos_local[1]);
+    }
+
 
    if( pTrk->GetNofHits() >= fNReqStations ){   // all possible hits are there
      LOG(DEBUG) << "Complete Tracklet in event "<<fiEvent<<FairLogger::endl;
+
      for (Int_t iSt=0; iSt<fNTofStations; iSt++){
        Int_t iH  = pTrk->GetStationHitIndex(fMapStationRpcId[iSt]); // Station Hit index
        if(iH<0) {
-	 LOG(DEBUG)<<" Inconsistent Tracklet, skip "<<FairLogger::endl;
+	 LOG(DEBUG)<<" Incomplete Tracklet, skip station "<<iSt<<FairLogger::endl;
 	 continue;                                       // Station not part of tracklet
        }
        CbmTofHit* pHit  = (CbmTofHit*)fTofHitArray->At(iH);	
@@ -1425,7 +1457,7 @@ void CbmTofFindTracks::FillHistograms(){
        Double_t hitpos_local[3]={3*0.};
        CbmTofCell* fChannelInfo = fDigiPar->GetCell( iChId );
        if(NULL == fChannelInfo){
-	 //faked hit, take init values 
+	                           //faked hit, take init values 
        }else{
 /*	 TGeoNode *fNode=*/        // prepare global->local trafo
 	   gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
@@ -1443,8 +1475,8 @@ void CbmTofFindTracks::FillHistograms(){
        vhXY_DX[iSt]->Fill(hitpos_local[0],hitpos_local[1],dDX);  
        vhXY_DY[iSt]->Fill(hitpos_local[0],hitpos_local[1],dDY);  
        vhXY_DT[iSt]->Fill(hitpos_local[0],hitpos_local[1],dDTB);
-       Double_t dCSZ=((Double_t)pHit->GetFlag())*0.5;
-       Double_t dTOT=((Double_t)pHit->GetCh())*0.1/dCSZ;
+       Double_t dCSZ=((Double_t)(pHit->GetFlag()%100))*0.5;
+       Double_t dTOT=((Double_t)pHit->GetCh())*0.1/dCSZ;  // counteract UHIT flagging
        vhXY_TOT[iSt]->Fill(hitpos_local[0],hitpos_local[1],dTOT);  
        vhXY_CSZ[iSt]->Fill(hitpos_local[0],hitpos_local[1],dCSZ);  
      }
@@ -1504,12 +1536,18 @@ void CbmTofFindTracks::FillHistograms(){
   fhTrklMulNhits->Fill(fTofHitArray->GetEntries(),iTMul);
   fhTrackingTimeNhits->Fill(fTofHitArray->GetEntries(),fdTrackingTime);
 
-  if (7<fNTofStations) if (HMul[7]>0)  // temporary  
+  if (5<fNTofStations) if (HMul[6]>2) { // temporary  
     //if (HMul[fNTofStations]>0) 
-    LOG(INFO)<<"Found "<<HMul[fNTofStations]<<" max length tracklets in event "<<fiEvent
-	     <<" with "<< fTofHitArray->GetEntries() << " hits "
+    //LOG(INFO)<<"Found "<<HMul[fNTofStations]<<" max length tracklets in event "<<fiEvent
+    LOG(INFO)<<"Found "<<HMul[6]<<" max length tracklets in event "<<fiEvent
+	     <<" within "<< fTofHitArray->GetEntries() << " hits "
 	     <<FairLogger::endl;
-
+    for (Int_t iTrk=0; iTrk<fTrackArray->GetEntries();iTrk++) {
+      CbmTofTracklet *pTrk = (CbmTofTracklet*)fTrackArray->At(iTrk);
+      if(NULL == pTrk) continue;
+      pTrk->PrintInfo();
+    }
+  }
   if(iTMul > 1){
     LOG(DEBUG)<<Form("CbmTofFindTracks::FillHistograms NTrkl %d(%d) in event %d", 
 		     iTMul,fTrackArray->GetEntries(),fiEvent)
@@ -1665,13 +1703,23 @@ void CbmTofFindTracks::FillUHits(){
 Bool_t CbmTofFindTracks::CheckHit2Track(CbmTofHit *pHit){
   Int_t iAddr   = ( pHit->GetAddress() & DetMask );
   Int_t iSt =  GetStationOfAddr(iAddr);
+  if(iSt<0 || iSt>=GetNofStations()) return kFALSE;
   for (Int_t iTrk=0; iTrk<fTrackArray->GetEntries();iTrk++) {
     CbmTofTracklet *pTrk = (CbmTofTracklet*)fTrackArray->At(iTrk);
     if(NULL == pTrk) continue;
     Double_t dDX = pHit->GetX()    - pTrk->GetFitX( pHit->GetZ() );
     Double_t dDY = pHit->GetY()    - pTrk->GetFitY( pHit->GetZ() );
     Double_t dDT = pHit->GetTime() - pTrk->GetFitT( pHit->GetZ() );
-    vhUDXDY_DT[iSt]->Fill(dDX,dDY,dDT);
+    LOG(DEBUG)<<Form("Test Trk %d with HMul %d for Addr 0x%08x in station %d with dx %5.1f, dy %5.1f, dt %5.1f",
+		     iTrk,pTrk->GetNofHits(),iAddr,iSt, dDX, dDY, dDT)
+	      <<FairLogger::endl;
+    if( !(pTrk->ContainsAddr(iAddr)) ) {
+      LOG(DEBUG)<<"Fill histo "<<vhUDXDY_DT[iSt]->GetName()
+		<<FairLogger::endl;
+      vhUDXDY_DT[iSt]->Fill(dDX,dDY,dDT);
+    }else{
+      vhUCDXDY_DT[iSt]->Fill(dDX,dDY,dDT);
+    }
   }  
   return kFALSE;
 }

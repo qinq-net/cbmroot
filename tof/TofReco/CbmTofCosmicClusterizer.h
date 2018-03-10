@@ -140,6 +140,7 @@ class CbmTofCosmicClusterizer : public FairTask
       inline void SetEnableAvWalk(Bool_t bval)          { fEnableAvWalk = bval; }
       inline void SetPs2Ns(Bool_t bval)                 { fbPs2Ns = bval; }
       inline void SetTimePeriod(Double_t dval)          { fdTimePeriod = dval; }
+      inline void SetCorMode(Int_t ival)                { fiCorMode = ival; }
 
       //static Double_t  f1_xboxe(double *x, double *par); // Fit function 
       virtual void fit_ybox(const char *hname);                      // Fit
@@ -374,7 +375,8 @@ class CbmTofCosmicClusterizer : public FairTask
       Double_t fdMemoryTime;
       Double_t fdYFitMin;
       Double_t fdTimePeriod;
-      
+      Int_t    fiCorMode;
+
       Bool_t fEnableMatchPosScaling;
       Bool_t fEnableAvWalk;
       Bool_t fbPs2Ns;  // convert input raw digis from ps to ns 

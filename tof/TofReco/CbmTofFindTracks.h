@@ -202,6 +202,7 @@ class CbmTofFindTracks : public FairTask
   std::vector<TH1 *> vhPullZ;
   std::vector<TH1 *> vhPullT;
   std::vector<TH1 *> vhPullTB;
+  std::vector<TH2 *> vhXY_AllTracks;        // for monitoring
   std::vector<TH2 *> vhXY_AllStations;      // for efficiency estimation
   std::vector<TH2 *> vhXY_MissedStation;    // for efficiency estimation
   std::vector<TH3 *> vhXY_DX;
@@ -210,6 +211,7 @@ class CbmTofFindTracks : public FairTask
   std::vector<TH3 *> vhXY_TOT;
   std::vector<TH3 *> vhXY_CSZ;
   std::vector<TH3 *> vhUDXDY_DT;
+  std::vector<TH3 *> vhUCDXDY_DT;
 
   TH1* fhVTXNorm;
   TH2* fhVTX_XY0;

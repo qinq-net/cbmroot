@@ -59,6 +59,7 @@ public:
    inline void SetChiMaxAccept ( Double_t val ) { fChiMaxAccept = val; }
 
    inline Double_t GetSIGLIM () { return fSIGLIM; }
+   inline Double_t GetChiMaxAccept () { return fChiMaxAccept; }
 
    void Line3Dfit(CbmTofTracklet*  pTrk);
    Bool_t  Active(CbmTofTracklet*  pTrk);
