@@ -58,6 +58,8 @@ class CbmTofTracklet : public TObject {
 	/**   Destructor   **/
 	virtual ~CbmTofTracklet();
 
+	virtual void PrintInfo();
+
 	/**  PID hypothesis for track extrapolation to TOF **/
 	Int_t    GetPidHypo() const { return fPidHypo; }
 
@@ -206,6 +208,7 @@ class CbmTofTracklet : public TObject {
 	}
 
 	virtual Double_t GetTdif(Int_t iSmType, CbmTofHit* pHit);
+	virtual Double_t Dist3D(CbmTofHit* pHit0, CbmTofHit* pHit1);
 	virtual Bool_t ContainsAddr(Int_t iAddr); 
 	virtual Int_t  HitIndexOfAddr(Int_t iAddr); 
 	virtual CbmTofHit* HitPointerOfAddr(Int_t iAddr); 
