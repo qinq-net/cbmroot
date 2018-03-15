@@ -1,5 +1,6 @@
 // -------------------------------------------------------------------------
 // -----                  CbmMuchHitFinderQa header file               -----
+// -----                  Modified 01/18  by Vikas Singhal              -----
 // -----                  Created 16/11/07  by E. Kryshen              -----
 // -------------------------------------------------------------------------
 
@@ -111,12 +112,18 @@ private:
   Int_t  fnPadSizesX;
   Int_t  fnPadSizesY;
 
-  TH1D** fhPullT;
+  //TH1D** fhPullT;
   Int_t fNTimingPulls;
-  
+  //1D Histogram for PULL Distribution
   TH1D* fhPullX;
   TH1D* fhPullY;
+  TH1D* fhPullT;
 
+  //1D Histogram for Residual Distribution
+  TH1D* fhResidualX;
+  TH1D* fhResidualY;
+  TH1D* fhResidualT;
+  
   TH1I* fhPointsInCluster;
   TH1I* fhDigisInCluster;
   TH1I* fhHitsInCluster;
