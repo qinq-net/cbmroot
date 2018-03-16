@@ -2532,6 +2532,7 @@ void create_detector_layers(Int_t layerId)
           }
 
       	  module_rotation->RotateX(180);
+	  xPos = -(1.5 + 4.5 *3);  // center 2nd row on top of TOF RPC center
 
           TGeoCombiTrans* module_placement = new TGeoCombiTrans(xPos, yPos, LayerPosition[layerId] + LayerThickness/2 + dz, module_rotation);  // shift by half layer thickness
 //          gGeoMan->GetVolume(geoVersion)->AddNode(gModules[type - 1], copy, module_placement);
