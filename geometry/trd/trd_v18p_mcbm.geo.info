@@ -1,0 +1,95 @@
+#
+##   trd_v18p information file
+#
+
+# created 20180316
+
+# envelope
+-19.000000 cm   start of TRD (z)
+22.000000 cm   end   of TRD (z)
+
+# thickness
+22.000000 cm   per single layer (z)
+
+# extra gaps
+ 0.000000    extra gaps in z (cm)
+
+# generated TRD layers
+  1    planeID
+
+# dimensions in x
+-329.000000 cm to 329.000000 cm x-dimension of layer  1
+
+# dimensions in y
+-235.000000 cm to 235.000000 cm y-dimension of layer  1
+
+# z-positions of layer front
+-19.000000 cm   z-position of layer  1
+
+# flags
+support structure is    : NOT included
+radiator is             : NOT included
+lattice grid is         : included
+kapton window is        : included
+gas frame is            : included
+padplane is             : included
+backpanel is            : included
+Aluminium ledge is      : included
+Power bus bars are      : NOT included
+asics are               : included
+front-end boards are    : included
+GBTX readout boards are : included
+
+# modules
+     mod1     mod2     mod3     mod4     mod5     mod6     mod7     mod8    total
+---------------------------------------------------------------------------------
+        1        0        0        0        0        0        0        0            layer  1
+
+---------------------------------------------------------------------------------
+        1        0        0        0        0        0        0        0        1   number of modules
+# febs
+        7        5s       6s      18       12        8        4        3            FEBs per module
+                                                                                0   ultimate  FEBs
+                 0s       0s                                                    0   super     FEBs
+        7                                   0        0        0        0        7   regular   FEBs
+        7        0        0        0        0        0        0        0        7   number of FEBs
+# asics
+        5       10       10       10        8        8        8        8            ASICs per FEB
+       35       50       60      180       96       64       32       24            ASICs per module
+       35        0        0        0        0        0        0        0       35   number of ASICs
+# gbtx
+        3       10        5       18        0       10        5        3            GBTXs per module
+        3        0        0        0        0        0        0        0        3   number of GBTXs
+        3       55        5   333333        0       55        5        3            GBTX ROB types on module
+        0        0        0        0        0        0        0        0        0   number of GBTX ROB7
+        0        0        0        0        0        0        0        0        0   number of GBTX ROB5
+        1        0        0        0        0        0        0        0        1   number of GBTX ROB3
+# e-links
+       70      100      120      360      192      128       64       48       70   e-links used
+       42      140       70      252        0      140       70       42       42   e-links available
+   166.7%        -        -        -        -        -        -        -   166.7%   e-link efficiency
+
+# channels
+     1120      800      960     2880     3072     2048     1024      768            channels per module
+      160      160      160      160      256      256      256      256            channels per feb
+     1120        0        0        0        0        0        0        0     1120   channels used
+     1120        0s       0s       0F       0        0        0        0     1120   channels available
+     0.0%u    0.0%s  100.0%r                                                        channel ratio
+
+   100.0%   channel efficiency
+
+   0.35 m2      total surface    
+   0.32 m2      total active area
+   0.00 m3      total gas volume 
+   2.90 cm2/ch  average channel size
+3447.21 ch/m2   channels per m2 active area
+
+# gas volume position
+  -17.4000 cm   position of gas volume - layer  1
+
+# angles of acceptance
+v: -85.92 deg, h: -87.08 deg - vertical/horizontal - layer  1
+
+# inner aperture
+v: -60.37 deg, h: -60.37 deg - vertical/horizontal - layer  1
+
