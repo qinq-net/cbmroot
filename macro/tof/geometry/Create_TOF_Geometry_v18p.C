@@ -259,7 +259,7 @@ Float_t GetShiftedY( Double_t, Int_t, Double_t,
                        Int_t, Double_t,
                        Double_t);
 
-void Create_TOF_Geometry_v18d() {
+void Create_TOF_Geometry_v18p() {
   // Load the necessary FairRoot libraries 
 //  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
 //  basiclibs();
