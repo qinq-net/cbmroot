@@ -150,6 +150,10 @@ Int_t TrackDesc::firstTrdStationNo = 0;
 Int_t TrackDesc::tofStationNo = 0;
 
 static vector<vector<TrackDesc> > gTracks;
+static vector<vector<bool> > gStsPoints;
+static vector<vector<bool> > gMuchPoints;
+static vector<vector<bool> > gTrdPoints;
+static vector<vector<bool> > gTofPoints;
 
 static TProfile* effByMom = 0;
 static TProfile* effByMomPrimary = 0;
@@ -179,6 +183,15 @@ static TH1F* stsTrackResidualLastX = 0;
 static TH1F* stsTrackResidualLastY = 0;
 static TH1F* stsTrackPullLastX = 0;
 static TH1F* stsTrackPullLastY = 0;
+
+static TH1F* muchTrackResidualFirstX = 0;
+static TH1F* muchTrackResidualFirstY = 0;
+static TH1F* muchTrackPullFirstX = 0;
+static TH1F* muchTrackPullFirstY = 0;
+static TH1F* muchTrackResidualLastX = 0;
+static TH1F* muchTrackResidualLastY = 0;
+static TH1F* muchTrackPullLastX = 0;
+static TH1F* muchTrackPullLastY = 0;
 
 static TH1F* trdTrackResidualFirstX = 0;
 static TH1F* trdTrackResidualFirstY = 0;
@@ -294,6 +307,15 @@ InitStatus CbmBinnedTrackerQA::Init()
    stsTrackPullLastX = new TH1F("stsTrackPullLastX", "stsTrackPullLastX", 100, -5.0, 5.0);
    stsTrackPullLastY = new TH1F("stsTrackPullLastY", "stsTrackPullLastY", 100, -5.0, 5.0);
    
+   muchTrackResidualFirstX = new TH1F("muchTrackResidualFirstX", "muchTrackResidualFirstX", 100, -5.0, 5.0);
+   muchTrackResidualFirstY = new TH1F("muchTrackResidualFirstY", "muchTrackResidualFirstY", 100, -5.0, 5.0);
+   muchTrackPullFirstX = new TH1F("muchTrackPullFirstX", "muchTrackPullFirstX", 100, -10.0, 10.0);
+   muchTrackPullFirstY = new TH1F("muchTrackPullFirstY", "muchTrackPullFirstY", 100, -10.0, 10.0);
+   muchTrackResidualLastX = new TH1F("muchTrackResidualLastX", "muchTrackResidualLastX", 100, -5.0, 5.0);
+   muchTrackResidualLastY = new TH1F("muchTrackResidualLastY", "muchTrackResidualLastY", 100, -5.0, 5.0);
+   muchTrackPullLastX = new TH1F("muchTrackPullLastX", "muchTrackPullLastX", 100, -10.0, 10.0);
+   muchTrackPullLastY = new TH1F("muchTrackPullLastY", "muchTrackPullLastY", 100, -10.0, 10.0);
+   
    trdTrackResidualFirstX = new TH1F("trdTrackResidualFirstX", "trdTrackResidualFirstX", 100, -10.0, 10.0);
    trdTrackResidualFirstY = new TH1F("trdTrackResidualFirstY", "trdTrackResidualFirstY", 100, -10.0, 10.0);
    trdTrackPullFirstX = new TH1F("trdTrackPullFirstX", "trdTrackPullFirstX", 100, -5.0, 5.0);
@@ -381,6 +403,11 @@ InitStatus CbmBinnedTrackerQA::Init()
    for (Int_t i = 0; fMCTracks->Size(0, i) >= 0; ++i)
    {
       gTracks.push_back(vector<TrackDesc>());
+      gStsPoints.push_back(vector<bool> ());
+      gMuchPoints.push_back(vector<bool> ());
+      gTrdPoints.push_back(vector<bool> ());
+      gTofPoints.push_back(vector<bool> ());
+      
       Int_t nofMcTracks = fMCTracks->Size(0, i);
       vector<TrackDesc>& eventTracks = gTracks.back();
       eventTracks.resize(nofMcTracks);
@@ -472,6 +499,7 @@ InitStatus CbmBinnedTrackerQA::Init()
       for (Int_t i = 0; fStsPoints->Size(0, i) >= 0; ++i)
       {
          Int_t nofPoints = fStsPoints->Size(0, i);
+         gStsPoints[i].resize(nofPoints, false);
          vector<TrackDesc>& tracks = gTracks[i];
       
          for (Int_t j = 0; j < nofPoints; ++j)
@@ -517,6 +545,7 @@ InitStatus CbmBinnedTrackerQA::Init()
       for (Int_t i = 0; fMuchPoints->Size(0, i) >= 0; ++i)
       {
          Int_t nofPoints = fMuchPoints->Size(0, i);
+         gMuchPoints[i].resize(nofPoints, false);
          vector<TrackDesc>& tracks = gTracks[i];
       
          for (Int_t j = 0; j < nofPoints; ++j)
@@ -570,6 +599,7 @@ InitStatus CbmBinnedTrackerQA::Init()
       for (Int_t i = 0; fTrdPoints->Size(0, i) >= 0; ++i)
       {
          Int_t nofPoints = fTrdPoints->Size(0, i);
+         gTrdPoints[i].resize(nofPoints, false);
          vector<TrackDesc>& tracks = gTracks[i];
       
          for (Int_t j = 0; j < nofPoints; ++j)
@@ -615,12 +645,16 @@ InitStatus CbmBinnedTrackerQA::Init()
       {
          Int_t nofPoints = fTofPoints->Size(0, i);
          vector<TrackDesc>& tracks = gTracks[i];
+         set<Int_t> evTrackIds;
       
          for (Int_t j = 0; j < nofPoints; ++j)
          {
             const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*> (fTofPoints->Get(0, i, j));
             Int_t trackId = tofPoint->GetTrackID();
+            evTrackIds.insert(trackId);
          }
+         
+         gTofPoints[i].resize(evTrackIds.size(), false);
       }
    }
    
@@ -693,6 +727,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
                const CbmLink& link = match->GetLink(k);
                Int_t eventId = link.GetEntry();
                Int_t mcPointId = link.GetIndex();
+               gStsPoints[eventId][mcPointId] = true;
                const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, eventId, mcPointId));
 #ifdef CBM_BINNED_QA_FILL_HISTOS
                stsXResHisto->Fill(stsHit->GetX() - (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2);
@@ -735,6 +770,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
                const CbmLink& link = match->GetLink(k);
                Int_t eventId = link.GetEntry();
                Int_t mcPointId = link.GetIndex();
+               gStsPoints[eventId][mcPointId] = true;
                const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, eventId, mcPointId));
 #ifdef CBM_BINNED_QA_FILL_HISTOS
                stsXResHisto->Fill(stsHit->GetX() - (stsPoint->GetXIn() + stsPoint->GetXOut()) / 2);
@@ -790,6 +826,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
                const CbmLink& link = match->GetLink(k);
                Int_t eventId = link.GetEntry();
                Int_t mcPointId = link.GetIndex();
+               gMuchPoints[eventId][mcPointId] = true;
                const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->Get(0, eventId, mcPointId));
 #ifdef CBM_BINNED_QA_FILL_HISTOS
                muchXResHisto->Fill(muchHit->GetX() - (muchPoint->GetXIn() + muchPoint->GetXOut()) / 2);
@@ -828,6 +865,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
                const CbmLink& link = match->GetLink(k);
                Int_t eventId = link.GetEntry();
                Int_t mcPointId = link.GetIndex();
+               gTrdPoints[eventId][mcPointId] = true;
                const CbmTrdPoint* trdPoint = static_cast<const CbmTrdPoint*> (fTrdPoints->Get(0, eventId, mcPointId));
                Double_t mcX = (trdPoint->GetXIn() + trdPoint->GetXOut()) / 2;
                Double_t mcY = (trdPoint->GetYIn() + trdPoint->GetYOut()) / 2;
@@ -905,8 +943,8 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             {
                const CbmLink& pointLink = pointMatch->GetLink(k);
                Int_t eventId = pointLink.GetEntry();
-               Int_t pointId = pointLink.GetIndex();
-               const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*> (fTofPoints->Get(0, eventId, pointId));
+               Int_t mcPointId = pointLink.GetIndex();
+               const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*> (fTofPoints->Get(0, eventId, mcPointId));
 #ifdef CBM_BINNED_QA_FILL_HISTOS
                tofXResHisto->Fill(tofHit->GetX() - tofPoint->GetX());
                tofYResHisto->Fill(tofHit->GetY() - tofPoint->GetY());
@@ -915,6 +953,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
                Int_t trackId = tofPoint->GetTrackID();
                TrackDesc& trackDesk = gTracks[eventId][trackId];
                trackDesk.tof.first.insert(i);
+               gTofPoints[eventId][trackId] = true;
             }
          }
       }// TOF hits
@@ -1247,6 +1286,9 @@ void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> 
       Int_t muchStationNumber = CbmMuchGeoScheme::GetStationIndex(muchHit->GetAddress());
       Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(muchHit->GetAddress());
       Int_t stationNumber = muchStationNumber * 3 + layerNumber;
+      Double_t mcX = 0;
+      Double_t mcY = 0;
+      Double_t mcCnt = 0;
       globalTracksHitInds[muchTrackIndex * nofStations + TrackDesc::firstMuchStationNo + stationNumber] = muchHitInd;
       Int_t clusterId = muchHit->GetRefId();
       const CbmMuchCluster* cluster = static_cast<const CbmMuchCluster*> (fMuchClusters->At(clusterId));
@@ -1265,6 +1307,9 @@ void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> 
             Int_t eventId = link.GetEntry();
             Int_t mcPointId = link.GetIndex();
             const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->Get(0, eventId, mcPointId));
+            mcX += (muchPoint->GetXIn() + muchPoint->GetXOut()) / 2;
+            mcY += (muchPoint->GetYIn() + muchPoint->GetYOut()) / 2;
+            ++mcCnt;
             Int_t trackId = muchPoint->GetTrackID();
             IncrementForId(mcTrackIds, trackId, 100 + stationNumber);
             globalTrackMCRefs[muchTrackIndex * nofStations + TrackDesc::firstMuchStationNo + stationNumber].insert(trackId);
@@ -1273,6 +1318,37 @@ void CbmBinnedTrackerQA::HandleMuch(Int_t muchTrackIndex, map<Int_t, set<Int_t> 
             if (trackDesk.much[stationNumber].first.find(muchHitInd) != trackDesk.much[stationNumber].first.end())
                trackDesk.much[stationNumber].second.insert(muchTrackIndex);
          }
+      }
+      
+      if (0 == mcCnt)
+         continue;
+      
+      mcX /= mcCnt;
+      mcY /= mcCnt;
+      
+      if (0 == stationNumber)
+      {
+         const FairTrackParam* param = muchTrack->GetParamFirst();
+         Double_t xRes = param->GetX() - mcX;
+         Double_t yRes = param->GetY() - mcY;
+         Double_t xPull = xRes / TMath::Sqrt(param->GetCovariance(0, 0));
+         Double_t yPull = yRes / TMath::Sqrt(param->GetCovariance(1, 1));
+         muchTrackResidualFirstX->Fill(xRes);
+         muchTrackResidualFirstY->Fill(yRes);
+         muchTrackPullFirstX->Fill(xPull);
+         muchTrackPullFirstY->Fill(yPull);
+      }
+      else if (TrackDesc::nofMuchStations - 1 == stationNumber)
+      {
+         const FairTrackParam* param = muchTrack->GetParamLast();
+         Double_t xRes = param->GetX() - mcX;
+         Double_t yRes = param->GetY() - mcY;
+         Double_t xPull = xRes / TMath::Sqrt(param->GetCovariance(0, 0));
+         Double_t yPull = yRes / TMath::Sqrt(param->GetCovariance(1, 1));
+         muchTrackResidualLastX->Fill(xRes);
+         muchTrackResidualLastY->Fill(yRes);
+         muchTrackPullLastX->Fill(xPull);
+         muchTrackPullLastY->Fill(yPull);
       }
    }
 }
@@ -1433,6 +1509,32 @@ template<typename T> void NumberToFile(const char* name, T number)
    sprintf(buf, "%s.txt", name);
    ofstream fileStream(buf, ios_base::out | ios_base::trunc);
    fileStream << number;
+}
+
+static void effOfMCPoints(const char* name, const vector<vector<bool> >& points)
+{
+   int nofAllMCPoints = 0;
+   int nofRecoMCPoints = 0;
+   
+   for (const auto& i : points)
+   {
+       for (auto j : i)
+       {
+           ++nofAllMCPoints;
+           
+           if (j)
+               ++nofRecoMCPoints;
+       }
+   }
+   
+   double eff = 100 * nofRecoMCPoints;
+   
+   if (0 == nofAllMCPoints)
+       eff = 100;
+   else
+       eff /= nofAllMCPoints;
+   
+   cout << "Reconstructed of the " << name << " points: " << eff << "% " << nofRecoMCPoints << "/" << nofAllMCPoints << endl;
 }
 
 void CbmBinnedTrackerQA::Finish()
@@ -1982,6 +2084,11 @@ void CbmBinnedTrackerQA::Finish()
    
    cout << "Reconstructed of the Lambda baryons in the acceptance: " << eff << "% " << nofRecoLambdas << "/" << nofLambdasInAcc << endl;
    
+   effOfMCPoints("STS", gStsPoints);
+   effOfMCPoints("MuCh", gMuchPoints);
+   effOfMCPoints("TRD", gTrdPoints);
+   effOfMCPoints("ToF", gTofPoints);
+   
    SaveHisto(effByMom);
    SaveHisto(effByMomPrimary);
    SaveHisto(effByMomNonPrimary);
@@ -2010,6 +2117,15 @@ void CbmBinnedTrackerQA::Finish()
    SaveHisto(stsTrackResidualLastY);
    SaveHisto(stsTrackPullLastX);
    SaveHisto(stsTrackPullLastY);
+   
+   SaveHisto(muchTrackResidualFirstX);
+   SaveHisto(muchTrackResidualFirstY);
+   SaveHisto(muchTrackPullFirstX);
+   SaveHisto(muchTrackPullFirstY);
+   SaveHisto(muchTrackResidualLastX);
+   SaveHisto(muchTrackResidualLastY);
+   SaveHisto(muchTrackPullLastX);
+   SaveHisto(muchTrackPullLastY);
 
    SaveHisto(trdTrackResidualFirstX);
    SaveHisto(trdTrackResidualFirstY);
