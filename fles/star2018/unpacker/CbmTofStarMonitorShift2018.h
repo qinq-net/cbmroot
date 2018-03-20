@@ -218,6 +218,8 @@ class CbmTofStarMonitorShift2018: public CbmTSUnpack {
       std::vector< UInt_t > fvuPadiToGet4;
       std::vector< UInt_t > fvuGet4ToPadi;
 
+      ///* Periodic histos saving *///
+      std::chrono::time_point<std::chrono::system_clock> fTimeLastHistoSaving;
 
       CbmTofStarMonitorShift2018(const CbmTofStarMonitorShift2018&);
       CbmTofStarMonitorShift2018 operator=(const CbmTofStarMonitorShift2018&);

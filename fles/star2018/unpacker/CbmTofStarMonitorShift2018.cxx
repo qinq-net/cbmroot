@@ -17,6 +17,7 @@
 #include "FairRuntimeDb.h"
 #include "FairRunOnline.h"
 
+#include "TROOT.h"
 #include "TClonesArray.h"
 #include "TString.h"
 #include "THttpServer.h"
@@ -121,10 +122,10 @@ CbmTofStarMonitorShift2018::CbmTofStarMonitorShift2018() :
     fvhFeetRateLong_gDPB(),
     fvhFeetErrorRateLong_gDPB(),
     fvhFeetErrorRatioLong_gDPB(),
-    fvhTokenMsgType(NULL),
-    fvhTriggerRate(NULL),
-    fvhCmdDaqVsTrig(NULL),
-    fvhStarTokenEvo(NULL),
+    fvhTokenMsgType(),
+    fvhTriggerRate(),
+    fvhCmdDaqVsTrig(),
+    fvhStarTokenEvo(),
     fvhStarTrigGdpbTsEvo(),
     fvhStarTrigStarTsEvo(),
     fvhTimeDiffPulser(),
@@ -132,7 +133,8 @@ CbmTofStarMonitorShift2018::CbmTofStarMonitorShift2018() :
     fhTimeRmsZoomFitPuls(NULL),
     fhTimeResFitPuls(NULL),
     fvuPadiToGet4(),
-    fvuGet4ToPadi()
+    fvuGet4ToPadi(),
+    fTimeLastHistoSaving()
 {
 }
 
@@ -1038,7 +1040,7 @@ Bool_t CbmTofStarMonitorShift2018::DoUnpack(const fles::Timeslice& ts,
    if( bSaveTofStarMoniShiftHistos )
    {
       LOG(INFO) << "Start saving eTOF STAR histos " << FairLogger::endl;
-      SaveAllHistos( "data/histos_StarTof.root" );
+      SaveAllHistos( "data/histos_Shift_StarTof.root" );
       bSaveTofStarMoniShiftHistos = kFALSE;
    } // if( bSaveStsHistos )
    if( bTofUpdateZoomedFitMoniShift )
@@ -1078,6 +1080,33 @@ Bool_t CbmTofStarMonitorShift2018::DoUnpack(const fles::Timeslice& ts,
       LOG(INFO) << "Added MS size histo for component (link): " << component
                 << FairLogger::endl;
    } // if( NULL == fvhMsSzPerLink[ component ] )
+
+   /// Periodically save the histograms
+   std::chrono::time_point<std::chrono::system_clock> timeCurrent = std::chrono::system_clock::now();
+   std::chrono::duration<double> elapsed_seconds = timeCurrent - fTimeLastHistoSaving;
+   if( 0 == fTimeLastHistoSaving.time_since_epoch().count() )
+   {
+      fTimeLastHistoSaving = timeCurrent;
+//      fulNbBuiltSubEventLastPrintout = fulNbBuiltSubEvent;
+//      fulNbStarSubEventLastPrintout  = fulNbStarSubEvent;
+   } // if( 0 == fTimeLastHistoSaving.time_since_epoch().count() )
+   else if( 300 < elapsed_seconds.count() )
+   {
+      std::time_t cTimeCurrent = std::chrono::system_clock::to_time_t( timeCurrent );
+      char tempBuff[80];
+      std::strftime( tempBuff, 80, "%F %T", localtime (&cTimeCurrent) );
+/*
+      LOG(INFO) << "CbmTofStarEventBuilder2018::DoUnpack => " << tempBuff
+               << " Total number of Built events: " << std::setw(9) << fulNbBuiltSubEvent
+               << ", " << std::setw(9) << (fulNbBuiltSubEvent - fulNbBuiltSubEventLastPrintout)
+               << " events in last " << std::setw(4) << elapsed_seconds.count() << " s"
+               << FairLogger::endl;
+      fTimeLastPrintoutNbStarEvent = timeCurrent;
+      fulNbBuiltSubEventLastPrintout   = fulNbBuiltSubEvent;
+*/
+      fTimeLastHistoSaving = timeCurrent;
+      SaveAllHistos( "data/histos_shift.root" );
+   } // else if( 300 < elapsed_seconds.count() )
 
    Int_t messageType = -111;
    Double_t dTsStartTime = -1;
@@ -1501,6 +1530,7 @@ void CbmTofStarMonitorShift2018::PrintSlcInfo(gdpb::Message mess)
          }
          case 2: // SPI message
          {
+/*
             LOG(INFO) << "GET4 Slow Control message, epoch "
                        << static_cast<Int_t>(fvulCurrentEpoch[fuGet4Nr]) << ", time " << std::setprecision(9)
                        << std::fixed << dMessTime << " s "
@@ -1515,6 +1545,7 @@ void CbmTofStarMonitorShift2018::PrintSlcInfo(gdpb::Message mess)
                        << std::dec << ", CRC = " << uCRC
 //                 << " RAW: " << Form( "%08x", mess.getGdpbSlcMess() )
                        << FairLogger::endl;
+*/
             fhGet4ChanScm->Fill(dFullChId, uType );
             break;
          }
@@ -1917,6 +1948,15 @@ void CbmTofStarMonitorShift2018::SaveAllHistos( TString sFileName )
       fvhMsSzPerLink[ uLinks ]->Write();
       fvhMsSzTimePerLink[ uLinks ]->Write();
    } // for( UInt_t uLinks = 0; uLinks < fvhMsSzPerLink.size(); uLinks++ )
+
+   TH1 * pMissedTsH1    = dynamic_cast< TH1 * >( gROOT->FindObjectAny( "Missed_TS" ) );
+   if( NULL != pMissedTsH1 )
+      pMissedTsH1->Write();
+
+   TProfile * pMissedTsEvoP = dynamic_cast< TProfile * >( gROOT->FindObjectAny( "Missed_TS_Evo" ) );
+   if( NULL != pMissedTsEvoP )
+      pMissedTsEvoP->Write();
+
    gDirectory->cd("..");
 
 

@@ -104,7 +104,7 @@ Bool_t CbmTofStar2018Source::Init()
 #endif
 
   fHistoMissedTS = new TH1I("Missed_TS", "Missed TS", 2, 0., 2.);
-  fHistoMissedTSEvo  = new TProfile("Missed_TS_Evo", "Missed TS evolution; TS Idx []", 2400, 0., 240000.);
+  fHistoMissedTSEvo  = new TProfile("Missed_TS_Evo", "Missed TS evolution; TS Idx []", 100000, 0., 10000000.);
 
 #ifdef USE_HTTP_SERVER
   if (server)

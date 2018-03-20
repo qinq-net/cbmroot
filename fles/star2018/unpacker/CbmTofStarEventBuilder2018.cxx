@@ -20,6 +20,7 @@
 #include "FairRuntimeDb.h"
 #include "FairRunOnline.h"
 
+#include "TROOT.h"
 #include "TClonesArray.h"
 #include "TString.h"
 #include "THttpServer.h"
@@ -133,7 +134,8 @@ CbmTofStarEventBuilder2018::~CbmTofStarEventBuilder2018()
 
 Bool_t CbmTofStarEventBuilder2018::Init()
 {
-   LOG(INFO) << "Initializing flib Get4 unpacker" << FairLogger::endl;
+   LOG(INFO) << "CbmTofStarEventBuilder2018::Init => modif of 2018/02/14 18:52 CET" << FairLogger::endl;
+   LOG(INFO) << "Initializing STAR eTOF 2018 Event Builder" << FairLogger::endl;
 
    FairRootManager* ioman = FairRootManager::Instance();
    if( NULL == ioman )
@@ -324,7 +326,7 @@ Bool_t CbmTofStarEventBuilder2018::ReInitContainers()
 void CbmTofStarEventBuilder2018::SetEventBuildingMode( Bool_t bEventBuildingMode )
 {
    fbEventBuilding = bEventBuildingMode;
-   if( fbEventBuilding )
+   if( !fbEventBuilding )
       LOG(INFO) << "Event building mode = single link per subevent: " << FairLogger::endl
                 << "test mode in 2018 S1, sector mode in 2018 S2"
                 << FairLogger::endl;
@@ -725,7 +727,7 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
                         << " triggers " << std::setw(9) << fvtCurrentLinkBuffer.size()
                         << FairLogger::endl;
 
-      SaveAllHistos( "data/histos_test.root" );
+      SaveAllHistos( "data/histos_event_build.root" );
    } // else if( 300 < elapsed_seconds.count() )
 
    // Loop over microslices
@@ -1241,7 +1243,7 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
                          << FairLogger::endl;
             return;
          } // if exactly same message repeated
-
+/*
          if( (uNewToken != fuStarTokenLast[fuGdpbNr] + 1) &&
              0 < fulGdpbTsFullLast[fuGdpbNr] && 0 < fulStarTsFullLast[fuGdpbNr] &&
              ( 4095 != fuStarTokenLast[fuGdpbNr] || 1 != uNewToken)  )
@@ -1253,7 +1255,7 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
                          << Form("old = %2u vs new = %2u ", fuStarDaqCmdLast[fuGdpbNr],  uNewDaqCmd)
                          << Form("old = %2u vs new = %2u ", fuStarTrigCmdLast[fuGdpbNr], uNewTrigCmd)
                          << FairLogger::endl;
-
+*/
 
          // STAR TS counter reset detection
          if( ulNewStarTsFull < fulStarTsFullLast[fuGdpbNr] )
@@ -1421,6 +1423,18 @@ void CbmTofStarEventBuilder2018::SaveAllHistos( TString sFileName )
       fhStarEventSizeTime->Write();
       fhStarEventSizeTimeLong->Write();
    } // if( kTRUE == fbEventBuilding )
+   gDirectory->cd("..");
+
+   // Plots monitoring the TS losses
+   gDirectory->mkdir("Flib_Raw");
+   gDirectory->cd("Flib_Raw");
+   TH1 * pMissedTsH1    = dynamic_cast< TH1 * >( gROOT->FindObjectAny( "Missed_TS" ) );
+   if( NULL != pMissedTsH1 )
+      pMissedTsH1->Write();
+
+   TProfile * pMissedTsEvoP = dynamic_cast< TProfile * >( gROOT->FindObjectAny( "Missed_TS_Evo" ) );
+   if( NULL != pMissedTsEvoP )
+      pMissedTsEvoP->Write();
    gDirectory->cd("..");
 
    if( "" != sFileName )
