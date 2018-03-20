@@ -32,6 +32,7 @@ CbmGeoPsd.cxx
 CbmGeoPsdPar.cxx  
 CbmPsdv1.cxx 
 CbmPsdIdealDigitizer.cxx
+CbmPsdSimpleDigitizer.cxx
 CbmPsdHitProducer.cxx
 # CbmPsdv1_44mods_hole6cm.cxx 
 # CbmPsdWoutv1_for44mods_full_holes.cxx

@@ -35,7 +35,9 @@ CbmPsdMC::CbmPsdMC(Bool_t active, const char* name)
     fMom(),        
     fTime(-1.),         
     fLength(-1.),        
-    fEloss(-1.)
+    fEloss(-1.),
+    fLayerID(-1),
+    fModuleID(-1)
 {
 }
 // -------------------------------------------------------------------------
@@ -155,16 +157,15 @@ Bool_t CbmPsdMC::ProcessHits(FairVolume*) {
   // No action for neutral particles
   if (TMath::Abs(gMC->TrackCharge()) <= 0) return kFALSE;
 
-  Int_t layer  = -1;
-  Int_t module = -1;
-
   // --- If this is the first step for the track in the volume:
   //     Reset energy loss and store track parameters
   if ( gMC->IsTrackEntering() ) {
     fTrackID = gMC->GetStack()->GetCurrentTrackNumber();
-    gMC->CurrentVolOffID(1, layer);   // ID of scintillator layer
-    gMC->CurrentVolOffID(3, module);  // ID of module
-    fAddress = (layer << 16) | (module << 4) | kPsd; // Encode address
+
+    gMC->CurrentVolOffID(1, fLayerID);
+    gMC->CurrentVolOffID(3, fModuleID);
+
+    fAddress = fLayerID;
     gMC->TrackPosition(fPos);
     gMC->TrackMomentum(fMom);
     fTime    = gMC->TrackTime() * 1.0e09;
@@ -174,22 +175,22 @@ Bool_t CbmPsdMC::ProcessHits(FairVolume*) {
 
   // --- For all steps within active volume: sum up differential energy loss
   fEloss += gMC->Edep();
-  
+
   // --- If track is leaving: get track parameters and create CbmstsPoint
   if ( gMC->IsTrackExiting()    ||
        gMC->IsTrackStop()       ||
        gMC->IsTrackDisappeared()   ) {
-    
+
     // Create CbmPsdPoint
     Int_t size = fPsdPoints->GetEntriesFast();
-//    CbmPsdPoint* point = new((*fPsdPoints)[size]) CbmPsdPoint(fTrackID,
-    new((*fPsdPoints)[size]) CbmPsdPoint(fTrackID,
+    CbmPsdPoint* psdPoint = new((*fPsdPoints)[size]) CbmPsdPoint(fTrackID,
                                                               fAddress,
                                                               fPos.Vect(),
                                                               fMom.Vect(),
                                                               fTime,
                                                               fLength,
                                                               fEloss);
+    psdPoint->SetModuleID(fModuleID + 1);
 
     // --- Increment number of PsdPoints for this track in the stack
     CbmStack* stack = dynamic_cast<CbmStack*>(gMC->GetStack());

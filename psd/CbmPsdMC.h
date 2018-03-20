@@ -155,7 +155,8 @@ class CbmPsdMC : public FairDetector
   Double_t       fTime;              //!  time
   Double_t       fLength;            //!  length
   Double_t       fEloss;             //!  energy loss
-  
+  Int_t          fLayerID;           //!  layer ID
+  Int_t          fModuleID;          //!  module ID
 
   /** @brief Register all sensitive volumes
    ** @param node Pointer to start node
