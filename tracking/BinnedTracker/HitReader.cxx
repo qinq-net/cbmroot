@@ -515,38 +515,38 @@ public:
 class CbmBinnedMuchHitReader : public CbmBinnedHitReader
 {
 private:
-   TClonesArray* fMuchClusters;
+   /*TClonesArray* fMuchClusters;
    TClonesArray* fMuchDigis;
    TClonesArray* fMuchPoints;
    TH1F* fHitResidualXHisto;
    TH1F* fHitResidualYHisto;
    TH1F* fHitResidualTHisto;
-   TH1F* fHitPullTHisto;
+   TH1F* fHitPullTHisto;*/
    
 public:
    CbmBinnedMuchHitReader() 
    : CbmBinnedHitReader()
-   , fMuchClusters(nullptr)
+   /*, fMuchClusters(nullptr)
    , fMuchDigis(nullptr)
    , fMuchPoints(nullptr)
    , fHitResidualXHisto(nullptr)
    , fHitResidualYHisto(nullptr)
    , fHitResidualTHisto(nullptr)
-   , fHitPullTHisto(nullptr)
+   , fHitPullTHisto(nullptr)*/
    {
       FairRootManager* ioman = FairRootManager::Instance();
       fHitArray = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
       
-      fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
+      /*fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
       fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
       fMuchPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
       fHitResidualXHisto = new TH1F("muchHitResidualXHisto", "muchHitResidualXHisto", 200, -10., 10.);
       fHitResidualYHisto = new TH1F("muchHitResidualYHisto", "muchHitResidualYHisto", 200, -10., 10.);
       fHitResidualTHisto = new TH1F("muchHitResidualTHisto", "muchHitResidualTHisto", 1000, -20., 80.);
-      fHitPullTHisto = new TH1F("muchHitPullTHisto", "muchHitPullTHisto", 200, -10., 10.);
+      fHitPullTHisto = new TH1F("muchHitPullTHisto", "muchHitPullTHisto", 200, -10., 10.);*/
    }
    
-   void SaveHisto(TH1* histo)
+   /*void SaveHisto(TH1* histo)
    {
       TFile* curFile = TFile::CurrentFile();
       TString histoName = histo->GetName();
@@ -564,7 +564,7 @@ public:
       SaveHisto(fHitResidualYHisto);
       SaveHisto(fHitResidualTHisto);
       SaveHisto(fHitPullTHisto);
-   }
+   }*/
    
    CbmBinnedMuchHitReader(const CbmBinnedMuchHitReader&) = delete;
    CbmBinnedMuchHitReader& operator=(const CbmBinnedMuchHitReader&) = delete;
@@ -580,7 +580,7 @@ public:
          int layerNumber = CbmMuchGeoScheme::GetLayerIndex(hit->GetAddress());
          int stationNumber = muchStationNumber * 3 + layerNumber;
          
-         Double_t t = 0;
+         /*Double_t t = 0;
          int cnt = 0;
          Int_t clusterId = hit->GetRefId();
          const CbmMuchCluster* cluster = static_cast<const CbmMuchCluster*> (fMuchClusters->At(clusterId));
@@ -607,7 +607,7 @@ public:
          }
       
          if (0 < cnt)
-            t /= cnt;
+            t /= cnt;*/
          
          //hit->SetTime(0);
          
