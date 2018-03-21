@@ -463,7 +463,7 @@ InitStatus LxTBFinder::Init()
             
             if (mcTrack->GetPdgCode() == 13 || mcTrack->GetPdgCode() == -13)
             {
-               Double_t m = mcTrack->GetMass();
+               //Double_t m = mcTrack->GetMass();
                 Int_t motherId = mcTrack->GetMotherId();
 
                 if ((useAsciiSig && motherId < 0) ||
