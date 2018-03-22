@@ -77,8 +77,8 @@ class CbmTofStarSubevent2018
       // Setters
       inline void SetTrigger( CbmTofStarTrigger triggerIn ){ fTrigger = triggerIn; fbTriggerSet = kTRUE; }
       inline void SetSource( UShort_t sourceIdIn ){ fusSourceId = sourceIdIn;
-		                                              fulEventStatusFlags = (fulEventStatusFlags & ( ( sourceIdIn & kulSourceIdMask ) << kulSourceIdOffset ) )
-		                                                                                         | ( ( sourceIdIn & kulSourceIdMask ) << kulSourceIdOffset );
+		                                              fulEventStatusFlags =   (fulEventStatusFlags & !( kulSourceIdMask << kulSourceIdOffset ) )
+		                                                                    | ( ( sourceIdIn & kulSourceIdMask ) << kulSourceIdOffset );
 		                                            }
       inline void SetBadEventFlag(  Bool_t bFlagState = kTRUE ){
                         bFlagState ? (fulEventStatusFlags |= kulFlagBadEvt) :
@@ -104,8 +104,8 @@ class CbmTofStarSubevent2018
       inline Bool_t            GetBadEventFlag()         const { return 0 < (fulEventStatusFlags & kulFlagBadEvt); }
       inline Bool_t            GetOverlapEventFlag()     const { return 0 < (fulEventStatusFlags & kulFlagOverlapEvt); }
       inline Bool_t            GetEmptyEventFlag()       const { return 0 < (fulEventStatusFlags & kulFlagEmptyEvt); }
-      inline Bool_t            SetStartBorderEventFlag() const { return 0 < (fulEventStatusFlags & kulFlagStartBorderEvt); }
-      inline Bool_t            SetEndBorderEventFlag()   const { return 0 < (fulEventStatusFlags & kulFlagEndBorderEvt); }
+      inline Bool_t            GetStartBorderEventFlag() const { return 0 < (fulEventStatusFlags & kulFlagStartBorderEvt); }
+      inline Bool_t            GetEndBorderEventFlag()   const { return 0 < (fulEventStatusFlags & kulFlagEndBorderEvt); }
 //#ifndef __CINT__
       inline gdpb::Message     GetMsg( UInt_t uMsgIdx ) const;
 //#endif

@@ -66,8 +66,7 @@ CbmTofStarSubevent2018::CbmTofStarSubevent2018( CbmTofStarTrigger triggerIn, USh
    fulEventStatusFlags( 0 ),
    fvMsgBuffer()
 {
-   fulEventStatusFlags = (fulEventStatusFlags & ( ( sourceIdIn & kulSourceIdMask ) << kulSourceIdOffset ) )
-                                              | ( ( sourceIdIn & kulSourceIdMask ) << kulSourceIdOffset );
+   SetSource( sourceIdIn );
 }
 CbmTofStarSubevent2018::~CbmTofStarSubevent2018()
 {

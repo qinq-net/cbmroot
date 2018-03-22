@@ -872,9 +872,12 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
                   {
                      if( kTRUE == fbEventBuilding )
                      {
-                        gdpb::FullMessage fullMess( mess, mess.getGdpbEpEpochNb() );
-                        fdCurrentTsStartTime = fullMess.GetFullTimeNs();
-                        fdCurrentTsCoreEndTime = fdCurrentTsStartTime + fdTsCoreSizeInNs;
+                        if( 0 == fuCurrentMs )
+                        {
+                           gdpb::FullMessage fullMess( mess, mess.getGdpbEpEpochNb() );
+                           fdCurrentTsStartTime = fullMess.GetFullTimeNs();
+                           fdCurrentTsCoreEndTime = fdCurrentTsStartTime + fdTsCoreSizeInNs;
+                        } // if( 0 == fuCurrentMs )
                      } // if( kTRUE == fbEventBuilding )
                         else
                         {
@@ -905,8 +908,8 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
             } // case gdpb::MSG_EPOCH2:
             case gdpb::MSG_GET4_32B:
             {
-//               FillHitInfo( mess );
-               fvmEpSupprBuffer[ fuGet4Nr ].push_back( mess );
+               FillHitInfo( mess );
+//               fvmEpSupprBuffer[ fuGet4Nr ].push_back( mess );
                break;
             } // case gdpb::MSG_GET4_32B:
             case gdpb::MSG_GET4_SLC:
@@ -1048,7 +1051,7 @@ void CbmTofStarEventBuilder2018::FillEpochInfo( gdpb::Message mess )
 
    fulCurrentEpochTime = mess.getMsgFullTime(ulEpochNr);
    fNofEpochs++;
-
+/*
    /// In Ep. Suppr. Mode, receive following epoch instead of previous
    /// Re-align the epoch number of the message in case it will be used later:
    /// We received the epoch after the data instead of the one before!
@@ -1075,7 +1078,7 @@ void CbmTofStarEventBuilder2018::FillEpochInfo( gdpb::Message mess )
 
       fvmEpSupprBuffer[fuGet4Nr].clear();
    } // if( 0 < fvmEpSupprBuffer[fGet4Nr] )
-
+*/
 }
 
 void CbmTofStarEventBuilder2018::PrintSlcInfo(gdpb::Message mess)
@@ -1096,7 +1099,7 @@ void CbmTofStarEventBuilder2018::PrintSlcInfo(gdpb::Message mess)
                 << ", Type = " << mess.getGdpbSlcCrc()
                 << FairLogger::endl;
 */
-   gdpb::FullMessage fullMess( mess, fulCurrentEpochTime );
+   gdpb::FullMessage fullMess( mess, fvulCurrentEpoch[ fuGet4Nr ] );
    if( kTRUE == fbEventBuilding )
    {
       if( fuCurrentMs < fuCoreMs )
@@ -1148,7 +1151,7 @@ void CbmTofStarEventBuilder2018::PrintSysInfo(gdpb::Message mess)
 */
          /// TODO FIXME: Add the error messages to the buffer for inclusion in the STAR event
          ///             NEEDS the proper "<" operator in FullMessage or Message to allow time sorting
-         gdpb::FullMessage fullMess( mess, fulCurrentEpochTime );
+         gdpb::FullMessage fullMess( mess, fvulCurrentEpoch[ fuGet4Nr ] );
          if( kTRUE == fbEventBuilding )
          {
             if( fuCurrentMs < fuCoreMs )
@@ -1532,6 +1535,12 @@ void CbmTofStarEventBuilder2018::ResetLongEvolutionHistograms()
 
 void CbmTofStarEventBuilder2018::BuildStarEventsSingleLink()
 {
+   /// Time sort the message buffer
+   /// TODO: Check if using an epoch buffer per gDPB similar to the epoch suppression one does not make
+   ///       a more efficient sorting (max disorder is within the epoch!)
+   /// Data are sorted between epochs, not inside => Epoch level ordering
+   /// Sorting at lower bin precision level
+   std::stable_sort( fvmCurrentLinkBuffer.begin(),     fvmCurrentLinkBuffer.begin() );
 
    std::vector< gdpb::FullMessage >::iterator itFirstMessageNextEvent   = fvmCurrentLinkBuffer.begin();
    Double_t dPrevEventEnd = 0.0;
@@ -1682,6 +1691,17 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                    << FairLogger::endl;
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
 */
+
+   /// Time sort the message buffers
+   /// TODO: Check if using an epoch buffer per gDPB similar to the epoch suppression one does not make
+   ///       a more efficient sorting (max disorder is within the epoch!)
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
+   {
+      /// Data are sorted between epochs, not inside => Epoch level ordering
+      /// Sorting at lower bin precision level
+      std::stable_sort( fvmTsLinksBuffer[uGdpb].begin(),     fvmTsLinksBuffer[uGdpb].begin() );
+      std::stable_sort( fvmTsOverLinksBuffer[uGdpb].begin(), fvmTsOverLinksBuffer[uGdpb].begin() );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
 
    /// Initialize the iterator for first possible message in event to beginning of buffer
    std::vector< std::vector< gdpb::FullMessage >::iterator > itFirstMessageNextEvent( fuNrOfGdpbs );
