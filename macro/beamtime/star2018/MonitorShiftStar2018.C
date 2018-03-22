@@ -24,8 +24,8 @@ void MonitorShiftStar2018(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/test.root";
-  TString parFile = "data/testparam.root";
+  TString outFile = "data/shift.root";
+  TString parFile = "data/shift_param.root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
