@@ -95,8 +95,9 @@ SizeMsInNs: Double_t 1638400
 StarTriggerDeadtime:  Double_t \
  1000.0  1000.0  1000.0  1000.0  1000.0
 StarTriggerDelay: Double_t \
--23000.0  -23000.0  -23000.0  -23000.0  -23000.0
+ 2000.0  2000.0  2000.0  2000.0  2000.0
 //  2000.0  2000.0  2000.0  2000.0  2000.0
+//-23000.0  -23000.0  -23000.0  -23000.0  -23000.0
 StarTriggerWinSize: Double_t \
  2000.0  2000.0  2000.0  2000.0  2000.0
 TsDeadtimePeriod: Double_t 62.5
