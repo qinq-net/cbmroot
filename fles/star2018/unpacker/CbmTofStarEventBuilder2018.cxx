@@ -759,6 +759,21 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
       if( fdStartTimeMsSz < 0 )
          fdStartTimeMsSz = (1e-9) * fdMsIndex;
 
+      /// Save the starting time of the TS or of the MS
+      if( kTRUE == fbEventBuilding )
+      {
+         if( 0 == fuCurrentMs )
+         {
+            fdCurrentTsStartTime = fdMsIndex;
+            fdCurrentTsCoreEndTime = fdCurrentTsStartTime + fdTsCoreSizeInNs;
+         } // if( 0 == fuCurrentMs )
+      } // if( kTRUE == fbEventBuilding )
+         else
+         {
+            fdCurrentMsStartTime = fdMsIndex;
+            fdCurrentMsEndTime   = fdCurrentMsStartTime + fdMsSizeInNs;
+         } // else of if( kTRUE == fbEventBuilding )
+
       // If not integer number of message in input buffer, print warning/error
       if( 0 != (size % kuBytesPerMessage) )
          LOG(ERROR) << "The input microslice buffer does NOT "
@@ -833,13 +848,24 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
                          << " VS " << fuNrOfGet4PerGdpb << " set in parameters." << FairLogger::endl;
 
          /// First message in MS should ALWAYS be a merged epoch
+/*
          if( 0 == uIdx )
          {
-            if( gdpb::MSG_EPOCH2 != iMessageType && get4v2x::kuChipIdMergedEpoch == fuGet4Id )
+            if( gdpb::MSG_EPOCH2 != iMessageType || get4v2x::kuChipIdMergedEpoch != fuGet4Id )
                LOG(WARNING) << "First message in MS is not a merged epoch!!!!!"
-                                 << FairLogger::endl;
+                            << " TS = " << fulCurrentTsIndex << " MS = " << fuCurrentMs
+                            << " Type = " << iMessageType << " Get4Id = " << fuGet4Id
+                            << FairLogger::endl;
          } // if( 0 == uIdx )
-
+         if( uNbMessages - 1 == uIdx )
+         {
+            if( gdpb::MSG_EPOCH2 != iMessageType || get4v2x::kuChipIdMergedEpoch != fuGet4Id )
+               LOG(WARNING) << "Last message in MS is not a merged epoch!!!!!"
+                            << " TS = " << fulCurrentTsIndex << " MS = " << fuCurrentMs
+                            << " Type = " << iMessageType << " Get4Id = " << fuGet4Id
+                            << FairLogger::endl;
+         } // if( uNbMessages - 1 == uIdx )
+*/
          switch( iMessageType )
          {
             case gdpb::MSG_GET4:
@@ -866,26 +892,6 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
 
                   /// Keep track of extended epoch index for each gDPB
                   // TO BE DONE
-
-                  /// Save the starting time of the TS or of the MS
-                  if( 0 == uIdx )
-                  {
-                     if( kTRUE == fbEventBuilding )
-                     {
-                        if( 0 == fuCurrentMs )
-                        {
-                           gdpb::FullMessage fullMess( mess, mess.getGdpbEpEpochNb() );
-                           fdCurrentTsStartTime = fullMess.GetFullTimeNs();
-                           fdCurrentTsCoreEndTime = fdCurrentTsStartTime + fdTsCoreSizeInNs;
-                        } // if( 0 == fuCurrentMs )
-                     } // if( kTRUE == fbEventBuilding )
-                        else
-                        {
-                           gdpb::FullMessage fullMess( mess, mess.getGdpbEpEpochNb() );
-                           fdCurrentMsStartTime = fullMess.GetFullTimeNs();
-                           fdCurrentMsEndTime   = fdCurrentMsStartTime + fdMsSizeInNs;
-                        } // else of if( kTRUE == fbEventBuilding )
-                  } // if( 0 == uIdx )
                } // if this epoch message is a merged one valiud for all chips
                   else
                   {
