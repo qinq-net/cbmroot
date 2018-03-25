@@ -25,6 +25,7 @@ void pl_all_cluWalk(Int_t iNch=1, Int_t i1=0, Int_t SmT=0, Int_t iSm=0, Int_t iR
   case 72:
     break;
   default:
+    ;
   }
   //  can->Divide(2,2,0,0); 
 
@@ -38,13 +39,16 @@ void pl_all_cluWalk(Int_t iNch=1, Int_t i1=0, Int_t SmT=0, Int_t iSm=0, Int_t iR
  //gROOT->SetDirLevel(2);
 
  TH1 *h;
+ TH1 *h1;
  TH2 *h2;
+ TString hname;
+
  // if (h!=NULL) h->Delete();
  Int_t ic=0;
  for(Int_t iCh=i1; iCh<i1+iNch/2; iCh++){
    can->cd(++ic);
    gROOT->cd();
-   TString hname=Form("cl_SmT%d_sm%03d_rpc%03d_Ch%03d_S0_Walk",SmT,iSm,iRpc,iCh);
+   hname=Form("cl_SmT%d_sm%03d_rpc%03d_Ch%03d_S0_Walk",SmT,iSm,iRpc,iCh);
    h2=(TH2 *)gROOT->FindObjectAny(hname);
    if (h2!=NULL) {
      h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);
@@ -53,7 +57,7 @@ void pl_all_cluWalk(Int_t iNch=1, Int_t i1=0, Int_t SmT=0, Int_t iSm=0, Int_t iR
      TProfile *h2_pfx=h2->ProfileX();
      h2_pfx->Draw("same");
    }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
-   TString hname=Form("Cor_SmT%d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px",SmT,iSm,iRpc,iCh);
+   hname=Form("Cor_SmT%d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px",SmT,iSm,iRpc,iCh);
    h1=(TH1 *)gROOT->FindObjectAny(hname);
    if (h1!=NULL) {
      h1->Draw("same");
@@ -61,7 +65,7 @@ void pl_all_cluWalk(Int_t iNch=1, Int_t i1=0, Int_t SmT=0, Int_t iSm=0, Int_t iR
 
    can->cd(++ic);
    gROOT->cd();
-   TString hname=Form("cl_SmT%d_sm%03d_rpc%03d_Ch%03d_S1_Walk",SmT,iSm,iRpc,iCh);
+   hname=Form("cl_SmT%d_sm%03d_rpc%03d_Ch%03d_S1_Walk",SmT,iSm,iRpc,iCh);
    h2=(TH2 *)gROOT->FindObjectAny(hname);
    if (h2!=NULL) {
      h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);
@@ -70,7 +74,7 @@ void pl_all_cluWalk(Int_t iNch=1, Int_t i1=0, Int_t SmT=0, Int_t iSm=0, Int_t iR
      TProfile *h2_pfx=h2->ProfileX();
      h2_pfx->Draw("same");
    }
-   TString hname=Form("Cor_SmT%d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px",SmT,iSm,iRpc,iCh);
+   hname=Form("Cor_SmT%d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px",SmT,iSm,iRpc,iCh);
    h1=(TH1 *)gROOT->FindObjectAny(hname);
    if (h1!=NULL) {
      h1->Draw("same");
