@@ -3540,7 +3540,7 @@ Bool_t   CbmTofCosmicClusterizer::BuildClusters()
 	       { // opposite side missing, neighbouring channel has hit on opposite side // FIXME 
 		 // check that same side digi of neighbouring channel is absent
 		 LOG(DEBUG) << Form("Missing digi cor %d for TSRC %d%d%d%d ?", fiCorMode,
-		     (Int_t)pDigi->GetType(),(Int_t)pDigi->GetSm(),(Int_t)pDigi->GetRpc(),(Int_t)pDigi->GetChannel(),(Int_t)pDigi->GetSide()) 
+		     (Int_t)pDigi->GetType(),(Int_t)pDigi->GetSm(),(Int_t)pDigi->GetRpc(),(Int_t)pDigi->GetChannel()) 
 			    <<FairLogger::endl;
 		 Int_t iDigI3 =0;
 		 for (; iDigI3<iNbTofDigi;iDigI3++){
