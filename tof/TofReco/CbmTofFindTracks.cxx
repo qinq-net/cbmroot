@@ -1180,19 +1180,19 @@ void CbmTofFindTracks::CreateHistograms(){
   for (Int_t iSt=0; iSt<fNTofStations; iSt++){
     vhPullX[iSt]=new TH1F(  Form("hPullX_Station_%d",iSt),
 			    Form("hResiX_Station_%d;  #DeltaX (cm)",iSt),
-			    100, -DX0MAX, DX0MAX);  
+			    99, -DX0MAX, DX0MAX);  
     vhPullY[iSt]=new TH1F(  Form("hPullY_Station_%d",iSt),
 			    Form("hResiY_Station_%d;  #DeltaY (cm)",iSt),
-			    100, -DY0MAX, DY0MAX);  
+			    99, -DY0MAX, DY0MAX);  
     vhPullZ[iSt]=new TH1F(  Form("hPullZ_Station_%d",iSt),
 			    Form("hResiZ_Station_%d;  #DeltaZ (cm)",iSt),
-			    100, -50., 50.);  
+			    99, -50., 50.);  
     vhPullT[iSt]=new TH1F(  Form("hPullT_Station_%d",iSt),
 			    Form("hResiT_Station_%d;  #DeltaT (ns)",iSt),
-			    200, -fT0MAX, fT0MAX); 
+			    199, -fT0MAX, fT0MAX); 
     vhPullTB[iSt]=new TH1F( Form("hPullTB_Station_%d",iSt),
 			    Form("hResiTB_Station_%d;  #DeltaT (ns)",iSt),
-			    250, -1.25*fT0MAX, 1.25*fT0MAX); 
+			    249, -1.25*fT0MAX, 1.25*fT0MAX); 
     Double_t XSIZ=16.; 
     Int_t Nbins=32.;
     vhXY_AllTracks[iSt]   = new TH2F( Form("hXY_AllTracks_%d",iSt),

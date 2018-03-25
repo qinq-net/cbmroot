@@ -389,12 +389,12 @@ Int_t CbmTofTrackFinderNN::DoFind(
 			    (dYex-pHit->GetY())/fFindTracks->GetSigY(iAddr), dChi)
 	  		    <<FairLogger::endl; 
 
-	    if(   dChi < fSIGLIM )
+	    if(   dChi < fSIGLIM )  // FIXME: should scale limit with material budget between hit and track reference
 	    { // extend and update tracklet 
 	      LOG(DEBUG) << Form("<IP> TofTracklet %d, HMul %d, Hits %d, %d mark for extension by %d, add = 0x%08x, DT %6.2f, DX %6.2f, DY=%6.2f ",
 				 iTrk,pTrk->GetNofHits(),iHit0,iHit1,iHit, pHit->GetAddress(), dTex-pHit->GetTime(),dXex-pHit->GetX(),dYex-pHit->GetY() )
 			 << tPar->ToString()
-	  	      <<FairLogger::endl; 
+			 << FairLogger::endl; 
 
 	      if(iNCand>0) {
 		LOG(DEBUG)<<Form("CbmTofTrackFinderNN::DoFind new match %d of Hit %d, Trk %d, chi2 = %f", iNCand,iHit,iTrk,dChi)
@@ -890,16 +890,22 @@ void CbmTofTrackFinderNN::Line3Dfit(CbmTofTracklet*  pTrk)
       y = (pTrk->GetTofHitPointer(N))->GetY();  
       z = (pTrk->GetTofHitPointer(N))->GetZ();  
       gr->SetPoint(N,x,y,z);
-      double dx,dy,dz = 0;
+      double dx,dy,dz = 0.;
       dx = (pTrk->GetTofHitPointer(N))->GetDx();  
       dy = (pTrk->GetTofHitPointer(N))->GetDy();  
-      //dz = (pTrk->GetTofHitPointer(N))->GetDz();
+      dz = (pTrk->GetTofHitPointer(N))->GetDz(); //FIXME
       gr->SetPointError(N,dx,dy,dz);
-      LOG(DEBUG) << "Line3Dfit add N = "<<N<<", "<<x<<", "<<y<<", "<<z<<", "<<dx<<", "<<dy<<", "<<dz<<FairLogger::endl;
+      LOG(DEBUG) << "Line3Dfit add N = "<<N<<",\t"<<x<<",\t"<<y<<",\t"<<z<<",\t"<<dx<<",\t"<<dy<<",\t"<<dz<<FairLogger::endl;
    }  
-   //gr->Draw("P0");
    // fit the graph now 
-   fMinuit.DoFit(gr);
+   Double_t pStart[4]= {0.,0.,0.,0.};
+   pStart[0]=pTrk->GetFitX(0.);
+   pStart[1]=(pTrk->GetTrackParameter())->GetTx();
+   pStart[2]=pTrk->GetFitY(0.);
+   pStart[3]=(pTrk->GetTrackParameter())->GetTy();
+
+   fMinuit.DoFit(gr,pStart);
+   //gr->Draw("err p0");
    gr->Delete();
    Double_t* dRes;
    dRes=fMinuit.GetParFit();

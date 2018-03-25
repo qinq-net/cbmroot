@@ -38,6 +38,7 @@ class TClonesArray;
 class TF1;
 class TH1;
 class TH2;
+class TH3;
 class TProfile;
 class TString;
 #include "TTimeStamp.h"
@@ -306,6 +307,7 @@ class CbmTofCosmicClusterizer : public FairTask
       std::vector< std::vector< TH2* > > fhTRpcCluDelTof;   // [nbDet][nbSel]
       std::vector< std::vector< TH2* > > fhTRpcCludXdY;     // [nbDet][nbSel]
       std::vector< std::vector< std::vector< std::vector<TH2 *> > > >fhTRpcCluWalk; // [nbDet][nbSel][nbCh][nSide]
+      std::vector< std::vector<TH3 *> >  fhTRpcCluWalk2; // [nbDet][nbSel]
 
       std::vector< std::vector< TH2* > > fhTSmCluPosition; //[nbSmTypes][nbSel]
       std::vector< std::vector< TH2* > > fhTSmCluTOff;     //[nbSmTypes][nbSel]

@@ -43,6 +43,7 @@
 #include "TVector3.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TProfile.h"
 #include "TDirectory.h"
 #include "TROOT.h"
@@ -152,6 +153,7 @@ CbmTofCosmicClusterizer::CbmTofCosmicClusterizer(const char *name, Int_t verbose
    fhTRpcCluDelTof(),
    fhTRpcCludXdY(),
    fhTRpcCluWalk(),
+   fhTRpcCluWalk2(),
    fhTSmCluPosition(),
    fhTSmCluTOff(),
    fhTSmCluTRun(),
@@ -1088,7 +1090,7 @@ Bool_t   CbmTofCosmicClusterizer::CreateHistos()
 
        fhRpcDTLastHits_Tot[iDetIndx]  =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Tot_DTLH", iSmType, iSmId, iRpcId),
-          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d; log(#DeltaT (ns)); TOT [ns]", iRpcId, iSmId, iSmType),
+          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d; log(#DeltaT (ns)); TOT [a.u.]", iRpcId, iSmId, iSmType),
           100, 0., 10., 100, fdTOTMin, 4.*fdTOTMax);	      
 
        fhRpcDTLastHits_CluSize[iDetIndx]  =  new TH2F( 
@@ -1145,7 +1147,7 @@ Bool_t   CbmTofCosmicClusterizer::CreateHistos()
 
        fhRpcCluTot[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Tot", iSmType, iSmId, iRpcId ),
-          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d; StripSide []; TOT [ns]", iRpcId, iSmId, iSmType ),
+          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d; StripSide []; TOT [a.u.]", iRpcId, iSmId, iSmType ),
             2*fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,2*fDigiBdfPar->GetNbChan(iSmType,iRpcId),
             100, fdTOTMin, fdTOTMax);
 
@@ -1235,6 +1237,7 @@ Bool_t   CbmTofCosmicClusterizer::CreateHistos()
    fhTRpcCluDelTof.resize( iNbDet );
    fhTRpcCludXdY.resize( iNbDet );
    fhTRpcCluWalk.resize( iNbDet );
+   fhTRpcCluWalk2.resize( iNbDet );
    fhTRpcCluTOffDTLastHits.resize( iNbDet  );
    fhTRpcCluTotDTLastHits.resize( iNbDet  );
    fhTRpcCluSizeDTLastHits.resize( iNbDet  );
@@ -1270,6 +1273,7 @@ Bool_t   CbmTofCosmicClusterizer::CreateHistos()
        fhTRpcCluDelTof[iDetIndx].resize( iNSel  );
        fhTRpcCludXdY[iDetIndx].resize( iNSel  );
        fhTRpcCluWalk[iDetIndx].resize( iNSel  );
+       fhTRpcCluWalk2[iDetIndx].resize( iNSel  );
        fhTRpcCluTOffDTLastHits[iDetIndx].resize( iNSel  );
        fhTRpcCluTotDTLastHits[iDetIndx].resize( iNSel  );
        fhTRpcCluSizeDTLastHits[iDetIndx].resize( iNSel  );
@@ -1303,7 +1307,7 @@ Bool_t   CbmTofCosmicClusterizer::CreateHistos()
        if (fTotMax !=0.) fdTOTMax=fTotMax;
        fhTRpcCluTot[iDetIndx][iSel]  =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Tot", iSmType, iSmId, iRpcId, iSel ),
-          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d under Selector %02d; StripSide []; TOT [ns]", iRpcId, iSmId, iSmType, iSel ),
+          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d under Selector %02d; StripSide []; TOT [a.u.]", iRpcId, iSmId, iSmType, iSel ),
           fDigiBdfPar->GetNbChan(iSmType,iRpcId)*2, 0, fDigiBdfPar->GetNbChan(iSmType,iRpcId)*2,
           100, fdTOTMin, fdTOTMax);
 
@@ -1333,8 +1337,15 @@ Bool_t   CbmTofCosmicClusterizer::CreateHistos()
           Form("SmT%01d_sm%03d_rpc%03d_Sel%02d_dXdY; #Delta x [cm]; #Delta y [cm];", iSmType, iSmId, iRpcId, iSel),
           nbCldXdYBinX,-dXdYMax,dXdYMax,nbCldXdYBinY,-dXdYMax,dXdYMax);
 
+       fhTRpcCluWalk2[iDetIndx][iSel]= new TH3F ( 
+	  Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Walk2", iSmType, iSmId, iRpcId, iSel ),
+          Form("Walk in SmT%01d_sm%03d_rpc%03d_Sel%02d_Walk2", iSmType, iSmId, iRpcId, iSel ),
+          nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax);
+
        fhTRpcCluWalk[iDetIndx][iSel].resize( fDigiBdfPar->GetNbChan(iSmType,iRpcId) );
+
        for( Int_t iCh=0; iCh<fDigiBdfPar->GetNbChan(iSmType,iRpcId); iCh++){
+
          fhTRpcCluWalk[iDetIndx][iSel][iCh].resize( 2 );
          for (Int_t iSide=0; iSide<2; iSide++)
          {
@@ -1343,6 +1354,7 @@ Bool_t   CbmTofCosmicClusterizer::CreateHistos()
            Form("Walk in SmT%01d_sm%03d_rpc%03d_Ch%03d_S%01d_Sel%02d_Walk", iSmType, iSmId, iRpcId, iCh, iSide, iSel ),
            nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax);
          }
+
        }
 
        fhTRpcCluTOffDTLastHits[iDetIndx][iSel] =  new TH2F( 
@@ -1352,7 +1364,7 @@ Bool_t   CbmTofCosmicClusterizer::CreateHistos()
 
        fhTRpcCluTotDTLastHits[iDetIndx][iSel]  =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Tot_DTLH", iSmType, iSmId, iRpcId, iSel ),
-          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d under Selector %02d; log(#DeltaT (ns)); TOT [ns]", iRpcId, iSmId, iSmType, iSel ),
+          Form("Clu Tot of Rpc #%03d in Sm %03d of type %d under Selector %02d; log(#DeltaT (ns)); TOT [a.u.]", iRpcId, iSmId, iSmType, iSel ),
           100, 0., 10., 100, fdTOTMin, fdTOTMax);
 
        fhTRpcCluSizeDTLastHits[iDetIndx][iSel]  =  new TH2F( 
@@ -2068,6 +2080,8 @@ Bool_t   CbmTofCosmicClusterizer::FillHistos()
 	       //(pDig1->GetTime()+((1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc))-dTTrig[iSel])-dTTcor[iSel]);
 	       //dTcor[iSel]+(1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc));
 	         dTcor[iSel]);
+
+	       fhTRpcCluWalk2[iDetIndx][iSel]->Fill(pDig0->GetTot(),pDig1->GetTot(),dTcor[iSel]);
 				 
 	       fhTRpcCluAvWalk[iDetIndx][iSel]->Fill(pDig0->GetTot(),
 	       //(pDig0->GetTime()+((1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc))-dTTrig[iSel])-dTTcor[iSel]);
@@ -3472,15 +3486,16 @@ Bool_t   CbmTofCosmicClusterizer::BuildClusters()
       for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ )
       {
        CbmTofDigiExp *pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
-       LOG(DEBUG1)<<iDigInd<<" "<<pDigi<<Form(" Address : 0x%08x ",pDigi->GetAddress())
-                 <<" SmT " << pDigi->GetType()
-                 <<" Sm " << pDigi->GetSm()
-                 <<" Rpc "<< pDigi->GetRpc()
+       LOG(DEBUG)<<"#"<<iDigInd
+	 //      <<Form(" Address : 0x%08x ",pDigi->GetAddress())
+                 <<" TSR " << pDigi->GetType()
+                 << pDigi->GetSm()
+                 << pDigi->GetRpc()
                  <<" Ch " << pDigi->GetChannel()
                  <<" S " << pDigi->GetSide()
                  <<" : " << pDigi->ToString()
-         //         <<" Time "<<pDigi->GetTime()
-         //         <<" Tot " <<pDigi->GetTot()
+         //      <<" Time "<<pDigi->GetTime()
+         //      <<" Tot " <<pDigi->GetTot()
                  <<FairLogger::endl;
 
        Int_t iDetIndx= fDigiBdfPar->GetDetInd( pDigi->GetAddress() );
@@ -3524,9 +3539,13 @@ Bool_t   CbmTofCosmicClusterizer::BuildClusters()
 	      }else if (TMath::Abs(pDigi->GetChannel() - pDigi2->GetChannel()) == 1 )
 	       { // opposite side missing, neighbouring channel has hit on opposite side // FIXME 
 		 // check that same side digi of neighbouring channel is absent
+		 LOG(DEBUG) << Form("Missing digi cor %d for TSRC %d%d%d%d ?", fiCorMode,
+		     (Int_t)pDigi->GetType(),(Int_t)pDigi->GetSm(),(Int_t)pDigi->GetRpc(),(Int_t)pDigi->GetChannel(),(Int_t)pDigi->GetSide()) 
+			    <<FairLogger::endl;
 		 Int_t iDigI3 =0;
 		 for (; iDigI3<iNbTofDigi;iDigI3++){
 		   CbmTofDigiExp *pDigi3 = (CbmTofDigiExp*) fTofDigisColl->At( iDigI3 );
+		   if( iDetIndx == fDigiBdfPar->GetDetInd( pDigi3->GetAddress() ))
 		   if(pDigi3->GetSide() == pDigi->GetSide() && pDigi2->GetChannel() == pDigi3->GetChannel()) break;
 		 }
 		 if(iDigI3 == iNbTofDigi) // same side neighbour did not fire 
@@ -3550,14 +3569,18 @@ Bool_t   CbmTofCosmicClusterizer::BuildClusters()
 				 <<FairLogger::endl;
 		     break;
 		   case 2:  // insert missing hits
+
 		     CbmTofDigiExp *pDigiN  = new((*fTofDigisColl)[iNbTofDigi++]) CbmTofDigiExp( *pDigi );
 		     pDigiN->SetAddress(pDigi->GetSm(),pDigi->GetRpc(),pDigi2->GetChannel(),pDigi->GetSide(),pDigi->GetType());
 		     pDigiN->SetTot(pDigi2->GetTot());
+		     LOG(DEBUG) << Form("InsertDigi  TSRCS %d%d%d%d%d and  ",(Int_t)pDigiN->GetType(),(Int_t)pDigiN->GetSm(),(Int_t)pDigiN->GetRpc(),(Int_t)pDigiN->GetChannel(),(Int_t)pDigiN->GetSide()) 
+				 <<FairLogger::endl;
 
 		     CbmTofDigiExp *pDigiN2 = new((*fTofDigisColl)[iNbTofDigi++]) CbmTofDigiExp( *pDigi2 );
 		     pDigiN2->SetAddress(pDigi2->GetSm(),pDigi2->GetRpc(),pDigi->GetChannel(),pDigi2->GetSide(),pDigi2->GetType());
 		     pDigiN2->SetTot(pDigi->GetTot());
-
+		     LOG(DEBUG) << Form("InsertDigi2 TSRCS %d%d%d%d%d and  ",(Int_t)pDigiN2->GetType(),(Int_t)pDigiN2->GetSm(),(Int_t)pDigiN2->GetRpc(),(Int_t)pDigiN2->GetChannel(),(Int_t)pDigiN2->GetSide()) 
+				 <<FairLogger::endl;
 		     break;
 		   }
 		 }

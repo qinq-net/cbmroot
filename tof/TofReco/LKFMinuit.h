@@ -21,10 +21,11 @@ class LKFMinuit
   public:                       // öffentlich
 
     LKFMinuit();               // der Default-Konstruktor
-    int DoFit(TGraph2DErrors * gr);
+    int DoFit(TGraph2DErrors * gr, double pStart[]);
     int Initialize();
     double SumDistance2(double par[]);
     double distance2(double x,double y,double z, double *p);
+    double distance2err(double x,double y,double z, double ex,double ey,double ez, double *p);
     void   line(double t, double *p, double &x, double &y, double &z);
 
     inline double* GetParFit() {return fparFit;}
