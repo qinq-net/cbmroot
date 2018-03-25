@@ -13,7 +13,7 @@ void pl_eff_XY(Int_t iMode=0)
  gStyle->SetPalette(1);
  gStyle->SetLabelSize(lsize);
 
- //gStyle->SetOptStat(kTRUE);
+ gStyle->SetOptStat(kFALSE);
  //gROOT->cd();
  //gROOT->SetDirLevel(2);
 
@@ -105,21 +105,28 @@ void pl_eff_XY(Int_t iMode=0)
 
  can->cd(7);
    if (heff4!=NULL) {
-     heff4->SetMaximum(1.);
      heff4->UseCurrentStyle(); heff4->GetYaxis()->SetLabelSize(lsize);
+     heff4->Draw("colz");
+     heff4->SetMaximum(1.5);
+     heff4->GetZaxis()->SetRangeUser(0.5, 1.5);
+     can->Update();    
      heff4->Draw("colz");
    }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
 
  can->cd(8);
    if (heffS!=NULL) {
-     heffS->SetMaximum(1.);
      heffS->UseCurrentStyle(); heffS->GetYaxis()->SetLabelSize(lsize);
+     heffS->Draw("colz");
+     heffS->SetMaximum(1.5);
+     heffS->GetZaxis()->SetRangeUser(0.5, 1.5);
      heffS->Draw("colz");
    }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
 
  can->cd(9);
    if (heff0!=NULL) {
-     heff0->SetMaximum(1.);
+     heff0->Draw("colz");
+     heff0->SetMaximum(1.5);
+     heff0->GetZaxis()->SetRangeUser(0.5, 1.5);
      heff0->UseCurrentStyle(); heff0->GetYaxis()->SetLabelSize(lsize);
      heff0->Draw("colz");
    }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}

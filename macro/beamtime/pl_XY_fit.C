@@ -2,7 +2,7 @@ void pl_XY_fit(Int_t iNSt=4,  Int_t NewNbinsX=32, Int_t NewNbinsY=32, Int_t iOpt
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
   TCanvas *can = new TCanvas("can","can",50,0,800,800);
-  can->Divide(4,4); 
+  can->Divide(4,iNSt); 
 
 gPad->SetFillColor(0);
 gStyle->SetPalette(1);
@@ -97,21 +97,21 @@ gStyle->SetOptStat(kFALSE);
        cout << "Draw "<<h2n->GetName()<<endl;
        h2n->Draw("colz");
        //gPad->SetLinz();
-       //gPad->SetMargin(0.23,0.23,0.23,0.23);
+       gPad->SetMargin(0.23,0.23,0.23,0.23);
      }
      iCan++;
      can->cd(iCan);
      {
        cout << "Draw "<<h2m->GetName()<<endl;
        h2m->Draw("colz");
-       //gPad->SetMargin(0.23,0.23,0.23,0.23);
+       gPad->SetMargin(0.23,0.23,0.23,0.23);
      }
      iCan++;
      can->cd(iCan);
      {
        cout << "Draw "<<h2s->GetName()<<endl;
        h2s->Draw("colz");
-       //gPad->SetMargin(0.23,0.23,0.23,0.23);
+       gPad->SetMargin(0.23,0.23,0.23,0.23);
      }
      iCan++;
    }else cout << hname << " not found" << endl;

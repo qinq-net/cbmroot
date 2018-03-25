@@ -1,5 +1,7 @@
-void pl_over_MatD4sel()
+void pl_over_MatD4sel(TString sysinfo="")
 {
+ gROOT->LoadMacro("pl_Datime.C");
+
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
   TCanvas *can = new TCanvas("can","can",50,0,800,800);
@@ -162,6 +164,10 @@ can->cd(12);
   h2->Draw("colz");
  }else  { cout << hname << " not found" << endl; }
 }
+
+ TString FADD=Form("pl_Datime(\"%s\")",sysinfo.Data());
+ gInterpreter->ProcessLine(FADD.Data());
+
  //report summary
  can->SaveAs("pl_over_MatD4sel.pdf");
 

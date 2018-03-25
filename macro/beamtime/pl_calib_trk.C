@@ -108,6 +108,7 @@ can->cd(7);
  h1=(TH1 *)gROOT->FindObjectAny(hname);
  if (h1!=NULL) {
   h1->Draw();
+  h1->GetYaxis()->SetTitleOffset(1.3);
   gPad->SetLogz();
  }else 
    {
@@ -120,8 +121,8 @@ can->cd(8);
  h1=(TH1 *)gROOT->FindObjectAny(hname);
  if (h1!=NULL) {
   h1->Draw();
-  h1->SetMaximum(1.);
-  h1->SetMinimum(-1.);
+  h1->SetMaximum(2.);
+  h1->SetMinimum(-2.);
  }else 
    {
      cout << hname << " not found" << endl;
@@ -148,6 +149,7 @@ can->cd(10);
  if (h1!=NULL) {
   h1->Draw();
   h1->SetMinimum(0.);
+  h1->GetYaxis()->SetTitleOffset(1.3);
   //gPad->SetLogz();
  }else 
    {
@@ -162,6 +164,7 @@ can->cd(11);
   h1->Draw();
   h1->SetMaximum(2.);
   h1->SetMinimum(0.);
+  h1->GetYaxis()->SetTitleOffset(1.3);
   gPad->SetLogz();
  }else 
    {
@@ -188,6 +191,7 @@ can->cd(12);
  h2=(TH2 *)gROOT->FindObjectAny(hname);
  if (h2!=NULL) {
   h2->Draw("colz");
+  h2->GetYaxis()->SetTitleOffset(1.3);
   gPad->SetLogz();
  }else 
    {

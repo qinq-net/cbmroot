@@ -93,7 +93,7 @@ can->cd(6);
  TString hname=Form("cl_SmT%d_sm%03d_rpc%03d_Sel%02d_Mul",iSmT,iSm,iRpc,iSel);
  h1=(TH1 *)gROOT->FindObjectAny(hname);
  if (h1!=NULL) {
-  h1->Draw();
+  h1->Draw("HIST E");
   gPad->SetLogy();
  }else { cout << hname << " not found" << endl;  }
 }

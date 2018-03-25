@@ -27,7 +27,7 @@ title->Draw();
   pt->Draw();
   if(sysinfo!=""){
     cout << " add to canvas: sysinfo = " << sysinfo.Data() << endl; 
-    TPaveText *st = new TPaveText(.96,.9,.99,.4,"blNDC");
+    TPaveText *st = new TPaveText(.96,.9,.995,.2,"blNDC");
     st->SetBorderSize(0);
     st->SetFillColor(0);
     TText *text = (TText *) st->AddText(Form("%s",sysinfo.Data()));

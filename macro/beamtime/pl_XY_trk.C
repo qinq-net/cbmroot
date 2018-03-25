@@ -20,6 +20,8 @@ void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5){
 
  // if (h!=NULL) h->Delete();
  Int_t iCan=1;
+ Double_t eff[NSt];
+ Double_t Nall;
  //if(NULL != h2)  h2->Delete();
  //if(NULL != h2m) h2m->Delete();
 
@@ -32,7 +34,7 @@ void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5){
       h2->Draw("colz");
       TH2D *h2acc=(TH2D *)h2->Clone(Form("Acc_%d",iSt));
       h2acc->Divide(h2,h2,1.,1.,"B"); 
-      Double_t Nall=h2->GetEntries();
+      Nall=h2->GetEntries();
       can->cd(iCan++);
       gROOT->cd();
       hname=Form("hXY_MissedStation_%d",iSt);
@@ -44,9 +46,9 @@ void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5){
       TH2D *h2missed=(TH2D *)h2->Clone(Form("Missed_%d",iSt));
       h2missed->Multiply(h2m,h2acc,1.,1.,"B");
       Double_t NmisaI=h2missed->Integral();
-      Double_t eff=1. - NmisaI/(Nall+NmisaI);
+      eff[iSt]=1. - NmisaI/(Nall+NmisaI);
       cout << "Efficiency of Station "<<iSt<<": all "<<Nall<<", mis "<<Nmis<<", "<<NmisI<<", "<<NmisaI
-	   <<" -> "<<Form("%6.3f",eff)<<endl;
+	   <<" -> "<<Form("%6.3f",eff[iSt])<<endl;
 
       can->cd(iCan++);
       hname=Form("Efficiency_%d",iSt);
@@ -72,7 +74,7 @@ void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5){
 	newpad->SetFillStyle(4000);
 	newpad->Draw();
 	newpad->cd();
-	TPaveLabel *tit = new TPaveLabel(0.2,0.75,0.45,0.9,Form(" <eff>: %5.2f",eff));
+	TPaveLabel *tit = new TPaveLabel(0.2,0.75,0.45,0.9,Form(" <eff>: %5.2f",eff[iSt]));
 	tit->SetFillColor(0);
 	tit->SetTextFont(52);
 	tit->SetBorderSize(1);
@@ -84,6 +86,10 @@ void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5){
      cout << hname << " not found" << endl;
    }
  }
+ cout << "Eff-summary: Nall, effs = "<<Nall;
+ for (Int_t iSt=0; iSt<NSt; iSt++) cout << Form(", %6.3f",eff[iSt]);
+ cout <<endl; 
+
  can->SaveAs("pl_XY_trk.pdf");
 
 }
