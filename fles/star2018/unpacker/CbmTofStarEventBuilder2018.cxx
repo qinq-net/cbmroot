@@ -93,6 +93,7 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fuStarTrigCmdLastCore(),
     fhTokenMsgType(),
     fhTriggerRate(),
+    fhTriggerRateLong(),
     fhCmdDaqVsTrig(),
     fhStarTokenEvo(),
     fhStarTrigGdpbTsEvo(),
@@ -281,6 +282,7 @@ Bool_t CbmTofStarEventBuilder2018::ReInitContainers()
    fuStarTrigCmdLastCore.resize(  fuNrOfGdpbs );
    fhTokenMsgType.resize(  fuNrOfGdpbs );
    fhTriggerRate.resize(  fuNrOfGdpbs );
+   fhTriggerRateLong.resize(  fuNrOfGdpbs );
    fhCmdDaqVsTrig.resize(  fuNrOfGdpbs );
    fhStarTokenEvo.resize(  fuNrOfGdpbs );
    fhStarTrigGdpbTsEvo.resize(  fuNrOfGdpbs );
@@ -303,6 +305,7 @@ Bool_t CbmTofStarEventBuilder2018::ReInitContainers()
       fuStarTrigCmdLastCore[ uGdpb ] = 0;
       fhTokenMsgType[ uGdpb ] = NULL;
       fhTriggerRate[ uGdpb ]  = NULL;
+      fhTriggerRateLong[ uGdpb ]  = NULL;
       fhCmdDaqVsTrig[ uGdpb ] = NULL;
       fhStarTokenEvo[ uGdpb ] = NULL;
       fhStarTrigGdpbTsEvo[ uGdpb ] = NULL;
@@ -406,6 +409,14 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
 #ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhTriggerRate[ uGdpb ] );
+#endif
+
+      name = Form( "hTriggerRateLong_gDPB_%02u", uGdpb);
+      title = Form( "STAR trigger signals per minute gDPB %02u; Time[min] ; Counts", uGdpb);
+      fhTriggerRateLong[ uGdpb ] =  new TH1F(name, title, fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong);
+#ifdef USE_HTTP_SERVER
+      if (server)
+         server->Register("/StarRaw", fhTriggerRateLong[ uGdpb ] );
 #endif
 
       name = Form( "hCmdDaqVsTrig_gDPB_%02u", uGdpb);
@@ -544,7 +555,7 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       name = "StarEventSizeTime";
       title = "STAR SubEvent size for all gDPBS; run time [s]; SubEvent size [bytes]";
       uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize()
-                                            / (sizeof( ngdpb::Message )) );
+                                            / (sizeof( gdpb::FullMessage )) );
       fhStarEventSizeTime = new TH2I( name.Data(), title.Data(),
                    fuHistoryHistoSize, 0.0, fuHistoryHistoSize,
                    uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() );
@@ -556,7 +567,7 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       name = "StarEventSizeTimeLong";
       title = "STAR SubEvent size for all gDPB; run time [min]; SubEvent size [bytes]";
       uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize()
-                                            / (sizeof( ngdpb::Message )) );
+                                            / (sizeof( gdpb::FullMessage )) );
       fhStarEventSizeTimeLong = new TH2I( name.Data(), title.Data(),
                    fuHistoryHistoSizeLong, 0.0, fuHistoryHistoSizeLong,
                    uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() );
@@ -1299,6 +1310,8 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
                } // if( fuHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * get4v2x::kdClockCycleSizeNs - fdStartTime) )
 
                fhTriggerRate[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ) );
+               fhTriggerRateLong[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ) / 60.0,
+                                                  1 / 60.0 );
                fhStarTokenEvo[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ),
                                                fuStarTokenLast[fuGdpbNr] );
                fhStarTrigGdpbTsEvo[fuGdpbNr]->Fill( 1e-9 * ( fulGdpbTsFullLast[fuGdpbNr] * get4v2x::kdClockCycleSizeNs - fdStartTime ),
@@ -1408,6 +1421,7 @@ void CbmTofStarEventBuilder2018::SaveAllHistos( TString sFileName )
       /// Token detection
       fhTokenMsgType[ uGdpb ]->Write();
       fhTriggerRate[ uGdpb ]->Write();
+      fhTriggerRateLong[ uGdpb ]->Write();
       fhCmdDaqVsTrig[ uGdpb ]->Write();
       fhStarTokenEvo[ uGdpb ]->Write();
       fhStarTrigGdpbTsEvo[ uGdpb ]->Write();
@@ -1470,6 +1484,7 @@ void CbmTofStarEventBuilder2018::ResetAllHistos()
       /// Token detection
       fhTokenMsgType[ uGdpb ]->Reset();
       fhTriggerRate[ uGdpb ]->Reset();
+      fhTriggerRateLong[ uGdpb ]->Reset();
       fhCmdDaqVsTrig[ uGdpb ]->Reset();
       fhStarTokenEvo[ uGdpb ]->Reset();
       fhStarTrigGdpbTsEvo[ uGdpb ]->Reset();
@@ -1523,6 +1538,10 @@ void CbmTofStarEventBuilder2018::ResetEvolutionHistograms()
 }
 void CbmTofStarEventBuilder2018::ResetLongEvolutionHistograms()
 {
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      fhTriggerRate[ uGdpb ]->Reset();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
    if( kFALSE == fbEventBuilding )
    {
@@ -1535,7 +1554,6 @@ void CbmTofStarEventBuilder2018::ResetLongEvolutionHistograms()
       {
          fhStarEventSizeTimeLong->Reset();
       } // else of if( kFALSE == fbEventBuilding )
-
    fdStartTimeLong = -1;
 }
 
@@ -1640,7 +1658,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsSingleLink()
       if( 0 < fdStartTime )
          fhStarEventSizeTime_gDPB[ fuGdpbNr ]->Fill( 1e-9 *(dTriggerTime - fdStartTime), iBuffSzByte );
       if( 0 < fdStartTimeLong )
-         fhStarEventSizeTimeLong_gDPB[ fuGdpbNr ]->Fill( 1e-9 *(dTriggerTime - fdStartTimeLong) / 60.0, iBuffSzByte/60.0 );
+         fhStarEventSizeTimeLong_gDPB[ fuGdpbNr ]->Fill( 1e-9 *(dTriggerTime - fdStartTimeLong) / 60.0, iBuffSzByte );
 
       /// Now clear the sub-event
       fStarSubEvent.ClearSubEvent();
@@ -1895,7 +1913,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
       if( 0 < fdStartTime )
          fhStarEventSizeTime->Fill( 1e-9 *(dMeanTriggerGdpbTs - fdStartTime), iBuffSzByte );
       if( 0 < fdStartTimeLong )
-         fhStarEventSizeTimeLong->Fill( 1e-9 *(dMeanTriggerGdpbTs - fdStartTimeLong) / 60.0, iBuffSzByte/60.0 );
+         fhStarEventSizeTimeLong->Fill( 1e-9 *(dMeanTriggerGdpbTs - fdStartTimeLong) / 60.0, iBuffSzByte );
 
       /// Now clear the sub-event
       fStarSubEvent.ClearSubEvent();
@@ -2159,7 +2177,7 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
             if( 0 < fdStartTime )
                fhStarEventSizeTime->Fill( 1e-9 *(dMeanTriggerGdpbTsOver - fdStartTime), iBuffSzByte );
             if( 0 < fdStartTimeLong )
-               fhStarEventSizeTimeLong->Fill( 1e-9 *(dMeanTriggerGdpbTsOver - fdStartTimeLong) / 60.0, iBuffSzByte/60.0 );
+               fhStarEventSizeTimeLong->Fill( 1e-9 *(dMeanTriggerGdpbTsOver - fdStartTimeLong) / 60.0, iBuffSzByte );
 
             /// Now clear the sub-event
             fStarSubEvent.ClearSubEvent();

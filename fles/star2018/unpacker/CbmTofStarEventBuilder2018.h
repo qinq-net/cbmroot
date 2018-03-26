@@ -160,6 +160,7 @@ private:
    std::vector< UInt_t    > fuStarTrigCmdLastCore;
    std::vector< TH1 *     > fhTokenMsgType;
    std::vector< TH1 *     > fhTriggerRate;
+   std::vector< TH1 *     > fhTriggerRateLong;
    std::vector< TH2 *     > fhCmdDaqVsTrig;
    std::vector< TH2 *     > fhStarTokenEvo;
    std::vector< TProfile * > fhStarTrigGdpbTsEvo;
