@@ -1,20 +1,21 @@
-void run_sim(Int_t nEvents = 12)
+void run_sim(Int_t nEvents = 10)
 {
+
     TTree::SetMaxTreeSize(90000000000);
-    Int_t iVerbose = 0;
-    
+
     TString script = TString(gSystem->Getenv("SCRIPT"));
-    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
-    
-    //gRandom->SetSeed(10);
-    
-    TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
-    TString parFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/param.00000.root";
-    TString geoFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/geofilefull.00000.root";
-    TString mcFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/mc.00000.root";
-    
-    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
-    
+
+    TString myName = "run_sim";  // this macro's name for screen output
+    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+
+    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_v18a_1e.C";
+
+    TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root";
+    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
+    TString parFile =  outDir + "param.00000.root";
+    TString mcFile = outDir + "mc.00000.root";
+    TString geoFile = outDir + "geosim.00000.root";
+
     TString electrons = "yes"; // If "yes" than primary electrons will be generated
     Int_t NELECTRONS = 5; // number of e- to be generated
     Int_t NPOSITRONS = 5; // number of e+ to be generated
@@ -22,14 +23,15 @@ void run_sim(Int_t nEvents = 12)
     TString pluto = "no"; // If "yes" PLUTO particles will be embedded
     TString plutoFile = "";
     TString plutoParticle = "";
-    
+
+
     if (script == "yes") {
         urqmdFile = TString(gSystem->Getenv("IN_FILE"));
         mcFile = TString(gSystem->Getenv("MC_FILE"));
         parFile = TString(gSystem->Getenv("PAR_FILE"));
-        
-        geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
-        
+        geoFile = TString(gSystem->Getenv("GEOSIM_FILE"));
+        geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+
         NELECTRONS = TString(gSystem->Getenv("NELECTRONS")).Atoi();
         NPOSITRONS = TString(gSystem->Getenv("NPOSITRONS")).Atoi();
         electrons = TString(gSystem->Getenv("ELECTRONS"));
@@ -38,121 +40,75 @@ void run_sim(Int_t nEvents = 12)
         plutoFile = TString(gSystem->Getenv("PLUTO_FILE"));
         plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
     }
-    
     remove(parFile.Data());
     remove(mcFile.Data());
-    
-    gDebug = 0;
-    TStopwatch timer;
-    timer.Start();
-    
-    //setup all geometries from macro
-    cout << "geoSetupName:" << geoSetupFile << endl;
-    gROOT->LoadMacro(geoSetupFile);
-    init_geo_setup();
-    
-    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-    loadlibs();
-    
-    //Logger settings
-    TString logLevel = "INFO";   // "DEBUG";
-    TString logVerbosity = "LOW";
-    
-    //Target geometry
+    remove(geoFile.Data());
+
+    // Target geometry
     TString  targetElement   = "Gold";
-    Double_t targetThickness = 0.025; // 250 mum, full thickness in cm
+    Double_t targetThickness = 0.025;  // full thickness in cm
     Double_t targetDiameter  = 2.5;    // diameter in cm
     Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
     Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
     Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
     Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
-    
-    // creation of the primary vertex
+
+
+    // primary vertex
     Bool_t smearVertexXY = kTRUE;
     Bool_t smearVertexZ  = kTRUE;
-    Double_t beamWidthX   = 1.;  // Gaussian sigma of the beam profile in x [cm]
-    Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
-    // ------------------------------------------------------------------------
-    
-    FairRunSim* fRun = new FairRunSim();
-    fRun->SetName("TGeant3");
-    fRun->SetOutputFile(mcFile);
-    fRun->SetGenerateRunInfo(kTRUE);
-    FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
-    
-  //  gLogger->SetLogScreenLevel(logLevel.Data());
-   // gLogger->SetLogVerbosityLevel(logVerbosity.Data());
-    
-    fRun->SetMaterials("media.geo"); // Materials
-    
-    if ( caveGeom != "" ) {
-        FairModule* cave = new CbmCave("CAVE");
-        cave->SetGeometryFileName(caveGeom);
-        fRun->AddModule(cave);
-    }
-    
-    if ( pipeGeom != "" ) {
-        FairModule* pipe = new CbmPipe("PIPE");
-        pipe->SetGeometryFileName(pipeGeom);
-        fRun->AddModule(pipe);
-    }
-    
+    Double_t beamWidthX   = 0.1;  // Gaussian sigma of the beam profile in x [cm]
+    Double_t beamWidthY   = 0.1;  // Gaussian sigma of the beam profile in y [cm]
+
+    TStopwatch timer;
+    timer.Start();
+    gDebug = 0;
+
+    FairRunSim* run = new FairRunSim();
+    run->SetName("TGeant3");
+    run->SetOutputFile(mcFile);
+    run->SetGenerateRunInfo(kTRUE);
+
+    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+    FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
+
+    TString setupFunct = "do_setup()";
+    std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
+    gROOT->LoadMacro(geoSetupFile);
+    gROOT->ProcessLine(setupFunct);
+
+    std::cout << std:: endl << "-I- " << myName << ": Setting media file" << std::endl;
+    run->SetMaterials("media.geo"); // Materials
+
+    TString macroName = gSystem->Getenv("VMCWORKDIR");
+    macroName += "/macro/run/modules/registerSetup.C";
+    std::cout << std::endl << "Loading macro " << macroName << std::endl;
+    gROOT->LoadMacro(macroName);
+    gROOT->ProcessLine("registerSetup()");
+
+
+    std::cout << std::endl << "-I- " << myName << ": Registering target" << std::endl;
     CbmTarget* target = new CbmTarget(targetElement.Data(), targetThickness, targetDiameter);
     target->SetPosition(targetPosX, targetPosY, targetPosZ);
     target->SetRotation(targetRotY);
-    fRun->AddModule(target);
-    
-    if ( magnetGeom != "" ) {
-        FairModule* magnet = new CbmMagnet("MAGNET");
-        magnet->SetGeometryFileName(magnetGeom);
-        fRun->AddModule(magnet);
+    target->Print();
+    run->AddModule(target);
+
+    // Magnetic field
+    std::cout << std::endl << "-I- " << myName << ": Registering magnetic field" << std::endl;
+    CbmFieldMap* magField = CbmSetup::Instance()->CreateFieldMap();
+    if ( !magField ) {
+        std::cout << "-ERROR- : No valid field!";
+        return;
     }
-    
-    if ( mvdGeom != "" ) {
-        FairDetector* mvd = new CbmMvd("MVD", kTRUE);
-        mvd->SetGeometryFileName(mvdGeom);
-        mvd->SetMotherVolume("pipevac1");
-        fRun->AddModule(mvd);
-    }
-    
-    if ( stsGeom != "" ) {
-        FairDetector* sts = new CbmStsMC(kTRUE);
-        sts->SetGeometryFileName(stsGeom);
-        fRun->AddModule(sts);
-    }
-    
-    if ( richGeom != "" ) {
-        FairDetector* rich = new CbmRich("RICH", kTRUE);
-        rich->SetGeometryFileName(richGeom);
-        fRun->AddModule(rich);
-    }
-    
-    if ( trdGeom != "" ) {
-        FairDetector* trd = new CbmTrd("TRD",kTRUE );
-        trd->SetGeometryFileName(trdGeom);
-        fRun->AddModule(trd);
-    }
-    
-    if ( tofGeom != "" ) {
-        FairDetector* tof = new CbmTof("TOF", kTRUE);
-        tof->SetGeometryFileName(tofGeom);
-        fRun->AddModule(tof);
-    }
-    
-    // Create magnetic field
-    cout <<"fieldSymType=" << fieldSymType << endl;
-    CbmFieldMap* magField = NULL;
-    if ( 2 == fieldSymType ) {
-        CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
-    }  else if ( 3 == fieldSymType ) {
-        CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
-    }
-    magField->SetPosition(0., 0., fieldZ);
-    magField->SetScale(fieldScale);
-    fRun->SetField(magField);
-    
-    // -----   Create PrimaryGenerator   --------------------------------------
+    run->SetField(magField);
+
+    //  PrimaryGenerator
+    std::cout << std::endl << "-I- " << myName << ": Registering event generators" << std::endl;
     FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
+    // --- Uniform distribution of event plane angle
+    primGen->SetEventPlane(0., 2. * TMath::Pi());
+    // --- Get target parameters
     Double_t tX = 0.;
     Double_t tY = 0.;
     Double_t tZ = 0.;
@@ -165,13 +121,16 @@ void run_sim(Int_t nEvents = 12)
     primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
     primGen->SmearGausVertexXY(smearVertexXY);
     primGen->SmearVertexZ(smearVertexZ);
-    
+
+
+
     if (urqmd == "yes"){
-        CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(urqmdFile);
-        uniGen->SetEventPlane(0. , 360.);
-        primGen->AddGenerator(uniGen);
+        CbmUnigenGenerator*  urqmdGen = new CbmUnigenGenerator(urqmdFile);
+        urqmdGen->SetEventPlane(0. , 360.);
+        urqmdGen->SetEventPlane(0. , 360.);
+        primGen->AddGenerator(urqmdGen);
     }
-    
+
     //add electrons
     if (electrons == "yes"){
         FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, NPOSITRONS);
@@ -181,7 +140,7 @@ void run_sim(Int_t nEvents = 12)
         boxGen1->SetCosTheta();
         boxGen1->Init();
         primGen->AddGenerator(boxGen1);
-        
+
         FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, NELECTRONS);
         boxGen2->SetPtRange(0.,3.);
         boxGen2->SetPhiRange(0.,360.);
@@ -189,57 +148,50 @@ void run_sim(Int_t nEvents = 12)
         boxGen2->SetCosTheta();
         boxGen2->Init();
         primGen->AddGenerator(boxGen2);
-        
-        //      CbmLitPolarizedGenerator *polGen;
-        //      polGen = new CbmLitPolarizedGenerator(443, NELECTRONS);
-        //      polGen->SetDistributionPt(0.176);        // 25 GeV
-        //      polGen->SetDistributionY(1.9875,0.228);  // 25 GeV
-        //      polGen->SetRangePt(0.,3.);
-        //      polGen->SetRangeY(1.,3.);
-        //      polGen->SetBox(0);
-        //      polGen->SetRefFrame(CbmLitPolarizedGenerator::kHelicity);
-        //      polGen->SetDecayMode(CbmLitPolarizedGenerator::kDiElectron);
-        //      polGen->SetAlpha(0);
-        //      polGen->Init();
-        //      primGen->AddGenerator(polGen);
     }
-    
+
     if (pluto == "yes") {
-        CbmPlutoGenerator *plutoGen= new CbmPlutoGenerator(plutoFile);
-        primGen->AddGenerator(plutoGen);
+       // CbmPlutoGenerator *plutoGen= new CbmPlutoGenerator(plutoFile);
+       // primGen->AddGenerator(plutoGen);
     }
-    
-    fRun->SetGenerator(primGen);
-    
-    fRun->Init();
-    
+
+    run->SetGenerator(primGen);
+
+    std::cout << std::endl << "-I- " << myName << ": Initialise run" << std::endl;
+    run->Init();
+
     // -----   Runtime database   ---------------------------------------------
+    std::cout << std::endl << std::endl;
+    std::cout << "-I- " << myName << ": Set runtime DB" << std::endl;
+    FairRuntimeDb* rtdb = run->GetRuntimeDb();
     CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
     fieldPar->SetParameters(magField);
     fieldPar->setChanged();
-    fieldPar->setInputVersion(fRun->GetRunId(),1);
+    fieldPar->setInputVersion(run->GetRunId(),1);
     Bool_t kParameterMerged = kTRUE;
     FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
     parOut->open(parFile.Data());
     rtdb->setOutput(parOut);
     rtdb->saveOutput();
     rtdb->print();
-    
-    fRun->Run(nEvents);
-    
-    fRun->CreateGeometryFile(geoFile);
-    
+
+
+    std::cout << std::endl << std::endl << "-I- " << myName << ": Starting run" << std::endl;
+    run->Run(nEvents);
+
+
+    run->CreateGeometryFile(geoFile);
+
     timer.Stop();
     Double_t rtime = timer.RealTime();
     Double_t ctime = timer.CpuTime();
-    cout << endl << endl;
-    cout << "Macro finished succesfully." << endl;
-    cout << "Output file is "    << mcFile << endl;
-    cout << "Parameter file is " << parFile << endl;
-    cout << "Real time " << rtime << " s, CPU time " << ctime
-    << "s" << endl << endl;
-    
-    cout << " Test passed" << endl;
-    cout << " All ok " << endl;
+    std::cout << std::endl << std::endl;
+    std::cout << "Macro finished successfully." << std::endl;
+    std::cout << "Output file is "    << mcFile << std::endl;
+    std::cout << "Parameter file is " << parFile << std::endl;
+    std::cout << "Geometry file is "  << geoFile << std::endl;
+    std::cout << "Real time " << rtime << " s, CPU time " << ctime << "s" << std::endl << std::endl;
+    std::cout << " Test passed" << std::endl;
+    std::cout << " All ok " << std::endl;
 }
 
