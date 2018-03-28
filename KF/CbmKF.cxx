@@ -97,6 +97,9 @@ InitStatus CbmKF::ReInit()
 
 InitStatus CbmKF::Init()
 {
+  if(!CbmStsSetup::Instance()->IsInit()) //TODO remove initialisation when the problem will be resolved globaly 
+    CbmStsSetup::Instance()->Init();
+  
   fMagneticField = 0;
   
   vMvdMaterial.clear();
