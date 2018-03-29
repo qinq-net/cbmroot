@@ -10,16 +10,17 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void BuildEventStar2018( TString inFile = "",
+void BuildEventStar2018( TString inFile = "", TString inDir = "",
                          Bool_t bEventBuildingMode = kFALSE, Bool_t bTimeSort = kTRUE,
                          Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8081,
                          size_t uAcceptBoundaryPct = 100  )
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
+/*
   TString inDir  = srcDir + "/input/";
   if( "" != inFile )
    inFile = inDir + inFile;
-
+*/
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
   Int_t nEvents = -1;
@@ -65,8 +66,13 @@ void BuildEventStar2018( TString inFile = "",
 
   // --- Source task
   CbmTofStar2018Source* source = new CbmTofStar2018Source();
+  CbmFlibTestSource* sourceFile = new CbmFlibTestSource();
   if( "" != inFile )
-      source->SetFileName(inFile);
+  {
+      sourceFile->AddPath(inDir,inFile);
+      sourceFile->AddUnpacker(etofEventBuilder, 0x60, 6);//gDPBs
+  }
+//      source->SetFileName(inFile);
       else
       {
          source->SetHostName( "localhost");
@@ -80,7 +86,10 @@ void BuildEventStar2018( TString inFile = "",
   event->SetRunId(1);
 
   // --- Run
-  run = new FairRunOnline(source);
+//  run = new FairRunOnline(source);
+  if( "" != inFile )
+   run = new FairRunOnline(sourceFile);
+   else run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
   run->SetEventHeader(event);
   run->ActivateHttpServer( iServerRefreshRate, iServerHttpPort ); // refresh each 100 events
@@ -104,6 +113,8 @@ void BuildEventStar2018( TString inFile = "",
   std::cout << ">>> ngDpbMonitorLab: Starting run..." << std::endl;
   run->Run(nEvents, 0); // run until end of input file
   timer.Stop();
+
+  run->Finish();
 
   std::cout << "Processed " << std::dec << source->GetTsCount() << " timeslices" << std::endl;
 
