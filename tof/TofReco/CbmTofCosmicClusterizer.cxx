@@ -1934,29 +1934,29 @@ Bool_t   CbmTofCosmicClusterizer::FillHistos()
 	   //             fhRpcCluAvWalk[iDetIndx]->Fill(0.5*(pDig0->GetTot()+pDig1->GetTot()),
 	   //                        0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime());
 
-           fhRpcCluAvLnWalk[iDetIndx]->Fill(TMath::Log10(0.5*(pDig0->GetTot()+pDig1->GetTot())),
-                                       0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime());
 
            Double_t dTotWeigth=(pDig0->GetTot()+pDig1->GetTot())/TotSum;
-           Double_t dCorWeigth=1.-dTotWeigth;
+           //Double_t dCorWeigth=1.-dTotWeigth;
+           Double_t dCorWeigth=1.;
+	   Double_t dTDigi = 0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime();
 
-           fhRpcCluDelTOff[iDetIndx]->Fill(pDig0->GetChannel(),
-                                           dCorWeigth*(0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime()));
+           fhRpcCluAvLnWalk[iDetIndx]->Fill(TMath::Log10(0.5*(pDig0->GetTot()+pDig1->GetTot())),dTDigi);
+
+           fhRpcCluDelTOff[iDetIndx]->Fill(pDig0->GetChannel(),dCorWeigth*dTDigi);
 
            Double_t dDelPos=0.5*(pDig0->GetTime()-pDig1->GetTime())*fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc);
            if(0==pDig0->GetSide()) dDelPos *= -1.;
            fhRpcCluDelPos[iDetIndx]->Fill(pDig0->GetChannel(),dCorWeigth*(dDelPos-hitpos_local[1]));
 
-           fhRpcCluWalk[iDetIndx][iCh0][iS0]->Fill(pDig0->GetTot(),pDig0->GetTime()-(pHit->GetTime()
-			 -(1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)));
+           fhRpcCluWalk[iDetIndx][iCh0][iS0]->Fill(pDig0->GetTot(),dTDigi);
+	   //pDig0->GetTime()-(pHit->GetTime() -(1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)));
               
-           fhRpcCluWalk[iDetIndx][iCh1][iS1]->Fill(pDig1->GetTot(),pDig1->GetTime()-(pHit->GetTime()
-                         -(1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)));
+           fhRpcCluWalk[iDetIndx][iCh1][iS1]->Fill(pDig1->GetTot(),dTDigi);
+	   //pDig1->GetTime()-(pHit->GetTime()-(1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)));
 
-           fhRpcCluAvWalk[iDetIndx]->Fill(pDig0->GetTot(),pDig0->GetTime()-(pHit->GetTime()
-                         -(1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)));
-	   fhRpcCluAvWalk[iDetIndx]->Fill(pDig1->GetTot(),pDig1->GetTime()-(pHit->GetTime()
-                         -(1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc)));
+           fhRpcCluAvWalk[iDetIndx]->Fill(pDig0->GetTot(),dTDigi);
+	   fhRpcCluAvWalk[iDetIndx]->Fill(pDig1->GetTot(),dTDigi);
+
          }  // end of Clustersize > 1 condition 
 
          LOG(DEBUG1)<<" fhRpcCluTot: Digi 0 "<<iDigInd0<<": Ch "<<pDig0->GetChannel()<<", Side "<<pDig0->GetSide()
@@ -2307,10 +2307,10 @@ Bool_t   CbmTofCosmicClusterizer::WriteHistos()
      TH1      *htempTot_Off  = NULL; 
 
      if(-1<fCalSel){
-       //htempPos      = fhRpcCluPosition[iDetIndx]; // use untriggered distributions for position  
-       //htempPos_pfx  = fhRpcCluPosition[iDetIndx]->ProfileX("_pfx",1,fhRpcCluPosition[iDetIndx]->GetNbinsY());
-       htempPos      = fhTRpcCluPosition[iDetIndx][fCalSel];
-       htempPos_pfx  = fhTRpcCluPosition[iDetIndx][fCalSel]->ProfileX("_pfx",1,fhTRpcCluPosition[iDetIndx][fCalSel]->GetNbinsY());
+       htempPos      = fhRpcCluPosition[iDetIndx]; // use untriggered distributions for position  
+       htempPos_pfx  = fhRpcCluPosition[iDetIndx]->ProfileX("_pfx",1,fhRpcCluPosition[iDetIndx]->GetNbinsY());
+       //htempPos      = fhTRpcCluPosition[iDetIndx][fCalSel];
+       //htempPos_pfx  = fhTRpcCluPosition[iDetIndx][fCalSel]->ProfileX("_pfx",1,fhTRpcCluPosition[iDetIndx][fCalSel]->GetNbinsY());
        htempTOff     = fhTRpcCluTOff[iDetIndx][fCalSel]; // -> Comment to remove warning because set but never used
        htempTOff_pfx = htempTOff->ProfileX("_pfx",1,fhTRpcCluTOff[iDetIndx][fCalSel]->GetNbinsY());
        htempTOff_px  = htempTOff->ProjectionX("_px",1,fhTRpcCluTOff[iDetIndx][fCalSel]->GetNbinsY());
