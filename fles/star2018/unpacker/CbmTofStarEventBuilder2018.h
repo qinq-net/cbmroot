@@ -187,6 +187,10 @@ private:
    std::vector< std::vector < CbmTofStarTrigger  > > fvtTsOverLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
    std::vector<TH1*> fhStarHitToTrigAll_gDPB;
    std::vector<TH1*> fhStarHitToTrigWin_gDPB;
+   std::vector<TH2*> fhStarHitToTrigAllTime_gDPB;
+   std::vector<TH2*> fhStarHitToTrigWinTime_gDPB;
+   std::vector<TH2*> fhStarHitToTrigAllTimeLong_gDPB;
+   std::vector<TH2*> fhStarHitToTrigWinTimeLong_gDPB;
    std::vector<TH1*> fhStarEventSize_gDPB;
    std::vector<TH2*> fhStarEventSizeTime_gDPB;
    std::vector<TH2*> fhStarEventSizeTimeLong_gDPB;
@@ -194,6 +198,9 @@ private:
    TH1 * fhStarEventSize;
    TH2 * fhStarEventSizeTime;
    TH2 * fhStarEventSizeTimeLong;
+
+   std::chrono::time_point<std::chrono::system_clock> fStartTimeProcessingLastTs;
+   TH2 * fhStarTsProcessTime;
 
    std::vector< std::vector < gdpb::Message > > fvmEpSupprBuffer;
 
