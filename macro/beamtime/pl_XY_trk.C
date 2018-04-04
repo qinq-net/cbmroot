@@ -1,4 +1,4 @@
-void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5){
+void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5, Double_t dThr=0.05){
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
   TCanvas *can = new TCanvas("can","can",50,0,800,800);
@@ -33,7 +33,12 @@ void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5){
   if (h2!=NULL) {
       h2->Draw("colz");
       TH2D *h2acc=(TH2D *)h2->Clone(Form("Acc_%d",iSt));
-      h2acc->Divide(h2,h2,1.,1.,"B"); 
+      //h2acc->Divide(h2,h2,1.,1.,"B"); 
+      h2acc->Reset();
+      Int_t    Nbins=h2->GetNbinsX()*h2->GetNbinsY();
+      Double_t dMax=dThr*h2->GetMaximum();
+      for(Int_t i=0; i<Nbins; i++) 
+	h2->GetBinContent(i+1) < dMax  ?  h2acc->SetBinContent(i+1,0.) : h2acc->SetBinContent(i+1,1.);  
       Nall=h2->GetEntries();
       can->cd(iCan++);
       gROOT->cd();
@@ -60,6 +65,7 @@ void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5){
       if(NULL != h2tot) h2tot->Delete();
       h2tot=(TH2D *)h2m->Clone(hname);
       h2tot->Add(h2tot,h2,1.,1.);
+      h2tot->Multiply(h2tot,h2acc,1.,1.,"B");
       h2eff->Reset();
       h2eff->Divide(h2,h2tot,1.,1.,"B");
       h2eff->SetTitle(Form("Efficiency of station %d",iSt));
