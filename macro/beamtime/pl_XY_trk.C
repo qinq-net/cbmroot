@@ -1,4 +1,4 @@
-void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5, Double_t dThr=0.05){
+void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5, Double_t dThr=0.01){
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
   TCanvas *can = new TCanvas("can","can",50,0,800,800);
@@ -39,7 +39,9 @@ void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5, Double_t dThr=0.05){
       Double_t dMax=dThr*h2->GetMaximum();
       for(Int_t i=0; i<Nbins; i++) 
 	h2->GetBinContent(i+1) < dMax  ?  h2acc->SetBinContent(i+1,0.) : h2acc->SetBinContent(i+1,1.);  
-      Nall=h2->GetEntries();
+      TH2D *h2aall=(TH2D *)h2->Clone(Form("ALL_acc%d",iSt));
+      h2aall->Multiply(h2aall,h2acc,1.,1.,"B");
+      Nall=h2aall->Integral();
       can->cd(iCan++);
       gROOT->cd();
       hname=Form("hXY_MissedStation_%d",iSt);
@@ -53,7 +55,7 @@ void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5, Double_t dThr=0.05){
       Double_t NmisaI=h2missed->Integral();
       eff[iSt]=1. - NmisaI/(Nall+NmisaI);
       cout << "Efficiency of Station "<<iSt<<": all "<<Nall<<", mis "<<Nmis<<", "<<NmisI<<", "<<NmisaI
-	   <<" -> "<<Form("%6.3f",eff[iSt])<<endl;
+	   << " -> "<<Form("%6.3f",eff[iSt])<<endl;
 
       can->cd(iCan++);
       hname=Form("Efficiency_%d",iSt);
