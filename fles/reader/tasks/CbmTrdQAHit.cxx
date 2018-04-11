@@ -110,7 +110,7 @@ CbmTrdQAHit::CreateHistograms ()
 	{
 	  for (Int_t channel = 0; channel < 32; channel++)
 	    {
-	      for (Int_t trigger = 1; trigger < 5; trigger++)
+	      for (Int_t trigger = 0; trigger < 4; trigger++)
 		{
 		  TString spadicName = GetSpadicName (syscore, spadic, "Afck",
 						      true);
@@ -340,7 +340,7 @@ CbmTrdQAHit::Exec (Option_t*)
     }
   LOG(INFO) << this->GetName () << ": Loop for Hitfrequency_vs_Time done"
 	       << FairLogger::endl;
-  if (nSpadicMessages != 0&&false)
+  if (nSpadicMessages != 0)
     {
       std::vector<TH2*> SignalShapes (
 	  static_cast<size_t> (fBT->GetNrRobs () * fBT->GetNrSpadics () * 32 * 5));
@@ -350,7 +350,7 @@ CbmTrdQAHit::Exec (Option_t*)
 	    {
 	      for (Int_t channel = 0; channel < 32; channel++)
 		{
-		  for (Int_t trigger = 1; trigger < 5; trigger++)
+		  for (Int_t trigger = 0; trigger < 4; trigger++)
 		    {
 		      TString spadicName = GetSpadicName (afck, spadic, "Afck",
 							  true);
@@ -377,8 +377,7 @@ CbmTrdQAHit::Exec (Option_t*)
 	  int afck = fBT->GetRobID (raw);
 	  int spadic = fBT->GetSpadicID (raw) / 2;
 	  int trigger = raw->GetTriggerType ();
-	  int channel = raw->GetChannelID () + 16 * fBT->GetSpadicID (raw) % 2;
-	  TH2* CurrentHisto = SignalShapes.at (
+	  int channel = raw->GetChannelID () + 16 * (fBT->GetSpadicID (raw) % 2);	  TH2* CurrentHisto = SignalShapes.at (
 	      afck * fBT->GetNrSpadics () * 32 * 4 + spadic * 32 * 4
 		  + channel * 4 + trigger);
 	  Int_t* Samples = raw->GetSamples ();
