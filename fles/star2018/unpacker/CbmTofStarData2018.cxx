@@ -56,6 +56,7 @@ CbmTofStarSubevent2018::CbmTofStarSubevent2018() :
    fTrigger( CbmTofStarTrigger( 0, 0, 0, 0, 0) ),
    fusSourceId( 0 ),
    fulEventStatusFlags( 0 ),
+   fuEventSizeBytes( 0 ),
    fvMsgBuffer()
 {
 }
@@ -64,6 +65,7 @@ CbmTofStarSubevent2018::CbmTofStarSubevent2018( CbmTofStarTrigger triggerIn, USh
    fTrigger( triggerIn ),
    fusSourceId( sourceIdIn ),
    fulEventStatusFlags( 0 ),
+   fuEventSizeBytes( 0 ),
    fvMsgBuffer()
 {
    SetSource( sourceIdIn );
@@ -109,6 +111,11 @@ void * CbmTofStarSubevent2018::BuildOutput( Int_t & iOutputSizeBytes )
       uMsgsToRead      = kuMaxNbMsgs;
       fulEventStatusFlags |= kulFlagBadEvt;
    } // if( kuMaxOutputSize < iOutputSizeBytes )
+
+   /// Store the event size in the free part of the status member for consistency checks
+   fuEventSizeBytes = iOutputSizeBytes & kulEventSizeMask;
+   fulEventStatusFlags =   (fulEventStatusFlags & !( kulEventSizeMask << kulEventSizeOffset ) )
+                         | ( static_cast< ULong64_t >( fuEventSizeBytes ) << kulEventSizeOffset );
 
    // Fills header info
    fpulBuff[0] = fTrigger.GetFullGdpbTs();
@@ -156,6 +163,10 @@ Bool_t CbmTofStarSubevent2018::LoadInput( void * pBuff, Int_t iInputSizeBytes )
    UInt_t    uStarTrigCmdIn  = (pulLongBuff[2]      ) & 0x00F;
    fulEventStatusFlags       = pulLongBuff[3];
 
+   fusSourceId = (fulEventStatusFlags >> kulSourceIdOffset ) & kulSourceIdMask;
+
+   fuEventSizeBytes = (fulEventStatusFlags >> kulEventSizeOffset ) & kulEventSizeMask;
+
    fTrigger.SetFullGdpbTs( ulTrgGdpbFullTs );
    fTrigger.SetFullStarTs( ulTrgStarFullTs );
    fTrigger.SetStarToken(  uStarToken );
@@ -163,7 +174,7 @@ Bool_t CbmTofStarSubevent2018::LoadInput( void * pBuff, Int_t iInputSizeBytes )
    fTrigger.SetStarTRigCmd(uStarTrigCmdIn );
 
    // Read as many messages as left in the buffer and store them in the vector
-   UInt_t uMsgsToRead = iInputSzLg - 4;
+   UInt_t uMsgsToRead = (iInputSzLg - 4)/2;
    for( UInt_t uMsgIdx = 0; uMsgIdx < uMsgsToRead; uMsgIdx++)
    {
       gdpb::FullMessage mess( pulLongBuff[4 + 2 * uMsgIdx], pulLongBuff[4 + 2 * uMsgIdx + 1] );

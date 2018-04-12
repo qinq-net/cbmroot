@@ -101,11 +101,13 @@ class CbmTofStarSubevent2018
 
       // Accessors
       inline CbmTofStarTrigger GetTrigger() const { return fTrigger;}
+      inline UShort_t          GetSource() const { return fusSourceId; }
       inline Bool_t            GetBadEventFlag()         const { return 0 < (fulEventStatusFlags & kulFlagBadEvt); }
       inline Bool_t            GetOverlapEventFlag()     const { return 0 < (fulEventStatusFlags & kulFlagOverlapEvt); }
       inline Bool_t            GetEmptyEventFlag()       const { return 0 < (fulEventStatusFlags & kulFlagEmptyEvt); }
       inline Bool_t            GetStartBorderEventFlag() const { return 0 < (fulEventStatusFlags & kulFlagStartBorderEvt); }
       inline Bool_t            GetEndBorderEventFlag()   const { return 0 < (fulEventStatusFlags & kulFlagEndBorderEvt); }
+      inline Int_t             GetEventSize()            const { return fuEventSizeBytes; }
 //#ifndef __CINT__
       inline gdpb::Message     GetMsg( UInt_t uMsgIdx ) const;
 //#endif
@@ -131,21 +133,24 @@ class CbmTofStarSubevent2018
 
    private:
 //#ifndef __CINT__
-      static const uint32_t         kuMaxOutputSize       = 131072; // 2^17
-      static const uint32_t         kuMaxNbMsgs           =   8190; // 4 * 64b in header => floor( (2^17 / 8 ) - 4) / 2
-      static const uint64_t         kulFlagBadEvt         = 0x1 << 0;
-      static const uint64_t         kulFlagOverlapEvt     = 0x1 << 1;
-      static const uint64_t         kulFlagEmptyEvt       = 0x1 << 2;
-      static const uint64_t         kulFlagStartBorderEvt = 0x1 << 3;
-      static const uint64_t         kulFlagEndBorderEvt   = 0x1 << 4;
-      static const uint64_t         kulSourceIdOffset     =       16;
-      static const uint64_t         kulSourceIdMask       =   0xFFFF;
+      static const uint32_t         kuMaxOutputSize       =     131072; // 2^17
+      static const uint32_t         kuMaxNbMsgs           =       8190; // 4 * 64b in header => floor( (2^17 / 8 ) - 4) / 2
+      static const uint64_t         kulFlagBadEvt         =   0x1 << 0;
+      static const uint64_t         kulFlagOverlapEvt     =   0x1 << 1;
+      static const uint64_t         kulFlagEmptyEvt       =   0x1 << 2;
+      static const uint64_t         kulFlagStartBorderEvt =   0x1 << 3;
+      static const uint64_t         kulFlagEndBorderEvt   =   0x1 << 4;
+      static const uint64_t         kulSourceIdOffset     =         16;
+      static const uint64_t         kulSourceIdMask       =     0xFFFF;
+      static const uint64_t         kulEventSizeOffset    =         32;
+      static const uint64_t         kulEventSizeMask      = 0xFFFFFFFF;
 //#endif
 
       Bool_t                        fbTriggerSet;
       CbmTofStarTrigger             fTrigger;
       UShort_t                      fusSourceId;
       ULong64_t                     fulEventStatusFlags;
+      UInt_t                        fuEventSizeBytes;
 //#ifndef __CINT__
       std::vector< gdpb::FullMessage > fvMsgBuffer;
       ULong64_t                     fpulBuff[kuMaxOutputSize];
