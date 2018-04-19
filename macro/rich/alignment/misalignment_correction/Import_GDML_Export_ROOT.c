@@ -15,7 +15,8 @@ void Import_GDML_Export_ROOT(TString axis="", TString nb="")
 //	TGeoVolume* gdmlTop = parser.GDMLReadFile (vmcDir2 + "misalign_5mrad.gdml");
 //	TGeoVolume* gdmlTop = parser.GDMLReadFile (vmcDir2 + "position_cyl/rich_v17a_1e_test.gdml");
 
-	TGeoVolume* gdmlTop = parser.GDMLReadFile ("/data/ROOT6/trunk/geometry/rich/gauss/gauss_distrib_sigma_1.gdml");
+//	TGeoVolume* gdmlTop = parser.GDMLReadFile ("/data/ROOT6/trunk/geometry/rich/gauss/gauss_distrib_sigma_5.gdml");
+	TGeoVolume* gdmlTop = parser.GDMLReadFile ("/data/ROOT6/trunk/geometry/rich/gauss/test_1.gdml");
 	TGeoVolume* rootTop = new TGeoVolumeAssembly("TOP");
 
 	gGeoManager->SetTopVolume(rootTop);
@@ -41,7 +42,8 @@ void Import_GDML_Export_ROOT(TString axis="", TString nb="")
 //	TFile* outfile = new TFile("/home/aghoehne/Desktop/Rich_jan2016_misalign_" + nb + "mrad_" + axis + ".root", "RECREATE");
 
 //	TFile* outfile = new TFile(vmcDir2 + "rich_v16a_misalign_5mrad_01y_15x.geo.root", "RECREATE");
-	TFile* outfile = new TFile("/data/ROOT6/trunk/geometry/rich/rich_v17a_gauss_distrib_sigma_1.geo.root", "RECREATE");
+//	TFile* outfile = new TFile("/data/ROOT6/trunk/geometry/rich/rich_v17a_gauss_distrib_sigma_5.geo.root", "RECREATE");
+	TFile* outfile = new TFile("/data/ROOT6/trunk/geometry/rich/rich_v17a_1e_test_1.geo.root", "RECREATE");
 	rootTop->Write();
 	outfile->Close();
 }
