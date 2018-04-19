@@ -5,7 +5,7 @@
 # sbatch --array=1-3 -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position ./test.sh $param1
 # sbatch -J position -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Ring_Track_VS_Position/Misaligned -o %j_%N.out.log -e %j_%N.err.log --time=0:30:00 --array=1-3 ./test1.sh
 
-FLAAG=0
+FLAG=0
 NEVTS=2
 COLL_ENERGY=8gev
 	sbatch -J matching -D /lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/Reference/ -o %j_%N.out.log -e %j_%N.err.log --time=0:10:00 --array=1-2 ./matching.sh $FLAG $NEVTS $COLL_ENERGY

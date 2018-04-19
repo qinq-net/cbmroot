@@ -6,18 +6,21 @@ XXXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
 #COLL_ENERGY=8gev
 
 # Specify input and output directories
-if [ $FLAG -eq 0 ] ; then
+if [ $1 -eq 0 ] ; then
 	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/Reference
-	geoSetupFile=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/setup/setup_align.C
-elif [ $FLAG -eq 1 ] ; then
+	geoSetupFile=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/geosetup/setup_align.C
+elif [ $1 -eq 1 ] ; then
 	outdir=/lustre/nyx/cbm/users/jbendar/Sim_Outputs/Matching/WO_Corr_3mrad
-	geoSetupFile=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/geometry/setup/setup_misalign_gauss_sigma_3.C
+	geoSetupFile=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/geosetup/setup_misalign_gauss_sigma_3.C
 fi
 
-echo 'outdir: ' ${outdir}
-
 cbmroot_config_path=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/bin/CbmRootConfig.sh
-macro_dir=/u/jbendar/CBMSRC/macro/rich/alignment/misalignment_correction/Sim_Thesis/
+#macro_dir=/u/jbendar/cbmroot/CBMSRC/macro/rich/alignment/misalignment_correction/Sim_Thesis/
+macro_dir=/lustre/nyx/cbm/users/jbendar/CBMINSTALL/share/cbmroot/macro/rich/Sim_Thesis
+
+echo 'outdir: ' ${outdir}
+echo 'FLAG: ' ${1}
+echo 'geoSetupFile: ' ${geoSetupFile}
 
 # Needed to run macro via script
 export SCRIPT=yes
@@ -35,7 +38,7 @@ source ${cbmroot_config_path}
 export DISPLAY=localhost:0.0
 
 # Define urqmd and output files
-export URQMD_FILE=/lustre/nyx/cbm/prod/gen/urqmd/auau/${COLL_ENERGY}/centr/urqmd.auau.${COLL_ENERGY}.centr.${XXXXX}.root
+export URQMD_FILE=/lustre/nyx/cbm/prod/gen/urqmd/auau/${3}/centr/urqmd.auau.${3}.centr.${XXXXX}.root
 export MC_FILE=${outdir}/mc.root
 export PAR_FILE=${outdir}/params.root
 export RECO_FILE=${outdir}/reco.root
@@ -54,7 +57,7 @@ export URQMD=yes
 # If "yes" PLUTO particles will be embedded
 export PLUTO=no
 # Collision energy: 25gev or 8gev -> set proper weight into analysis
-export ENERGY=${COLL_ENERGY}
+export ENERGY=${3}
 
 # Geometry setup macro
 #export GEO_SETUP_FILE=${setupMacro}
@@ -71,8 +74,8 @@ export ENERGY=${COLL_ENERGY}
 
 export OUT_DIR=${outdir}
 # Run the root simulation
-root -b -l -q "${macro_dir}/run_sim.C(${NEVTS}, ${FLAG})"
-root -b -l -q "${macro_dir}/run_reco.C(${NEVTS}, ${FLAG})"
+root -b -l -q "${macro_dir}/run_sim.C(${2}, 1, 0)"
+root -b -l -q "${macro_dir}/run_reco.C(${2}, 1, 0)"
 
 # cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
 

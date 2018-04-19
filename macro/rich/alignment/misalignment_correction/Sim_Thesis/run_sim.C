@@ -15,8 +15,8 @@ void run_sim(Int_t nEvents = 200, Int_t input = 1, Int_t geom = 0)
 
     // -----   In- and output file names   ------------------------------------
     TString setupName = "", outDir = "";
-//    if (geom == 0) {setupName = "setup_align";}
-    if (geom == 0) {setupName = "setup_test_1";}
+    if (geom == 0) {setupName = "setup_align";}
+//    if (geom == 0) {setupName = "setup_test_1";}
     else if (geom == 1) {setupName = "setup_misalign_gauss_sigma_1";}
     else if (geom == 2) {setupName = "setup_misalign_gauss_sigma_2";}
     else if (geom == 3) {setupName = "setup_misalign_gauss_sigma_3";}
@@ -28,8 +28,8 @@ void run_sim(Int_t nEvents = 200, Int_t input = 1, Int_t geom = 0)
     }
     else {
 	if (input == 1) {
-	    // if (geom == 0) {outDir = "/data/Sim_Outputs/Sim_Thesis/Aligned/Only_e_p/";}
-            if (geom == 0) {outDir = "/data/Sim_Outputs/Sim_Thesis/Only_e_p/";}
+		if (geom == 0) {outDir = "/data/Sim_Outputs/Sim_Thesis/Aligned/Only_e_p/";}
+//              if (geom == 0) {outDir = "/data/Sim_Outputs/Sim_Thesis/Only_e_p/";}
 			else if (geom == 1) {outDir = "/data/Sim_Outputs/Sim_Thesis/Misaligned_1mrad/Only_e_p/";}
 			else if (geom == 2) {outDir = "/data/Sim_Outputs/Sim_Thesis/Misaligned_2mrad/Only_e_p/";}
 			else if (geom == 3) {outDir = "/data/Sim_Outputs/Sim_Thesis/Misaligned_3mrad/Only_e_p/";}
