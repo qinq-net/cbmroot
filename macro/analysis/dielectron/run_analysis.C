@@ -9,12 +9,6 @@ void run_analysis(Int_t nEvents = 1000)
    TString script = TString(gSystem->Getenv("SCRIPT"));
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
 
-   //gRandom->SetSeed(10);
-/*	TString dir = "/hera/cbm/users/slebedev/mc/dielectron/sep13/25gev/trd/1.0field/nomvd/rho0/";
-	TString mcFile = dir + "mc.auau.25gev.centr.00001.root";
-	TString parFile = dir + "/params.auau.25gev.centr.00001.root";
-	TString recoFile = dir + "/reco.auau.25gev.centr.00001.root";
-	TString analysisFile = dir + "/test.analysis.test.auau.25gev.centr.00001.root";*/
 
    TString parFile = "/hera/cbm/users/slebedev/data/lmvm/apr16/8gev/geosetup_v1512_8gev/rho0/params.auau.8gev.centr.00002.root";
    TString mcFile = "/hera/cbm/users/slebedev/data/lmvm/apr16/8gev/geosetup_v1512_8gev/rho0/mc.auau.8gev.centr.00002.root";

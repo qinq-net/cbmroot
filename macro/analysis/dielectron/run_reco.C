@@ -1,267 +1,181 @@
-void run_reco(Int_t nEvents = 100)
+void run_reco(Int_t nEvents = 2)
 {
-   TTree::SetMaxTreeSize(90000000000);
+    TTree::SetMaxTreeSize(90000000000);
+    TString script = TString(gSystem->Getenv("SCRIPT"));
 
-	TString script = TString(gSystem->Getenv("SCRIPT"));
-	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
+    TString myName = "run_reco";
+    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-	//gRandom->SetSeed(10);
+    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
 
-  // TString parFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.param.root";
- //  TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.mc.root";
- //  TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.reco.root";
+    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
+    TString mcFile = outDir + "mc.00000.root";
+    TString parFile = outDir + "param.00000.root";
+    TString recoFile = outDir + "reco.00000.root";
+    std::string resultDir = "results_recoqa/";
 
-	TString dir = "/hera/cbm/users/slebedev/data/lmvm/sep15/25gev/geosetup_v1509_25gev/rho0/";
-	TString mcFile = dir + "/mc.auau.25gev.centr.00134.root";
-	TString parFile = dir + "/params.auau.25gev.centr.00134.root";
-	TString recoFile = dir + "/reco.auau.25gev.centr.00134.root";
-	//  TString analysisFile = dir + "/test.analysis.test.auau.25gev.centr.00001.root";
+    if (script == "yes") {
+        mcFile = TString(gSystem->Getenv("MC_FILE"));
+        recoFile = TString(gSystem->Getenv("RECO_FILE"));
+        parFile = TString(gSystem->Getenv("PAR_FILE"));
+        resultDir = TString(gSystem->Getenv("LIT_RESULT_DIR"));
+        geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+    }
 
-    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/geosetup_v1509_25gev.C";
+    remove(recoFile.Data());
 
-	TString delta = "no"; // if "yes" Delta electrons will be embedded
-	TString deltaFile = "";
+    TString setupFunct = "do_setup()";
+    std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
+    gROOT->LoadMacro(geoSetupFile);
+    gROOT->ProcessLine(setupFunct);
 
-	if (script == "yes") {
-		mcFile = TString(gSystem->Getenv("MC_FILE"));
-		parFile = TString(gSystem->Getenv("PAR_FILE"));
-		recoFile = TString(gSystem->Getenv("RECO_FILE"));
-		delta = TString(gSystem->Getenv("DELTA"));
-		deltaFile = TString(gSystem->Getenv("DELTA_FILE"));
+    CbmSetup* setup = CbmSetup::Instance();
 
-		geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
-	}
+    std::cout << std::endl<< "-I- " << myName << ": Defining parameter files " << std::endl;
+    TList *parFileList = new TList();
+    TString geoTag;
 
-        remove(recoFile.Data());
+    // - TRD digitisation parameters
+    if ( CbmSetup::Instance()->GetGeoTag(kTrd, geoTag) ) {
+        TObjString* trdFile = new TObjString(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
+        parFileList->Add(trdFile);
+        std::cout << "-I- " << myName << ": Using parameter file " << trdFile->GetString() << std::endl;
+    }
+    // - TOF digitisation parameters
+    if ( CbmSetup::Instance()->GetGeoTag(kTof, geoTag) ) {
+        TObjString* tofFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
+        parFileList->Add(tofFile);
+        std::cout << "-I- " << myName << ": Using parameter file " << tofFile->GetString() << std::endl;
+        TObjString* tofBdfFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
+        parFileList->Add(tofBdfFile);
+        std::cout << "-I- " << myName << ": Using parameter file " << tofBdfFile->GetString() << std::endl;
+    }
 
-       
-	//setup all geometries from macro
-	cout << "geoSetupName:" << geoSetupFile << endl;
-	gROOT->LoadMacro(geoSetupFile);
-	init_geo_setup();
-
-	// digi parameters
-	TList *parFileList = new TList();
-	TObjString trdDigiFile = parDir + "/" + trdDigi;
-	TObjString tofDigiFile = parDir + "/" + tofDigi;
-	TObjString tofDigiBdfFile = parDir + "/" + tofDigiBdf;
-
-	if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
-	if (tofDigiFile.GetString() != "") parFileList->Add(&tofDigiFile);
-	if (tofDigiBdfFile.GetString() != "") parFileList->Add(&tofDigiBdfFile);
-
-	// material budget for STS and MVD
-	TString mvdMatBudgetFileName = "";
-	TString stsMatBudgetFileName = parDir + "/" + stsMatBudget;
-
-	gDebug = 0;
-	TStopwatch timer;
-	timer.Start();
-
-	// ----  Load libraries   -------------------------------------------------
-	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-	loadlibs();
-	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/determine_setup.C");
-
-	// -----   Reconstruction run   -------------------------------------------
-	FairRunAna *run= new FairRunAna();
-        run->SetGenerateRunInfo(kTRUE);
-	if (mcFile != "") run->SetInputFile(mcFile);
-	if (recoFile != "") run->SetOutputFile(recoFile);
-
-	CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-	mcManager->AddFile(mcFile);
-	run->AddTask(mcManager);
-
-    // =========================================================================
-    // ===                     MVD local reconstruction                      ===
-	// =========================================================================
-	Bool_t useMvdInTracking = kFALSE;
-	if (IsMvd(parFile)) {
-		  CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("CbmMvdDigitizer", 0, 0);
-		  run->AddTask(mvdDigitise);
-
-		  CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("CbmMvdClusterfinder", 0, 0);
-		  run->AddTask(mvdCluster);
-
-		  CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("CbmMvdHitfinder", 0, 0);
-		  mvdHitfinder->UseClusterfinder(kTRUE);
-		  run->AddTask(mvdHitfinder);
-
-		  useMvdInTracking = kTRUE;
-		  mvdMatBudgetFileName = parDir + "/" + mvdMatBudget;
-	}
-
-	// =========================================================================
-	// ===                      STS local reconstruction                     ===
-	// =========================================================================
-	Double_t dynRange       =   40960.;  // Dynamic range [e]
-	Double_t threshold      =    4000.;  // Digitisation threshold [e]
-	Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
-	Double_t timeResolution =       5.;  // time resolution [ns]
-	Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
-	Double_t noise          =       0.;  // ENC [e]
-	Int_t digiModel         =       1;   // User sensor type DSSD
-
-	// The following settings correspond to a validated implementation.
-	// Changing them is on your own risk.
-	Int_t  eLossModel       = 1;         // Energy loss model: uniform
-	Bool_t useLorentzShift  = kFALSE;    // Deactivate Lorentz shift
-	Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
-	Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
-
-	CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
-	stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
-	stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
-						 deadTime, noise);
-	run->AddTask(stsDigi);
-
-	FairTask* stsClusterFinder = new CbmStsFindClusters();
-	run->AddTask(stsClusterFinder);
-
-	FairTask* stsFindHits = new CbmStsFindHits();
-	run->AddTask(stsFindHits);
-
-	CbmKF* kalman = new CbmKF();
-	run->AddTask(kalman);
-	CbmL1* l1 = new CbmL1();
-	l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
-	if (mvdMatBudgetFileName != "") l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
-	run->AddTask(l1);
-
-	CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
-	FairTask* stsFindTracks = new CbmStsFindTracks(1, stsTrackFinder);
-	run->AddTask(stsFindTracks);
+    TStopwatch timer;
+    timer.Start();
+    gDebug = 0;
 
 
-	// =========================================================================
-	// ===                     TRD local reconstruction                      ===
-	// =========================================================================
-	if (IsTrd(parFile)) {
-		Bool_t simpleTR = kTRUE; // use fast and simple version for TR production
-		CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR , "K++");
+    FairRunAna *run = new FairRunAna();
+    FairFileSource* inputSource = new FairFileSource(mcFile);
+    run->SetSource(inputSource);
+    run->SetOutputFile(recoFile);
+    run->SetGenerateRunInfo(kTRUE);
 
-		if (trdHitProducerType == "smearing") {
-			CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
-			trdHitProd->SetUseDigiPar(false);
-		        run->AddTask(trdHitProd);
-		} else if (trdHitProducerType == "digi") {
-			CbmTrdDigitizer* trdDigitizer = new CbmTrdDigitizer(radiator);
-			run->AddTask(trdDigitizer);
+    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+    FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
-			CbmTrdHitProducerDigi* trdHitProd = new CbmTrdHitProducerDigi();
-			run->AddTask(trdHitProd);
-		} else if (trdHitProducerType == "clustering") {
-			Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
-			//Double_t triggerThreshold = 0.5e-6;//SIS100
-			Double_t triggerThreshold = 1.0e-6;//SIS300
-			Double_t trdNoiseSigma_keV = 0.1; //default best matching to test beam PRF
 
-			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
-			trdDigiPrf->SetTriangularPads(triangularPads);
-			trdDigiPrf->SetNoiseLevel(trdNoiseSigma_keV);
-			run->AddTask(trdDigiPrf);
+    CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+    mcManager->AddFile(mcFile);
+    run->AddTask(mcManager);
 
-			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
-			trdCluster->SetNeighbourTrigger(true);
-			trdCluster->SetTriggerThreshold(triggerThreshold);
-			trdCluster->SetNeighbourRowTrigger(false);
-			trdCluster->SetPrimaryClusterRowMerger(true);
-			trdCluster->SetTriangularPads(triangularPads);
-		        run->AddTask(trdCluster);
 
-			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
-			trdHit->SetTriangularPads(triangularPads);
-		        run->AddTask(trdHit);
-		}
-	}// isTRD
+    // Digitisers
+    std::cout << std::endl;
+    TString macroName = gSystem->Getenv("VMCWORKDIR");
+    macroName += "/macro/run/modules/digitize.C";
+    std::cout << "Loading macro " << macroName << std::endl;
+    gROOT->LoadMacro(macroName);
+    gROOT->ProcessLine("digitize()");
 
-	// =========================================================================
-	// ===                     TOF local reconstruction                      ===
-	// =========================================================================
-	if (IsTof(parFile)) {
-             if (tofHitProducerType == "smearing") {
-		CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("CbmTofHitProducer", 1);
-		tofHitProd->SetInitFromAscii(kFALSE);
-		run->AddTask(tofHitProd);
 
-	     }  else if (tofHitProducerType == "clustering") {
+    // Reconstruction tasks
+    std::cout << std::endl;
+    macroName = srcDir + "/macro/run/modules/reconstruct.C";
+    std::cout << "Loading macro " << macroName << std::endl;
+    gROOT->LoadMacro(macroName);
+    Bool_t recoSuccess = gROOT->ProcessLine("reconstruct()");
+    if ( ! recoSuccess ) {
+        std::cerr << "-E-" << myName << ": error in executing " << macroName << std::endl;
+        return;
+    }
+    std::cout << "-I-" << myName << ": " << macroName << " excuted successfully" << std::endl;
 
-		 CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",0);
-       tofDigi->SetOutputBranchPersistent("TofDigi",            kFALSE);
-       tofDigi->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
-		 TString paramDir = gSystem->Getenv("VMCWORKDIR");
-		 tofDigi->SetInputFileName( paramDir + "/parameters/tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
-		// tofDigi->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
-		 run->AddTask(tofDigi);
 
-		 CbmTofSimpClusterizer* tofSimpClust = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0);
-       tofSimpClust->SetOutputBranchPersistent("TofHit",        kTRUE);
-       tofSimpClust->SetOutputBranchPersistent("TofDigiMatch",  kTRUE);
-		// tofSimpClust->SetHistoFileName( clustOutFile ); // Uncomment to save control histograms
-		 run->AddTask(tofSimpClust);
-	     }
-	} //isTof
+    CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
+    run->AddTask(matchRecoToMc);
 
-	// =========================================================================
-	// ===                        Global tracking                            ===
-	// =========================================================================
+//    // RICH reco QA
+//    CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
+//    richRecoQa->SetOutputDir(resultDir);
+//    run->AddTask(richRecoQa);
+//
+////    // Reconstruction Qa
+//    CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
+//    trackingQa->SetMinNofPointsSts(4);
+//    trackingQa->SetUseConsecutivePointsInSts(true);
+//   // trackingQa->SetMinNofPointsTrd(minNofPointsTrd);
+//    trackingQa->SetMinNofPointsMuch(10);
+//    trackingQa->SetMinNofPointsTof(1);
+//    trackingQa->SetQuota(0.7);
+//   // trackingQa->SetMinNofHitsTrd(minNofPointsTrd);
+//    trackingQa->SetMinNofHitsMuch(10);
+//    trackingQa->SetVerbose(0);
+//    trackingQa->SetMinNofHitsRich(7);
+//    trackingQa->SetQuotaRich(0.6);
+//    trackingQa->SetOutputDir(resultDir);
+//    trackingQa->SetPRange(12, 0., 6.);
+//   // trackingQa->SetTrdAnnCut(trdAnnCut);
+//    std::vector<std::string> trackCat, richCat;
+//    trackCat.push_back("All");
+//    trackCat.push_back("Electron");
+//    richCat.push_back("Electron");
+//    richCat.push_back("ElectronReference");
+//    trackingQa->SetTrackCategories(trackCat);
+//    trackingQa->SetRingCategories(richCat);
+//    run->AddTask(trackingQa);
+//
+//    CbmLitFitQa* fitQa = new CbmLitFitQa();
+//    fitQa->SetMvdMinNofHits(0);
+//    fitQa->SetStsMinNofHits(6);
+//    fitQa->SetMuchMinNofHits(10);
+//   // fitQa->SetTrdMinNofHits(minNofPointsTrd);
+//    fitQa->SetOutputDir(resultDir);
+//    //run->AddTask(fitQa);
+//
+//    CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
+//    clusteringQa->SetOutputDir(resultDir);
+//    //run->AddTask(clusteringQa);
 
-	CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
-	finder->SetTrackingType("branch");
-	finder->SetMergerType("nearest_hit");
-        run->AddTask(finder);
+    //CbmLitTofQa* tofQa = new CbmLitTofQa();
+    //tofQa->SetOutputDir(std::string(resultDir));
+    //run->AddTask(tofQa);
 
-	// -----   Primary vertex finding   ---------------------------------------
-	CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
-	CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
-        run->AddTask(findVertex);
-	// ------------------------------------------------------------------------
 
-	if (IsTrd(parFile)) {
-		CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN("CbmTrdSetTracksPidANN","CbmTrdSetTracksPidANN");
-		trdSetTracksPidAnnTask->SetTRDGeometryType("h++");
-	        run->AddTask(trdSetTracksPidAnnTask);
-	}//isTrd
+    std::cout << std::endl << std::endl << "-I- " << myName << ": Set runtime DB" << std::endl;
+    FairRuntimeDb* rtdb = run->GetRuntimeDb();
+    FairParRootFileIo* parIo1 = new FairParRootFileIo();
+    FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
+    parIo1->open(parFile.Data(),"UPDATE");
+    rtdb->setFirstInput(parIo1);
+    if ( ! parFileList->IsEmpty() ) {
+        parIo2->open(parFileList, "in");
+        rtdb->setSecondInput(parIo2);
+    }
 
-    // =========================================================================
-    // ===                        RICH reconstruction                        ===
-    // =========================================================================
-	if (IsRich(parFile)){
-	    CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
-	    run->AddTask(richDigitizer);
-
-	    CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
-	    run->AddTask(richHitProd);
-
-	    CbmRichReconstruction* richReco = new CbmRichReconstruction();
-	    run->AddTask(richReco);
-
-	}//isRich
-
-	CbmMatchRecoToMC* match = new CbmMatchRecoToMC();
-        run->AddTask(match);
-
-	// -----  Parameter database   --------------------------------------------
-	FairRuntimeDb* rtdb = run->GetRuntimeDb();
-	FairParRootFileIo* parIo1 = new FairParRootFileIo();
-	FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-	parIo1->open(parFile.Data());
-	parIo2->open(parFileList, "in");
-	rtdb->setFirstInput(parIo1);
-	rtdb->setSecondInput(parIo2);
-	rtdb->setOutput(parIo1);
-	rtdb->saveOutput();
-
+    std::cout << std::endl << "-I- " << myName << ": Initialise run" << std::endl;
     run->Init();
-    run->Run(0, nEvents);
 
-    // -----   Finish   -------------------------------------------------------
+    rtdb->setOutput(parIo1);
+    rtdb->saveOutput();
+    rtdb->print();
+
+    std::cout << "-I- " << myName << ": Starting run" << std::endl;
+    run->Run(0,nEvents);
+
+
+
+    // Finish
     timer.Stop();
-    std::cout << "Macro finished successfully." << std::endl;
-    std::cout << "Output file is "    << recoFile << std::endl;
+    Double_t rtime = timer.RealTime();
+    Double_t ctime = timer.CpuTime();
+    std::cout << std::endl << std::endl;
+    std::cout << "Macro finished succesfully." << std::endl;
+    std::cout << "Output file is " << recoFile << std::endl;
     std::cout << "Parameter file is " << parFile << std::endl;
-    std::cout << "Real time " << timer.RealTime() << " s, CPU time " << timer.CpuTime() << " s" << std::endl;
+    std::cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << std::endl;
+    std::cout << std::endl;
     std::cout << " Test passed" << std::endl;
     std::cout << " All ok " << std::endl;
 }
