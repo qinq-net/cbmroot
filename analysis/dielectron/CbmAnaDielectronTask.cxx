@@ -615,7 +615,7 @@ InitStatus CbmAnaDielectronTask::Init()
         fCuts.fMomentumCut = 5.5;
     }
     
-    CbmLitMCTrackCreator::Instance()->CreateMC();
+   // CbmLitMCTrackCreator::Instance()->CreateMC();
     
     return kSUCCESS;
 }
@@ -635,7 +635,7 @@ void CbmAnaDielectronTask::Exec(Option_t*)
         Fatal("CbmAnaDielectronTask::Exec","No PrimaryVertex array!");
     }
     cout << "I'm here" << endl;
-    CbmLitMCTrackCreator::Instance()->CreateReco();
+   // CbmLitMCTrackCreator::Instance()->CreateReco();
     //
     FillRichRingNofHits();
     MCPairs();
@@ -1602,9 +1602,9 @@ void CbmAnaDielectronTask::CalculateNofTopologyPairs(
             if (mcTrack->GetMotherId() != fCandidates[iP].fMcMotherId) continue;
             if (iMCTrack == fCandidates[iP].fStsMcTrackId) continue;
             
-            if (!CbmLitMCTrackCreator::Instance()->TrackExists(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack)) continue;
-            const CbmLitMCTrack& litMCTrack = CbmLitMCTrackCreator::Instance()->GetTrack(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack);
-            nofPointsSts = litMCTrack.GetNofPointsInDifferentStations(kSts);
+          //  if (!CbmLitMCTrackCreator::Instance()->TrackExists(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack)) continue;
+          //  const CbmLitMCTrack& litMCTrack = CbmLitMCTrackCreator::Instance()->GetTrack(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack);
+          //  nofPointsSts = litMCTrack.GetNofPointsInDifferentStations(kSts);
             break;
         }
         if (nofPointsSts == 0) h_nof_pairs->Fill(0.5);
@@ -1980,3 +1980,47 @@ void CbmAnaDielectronTask::Finish()
         fHistoList[i]->Write();
     }
 }
+
+void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const string& particle)
+{
+    if (energy == "8gev" || energy == "10gev") {
+        // weight rho0 = Multiplicity * Branching Ratio = 9 * 4.7e-5 for 10 AGeV beam energy
+        if (particle == "rho0") this->SetWeight(9 * 4.7e-5);
+        // weight omega = Multiplicity * Branching Ratio = 19 * 7.28e-5 for 10 AGeV beam energy
+        if (particle == "omegaepem" ) this->SetWeight(19 * 7.28e-5);
+        // weight omega = Multiplicity * Branching Ratio = 19 * 7.7e-4 for 10 AGeV beam energy
+        if (particle == "omegadalitz") this->SetWeight(19 * 7.7e-4);
+        // weight phi = Multipli0city * Branching Ratio = 0.12 * 2.97e-4 for 10 AGeV beam energy
+        if (particle == "phi") this->SetWeight(0.12 * 2.97e-4);
+        // weight in medium rho. 0.5 is a scaling factor for 8AGev from 25AGeV
+        if (particle == "inmed") this->SetWeight(0.5 * 4.45e-2);
+        // weight qgp radiation  0.5 is a scaling factor for 8AGev from 25AGeV
+        if (particle == "qgp") this->SetWeight(0.5 * 1.15e-2);
+    } else if (energy == "25gev") {
+        // weight rho0 = Multiplicity * Branching Ratio = 23 * 4.7e-5 for 25 AGeV beam energy
+        if (particle == "rho0") this->SetWeight(23 * 4.7e-5);
+        // weight omega = Multiplicity * Branching Ratio = 38 * 7.28e-5 for 25 AGeV beam energy
+        if (particle == "omegaepem" ) this->SetWeight(38 * 7.28e-5);
+        // weight omega = Multiplicity * Branching Ratio = 38 * 7.7e-4 for 25 AGeV beam energy
+        if (particle == "omegadalitz") this->SetWeight(38 * 7.7e-4);
+        // weight phi = Multiplicity * Branching Ratio = 1.28 * 2.97e-4 for 25 AGeV beam energy
+        if (particle == "phi") this->SetWeight(1.28 * 2.97e-4);
+        // weight in medium rho.
+        if (particle == "inmed") this->SetWeight(4.45e-2);
+        // weight qgp radiation
+        if (particle == "qgp") this->SetWeight(1.15e-2);
+    } else if (energy == "3.5gev") {
+        // weight rho0 = Multiplicity * Branching Ratio = 1.0 * 4.7e-5 for 25 AGeV beam energy
+        if (particle == "rho0") this->SetWeight(1.0 * 4.7e-5);
+        // weight omega = Multiplicity * Branching Ratio = 1.2 * 7.28e-5 for 25 AGeV beam energy
+        if (particle == "omegaepem" ) this->SetWeight(1.2 * 7.28e-5);
+        // weight omega = Multiplicity * Branching Ratio = 1.2 * 5.9e-4 for 25 AGeV beam energy
+        if (particle == "omegadalitz") this->SetWeight(1.2 * 7.7e-5);
+        // weight phi = Multiplicity * Branching Ratio = 0.1 * 2.97e-4 for 25 AGeV beam energy
+        if (particle == "phi") this->SetWeight(0.1 * 2.97e-4);
+    } else {
+        cout << "-ERROR- CbmAnaDielectronTask::SetEnergyAndParticle energy or particle is not correct, energy:"
+                << energy << " particle:" << particle << endl;
+    }
+}
+

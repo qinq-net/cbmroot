@@ -478,6 +478,7 @@ public:
    void SetUseTrd(Bool_t use){fUseTrd = use;};
    void SetUseTof(Bool_t use){fUseTof = use;};
    void SetWeight(Double_t weight){fWeight = weight;};
+   void SetEnergyAndPlutoParticle(const string& energy, const string& particle);
 
    void SetPionMisidLevel(Double_t level) {fPionMisidLevel = level;}
   // void SetMomentumCut(Double_t mom) {fMomentumCut = mom;}
