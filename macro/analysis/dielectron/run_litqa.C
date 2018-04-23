@@ -12,7 +12,7 @@ void run_litqa(Int_t nEvents = 2)
     TString mcFile = outDir + "mc.00000.root";
     TString parFile = outDir + "param.00000.root";
     TString recoFile = outDir + "reco.00000.root";
-    TString litqaFile = outDir + "analysis.00000.root";
+    TString litqaFile = outDir + "litqa.00000.root";
 
     TString energy = "8gev";
     TString plutoParticle = "rho0";
