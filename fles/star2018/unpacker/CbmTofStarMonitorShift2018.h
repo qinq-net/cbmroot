@@ -172,6 +172,7 @@ class CbmTofStarMonitorShift2018: public CbmTSUnpack {
       TH2* fhScmSeuCountersEvo;
          // Hit messages
             /// TODO: Channel rate plots!
+      std::vector< TH2      * > fvhRawFt_gDPB;
       std::vector< TH2      * > fvhRawTot_gDPB;
       std::vector< TH1      * > fvhChCount_gDPB;
       std::vector< TH2      * > fvhChannelRate_gDPB;

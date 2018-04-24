@@ -110,6 +110,7 @@ CbmTofStarMonitorShift2018::CbmTofStarMonitorShift2018() :
     fhScmDeadtimeCounters(NULL),
     fhScmSeuCounters(NULL),
     fhScmSeuCountersEvo(NULL),
+    fvhRawFt_gDPB(),
     fvhRawTot_gDPB(),
     fvhChCount_gDPB(),
     fvhChannelRate_gDPB(),
@@ -454,6 +455,14 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
   {
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
+      name = Form("RawFt_gDPB_%02u", uGdpb);
+      title = Form("Raw FineTime gDPB %02u Plot 0; channel; FineTime [bin]", uGdpb);
+      fvhRawFt_gDPB.push_back(
+         new TH2F(name.Data(), title.Data(),
+            fuNrOfChannelsPerGdpb, 0, fuNrOfChannelsPerGdpb,
+            128, 0, 128 ) );
+
+      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
       name = Form("RawTot_gDPB_%02u_0", uGdpb);
       title = Form("Raw TOT gDPB %02u Plot 0; channel; TOT [bin]", uGdpb);
       fvhRawTot_gDPB.push_back(
@@ -713,6 +722,7 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
 
       for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
       {
+         server->Register("/TofRaw", fvhRawFt_gDPB[ uGdpb ] );
          server->Register("/TofRaw", fvhChCount_gDPB[ uGdpb ] );
          server->Register("/TofRates", fvhChannelRate_gDPB[ uGdpb ] );
          server->Register("/TofRaw", fvhRemapChCount_gDPB[ uGdpb ] );
@@ -1388,6 +1398,7 @@ void CbmTofStarMonitorShift2018::FillHitInfo(gdpb::Message mess)
    uFts = mess.getGdpbHitFullTs() % 112;
 
    fvhChCount_gDPB[fuGdpbNr]->Fill(uChannelNr);
+   fvhRawFt_gDPB[fuGdpbNr]->Fill(uChannelNr, uFts);
    fvhRawTot_gDPB[ fuGdpbNr * fuNbFeetPlotsPerGdpb + uFeetNr/fuNbFeetPlot ]->Fill(uChannelNr, uTot);
 
    /// Remapped for PADI to GET4
@@ -1893,6 +1904,7 @@ void CbmTofStarMonitorShift2018::SaveAllHistos( TString sFileName )
 
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
+      fvhRawFt_gDPB[ uGdpb ]->Write();
       fvhChCount_gDPB[ uGdpb ]->Write();
       fvhChannelRate_gDPB[ uGdpb ]->Write();
       fvhRemapChCount_gDPB[ uGdpb ]->Write();
@@ -1998,6 +2010,7 @@ void CbmTofStarMonitorShift2018::ResetAllHistos()
 
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
+      fvhRawFt_gDPB[ uGdpb ]->Reset();
       fvhChCount_gDPB[ uGdpb ]->Reset();
       fvhChannelRate_gDPB[ uGdpb ]->Reset();
       fvhRemapChCount_gDPB[ uGdpb ]->Reset();
