@@ -53,6 +53,9 @@ void run_analysis(Int_t nEvents = 2)
     FairLogger::GetLogger()->SetLogScreenLevel("INFO");
     FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
+    //CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+    //mcManager->AddFile(mcFile);
+    //run->AddTask(mcManager);
 
     CbmKF* kalman = new CbmKF();
     run->AddTask(kalman);
