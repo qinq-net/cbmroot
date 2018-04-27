@@ -1975,10 +1975,17 @@ void CbmAnaDielectronTask::MvdCutMcDistance()
 
 void CbmAnaDielectronTask::Finish()
 {
-    // Write histograms to a file
-    for (UInt_t i = 0; i < fHistoList.size(); i++){
-        fHistoList[i]->Write();
+    TDirectory * oldir = gDirectory;
+    TFile* outFile = FairRootManager::Instance()->GetOutFile();
+    if (outFile != NULL) {
+        // Write histograms to a file
+            for (UInt_t i = 0; i < fHistoList.size(); i++){
+                fHistoList[i]->Write();
+            }
     }
+    gDirectory->cd( oldir->GetPath() );
+
+
 }
 
 void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const string& particle)
