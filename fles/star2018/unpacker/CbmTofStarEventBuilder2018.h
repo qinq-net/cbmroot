@@ -67,6 +67,7 @@ public:
 
    void SetEventBuildingMode( Bool_t bEventBuildingMode = kFALSE );
    void SetTimeSortOutput( Bool_t bTimeSort = kTRUE );
+   void SetEventDumpEnable( Bool_t bDumpEna = kTRUE );
 
    inline void SetHistoryHistoSize( UInt_t inHistorySizeSec = 1800 ) { fuHistoryHistoSize = inHistorySizeSec; }
    inline void SetHistoryHistoSizeLong( UInt_t inHistorySizeMin = 1800 ) { fuHistoryHistoSizeLong = inHistorySizeMin; }
@@ -203,6 +204,12 @@ private:
    TH2 * fhStarTsProcessTime;
 
    std::vector< std::vector < gdpb::Message > > fvmEpSupprBuffer;
+
+   ///* Event dump to binary file *///
+   Bool_t fbEventDumpEna;
+   std::fstream * fpBinDumpFile;
+   const UInt_t   kuBinDumpBegWord = 0xFEEDBEAF;
+   const UInt_t   kuBinDumpEndWord = 0xFAEBDEEF;
 
    void FillHitInfo(gdpb::Message);
    void FillStarTrigInfo(gdpb::Message);

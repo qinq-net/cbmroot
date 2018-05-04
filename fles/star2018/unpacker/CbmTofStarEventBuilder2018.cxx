@@ -29,6 +29,7 @@
 #include <iostream>
 #include <stdint.h>
 #include <iomanip>
+#include <fstream>
 
 static Int_t iMess=0;
 const  Int_t DetMask = 0x0001FFFF;
@@ -131,7 +132,9 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fhStarEventSizeTimeLong( NULL ),
     fStartTimeProcessingLastTs(),
     fhStarTsProcessTime( NULL ),
-    fvmEpSupprBuffer()
+    fvmEpSupprBuffer(),
+    fbEventDumpEna( kFALSE ),
+    fpBinDumpFile( NULL )
 {
 }
 
@@ -355,6 +358,49 @@ void CbmTofStarEventBuilder2018::SetTimeSortOutput( Bool_t bTimeSort )
       else LOG(INFO) << "Output buffer will NOT be time sorted before being sent to STAR DAQ " << FairLogger::endl
                      << "=> This will have an effect (build time) only in event building mode with all links in one subevent "
                      << " as data for single links are already time sorted"
+                     << FairLogger::endl;
+}
+void CbmTofStarEventBuilder2018::SetEventDumpEnable( Bool_t bDumpEna )
+{
+   if( fbEventDumpEna != bDumpEna )
+   {
+      if( bDumpEna )
+      {
+         LOG(INFO) << "Enabling event dump to binary file which was disabled. File will be opened."
+                   << FairLogger::endl;
+
+         std::time_t cTimeCurrent = std::chrono::system_clock::to_time_t( std::chrono::system_clock::now() );
+         char tempBuff[80];
+         std::strftime( tempBuff, 80, "%Y_%m_%d_%H_%M_%S", localtime (&cTimeCurrent) );
+         TString sFileName = Form("event_dump_%s.bin", tempBuff);
+         fpBinDumpFile = new std::fstream( sFileName, std::ios::out | std::ios::binary);
+
+         if( NULL == fpBinDumpFile )
+         {
+            LOG(FATAL) << "Failed to open new binary file for event dump at "
+                       << sFileName
+                       << FairLogger::endl;
+         } // if( NULL == fpBinDumpFile )
+            else LOG(INFO) << "Opened binary dump file at "
+                           << sFileName
+                           << FairLogger::endl;
+
+      } // if( bDumpEna )
+         else
+         {
+            LOG(INFO) << "Disabling event dump to binary file which was enabled. File will be closed."
+                      << FairLogger::endl;
+
+            if( NULL != fpBinDumpFile )
+               fpBinDumpFile->close();
+         } // else of if( bDumpEna )
+   } // if( fbEventDumpEna != bDumpEna )
+
+   fbEventDumpEna = bDumpEna;
+   if( fbEventDumpEna )
+      LOG(INFO) << "Event dump to binary file is now ENABLED"
+                << FairLogger::endl;
+      else LOG(INFO) << "Event dump to binary file is now DISABLED"
                      << FairLogger::endl;
 }
 
@@ -932,6 +978,7 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
                LOG(WARNING) << "First message in MS is not a merged epoch!!!!!"
                             << " TS = " << fulCurrentTsIndex << " MS = " << fuCurrentMs
                             << " Type = " << iMessageType << " Get4Id = " << fuGet4Id
+                            << " Is epoch? " << (gdpb::MSG_EPOCH2 == iMessageType)
                             << FairLogger::endl;
          } // if( 0 == uIdx )
          if( uNbMessages - 1 == uIdx )
@@ -940,6 +987,7 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
                LOG(WARNING) << "Last message in MS is not a merged epoch!!!!!"
                             << " TS = " << fulCurrentTsIndex << " MS = " << fuCurrentMs
                             << " Type = " << iMessageType << " Get4Id = " << fuGet4Id
+                            << " Is epoch? " << (gdpb::MSG_EPOCH2 == iMessageType)
                             << FairLogger::endl;
          } // if( uNbMessages - 1 == uIdx )
 */
@@ -973,6 +1021,10 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
                   else
                   {
 //                     fHistGet4MessType->Fill( fuGet4Nr, gdpb::GET4_32B_EPOCH );
+                     LOG(WARNING) << "Extra non merged epoch for GDPB#" << Form("%2u", fuGdpbNr)
+                                  << " G4 #" << Form("%2u", fuGet4Id)
+                                  << " => ASIC " << Form("%3u", fuGet4Nr)
+                                  << FairLogger::endl;
                      FillEpochInfo(mess);
                   } // if single chip epoch message
 
@@ -1058,7 +1110,7 @@ void CbmTofStarEventBuilder2018::FillHitInfo( gdpb::Message mess )
    // => FTS = Fullt TS modulo 112
    UInt_t uFts        = mess.getGdpbHitFullTs() % 112;
 
-   ULong_t  ulCurEpochGdpbGet4 = fvulCurrentEpoch[ fuGet4Nr ];
+   ULong64_t  ulCurEpochGdpbGet4 = fvulCurrentEpoch[ fuGet4Nr ];
 
    if( kTRUE == fvbFirstEpochSeen[ fuGet4Nr ] )
    {
@@ -1128,6 +1180,16 @@ void CbmTofStarEventBuilder2018::FillEpochInfo( gdpb::Message mess )
    ULong64_t ulEpochNr = mess.getGdpbEpEpochNb();
 
    fvulCurrentEpoch[ fuGet4Nr ] = ulEpochNr;
+
+   if (1 == mess.getGdpbEpDataLoss())
+      LOG(INFO) << "Data loss flag set GDPB #" << Form( "%2u", fuGdpbNr) << " G4 #" << Form( "%3u", fuGet4Nr)
+                 << FairLogger::endl;
+   if (1 == mess.getGdpbEpEpochLoss())
+      LOG(INFO) << "Epoch loss flag set GDPB #" << Form( "%2u", fuGdpbNr) << " G4 #" << Form( "%3u", fuGet4Nr)
+                 << FairLogger::endl;
+//   if (1 == mess.getGdpbEpMissmatch())
+//      LOG(INFO) << "Epoch missmatch flag set GDPB #" << Form( "%2u", fuGdpbNr) << " G4 #" << Form( "%3u", fuGet4Nr)
+//                 << FairLogger::endl;
 
    if( kFALSE == fvbFirstEpochSeen[ fuGet4Nr ] )
       fvbFirstEpochSeen[ fuGet4Nr ] = kTRUE;
@@ -1471,6 +1533,13 @@ void CbmTofStarEventBuilder2018::Finish()
                    << FairLogger::endl;
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
 
+   if( NULL != fpBinDumpFile )
+   {
+      LOG(INFO) << "Closing binary file used for event dump."
+                << FairLogger::endl;
+      fpBinDumpFile->close();
+   } // if( NULL != fpBinDumpFile )
+
   SaveAllHistos();
 
 }
@@ -1745,6 +1814,14 @@ void CbmTofStarEventBuilder2018::BuildStarEventsSingleLink()
                    << FairLogger::endl;
 */
 #endif // STAR_SUBEVT_BUILDER
+
+         if( kTRUE == fbEventDumpEna )
+         {
+            fpBinDumpFile->write( reinterpret_cast< const char * >( &kuBinDumpBegWord ), sizeof( UInt_t ) );
+            fpBinDumpFile->write( reinterpret_cast< const char * >( &iBuffSzByte ), sizeof( Int_t ) );
+            fpBinDumpFile->write( reinterpret_cast< const char * >( pDataBuff ), iBuffSzByte );
+            fpBinDumpFile->write( reinterpret_cast< const char * >( &kuBinDumpEndWord ), sizeof( UInt_t ) );
+         } // if( kTRUE == fbEventDumpEna )
       } // if( NULL != pDataBuff )
          else LOG(ERROR) << "Invalid STAR SubEvent Output, can only happen if trigger "
                          << " object was not set => Do Nothing more with it!!! "
@@ -2004,6 +2081,14 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                    << FairLogger::endl;
 */
 #endif // STAR_SUBEVT_BUILDER
+
+         if( kTRUE == fbEventDumpEna )
+         {
+            fpBinDumpFile->write( reinterpret_cast< const char * >( &kuBinDumpBegWord ), sizeof( UInt_t ) );
+            fpBinDumpFile->write( reinterpret_cast< const char * >( &iBuffSzByte ), sizeof( Int_t ) );
+            fpBinDumpFile->write( reinterpret_cast< const char * >( pDataBuff ), iBuffSzByte );
+            fpBinDumpFile->write( reinterpret_cast< const char * >( &kuBinDumpEndWord ), sizeof( UInt_t ) );
+         } // if( kTRUE == fbEventDumpEna )
       } // if( NULL != pDataBuff )
          else LOG(ERROR) << "Invalid STAR SubEvent Output, can only happen if trigger "
                          << " object was not set => Do Nothing more with it!!! "
@@ -2277,10 +2362,18 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                          << FairLogger::endl;
 */
 #endif // STAR_SUBEVT_BUILDER
-               } // if( NULL != pDataBuff )
-                  else LOG(ERROR) << "Invalid STAR SubEvent Output, can only happen if trigger "
-                                  << " object was not set => Do Nothing more with it!!! "
-                                  << FairLogger::endl;
+
+               if( kTRUE == fbEventDumpEna )
+               {
+                  fpBinDumpFile->write( reinterpret_cast< const char * >( &kuBinDumpBegWord ), sizeof( UInt_t ) );
+                  fpBinDumpFile->write( reinterpret_cast< const char * >( &iBuffSzByte ), sizeof( Int_t ) );
+                  fpBinDumpFile->write( reinterpret_cast< const char * >( pDataBuff ), iBuffSzByte );
+                  fpBinDumpFile->write( reinterpret_cast< const char * >( &kuBinDumpEndWord ), sizeof( UInt_t ) );
+               } // if( kTRUE == fbEventDumpEna )
+            } // if( NULL != pDataBuff )
+               else LOG(ERROR) << "Invalid STAR SubEvent Output, can only happen if trigger "
+                               << " object was not set => Do Nothing more with it!!! "
+                               << FairLogger::endl;
 /*
             if( 1000 <  iBuffSzByte )
             {
