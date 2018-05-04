@@ -78,6 +78,9 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fUnpackPar(NULL),
     fuHistoryHistoSize( 1800 ),
     fuHistoryHistoSizeLong( 600 ),
+    fdMoniOutIntervalSec( 30.0 ),
+    fuPrintToSaveRatio( 4 ),
+    fuPrintToSaveCount( 0 ),
     fulGdpbTsMsb(),
     fulGdpbTsLsb(),
     fulStarTsMsb(),
@@ -132,6 +135,7 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fhStarEventSizeTimeLong( NULL ),
     fStartTimeProcessingLastTs(),
     fhStarTsProcessTime( NULL ),
+    fhStarTsProcessTimeShort( NULL ),
     fvmEpSupprBuffer(),
     fbEventDumpEna( kFALSE ),
     fpBinDumpFile( NULL )
@@ -674,10 +678,20 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
    Double_t dTsEvoLongMax = fuHistoryHistoSizeLong * 60.0 / (fdTsCoreSizeInNs * 1e-9);
    fhStarTsProcessTime = new TH2I( name.Data(), title.Data(),
                 fuHistoryHistoSizeLong, 0.0, dTsEvoLongMax,
-                1000, 0.0, 10.0 );
+                250, 0.0, 5.0 );
 #ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/StarRaw", fhStarTsProcessTime );
+#endif
+   name = "fhStarTsProcessTimeShort";
+   title = "Ratio of processing time per TS to TS size VS TS index; TS index []; Ratio  []";
+   Double_t dTsEvoShortMax = 500 / (fdTsCoreSizeInNs * 1e-9);
+   fhStarTsProcessTimeShort = new TH2I( name.Data(), title.Data(),
+                500, 0.0, dTsEvoShortMax,
+                250, 0.0, 5.0 );
+#ifdef USE_HTTP_SERVER
+   if (server)
+      server->Register("/StarRaw", fhStarTsProcessTimeShort );
 #endif
 
    /** Create summary Canvases for STAR 2017 **/
@@ -786,7 +800,17 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
           0 < fulCurrentTsIndex )
       {
          std::chrono::duration<double> elapsed_seconds = timeCurrent - fStartTimeProcessingLastTs;
-         fhStarTsProcessTime->Fill(fulCurrentTsIndex, elapsed_seconds.count() / (fdTsCoreSizeInNs * 1e-9) );
+         Double_t dTimeRatio = elapsed_seconds.count() / (fdTsCoreSizeInNs * 1e-9);
+         if( dTimeRatio < 5 )
+         {
+            fhStarTsProcessTime->Fill(fulCurrentTsIndex, dTimeRatio );
+            fhStarTsProcessTimeShort->Fill(fulCurrentTsIndex, dTimeRatio );
+         } // if( dTimeRatio < 5 )
+            else
+            {
+               fhStarTsProcessTime->Fill(fulCurrentTsIndex, 4.999 );
+               fhStarTsProcessTimeShort->Fill(fulCurrentTsIndex, 4.999 );
+            } // else of if( dTimeRatio < 5 )
       } // if( 0 != fStartTimeProcessingLastTs.time_since_epoch().count() && 0 < fulCurrentTsIndex )
       fStartTimeProcessingLastTs = timeCurrent;
    } // if( fCurrentTsIndex < ts.index() )
@@ -820,7 +844,7 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
       fulNbBuiltSubEventLastPrintout = fulNbBuiltSubEvent;
       fulNbStarSubEventLastPrintout  = fulNbStarSubEvent;
    } // if( 0 == fTimeLastPrintoutNbStarEvent.time_since_epoch().count() )
-   else if( 30 < elapsed_seconds.count() )
+   else if( fdMoniOutIntervalSec < elapsed_seconds.count() )
    {
       std::time_t cTimeCurrent = std::chrono::system_clock::to_time_t( timeCurrent );
       char tempBuff[80];
@@ -850,7 +874,12 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
                         << " triggers " << std::setw(9) << fvtCurrentLinkBuffer.size()
                         << FairLogger::endl;
 
-      SaveAllHistos( "data/histos_event_build.root" );
+      fuPrintToSaveCount ++;
+      if( fuPrintToSaveCount == fuPrintToSaveRatio )
+      {
+         SaveAllHistos( "data/histos_event_build.root" );
+         fuPrintToSaveCount = 0;
+      } // if( fuPrintToSaveCount == fuPrintToSaveRatio )
    } // else if( 300 < elapsed_seconds.count() )
 
    // Loop over microslices
@@ -1180,7 +1209,7 @@ void CbmTofStarEventBuilder2018::FillEpochInfo( gdpb::Message mess )
    ULong64_t ulEpochNr = mess.getGdpbEpEpochNb();
 
    fvulCurrentEpoch[ fuGet4Nr ] = ulEpochNr;
-
+/*
    if (1 == mess.getGdpbEpDataLoss())
       LOG(INFO) << "Data loss flag set GDPB #" << Form( "%2u", fuGdpbNr) << " G4 #" << Form( "%3u", fuGet4Nr)
                  << FairLogger::endl;
@@ -1190,6 +1219,7 @@ void CbmTofStarEventBuilder2018::FillEpochInfo( gdpb::Message mess )
 //   if (1 == mess.getGdpbEpMissmatch())
 //      LOG(INFO) << "Epoch missmatch flag set GDPB #" << Form( "%2u", fuGdpbNr) << " G4 #" << Form( "%3u", fuGet4Nr)
 //                 << FairLogger::endl;
+*/
 
    if( kFALSE == fvbFirstEpochSeen[ fuGet4Nr ] )
       fvbFirstEpochSeen[ fuGet4Nr ] = kTRUE;
@@ -1595,6 +1625,7 @@ void CbmTofStarEventBuilder2018::SaveAllHistos( TString sFileName )
    } // if( kTRUE == fbEventBuilding )
 
    fhStarTsProcessTime->Write();
+   fhStarTsProcessTimeShort->Write();
    gDirectory->cd("..");
 
    // Plots monitoring the TS losses
@@ -1663,6 +1694,7 @@ void CbmTofStarEventBuilder2018::ResetAllHistos()
       fhStarEventSizeTimeLong->Reset();
    } // if( kTRUE == fbEventBuilding )
    fhStarTsProcessTime->Reset();
+   fhStarTsProcessTimeShort->Reset();
 
    fdStartTime = -1;
    fdStartTimeLong = -1;

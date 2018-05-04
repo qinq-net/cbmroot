@@ -71,6 +71,8 @@ public:
 
    inline void SetHistoryHistoSize( UInt_t inHistorySizeSec = 1800 ) { fuHistoryHistoSize = inHistorySizeSec; }
    inline void SetHistoryHistoSizeLong( UInt_t inHistorySizeMin = 1800 ) { fuHistoryHistoSizeLong = inHistorySizeMin; }
+   inline void SetPrintoutInterval( Double_t inIntervalInSec = 30.0 ) { fdMoniOutIntervalSec = inIntervalInSec; }
+   inline void SetHistSaveToPrintRatio( UInt_t inSavePrintRatio = 4 ) { fuPrintToSaveRatio = inSavePrintRatio; }
 
 
    // Output control methods
@@ -144,6 +146,11 @@ private:
    UInt_t            fuHistoryHistoSize;
    UInt_t            fuHistoryHistoSizeLong;
 
+   /// Variables used for monitoring output control
+   Double_t          fdMoniOutIntervalSec;
+   UInt_t            fuPrintToSaveRatio;
+   UInt_t            fuPrintToSaveCount;
+
    ///* STAR TRIGGER detection *///
    std::vector< ULong64_t > fulGdpbTsMsb;
    std::vector< ULong64_t > fulGdpbTsLsb;
@@ -202,6 +209,7 @@ private:
 
    std::chrono::time_point<std::chrono::system_clock> fStartTimeProcessingLastTs;
    TH2 * fhStarTsProcessTime;
+   TH2 * fhStarTsProcessTimeShort;
 
    std::vector< std::vector < gdpb::Message > > fvmEpSupprBuffer;
 
