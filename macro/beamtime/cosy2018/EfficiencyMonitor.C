@@ -10,24 +10,19 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void DupliMonitor(TString inFile = "",
+void EfficiencyMonitor(TString inFile = "",
                  Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
-                 Int_t iStartFile = -1, Int_t iStopFile = -1 )
+                 Int_t iStartFile = -1, Int_t iStopFile = -1,
+                 Bool_t bEnableDeadCorr = kFALSE )
 {
-  /*
-  TString srcDir = gSystem->Getenv("VMCWORKDIR");
-  TString inDir  = srcDir + "/input/";
-  if( "" != inFile )
-   inFile = inDir + inFile;
-*/
+
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
-//  Int_t nEvents = 10000;
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/dupli_out.root";
-  TString parFile = "data/dupli_param.root";
+  TString outFile = "data/eff_out.root";
+  TString parFile = "data/eff_param.root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -60,14 +55,31 @@ void DupliMonitor(TString inFile = "",
   std::cout << ">>> Cern2017Monitor: Initialising..." << std::endl;
 
   // Hodoscopes Monitor
-  CbmCosy2018MonitorDupli* monitorDupli = new CbmCosy2018MonitorDupli();
-  monitorDupli->SetHistoFileName( "data/DupliHistos.root" );
-//  monitorDupli->SetPrintMessage();
-  monitorDupli->SetMsOverlap();
-  monitorDupli->EnableDualStsMode( kTRUE );
-//  monitorDupli->SetLongDurationLimits( 3600, 10 );
-  monitorDupli->SetLongDurationLimits( 7200, 60 );
-  monitorDupli->SetCoincidenceBorder( 150 );
+  CbmCosy2018MonitorEfficiency* monitorEff = new CbmCosy2018MonitorEfficiency();
+  monitorEff->SetHistoFileName( "data/EfficiencyHistos.root" );
+//  monitorEff->SetPrintMessage();
+  monitorEff->SetMsOverlap();
+  monitorEff->EnableDualStsMode( kTRUE );
+//  monitorEff->SetLongDurationLimits( 3600, 10 );
+  monitorEff->SetLongDurationLimits( 7200, 60 );
+/*
+  monitorEff->SetCoincidenceBorderHodo(   0.0,  50 );
+  monitorEff->SetCoincidenceBorderSts1(   0.0,  75 );
+  monitorEff->SetCoincidenceBorderSts2(   0.0,  75 );
+*/
+  monitorEff->SetCoincidenceBorderHodo(       0.0,  25 );
+  monitorEff->SetCoincidenceBorderHodoBoth(  12.0,  50 );
+  monitorEff->SetCoincidenceBorderSts1(     -10.0,  40 );
+  monitorEff->SetCoincidenceBorderSts2(     -27.5,  40 );
+  monitorEff->SetCoincidenceBorderHodoSts1(     0.0,  20 );
+  monitorEff->SetCoincidenceBorderHodoSts2(   -30.0,  20 );
+  monitorEff->SetCoincidenceBorder(           0.0, 150 );
+  monitorEff->SetStripsOffset1( -64, -61 );
+  monitorEff->SetStripsOffset2( -64, -61 );
+  monitorEff->SetPositionsMmZ( 1230.0, 1620.0, 1350.0, 1470.0 );
+  monitorEff->SetPositionOffsetSts1( -3.97, -17.85 );
+  monitorEff->SetPositionOffsetSts2( -1.57,  -6.68 );
+  monitorEff->EnableDeadCorr( bEnableDeadCorr );
 
   // --- Source task
   CbmTofStar2018Source* source = new CbmTofStar2018Source();
@@ -86,11 +98,11 @@ void DupliMonitor(TString inFile = "",
   } // if( "" != inFile )
       else
       {
-         source->SetHostName( "cbmin003");
+         source->SetHostName( "cbmin002");
          source->SetPortNumber( 5556 );
       }
 
-  source->AddUnpacker(monitorDupli,  0x10, 6); // stsXyter DPBs
+  source->AddUnpacker(monitorEff,  0x10, 6); // stsXyter DPBs
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();

@@ -3,6 +3,10 @@ void plotCosyHistos()
 {
    /// Efficiency without corrections
    TProfile   * fhEfficiencyNoDeadCorr;
+   TH2 * fhMapBestPairsHodoGeoCutS1_H1_NoDeadCorr;
+   TH2 * fhMapBestPairsHodoGeoCutS1_H2_NoDeadCorr;
+   TH2 * fhMapBestPairsHodoGeoCutS2_H1_NoDeadCorr;
+   TH2 * fhMapBestPairsHodoGeoCutS2_H2_NoDeadCorr;
 
    /// Histos with attempt at dead strip correction in Geometric cut
    TH1 * fhDtAllPairsHodoS1;
@@ -27,6 +31,10 @@ void plotCosyHistos()
    TH2 * fhResidualsBestPairsHodoS1GeoCut;
    TH2 * fhResidualsBestPairsHodoS2GeoCut;
 
+   TH2 * fhMapBestPairsHodoGeoCutS1_H1;
+   TH2 * fhMapBestPairsHodoGeoCutS1_H2;
+   TH2 * fhMapBestPairsHodoGeoCutS2_H1;
+   TH2 * fhMapBestPairsHodoGeoCutS2_H2;
    TH2 * fhMapBestPairsHodoS1GeoCut_Proj;
    TH2 * fhMapBestPairsHodoS2GeoCut_Proj;
 
@@ -49,6 +57,20 @@ void plotCosyHistos()
 
       fhEfficiencyNoDeadCorr = dynamic_cast< TProfile * >( gDirectory->FindObjectAny( "fhEfficiency" ) );
       if( NULL == fhEfficiencyNoDeadCorr )
+         return;
+
+      gDirectory->cd("../Sts_GeoCuts");
+      fhMapBestPairsHodoGeoCutS1_H1_NoDeadCorr    = dynamic_cast< TH2 * >( gDirectory->FindObjectAny( "fhMapBestPairsHodoGeoCutS1_H1" ) );
+      if( NULL == fhMapBestPairsHodoGeoCutS1_H1_NoDeadCorr )
+         return;
+      fhMapBestPairsHodoGeoCutS1_H2_NoDeadCorr    = dynamic_cast< TH2 * >( gDirectory->FindObjectAny( "fhMapBestPairsHodoGeoCutS1_H2" ) );
+      if( NULL == fhMapBestPairsHodoGeoCutS1_H2_NoDeadCorr )
+         return;
+      fhMapBestPairsHodoGeoCutS2_H1_NoDeadCorr    = dynamic_cast< TH2 * >( gDirectory->FindObjectAny( "fhMapBestPairsHodoGeoCutS2_H1" ) );
+      if( NULL == fhMapBestPairsHodoGeoCutS2_H1_NoDeadCorr )
+         return;
+      fhMapBestPairsHodoGeoCutS2_H2_NoDeadCorr    = dynamic_cast< TH2 * >( gDirectory->FindObjectAny( "fhMapBestPairsHodoGeoCutS2_H2" ) );
+      if( NULL == fhMapBestPairsHodoGeoCutS2_H2_NoDeadCorr )
          return;
    } // if( NULL != fileNoCorr )
       else return;
@@ -116,6 +138,19 @@ void plotCosyHistos()
          return;
       fhMapBestPairsHodoS2GeoCut_Proj    = dynamic_cast< TH2 * >( gDirectory->FindObjectAny( "fhMapBestPairsHodoS2GeoCut_Proj" ) );
       if( NULL == fhMapBestPairsHodoS2GeoCut_Proj )
+         return;
+
+      fhMapBestPairsHodoGeoCutS1_H1    = dynamic_cast< TH2 * >( gDirectory->FindObjectAny( "fhMapBestPairsHodoGeoCutS1_H1" ) );
+      if( NULL == fhMapBestPairsHodoGeoCutS1_H1 )
+         return;
+      fhMapBestPairsHodoGeoCutS1_H2    = dynamic_cast< TH2 * >( gDirectory->FindObjectAny( "fhMapBestPairsHodoGeoCutS1_H2" ) );
+      if( NULL == fhMapBestPairsHodoGeoCutS1_H2 )
+         return;
+      fhMapBestPairsHodoGeoCutS2_H1    = dynamic_cast< TH2 * >( gDirectory->FindObjectAny( "fhMapBestPairsHodoGeoCutS2_H1" ) );
+      if( NULL == fhMapBestPairsHodoGeoCutS2_H1 )
+         return;
+      fhMapBestPairsHodoGeoCutS2_H2    = dynamic_cast< TH2 * >( gDirectory->FindObjectAny( "fhMapBestPairsHodoGeoCutS2_H2" ) );
+      if( NULL == fhMapBestPairsHodoGeoCutS2_H2 )
          return;
 
       fhResidualsBestPairsHodoS1GeoCut    = dynamic_cast< TH2 * >( gDirectory->FindObjectAny( "fhResidualsBestPairsHodoS1GeoCut" ) );
@@ -404,4 +439,93 @@ void plotCosyHistos()
    //====================================================================//
 
    std::cout << " Done with efficiency canvas" << std::endl;
+   std::cout << " S1 efficiency without dead strips correction: "
+             << fhEfficiencyNoDeadCorr->GetBinContent( 5 )
+             << std::endl;
+   std::cout << " S2 efficiency without dead strips correction: "
+             << fhEfficiencyNoDeadCorr->GetBinContent( 6 )
+             << std::endl;
+
+   //====================================================================//
+   TCanvas * fcCanvasDeadCorr = new TCanvas( "cDearCorr",
+                                    "Hodo pairs within sensors w/ and w/o Dead strip rejection");
+   fcCanvasDeadCorr->Divide( 4, 2 );
+
+   // No Dead Correction
+   fcCanvasDeadCorr->cd(1);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhMapBestPairsHodoGeoCutS1_H1_NoDeadCorr->Draw( "colz" );
+
+   fcCanvasDeadCorr->cd(2);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhMapBestPairsHodoGeoCutS1_H2_NoDeadCorr->Draw( "colz" );
+
+   fcCanvasDeadCorr->cd(3);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhMapBestPairsHodoGeoCutS2_H1_NoDeadCorr->Draw( "colz" );
+
+   fcCanvasDeadCorr->cd(4);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhMapBestPairsHodoGeoCutS2_H2_NoDeadCorr->Draw( "colz" );
+
+   // Dead strips out
+   fcCanvasDeadCorr->cd(5);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhMapBestPairsHodoGeoCutS1_H1->Draw( "colz" );
+
+   fcCanvasDeadCorr->cd(6);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhMapBestPairsHodoGeoCutS1_H2->Draw( "colz" );
+
+   fcCanvasDeadCorr->cd(7);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhMapBestPairsHodoGeoCutS2_H1->Draw( "colz" );
+
+   fcCanvasDeadCorr->cd(8);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhMapBestPairsHodoGeoCutS2_H2->Draw( "colz" );
+   //====================================================================//
+
+   std::cout << " Done with projections canvas" << std::endl;
+
+   Double_t dNoDeadEntriesS1 = fhMapBestPairsHodoGeoCutS1_H1->GetEntries();
+   Double_t dNoCorrEntriesS1 = fhMapBestPairsHodoGeoCutS1_H1_NoDeadCorr->GetEntries();
+   Double_t dEffRatioS1      = dNoDeadEntriesS1 / dNoCorrEntriesS1;
+   Double_t dEffCorrS1       = 1.0 - dEffRatioS1;
+   std::cout << " Dead strips efficiency ratio for S1 active area: "
+             << dNoDeadEntriesS1 << " / " << dNoCorrEntriesS1 << " = "
+             << dEffRatioS1 << " => Correction of " << dEffCorrS1
+             << std::endl;
+
+   Double_t dNoDeadEntriesS2 = fhMapBestPairsHodoGeoCutS2_H1->GetEntries();
+   Double_t dNoCorrEntriesS2 = fhMapBestPairsHodoGeoCutS2_H1_NoDeadCorr->GetEntries();
+   Double_t dEffRatioS2      = dNoDeadEntriesS2 / dNoCorrEntriesS2;
+   Double_t dEffCorrS2       = 1.0 - dEffRatioS2;
+   std::cout << " Dead strips efficiency ratio for S2 active area: "
+             << dNoDeadEntriesS2 << " / " << dNoCorrEntriesS2 << " = "
+             << dEffRatioS2 << " => Correction of " << dEffCorrS2
+             << std::endl;
+
+   std::cout << " S1 efficiency with dead strips correction: "
+             << fhEfficiencyNoDeadCorr->GetBinContent( 5 ) + dEffCorrS1
+             << std::endl;
+   std::cout << " S2 efficiency with dead strips correction: "
+             << fhEfficiencyNoDeadCorr->GetBinContent( 6 ) + dEffCorrS2
+             << std::endl;
 }
