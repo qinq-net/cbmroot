@@ -10,7 +10,7 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void SetupMonitor(TString inFile = "",
+void DupliMonitor(TString inFile = "",
                  Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
                  Int_t iStartFile = -1, Int_t iStopFile = -1 )
 {
@@ -26,8 +26,8 @@ void SetupMonitor(TString inFile = "",
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/setup_out.root";
-  TString parFile = "data/setup_param.root";
+  TString outFile = "data/fakes_out.root";
+  TString parFile = "data/fakes_param.root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -60,13 +60,14 @@ void SetupMonitor(TString inFile = "",
   std::cout << ">>> Cern2017Monitor: Initialising..." << std::endl;
 
   // Hodoscopes Monitor
-  CbmCosy2018MonitorSetup* monitorSetup = new CbmCosy2018MonitorSetup();
-//  monitorSetup->SetPrintMessage();
-  monitorSetup->SetMsOverlap();
-  monitorSetup->EnableDualStsMode( kTRUE );
-//  monitorSetup->SetLongDurationLimits( 3600, 10 );
-  monitorSetup->SetLongDurationLimits( 7200, 60 );
-  monitorSetup->SetCoincidenceBorder( 150 );
+  CbmCosy2018MonitorDupli* monitorDupli = new CbmCosy2018MonitorDupli();
+  monitorDupli->SetHistoFileName( "data/DupliHistos.root" );
+//  monitorDupli->SetPrintMessage();
+  monitorDupli->SetMsOverlap();
+  monitorDupli->EnableDualStsMode( kTRUE );
+//  monitorDupli->SetLongDurationLimits( 3600, 10 );
+  monitorDupli->SetLongDurationLimits( 7200, 60 );
+  monitorDupli->SetCoincidenceBorder( 150 );
 
   // --- Source task
   CbmTofStar2018Source* source = new CbmTofStar2018Source();
@@ -85,11 +86,11 @@ void SetupMonitor(TString inFile = "",
   } // if( "" != inFile )
       else
       {
-         source->SetHostName( "cbmin002");
+         source->SetHostName( "cbmin003");
          source->SetPortNumber( 5556 );
       }
 
-  source->AddUnpacker(monitorSetup,  0x10, 6); // stsXyter DPBs
+  source->AddUnpacker(monitorDupli,  0x10, 6); // stsXyter DPBs
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();

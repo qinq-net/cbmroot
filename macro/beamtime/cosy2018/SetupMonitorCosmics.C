@@ -10,8 +10,8 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void SetupMonitor(TString inFile = "",
-                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
+void SetupMonitorCosmics(TString inFile = "",
+                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8083,
                  Int_t iStartFile = -1, Int_t iStopFile = -1 )
 {
   /*
@@ -26,8 +26,8 @@ void SetupMonitor(TString inFile = "",
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/setup_out.root";
-  TString parFile = "data/setup_param.root";
+  TString outFile = "data/setup_cosmics_out.root";
+  TString parFile = "data/setup_cosmics_param.root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -61,11 +61,12 @@ void SetupMonitor(TString inFile = "",
 
   // Hodoscopes Monitor
   CbmCosy2018MonitorSetup* monitorSetup = new CbmCosy2018MonitorSetup();
+  monitorSetup->SetHistoFileName( "data/SetupCosmicsHistos.root" );
 //  monitorSetup->SetPrintMessage();
   monitorSetup->SetMsOverlap();
   monitorSetup->EnableDualStsMode( kTRUE );
 //  monitorSetup->SetLongDurationLimits( 3600, 10 );
-  monitorSetup->SetLongDurationLimits( 7200, 60 );
+  monitorSetup->SetLongDurationLimits( 288000, 60 );
   monitorSetup->SetCoincidenceBorder( 150 );
 
   // --- Source task
