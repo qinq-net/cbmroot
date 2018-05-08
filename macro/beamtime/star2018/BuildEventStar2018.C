@@ -12,6 +12,7 @@ FairRunOnline *run = NULL;
 
 void BuildEventStar2018( TString inFile = "", TString inDir = "",
                          Bool_t bEventBuildingMode = kFALSE, Bool_t bTimeSort = kTRUE,
+                         Bool_t bEventBinaryDump = kFALSE,
                          Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8081,
                          size_t uAcceptBoundaryPct = 100  )
 {
@@ -61,8 +62,11 @@ void BuildEventStar2018( TString inFile = "", TString inDir = "",
    etofEventBuilder->SetMsLimitLevel( uAcceptBoundaryPct );
    etofEventBuilder->SetEventBuildingMode( bEventBuildingMode );
    etofEventBuilder->SetTimeSortOutput( bTimeSort );
+   etofEventBuilder->SetEventDumpEnable( bEventBinaryDump );
    etofEventBuilder->SetHistoryHistoSize( 600. );
-   etofEventBuilder->SetHistoryHistoSizeLong( 1200. );
+   etofEventBuilder->SetHistoryHistoSizeLong( 1800. );
+   etofEventBuilder->SetPrintoutInterval( 30.0 );
+   etofEventBuilder->SetHistSaveToPrintRatio( 10 );
 
   // --- Source task
   CbmTofStar2018Source* source = new CbmTofStar2018Source();

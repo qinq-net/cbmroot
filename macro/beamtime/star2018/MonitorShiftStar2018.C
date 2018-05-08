@@ -104,6 +104,8 @@ void MonitorShiftStar2018(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_
   run->Run(nEvents, 0); // run until end of input file
   timer.Stop();
 
+  run->Finish();
+
   std::cout << "Processed " << std::dec << source->GetTsCount() << " timeslices" << std::endl;
 
   // --- End-of-run info
