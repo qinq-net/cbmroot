@@ -136,6 +136,7 @@ CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018( UInt_t uNbGdpb )
     fStartTimeProcessingLastTs(),
     fhStarTsProcessTime( NULL ),
     fhStarTsProcessTimeShort( NULL ),
+    fhStarTsInterprocessTime( NULL ),
     fvmEpSupprBuffer(),
     fbEventDumpEna( kFALSE ),
     fpBinDumpFile( NULL )
@@ -693,6 +694,14 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
    if (server)
       server->Register("/StarRaw", fhStarTsProcessTimeShort );
 #endif
+   name = "fhStarTsInterprocessTime";
+   title = "Ratio of time between TS processing to TS size VS TS index; Ratio tInterprocess / tTS  []";
+   fhStarTsInterprocessTime = new TH1D( name.Data(), title.Data(),
+                2000, 0.0, 200.0 );
+#ifdef USE_HTTP_SERVER
+   if (server)
+      server->Register("/StarRaw", fhStarTsInterprocessTime );
+#endif
 
    /** Create summary Canvases for STAR 2017 **/
    Double_t w = 10;
@@ -801,16 +810,7 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
       {
          std::chrono::duration<double> elapsed_seconds = timeCurrent - fStartTimeProcessingLastTs;
          Double_t dTimeRatio = elapsed_seconds.count() / (fdTsCoreSizeInNs * 1e-9);
-         if( dTimeRatio < 5 )
-         {
-            fhStarTsProcessTime->Fill(fulCurrentTsIndex, dTimeRatio );
-            fhStarTsProcessTimeShort->Fill(fulCurrentTsIndex, dTimeRatio );
-         } // if( dTimeRatio < 5 )
-            else
-            {
-               fhStarTsProcessTime->Fill(fulCurrentTsIndex, 4.999 );
-               fhStarTsProcessTimeShort->Fill(fulCurrentTsIndex, 4.999 );
-            } // else of if( dTimeRatio < 5 )
+         fhStarTsInterprocessTime->Fill( dTimeRatio );
       } // if( 0 != fStartTimeProcessingLastTs.time_since_epoch().count() && 0 < fulCurrentTsIndex )
       fStartTimeProcessingLastTs = timeCurrent;
    } // if( fCurrentTsIndex < ts.index() )
@@ -1124,6 +1124,26 @@ Bool_t CbmTofStarEventBuilder2018::DoUnpack(const fles::Timeslice& ts, size_t co
       } // if( kFALSE == fbEventBuilding )
 
    } // for( fuCurrentMs = 0; fuCurrentMs < numCompMsInTs; ++fuCurrentMs )
+
+   /// Plot processing time
+   timeCurrent = std::chrono::system_clock::now();
+   if( 0 != fStartTimeProcessingLastTs.time_since_epoch().count() &&
+       0 < fulCurrentTsIndex )
+   {
+      elapsed_seconds = timeCurrent - fStartTimeProcessingLastTs;
+      Double_t dTimeRatio = elapsed_seconds.count() / (fdTsCoreSizeInNs * 1e-9);
+      if( dTimeRatio < 5 )
+      {
+         fhStarTsProcessTime->Fill(fulCurrentTsIndex, dTimeRatio );
+         fhStarTsProcessTimeShort->Fill(fulCurrentTsIndex, dTimeRatio );
+      } // if( dTimeRatio < 5 )
+         else
+         {
+            fhStarTsProcessTime->Fill(fulCurrentTsIndex, 4.999 );
+            fhStarTsProcessTimeShort->Fill(fulCurrentTsIndex, 4.999 );
+         } // else of if( dTimeRatio < 5 )
+   } // if( 0 != fStartTimeProcessingLastTs.time_since_epoch().count() && 0 < fulCurrentTsIndex )
+   fStartTimeProcessingLastTs = timeCurrent;
 
   return kTRUE;
 }
@@ -1626,6 +1646,7 @@ void CbmTofStarEventBuilder2018::SaveAllHistos( TString sFileName )
 
    fhStarTsProcessTime->Write();
    fhStarTsProcessTimeShort->Write();
+   fhStarTsInterprocessTime->Write();
    gDirectory->cd("..");
 
    // Plots monitoring the TS losses
@@ -1695,6 +1716,7 @@ void CbmTofStarEventBuilder2018::ResetAllHistos()
    } // if( kTRUE == fbEventBuilding )
    fhStarTsProcessTime->Reset();
    fhStarTsProcessTimeShort->Reset();
+   fhStarTsInterprocessTime->Reset();
 
    fdStartTime = -1;
    fdStartTimeLong = -1;

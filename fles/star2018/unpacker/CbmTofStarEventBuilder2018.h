@@ -210,6 +210,7 @@ private:
    std::chrono::time_point<std::chrono::system_clock> fStartTimeProcessingLastTs;
    TH2 * fhStarTsProcessTime;
    TH2 * fhStarTsProcessTimeShort;
+   TH1 * fhStarTsInterprocessTime;
 
    std::vector< std::vector < gdpb::Message > > fvmEpSupprBuffer;
 
