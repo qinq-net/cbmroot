@@ -1,12 +1,12 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                     CbmCosy2018MonitorSetup                        -----
+// -----                     CbmCosy2018MonitorSetupGood                        -----
 // -----                Created 27/02/18  by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#ifndef CBMCOSY2018MONITORSETUP_H
-#define CBMCOSY2018MONITORSETUP_H
+#ifndef CBMCOSY2018MONITORSETUPGOOD_H
+#define CBMCOSY2018MONITORSETUPGOOD_H
 
 #ifndef __CINT__
     #include "Timeslice.hpp"
@@ -32,12 +32,12 @@ class CbmDigi;
 class CbmCern2017UnpackParHodo;
 class CbmCern2017UnpackParSts;
 
-class CbmCosy2018MonitorSetup: public CbmTSUnpack
+class CbmCosy2018MonitorSetupGood: public CbmTSUnpack
 {
 public:
 
-   CbmCosy2018MonitorSetup();
-   virtual ~CbmCosy2018MonitorSetup();
+   CbmCosy2018MonitorSetupGood();
+   virtual ~CbmCosy2018MonitorSetupGood();
 
    virtual Bool_t Init();
 #ifndef __CINT__
@@ -73,6 +73,9 @@ public:
    void SetCoincidenceBorderHodo( Double_t dNewValue ){ fdCoincBorderHodo = dNewValue;}
    void SetCoincidenceBorderSts( Double_t dNewValue ){  fdCoincBorderSts  = dNewValue;}
    void SetCoincidenceBorder( Double_t dNewValue ){     fdCoincBorder     = dNewValue;}
+
+   void SetStripsOffset1( Int_t iOffN, Int_t iOffP ) { fiStripsOffsetN1 = iOffN; fiStripsOffsetP1 = iOffP; }
+   void SetStripsOffset2( Int_t iOffN, Int_t iOffP ) { fiStripsOffsetN2 = iOffN; fiStripsOffsetP2 = iOffP; }
 
 private:
    size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
@@ -276,6 +279,8 @@ private:
    std::vector< UInt_t >    fvuNbHitSameTsAsicLastS;
    std::vector< UInt_t >    fvuNbHitSameTsAdcAsicLastS;
 
+   std::vector< Bool_t > fvbAsicHasDuplicInMs;
+
    std::vector< TH2 * >        fhSetupSortedNbSameTsChan;
    std::vector< TH2 * >        fhSetupSortedSameTsAdcChan;
    std::vector< TH2 * >        fhSetupSortedSameTsAdcDiff;
@@ -288,6 +293,11 @@ private:
    std::vector< TH2 * >        fhSetupSortedAsicRatioSameTsAdcVsFlux;
    std::vector< TH2 * >        fhSetupSortedAsicRatioSameAdcSameTsVsFlux;
 
+   TH1 * fhSetupSortedCleanMsDtH1H2S1S2;
+   TProfile * fhRatioMsDuplicateQuality;
+   std::vector< TProfile * > fhEvoMsDuplicateQuality;
+   TH1 * fhSizeCleanMs;
+
    TH2 * fhHodoX1SpillEvo;
    TH2 * fhHodoY1SpillEvo;
    TH2 * fhHodoX2SpillEvo;
@@ -299,6 +309,21 @@ private:
    TProfile * fhHodoX2SpillEvoProf;
    TProfile * fhHodoY2SpillEvoProf;
 
+   const Double_t kdStereoAngle =    7.5; // [Deg]
+   Double_t       fdStereoAngleTan;
+   const Double_t kdPitchMm     =    0.058; // [mm]
+   const Int_t    kiNbStrips    = 1024;
+   const Double_t kdSensorsSzX  =   60; // [mm], active is 59.570 mm (kiNbStrips*kdPitchMm)
+   const Double_t kdSensorsSzY  =   40; // [mm], active is 39.703 mm
+   Int_t fiStripsOffsetN1; // of channel 0 relative to center strip
+   Int_t fiStripsOffsetP1; // of channel 0 relative to center strip
+   Int_t fiStripsOffsetN2; // of channel 0 relative to center strip
+   Int_t fiStripsOffsetP2; // of channel 0 relative to center strip
+   TH2 * fhStsSortedMapS1;
+   TH2 * fhStsSortedMapS2;
+   TH2 * fhStsSortedMapS1Coinc;
+   TH2 * fhStsSortedMapS2Coinc;
+
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
    TProfile* fhMsSzTime[kiMaxNbFlibLinks];
@@ -309,10 +334,13 @@ private:
    void FillTsMsbInfo( stsxyter::Message mess, UInt_t uMessIdx = 0, UInt_t uMsIdx = 0);
    void FillEpochInfo( stsxyter::Message mess );
 
-   CbmCosy2018MonitorSetup(const CbmCosy2018MonitorSetup&);
-   CbmCosy2018MonitorSetup operator=(const CbmCosy2018MonitorSetup&);
+   void ComputeCoordinatesSensor1( Int_t iChanN, Int_t iChanP, Double_t & dPosX, Double_t & dPosY );
+   void ComputeCoordinatesSensor2( Int_t iChanN, Int_t iChanP, Double_t & dPosX, Double_t & dPosY );
 
-   ClassDef(CbmCosy2018MonitorSetup, 1)
+   CbmCosy2018MonitorSetupGood(const CbmCosy2018MonitorSetupGood&);
+   CbmCosy2018MonitorSetupGood operator=(const CbmCosy2018MonitorSetupGood&);
+
+   ClassDef(CbmCosy2018MonitorSetupGood, 1)
 };
 
-#endif // CBMCOSY2018MONITORSETUP_H
+#endif // CBMCOSY2018MONITORSETUPGOOD_H

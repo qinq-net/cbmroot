@@ -1,12 +1,12 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                     CbmCosy2018MonitorSetup                        -----
+// -----                     CbmCosy2018MonitorDupli                        -----
 // -----                Created 27/02/18  by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#ifndef CBMCOSY2018MONITORSETUP_H
-#define CBMCOSY2018MONITORSETUP_H
+#ifndef CBMCOSY2018MONITORFAKES_H
+#define CBMCOSY2018MONITORFAKES_H
 
 #ifndef __CINT__
     #include "Timeslice.hpp"
@@ -32,12 +32,12 @@ class CbmDigi;
 class CbmCern2017UnpackParHodo;
 class CbmCern2017UnpackParSts;
 
-class CbmCosy2018MonitorSetup: public CbmTSUnpack
+class CbmCosy2018MonitorDupli: public CbmTSUnpack
 {
 public:
 
-   CbmCosy2018MonitorSetup();
-   virtual ~CbmCosy2018MonitorSetup();
+   CbmCosy2018MonitorDupli();
+   virtual ~CbmCosy2018MonitorDupli();
 
    virtual Bool_t Init();
 #ifndef __CINT__
@@ -98,6 +98,8 @@ private:
    Bool_t                fbPrintMessages;
    stsxyter::MessagePrintMask fPrintMessCtrl;
    Bool_t                fbDualStsEna;
+   UInt_t                fuPrintMessagesIdx;
+   const UInt_t          kuNbPrintMessages = 5000;
       // TS/MS info
    ULong64_t             fulCurrentTsIdx;
    ULong64_t             fulCurrentMsIdx;
@@ -276,6 +278,8 @@ private:
    std::vector< UInt_t >    fvuNbHitSameTsAsicLastS;
    std::vector< UInt_t >    fvuNbHitSameTsAdcAsicLastS;
 
+   std::vector< TH2 * >        fhSetupSortedTsFirstDuplicateChan;
+   std::vector< TH2 * >        fhSetupSortedTsGoodChan;
    std::vector< TH2 * >        fhSetupSortedNbSameTsChan;
    std::vector< TH2 * >        fhSetupSortedSameTsAdcChan;
    std::vector< TH2 * >        fhSetupSortedSameTsAdcDiff;
@@ -287,6 +291,44 @@ private:
    std::vector< TH2 * >        fhSetupSortedAsicRatioSameTsVsFlux;
    std::vector< TH2 * >        fhSetupSortedAsicRatioSameTsAdcVsFlux;
    std::vector< TH2 * >        fhSetupSortedAsicRatioSameAdcSameTsVsFlux;
+
+   std::vector< TProfile2D * > fhRatioSameTsSpillEvo;
+   std::vector< TProfile2D * > fhRatioSameTsAdcSpillEvo;
+   std::vector< TProfile2D * > fhRatioSameAdcSameTsSpillEvo;
+
+   std::vector< TProfile * > fhFractionHitsAsicSpillEvo;
+   std::vector< TProfile * > fhFractionGoodHitsSpillEvo;
+   std::vector< TProfile * > fhFractionDupliHitsSpillEvo;
+   std::vector< TProfile * > fhFractionTsMsbSpillEvo;
+   std::vector< TProfile * > fhFractionEpochSpillEvo;
+   std::vector< TProfile * > fhFractionEmptySpillEvo;
+   std::vector< TProfile * > fhFractionHitsAsicEvo;
+   std::vector< TProfile * > fhFractionGoodHitsEvo;
+   std::vector< TProfile * > fhFractionDupliHitsEvo;
+   std::vector< TProfile * > fhFractionTsMsbEvo;
+   std::vector< TProfile * > fhFractionEpochEvo;
+   std::vector< TProfile * > fhFractionEmptyEvo;
+   TProfile * fhFractionAsics;
+   TProfile * fhFractionTypes;
+
+   std::vector< UInt_t >     fvuNbSameFullHitAsic;
+   std::vector< UInt_t >     fvuNbDiffFullHitAsic;
+   std::vector< UInt_t >     fvuLastHitBufferIdx;
+   std::vector< std::vector< stsxyter::FinalHit > > fvmLastHitsAsic; //! last 128 hits (time in bins, ADC in bins, asic, channel)
+   std::vector< TH2 * >      fhAsicDuplicDtLastHits;
+   std::vector< TH2 * >      fhAsicDuplicCompTs;
+   std::vector< TH2 * >      fhAsicDuplicTsLsb;
+   std::vector< TH2 * >      fhAsicDuplicTsMsb;
+   std::vector< TH2 * >      fhAsicDuplicCompTsBitThere;
+   std::vector< TH2 * >      fhAsicDuplicTsLsbBitThere;
+   std::vector< TH2 * >      fhAsicDuplicTsMsbBitThere;
+   std::vector< TH2 * >      fhAsicDuplicTs;
+   std::vector< TH2 * >      fhAsicGoodTs;
+   std::vector< TH2 * >      fhAsicDuplicTsBitPattern;
+   std::vector< TH2 * >      fhAsicGoodTsBitPattern;
+
+   std::vector<TH1 *> fhHodoChanCntGood;
+   std::vector<TH2 *> fhHodoChanGoodHitRateEvo;
 
    TH2 * fhHodoX1SpillEvo;
    TH2 * fhHodoY1SpillEvo;
@@ -303,16 +345,20 @@ private:
    TH1*      fhMsSz[kiMaxNbFlibLinks];
    TProfile* fhMsSzTime[kiMaxNbFlibLinks];
 
+   std::vector< ULong64_t > fvuAsicTimeLastPulse;
+   std::vector< std::vector< Bool_t > > fvbPulseThereChan;
+   std::vector< TH2 * > fhPulseChanCountEvo;
+
    void CreateHistograms();
 
    void FillHitInfo(   stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx, const UInt_t & uMsIdx );
    void FillTsMsbInfo( stsxyter::Message mess, UInt_t uMessIdx = 0, UInt_t uMsIdx = 0);
    void FillEpochInfo( stsxyter::Message mess );
 
-   CbmCosy2018MonitorSetup(const CbmCosy2018MonitorSetup&);
-   CbmCosy2018MonitorSetup operator=(const CbmCosy2018MonitorSetup&);
+   CbmCosy2018MonitorDupli(const CbmCosy2018MonitorDupli&);
+   CbmCosy2018MonitorDupli operator=(const CbmCosy2018MonitorDupli&);
 
-   ClassDef(CbmCosy2018MonitorSetup, 1)
+   ClassDef(CbmCosy2018MonitorDupli, 1)
 };
 
-#endif // CBMCOSY2018MONITORSETUP_H
+#endif // CBMCOSY2018MONITORFAKES_H
