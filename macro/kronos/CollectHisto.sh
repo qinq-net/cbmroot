@@ -9,7 +9,7 @@ SETUP=sis100_electron
 export MAINDIR=`pwd`
 
 SCRIPT_DIR=$MAINDIR/histos
-export CBMROOT_DIR=/lustre/nyx/cbm/users/$USER/cbmroot_JUN16/build
+export CBMROOT_DIR=/lustre/nyx/cbm/users/$USER/cbmroot/build
 
 MAINDIR=`pwd`
 

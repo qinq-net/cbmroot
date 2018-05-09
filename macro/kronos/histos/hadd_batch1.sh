@@ -18,7 +18,9 @@ NUM_DIR=$(($SLURM_ARRAY_TASK_ID*10))
 infiles=" "
 for i in `seq 1 10`;
 do
-infiles=$infiles" "$indir/$NUM_DIR/KFParticleFinder.root
+if [ -f $indir/$NUM_DIR/KFParticleFinder.root ]; then
+  infiles=$infiles" "$indir/$NUM_DIR/KFParticleFinder.root
+fi
 NUM_DIR=$(($NUM_DIR + 1))
 done
 

@@ -11,7 +11,7 @@ ENERGY=15gev
 CENTRALITY=centr
 SETUP=sis100_electron
 
-cd /lustre/nyx/cbm/users/$USER/cbmroot_JUN16/build
+cd /lustre/nyx/cbm/users/$USER/cbmroot/build
 . ./config.sh
 export DISPLAY=localhost:0.0
 
@@ -32,8 +32,8 @@ cd $OUTDIR
 cp -rf "$MAINDIR/macro/run_mc.C" .
 root -l -b -q "run_mc.C(\"$INPUTFILE\",\"$SETUP\",$NEVENTS)"
 
-#cp -rf "$MAINDIR/macro/run_reco.C" .
-#root -l -b -q "run_reco.C(\"$SETUP\",$NEVENTS)"
+# cp -rf "$MAINDIR/macro/run_reco.C" .
+# root -l -b -q "run_reco.C(\"$SETUP\",$NEVENTS)"
 
 # cp -rf "$MAINDIR/macro/run_phys.C" .
 # root -l -b -q "run_phys.C(\"$SETUP\",$NEVENTS,\"$INPUTDIR\")"

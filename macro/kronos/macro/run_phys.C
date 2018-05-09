@@ -40,6 +40,11 @@ void run_phys(TString setupName, Int_t nEvents = 10, TString inputDir = "")
   run->AddFriend(recFile);
   run->SetOutputFile(outFile);
   // ------------------------------------------------------------------------
+  
+  // ----- MC Data Manager   ------------------------------------------------
+  CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+  mcManager->AddFile(inFile);
+  run->AddTask(mcManager);
 
  //          Adjust this part according to your requirements
   CbmKF *KF = new CbmKF();
@@ -65,14 +70,14 @@ void run_phys(TString setupName, Int_t nEvents = 10, TString inputDir = "")
   kfParticleFinderPID->SetSIS100(); 
 //  kfParticleFinderPID->SetPIDMode(1);
   kfParticleFinderPID->SetPIDMode(2);
-//  kfParticleFinderPID->UseTRDANNPID();
+  kfParticleFinderPID->UseTRDANNPID();
   kfParticleFinderPID->UseRICHRvspPID();
   run->AddTask(kfParticleFinderPID);
   
   // ----- KF Particle Finder --------------------------------------------
   CbmKFParticleFinder* kfParticleFinder = new CbmKFParticleFinder();
   kfParticleFinder->SetPIDInformation(kfParticleFinderPID);
-  kfParticleFinder->SetPVToZero();
+//   kfParticleFinder->SetPVToZero();
 //  kfParticleFinder->SetSuperEventAnalysis(); // SuperEvent
   run->AddTask(kfParticleFinder);
 
@@ -87,16 +92,20 @@ void run_phys(TString setupName, Int_t nEvents = 10, TString inputDir = "")
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-  parIo1->open(parFile.Data());
-  parIo2->open(parFileList, "in");
+  parIo1->open(parFile.Data(),"UPDATE");
   rtdb->setFirstInput(parIo1);
-  rtdb->setSecondInput(parIo2);
-  rtdb->setOutput(parIo1);
-  rtdb->saveOutput();
+  if ( ! parFileList->IsEmpty() ) {
+    parIo2->open(parFileList, "in");
+    rtdb->setSecondInput(parIo2);
+  }
   // ------------------------------------------------------------------------
 
   // -----   Intialise and run   --------------------------------------------
   run->Init();
+  
+  rtdb->setOutput(parIo1);
+  rtdb->saveOutput();
+  rtdb->print();
   
   KFPartEfficiencies eff;
   for(int jParticle=eff.fFirstStableParticleIndex+10; jParticle<=eff.fLastStableParticleIndex; jParticle++)
@@ -118,5 +127,5 @@ void run_phys(TString setupName, Int_t nEvents = 10, TString inputDir = "")
   cout << "Macro finished succesfully." << endl;
   cout << "Output file is "    << outFile << endl;
   cout << "Parameter file is " << parFile << endl;
-  printf("RealTime=%f seconds, CpuTime=%f seconds\n",rtime,ctime);
+  printf("RealTime=%f seconds, CpuTime=%f seconds\n",rtime,ctime);  
 }

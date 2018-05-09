@@ -120,10 +120,7 @@ void run_reco(TString setupName, Int_t nEvents = 10)
     Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
     Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
   
-    CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
-    stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
-    stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
-                       deadTime, noise);
+    CbmStsDigitize* stsDigi = new CbmStsDigitize();
     run->AddTask(stsDigi);
   }
 
@@ -135,7 +132,10 @@ void run_reco(TString setupName, Int_t nEvents = 10)
   // -----   MVD Hit Finder   ------------------------------------------------
   if( setup->IsActive(kMvd) )
   {
+    CbmMvdClusterfinder* mvdClusterFinder = new CbmMvdClusterfinder("MVD Cluster Finder", 0, iVerbose);
+    run->AddTask(mvdClusterFinder);
     CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
+    mvdHitfinder->UseClusterfinder(kTRUE);
     run->AddTask(mvdHitfinder);
   }
   // -------------------------------------------------------------------------
@@ -149,18 +149,15 @@ void run_reco(TString setupName, Int_t nEvents = 10)
   // =========================================================================
   // ===                      STS local reconstruction                     ===
   // =========================================================================
-
-
+  
   // -----   STS Cluster Finder   --------------------------------------------
-  FairTask* stsClusterFinder = new CbmStsFindClusters();
-  run->AddTask(stsClusterFinder);
-  // -------------------------------------------------------------------------
-
-
+  CbmStsFindClusters* stsCluster = new CbmStsFindClusters();
+  stsCluster->UseEventMode();
+  run->AddTask(stsCluster);
+    
   // -----   STS hit finder   ------------------------------------------------
-  FairTask* stsFindHits = new CbmStsFindHits();
-  run->AddTask(stsFindHits);
-  // -------------------------------------------------------------------------
+  FairTask* stsHit = new CbmStsFindHitsEvents();
+  run->AddTask(stsHit);
 
   // ---   STS track matching   ----------------------------------------------
   CbmMatchRecoToMC* matchTask = new CbmMatchRecoToMC();    
@@ -276,22 +273,38 @@ void run_reco(TString setupName, Int_t nEvents = 10)
     matchTask2->SetIncludeMvdHitsInStsTrack(1);
   run->AddTask(matchTask2);
   // -------------------------------------------------------------------------
+  
+  if( setup->IsActive(kTrd) )
+  {
+    // ----------- TRD track Pid ModWkn ----------------------
+    CbmTrdSetTracksPidModWkn* trdSetTracksPidModWknTask = new CbmTrdSetTracksPidModWkn("Wkn", "Wkn");
+    run->AddTask(trdSetTracksPidModWknTask);
+    // ----------------------------------------------------
 
+    // ----------- TRD track Pid Ann ----------------------
+    CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN("Ann", "Ann");
+    run->AddTask(trdSetTracksPidAnnTask);
+  }
+  
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-  parIo1->open(parFile.Data());
-  parIo2->open(parFileList, "in");
+  parIo1->open(parFile.Data(),"UPDATE");
   rtdb->setFirstInput(parIo1);
-  rtdb->setSecondInput(parIo2);
-  rtdb->setOutput(parIo1);
-  rtdb->saveOutput();
+  if ( ! parFileList->IsEmpty() ) {
+    parIo2->open(parFileList, "in");
+    rtdb->setSecondInput(parIo2);
+  }
   // ------------------------------------------------------------------------
 
 
   // -----   Intialise and run   --------------------------------------------
   run->Init();
+  rtdb->setOutput(parIo1);
+  rtdb->saveOutput();
+  rtdb->print();
+  
   //add ions to the TDatabasePDG
   KFPartEfficiencies eff;
   for(int jParticle=eff.fFirstStableParticleIndex+10; jParticle<=eff.fLastStableParticleIndex; jParticle++)
