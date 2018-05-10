@@ -414,11 +414,12 @@ public:
     }*/
     
 public:
-    CbmBinnedStation(Double_t minZ, Double_t maxZ, int nofYBins, int nofXBins, int nofTBins);
+    CbmBinnedStation(ECbmModuleId stationType, Double_t minZ, Double_t maxZ, int nofYBins, int nofXBins, int nofTBins);
     CbmBinnedStation(const CbmBinnedStation&) = delete;
     CbmBinnedStation& operator=(const CbmBinnedStation&) = delete;
     
     virtual ~CbmBinnedStation() {}
+    ECbmModuleId GetStationType() const { return fStationType; }
     Double_t GetMinZ() const { return fMinZ; }
     Double_t GetMaxZ() const { return fMaxZ; }
     void SetMinZ(Double_t v) { fMinZ = v; }
@@ -543,7 +544,7 @@ public:
         return ind;
     }
     
-    void SetCheckUsed(bool v) { fCheckUsed = v; }
+    void SetStage(char v) { fStage = v; }
     
     virtual void Init()
     {
@@ -559,11 +560,12 @@ public:
         fDySq = 0;
         fDt = 0;
         fDtSq = 0;
-        fCheckUsed = false;
+        fStage = 0;
+        fVertexHolder.stage = std::numeric_limits<char>::max();
         fSegments.clear();
     }
     
-    virtual void AddHit(const CbmPixelHit* hit, Int_t index) = 0;
+    virtual void AddHit(ECbmModuleId type, const CbmPixelHit* hit, Int_t index) = 0;
     virtual void IterateHits(std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
     virtual void SearchHits(const CbmTrackParam2& stateVec, Double_t stateZ, std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
     virtual void SearchHits(Segment& segment, std::function<void(CbmTBin::HitHolder&)> handleHit) = 0;
@@ -597,6 +599,7 @@ public:
     }
     
 protected:
+    ECbmModuleId fStationType;
     Double_t fMinZ;
     Double_t fMaxZ;
     int fNofYBins;
@@ -633,7 +636,7 @@ protected:
     Double_t fNofSigmasXSq;
     Double_t fNofSigmasY;
     Double_t fNofSigmasYSq;
-    bool fCheckUsed;
+    char fStage;
 };
 
 #endif /* STATION_H */

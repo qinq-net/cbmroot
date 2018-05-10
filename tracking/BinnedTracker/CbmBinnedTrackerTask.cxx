@@ -40,8 +40,8 @@ using std::copy;
 CbmBinnedTrackerTask* CbmBinnedTrackerTask::fInstance = 0;
    
 CbmBinnedTrackerTask::CbmBinnedTrackerTask(bool useAllDetectors, Double_t beamWidthX, Double_t beamWidthY) : fUseAllDetectors(useAllDetectors),
-   fIsOnlyPrimary(false), fChiSqCut(0), fSettings(0), fBeamDx(beamWidthX), fBeamDy(beamWidthY), fTracker(0), fGlobalTracks(0), fStsTracks(0),
-   fMuchTracks(0), fTrdTracks(0)
+   fIsOnlyPrimary(false), fChiSqCut(0), fCanSkipHits(-1/*Negative value means: calculate the value*/), fSettings(0), fBeamDx(beamWidthX),
+   fBeamDy(beamWidthY), fTracker(0), fGlobalTracks(0), fStsTracks(0), fMuchTracks(0), fTrdTracks(0)
 {
    fInstance = this;
    fill_n(fUseModules, int(kLastModule), fUseAllDetectors);
@@ -75,6 +75,9 @@ InitStatus CbmBinnedTrackerTask::Init()
    
    if (fChiSqCut)
       fTracker->SetChiSqCut(fChiSqCut);
+   
+   if (fCanSkipHits >= 0)
+       fTracker->SetCanSkipHits(fCanSkipHits);
    
    FairRootManager* ioman = FairRootManager::Instance();
     
@@ -135,7 +138,10 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
       fTrdTracks->Clear();
    
    fGlobalTracks->Clear();
-   int trackNumber = 0;
+   int globalTrackNumber = 0;
+   int stsTrackNumber = 0;
+   int muchTrackNumber = 0;
+   int trdTrackNumber = 0;
    std::list<CbmBinnedTracker::Track*>::const_iterator tracksEnd = fTracker->GetTracksEnd();
    
    for (std::list<CbmBinnedTracker::Track*>::const_iterator trackIter = fTracker->GetTracksBegin(); trackIter != tracksEnd; ++trackIter)
@@ -145,15 +151,94 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
       if (recoTrack->fIsClone)
          continue;
       
-      int previousTrackId = -1;
-      int stationNumber = 0;
-      int nofStations = 0;
+      int previousGlobalTrackId = -1;
+      int previousStsTrackId = -1;
+      int previousMuchTrackId = -1;
+      int previousTrdTrackId = -1;
+      int stsStationNumber = 0;
+      int muchStationNumber = 0;
+      int trdStationNumber = 0;
+      int tofStationNumber = 0;
       Double_t cov[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
       //Double_t parCov[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
       FairTrackParam trackParam;
-      CbmGlobalTrack* globalTrack = new ((*fGlobalTracks)[trackNumber]) CbmGlobalTrack();
+      CbmGlobalTrack* globalTrack = new ((*fGlobalTracks)[globalTrackNumber++]) CbmGlobalTrack();
+      CbmStsTrack* stsTrack = 0;
+      CbmMuchTrack* muchTrack = 0;
+      CbmTrdTrack* trdTrack = 0;
       
-      if (fSettings->Use(kSts))
+      for (int hitNo = 0; hitNo < recoTrack->fLength; ++hitNo)
+      {
+          CbmTBin::HitHolder* hitHolder = recoTrack->fHits[hitNo];
+          
+          switch (hitHolder->type)
+          {
+          case kSts:
+              if (0 == stsTrack)
+              {
+                  stsTrack = new ((*fStsTracks)[stsTrackNumber]) CbmStsTrack();
+                  globalTrack->SetStsTrackIndex(stsTrackNumber++);
+              }
+              
+              ++stsStationNumber;
+              stsTrack->AddStsHit(hitHolder->index);
+              break;
+              
+          case kMuch:
+              if (0 == muchTrack)
+              {
+                  muchTrack = new ((*fMuchTracks)[muchTrackNumber]) CbmMuchTrack();
+                  globalTrack->SetMuchTrackIndex(muchTrackNumber++);
+              }
+              
+              ++muchStationNumber;
+              muchTrack->AddHit(hitHolder->index, kMUCHPIXELHIT);
+              break;
+              
+          case kTrd:
+              if (0 == trdTrack)
+              {
+                  trdTrack = new ((*fTrdTracks)[trdTrackNumber]) CbmTrdTrack();
+                  globalTrack->SetTrdTrackIndex(trdTrackNumber++);
+              }
+              
+              ++trdStationNumber;
+              trdTrack->AddHit(hitHolder->index, kTRDHIT);
+              break;
+              
+          case kTof:
+              globalTrack->SetTofHitIndex(hitHolder->index);
+              ++tofStationNumber;
+              break;
+          }
+      }
+      
+      int lastStationNumber = stsStationNumber + muchStationNumber + trdStationNumber + tofStationNumber - 1;
+      
+      trackParam.SetX(recoTrack->fParams[0].GetX());
+      trackParam.SetY(recoTrack->fParams[0].GetY());
+      trackParam.SetZ(recoTrack->fHits[0]->hit->GetZ());
+      trackParam.SetTx(recoTrack->fParams[0].GetTx());
+      trackParam.SetTy(recoTrack->fParams[0].GetTy());
+      cov[0] = recoTrack->fParams[0].GetCovXX();//parCov[0];
+      cov[5] = recoTrack->fParams[0].GetCovYY();//parCov[6];
+      trackParam.SetCovMatrix(cov);
+      globalTrack->SetParamFirst(&trackParam);
+      
+      trackParam.SetX(recoTrack->fParams[lastStationNumber].GetX());
+      trackParam.SetY(recoTrack->fParams[lastStationNumber].GetY());
+      trackParam.SetZ(recoTrack->fHits[lastStationNumber]->hit->GetZ());
+      trackParam.SetTx(recoTrack->fParams[lastStationNumber].GetTx());
+      trackParam.SetTy(recoTrack->fParams[lastStationNumber].GetTy());
+      cov[0] = recoTrack->fParams[lastStationNumber].GetCovXX();//parCov[0];
+      cov[5] = recoTrack->fParams[lastStationNumber].GetCovYY();//parCov[6];
+      trackParam.SetCovMatrix(cov);
+      globalTrack->SetParamLast(&trackParam);
+      
+      globalTrack->SetNDF((lastStationNumber + 1) * 2);
+      globalTrack->SetChi2(recoTrack->fChiSq);
+      
+      /*if (fSettings->Use(kSts))
       {
          globalTrack->SetStsTrackIndex(trackNumber);
          CbmStsTrack* stsTrack = new ((*fStsTracks)[trackNumber]) CbmStsTrack();
@@ -295,9 +380,7 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
       globalTrack->SetParamLast(&trackParam);
       
       globalTrack->SetNDF(nofStations * 2);
-      globalTrack->SetChi2(recoTrack->fChiSq);
-      
-      ++trackNumber;
+      globalTrack->SetChi2(recoTrack->fChiSq);*/
    }
    
    clock_gettime(CLOCK_REALTIME, &ts);

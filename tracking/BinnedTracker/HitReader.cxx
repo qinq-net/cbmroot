@@ -119,7 +119,7 @@ public:
       {
          const CbmPixelHit* hit = static_cast<const CbmPixelHit*> (fHitArray->At(i));
          int stationNumber = CbmStsSetup::Instance()->GetStationNumber(hit->GetAddress());
-         fStations[stationNumber]->AddHit(hit, i);
+         fStations[stationNumber]->AddHit(kSts, hit, i);
 #ifdef DO_ERROR_STAT
          UpdateMax("Sts", stationNumber, hit);
 #endif//DO_ERROR_STAT
@@ -467,7 +467,7 @@ public:
          hit->SetTimeError(4);
          hit->SetDx(0.175);
          hit->SetDy(0.175);
-         fStations[0]->AddHit(hit, i);
+         fStations[0]->AddHit(kRich, hit, i);
 #ifdef DO_ERROR_STAT
          UpdateMax("Rich", 0, hit);
 #endif//DO_ERROR_STAT
@@ -613,7 +613,7 @@ public:
          
          hit->SetTime(hit->GetTime() - 17.23);
          //hit->SetTimeError(10);
-         fStations[stationNumber]->AddHit(hit, i);
+         fStations[stationNumber]->AddHit(kMuch, hit, i);
 #ifdef DO_ERROR_STAT
          UpdateMax("Much", stationNumber, hit);
 #endif//DO_ERROR_STAT
@@ -713,7 +713,7 @@ public:
          hit->SetTimeError(10000);
          //hit->SetDx(hit->GetDx() * 4);
          //hit->SetDy(hit->GetDy() * 4);
-         fStations[stationNumber]->AddHit(hit, i);
+         fStations[stationNumber]->AddHit(kTrd, hit, i);
 #ifdef DO_ERROR_STAT
          UpdateMax("Trd", stationNumber, hit);
 #endif//DO_ERROR_STAT
@@ -770,7 +770,7 @@ public:
          if (hit->GetTimeError() <= 0)
             hit->SetTimeError(4);
          
-         fStations[0]->AddHit(hit, i);
+         fStations[0]->AddHit(kTof, hit, i);
 #ifdef DO_ERROR_STAT
          UpdateMax("Tof", 0, hit);
 #endif//DO_ERROR_STAT

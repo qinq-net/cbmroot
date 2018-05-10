@@ -21,7 +21,8 @@
 class CbmBinned3DStation : public CbmBinnedStation
 {
 public:
-    CbmBinned3DStation(Double_t minZ, Double_t maxZ, int nofYBins, int nofXBins, int nofTBins) : CbmBinnedStation(minZ, maxZ, nofYBins, nofXBins, nofTBins),
+    CbmBinned3DStation(ECbmModuleId stationType, Double_t minZ, Double_t maxZ, int nofYBins, int nofXBins, int nofTBins) :
+        CbmBinnedStation(stationType, minZ, maxZ, nofYBins, nofXBins, nofTBins),
             fYBins(reinterpret_cast<CbmYBin*> (new unsigned char[nofYBins * sizeof(CbmYBin)]))
     {
         for (int i = 0; i < nofYBins; ++i)
@@ -52,7 +53,7 @@ public:
         }
     }
     
-    void AddHit(const CbmPixelHit* hit, Int_t index)
+    void AddHit(ECbmModuleId type, const CbmPixelHit* hit, Int_t index)
     {
         Double_t y = hit->GetY();
         
@@ -81,7 +82,7 @@ public:
         CbmYBin& yBin = fYBins[yInd];
         CbmXBin& xBin = yBin[xInd];
         CbmTBin& tBin = xBin[tInd];
-        tBin.AddHit(hit, index, fDefaultUse);
+        tBin.AddHit(type, hit, index, fDefaultUse);
         SetDx(hit->GetDx());
         SetDy(hit->GetDy());
         SetDt(hit->GetTimeError());
@@ -121,7 +122,7 @@ public:
                     {
                         CbmTBin::HitHolder& hitHolder = *hi;
                
-                        if (fCheckUsed && hitHolder.used)
+                        if (fStage > hitHolder.stage)
                             continue;
                   
                         handleHit(hitHolder);

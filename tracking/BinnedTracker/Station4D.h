@@ -19,7 +19,8 @@
 class CbmBinned4DStation : public CbmBinnedStation
 {
 public:
-    CbmBinned4DStation(Double_t minZ, Double_t maxZ, int nofZBins, int nofYBins, int nofXBins, int nofTBins) : CbmBinnedStation(minZ, maxZ, nofYBins, nofXBins, nofTBins),
+    CbmBinned4DStation(ECbmModuleId stationType, Double_t minZ, Double_t maxZ, int nofZBins, int nofYBins, int nofXBins, int nofTBins) :
+        CbmBinnedStation(stationType, minZ, maxZ, nofYBins, nofXBins, nofTBins),
             fZBins(reinterpret_cast<CbmZBin*> (new unsigned char[nofZBins * sizeof(CbmZBin)])),
             fNofZBins(nofZBins), fZBinSize(0), fDtx(0), fDtxSq(0), fDty(0), fDtySq(0)
     {
@@ -79,7 +80,7 @@ public:
         }
     }
     
-    void AddHit(const CbmPixelHit* hit, Int_t index)
+    void AddHit(ECbmModuleId type, const CbmPixelHit* hit, Int_t index)
     {
         Double_t z = hit->GetZ();
         
@@ -110,7 +111,7 @@ public:
         CbmYBin& yBin = zBin[yInd];
         CbmXBin& xBin = yBin[xInd];
         CbmTBin& tBin = xBin[tInd];
-        tBin.AddHit(hit, index, fDefaultUse);
+        tBin.AddHit(type, hit, index, fDefaultUse);
         SetDx(hit->GetDx());
         SetDy(hit->GetDy());
         SetDt(hit->GetTimeError());
@@ -160,7 +161,7 @@ public:
                         {
                             CbmTBin::HitHolder& hitHolder = *hi;
                
-                            if (fCheckUsed && hitHolder.used)
+                            if (fStage > hitHolder.stage)
                                 continue;
                   
                             handleHit(hitHolder);
@@ -386,7 +387,7 @@ public:
 
                             CbmTBin::HitHolder& hitHolder = *hitIter;
                
-                            if (fCheckUsed && hitHolder.used)
+                            if (fStage > hitHolder.stage)
                                 continue;
                   
                             handleHit(hitHolder);

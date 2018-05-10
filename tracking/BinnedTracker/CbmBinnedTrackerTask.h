@@ -41,6 +41,7 @@ public:
     bool Use(ECbmModuleId m) const { return fUseModules[m]; }
     void SetUse(ECbmModuleId m, bool v) { fUseModules[m] = v; }
     void SetChiSqCut(Double_t v) { fChiSqCut = v; }
+    void SetCanSkipHits(Int_t v) { fCanSkipHits = v; }
     
 private:
     static CbmBinnedTrackerTask* fInstance;
@@ -50,6 +51,7 @@ private:
     bool fIsOnlyPrimary;
     bool fUseModules[kLastModule];
     Double_t fChiSqCut;
+    Int_t fCanSkipHits;
     CbmBinnedSettings* fSettings;
     Double_t fBeamDx;
     Double_t fBeamDy;

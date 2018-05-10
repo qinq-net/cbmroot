@@ -16,7 +16,9 @@
 
 #include <list>
 #include <cmath>
+#include <limits>
 #include "CbmPixelHit.h"
+#include "CbmDefs.h"
 
 class CbmXBin;
 
@@ -25,12 +27,13 @@ class CbmTBin
 public:
     struct HitHolder
     {
+        ECbmModuleId type;
         const CbmPixelHit* hit;
         Int_t index;
         bool use;
         CbmTBin& bin;
         //std::list<HitHolder*> children;
-        bool used;
+        char stage;
         std::list<void*> tracks;
         
         void SetUse(bool v)
@@ -50,7 +53,7 @@ public:
     std::list<HitHolder>::iterator HitsBegin() { return fHits.begin(); }
     std::list<HitHolder>::iterator HitsEnd() { return fHits.end(); }
     void Clear() { fHits.clear(); }
-    void AddHit(const CbmPixelHit* hit, Int_t index, bool use) { fHits.push_back({ hit, index, use, *this, /*{},*/ false, {} }); }
+    void AddHit(ECbmModuleId type, const CbmPixelHit* hit, Int_t index, bool use) { fHits.push_back({ type, hit, index, use, *this, std::numeric_limits<char>::max(), {} }); }
     
 private:
     CbmXBin* fOwner;

@@ -53,7 +53,7 @@ void CbmBinned3DStation::SearchHits(const CbmTrackParam2& stateVec, Double_t sta
             {
                CbmTBin::HitHolder& hitHolder = *hitIter;
                
-               if (fCheckUsed && hitHolder.used)
+               if (fStage > hitHolder.stage)
                   continue;
                   
                handleHit(hitHolder);

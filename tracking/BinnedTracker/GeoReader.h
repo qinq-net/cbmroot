@@ -38,7 +38,8 @@ public:
     
 private:
     void ReadDetector(const char* name);
-    void SearchStation(TGeoNode* node, CbmBinnedHitReader* hitReader, std::list<const char*>::const_iterator stationPath, std::list<const char*>::const_iterator stationPathEnd,
+    void SearchStation(ECbmModuleId stationType, TGeoNode* node, CbmBinnedHitReader* hitReader,
+        std::list<const char*>::const_iterator stationPath, std::list<const char*>::const_iterator stationPathEnd,
         const std::list<const char*>& geoPath, bool is4d = false);
     void HandleStation(TGeoNode* node, std::list<const char*>::const_iterator geoPath, std::list<const char*>::const_iterator geoPathEnd,
         Double_t& left, Double_t& right, Double_t& top, Double_t& bottom, Double_t& front, Double_t& back);
