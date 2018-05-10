@@ -160,11 +160,19 @@ CbmTrdQABase::Exec (Option_t*)
     {
       CbmSpadicRawMessage *raw = static_cast<CbmSpadicRawMessage*> (fRaw->At (
 	  iSpadicMessage));
-      if (!raw)
-	continue;
-      if (raw->GetFullTime()>MaxTime[2*fBT->GetNrSpadics()*fBT->GetRobID (raw)+fBT->GetSpadicID(raw)])
-	MaxTime[2*fBT->GetNrSpadics()*fBT->GetRobID (raw)+fBT->GetSpadicID(raw)]=raw->GetFullTime();
+      if (!raw)	continue;
+
+      //LOG(INFO) << "Find Values out of Bounds Fulltime:"  << raw->GetFullTime() << "   GetRobID:"  << fBT->GetRobID (raw) << "   GetSpadicID:" << fBT->GetSpadicID(raw) << FairLogger::endl;
+
+	if ((raw->GetFullTime()>MaxTime[2*fBT->GetNrSpadics()*fBT->GetRobID (raw)+fBT->GetSpadicID(raw)])&&(fBT->GetSpadicID(raw)>=0))
+
+	if(((2*fBT->GetNrSpadics()*fBT->GetRobID (raw)+fBT->GetSpadicID(raw)))<MaxTime.size())
+	{
+			MaxTime.at(2*fBT->GetNrSpadics()*fBT->GetRobID (raw)+fBT->GetSpadicID(raw))=raw->GetFullTime();
     }
+
+	}
+
   for (Int_t RobID = 0; RobID < fBT->GetNrRobs (); RobID++)
     {
       for (Int_t SpadicID = 0; SpadicID < fBT->GetNrSpadics () * 2; SpadicID++)
@@ -172,7 +180,7 @@ CbmTrdQABase::Exec (Option_t*)
 	  TString GraphName = "Time_vs_TS_"
 	      + GetSpadicName (RobID, SpadicID, "Afck", false);
 	  TGraph* currentGraph =fHm->G1(GraphName.Data());
-	  currentGraph->SetPoint(currentGraph->GetN(), fNrTimeslice,static_cast<double>(MaxTime[2*fBT->GetNrSpadics()*RobID+SpadicID]));
+	  currentGraph->SetPoint(currentGraph->GetN(), fNrTimeslice,static_cast<double>(MaxTime.at(2*fBT->GetNrSpadics()*RobID+SpadicID)));
 	}
     }
 }
