@@ -17,51 +17,34 @@
 
 #include <vector>
 
-/*
-class CbmTofStarTrigger2018
+
+class CbmTofStarTrigger2018 : public CbmTofStarTrigger
 {
    // Methods implementation can be found at the end of CbmTsMonitorTofStar.cxx!
    public:
       // Constructors
       CbmTofStarTrigger2018( ULong64_t ulGdpbTsFullIn, ULong64_t ulStarTsFullIn,
-                         UInt_t    uStarTokenIn,   UInt_t    uStarDaqCmdIn,
-                         UInt_t    uStarTrigCmdIn );
+                             UInt_t    uStarTokenIn,   UInt_t    uStarDaqCmdIn,
+                             UInt_t    uStarTrigCmdIn );
 
       // Destructor
       ~CbmTofStarTrigger2018() {};
 
-      // Setters
-      inline void SetFullGdpbTs( ULong64_t ulGdpbTsFullIn ){ fulGdpbTsFull = ulGdpbTsFullIn; }
-      inline void SetFullStarTs( ULong64_t ulStarTsFullIn ){ fulStarTsFull = ulStarTsFullIn; }
-      inline void SetStarToken(  UInt_t    uStarTokenIn ){   fuStarToken   = uStarTokenIn; }
-      inline void SetStarDaqCmd( UInt_t    uStarDaqCmdIn ){  fusStarDaqCmd  = uStarDaqCmdIn; }
-      inline void SetStarTRigCmd(UInt_t    uStarTrigCmdIn ){ fusStarTrigCmd = uStarTrigCmdIn; }
+      // Setters => Provided by CbmTofStarTrigger
 
-      // Accessors
-      inline ULong64_t GetFullGdpbTs()  const { return fulGdpbTsFull;}
-      inline ULong64_t GetFullStarTs()  const { return fulStarTsFull;}
-      inline UInt_t    GetStarToken()   const { return fuStarToken;}
-      inline UShort_t  GetStarDaqCmd()  const { return fusStarDaqCmd;}
-      inline UShort_t  GetStarTrigCmd() const { return fusStarTrigCmd;}
-      UInt_t           GetStarTrigerWord() const;
-      UInt_t           GetFullGdpbEpoch()  const;
+      // Accessors => Mostly provided by CbmTofStarTrigger
+      std::vector< gdpb::FullMessage > GetGdpbMessages( UShort_t usGdpbId ) const;
 
       // Operators
       bool operator<(const CbmTofStarTrigger2018& other) const;
 
    private:
-      ULong64_t fulGdpbTsFull;
-      ULong64_t fulStarTsFull;
-      UInt_t    fuStarToken;
-      UShort_t  fusStarDaqCmd;
-      UShort_t  fusStarTrigCmd;
 
 //      CbmTofStarTrigger2018(const CbmTofStarTrigger2018&);
 //      CbmTofStarTrigger2018 operator=(const CbmTofStarTrigger2018&);
 
 //   ClassDef(CbmTofStarTrigger2018, 1)
 };
-*/
 
 class CbmTofStarSubevent2018
 {

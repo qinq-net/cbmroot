@@ -186,13 +186,13 @@ private:
    Double_t fdCurrentMsStartTime;                          //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
    Double_t fdCurrentMsEndTime;                            //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
    std::vector< gdpb::FullMessage > fvmCurrentLinkBuffer;  //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
-   std::vector< CbmTofStarTrigger  > fvtCurrentLinkBuffer; //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
+   std::vector< CbmTofStarTrigger2018  > fvtCurrentLinkBuffer; //! M1, Used in case of single link per subevent: test mode in 2018 S1, sector mode in 2018 S2
    Double_t fdCurrentTsStartTime;                                      //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
    Double_t fdCurrentTsCoreEndTime;                                    //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
    std::vector< std::vector < gdpb::FullMessage > >  fvmTsLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
-   std::vector< std::vector < CbmTofStarTrigger  > > fvtTsLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
+   std::vector< std::vector < CbmTofStarTrigger2018  > > fvtTsLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
    std::vector< std::vector < gdpb::FullMessage > >  fvmTsOverLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
-   std::vector< std::vector < CbmTofStarTrigger  > > fvtTsOverLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
+   std::vector< std::vector < CbmTofStarTrigger2018  > > fvtTsOverLinksBuffer; //! M2, Used in case of all links in same subevent: Sector mode in 2018 S1, Full eTOF mode in 2018 S2
    std::vector<TH1*> fhStarHitToTrigAll_gDPB;
    std::vector<TH1*> fhStarHitToTrigWin_gDPB;
    std::vector<TH2*> fhStarHitToTrigAllTime_gDPB;

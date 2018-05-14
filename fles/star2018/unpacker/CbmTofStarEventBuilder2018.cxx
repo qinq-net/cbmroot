@@ -1523,8 +1523,8 @@ void CbmTofStarEventBuilder2018::FillStarTrigInfo(gdpb::Message mess)
          } // if( fuCurrentMs < fuCoreMs  )
 
          /// Generate Trigger object and store it for event building ///
-         CbmTofStarTrigger newTrig( fulGdpbTsFullLast[fuGdpbNr], fulStarTsFullLast[fuGdpbNr], fuStarTokenLast[fuGdpbNr],
-                                    fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
+         CbmTofStarTrigger2018 newTrig( fulGdpbTsFullLast[fuGdpbNr], fulStarTsFullLast[fuGdpbNr], fuStarTokenLast[fuGdpbNr],
+                                        fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
          if( kTRUE == fbEventBuilding )
          {
             if( fuCurrentMs < fuCoreMs )
@@ -2031,6 +2031,36 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
       {
          dMeanTriggerGdpbTs += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullGdpbTs();
          dMeanTriggerStarTs += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullStarTs();
+
+         /// Recreate the corresponding messages and insert them into the event bufffer
+         std::vector< gdpb::FullMessage > vTrigMess = fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetGdpbMessages( fUnpackPar->GetRocId( uGdpb ) );
+         for( std::vector< gdpb::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
+         {
+            fStarSubEvent.AddMsg( (*itMess) );
+//            std::cout << Form( "Event %6llu Trigger message for gDPB %02u is %016lx ", fulNbBuiltSubEvent, uGdpb, (*itMess).getData() ) << std::endl;
+         } // for( std::vector< gdpb::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
+/*
+         ULong64_t testulGdpbTsMsb = vTrigMess[0].getGdpbTsMsbStarA();
+         ULong64_t testulGdpbTsLsb = vTrigMess[1].getGdpbTsLsbStarB();
+         ULong64_t testulStarTsMsb = vTrigMess[1].getStarTsMsbStarB();
+         ULong64_t testulStarTsMid = vTrigMess[2].getStarTsMidStarC();
+         ULong64_t ulNewGdpbTsFull = ( testulGdpbTsMsb << 24 )
+                                   + ( testulGdpbTsLsb       );
+         ULong64_t ulNewStarTsFull = ( testulStarTsMsb << 48 )
+                                   + ( testulStarTsMid <<  8 )
+                                   + vTrigMess[3].getStarTsLsbStarD();
+         UInt_t uNewToken   = vTrigMess[3].getStarTokenStarD();
+         UInt_t uNewDaqCmd  = vTrigMess[3].getStarDaqCmdStarD();
+         UInt_t uNewTrigCmd = vTrigMess[3].getStarTrigCmdStarD();
+
+         std::cout << Form( "Event %6llu Trigger message for gDPB %02u check: %1u %1u %1u %1u %1u ", fulNbBuiltSubEvent, uGdpb,
+                            ulNewGdpbTsFull == fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullGdpbTs(),
+                            ulNewStarTsFull == fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullStarTs(),
+                            uNewToken   == fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetStarToken(),
+                            uNewDaqCmd  == fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetStarDaqCmd(),
+                            uNewTrigCmd == fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetStarTrigCmd() )
+                   << std::endl;
+*/
       } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
       dMeanTriggerGdpbTs /= fuNrOfGdpbs;
       dMeanTriggerStarTs /= fuNrOfGdpbs;
@@ -2042,10 +2072,10 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                      get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullGdpbTs()
                    - dMeanTriggerGdpbTs );
 
-      CbmTofStarTrigger meanTrigger( static_cast< ULong64_t >( dMeanTriggerGdpbTs ), static_cast< ULong64_t >( dMeanTriggerStarTs ),
-                                     fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarToken(),
-                                     fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarDaqCmd(),
-                                     fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarTrigCmd() );
+      CbmTofStarTrigger2018 meanTrigger( static_cast< ULong64_t >( dMeanTriggerGdpbTs ), static_cast< ULong64_t >( dMeanTriggerStarTs ),
+                                         fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarToken(),
+                                         fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarDaqCmd(),
+                                         fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarTrigCmd() );
 
       /// Associate this trigger to its subevent
       fStarSubEvent.SetTrigger( meanTrigger );
@@ -2253,11 +2283,27 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
                {
                   dMeanTriggerGdpbTsOver += get4v2x::kdClockCycleSizeNs * fvtTsOverLinksBuffer[uGdpb][ 0 ].GetFullGdpbTs();
                   dMeanTriggerStarTsOver += get4v2x::kdClockCycleSizeNs * fvtTsOverLinksBuffer[uGdpb][ 0 ].GetFullStarTs();
+
+                  /// Recreate the corresponding messages and insert them into the event bufffer
+                  std::vector< gdpb::FullMessage > vTrigMess = fvtTsLinksBuffer[uGdpb][ 0 ].GetGdpbMessages( fUnpackPar->GetRocId( uGdpb ) );
+                  for( std::vector< gdpb::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
+                  {
+                     fStarSubEvent.AddMsg( (*itMess) );
+//                     std::cout << Form( "Event %6llu Trigger message in Overlap for gDPB %02u is %016lx ", fulNbBuiltSubEvent, uGdpb, (*itMess).getData() ) << std::endl;
+                  } // for( std::vector< gdpb::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
                } // if( bTriggerInOverMs[uGdpb] )
                   else
                   {
                      dMeanTriggerGdpbTsOver += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullGdpbTs();
                      dMeanTriggerStarTsOver += get4v2x::kdClockCycleSizeNs * fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetFullStarTs();
+
+                     /// Recreate the corresponding messages and insert them into the event bufffer
+                     std::vector< gdpb::FullMessage > vTrigMess = fvtTsLinksBuffer[uGdpb][ vuIndexMatchingTrigger[uGdpb] ].GetGdpbMessages( fUnpackPar->GetRocId( uGdpb ) );
+                     for( std::vector< gdpb::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
+                     {
+                        fStarSubEvent.AddMsg( (*itMess) );
+//                        std::cout << Form( "Event %6llu Trigger message in Overlap for gDPB %02u is %016lx ", fulNbBuiltSubEvent, uGdpb, (*itMess).getData() ) << std::endl;
+                     } // for( std::vector< gdpb::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
                   } // else of if( bTriggerInOverMs[uGdpb] )
             } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
             dMeanTriggerGdpbTsOver /= fuNrOfGdpbs;
@@ -2267,20 +2313,20 @@ void CbmTofStarEventBuilder2018::BuildStarEventsAllLinks()
 
             if( bTriggerInOverMs[0] )
             {
-               CbmTofStarTrigger meanTriggerOver( static_cast< ULong64_t >( dMeanTriggerGdpbTsOver ), static_cast< ULong64_t >( dMeanTriggerStarTsOver ),
-                                                 fvtTsOverLinksBuffer[0][ 0 ].GetStarToken(),
-                                                 fvtTsOverLinksBuffer[0][ 0 ].GetStarDaqCmd(),
-                                                 fvtTsOverLinksBuffer[0][ 0 ].GetStarTrigCmd() );
+               CbmTofStarTrigger2018 meanTriggerOver( static_cast< ULong64_t >( dMeanTriggerGdpbTsOver ), static_cast< ULong64_t >( dMeanTriggerStarTsOver ),
+                                                      fvtTsOverLinksBuffer[0][ 0 ].GetStarToken(),
+                                                      fvtTsOverLinksBuffer[0][ 0 ].GetStarDaqCmd(),
+                                                      fvtTsOverLinksBuffer[0][ 0 ].GetStarTrigCmd() );
 
                /// Associate this trigger to its subevent
                fStarSubEvent.SetTrigger( meanTriggerOver );
             } // if( bTriggerInOverMs[0] )
                else
                {
-                  CbmTofStarTrigger meanTriggerOver( static_cast< ULong64_t >( dMeanTriggerGdpbTsOver ), static_cast< ULong64_t >( dMeanTriggerStarTsOver ),
-                                                    fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarToken(),
-                                                    fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarDaqCmd(),
-                                                    fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarTrigCmd() );
+                  CbmTofStarTrigger2018 meanTriggerOver( static_cast< ULong64_t >( dMeanTriggerGdpbTsOver ), static_cast< ULong64_t >( dMeanTriggerStarTsOver ),
+                                                         fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarToken(),
+                                                         fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarDaqCmd(),
+                                                         fvtTsLinksBuffer[0][ vuIndexMatchingTrigger[0] ].GetStarTrigCmd() );
 
                   /// Associate this trigger to its subevent
                   fStarSubEvent.SetTrigger( meanTriggerOver );

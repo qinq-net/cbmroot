@@ -13,15 +13,12 @@
 #include <iomanip>
 
 /********************** CbmTofStarTrigger2018 *************************/
-/*
 CbmTofStarTrigger2018::CbmTofStarTrigger2018( ULong64_t ulGdpbTsFullIn, ULong64_t ulStarTsFullIn,
                      UInt_t    uStarTokenIn,   UInt_t    uStarDaqCmdIn,
                      UInt_t    uStarTrigCmdIn ) :
-   fulGdpbTsFull( ulGdpbTsFullIn ),
-   fulStarTsFull( ulStarTsFullIn ),
-   fuStarToken(   uStarTokenIn ),
-   fusStarDaqCmd(  uStarDaqCmdIn) ,
-   fusStarTrigCmd( uStarTrigCmdIn )
+   CbmTofStarTrigger( ulGdpbTsFullIn, ulStarTsFullIn,
+                      uStarTokenIn, uStarDaqCmdIn,
+                      uStarTrigCmdIn )
 {
 }
 //! strict weak ordering operator, assumes same TS cycle for both triggers
@@ -32,23 +29,34 @@ bool CbmTofStarTrigger2018::operator<(const CbmTofStarTrigger2018& other) const
 
    return uThisTs < uOtherTs;
 }
-UInt_t CbmTofStarTrigger2018::GetStarTrigerWord() const
+std::vector< gdpb::FullMessage > CbmTofStarTrigger2018::GetGdpbMessages( UShort_t usGdpbId ) const
 {
-   // trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
-   UInt_t uTrigWord =  ( (fusStarTrigCmd & 0x00F) << 16 )
-                     + ( (fusStarDaqCmd  & 0x00F) << 12 )
-                     + ( (fuStarToken    & 0xFFF)       );
-   return uTrigWord;
-}
-UInt_t CbmTofStarTrigger2018::GetFullGdpbEpoch() const
-{
-   // trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
-   UInt_t uEpochIndex =  (fulGdpbTsFull >> get4v1x::kuCtSize)
-                       & get4v1x::kuEpochCounterSz;
-   return uEpochIndex;
+   gdpb::Message mCommonData( ( static_cast< ULong64_t >( usGdpbId ) << 48 ) // GdpbId
+                              + gdpb::MSG_STAR_TRI // Message type
+                            );
+   std::vector< gdpb::FullMessage > vMsgs( 4, mCommonData );
+
+   /// Subtype 0
+   vMsgs[ 0 ].setStarTrigMsgIndex( 0 ); // Message Subtype
+   vMsgs[ 0 ].setGdpbTsMsbStarA( GetFullGdpbTs() ); // 40b MSB of GDPB TS b[ 24, 63 ]
+   /// Subtype 1
+   vMsgs[ 1 ].setStarTrigMsgIndex( 1 ); // Message Subtype
+   vMsgs[ 1 ].setGdpbTsLsbStarB( GetFullGdpbTs() ); // 24b LSB of GDPB TS b[  0, 23 ]
+   vMsgs[ 1 ].setStarTsMsbStarB( GetFullStarTs() ); // 16b MSB of STAR TS b[ 48, 63 ]
+   /// Subtype 2
+   vMsgs[ 2 ].setStarTrigMsgIndex( 2 ); // Message Subtype
+   vMsgs[ 2 ].setStarTsMidStarC( GetFullStarTs() ); // 40b mid bits of STAR TS b[  8, 47 ]
+   /// Subtype 3
+   vMsgs[ 3 ].setStarTrigMsgIndex( 3 ); // Message Subtype
+   vMsgs[ 3 ].setStarTsLsbStarD( GetFullStarTs() ); // 8b LSB of STAR TS b[ 0, 7]
+   vMsgs[ 3 ].setStarFillerD(); // 12 bits in between are set to 0
+   vMsgs[ 3 ].setStarTokenStarD(   GetStarToken()    ); // 12b STAR Token
+   vMsgs[ 3 ].setStarDaqCmdStarD(  GetStarDaqCmd()  ); // 4b STAR DAQ CMD
+   vMsgs[ 3 ].setStarTrigCmdStarD( GetStarTrigCmd() ); // 4b STAR TRIG CMD
+
+   return vMsgs;
 }
 //ClassImp(CbmTofStarTrigger2018)
-*/
 /**********************************************************************/
 /********************** CbmTofStarSubevent2018 ************************/
 CbmTofStarSubevent2018::CbmTofStarSubevent2018() :

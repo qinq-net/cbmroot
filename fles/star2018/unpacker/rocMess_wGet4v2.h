@@ -188,7 +188,12 @@ namespace gdpb {
             { return (data >> shift) & (((static_cast<uint32_t>(1)) << len) - 1); }
 
          inline void setField(uint32_t shift, uint32_t len, uint32_t value)
-            { data = (data & ~((((static_cast<uint64_t>(1)) << len) - 1) << shift)) | ((static_cast<uint64_t>(value)) << shift); }
+            { uint64_t mask = (((static_cast<uint64_t>(1)) << len) - 1);
+              data = (data & ~(mask << shift)) | ((static_cast<uint64_t>(value) & mask) << shift); }
+
+         inline void setFieldLong(uint32_t shift, uint32_t len, uint64_t value)
+            { uint64_t mask = (((static_cast<uint64_t>(1)) << len) - 1);
+              data = (data & ~(mask << shift)) | ((value & mask ) << shift); }
 
          inline uint8_t getBit(uint32_t shift) const
             { return (data >> shift) & 1; }
@@ -406,6 +411,23 @@ namespace gdpb {
          inline uint32_t getStarTokenStarD()   const { return getField(      8, 12 ); }
          inline uint32_t getStarDaqCmdStarD()  const { return getField(     20,  4 ); }
          inline uint32_t getStarTrigCmdStarD() const { return getField(     24,  4 ); }
+
+         // ---------- STAR Trigger messages setter methods ------------------------
+         inline void setStarTrigMsgIndex( uint8_t v ) { setField(      4,  4, v ); }
+         //++++//
+         inline void setGdpbTsMsbStarA( uint64_t fullGdpbTs ) { setFieldLong(  8, 40, ( fullGdpbTs >> 24 ) ); }
+         //++++//
+         inline void setGdpbTsLsbStarB( uint64_t fullGdpbTs ) { setFieldLong( 24, 24, ( fullGdpbTs       ) ); }
+         inline void setStarTsMsbStarB( uint64_t fullStarTs ) { setFieldLong(  8, 16, ( fullStarTs >> 48 ) ); }
+         //++++//
+         inline void setStarTsMidStarC( uint64_t fullStarTs ) { setFieldLong(  8, 40, ( fullStarTs >>  8 ) ); }
+         //++++//
+         inline void setStarTsLsbStarD( uint64_t fullStarTs ) { setFieldLong( 40,  8, ( fullStarTs       ) ); }
+         /// 12 bits in between are set to 0
+         inline void setStarFillerD()                 { setField(     28, 12, 0 ); } // Should be always 0
+         inline void setStarTokenStarD( uint16_t v )  { setField(      8, 12, v ); }
+         inline void setStarDaqCmdStarD( uint8_t v )  { setField(     20,  4, v ); }
+         inline void setStarTrigCmdStarD( uint8_t v ) { setField(     24,  4, v ); }
 
          // ---------- Common functions -----------------------
 
