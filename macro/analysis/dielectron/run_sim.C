@@ -26,7 +26,7 @@ void run_sim(Int_t nEvents = 2)
 
 
     if (script == "yes") {
-        urqmdFile = TString(gSystem->Getenv("IN_FILE"));
+        urqmdFile = TString(gSystem->Getenv("URQMD_FILE"));
         mcFile = TString(gSystem->Getenv("MC_FILE"));
         parFile = TString(gSystem->Getenv("PAR_FILE"));
         geoFile = TString(gSystem->Getenv("GEOSIM_FILE"));
