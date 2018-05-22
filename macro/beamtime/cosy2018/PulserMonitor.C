@@ -10,21 +10,18 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void Cern2017Monitor(TString inFile = "")
+void PulserMonitor(TString inFile = "",
+                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
+                 Int_t iStartFile = -1, Int_t iStopFile = -1 )
 {
-  TString srcDir = gSystem->Getenv("VMCWORKDIR");
-  TString inDir  = srcDir + "/input/";
-  if( "" != inFile )
-   inFile = inDir + inFile;
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
-//  Int_t nEvents = 10000;
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/test.root";
-  TString parFile = "data/testparam.root";
+  TString outFile = "data/pulser_out.root";
+  TString parFile = "data/pulser_param.root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -36,9 +33,9 @@ void Cern2017Monitor(TString inFile = "")
   TList *parFileList = new TList();
   TString paramDir = "./";
 
-  TString paramFileSts = paramDir + "StsUnpackPar.par";
-  TObjString* tutDetDigiFileSts = new TObjString(paramFileSts);
-  parFileList->Add(tutDetDigiFileSts);
+  TString paramFileHodo = paramDir + "PulserPar.par";
+  TObjString* tutDetDigiFileHodo = new TObjString(paramFileHodo);
+  parFileList->Add(tutDetDigiFileHodo);
 
   // --- Set debug level
   gDebug = 0;
@@ -52,28 +49,37 @@ void Cern2017Monitor(TString inFile = "")
   std::cout << std::endl;
   std::cout << ">>> Cern2017Monitor: Initialising..." << std::endl;
 
-  // Sts Monitor
-//  CbmCern2017MonitorRawSts* monitorSts = new CbmCern2017MonitorRawSts();
-  CbmCern2017MonitorSts* monitorSts = new CbmCern2017MonitorSts();
-//  monitorSts->SetPrintMessage();
-  monitorSts->SetMsOverlap();
-  monitorSts->EnableChanHitDtPlot();
-  monitorSts->SetPulserChannels( 0,  27, 0, 91,
-                                 4,  27, 4, 91);
-  monitorSts->SetLongDurationLimits( 3600, 10 );
-//  monitorSts->SetBetaFormatMode();
+  // Hodoscopes Monitor
+  CbmCosy2018MonitorPulser* monitorPulser = new CbmCosy2018MonitorPulser();
+  monitorPulser->SetHistoFileName( "data/PulserHistos.root" );
+//  monitorPulser->SetPrintMessage();
+  monitorPulser->SetMsOverlap( 0 );
+//  monitorPulser->SetLongDurationLimits( 3600, 10 );
+  monitorPulser->SetLongDurationLimits( 7200, 60 );
+  monitorPulser->SetCoincidenceBorder(   0.0,  200 );
 
   // --- Source task
-  CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
+  CbmTofStar2018Source* source = new CbmTofStar2018Source();
   if( "" != inFile )
-      source->SetFileName(inFile);
+  {
+      if( 0 <= iStartFile && iStartFile < iStopFile )
+      {
+         for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
+         {
+            TString sFilePath = Form( "%s_%04u.tsa", inFile.Data(), iFileIdx );
+            source->AddFile( sFilePath  );
+            std::cout << "Added " << sFilePath <<std::endl;
+         } // for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
+      } // if( 0 < iStartFile && 0 < iStopFile )
+         else source->SetFileName(inFile);
+  } // if( "" != inFile )
       else
       {
          source->SetHostName( "localhost");
          source->SetPortNumber( 5556 );
       }
 
-  source->AddUnpacker(monitorSts,  0x10, 6); // stsXyter DPBs
+  source->AddUnpacker(monitorPulser,  0x10, 6); // stsXyter DPBs
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();
@@ -83,7 +89,7 @@ void Cern2017Monitor(TString inFile = "")
   run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
   run->SetEventHeader(event);
-  run->ActivateHttpServer(100); // refresh each 100 events
+  run->ActivateHttpServer( iServerRefreshRate, iServerHttpPort ); // refresh each 100 events
   run->SetAutoFinish(kFALSE);
 
   // -----   Runtime database   ---------------------------------------------

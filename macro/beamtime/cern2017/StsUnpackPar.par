@@ -7,7 +7,7 @@
 NrOfDpbs: Int_t 2
 // Array size has to match NrOfDpbs
 DbpIdArray: Int_t \
-  0x55ef 0x4f33
+  0x5be8 0x4ef6
 //   0x6161
 NbElinksPerDpb: Int_t 20
 NbStsXyters: Int_t 7
