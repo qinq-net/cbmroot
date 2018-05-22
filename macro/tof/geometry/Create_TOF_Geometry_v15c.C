@@ -255,6 +255,7 @@ void Create_TOF_Geometry_v15c()
   outfile->Close();
   top->SetVisContainers(1); 
   gGeoMan->SetVisLevel(5); 
+  if(!gROOT->IsBatch())
   top->Draw("ogl");
   //top->Draw();
   //gModules[0]->Draw("ogl");

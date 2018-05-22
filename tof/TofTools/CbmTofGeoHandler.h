@@ -75,6 +75,8 @@ class CbmTofGeoHandler : public TObject {
   Int_t VolIdGeo(const char *name) const;
   const char* CurrentVolName() const;
   const char* CurrentVolOffName(Int_t off) const;
+  const char* CurrentNodeName() const;
+  const char* CurrentNodeOffName(Int_t off) const;
 
   Int_t CheckGeometryVersion(); 
 
@@ -86,6 +88,8 @@ class CbmTofGeoHandler : public TObject {
   Int_t            fGeoVersion; //!
 
   Bool_t fIsSimulation; //!
+  Int_t fMCVersion; //!
+  Bool_t fUseNodeName; //!
 
   Int_t fLastUsedDetectorID;  //!
   CbmTofDetectorInfo fDetectorInfoArray;  //!
@@ -98,7 +102,7 @@ class CbmTofGeoHandler : public TObject {
  CbmTofGeoHandler(const CbmTofGeoHandler&);
  CbmTofGeoHandler operator=(const CbmTofGeoHandler&);
 
- ClassDef(CbmTofGeoHandler,1) 
+ ClassDef(CbmTofGeoHandler, 0) 
 
 };
 

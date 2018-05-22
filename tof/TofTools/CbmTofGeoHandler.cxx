@@ -32,6 +32,8 @@ CbmTofGeoHandler::CbmTofGeoHandler()
     fTofId(NULL),
     fGeoVersion(-1),
     fIsSimulation(kFALSE),
+    fMCVersion(-1),
+    fUseNodeName(kFALSE),
     fLastUsedDetectorID(0),
     fDetectorInfoArray(),
     fGeoPathHash(0),
@@ -44,9 +46,31 @@ CbmTofGeoHandler::CbmTofGeoHandler()
 
 Int_t CbmTofGeoHandler::Init(Bool_t isSimulation)
 {
-  Int_t geoVersion = CheckGeometryVersion();
+  fIsSimulation = isSimulation;
 
-  fIsSimulation=isSimulation;
+  if(fIsSimulation)
+  {
+    TString tVirtualMCName = gMC->GetName();
+
+    if(tVirtualMCName == "TGeant3TGeo")
+    {
+      fMCVersion = 0;
+    }
+    else if(tVirtualMCName == "TGeant4")
+    {
+      fMCVersion = 1;
+    }
+    else if(tVirtualMCName == "TFluka")
+    {
+      fMCVersion = 2;
+    }
+    else
+    {
+      fMCVersion = 3;  // GEANE
+    }
+  }
+
+  Int_t geoVersion = CheckGeometryVersion();
 
   return geoVersion;
 }
@@ -102,6 +126,18 @@ Int_t CbmTofGeoHandler::CheckGeometryVersion()
         //	if(NULL!=fTofId) fTofId->Delete();
         fTofId = new CbmTofDetectorId_v14a();
         fGeoVersion = k14a;
+
+        if(TString(node->GetName()).Contains("v14a_n"))
+        {
+          if(fIsSimulation && 0 != fMCVersion)
+          {
+            LOG(FATAL) << "Using node names instead of volume names to extract the module type "
+                       << "in a MC simulation only works with GEANT3 VMC!" << FairLogger::endl;
+          }
+
+          fUseNodeName = kTRUE;
+        }
+
         return fGeoVersion;
       } else {
         LOG(FATAL)<< "Found an unknown TOF geometry." << FairLogger::endl;
@@ -149,7 +185,14 @@ Int_t CbmTofGeoHandler::GetUniqueDetectorId()
     CurrentVolOffID(1, gap);
     CurrentVolID(cell);
   } else if (fGeoVersion == k14a) { // test beam
-    Volname = CurrentVolOffName(4);
+    if(fUseNodeName)
+    {
+      Volname = CurrentNodeOffName(4);
+    }
+    else
+    {
+      Volname = CurrentVolOffName(4);
+    }
     smtype = Volname[7]-'0';
     CurrentVolOffID(4, smodule);
     CurrentVolOffID(2, counter);
@@ -204,7 +247,14 @@ Int_t CbmTofGeoHandler::GetUniqueCounterId()
     CurrentVolOffID(1, gap);
     CurrentVolID(cell);
   } else if (fGeoVersion == k14a) { // test beam
-    Volname = CurrentVolOffName(4);
+    if(fUseNodeName)
+    {
+      Volname = CurrentNodeOffName(4);
+    }
+    else
+    {
+      Volname = CurrentVolOffName(4);
+    }
     smtype = Volname[7]-'0';
     CurrentVolOffID(4, smodule);
     CurrentVolOffID(2, counter);
@@ -395,6 +445,30 @@ const char* CbmTofGeoHandler::CurrentVolOffName(Int_t off) const
     if (!node) return 0;
     return node->GetVolume()->GetName();
   }
+}
+
+//_____________________________________________________________________________
+const char* CbmTofGeoHandler::CurrentNodeName() const
+{
+  //
+  // Returns the current node name
+  //
+  if (gGeoManager->IsOutside()) return gGeoManager->GetTopNode()->GetName();
+  return gGeoManager->GetCurrentNode()->GetName();
+}
+
+//_____________________________________________________________________________
+const char* CbmTofGeoHandler::CurrentNodeOffName(Int_t off) const
+{
+  //
+  // Return the current node "off" upward in the geometrical tree
+  // if name=0 no name is returned
+  //
+  if (off<0 || off>gGeoManager->GetLevel()) return 0;
+  if (off==0) return CurrentNodeName();
+  TGeoNode *node = gGeoManager->GetMother(off);
+  if (!node) return 0;
+  return node->GetName();
 }
 
 void CbmTofGeoHandler::FillDetectorInfoArray(Int_t uniqueId)

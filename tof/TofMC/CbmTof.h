@@ -20,8 +20,10 @@
 
 #include "TLorentzVector.h"
 
-#include <vector>
+#include <map>
 #include <tuple>
+#include <set>
+
 
 class CbmTofPoint;
 class CbmTofGeoHandler;
@@ -120,6 +122,10 @@ class CbmTof : public FairDetector
   virtual void ExpandNode(TGeoNode* Node);
 
   void GenerateOnePointPerTrack( Bool_t bOnePointPerTrack = kTRUE ) { fbOnePointPerTrack = bOnePointPerTrack; }
+  void SetProcessAnyTrack(Bool_t bProcess = kTRUE ) { fbProcessAnyTrack = bProcess; }
+  void SetAllCountersInactive(Bool_t bInactive = kTRUE ) { fbAllCountersInactive = bInactive; }
+
+  void SetCounterActive(Int_t iModuleType, Int_t iModuleIndex, Int_t iCounterIndex);
 
     /** Set a counter inactive
      ** @param iModuleType    type of inactive module
@@ -171,11 +177,17 @@ class CbmTof : public FairDetector
   Int_t          fCurrentModuleIndex;  //! Current module index
   Int_t          fCurrentCounterIndex; //! Current counter index
 
-  std::vector< std::pair< std::tuple<Int_t, Int_t, Int_t>, Int_t> > fInactiveCounters; //! Vector of inactive counters
-  std::vector< std::pair< std::tuple<Int_t, Int_t, Int_t>, TString> > fCountersInBeam; //! Vector of counters in beam
-  std::vector<TGeoPhysicalNode*> fNodesInBeam;                                         //! Vector of counter nodes in beam
+  std::set<std::tuple<Int_t, Int_t, Int_t>> fActiveCounters;   //! Set of   active counters
+  std::set<std::tuple<Int_t, Int_t, Int_t>> fInactiveCounters; //! Set of inactive counters
+  std::set<Int_t> fInactiveCounterIDs;                         //! Set of inactive counter IDs
+
+  std::map<std::tuple<Int_t, Int_t, Int_t>, std::pair<TString, TGeoPhysicalNode*>> fCountersInBeam; //! Map of counters in beam
 
   Int_t fOutputTreeEntry;
+
+  Bool_t fbProcessAnyTrack;
+
+  Bool_t fbAllCountersInactive;
 
   /** Private method AddHit
    **
@@ -232,7 +244,7 @@ class CbmTof : public FairDetector
   CbmTof& operator=(const CbmTof&);
 
 
-  ClassDef(CbmTof,5)
+  ClassDef(CbmTof,6)
 
 };
 

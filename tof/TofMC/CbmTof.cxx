@@ -61,10 +61,13 @@ CbmTof::CbmTof()
     fCurrentModuleType(0),
     fCurrentModuleIndex(0),
     fCurrentCounterIndex(0),
+    fActiveCounters(),
     fInactiveCounters(),
+    fInactiveCounterIDs(),
     fCountersInBeam(),
-    fNodesInBeam(),
-    fOutputTreeEntry(0)
+    fOutputTreeEntry(0),
+    fbProcessAnyTrack(kFALSE),
+    fbAllCountersInactive(kFALSE)
 {
   fVerboseLevel = 1;
 }
@@ -94,10 +97,13 @@ CbmTof::CbmTof(const char* name, Bool_t active)
     fCurrentModuleType(0),
     fCurrentModuleIndex(0),
     fCurrentCounterIndex(0),
+    fActiveCounters(),
     fInactiveCounters(),
+    fInactiveCounterIDs(),
     fCountersInBeam(),
-    fNodesInBeam(),
-    fOutputTreeEntry(0)
+    fOutputTreeEntry(0),
+    fbProcessAnyTrack(kFALSE),
+    fbAllCountersInactive(kFALSE)
 {
   fVerboseLevel = 1;
 }
@@ -116,11 +122,11 @@ CbmTof::~CbmTof() {
    delete fGeoHandler;
  }
 
-  for(auto &itNode : fNodesInBeam)
+  for(auto & CounterInBeam : fCountersInBeam)
   {
-    if(itNode)
+    if((CounterInBeam.second).second)
     {
-      delete itNode;
+      delete (CounterInBeam.second).second;
     }
   }
 }
@@ -137,21 +143,31 @@ void CbmTof::Initialize()
 
   if( fbOnePointPerTrack )
   {
-    for(auto & itInactiveCounter : fInactiveCounters)
+    for(auto itInactiveCounter = fInactiveCounters.cbegin(); itInactiveCounter != fInactiveCounters.cend(); )
     {
-      // FIXME: Actually, a volume marked insensitive by 'FairModule::CheckifSensitive'
-      // should not be called 'FairDetector::ProcessHits' for. But the method
-      // 'FairMCApplication::Stepping' calls the latter for all volumes that share
-      // the same 'TGeoVolume::fNumber' with any volume marked sensitive. As all
-      // "Cell" volumes in the ToF geometry share the same volume number, namely "4",
-      // a single cell marked sensitive by 'CheckIfSensitive' results in all ToF
-      // cells being marked sensitive in 'FairMCApplication::Stepping'. For this reason,
-      // for each call of 'ProcessHits' the counter address needs to be checked against
-      // sensitivity. 
-      CbmTofDetectorInfo tCounterInfo(kTof, std::get<0>(itInactiveCounter.first), std::get<1>(itInactiveCounter.first), std::get<2>(itInactiveCounter.first), 0, 0);
-      itInactiveCounter.second = fGeoHandler->GetDetIdPointer()->SetDetectorInfo(tCounterInfo);
+      if(fActiveCounters.find(*itInactiveCounter) != fActiveCounters.end())
+      {
+        itInactiveCounter = fInactiveCounters.erase(itInactiveCounter);
+      }
+      else
+      {
+        // FIXME: Actually, a volume marked insensitive by 'FairModule::CheckifSensitive'
+        // should not be called 'FairDetector::ProcessHits' for. But the method
+        // 'FairMCApplication::Stepping' calls the latter for all volumes that share
+        // the same 'TGeoVolume::fNumber' with any volume marked sensitive. As all
+        // "Cell" volumes in the ToF geometry share the same volume number, namely "4",
+        // a single cell marked sensitive by 'CheckIfSensitive' results in all ToF
+        // cells being marked sensitive in 'FairMCApplication::Stepping'. For this reason,
+        // for each call of 'ProcessHits' the counter address needs to be checked against
+        // sensitivity. 
+        CbmTofDetectorInfo tCounterInfo(kTof, std::get<0>(*itInactiveCounter), std::get<1>(*itInactiveCounter), std::get<2>(*itInactiveCounter), 0, 0);
+        fInactiveCounterIDs.emplace(fGeoHandler->GetDetIdPointer()->SetDetectorInfo(tCounterInfo));
+
+        ++itInactiveCounter;
+      }
     }
   }
+
 }
 
 void CbmTof::PreTrack()
@@ -186,8 +202,10 @@ void CbmTof::FinishEvent()
 
       if(1 == tCurrentPoint->GetNLinks())
       {
+        // NOTE: 'FairMultiLinkedData_Interface::GetLink' returns a copy of the 'FairLink' object!
         FairLink tLinkToTrack = tCurrentPoint->GetLink(0);
         tLinkToTrack.SetLink(0, fOutputTreeEntry, tLinkToTrack.GetType(), tLinkToTrack.GetIndex());
+        tCurrentPoint->SetLink(tLinkToTrack);
       }
 
 //      LOG(INFO)<<Form("ToF point in detector 0x%.8x at time %f ns", tCurrentPoint->GetDetectorID(), tCurrentPoint->GetTime())<<FairLogger::endl;
@@ -206,7 +224,6 @@ void CbmTof::FinishEvent()
   Double_t dLocalTargetCoordinates1[3] = {0., 0., 0.};
   Double_t dLocalCounterCoordinates[3] = {0., 0., 0.};
 
-  Int_t iCounter(0);
   TGeoPhysicalNode* tCurrentNode(NULL);
   Int_t iModuleType(0);
   Int_t iModuleIndex(0);
@@ -215,17 +232,17 @@ void CbmTof::FinishEvent()
   CbmTofPoint* tBeamPoint(NULL);
 
   // Loop over all counters that are eligible for beam points
-  for(auto const & itCounterInBeam : fCountersInBeam)
+  for(auto const & CounterInBeam : fCountersInBeam)
   {
-    iModuleType   = std::get<0>(itCounterInBeam.first);
-    iModuleIndex  = std::get<1>(itCounterInBeam.first);
-    iCounterIndex = std::get<2>(itCounterInBeam.first);
+    iModuleType   = std::get<0>(CounterInBeam.first);
+    iModuleIndex  = std::get<1>(CounterInBeam.first);
+    iCounterIndex = std::get<2>(CounterInBeam.first);
 
     // Create the unique counter ID
     CbmTofDetectorInfo tCounterInfo(kTof, iModuleType, iModuleIndex, iCounterIndex, 0, 0);
     iUniqueCounterId = fGeoHandler->GetDetIdPointer()->SetDetectorInfo(tCounterInfo);
 
-    tCurrentNode = fNodesInBeam.at(iCounter);
+    tCurrentNode = (CounterInBeam.second).second;
 
     // Transform the two points defining the beam line into the local coordinate system of the counter
     tCurrentNode->GetMatrix()->MasterToLocal(dGlobalTargetCoordinates, dLocalTargetCoordinates);
@@ -273,7 +290,6 @@ void CbmTof::FinishEvent()
       tBeamPoint->SetNCells(1);
     }
 
-    iCounter++;
   }
 
   fOutputTreeEntry++;
@@ -285,17 +301,14 @@ Bool_t  CbmTof::ProcessHits(FairVolume* /*vol*/)
   if( fbOnePointPerTrack )
   {
     // create/update CbmTofPoint objects for any charged particle or geantinos/rootinos
-    if( 0 != gMC->TrackCharge() || 0 == gMC->TrackPid() )
+    if( fbProcessAnyTrack || 0 != gMC->TrackCharge() || 0 == gMC->TrackPid() )
     {
       Int_t iCounterID = fGeoHandler->GetUniqueCounterId();
 
       // If the current volume is marked insensitive, do not process the MC hit.
-      for(auto const& itInactiveCounter : fInactiveCounters)
+      if(fInactiveCounterIDs.find(iCounterID) != fInactiveCounterIDs.end())
       {
-        if(itInactiveCounter.second == iCounterID)
-        {
-          return kTRUE;
-        }
+        return kTRUE;
       }
 
       Int_t iTrackID = gMC->GetStack()->GetCurrentTrackNumber();
@@ -572,10 +585,18 @@ void CbmTof::ConstructASCIIGeometry() {
 // -------------------------------------------------------------------------
 
 
+// -----   Public method SetCounterActive   --------------------------------
+void CbmTof::SetCounterActive(Int_t iModuleType, Int_t iModuleIndex, Int_t iCounterIndex)
+{
+  fActiveCounters.emplace(std::make_tuple(iModuleType, iModuleIndex, iCounterIndex));
+}
+// -------------------------------------------------------------------------
+
+
 // -----   Public method SetCounterInactive   ------------------------------
 void CbmTof::SetCounterInactive(Int_t iModuleType, Int_t iModuleIndex, Int_t iCounterIndex)
 {
-  fInactiveCounters.push_back( std::pair<std::tuple<Int_t, Int_t, Int_t>, Int_t>(std::tuple<Int_t, Int_t, Int_t>(iModuleType, iModuleIndex, iCounterIndex), 0) );
+  fInactiveCounters.emplace(std::make_tuple(iModuleType, iModuleIndex, iCounterIndex));
 }
 // -------------------------------------------------------------------------
 
@@ -583,7 +604,7 @@ void CbmTof::SetCounterInactive(Int_t iModuleType, Int_t iModuleIndex, Int_t iCo
 // -----   Public method SetCounterInBeam   --------------------------------
 void CbmTof::SetCounterInBeam(Int_t iModuleType, Int_t iModuleIndex, Int_t iCounterIndex)
 {
-  fCountersInBeam.push_back( std::pair<std::tuple<Int_t, Int_t, Int_t>, TString>(std::tuple<Int_t, Int_t, Int_t>(iModuleType, iModuleIndex, iCounterIndex), "") );
+  fCountersInBeam[std::make_tuple(iModuleType, iModuleIndex, iCounterIndex)];
 }
 // -------------------------------------------------------------------------
 
@@ -591,15 +612,15 @@ void CbmTof::SetCounterInBeam(Int_t iModuleType, Int_t iModuleIndex, Int_t iCoun
 // -----   Private method CreateInBeamNodes   ------------------------------
 void CbmTof::CreateInBeamNodes()
 {
-  for(auto const & itCounterInBeam : fCountersInBeam)
+  for(auto & CounterInBeam : fCountersInBeam)
   {
-    fNodesInBeam.push_back(new TGeoPhysicalNode((itCounterInBeam.second).Data()));
+    (CounterInBeam.second).second = new TGeoPhysicalNode(((CounterInBeam.second).first).Data());
   }
 }
 // -------------------------------------------------------------------------
 
 
-// -----   Public method CreateInBeamNodes   -------------------------------
+// -----   Public method ExpandNode   --------------------------------------
 void CbmTof::ExpandNode(TGeoNode* fN)
 {
   TGeoMatrix* Matrix =fN->GetMatrix();
@@ -664,14 +685,19 @@ void CbmTof::ExpandNode(TGeoNode* fN)
         tCentralNodePath += TString::Format("/Gap_%d",(iNGaps-1)/2);
       }
 
-      for(auto &itCounterInBeam : fCountersInBeam)
+      for(auto &CounterInBeam : fCountersInBeam)
       {
-        if(std::get<0>(itCounterInBeam.first) == fCurrentModuleType &&
-           std::get<1>(itCounterInBeam.first) == fCurrentModuleIndex &&
-           std::get<2>(itCounterInBeam.first) == fCurrentCounterIndex)
+        if(std::get<0>(CounterInBeam.first) == fCurrentModuleType &&
+           std::get<1>(CounterInBeam.first) == fCurrentModuleIndex &&
+           std::get<2>(CounterInBeam.first) == fCurrentCounterIndex)
         {
-          itCounterInBeam.second = tCentralNodePath;
+          (CounterInBeam.second).first = tCentralNodePath;
         }
+      }
+
+      if(fbAllCountersInactive)
+      {
+        fInactiveCounters.emplace(std::make_tuple(fCurrentModuleType, fCurrentModuleIndex, fCurrentCounterIndex));
       }
     }
     else
@@ -712,11 +738,11 @@ Bool_t CbmTof::CheckIfSensitive(std::string name)
   if (tsname.Contains("Cell"))
   {
     // FIXME: This does not work at the moment (see comment in the 'Initialize' method).
-    for(auto const& itInactiveCounter : fInactiveCounters)
+    for(auto const& InactiveCounter : fInactiveCounters)
     {
-      if(std::get<0>(itInactiveCounter.first) == fCurrentModuleType &&
-         std::get<1>(itInactiveCounter.first) == fCurrentModuleIndex &&
-         std::get<2>(itInactiveCounter.first) == fCurrentCounterIndex)
+      if(std::get<0>(InactiveCounter) == fCurrentModuleType &&
+         std::get<1>(InactiveCounter) == fCurrentModuleIndex &&
+         std::get<2>(InactiveCounter) == fCurrentCounterIndex)
       {
         return kFALSE;
       }
