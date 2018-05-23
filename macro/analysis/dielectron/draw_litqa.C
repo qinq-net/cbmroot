@@ -1,10 +1,7 @@
 void draw_litqa()
 {
-   gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-   loadlibs();
-
-   std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/apr16/apr16_tofclustering/8gev/geosetup_v1512_8gev/omegaepem/";
-   std::string fileName = dir + "litqa.tofclustering.auau.8gev.centr.all.root";
+   std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/test6/8gev/omegaepem/";
+   std::string fileName = dir + "litqa.auau.8gev.centr.all.root";
 
    std::string script = std::string(TString(gSystem->Getenv("SCRIPT")).Data());
     if (script == "yes"){

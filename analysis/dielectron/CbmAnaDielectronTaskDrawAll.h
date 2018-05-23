@@ -39,7 +39,6 @@ public:
      */
     CbmAnaDielectronTaskDrawAll()
     : TObject(),
-    fCanvas(),
     fUseMvd(false),
     fHM(),
     fh_mean_bg_minv(),
@@ -81,8 +80,6 @@ public:
 private:
     static const int fNofSignals = 5;
     
-    std::vector<TCanvas*> fCanvas; // store all pointers to TCanvas -> save to images
-    
     Bool_t fUseMvd; // do you want to draw histograms related to the MVD detector?
     
     //[0]=rho0, [1]=omega, [2]=phi, [3]=omegaDalitz
@@ -101,12 +98,6 @@ private:
     std::vector<TH1D*> fh_sum_s_minv; // sum of all signals
     
     std::string fOutputDir; // output directory for figures
-    
-    TCanvas* CreateCanvas(
-                          const std::string& name,
-                          const std::string& title,
-                          int width,
-                          int height);
     
     TH1D* H1(
              int signalType,

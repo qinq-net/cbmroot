@@ -53,7 +53,6 @@ private:
     CbmLmvmCuts fCuts; // electron identification and analysis cuts
 
     CbmHistManager* fHM; //histogram manager
-    std::vector<TCanvas*> fCanvas; // store pointers to all canvas -> save as image
     std::string fOutputDir; // output directory for results
 
     /**
@@ -75,20 +74,6 @@ private:
      */
     TH2D* H2(
           const std::string& name);
-
-    /**
-     * \brief Create Canvas with specified parameters and add pointer to vector fCanvas.
-     * \param[in] name Canvas name.
-     * \param[in] title Canvas title.
-     * \param[in] width Canvas width.
-     * \param[in] height Canvas height.
-     * \param return Created canvas.
-     */
-    TCanvas* CreateCanvas(
-          const std::string& name,
-          const std::string& title,
-          int width,
-          int height);
 
     /**
      * \brief Save all created canvases to images.

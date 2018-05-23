@@ -5,14 +5,11 @@
  **/
 
 void draw_analysis() {
-    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-    loadlibs();
-    gSystem->Load("libAnalysis");
 
     Bool_t useMvd = false;
     Bool_t drawSignificance = true;
-    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/apr16/apr16_trdtofclustering/8gev/geosetup_v1512_8gev/omegaepem/";
-    std::string fileName = dir + "analysis.trdtofclustering.auau.8gev.centr.all.root";
+    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/test6/8gev/omegaepem/";
+    std::string fileName = dir + "analysis.auau.8gev.centr.all.root";
 
     std::string script = std::string(TString(gSystem->Getenv("SCRIPT")).Data());
     if (script == "yes"){
@@ -20,8 +17,7 @@ void draw_analysis() {
        fileName = dir + std::string(TString(gSystem->Getenv("LMVM_ANA_FILE_NAME")).Data());
     }
 
-    std::string outputDir = dir + "lmvm_results/realpid/";
-  // std::string outputDir = "";
+    std::string outputDir = dir + "lmvm_results/";
 
     CbmAnaDielectronTaskDraw *draw = new CbmAnaDielectronTaskDraw();
     draw->DrawHistFromFile(fileName, outputDir, useMvd);//, drawSignificance);

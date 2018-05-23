@@ -46,26 +46,8 @@ draw_all()
 	draw_ana_all ${main_dir} ${ana_file}
 }
 
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/apr15/rich_pmts/25gev/stsv13d/richv08a/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/apr15/rich_pmts/25gev/stsv13d/richv08a_01/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/apr15/rich_pmts/25gev/stsv13d/richv08a_02/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/apr15/rich_pmts/25gev/stsv13d/richv08a_03/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/apr15/rich_pmts/25gev/stsv13d/richv08a_04/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/apr15/rich_pmts/25gev/stsv13d/richv08a_05/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/apr15/rich_pmts/25gev/stsv13d/richv08a_06/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/apr15/rich_pmts/25gev/stsv13d/richv08a_07/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
 
-draw_all /Users/slebedev/Development/cbm/data/lmvm/mar15_rtcut/8gev/stsv13d/richv14a_1e/notrd/tofv13/1.0field/nomvd/ .auau.8gev.centr.all.root
-draw_all /Users/slebedev/Development/cbm/data/lmvm/mar15_trdclustering/8gev/stsv13d/richv14a_1e/trd4/tofv13/1.0field/nomvd/ .trdclustering.auau.8gev.centr.all.root 
+draw_all /Users/slebedev/Development/cbm/data/lmvm/test6/8gev/ .auau.8gev.centr.all.root
 
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/mar15/8gev/stsv13d/richv14a_1e/trd4/tofv13/1.0field/nomvd/ .auau.8gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/mar15/25gev/stsv13d/richv14a_3e/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root 
-
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/mar15/3.5gev/stsv13d/richv14a_1e/trd4/tofv13/0.5field/nomvd/ .auau.3.5gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/mar15/3.5gev/stsv13d/richv14a_1e/trd4/tofv13/0.7field/nomvd/ .auau.3.5gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/mar15/3.5gev/stsv13d/richv14a_1e/trd4/tofv13/1.0field/nomvd/ .auau.3.5gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/mar15/3.5gev/stsv13d/richv14a_1e/notrd/tofv13/0.5field/nomvd/ .auau.3.5gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/mar15/3.5gev/stsv13d/richv14a_1e/notrd/tofv13/0.7field/nomvd/ .auau.3.5gev.centr.all.root
-#draw_all /Users/slebedev/Development/cbm/data/lmvm/mar15/3.5gev/stsv13d/richv14a_1e/notrd/tofv13/1.0field/nomvd/ .auau.3.5gev.centr.all.root
 
 export SCRIPT=no

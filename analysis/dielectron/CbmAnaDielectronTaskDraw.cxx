@@ -16,7 +16,6 @@
 #include <iomanip>
 #include <sstream>
 
-#include <boost/assign/list_of.hpp>
 #include "cbm/elid/CbmLitGlobalElectronId.h"
 
 #include "TText.h"
@@ -40,7 +39,6 @@ ClassImp(CbmAnaDielectronTaskDraw);
 
 using namespace std;
 using namespace Cbm;
-using boost::assign::list_of;
 CbmAnaDielectronTaskDraw::CbmAnaDielectronTaskDraw()
   :TObject(),
    fNofEvents(0),
@@ -48,7 +46,6 @@ CbmAnaDielectronTaskDraw::CbmAnaDielectronTaskDraw()
    fDrawSignificance(kFALSE),
    fCuts(),
    fHM(NULL),
-   fCanvas(),
    fOutputDir("")
 {
 }
@@ -133,17 +130,6 @@ TH2D* CbmAnaDielectronTaskDraw::H2(
       const string& name)
 {
    return (TH2D*) fHM->H1(name);
-}
-
-TCanvas* CbmAnaDielectronTaskDraw::CreateCanvas(
-      const string& name,
-      const string& title,
-      int width,
-      int height)
-{
-   TCanvas *c = new TCanvas(name.c_str(), title.c_str(), width, height);
-   fCanvas.push_back(c);
-   return c;
 }
 
 void CbmAnaDielectronTaskDraw::DrawEfficiencyOnHist(
@@ -280,7 +266,7 @@ void CbmAnaDielectronTaskDraw::SOverBg(
 
 void CbmAnaDielectronTaskDraw::SOverBgAll()
 {
-   TCanvas *c1 = CreateCanvas("lmvm_signal_fitting", "lmvm_signal_fitting", 600, 600);
+   TCanvas *c1 = fHM->CreateCanvas("lmvm_signal_fitting", "lmvm_signal_fitting", 600, 600);
    SOverBg(kReco);
    SOverBg(kChi2Prim);
    SOverBg(kElId);
@@ -307,7 +293,7 @@ void CbmAnaDielectronTaskDraw::DrawPtYDistribution(
 void CbmAnaDielectronTaskDraw::DrawPtYDistributionAll()
 {
    Int_t hi = 1;
-   TCanvas *c = CreateCanvas("lmvm_pty", "lmvm_pty", 750, 1000);
+   TCanvas *c = fHM->CreateCanvas("lmvm_pty", "lmvm_pty", 750, 1000);
    c->Divide(3, 4);
    for (int step = 0; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
@@ -315,10 +301,10 @@ void CbmAnaDielectronTaskDraw::DrawPtYDistributionAll()
       DrawPtYDistribution(step);
    }
 
-   TCanvas *cMc = CreateCanvas("lmvm_pty_"+CbmLmvmHist::fAnaSteps[kAcc], "lmvm_pty_"+CbmLmvmHist::fAnaSteps[kAcc], 800, 800);
+   TCanvas *cMc = fHM->CreateCanvas("lmvm_pty_"+CbmLmvmHist::fAnaSteps[kAcc], "lmvm_pty_"+CbmLmvmHist::fAnaSteps[kAcc], 800, 800);
    DrawPtYDistribution(kAcc, true);
 
-   TCanvas *cPtcut = CreateCanvas("lmvm_pty_"+CbmLmvmHist::fAnaSteps[kPtCut], "lmvm_pty_"+CbmLmvmHist::fAnaSteps[kPtCut], 800, 800);
+   TCanvas *cPtcut = fHM->CreateCanvas("lmvm_pty_"+CbmLmvmHist::fAnaSteps[kPtCut], "lmvm_pty_"+CbmLmvmHist::fAnaSteps[kPtCut], 800, 800);
    DrawPtYDistribution(kPtCut, true);
 }
 
@@ -326,7 +312,7 @@ void CbmAnaDielectronTaskDraw::DrawPtYDistributionAll()
 void CbmAnaDielectronTaskDraw::DrawRapidityDistributionAll()
 {
    Int_t hi = 1;
-   TCanvas *c = CreateCanvas("lmvm_signal_rapidity", "lmvm_signal_rapidity", 750, 1000);
+   TCanvas *c = fHM->CreateCanvas("lmvm_signal_rapidity", "lmvm_signal_rapidity", 750, 1000);
    c->Divide(3, 4);
    for (int step = 0; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
@@ -358,7 +344,7 @@ void CbmAnaDielectronTaskDraw::DrawPtYEfficiency(
 void CbmAnaDielectronTaskDraw::DrawPtYEfficiencyAll()
 {
    Int_t hi = 1;
-   TCanvas *c = CreateCanvas("lmvm_pty_efficiency", "lmvm_pty_efficiency", 1000, 1000);
+   TCanvas *c = fHM->CreateCanvas("lmvm_pty_efficiency", "lmvm_pty_efficiency", 1000, 1000);
    c->Divide(3,3);
    for (int step = kAcc; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
@@ -366,13 +352,13 @@ void CbmAnaDielectronTaskDraw::DrawPtYEfficiencyAll()
       DrawPtYEfficiency(step);
    }
 
-   TCanvas *cptcut = CreateCanvas("lmvm_pty_efficiency_ptcut", "lmvm_pty_efficiency_ptcut", 600, 600);
+   TCanvas *cptcut = fHM->CreateCanvas("lmvm_pty_efficiency_ptcut", "lmvm_pty_efficiency_ptcut", 600, 600);
    DrawPtYEfficiency(kPtCut, true);
 }
 
 void CbmAnaDielectronTaskDraw::DrawMomentumDistributionAll()
 {
-    TCanvas *c = CreateCanvas("lmvm_signal_momentum_distribution", "lmvm_signal_momentum_distribution", 600, 600);
+    TCanvas *c = fHM->CreateCanvas("lmvm_signal_momentum_distribution", "lmvm_signal_momentum_distribution", 600, 600);
     Draw1DHistoForEachAnalysisStep("fh_signal_mom", true);
 }
 
@@ -399,13 +385,13 @@ void CbmAnaDielectronTaskDraw::DrawMomentumEfficiencyAll()
 
 void CbmAnaDielectronTaskDraw::DrawMotherPdg()
 {
-   TCanvas *c = CreateCanvas("lmvm_mother_pdg", "lmvm_mother_pdg", 500, 500);
-   DrawH1(list_of(H1("fh_mc_mother_pdg"))(H1("fh_acc_mother_pdg")), list_of("MC")("acc"), kLinear, kLog, true, 0.7, 0.7, 0.99, 0.99);
+   TCanvas *c = fHM->CreateCanvas("lmvm_mother_pdg", "lmvm_mother_pdg", 500, 500);
+   DrawH1({H1("fh_mc_mother_pdg"), H1("fh_acc_mother_pdg")}, {"MC", "acc"}, kLinear, kLog, true, 0.7, 0.7, 0.99, 0.99);
 }
 
 void CbmAnaDielectronTaskDraw::DrawPmtXY()
 {
-	TCanvas *c = CreateCanvas("lmvm_pmt_xy", "lmvm_pmt_xy", 500, 1800);
+	TCanvas *c = fHM->CreateCanvas("lmvm_pmt_xy", "lmvm_pmt_xy", 500, 1800);
 	c->Divide(1, 3);
 	c->cd(1);
 	DrawH2(H2("fh_signal_pmtXY"));
@@ -446,7 +432,7 @@ void CbmAnaDielectronTaskDraw::Draw1DCut(
    Int_t w = 600;
    Int_t h = 600;
    if (fDrawSignificance) w = 1200;
-   TCanvas *c = CreateCanvas( ("lmvm_" + hName).c_str(), ("lmvm_" + hName).c_str(), w, h);
+   TCanvas *c = fHM->CreateCanvas( ("lmvm_" + hName).c_str(), ("lmvm_" + hName).c_str(), w, h);
    if (fDrawSignificance){
       c->Divide(2,1);
       c->cd(1);
@@ -545,7 +531,7 @@ void CbmAnaDielectronTaskDraw::DrawSourcesBgPairsEpEm(
 void CbmAnaDielectronTaskDraw::DrawSourcesBgPairsAll()
 {
    Int_t hi = 1;
-   TCanvas *c1 = CreateCanvas("lmvm_bg_sources_pairs_epem_abs", "lmvm_bg_sources_pairs_epem_abs", 900, 900);
+   TCanvas *c1 = fHM->CreateCanvas("lmvm_bg_sources_pairs_epem_abs", "lmvm_bg_sources_pairs_epem_abs", 900, 900);
    c1->Divide(3,3);
    for (int step = kReco; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
@@ -554,7 +540,7 @@ void CbmAnaDielectronTaskDraw::DrawSourcesBgPairsAll()
    }
 
    hi = 1;
-   TCanvas *c2 = CreateCanvas("lmvm_bg_sources_pairs_epem_percent", "lmvm_bg_sources_pairs_epem_percent", 900, 900);
+   TCanvas *c2 = fHM->CreateCanvas("lmvm_bg_sources_pairs_epem_percent", "lmvm_bg_sources_pairs_epem_percent", 900, 900);
    c2->Divide(3,3);
    for (int step = kReco; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
@@ -563,11 +549,11 @@ void CbmAnaDielectronTaskDraw::DrawSourcesBgPairsAll()
    }
 
    //Draw pair source histogram for the las step (ptcut)
-   TCanvas *c1PtCut = CreateCanvas("lmvm_bg_sources_pairs_epem_abs_" + CbmLmvmHist::fAnaSteps[kPtCut],
+   TCanvas *c1PtCut = fHM->CreateCanvas("lmvm_bg_sources_pairs_epem_abs_" + CbmLmvmHist::fAnaSteps[kPtCut],
          "lmvm_bg_sources_pairs_epem_abs_" + CbmLmvmHist::fAnaSteps[kPtCut], 600, 600);
    DrawSourcesBgPairsEpEm(kPtCut, false, false);
 
-   TCanvas *c2PtCut = CreateCanvas("lmvm_bg_sources_pairs_epem_percent_" + CbmLmvmHist::fAnaSteps[kPtCut],
+   TCanvas *c2PtCut = fHM->CreateCanvas("lmvm_bg_sources_pairs_epem_percent_" + CbmLmvmHist::fAnaSteps[kPtCut],
          "lmvm_bg_sources_pairs_epem_percent_" + CbmLmvmHist::fAnaSteps[kPtCut], 600, 600);
    DrawSourcesBgPairsEpEm(kPtCut, true, false);
 
@@ -597,7 +583,7 @@ void CbmAnaDielectronTaskDraw::Draw2DCut(
       double cutCrossX,
       double cutCrossY)
 {
-   TCanvas *c = CreateCanvas(("lmvm_" + hist).c_str(), ("lmvm_" + hist).c_str(), 600, 900);
+   TCanvas *c = fHM->CreateCanvas(("lmvm_" + hist).c_str(), ("lmvm_" + hist).c_str(), 600, 900);
    c->Divide(2,3);
    vector<TH1*> projX, projY;
    for (int i = 0; i < CbmLmvmHist::fNofSourceTypes; i++){
@@ -620,10 +606,10 @@ void CbmAnaDielectronTaskDraw::Draw2DCut(
    c->cd(6);
    DrawH1(projY, CbmLmvmHist::fSourceTypesLatex, kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99);
 
-   TCanvas* c2 = CreateCanvas(("lmvm_" + hist+"_signal").c_str(), ("lmvm_" + hist+"_signal").c_str(), 800, 800);
+   TCanvas* c2 = fHM->CreateCanvas(("lmvm_" + hist+"_signal").c_str(), ("lmvm_" + hist+"_signal").c_str(), 800, 800);
    DrawH2(H2( hist + "_"+ CbmLmvmHist::fSourceTypes[kSignal] ));
    Draw2DCutTriangle(cutCrossX, cutCrossY);
-   TCanvas* c3 = CreateCanvas(("lmvm_" + hist+"_gamma").c_str(), ("lmvm_" + hist+"_gamma").c_str(), 800, 800);
+   TCanvas* c3 = fHM->CreateCanvas(("lmvm_" + hist+"_gamma").c_str(), ("lmvm_" + hist+"_gamma").c_str(), 800, 800);
    DrawH2(H2( hist + "_"+ CbmLmvmHist::fSourceTypes[kGamma] ));
    Draw2DCutTriangle(cutCrossX, cutCrossY);
    //c->cd(9);
@@ -636,7 +622,7 @@ void CbmAnaDielectronTaskDraw::DrawGammaVertex()
    TH2D* xz = H2("fh_vertex_el_gamma_xz_mc");
    TH2D* yz = H2("fh_vertex_el_gamma_yz_mc");
    TH2D* xy = H2("fh_vertex_el_gamma_xy_mc");
-   TCanvas *c = CreateCanvas("lmvm_vertex_el_gamma_mc","lmvm_vertex_el_gamma_mc", 1200, 400);
+   TCanvas *c = fHM->CreateCanvas("lmvm_vertex_el_gamma_mc","lmvm_vertex_el_gamma_mc", 1200, 400);
    c->Divide(3,1);
    c->cd(1);
    DrawH2(xz);
@@ -652,13 +638,13 @@ void CbmAnaDielectronTaskDraw::DrawGammaVertex()
    gPad->SetLogz(true);
 
    // number of e+- from gamma vs Z.
-   TCanvas *cZ = CreateCanvas("lmvm_vertex_el_gamma_z_mc","lmvm_vertex_el_gamma_z_mc", 600, 600);
+   TCanvas *cZ = fHM->CreateCanvas("lmvm_vertex_el_gamma_z_mc","lmvm_vertex_el_gamma_z_mc", 600, 600);
    TH1D* zProj = (TH1D*)xz->ProjectionX("fh_vertex_el_gamma_pz_mc")->Clone();
    zProj->GetYaxis()->SetTitle("Counter per event");
    zProj->GetXaxis()->SetRangeUser(-2., 17.);
    DrawH1(zProj);
 
-   TCanvas *cZPtCut = CreateCanvas("lmvm_vertex_el_gamma_z_ptcut","lmvm_vertex_el_gamma_z_ptcut", 600, 600);
+   TCanvas *cZPtCut = fHM->CreateCanvas("lmvm_vertex_el_gamma_z_ptcut","lmvm_vertex_el_gamma_z_ptcut", 600, 600);
    TH1D* zProjPtCut = (TH1D*)(H2("fh_vertex_el_gamma_xz_ptcut")->ProjectionX("fh_vertex_el_gamma_ptcut_pz")->Clone());
    zProjPtCut->GetYaxis()->SetTitle("Counter per event");
    zProjPtCut->GetXaxis()->SetRangeUser(-2., 17.);
@@ -667,7 +653,7 @@ void CbmAnaDielectronTaskDraw::DrawGammaVertex()
    TH2D* xzZoom = (TH2D*)xz->Clone();
    TH2D* yzZoom = (TH2D*)yz->Clone();
    TH2D* xyZoom = (TH2D*)xy->Clone();
-   TCanvas *cZoom = CreateCanvas("lmvm_vertex_el_gamma_mc_target_zoom","lmvm_vertex_el_gamma_mc_target_zoom", 1200, 400);
+   TCanvas *cZoom = fHM->CreateCanvas("lmvm_vertex_el_gamma_mc_target_zoom","lmvm_vertex_el_gamma_mc_target_zoom", 1200, 400);
    cZoom->Divide(3,1);
    cZoom->cd(1);
    xzZoom->GetXaxis()->SetRangeUser(-1., 11.);
@@ -688,7 +674,7 @@ void CbmAnaDielectronTaskDraw::DrawGammaVertex()
    xyZoom->SetMinimum(1e-3);
    gPad->SetLogz(true);
 
-   TCanvas *cRZ = CreateCanvas("lmvm_vertex_el_gamma_rz_mc","lmvm_vertex_el_gamma_rz_mc", 600, 600);
+   TCanvas *cRZ = fHM->CreateCanvas("lmvm_vertex_el_gamma_rz_mc","lmvm_vertex_el_gamma_rz_mc", 600, 600);
    DrawH2(H2("fh_vertex_el_gamma_rz_mc"));
    H2("fh_vertex_el_gamma_rz_mc")->SetMinimum(1e-3);
    gPad->SetLogz(true);
@@ -727,21 +713,21 @@ void CbmAnaDielectronTaskDraw::Draw1DHistoForEachAnalysisStep(
 
 void CbmAnaDielectronTaskDraw::DrawMinvForEachAnalysisStep()
 {
-   TCanvas *c1 = CreateCanvas("lmvm_minv_for_each_analysis_step_s_bg", "lmvm_minv_for_each_analysis_step_s_bg", 1200, 600);
+   TCanvas *c1 = fHM->CreateCanvas("lmvm_minv_for_each_analysis_step_s_bg", "lmvm_minv_for_each_analysis_step_s_bg", 1200, 600);
    c1->Divide(2,1);
    c1->cd(1);
    Draw1DHistoForEachAnalysisStep("fh_signal_minv", true);
    c1->cd(2);
    Draw1DHistoForEachAnalysisStep("fh_bg_minv", true);
 
-   TCanvas *c2 = CreateCanvas("lmvm_minv_for_each_analysis_step_pi0_eta", "lmvm_minv_for_each_analysis_step_pi0_eta", 1200, 600);
+   TCanvas *c2 = fHM->CreateCanvas("lmvm_minv_for_each_analysis_step_pi0_eta", "lmvm_minv_for_each_analysis_step_pi0_eta", 1200, 600);
    c2->Divide(2,1);
    c2->cd(1);
    Draw1DHistoForEachAnalysisStep("fh_pi0_minv", true);
    c2->cd(2);
    Draw1DHistoForEachAnalysisStep("fh_eta_minv", true);
 
-   TCanvas *c3 = CreateCanvas("lmvm_minv_for_each_analysis_step_gamma", "lmvm_minv_for_each_analysis_step_gamma", 600, 600);
+   TCanvas *c3 = fHM->CreateCanvas("lmvm_minv_for_each_analysis_step_gamma", "lmvm_minv_for_each_analysis_step_gamma", 600, 600);
   // H1("fh_gamma_minv_mc")->GetXaxis()->SetRangeUser(0., 0.05);
    Draw1DHistoForEachAnalysisStep("fh_gamma_minv", true);
 
@@ -759,7 +745,7 @@ void CbmAnaDielectronTaskDraw::DrawMinvSandBg(
    sbg->Add(s);
    sbg->SetMinimum(1e-8);
 
-   DrawH1(list_of(sbg)(bg)(s), list_of("")("")(""), kLinear, kLog, false, 0,0,0,0);
+   DrawH1({sbg, bg, s}, {"", "", ""}, kLinear, kLog, false, 0,0,0,0);
    s->SetFillColor(kRed);
    s->SetLineColor(kBlack);
    s->SetLineWidth(1);
@@ -782,7 +768,7 @@ void CbmAnaDielectronTaskDraw::DrawMinvSandBg(
 void CbmAnaDielectronTaskDraw::DrawMinvSandBgAll()
 {
    Int_t hi = 1;
-   TCanvas *c = CreateCanvas("lmvm_minv_both_s_and_bg", "lmvm_minv_both_s_and_bg", 900, 900);
+   TCanvas *c = fHM->CreateCanvas("lmvm_minv_both_s_and_bg", "lmvm_minv_both_s_and_bg", 900, 900);
    c->Divide(3,3);
    for (int step = kReco; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
@@ -790,7 +776,7 @@ void CbmAnaDielectronTaskDraw::DrawMinvSandBgAll()
       DrawMinvSandBg(step);
    }
 
-   TCanvas *cPtCut = CreateCanvas("lmvm_minv_both_s_and_bg_ptcut", "lmvm_minv_both_s_and_bg_ptcut", 900, 900);
+   TCanvas *cPtCut = fHM->CreateCanvas("lmvm_minv_both_s_and_bg_ptcut", "lmvm_minv_both_s_and_bg_ptcut", 900, 900);
    DrawMinvSandBg(kPtCut);
 }
 
@@ -825,7 +811,7 @@ void CbmAnaDielectronTaskDraw::DrawMinvSourceAll()
 {
    {
    Int_t hi = 1;
-   TCanvas *c = CreateCanvas("lmvm_minv_source", "lmvm_minv_source", 900, 900);
+   TCanvas *c = fHM->CreateCanvas("lmvm_minv_source", "lmvm_minv_source", 900, 900);
    c->Divide(3,3);
    for (int step = kReco; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
@@ -834,11 +820,11 @@ void CbmAnaDielectronTaskDraw::DrawMinvSourceAll()
    }
 
    // Draw histogram for the last step (ptcut) on one histogram
-   TCanvas *cPtCut = CreateCanvas("lmvm_minv_source_" + CbmLmvmHist::fAnaSteps[kPtCut],
+   TCanvas *cPtCut = fHM->CreateCanvas("lmvm_minv_source_" + CbmLmvmHist::fAnaSteps[kPtCut],
          "lmvm_minv_source_"+CbmLmvmHist::fAnaSteps[kPtCut], 600, 600);
    DrawMinvSource(kPtCut, false);
        
-       TCanvas *cElId = CreateCanvas("lmvm_minv_source_" + CbmLmvmHist::fAnaSteps[kElId],
+       TCanvas *cElId = fHM->CreateCanvas("lmvm_minv_source_" + CbmLmvmHist::fAnaSteps[kElId],
                                       "lmvm_minv_source_"+CbmLmvmHist::fAnaSteps[kElId], 600, 600);
        DrawMinvSource(kElId, false);
 
@@ -847,16 +833,16 @@ void CbmAnaDielectronTaskDraw::DrawMinvSourceAll()
    // Draw mismatches and true matches minv
    {
    Int_t hi = 1;
-   TCanvas *c = CreateCanvas("lmvm_minv_mismatches", "lmvm_minv_mismatches", 900, 900);
+   TCanvas *c = fHM->CreateCanvas("lmvm_minv_mismatches", "lmvm_minv_mismatches", 900, 900);
    c->Divide(3,3);
    for (int step = kReco; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
       c->cd(hi++);
-      DrawH1(list_of( H1("fh_bg_truematch_minv_" + CbmLmvmHist::fAnaSteps[step]) )
-            ( H1("fh_bg_truematch_el_minv_" + CbmLmvmHist::fAnaSteps[step]) )
-            ( H1("fh_bg_truematch_notel_minv_" + CbmLmvmHist::fAnaSteps[step]) )
-            ( H1("fh_bg_mismatch_minv_" + CbmLmvmHist::fAnaSteps[step]) ),
-            list_of("true match")("true match (e^{#pm})")("true match (not e^{#pm})")("mismatch"), kLinear, kLinear, true, 0.5, 0.7, 0.99, 0.99);
+      DrawH1({ H1("fh_bg_truematch_minv_" + CbmLmvmHist::fAnaSteps[step]),
+             H1("fh_bg_truematch_el_minv_" + CbmLmvmHist::fAnaSteps[step]),
+             H1("fh_bg_truematch_notel_minv_" + CbmLmvmHist::fAnaSteps[step]),
+             H1("fh_bg_mismatch_minv_" + CbmLmvmHist::fAnaSteps[step])},
+              {"true match", "true match (e^{#pm})", "true match (not e^{#pm})", "mismatch"}, kLinear, kLinear, true, 0.5, 0.7, 0.99, 0.99);
    }
 
    // Draw minv after PtCut
@@ -866,16 +852,16 @@ void CbmAnaDielectronTaskDraw::DrawMinvSourceAll()
    double misMatch = H1("fh_bg_mismatch_minv_" + CbmLmvmHist::fAnaSteps[kPtCut])->GetEntries();
    double nofBg = H1("fh_bg_minv_" + CbmLmvmHist::fAnaSteps[kPtCut])->GetEntries();
 
-   TCanvas *cPtCut = CreateCanvas("lmvm_minv_mismatches_" + CbmLmvmHist::fAnaSteps[kPtCut],
+   TCanvas *cPtCut = fHM->CreateCanvas("lmvm_minv_mismatches_" + CbmLmvmHist::fAnaSteps[kPtCut],
             "lmvm_minv_mismatches_"+CbmLmvmHist::fAnaSteps[kPtCut], 700, 700);
-   DrawH1(list_of( H1("fh_bg_truematch_minv_" + CbmLmvmHist::fAnaSteps[kPtCut]) )
-         ( H1("fh_bg_truematch_el_minv_" + CbmLmvmHist::fAnaSteps[kPtCut]) )
-         ( H1("fh_bg_truematch_notel_minv_" + CbmLmvmHist::fAnaSteps[kPtCut]) )
-         ( H1("fh_bg_mismatch_minv_" + CbmLmvmHist::fAnaSteps[kPtCut]) ),
-         list_of("true match (" + Cbm::NumberToString(100. * trueMatch / nofBg, 1) + "%)")
-         ("true match (e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchEl / nofBg, 1)+ "%)")
-         ("true match (not e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchNotEl / nofBg, 1)+ "%)")
-         ("mismatch (" + Cbm::NumberToString(100. * misMatch / nofBg)+ "%)"),
+   DrawH1({ H1("fh_bg_truematch_minv_" + CbmLmvmHist::fAnaSteps[kPtCut]),
+         H1("fh_bg_truematch_el_minv_" + CbmLmvmHist::fAnaSteps[kPtCut]),
+         H1("fh_bg_truematch_notel_minv_" + CbmLmvmHist::fAnaSteps[kPtCut]),
+         H1("fh_bg_mismatch_minv_" + CbmLmvmHist::fAnaSteps[kPtCut]) },
+         {"true match (" + Cbm::NumberToString(100. * trueMatch / nofBg, 1) + "%)",
+         "true match (e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchEl / nofBg, 1)+ "%)",
+         "true match (not e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchNotEl / nofBg, 1)+ "%)",
+         "mismatch (" + Cbm::NumberToString(100. * misMatch / nofBg)+ "%)"},
          kLinear, kLinear, true, 0.4, 0.7, 0.99, 0.99);
    }
 }
@@ -884,7 +870,7 @@ void CbmAnaDielectronTaskDraw::DrawElPiMomHis()
 {
    double binWEl = H1("fh_pi_mom_mc")->GetBinWidth(1);
 
-   TCanvas *cPi = CreateCanvas("lmvm_pi_mom", "lmvm_pi_mom", 800, 800);
+   TCanvas *cPi = fHM->CreateCanvas("lmvm_pi_mom", "lmvm_pi_mom", 800, 800);
    H1("fh_pi_mom_mc")->Scale(1/binWEl);
    H1("fh_pi_mom_acc")->Scale(1/binWEl);
    H1("fh_pi_mom_rec")->Scale(1/binWEl);
@@ -893,19 +879,19 @@ void CbmAnaDielectronTaskDraw::DrawElPiMomHis()
    H1("fh_pi_mom_rec_sts_rich_trd_tof")->Scale(1/binWEl);
    H1("fh_pi_mom_mc")->SetMinimum(2);
     
-   DrawH1( list_of(H1("fh_pi_mom_mc"))(H1("fh_pi_mom_acc"))(H1("fh_pi_mom_rec"))(H1("fh_pi_mom_rec_only_sts"))
-         (H1("fh_pi_mom_rec_sts_rich_trd"))(H1("fh_pi_mom_rec_sts_rich_trd_tof")),
-         list_of("MC ("+Cbm::NumberToString(H1("fh_pi_mom_mc")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Acc (" + Cbm::NumberToString(H1("fh_pi_mom_acc")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec (" +  Cbm::NumberToString(H1("fh_pi_mom_rec")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec only STS (" + Cbm::NumberToString(H1("fh_pi_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec STS-RICH-TRD (" + Cbm::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec STS-RICH-TRD-TOF (" + Cbm::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"),
-         kLinear, kLog, true, 0.1, 0.7, 0.99, 0.99);
+   DrawH1( { H1("fh_pi_mom_mc"), H1("fh_pi_mom_acc"), H1("fh_pi_mom_rec"), H1("fh_pi_mom_rec_only_sts"),
+             H1("fh_pi_mom_rec_sts_rich_trd"), H1("fh_pi_mom_rec_sts_rich_trd_tof")},
+             {"MC ("+Cbm::NumberToString(H1("fh_pi_mom_mc")->GetEntries()/fNofEvents, 2) +" per event)",
+              "Acc (" + Cbm::NumberToString(H1("fh_pi_mom_acc")->GetEntries()/fNofEvents, 2) +" per event)",
+              "Rec (" +  Cbm::NumberToString(H1("fh_pi_mom_rec")->GetEntries()/fNofEvents, 2) +" per event)",
+              "Rec only STS (" + Cbm::NumberToString(H1("fh_pi_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)",
+              "Rec STS-RICH-TRD (" + Cbm::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)",
+              "Rec STS-RICH-TRD-TOF (" + Cbm::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"},
+              kLinear, kLog, true, 0.1, 0.7, 0.99, 0.99);
 
    //primary pions vertex < 0.1 cm
    double binWElPrim = H1("fh_piprim_mom_mc")->GetBinWidth(1);
-   TCanvas *cPiPrim = CreateCanvas("lmvm_piprim_mom", "lmvm_piprim_mom", 800, 800);
+   TCanvas *cPiPrim = fHM->CreateCanvas("lmvm_piprim_mom", "lmvm_piprim_mom", 800, 800);
    H1("fh_piprim_mom_mc")->Scale(1/binWElPrim);
    H1("fh_piprim_mom_acc")->Scale(1/binWElPrim);
    H1("fh_piprim_mom_rec")->Scale(1/binWElPrim);
@@ -913,21 +899,21 @@ void CbmAnaDielectronTaskDraw::DrawElPiMomHis()
    H1("fh_piprim_mom_rec_sts_rich_trd")->Scale(1/binWElPrim);
    H1("fh_piprim_mom_rec_sts_rich_trd_tof")->Scale(1/binWElPrim);
    H1("fh_piprim_mom_mc")->SetMinimum(2);
-   DrawH1( list_of(H1("fh_piprim_mom_mc"))(H1("fh_piprim_mom_acc"))(H1("fh_piprim_mom_rec"))(H1("fh_piprim_mom_rec_only_sts"))
-         (H1("fh_piprim_mom_rec_sts_rich_trd"))(H1("fh_piprim_mom_rec_sts_rich_trd_tof")),
-         list_of("MC ("+Cbm::NumberToString(H1("fh_piprim_mom_mc")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Acc (" + Cbm::NumberToString(H1("fh_piprim_mom_acc")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec (" +  Cbm::NumberToString(H1("fh_piprim_mom_rec")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec only STS (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec STS-RICH-TRD (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec STS-RICH-TRD-TOF (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"),
+   DrawH1( {H1("fh_piprim_mom_mc"), H1("fh_piprim_mom_acc"), H1("fh_piprim_mom_rec"), H1("fh_piprim_mom_rec_only_sts"),
+         H1("fh_piprim_mom_rec_sts_rich_trd"), H1("fh_piprim_mom_rec_sts_rich_trd_tof")},
+           {"MC ("+Cbm::NumberToString(H1("fh_piprim_mom_mc")->GetEntries()/fNofEvents, 2) +" per event)",
+            "Acc (" + Cbm::NumberToString(H1("fh_piprim_mom_acc")->GetEntries()/fNofEvents, 2) +" per event)",
+            "Rec (" +  Cbm::NumberToString(H1("fh_piprim_mom_rec")->GetEntries()/fNofEvents, 2) +" per event)",
+            "Rec only STS (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)",
+            "Rec STS-RICH-TRD (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)",
+            "Rec STS-RICH-TRD-TOF (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"},
          kLinear, kLog, true, 0.1, 0.7, 0.99, 0.99);
 
-   TCanvas *cPiNotAcc = CreateCanvas("lmvm_pi_mom_notacc", "lmvm_pi_mom_notacc", 800, 800);
+   TCanvas *cPiNotAcc = fHM->CreateCanvas("lmvm_pi_mom_notacc", "lmvm_pi_mom_notacc", 800, 800);
    TH1D* h1 = ((TH1D*)H1("fh_pi_mom_mc")->Clone());
    h1->Add(H1("fh_pi_mom_acc"), -1.);
    DrawH1( h1 );
-   TCanvas *cPiPrimNotAcc = CreateCanvas("lmvm_piprim_mom_notacc", "lmvm_piprim_mom_notacc", 800, 800);
+   TCanvas *cPiPrimNotAcc = fHM->CreateCanvas("lmvm_piprim_mom_notacc", "lmvm_piprim_mom_notacc", 800, 800);
    TH1D* h2 = ((TH1D*)H1("fh_piprim_mom_mc")->Clone());
    h2->Add(H1("fh_piprim_mom_acc"), -1.);
    DrawH1( h2 );
@@ -949,13 +935,13 @@ void CbmAnaDielectronTaskDraw::DrawElPiMomHis()
    H1("fh_pi0prim_rapidity_mc")->Scale(1/binWRapidity);
    H1("fh_etaprim_rapidity_mc")->Scale(1/binWRapidity);
 
-   TCanvas *cPiPrimPlusY = CreateCanvas("lmvm_piprim_plus_rapidity", "lmvm_piprim_plus_rapidity", 800, 800);
+   TCanvas *cPiPrimPlusY = fHM->CreateCanvas("lmvm_piprim_plus_rapidity", "lmvm_piprim_plus_rapidity", 800, 800);
    DrawH1(H1("fh_piprim_plus_rapidity_mc"));
-   TCanvas *cPiPrimMinusY = CreateCanvas("lmvm_piprim_minus_rapidity", "lmvm_piprim_minus_rapidity", 800, 800);
+   TCanvas *cPiPrimMinusY = fHM->CreateCanvas("lmvm_piprim_minus_rapidity", "lmvm_piprim_minus_rapidity", 800, 800);
    DrawH1(H1("fh_piprim_minus_rapidity_mc"));
-   TCanvas *cPi0PrimY = CreateCanvas("lmvm_pi0prim_rapidity", "lmvm_pi0prim_rapidity", 800, 800);
+   TCanvas *cPi0PrimY = fHM->CreateCanvas("lmvm_pi0prim_rapidity", "lmvm_pi0prim_rapidity", 800, 800);
    DrawH1(H1("fh_pi0prim_rapidity_mc"));
-   TCanvas *cEtaPrimY = CreateCanvas("lmvm_etaprim_rapidity", "lmvm_etaprim_rapidity", 800, 800);
+   TCanvas *cEtaPrimY = fHM->CreateCanvas("lmvm_etaprim_rapidity", "lmvm_etaprim_rapidity", 800, 800);
    DrawH1(H1("fh_etaprim_rapidity_mc"));
 
 }
@@ -993,7 +979,7 @@ void CbmAnaDielectronTaskDraw::DrawBgSource2D(
       rangeMax = CbmLmvmHist::fNofAnaSteps - 2;
    }
 
-   TCanvas *c1 = CreateCanvas(string(canvasName+"_abs").c_str(), string(canvasName+"_abs").c_str(), 900, 600);
+   TCanvas *c1 = fHM->CreateCanvas(string(canvasName+"_abs").c_str(), string(canvasName+"_abs").c_str(), 900, 600);
    TH2D* habs = (TH2D*)H2(histName)->Clone();
    habs->SetStats(false);
    habs->Scale(scale);
@@ -1002,7 +988,7 @@ void CbmAnaDielectronTaskDraw::DrawBgSource2D(
    habs->SetMarkerSize(1.4);
    DrawH2(habs, kLinear, kLinear, kLog, "text COLZ");
 
-   TCanvas *c2 = CreateCanvas(string(canvasName+"_percent").c_str(), string(canvasName+"_percent").c_str(), 900, 600);
+   TCanvas *c2 = fHM->CreateCanvas(string(canvasName+"_percent").c_str(), string(canvasName+"_percent").c_str(), 900, 600);
    TH2D* hperc = (TH2D*)H2(histName)->Clone();
    hperc->SetStats(false);
    Int_t nBinsX = hperc->GetNbinsX();
@@ -1045,7 +1031,7 @@ void CbmAnaDielectronTaskDraw::DrawBgSourceTracks()
       rangeMax = CbmLmvmHist::fNofAnaSteps - 2;
    }
 
-   TCanvas *c1 = CreateCanvas("lmvm_nof_bg_tracks", "lmvm_nof_bg_tracks", 600, 600);
+   TCanvas *c1 = fHM->CreateCanvas("lmvm_nof_bg_tracks", "lmvm_nof_bg_tracks", 600, 600);
    TH1D* hbg = (TH1D*)H1("fh_nof_bg_tracks")->Clone();
    hbg->Scale(10);
    hbg->GetYaxis()->SetTitle("Tracks/event x10");
@@ -1053,12 +1039,12 @@ void CbmAnaDielectronTaskDraw::DrawBgSourceTracks()
    DrawH1( hbg, kLinear, kLog, "hist text0");
    hbg->SetMarkerSize(2.);
 
-   TCanvas *c2 = CreateCanvas("lmvm_nof_el_tracks", "lmvm_nof_el_tracks", 600, 600);
+   TCanvas *c2 = fHM->CreateCanvas("lmvm_nof_el_tracks", "lmvm_nof_el_tracks", 600, 600);
    TH1D* hel = H1("fh_nof_el_tracks");
    hel->GetXaxis()->SetRange(kReco + 1, rangeMax);
    DrawH1( hel, kLinear, kLog);
 
-   TCanvas *c3 = CreateCanvas("lmvm_purity", "lmvm_purity", 600, 600);
+   TCanvas *c3 = fHM->CreateCanvas("lmvm_purity", "lmvm_purity", 600, 600);
    TH1D* purity = new TH1D("purity","purity;Analysis steps;Purity",
 		   CbmLmvmHist::fNofAnaSteps, 0., CbmLmvmHist::fNofAnaSteps);
    purity->Divide(H1("fh_nof_bg_tracks"), H1("fh_nof_el_tracks"));
@@ -1071,17 +1057,17 @@ void CbmAnaDielectronTaskDraw::DrawBgSourceTracks()
    SetAnalysisStepLabels(purity);
 
    DrawBgSource2D("lmvm_source_tracks_2d", "fh_source_tracks",
-         list_of("#gamma")("#pi^{0}")("#pi^{#pm}")("p")("K")("e^{#pm}_{sec}")("oth."),
+           {"#gamma", "#pi^{0}", "#pi^{#pm}", "p", "K", "e^{#pm}_{sec}", "oth."},
          100., "Tracks per event x10^{2}");
 
 
-   TCanvas *c4 = CreateCanvas("fh_nof_topology_pairs_gamma", "fh_nof_topology_pairs_gamma", 600, 600);
+   TCanvas *c4 = fHM->CreateCanvas("fh_nof_topology_pairs_gamma", "fh_nof_topology_pairs_gamma", 600, 600);
    TH1D* htopologyGamma = (TH1D*)H1("fh_nof_topology_pairs_gamma")->Clone();
    htopologyGamma->Scale(1. / htopologyGamma->Integral());
    DrawH1( htopologyGamma, kLinear, kLinear);
    htopologyGamma->SetMarkerSize(1.);
 
-   TCanvas *c5 = CreateCanvas("fh_nof_topology_pairs_pi0", "fh_nof_topology_pairs_pi0", 600, 600);
+   TCanvas *c5 = fHM->CreateCanvas("fh_nof_topology_pairs_pi0", "fh_nof_topology_pairs_pi0", 600, 600);
    TH1D* htopologyPi0 = (TH1D*)H1("fh_nof_topology_pairs_pi0")->Clone();
    htopologyPi0->Scale(1. / htopologyPi0->Integral());
    DrawH1( htopologyPi0, kLinear, kLinear);
@@ -1097,7 +1083,7 @@ void CbmAnaDielectronTaskDraw::DrawMismatchesAndGhosts()
       rangeMax = CbmLmvmHist::fNofAnaSteps - 2;
    }
 
-   TCanvas *c1 = CreateCanvas("lmvm_nof_mismatches", "lmvm_nof_mismatches", 600, 600);
+   TCanvas *c1 = fHM->CreateCanvas("lmvm_nof_mismatches", "lmvm_nof_mismatches", 600, 600);
    c1->Divide(2,2);
    c1->cd(1);
    TH1D* hmismatches = (TH1D*)H1("fh_nof_mismatches")->Clone();
@@ -1133,7 +1119,7 @@ void CbmAnaDielectronTaskDraw::DrawMismatchesAndGhosts()
    hmismatches_tof->SetMarkerSize(2.);
    SetAnalysisStepLabels(hmismatches_tof);
 
-   TCanvas *c2 = CreateCanvas("lmvm_nof_ghosts", "lmvm_nof_ghosts", 600, 600);
+   TCanvas *c2 = fHM->CreateCanvas("lmvm_nof_ghosts", "lmvm_nof_ghosts", 600, 600);
    TH1D* hghosts = H1("fh_nof_ghosts");
    hghosts->GetXaxis()->SetRange(kReco + 1, rangeMax);
    DrawH1( hghosts, kLinear, kLog);
@@ -1157,7 +1143,7 @@ void CbmAnaDielectronTaskDraw::SetAnalysisStepLabels(
 void CbmAnaDielectronTaskDraw::DrawMinvPtAll()
 {
    Int_t hi = 1;
-   TCanvas *c = CreateCanvas("lmvm_fh_signal_minv_pt", "lmvm_fh_signal_minv_pt", 750, 1000);
+   TCanvas *c = fHM->CreateCanvas("lmvm_fh_signal_minv_pt", "lmvm_fh_signal_minv_pt", 750, 1000);
    c->Divide(3, 4);
    for (int step = 0; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
@@ -1171,11 +1157,11 @@ void CbmAnaDielectronTaskDraw::DrawMinvPtAll()
 
 void CbmAnaDielectronTaskDraw::DrawBgSourcesVsMomentum()
 {
-   TCanvas *c1mc = CreateCanvas("lmvm_source_mom_mc_signal","lmvm_source_mom_mc_signal", 600, 600);
+   TCanvas *c1mc = fHM->CreateCanvas("lmvm_source_mom_mc_signal","lmvm_source_mom_mc_signal", 600, 600);
    DrawH1( H1("fh_source_mom_mc_signal") );
 
    int hi = 1;
-   TCanvas *c1 = CreateCanvas("lmvm_source_mom","lmvm_source_mom", 900, 900);
+   TCanvas *c1 = fHM->CreateCanvas("lmvm_source_mom","lmvm_source_mom", 900, 900);
    c1->Divide(3,3);
    for (Int_t step = kReco; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
@@ -1183,11 +1169,11 @@ void CbmAnaDielectronTaskDraw::DrawBgSourcesVsMomentum()
       Draw1DSourceTypes("fh_source_mom_" + CbmLmvmHist::fAnaSteps[step], false);
       DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.90, 0.70, 0.99);
    }
-   TCanvas *c1_1 = CreateCanvas("lmvm_source_mom_ttcut","lmvm_source_mom_ttcut", 600, 600);
+   TCanvas *c1_1 = fHM->CreateCanvas("lmvm_source_mom_ttcut","lmvm_source_mom_ttcut", 600, 600);
    Draw1DSourceTypes("fh_source_mom_" + CbmLmvmHist::fAnaSteps[kTtCut], false);
 
    hi = 1;
-   TCanvas *c3 = CreateCanvas("lmvm_source_pt","lmvm_source_pt", 900, 900);
+   TCanvas *c3 = fHM->CreateCanvas("lmvm_source_pt","lmvm_source_pt", 900, 900);
    c3->Divide(3,3);
    for (Int_t step = kReco; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
@@ -1195,11 +1181,11 @@ void CbmAnaDielectronTaskDraw::DrawBgSourcesVsMomentum()
       Draw1DSourceTypes("fh_source_pt_" + CbmLmvmHist::fAnaSteps[step], false);
       DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.90, 0.70, 0.99);
    }
-   TCanvas *c1_2 = CreateCanvas("lmvm_source_pt_ttcut","lmvm_source_pt_ttcut", 600, 600);
+   TCanvas *c1_2 = fHM->CreateCanvas("lmvm_source_pt_ttcut","lmvm_source_pt_ttcut", 600, 600);
    Draw1DSourceTypes("fh_source_pt_" + CbmLmvmHist::fAnaSteps[kTtCut], false);
 
    hi = 1;
-   TCanvas *c2 = CreateCanvas("lmvm_opening_angle","lmvm_opening_angle", 900, 900);
+   TCanvas *c2 = fHM->CreateCanvas("lmvm_opening_angle","lmvm_opening_angle", 900, 900);
    c2->Divide(3,3);
    for (Int_t step = kReco; step < CbmLmvmHist::fNofAnaSteps; step++){
       //cout << "fh_opening_angle_" << step << endl;
@@ -1208,14 +1194,14 @@ void CbmAnaDielectronTaskDraw::DrawBgSourcesVsMomentum()
       Draw1DSourceTypes("fh_opening_angle_" + CbmLmvmHist::fAnaSteps[step]);
       DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.90, 0.70, 0.99);
    }
-   TCanvas *c1_3 = CreateCanvas("lmvm_opening_angle_ttcut","lmvm_opening_angle_ttcut", 600, 600);
+   TCanvas *c1_3 = fHM->CreateCanvas("lmvm_opening_angle_ttcut","lmvm_opening_angle_ttcut", 600, 600);
    Draw1DSourceTypes("fh_opening_angle_" + CbmLmvmHist::fAnaSteps[kTtCut], false);
 }
 
 void CbmAnaDielectronTaskDraw::DrawMvdCutQa()
 {
    if (fUseMvd) {
-      TCanvas *c1 = CreateCanvas("lmvm_mvd1cut_qa","lmvm_mvd1cut_qa", 600, 600);
+      TCanvas *c1 = fHM->CreateCanvas("lmvm_mvd1cut_qa","lmvm_mvd1cut_qa", 600, 600);
       Draw1DSourceTypes("fh_mvd1cut_qa");
       TH1D* h1 = H1("fh_mvd1cut_qa_"+CbmLmvmHist::fSourceTypes[0]);
       h1->GetXaxis()->SetLabelSize(0.06);
@@ -1223,7 +1209,7 @@ void CbmAnaDielectronTaskDraw::DrawMvdCutQa()
       h1->GetXaxis()->SetBinLabel(2, "Wrong");
       gPad->SetLogy(false);
 
-      TCanvas *c2 = CreateCanvas("lmvm_mvd2cut_qa","lmvm_mvd2cut_qa", 600, 600);
+      TCanvas *c2 = fHM->CreateCanvas("lmvm_mvd2cut_qa","lmvm_mvd2cut_qa", 600, 600);
       Draw1DSourceTypes("fh_mvd2cut_qa");
       TH1D* h2 = H1("fh_mvd2cut_qa_"+CbmLmvmHist::fSourceTypes[0]);
       h2->GetXaxis()->SetLabelSize(0.07);
@@ -1236,7 +1222,7 @@ void CbmAnaDielectronTaskDraw::DrawMvdCutQa()
 void CbmAnaDielectronTaskDraw::DrawMvdAndStsHist()
 {
    if (!fUseMvd) return;
-   TCanvas *c1 = CreateCanvas("lmvm_nofhits_mvd_sts","lmvm_nofhits_mvd_sts", 900, 450);
+   TCanvas *c1 = fHM->CreateCanvas("lmvm_nofhits_mvd_sts","lmvm_nofhits_mvd_sts", 900, 450);
    c1->Divide(2,1);
    c1->cd(1);
    Draw1DSourceTypes("fh_nofMvdHits");
@@ -1244,20 +1230,17 @@ void CbmAnaDielectronTaskDraw::DrawMvdAndStsHist()
    Draw1DSourceTypes("fh_nofStsHits");
 
    Draw2DCut( "fh_mvd1xy");
-   TCanvas *c2 = CreateCanvas("lmvm_mvd1r","lmvm_mvd1r", 600, 600);
+   TCanvas *c2 = fHM->CreateCanvas("lmvm_mvd1r","lmvm_mvd1r", 600, 600);
    Draw1DSourceTypes("fh_mvd1r");
 
 
    Draw2DCut( "fh_mvd2xy");
-   TCanvas *c3 = CreateCanvas("lmvm_mvd2r","lmvm_mvd2r", 600, 600);
+   TCanvas *c3 = fHM->CreateCanvas("lmvm_mvd2r","lmvm_mvd2r", 600, 600);
    Draw1DSourceTypes("fh_mvd2r");
 }
 
 
 void CbmAnaDielectronTaskDraw::SaveCanvasToImage()
 {
-   for (unsigned int i = 0; i < fCanvas.size(); i++){
-      Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir + "/png/", "png");
-      Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir + "/eps/", "eps");
-   }
+    fHM->SaveCanvasToImage(fOutputDir, "png;eps");
 }

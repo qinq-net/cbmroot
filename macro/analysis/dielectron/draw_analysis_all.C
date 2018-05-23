@@ -5,15 +5,10 @@
  **/
 
 void draw_analysis_all() {
-	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-	loadlibs();
-    //gSystem->Load("libAnalysis");
 
     Bool_t useMvd = false;
-    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/apr16/apr16_tofclustering/8gev/geosetup_v1512_8gev/";
-    std::string fileName = "analysis.tofclustering.auau.8gev.centr.all.root";
-    //std::string fileName = "analysis.pimisid.0.0.auau.8gev.centr.all.root";
-
+    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/test6/8gev/";
+    std::string fileName = "analysis.auau.8gev.centr.all.root";
 
     std::string script = std::string(TString(gSystem->Getenv("SCRIPT")).Data());
     if (script == "yes"){
