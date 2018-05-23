@@ -7,7 +7,7 @@
 #ifndef CBMDIGITIZEINFO_H
 #define CBMDIGITIZEINFO_H 1
 
-#include "RTypes.h"
+#include "TObject.h"
 #include "TString.h"
 #include "FairTask.h"
 
