@@ -9,6 +9,7 @@ ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/data/raw
 ${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
 ${CBMROOT_SOURCE_DIR}/data/mvd
+${CBMROOT_SOURCE_DIR}/data/sts
 ${CBMROOT_SOURCE_DIR}/data/much
 ${CBMROOT_SOURCE_DIR}/data/trd
 ${CBMROOT_SOURCE_DIR}/data/tof
@@ -33,6 +34,7 @@ link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
 
+CbmTimeSlice.cxx
 CbmEvent.cxx
 CbmHit.cxx
 CbmDigi.cxx

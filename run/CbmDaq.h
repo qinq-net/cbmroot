@@ -11,12 +11,12 @@
 #include "TStopwatch.h"
 #include "FairTask.h"
 #include "CbmMCEventList.h"
+#include "CbmTimeSlice.h"
 
 
 class TClonesArray;
 class CbmDaqBuffer;
 class CbmDigi;
-class CbmTimeSlice;
 
 
 /** @class CbmDaq

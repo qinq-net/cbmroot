@@ -21,7 +21,6 @@
 #include "CbmTrdDigi.h"
 #include "CbmTofDigi.h"
 #include "CbmPsdDigi.h"
-#include "CbmTimeSlice.h"
 
 
 using namespace std;

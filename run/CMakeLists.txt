@@ -63,7 +63,6 @@ CbmDaq.cxx
 CbmDaqBuffer.cxx
 CbmMCBuffer.cxx
 CbmMCTimeSim.cxx
-CbmTimeSlice.cxx
 
 CbmMCStreamer.cxx
 CbmRunAna.cxx

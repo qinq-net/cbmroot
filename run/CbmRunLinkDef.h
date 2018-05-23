@@ -13,7 +13,6 @@
 //#pragma link C++ class CbmDaqQa;
 #pragma link C++ class CbmMCBuffer;
 #pragma link C++ class CbmMCTimeSim;
-#pragma link C++ class CbmTimeSlice;
 
 #pragma link C++ class CbmMCStreamer+;
 #pragma link C++ class CbmRunAna+;
