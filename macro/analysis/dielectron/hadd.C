@@ -4,7 +4,7 @@ void hadd(string pattern, string outputFile, int fileSizeLimit = 50000, int nofE
 
     vector<string> files = CbmHaddBase::GetGoodFiles(pattern, fileSizeLimit, nofEvents);
 
-    string commandStr = "hadd -T " + outputFile;
+    string commandStr = "hadd -T -f " + outputFile;
     for (int i = 0; i < files.size(); i++) {
         commandStr += (" " + files[i]);
     }
