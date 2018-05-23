@@ -4,13 +4,13 @@
 outdir=${1}
 collEnergy=${2}
 plutoParticle=${3}
-geoSetupMacro=${4}
+geoSetupMacroPath=${4}
 
-#cbmrootConfigPath=/lustre/nyx/cbm/users/slebedev/cbm/trunk/build/config.sh
-#macro_dir=/lustre/nyx/cbm/users/slebedev/cbm/trunk/cbmroot/macro/analysis/dielectron/
+cbmrootConfigPath=/lustre/nyx/cbm/users/slebedev/cbm/trunk/build/config.sh
+macro_dir=/lustre/nyx/cbm/users/slebedev/cbm/trunk/cbmroot/macro/analysis/dielectron/
 
-cbmrootConfigPath=/lustre/nyx/cbm/users/gpitsch/CbmRoot/trunk/build/config.sh
-macro_dir=/lustre/nyx/cbm/users/gpitsch/CbmRoot/trunk/macro/analysis/dielectron
+#cbmrootConfigPath=/lustre/nyx/cbm/users/gpitsch/CbmRoot/trunk/build/config.sh
+#macro_dir=/lustre/nyx/cbm/users/gpitsch/CbmRoot/trunk/macro/analysis/dielectron
 
 XXXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
 XXXX=$(printf "%04d" "$SLURM_ARRAY_TASK_ID")
@@ -50,7 +50,7 @@ export PLUTO=yes
 export ENERGY=${collEnergy}
 
 #Geometry setup macro
-export GEO_SETUP_FILE=${VMCWORKDIR}/macro/analysis/dielectron/geosetup/${geoSetupMacro}
+export GEO_SETUP_FILE=${geoSetupMacroPath}
 
 export PLUTO_PARTICLE=${plutoParticle}
 export PLUTO=yes
@@ -75,8 +75,8 @@ fi
 
 # run the root simulation
 root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
-#root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
+root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
 #root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
-#root -b -l -q "${macro_dir}/run_analysis.C(${nevents})"
+root -b -l -q "${macro_dir}/run_analysis.C(${nevents})"
 
 export SCRIPT=no

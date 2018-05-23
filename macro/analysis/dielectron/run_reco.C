@@ -139,7 +139,7 @@ void run_reco(Int_t nEvents = 100)
     Double_t ctime = timer.CpuTime();
     std::cout << std::endl << std::endl;
     std::cout << "Macro finished succesfully." << std::endl;
-    std::cout << "Output file is " << recoFile << std::endl;
+    std::cout << "Reco file is " << recoFile << std::endl;
     std::cout << "Parameter file is " << parFile << std::endl;
     std::cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << std::endl;
     std::cout << std::endl;

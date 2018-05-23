@@ -22,8 +22,9 @@ void run_litqa(Int_t nEvents = 2)
     if (script == "yes") {
         mcFile = TString(gSystem->Getenv("MC_FILE"));
         recoFile = TString(gSystem->Getenv("RECO_FILE"));
-        parFile = TString(gSystem->Getenv("PAR_FILE"));
-        geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+	parFile = TString(gSystem->Getenv("PAR_FILE"));
+        litqaFile = TString(gSystem->Getenv("LITQA_FILE"));
+        geoSetupFile = TString(gSystem->Getenv("GEO_SETUP_FILE"));
         energy = TString(gSystem->Getenv("ENERGY"));
         plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
         resultDir = TString(gSystem->Getenv("LIT_RESULT_DIR"));
@@ -56,9 +57,9 @@ void run_litqa(Int_t nEvents = 2)
     FairLogger::GetLogger()->SetLogScreenLevel("INFO");
     FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
-    //CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-    //mcManager->AddFile(mcFile);
-    //run->AddTask(mcManager);
+    CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+    mcManager->AddFile(mcFile);
+    run->AddTask(mcManager);
 
     CbmKF* kalman = new CbmKF();
     run->AddTask(kalman);
@@ -142,7 +143,7 @@ void run_litqa(Int_t nEvents = 2)
     Double_t ctime = timer.CpuTime();
     std::cout << std::endl << std::endl;
     std::cout << "Macro finished succesfully." << std::endl;
-    std::cout << "Output file is " << recoFile << std::endl;
+    std::cout << "Qa file is " << litqaFile << std::endl;
     std::cout << "Parameter file is " << parFile << std::endl;
     std::cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << std::endl;
     std::cout << std::endl;

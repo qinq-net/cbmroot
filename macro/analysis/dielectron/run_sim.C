@@ -219,8 +219,6 @@ void run_sim(Int_t nEvents = 100)
         gMC->SetRandom(rnd);
     }
 
-
-
     // -----   Runtime database   ---------------------------------------------
     std::cout << std::endl << std::endl;
     std::cout << "-I- " << myName << ": Set runtime DB" << std::endl;
@@ -246,7 +244,7 @@ void run_sim(Int_t nEvents = 100)
     Double_t ctime = timer.CpuTime();
     std::cout << std::endl << std::endl;
     std::cout << "Macro finished successfully." << std::endl;
-    std::cout << "Output file is "    << mcFile << std::endl;
+    std::cout << "MC file is "    << mcFile << std::endl;
     std::cout << "Parameter file is " << parFile << std::endl;
     std::cout << "Geometry file is "  << geoFile << std::endl;
     std::cout << "Real time " << rtime << " s, CPU time " << ctime << "s" << std::endl << std::endl;
