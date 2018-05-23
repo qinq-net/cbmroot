@@ -108,16 +108,21 @@ void digitize()
 	if ( setup->IsActive(kTof) ) {
       Int_t iVerbose = 0;
       CbmTofDigitizerBDF* tofDigi = new CbmTofDigitizerBDF("TOF Digitizer BDF",iVerbose);
-      tofDigi->SetOutputBranchPersistent("TofDigi",            kFALSE);
-      tofDigi->SetOutputBranchPersistent("TofDigiMatchPoints", kFALSE);
       TString paramDir = gSystem->Getenv("VMCWORKDIR");
       tofDigi->SetInputFileName( paramDir + "/parameters/tof/test_bdf_input.root"); // Required as input file name not read anymore by param class
-//      tofDigi->SetHistoFileName( digiOutFile ); // Uncomment to save control histograms
       run->AddTask(tofDigi);
       
 		std::cout << "-I- digitize: Added task " << tofDigi->GetName()
 				      << std::endl;
 	}
   // -------------------------------------------------------------------------
+  
+  	if ( setup->IsActive(kPsd) ) {
+  		FairTask* psdDigi = new CbmPsdSimpleDigitizer();
+  		run->AddTask(psdDigi);
+ 		std::cout << "-I- digitize: Added task " << psdDigi->GetName()
+				      << std::endl;
+ 	}
+
 
 }
