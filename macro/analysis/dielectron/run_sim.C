@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 2)
+void run_sim(Int_t nEvents = 100)
 {
 
     TTree::SetMaxTreeSize(90000000000);
@@ -6,13 +6,19 @@ void run_sim(Int_t nEvents = 2)
     TString script = TString(gSystem->Getenv("SCRIPT"));
 
     TString myName = "run_sim";  // this macro's name for screen output
-    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+//    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+    TString srcDir = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/";
+    cout << "srcDir: " << srcDir << endl;
 
-    TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root";
-    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
-    TString parFile =  outDir + "param.00000.root";
+    TString geoSetupFile = srcDir + "trunk/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+
+//    TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root";
+    TString urqmdFile =  "/lustre/nyx/cbm/prod/gen/urqmd/auau/4gev/";
+//    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
+//    TString outDir = "/home/aghoehne/Documents/CbmRoot/Gregor/results_dielectrons/";
+    TString outDir = srcDir + "results/results_dielectron/";
+    TString parFile = outDir + "param.00000.root";
     TString mcFile = outDir + "mc.00000.root";
     TString geoFile = outDir + "geosim.00000.root";
 
@@ -30,7 +36,7 @@ void run_sim(Int_t nEvents = 2)
         mcFile = TString(gSystem->Getenv("MC_FILE"));
         parFile = TString(gSystem->Getenv("PAR_FILE"));
         geoFile = TString(gSystem->Getenv("GEOSIM_FILE"));
-        geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
+        geoSetupFile = TString(gSystem->Getenv("GEO_SETUP_FILE"));
 
         NELECTRONS = TString(gSystem->Getenv("NELECTRONS")).Atoi();
         NPOSITRONS = TString(gSystem->Getenv("NPOSITRONS")).Atoi();
@@ -38,7 +44,7 @@ void run_sim(Int_t nEvents = 2)
         urqmd = TString(gSystem->Getenv("URQMD"));
         pluto = TString(gSystem->Getenv("PLUTO"));
         plutoFile = TString(gSystem->Getenv("PLUTO_FILE"));
-        plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
+	plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
     }
     remove(parFile.Data());
     remove(mcFile.Data());
@@ -80,8 +86,10 @@ void run_sim(Int_t nEvents = 2)
     std::cout << std:: endl << "-I- " << myName << ": Setting media file" << std::endl;
     run->SetMaterials("media.geo"); // Materials
 
-    TString macroName = gSystem->Getenv("VMCWORKDIR");
-    macroName += "/macro/run/modules/registerSetup.C";
+    //    TString macroName = gSystem->Getenv("VMCWORKDIR");
+    TString macroName = srcDir;
+
+    macroName += "trunk/macro/run/modules/registerSetup.C";
     std::cout << std::endl << "Loading macro " << macroName << std::endl;
     gROOT->LoadMacro(macroName);
     gROOT->ProcessLine("registerSetup()");
@@ -245,4 +253,3 @@ void run_sim(Int_t nEvents = 2)
     std::cout << " Test passed" << std::endl;
     std::cout << " All ok " << std::endl;
 }
-

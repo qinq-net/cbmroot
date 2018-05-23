@@ -1,3 +1,4 @@
+#!/bin/sh
 
 # get parameters of the script
 outdir=${1}
@@ -5,8 +6,11 @@ collEnergy=${2}
 plutoParticle=${3}
 geoSetupMacro=${4}
 
-cbmrootConfigPath=/lustre/nyx/cbm/users/slebedev/cbm/trunk/build/config.sh
-macro_dir=/lustre/nyx/cbm/users/slebedev/cbm/trunk/cbmroot/macro/analysis/dielectron/
+#cbmrootConfigPath=/lustre/nyx/cbm/users/slebedev/cbm/trunk/build/config.sh
+#macro_dir=/lustre/nyx/cbm/users/slebedev/cbm/trunk/cbmroot/macro/analysis/dielectron/
+
+cbmrootConfigPath=/lustre/nyx/cbm/users/gpitsch/CbmRoot/trunk/build/config.sh
+macro_dir=/lustre/nyx/cbm/users/gpitsch/CbmRoot/trunk/macro/analysis/dielectron
 
 XXXXX=$(printf "%05d" "$SLURM_ARRAY_TASK_ID")
 XXXX=$(printf "%04d" "$SLURM_ARRAY_TASK_ID")

@@ -6,7 +6,7 @@ void do_setup()
   TString pipeGeoTag      = "v16b_1e";
  // TString mvdGeoTag       = "v17a_tr";
   TString stsGeoTag       = "v16g";
-  TString richGeoTag      = "v18a_1e";
+  TString richGeoTag      = "v17a_1e";
   TString trdGeoTag       = "v17n_1e";
   TString tofGeoTag       = "v16c_1e";
  // TString psdGeoTag       = "v17a";

@@ -4,17 +4,21 @@ void run_analysis(Int_t nEvents = 2)
     TString script = TString(gSystem->Getenv("SCRIPT"));
 
     TString myName = "run_reco";
-    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+ //   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+    TString srcDir = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/";
 
-    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+    TString geoSetupFile = srcDir + "trunk/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
 
-    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
-    TString mcFile = outDir + "mc.00000.root";
-    TString parFile = outDir + "param.00000.root";
-    TString recoFile = outDir + "reco.00000.root";
-    TString analysisFile = outDir + "analysis.00000.root";
+    //    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
 
-    TString energy = "8gev";
+    TString outDir = srcDir + "results/results_dielectron/";
+
+    TString mcFile = outDir + "mc.00001.root";
+    TString parFile = outDir + "param.00001.root";
+    TString recoFile = outDir + "reco.00001.root";
+    TString analysisFile = outDir + "analysis.00001.root";
+
+    TString energy = "10gev";
     TString plutoParticle = "rho0";
 
     if (script == "yes") {
@@ -23,7 +27,8 @@ void run_analysis(Int_t nEvents = 2)
         parFile = TString(gSystem->Getenv("PAR_FILE"));
         geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
         energy = TString(gSystem->Getenv("ENERGY"));
-        plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
+        analysisFile = TString(gSystem->Getenv("ANALYSIS_FILE"));
+	plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
     }
 
     remove(analysisFile.Data());
@@ -53,9 +58,9 @@ void run_analysis(Int_t nEvents = 2)
     FairLogger::GetLogger()->SetLogScreenLevel("INFO");
     FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
-    //CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-    //mcManager->AddFile(mcFile);
-    //run->AddTask(mcManager);
+    CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+    mcManager->AddFile(mcFile);
+    run->AddTask(mcManager);
 
     CbmKF* kalman = new CbmKF();
     run->AddTask(kalman);
