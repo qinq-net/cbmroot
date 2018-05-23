@@ -71,7 +71,6 @@ CbmRunAna.cxx
 CbmMCStreamerQa.cxx
 
 CbmSetup.cxx
-CbmDigitize.cxx
 CbmDigitizeInfo.cxx
 CbmDigitization.cxx
 )
