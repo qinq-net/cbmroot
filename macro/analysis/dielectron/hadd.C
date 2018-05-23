@@ -1,32 +1,15 @@
 using namespace std;
 
-void hadd() {
-    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-    loadlibs();
-    gSystem->Load("libAnalysis");
+void hadd(string pattern, string outputFile, int fileSizeLimit = 50000, int nofEvents = 1000) {
 
-    string dir = "/hera/cbm/users/slebedev/mc/dielectron/apr16/8gev/stsv14_4cm/richv14a/trd4/tofv13/1.0field/nomvd/";
-    string fileArray = ".auau.8gev.centr.";
-    int nofFiles = 1000;
-    int fileSizeLimit = 50000;
-    int nofEvents = 1000;
+    vector<string> files = CbmHaddBase::GetGoodFiles(pattern, fileSizeLimit, nofEvents);
 
-    TString script = TString(gSystem->Getenv("SCRIPT"));
-    if (script == "yes") {
-    	fileArray = string(gSystem->Getenv("LMVM_FILE_ARRAY"));
-    	dir = string(gSystem->Getenv("LMVM_MAIN_DIR"));
-        nofFiles = TString(gSystem->Getenv("LMVM_NOF_FILES")).Atof();
+    string commandStr = "hadd -T " + outputFile;
+    for (int i = 0; i < files.size(); i++) {
+        commandStr += (" " + files[i]);
     }
 
-    CbmHaddBase::AddFilesInDir(dir + "/omegaepem/", fileArray, "analysis", nofFiles, fileSizeLimit, nofEvents);
-    CbmHaddBase::AddFilesInDir(dir + "/phi/", fileArray, "analysis", nofFiles, fileSizeLimit, nofEvents);
-    CbmHaddBase::AddFilesInDir(dir + "/omegadalitz/", fileArray, "analysis", nofFiles, fileSizeLimit, nofEvents);
-    CbmHaddBase::AddFilesInDir(dir + "/rho0/", fileArray, "analysis", nofFiles, fileSizeLimit, nofEvents);
-    CbmHaddBase::AddFilesInDir(dir + "/inmed/", fileArray, "analysis", nofFiles, fileSizeLimit, nofEvents);
-    CbmHaddBase::AddFilesInDir(dir + "/qgp/", fileArray, "analysis", nofFiles, fileSizeLimit, nofEvents);
+    gSystem->Exec(commandStr.c_str());
 
-    CbmHaddBase::AddFilesInDir(dir + "/omegaepem/", fileArray, "litqa", nofFiles, fileSizeLimit, nofEvents);
-    //CbmHaddBase::AddFilesInDir(dir + "/phi/", fileArray, "litqa", nofFiles);
-    //CbmHaddBase::AddFilesInDir(dir + "/omegadalitz/", fileArray, "litqa", nofFiles);
-    //CbmHaddBase::AddFilesInDir(dir + "/omegaepem/", fileArray, "litqa", nofFiles);
+    cout << "All done." << endl;
 }
