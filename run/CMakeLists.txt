@@ -18,10 +18,15 @@ ${CBMROOT_SOURCE_DIR}/data/global
 
 ${CBMROOT_SOURCE_DIR}/mvd
 ${CBMROOT_SOURCE_DIR}/sts/mc
+${CBMROOT_SOURCE_DIR}/sts/digitize
 ${CBMROOT_SOURCE_DIR}/rich
+${CBMROOT_SOURCE_DIR}/rich/detector
 ${CBMROOT_SOURCE_DIR}/much/geo
+${CBMROOT_SOURCE_DIR}/much/reco
 ${CBMROOT_SOURCE_DIR}/trd/mc
+${CBMROOT_SOURCE_DIR}/trd/digi
 ${CBMROOT_SOURCE_DIR}/tof/TofMC
+${CBMROOT_SOURCE_DIR}/tof/TofDigi
 ${CBMROOT_SOURCE_DIR}/ecal
 ${CBMROOT_SOURCE_DIR}/psd
 ${CBMROOT_SOURCE_DIR}/passive
@@ -42,6 +47,7 @@ set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
+${KFParticle_LIB_DIR}
 )
  
 link_directories( ${LINK_DIRECTORIES})
@@ -65,13 +71,15 @@ CbmRunAna.cxx
 CbmMCStreamerQa.cxx
 
 CbmSetup.cxx
-
+CbmDigitize.cxx
+CbmDigitizeInfo.cxx
+CbmDigitization.cxx
 )
 
 set(LINKDEF CbmRunLinkDef.h)
 Set(LIBRARY_NAME CbmRun)
 Set(DEPENDENCIES
-    CbmData CbmBase CbmField CbmMuch CbmMvd Base 
+    CbmData CbmBase CbmField CbmMvd CbmSts CbmRich CbmMuch CbmTrd CbmTof CbmPsd
 )
 
 GENERATE_LIBRARY()

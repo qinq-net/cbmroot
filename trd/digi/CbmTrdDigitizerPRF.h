@@ -22,7 +22,7 @@ class CbmTrdDigitizerPRF : public FairTask {
   /**
    * \brief Standard constructor.
    **/
-  CbmTrdDigitizerPRF(CbmTrdRadiator* radiator);
+  CbmTrdDigitizerPRF(CbmTrdRadiator* radiator = nullptr);
 
   /**
    * \brief Destructor.

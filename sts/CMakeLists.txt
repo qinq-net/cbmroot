@@ -128,7 +128,7 @@ ${Boost_LIBRARY_DIRS}
 
 # -----   Specify library dependences   -------------------
 Set(DEPENDENCIES
-    CbmPassive CbmRun CbmBase CbmData Base 
+    CbmPassive CbmBase CbmData Base 
 )
 # ---------------------------------------------------------
 

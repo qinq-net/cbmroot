@@ -60,6 +60,10 @@ static const Double_t gkResponsePeriod = 400.;
 
 class CbmMuchDigitizeGem : public FairTask{
   public:
+
+    /** Default constructor **/
+    CbmMuchDigitizeGem();
+
     /** Constructor */
   CbmMuchDigitizeGem(const char* digiFileName, Int_t flag);
 

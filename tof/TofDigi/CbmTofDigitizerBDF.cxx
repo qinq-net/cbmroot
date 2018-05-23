@@ -242,6 +242,13 @@ InitStatus CbmTofDigitizerBDF::Init()
      fbTimeBasedOutput = kTRUE;
    }
 
+   // If input file was not set explicitly, use default one
+   if ( fsBeamInputFile.IsNull() ) {
+     TString fileName = gSystem->Getenv("VMCWORKDIR");
+     fileName += "/parameters/tof/test_bdf_input.root";
+     SetInputFileName(fileName);
+   }
+
    if( kFALSE == RegisterInputs() )
       return kFATAL;
 
@@ -256,6 +263,8 @@ InitStatus CbmTofDigitizerBDF::Init()
 
    if( kFALSE == CreateHistos() )
       return kFATAL;
+
+
 
    return kSUCCESS;
 }

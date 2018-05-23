@@ -22,5 +22,9 @@
 
 #pragma link C++ class CbmSetup;
 
+#pragma link C++ class CbmDigitize;
+#pragma link C++ class CbmDigitizeInfo;
+#pragma link C++ class CbmDigitization;
+
 #endif
 

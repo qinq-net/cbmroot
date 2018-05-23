@@ -70,6 +70,79 @@ using std::cout;
 using std::endl;
 
 
+// -----   Default constructor   -------------------------------------------
+CbmMuchDigitizeGem::CbmMuchDigitizeGem()
+  : FairTask("MuchDigitizeGem",1),
+    fgDeltaResponse(),
+    fAlgorithm(1),
+    fGeoScheme(CbmMuchGeoScheme::Instance()),
+    fDigiFile(),
+    fFlag(0),
+    fPoints(NULL),
+    fMCTracks(NULL),
+    fDigis(NULL),
+    fDigiMatches(NULL),
+    fNFailed(0),
+    fNOutside(0),
+    fNMulti(0),
+    fNADCChannels(256),
+    fQMax(500000),
+    fQThreshold(10000),
+    fMeanNoise(1500),
+    fSpotRadius(0.05),
+    fMeanGasGain(1e4),
+    fDTime(3),
+    fDeadPadsFrac(0),
+    fTimer(),
+    fDaq(0),
+    fMcChain(NULL),
+    fDeadTime(400),
+    fDriftVelocity(100),
+    fPeakingTime(20),
+    fRemainderTime(40),
+    fTimeBinWidth(1),
+    fNTimeBins(200),
+    fTOT(0),
+    fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
+    fSigma(),
+    fMPV(),
+    fIsLight(1), // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.
+    fTimePointLast(-1.),
+    fTimeDigiFirst(-1.),
+    fTimeDigiLast(-1.),
+    fNofPoints(0),
+    fNofSignals(0),
+    fNofDigis(0),
+    fNofEvents(0),
+    fNofPointsTot(0.),
+    fNofSignalsTot(0.),
+    fNofDigisTot(0.),
+    fTimeTot(),
+    fAddressCharge()
+{
+  fSigma[0] = new TF1("sigma_e","pol6",-5,10);
+  fSigma[0]->SetParameters(sigma_e);
+
+  fSigma[1] = new TF1("sigma_mu","pol6",-5,10);
+  fSigma[1]->SetParameters(sigma_mu);
+
+  fSigma[2] = new TF1("sigma_p","pol6",-5,10);
+  fSigma[2]->SetParameters(sigma_p);
+
+  fMPV[0]   = new TF1("mpv_e","pol6",-5,10);
+  fMPV[0]->SetParameters(mpv_e);
+
+  fMPV[1]   = new TF1("mpv_mu","pol6",-5,10);
+  fMPV[1]->SetParameters(mpv_mu);
+
+  fMPV[2]   = new TF1("mpv_p","pol6",-5,10);
+  fMPV[2]->SetParameters(mpv_p);
+  Reset();
+}
+// -------------------------------------------------------------------------
+
+
+
 // -------------------------------------------------------------------------
 CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag) 
   : FairTask("MuchDigitizeGem",1),
@@ -141,6 +214,8 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag)
 }
 // -------------------------------------------------------------------------
 
+
+
 // -----   Destructor   ----------------------------------------------------
 CbmMuchDigitizeGem::~CbmMuchDigitizeGem() {
   if (fDigis) {
@@ -163,6 +238,7 @@ CbmMuchDigitizeGem::~CbmMuchDigitizeGem() {
 // -------------------------------------------------------------------------
 
 
+
 // -----   Private method Reset   -------------------------------------------
 void CbmMuchDigitizeGem::Reset() {
   fTimeDigiFirst = fTimeDigiLast = -1.;
@@ -182,6 +258,39 @@ InitStatus CbmMuchDigitizeGem::Init() {
   FairRootManager* ioman = FairRootManager::Instance();
   if (!ioman)
     Fatal("Init", "No FairRootManager");
+
+  // Get geometry version tag
+  gGeoManager->CdTop();
+  TGeoNode* cave = gGeoManager->GetCurrentNode();  // cave
+  TString geoTag;
+  for (Int_t iNode = 0; iNode < cave->GetNdaughters(); iNode++) {
+    LOG(INFO) << "Node " << cave->GetDaughter(iNode)->GetName() << FairLogger::endl;
+    TString name = cave->GetDaughter(iNode)->GetVolume()->GetName();
+     if ( name.Contains("much", TString::kIgnoreCase) ) {
+       geoTag = TString(name(5, name.Length() - 5));
+       LOG(INFO) << fName << ": MUCH geometry tag is " << geoTag
+           << FairLogger::endl;
+      break;
+     } //? node is MUCH
+  } //# top level nodes
+
+
+  // Set the parameter file and the flag, if not done in constructor
+  if ( fDigiFile.IsNull() ) {
+    if ( geoTag.IsNull() ) LOG(FATAL) << fName
+        << ": no parameter file specified and no MUCH node found in geometry!"
+        << FairLogger::endl;
+    fDigiFile = gSystem->Getenv("VMCWORKDIR");
+    fDigiFile += "/parameters/much/much_" + geoTag
+                + "_digi_sector.root";
+    LOG(INFO) << fName << ": using parameter file "
+        << fDigiFile << FairLogger::endl;
+
+    fFlag = (geoTag.Contains("mcbm", TString::kIgnoreCase) ? 1 : 0);
+    LOG(INFO) << fName << ": using flag " << fFlag
+        << (fFlag ? "(standard)" : "(mcbm)") << FairLogger::endl;
+  }
+
 
   // Initialize GeoScheme
   TFile* oldfile=gFile;

@@ -82,6 +82,7 @@ CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
    fAnalogBuffer(),
    fTimeBuffer()
 {
+  if ( ! fRadiator ) radiator = new CbmTrdRadiator(kTRUE,"K++");
 }
 
 CbmTrdDigitizerPRF::~CbmTrdDigitizerPRF()
