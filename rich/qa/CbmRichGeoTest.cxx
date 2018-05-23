@@ -53,13 +53,7 @@
 #include <iomanip>
 #include <string>
 
-#include <boost/assign/list_of.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-
 using namespace std;
-using boost::assign::list_of;
-using boost::property_tree::ptree;
 
 CbmRichGeoTest::CbmRichGeoTest():
 FairTask("RichGeoTestQa"),
@@ -165,7 +159,6 @@ void CbmRichGeoTest::InitHistograms()
     fHM->Create2<TH2D>("fhPointsXY", "fhPointsXY;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, nBinsY, yMin, yMax);
     fHM->Create1<TH1D>("fhHitsZ", "fhHitsZ;Z [cm];Yield", 1000, 150, 250);
     fHM->Create1<TH1D>("fhPointsZ", "fhPointsZ;Z [cm];Yield", 100, 190, 250);
-
     
     for (Int_t i = 0; i < 2; i++){
         stringstream ss;
@@ -524,7 +517,6 @@ void CbmRichGeoTest::HitsAndPoints()
             CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
             fHM->H1("fhDiffXhit")->Fill(hit->GetX() - outPos.X());
             fHM->H1("fhDiffYhit")->Fill(hit->GetY() - outPos.Y());
-            
         }
         
         //fHM->H1("fhNofPhotonsPerHit")->Fill(hit->GetNPhotons());
@@ -648,13 +640,13 @@ void CbmRichGeoTest::DrawHist()
     {
         fHM->CreateCanvas("richgeo_hits_z", "richgeo_hits_z", 800, 800);
         fHM->H1("fhHitsZ")->Scale(1./fHM->H1("fhHitsZ")->Integral());
-        DrawH1(fHM->H1("fhHitsZ"));
+        DrawH1(fHM->H1("fhHitsZ"), kLinear, kLinear, "hist");
     }
     
     {
         fHM->CreateCanvas("richgeo_points_z", "richgeo_points_z", 800, 800);
         fHM->H1("fhPointsZ")->Scale(1./fHM->H1("fhPointsZ")->Integral());
-        DrawH1(fHM->H1("fhPointsZ"));
+        DrawH1(fHM->H1("fhPointsZ"), kLinear, kLinear, "hist");
     }
     
     for (int i = 0; i < 2; i++) {
@@ -706,7 +698,7 @@ void CbmRichGeoTest::DrawHist()
     {
 		fHM->CreateCanvas("richgeo_nof_photons_per_hit", "richgeo_nof_photons_per_hit", 800, 800);
 		fHM->H1("fhNofPhotonsPerHit")->Scale(1./fHM->H1("fhNofPhotonsPerHit")->Integral());
-		DrawH1(fHM->H1("fhNofPhotonsPerHit"));
+		DrawH1(fHM->H1("fhNofPhotonsPerHit"), kLinear, kLinear, "hist");
     }
     
     {
@@ -721,17 +713,13 @@ void CbmRichGeoTest::DrawHist()
 		c->cd(4);
 		DrawH2(fHM->H2("fhDiffYcEllipse"));
 		c->cd(5);
-		DrawH1(fHM->H2("fhDiffAaxis")->ProjectionY());
-		gPad->SetLogy(true);
+		DrawH1(fHM->H2("fhDiffAaxis")->ProjectionY(), kLinear, kLog, "hist");
 		c->cd(6);
-		DrawH1(fHM->H2("fhDiffBaxis")->ProjectionY());
-		gPad->SetLogy(true);
+		DrawH1(fHM->H2("fhDiffBaxis")->ProjectionY(), kLinear, kLog, "hist");
 		c->cd(7);
-		DrawH1(fHM->H2("fhDiffXcEllipse")->ProjectionY());
-		gPad->SetLogy(true);
+		DrawH1(fHM->H2("fhDiffXcEllipse")->ProjectionY(), kLinear, kLog, "hist");
 		c->cd(8);
-		DrawH1(fHM->H2("fhDiffYcEllipse")->ProjectionY());
-		gPad->SetLogy(true);
+		DrawH1(fHM->H2("fhDiffYcEllipse")->ProjectionY(), kLinear, kLog, "hist");
     }
     
     {
@@ -744,14 +732,11 @@ void CbmRichGeoTest::DrawHist()
 		c->cd(3);
 		DrawH2(fHM->H2("fhDiffRadius"));
 		c->cd(4);
-		DrawH1(fHM->H2("fhDiffXcCircle")->ProjectionY());
-		gPad->SetLogy(true);
+		DrawH1(fHM->H2("fhDiffXcCircle")->ProjectionY(), kLinear, kLog, "hist");
 		c->cd(5);
-		DrawH1(fHM->H2("fhDiffYcCircle")->ProjectionY());
-		gPad->SetLogy(true);
+		DrawH1(fHM->H2("fhDiffYcCircle")->ProjectionY(), kLinear, kLog, "hist");
 		c->cd(6);
-		DrawH1(fHM->H2("fhDiffRadius")->ProjectionY());
-		gPad->SetLogy(true);
+		DrawH1(fHM->H2("fhDiffRadius")->ProjectionY(), kLinear, kLog, "hist");
     }
     
     {
@@ -759,18 +744,18 @@ void CbmRichGeoTest::DrawHist()
 		c->Divide(2,1);
 		c->cd(1);
 		fHM->H1("fhDiffXhit")->Scale(1./fHM->H1("fhDiffXhit")->Integral());
-		DrawH1(fHM->H1("fhDiffXhit"));
+		DrawH1(fHM->H1("fhDiffXhit"), kLinear, kLinear, "hist");
 		c->cd(2);
 		fHM->H1("fhDiffYhit")->Scale(1./fHM->H1("fhDiffYhit")->Integral());
-		DrawH1(fHM->H1("fhDiffYhit"));
+		DrawH1(fHM->H1("fhDiffYhit"), kLinear, kLinear, "hist");
     }
     
     {
 		TCanvas *c = fHM->CreateCanvas("richgeo_fit_eff", "richgeo_fit_eff", 1800, 600);
 		c->Divide(3,1);
 		c->cd(1);
-		DrawH1( list_of((TH1D*)fHM->H1("fhNofHitsAll")->Clone())((TH1D*)fHM->H1("fhNofHitsCircleFit")->Clone())((TH1D*)fHM->H1("fhNofHitsEllipseFit")->Clone()),
-			   list_of("All")("Circle fit")("Ellipse fit"), kLinear, kLog, true, 0.7, 0.7, 0.99, 0.99);
+		DrawH1( {(TH1D*)fHM->H1("fhNofHitsAll")->Clone(), (TH1D*)fHM->H1("fhNofHitsCircleFit")->Clone(), (TH1D*)fHM->H1("fhNofHitsEllipseFit")->Clone()},
+			    {"All", "Circle fit", "Ellipse fit"}, kLinear, kLog, true, 0.7, 0.7, 0.99, 0.99, "hist");
 		TH1D* fhNofHitsCircleFitEff = Cbm::DivideH1(fHM->H1("fhNofHitsCircleFit"), fHM->H1("fhNofHitsAll"));
 		TH1D* fhNofHitsEllipseFitEff = Cbm::DivideH1(fHM->H1("fhNofHitsEllipseFit"), fHM->H1("fhNofHitsAll"));
 		c->cd(2);
@@ -787,7 +772,7 @@ void CbmRichGeoTest::DrawHist()
 		TCanvas *c = fHM->CreateCanvas("richgeo_acc_eff_el", "richgeo_acc_eff_el", 1200, 800);
 		c->Divide(3,2);
 		c->cd(1);
-		DrawH1(list_of((TH1D*)fHM->H1("fhMcMomEl"))((TH1D*)fHM->H1("fhAccMomEl")), list_of("MC")("ACC"), kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99);
+		DrawH1({(TH1D*)fHM->H1("fhMcMomEl"), (TH1D*)fHM->H1("fhAccMomEl")}, {"MC", "ACC"}, kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99, "hist");
 		c->cd(2);
 		DrawH2(fHM->H2("fhMcPtyEl"));
 		c->cd(3);
@@ -810,15 +795,15 @@ void CbmRichGeoTest::DrawHist()
 		TCanvas *c = fHM->CreateCanvas("richgeo_acc_eff_pi", "richgeo_acc_eff_pi", 1200, 800);
 		c->Divide(3,2);
 		c->cd(1);
-		DrawH1(list_of((TH1D*)fHM->H1("fhMcMomPi"))((TH1D*)fHM->H1("fhAccMomPi")), list_of("MC")("ACC"), kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99);
+		DrawH1({(TH1D*)fHM->H1("fhMcMomPi"), (TH1D*)fHM->H1("fhAccMomPi")}, {"MC", "ACC"}, kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99, "hist");
 		c->cd(2);
 		DrawH2(fHM->H2("fhMcPtyPi"));
 		c->cd(3);
 		DrawH2(fHM->H2("fhAccPtyPi"));
     }
 
-	TH1D* pxPiEff = Cbm::DivideH1((TH1D*)(TH1D*)fHM->H1("fhAccMomPi")->Clone(), (TH1D*)(TH1D*)fHM->H1("fhMcMomPi")->Clone(), "", 100., "Geometrical acceptance [%]");
-	TH2D* pyzPiEff = Cbm::DivideH2((TH2D*)(TH1D*)fHM->H1("fhAccPtyPi")->Clone(), (TH2D*)(TH1D*)fHM->H1("fhMcPtyPi")->Clone(), "", 100., "Geometrical acceptance [%]");
+	TH1D* pxPiEff = Cbm::DivideH1((TH1D*)fHM->H1("fhAccMomPi")->Clone(), (TH1D*)fHM->H1("fhMcMomPi")->Clone(), "", 100., "Geometrical acceptance [%]");
+	TH2D* pyzPiEff = Cbm::DivideH2((TH2D*)fHM->H1("fhAccPtyPi")->Clone(), (TH2D*)fHM->H1("fhMcPtyPi")->Clone(), "", 100., "Geometrical acceptance [%]");
 	{
 		fHM->CreateCanvas("richgeo_acc_eff_pi_mom", "richgeo_acc_eff_pi_mom", 800, 800);
 		DrawH1(pxPiEff);
@@ -934,9 +919,6 @@ void CbmRichGeoTest::DrawHist()
     	c->cd(3);
     	DrawH2WithProfile(fHM->H2("fhdRVsY"), false, false);
     }
-    
-
-
 
     {
 		fHM->CreateCanvas("richgeo_acc_vs_min_nof_hits", "richgeo_acc_vs_min_nof_hits", 600, 600);
@@ -962,6 +944,7 @@ void CbmRichGeoTest::DrawHist()
 		DrawH1andFitGauss(fHM->H2("fhBaxisVsNofHits")->ProjectionY( (string(fHM->H2("fhBaxisVsNofHits")->GetName())+ "_py" ).c_str() ), true, true, 2., 8.);
     }
 }
+
 
 void CbmRichGeoTest::DrawPmts()
 {
@@ -1072,7 +1055,14 @@ void CbmRichGeoTest::Finish()
 {
     DrawHist();
     DrawPmts();
-    //fHM->WriteToFile();
+
+    TDirectory * oldir = gDirectory;
+    TFile* outFile = FairRootManager::Instance()->GetOutFile();
+    if (outFile != NULL) {
+        outFile->cd();
+        fHM->WriteToFile();
+    }
+    gDirectory->cd( oldir->GetPath() );
     fHM->SaveCanvasToImage(fOutputDir);
 }
 

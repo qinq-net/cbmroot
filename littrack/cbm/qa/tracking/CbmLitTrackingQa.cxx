@@ -102,6 +102,7 @@ InitStatus CbmLitTrackingQa::Init()
    fDet.DetermineSetup();
    if (fTrackCategories.empty()) FillDefaultTrackCategories();
    if (fRingCategories.empty()) FillDefaultRingCategories();
+
    FillDefaultTrackPIDCategories();
    FillDefaultRingPIDCategories();
    FillDefaultPiSuppCategories();
@@ -110,7 +111,7 @@ InitStatus CbmLitTrackingQa::Init()
    CreateHistograms();
 
    ReadDataBranches();
-   
+
    // --- Get STS setup
    CbmStsSetup* stsSetup = CbmStsSetup::Instance();
    
@@ -127,6 +128,8 @@ InitStatus CbmLitTrackingQa::Init()
 
    CbmLitGlobalElectronId::GetInstance().SetTrdAnnCut(fTrdAnnCut);
    CbmLitGlobalElectronId::GetInstance().SetRichAnnCut(fRichAnnCut);
+
+
    fMCTrackCreator->CreateMC();
 
    return kSUCCESS;
@@ -149,7 +152,15 @@ void CbmLitTrackingQa::Exec(
 void CbmLitTrackingQa::Finish()
 {
    ProcessMcTracks();
-   fHM->WriteToFile();
+
+   TDirectory * oldir = gDirectory;
+   TFile* outFile = FairRootManager::Instance()->GetOutFile();
+   if (outFile != NULL) {
+       outFile->cd();
+       fHM->WriteToFile();
+   }
+   gDirectory->cd( oldir->GetPath() );
+
    CbmSimulationReport* report = new CbmLitTrackingQaReport();
    report->Create(fHM, fOutputDir);
    delete report;

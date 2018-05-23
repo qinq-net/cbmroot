@@ -164,7 +164,14 @@ void CbmLitClusteringQa::Exec(
 
 void CbmLitClusteringQa::Finish()
 {
-   fHM->WriteToFile();
+    TDirectory * oldir = gDirectory;
+    TFile* outFile = FairRootManager::Instance()->GetOutFile();
+    if (outFile != NULL) {
+        outFile->cd();
+        fHM->WriteToFile();
+    }
+    gDirectory->cd( oldir->GetPath() );
+
    CbmSimulationReport* report = new CbmLitClusteringQaReport();
    report->Create(fHM, fOutputDir);
    delete report;

@@ -99,6 +99,7 @@ InitStatus CbmRichRecoQa::Init()
     InitHistograms();
     
    // CbmLitGlobalElectronId::GetInstance();
+    cout << "CbmRichRecoQa::Init finished"<<endl;
 
     return kSUCCESS;
 }
@@ -586,7 +587,14 @@ void CbmRichRecoQa::Finish()
 {
     DrawHist();
     fHM->SaveCanvasToImage(fOutputDir);
-    fHM->WriteToFile();
+
+    TDirectory * oldir = gDirectory;
+    TFile* outFile = FairRootManager::Instance()->GetOutFile();
+    if (outFile != NULL) {
+        outFile->cd();
+        fHM->WriteToFile();
+    }
+    gDirectory->cd( oldir->GetPath() );
 }
 
 void CbmRichRecoQa::DrawFromFile(

@@ -87,7 +87,14 @@ void CbmLitRadLengthQa::Exec(
 void CbmLitRadLengthQa::Finish()
 {
    fHM->ShrinkEmptyBinsH2ByPattern("hrl_.+_P2");
-   fHM->WriteToFile();
+   TDirectory * oldir = gDirectory;
+   TFile* outFile = FairRootManager::Instance()->GetOutFile();
+   if (outFile != NULL) {
+       outFile->cd();
+       fHM->WriteToFile();
+   }
+   gDirectory->cd( oldir->GetPath() );
+
    CbmSimulationReport* report = new CbmLitRadLengthQaReport();
    report->Create(fHM, fOutputDir);
    delete report;

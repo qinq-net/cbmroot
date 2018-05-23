@@ -62,7 +62,7 @@ public:
          Bool_t active,
          Double_t px=0.,
          Double_t py=0.,
-         Double_t pz=270., // Z coordinate for v16a = 270, for v17a = 258.75
+         Double_t pz=258.75, // Z coordinate for v16a = 270, for v17a = 258.75, for v18a = 0
          Double_t rx=0.,
          Double_t ry=0.,
          Double_t rz=0.);

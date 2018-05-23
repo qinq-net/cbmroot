@@ -973,7 +973,13 @@ void CbmAnaJpsiTask::CopyCandidatesToOutputArray()
 
 void CbmAnaJpsiTask::Finish()
 {
-	fHM->WriteToFile();
+    TDirectory * oldir = gDirectory;
+    TFile* outFile = FairRootManager::Instance()->GetOutFile();
+    if (outFile != NULL) {
+        outFile->cd();
+        fHM->WriteToFile();
+    }
+    gDirectory->cd( oldir->GetPath() );
 }
 
 

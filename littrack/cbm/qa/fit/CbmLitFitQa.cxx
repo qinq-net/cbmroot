@@ -95,7 +95,14 @@ void CbmLitFitQa::Exec(
 
 void CbmLitFitQa::Finish()
 {
-    fHM->WriteToFile();
+    TDirectory * oldir = gDirectory;
+    TFile* outFile = FairRootManager::Instance()->GetOutFile();
+    if (outFile != NULL) {
+        outFile->cd();
+        fHM->WriteToFile();
+    }
+    gDirectory->cd( oldir->GetPath() );
+
     fHM->ShrinkEmptyBinsH1ByPattern("htf_.+_WrongCov_.+");
     CbmSimulationReport* report = new CbmLitFitQaReport();
     report->Create(fHM, fOutputDir);

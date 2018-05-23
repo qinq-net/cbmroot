@@ -374,8 +374,7 @@ void CbmRichUrqmdTest::DrawHist()
     {
         fHM->H1("fh_vertex_z")->Scale(1./fEventNum);
         fHM->CreateCanvas("rich_urqmd_vertex_z", "rich_urqmd_vertex_z", 800, 800);
-        DrawH1(fHM->H1("fh_vertex_z"));
-        gPad->SetLogy(true);
+        DrawH1(fHM->H1("fh_vertex_z"), kLinear, kLog, "hist");
     }
     
     
@@ -417,9 +416,8 @@ void CbmRichUrqmdTest::DrawHist()
         stringstream ss1, ss2;
         ss1 << "At least 1 hit detected (" << fHM->H1("fh_nof_rings_1hit")->GetMean()  << ")" ;
         ss2 << "At least 7 hits detected (" << fHM->H1("fh_nof_rings_7hits")->GetMean()  << ")" ;
-        DrawH1(list_of(fHM->H1("fh_nof_rings_1hit"))(fHM->H1("fh_nof_rings_7hits")),
-               list_of(ss1.str())(ss2.str()),
-               kLinear, kLinear, true, 0.3, 0.85, 0.99, 0.99);
+        DrawH1({fHM->H1("fh_nof_rings_1hit"), fHM->H1("fh_nof_rings_7hits")}, {ss1.str(), ss2.str()},
+               kLinear, kLinear, true, 0.3, 0.85, 0.99, 0.99, "hist");
     }
     
     {
@@ -429,9 +427,8 @@ void CbmRichUrqmdTest::DrawHist()
         stringstream ss1, ss2;
         ss1 << "At least 1 hit detected (" << fHM->H1("fh_nof_rings_prim_1hit")->GetMean()  << ")" ;
         ss2 << "At least 7 hits detected (" << fHM->H1("fh_nof_rings_prim_7hits")->GetMean()  << ")" ;
-        DrawH1(list_of(fHM->H1("fh_nof_rings_prim_1hit"))(fHM->H1("fh_nof_rings_prim_7hits")),
-               list_of(ss1.str())(ss2.str()),
-               kLinear, kLinear, true, 0.3, 0.85, 0.99, 0.99);
+        DrawH1({fHM->H1("fh_nof_rings_prim_1hit"), fHM->H1("fh_nof_rings_prim_7hits")}, {ss1.str(), ss2.str()},
+               kLinear, kLinear, true, 0.3, 0.85, 0.99, 0.99, "hist");
     }
     
     {
@@ -441,9 +438,8 @@ void CbmRichUrqmdTest::DrawHist()
         stringstream ss1, ss2;
         ss1 << "At least 1 hit detected (" << fHM->H1("fh_nof_rings_target_1hit")->GetMean()  << ")" ;
         ss2 << "At least 7 hits detected (" << fHM->H1("fh_nof_rings_target_7hits")->GetMean()   << ")" ;
-        DrawH1(list_of(fHM->H1("fh_nof_rings_target_1hit"))(fHM->H1("fh_nof_rings_target_7hits")),
-               list_of(ss1.str())(ss2.str()),
-               kLinear, kLinear, true, 0.3, 0.85, 0.99, 0.99);
+        DrawH1({fHM->H1("fh_nof_rings_target_1hit"), fHM->H1("fh_nof_rings_target_7hits")}, {ss1.str(), ss2.str()},
+               kLinear, kLinear, true, 0.3, 0.85, 0.99, 0.99, "hist");
     }
     
     {
@@ -461,14 +457,9 @@ void CbmRichUrqmdTest::DrawHist()
         ss4 << "#pi^{#pm} (" << fHM->H1("fh_pi_mom")->GetEntries() / fEventNum  << ")" ;
         ss5 << "K^{#pm} (" << fHM->H1("fh_kaon_mom")->GetEntries() / fEventNum  << ")" ;
         ss6 << "#mu^{#pm} (" << fHM->H1("fh_mu_mom")->GetEntries() / fEventNum  << ")" ;
-        DrawH1(list_of(fHM->H1("fh_gamma_target_mom"))
-               (fHM->H1("fh_gamma_nontarget_mom"))
-               (fHM->H1("fh_secel_mom"))
-               (fHM->H1("fh_pi_mom"))
-               (fHM->H1("fh_kaon_mom"))
-               (fHM->H1("fh_mu_mom")),
+        DrawH1({fHM->H1("fh_gamma_target_mom"), fHM->H1("fh_gamma_nontarget_mom"), fHM->H1("fh_secel_mom"), fHM->H1("fh_pi_mom"), fHM->H1("fh_kaon_mom"), fHM->H1("fh_mu_mom")},
                list_of(ss1.str())(ss2.str())(ss3.str())(ss4.str())(ss5.str())(ss6.str()),
-               kLinear, kLog, true, 0.5, 0.7, 0.99, 0.99);
+               kLinear, kLog, true, 0.5, 0.7, 0.99, 0.99, "hist");
     }
     
     {
@@ -533,7 +524,13 @@ void CbmRichUrqmdTest::Finish()
 {
     DrawHist();
     fHM->SaveCanvasToImage(fOutputDir);
-    fHM->WriteToFile();
+    TDirectory * oldir = gDirectory;
+    TFile* outFile = FairRootManager::Instance()->GetOutFile();
+    if (outFile != NULL) {
+        outFile->cd();
+        fHM->WriteToFile();
+    }
+    gDirectory->cd( oldir->GetPath() );
 }
 
 ClassImp(CbmRichUrqmdTest)
