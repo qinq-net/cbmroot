@@ -76,7 +76,7 @@ Double_t fAcceptanceTanMax = 0.466; // Acceptance tangent max
 //************************************************************
 
 
-    // Input parameters for absorbers 
+// Input parameters for absorbers 
 //***********************************************************
 
 const Int_t fNabs = 6; // Number of absorbers
@@ -92,7 +92,7 @@ Double_t safetyrad[6]={0.0,30.0,30.0,30.0,30.0,5.0};
 //********************************************
 
 const Int_t fNst = 4; // Number of stations
- // Sector-type module parameters
+// Sector-type module parameters
 // Number of sectors per layer (should be even for symmetry)
 // Needs to be fixed with actual numbers
 Int_t fNSectorsPerLayer[4] = {16, 20, 24, 28}; 
@@ -108,9 +108,9 @@ Int_t fNlayers[4]={3,3,3,3};//,3}; // Number of layers
 Int_t fDetType[4]={3,3,3,3};//,3}; // Detector type
 Double_t fLayersDz[4]={10,10,10,10};//,10}; 
 Double_t fSupportLz[4]={1.5,1.5,1.5,1.5};//,1.5}; 
-Double_t fDriftDz=0.0035; //35 micron Drift thickness
+Double_t fDriftDz=0.0035; //35 micron copper Drift  
 Double_t fG10Dz = 0.3; // 3 mm G10
-Double_t fCoolLz=1.0;  // thickness of the cooling plate also used as support
+Double_t fCoolLz=1.0;  // thickness of the cooling plate 
 
 /* 
    1 - detailed design (modules at two sides)
@@ -148,7 +148,7 @@ TGeoVolume* CreateLayers(int istn, int ily);
 
 
 void create_MUCH_geometry_v18a_jpsi() {
-
+  
   // Load needed material definition from media.geo file
   create_materials_from_media_file();
   
@@ -160,30 +160,30 @@ void create_MUCH_geometry_v18a_jpsi() {
   TGeoBBox* topbox= new TGeoBBox("", 1000., 1000., 2000.);
   TGeoVolume* top = new TGeoVolume("top", topbox, gGeoMan->GetMedium("air"));
   gGeoMan->SetTopVolume(top);
-
-
-  TGeoVolume* much = new TGeoVolumeAssembly(geoVersion);
+  
+  TString topName=geoVersion+tagVersion+subVersion;
+  TGeoVolume* much = new TGeoVolumeAssembly(topName);
   top->AddNode(much, 1);
 
   TGeoVolume *absr = new TGeoVolumeAssembly("absorber");
   much->AddNode(absr,1);
-
+  
   TGeoVolume *shld = new TGeoVolumeAssembly("shield");
   much->AddNode(shld,1);
   
   TGeoVolume *sttn = new TGeoVolumeAssembly("station");
   much->AddNode(sttn,1);
-
-
+  
+  
   for (Int_t iabs = 0; iabs <fNabs ; iabs++) { // 6 pieces of absorbers
     // first abosrber is divided into two halves
     // first half inserted inside the dipole magnet
     
     gModules[iabs] = CreateAbsorbers(iabs);
-   
+    
     absr->AddNode(gModules[iabs],iabs); 
   }
-
+  
   
   for (Int_t ishi = 0; ishi <fNshs ; ishi++) {
     
@@ -192,23 +192,23 @@ void create_MUCH_geometry_v18a_jpsi() {
     shld->AddNode(gModules_shield[ishi],ishi);
 
   }
-
+  
   
   for (Int_t istn = 0; istn < fNst; istn++) { // 4 Stations
   
     
     gModules_station[istn] = CreateStations(istn);
- 
+    
     sttn->AddNode(gModules_station[istn],istn);
   }
-
+  
   gGeoMan->CloseGeometry();
-  gGeoMan->CheckOverlaps(0.00001);
+  //gGeoMan->CheckOverlaps(0.00001);
   gGeoMan->CheckOverlaps(0.0001, "s");
   
   gGeoMan->PrintOverlaps();
   //  gGeoMan->Test();
-
+  
   
   much->Export(FileNameSim);   // an alternative way of writing the much
 
@@ -216,13 +216,13 @@ void create_MUCH_geometry_v18a_jpsi() {
   TGeoTranslation* much_placement = new TGeoTranslation("much_trans", 0., 0., 0.);
   much_placement->Write();
   outfile->Close();
-
+  
   outfile = new TFile(FileNameGeo,"RECREATE");
   gGeoMan->Write();  // use this if you want GeoManager format in the output
   outfile->Close();
-
+  
   top->Draw("ogl");
- 
+  
 }
 
 void create_materials_from_media_file()
@@ -234,61 +234,61 @@ void create_materials_from_media_file()
   TString geoFile = geoPath + "/geometry/media.geo";
   geoFace->setMediaFile(geoFile);
   geoFace->readMedia();
-
+  
   // Read the required media and create them in the GeoManager
   FairGeoMedia* geoMedia = geoFace->getMedia();
   FairGeoBuilder* geoBuild = geoLoad->getGeoBuilder();
-
+  
   FairGeoMedium* air = geoMedia->getMedium(KeepingVolumeMedium);
   geoBuild->createMedium(air);
 
   FairGeoMedium* MUCHiron = geoMedia->getMedium(I);
   geoBuild->createMedium(MUCHiron);
-
+  
   FairGeoMedium* MUCHlead = geoMedia->getMedium(L);
   geoBuild->createMedium(MUCHlead);
- 
+  
   FairGeoMedium* MUCHwolfram = geoMedia->getMedium(W);
   geoBuild->createMedium(MUCHwolfram);
 
   FairGeoMedium* MUCHcarbon = geoMedia->getMedium(C);
   geoBuild->createMedium(MUCHcarbon);
-
+  
   FairGeoMedium* MUCHargon = geoMedia->getMedium(activemedium);
   geoBuild->createMedium(MUCHargon);
 
   FairGeoMedium* MUCHnoryl = geoMedia->getMedium(spacermedium);
   geoBuild->createMedium(MUCHnoryl);
-
+  
   FairGeoMedium* MUCHsupport = geoMedia->getMedium(supportmedium);
   geoBuild->createMedium(MUCHsupport);
   
   
   
   FairGeoMedium*aluminium  = geoMedia->getMedium(coolmedium);
-    // geoBuild->createMedium(MUCHcool);
+  // geoBuild->createMedium(MUCHcool);
   geoBuild->createMedium(aluminium);
   
   FairGeoMedium* g10plate  = geoMedia->getMedium(g10); //G10
-    geoBuild->createMedium(g10plate);
+  geoBuild->createMedium(g10plate);
     
   FairGeoMedium* copperplate  = geoMedia->getMedium(copper); //Copper for Drift
-    geoBuild->createMedium(copperplate);
+  geoBuild->createMedium(copperplate);
  
 }
 
 
 
 TGeoVolume* CreateShields(int ish) {
-
+  
   TGeoMedium* graphite = gGeoMan->GetMedium(C);
   TGeoMedium* iron = gGeoMan->GetMedium(I);
-
+  
   TString name = Form("shieldblock%d", ish);
   TGeoVolumeAssembly* shieldblock = new TGeoVolumeAssembly(name);
   
   TString conename_sh =  Form("conesh_%d",ish);
- 
+  
   
   Double_t dz = fShieldLz[ish]/2.0 ;
   Double_t globalZ1 = fShieldZin[ish] ;
@@ -310,16 +310,13 @@ TGeoVolume* CreateShields(int ish) {
   shield->SetTransparency(2);
   TGeoTranslation *sh_trans = new TGeoTranslation("", 0., 0., globalZ1+dz);
   shieldblock->AddNode(shield,ish, sh_trans); 
-  
-
-  
   return shieldblock; 
   
 }
 
 
 TGeoVolume* CreateAbsorbers(int i) {
-
+  
   TGeoMedium* graphite = gGeoMan->GetMedium(C);
   TGeoMedium* iron = gGeoMan->GetMedium(I);
 
@@ -331,7 +328,7 @@ TGeoVolume* CreateAbsorbers(int i) {
   TString BoxName   = Form("Box_%d",i);
   TString supportShapeName = Form("Support_%d",i);
   TString TrapName =  Form("Trap_%d",i);
-
+  
   Double_t dz = fAbsorberLz[i]/2.0 ;
   Double_t globalZ1 = fAbsorberZ1[i] + fMuchZ1;
   Double_t globalZ2 = fAbsorberZ1[i] + 2 * dz + fMuchZ1;
@@ -340,13 +337,13 @@ TGeoVolume* CreateAbsorbers(int i) {
   Double_t rmin2 = globalZ2 * fAcceptanceTanMin;
   Double_t rmax1 = globalZ1 * fAcceptanceTanMax + safetyrad[i];
   Double_t rmax2 = globalZ2 * fAcceptanceTanMax + safetyrad[i];//
-
+  
   // 1st part of 1st absorber trapezium
   //dimensions are hardcoded
     if(i==0)
       {
 	printf("absorber %d \n",i);
-
+	
 	TGeoTrd2 * trap = new TGeoTrd2(TrapName,70.0,70.0,46.0,71.0,dz);
 	TGeoCone * tube = new TGeoCone(pipename,dz+0.001,0.,rmin1,0.,rmin2);
 	TString expression = TrapName +"-"+pipename;
@@ -357,28 +354,28 @@ TGeoVolume* CreateAbsorbers(int i) {
 	TGeoTranslation *abs0_trans = new TGeoTranslation("", 0., 0., globalZ1+dz);
 	absblock->AddNode(abs0, i, abs0_trans);
       }
-
+    
     // 2nd part of 1st absorber box
   if(i==1)
-      {
-	printf("absorber %d \n",i);
-	TGeoBBox * box = new TGeoBBox(BoxName,130.0,125.0,dz);
-	TGeoCone * tube = new TGeoCone(pipename,dz+0.001,0.,rmin1,0.,rmin2);
-	TString expression = BoxName +"-"+pipename;
-	TGeoCompositeShape* shSupport = new TGeoCompositeShape(supportShapeName,expression);
-	
+    {
+      printf("absorber %d \n",i);
+      TGeoBBox * box = new TGeoBBox(BoxName,130.0,125.0,dz);
+      TGeoCone * tube = new TGeoCone(pipename,dz+0.001,0.,rmin1,0.,rmin2);
+      TString expression = BoxName +"-"+pipename;
+      TGeoCompositeShape* shSupport = new TGeoCompositeShape(supportShapeName,expression);
+      
 	TGeoVolume* abs1 = new TGeoVolume("absorber", shSupport, graphite);
 	abs1->SetLineColor(kBlue);
 	abs1->SetTransparency(2);
 	TGeoTranslation *abs1_trans = new TGeoTranslation("", 0., 0., globalZ1+dz);
 	absblock->AddNode(abs1, i, abs1_trans);
-
-
-      }
-
-
+	
+	
+    }
+  
+  
   //rest of the absorbers
-   if (!(i==0 || i ==1))
+  if (!(i==0 || i ==1))
     {
       TGeoBBox * box = new TGeoBBox(BoxName,rmax2,rmax2,dz);
       TGeoCone * tube = new TGeoCone(pipename,dz+0.001,0.,rmin1,0.,rmin2);   
@@ -386,20 +383,20 @@ TGeoVolume* CreateAbsorbers(int i) {
       TGeoCompositeShape* shSupport = new TGeoCompositeShape(supportShapeName,expression);
       
       TGeoVolume* abs2 = new TGeoVolume("absorber", shSupport, iron);
-
+      
       abs2->SetLineColor(kBlue);
       abs2->SetTransparency(2);
- 
+      
       
       TGeoTranslation *abs_trans = new TGeoTranslation("", 0., 0., globalZ1+dz);
       absblock->AddNode(abs2,i, abs_trans); 
       //  cout<<" Abosrber # "<<i<<"  z  "<<globalZ1+dz<<endl; 
-
-    
+      
+      
     }
   
-   return absblock; 
-   
+  return absblock; 
+  
 }
 
 TGeoVolume * CreateStations(int ist){
@@ -407,43 +404,43 @@ TGeoVolume * CreateStations(int ist){
   TString stationName = Form("muchstation%02i",ist+1);
 
   TGeoVolumeAssembly* station = new TGeoVolumeAssembly(stationName);//, shStation, air);
-
   
-
+  
+  
   TGeoVolume*  gLayer[4];
   
   for (int ii=0;ii<3;ii++){  // 3 Layers
-  
-
-     gLayer[ii] = CreateLayers(ist, ii);
-     station->AddNode(gLayer[ii],ii);
+    
+    
+    gLayer[ii] = CreateLayers(ist, ii);
+    station->AddNode(gLayer[ii],ii);
 
   }
-
+  
   return station;
 }
 
 
 TGeoVolume * CreateLayers(int istn, int ily){
-
+  
   TString layerName = Form("muchstation%02ilayer%i",istn+1,ily+1);
   //cout<<" check          "<<layerName<<endl;
   TGeoVolumeAssembly* volayer = new TGeoVolumeAssembly(layerName);
-
+  
   
   Double_t stGlobalZ0 = fStationZ0[istn] + fMuchZ1; //z position of station center (midplane) [cm]
   Double_t stDz = ((fNlayers[istn] - 1) * fLayersDz[istn] + fSupportLz[istn]+2*fActiveLzSector)/2.;
   Double_t stGlobalZ2 = stGlobalZ0 + stDz;
   Double_t stGlobalZ1 = stGlobalZ0 - stDz;
-
+  
   Double_t rmin = stGlobalZ1 * fAcceptanceTanMin;
   Double_t rmax = stGlobalZ2 * fAcceptanceTanMax;
-   
+  
   
   Double_t layerZ0 = (ily - (fNlayers[istn] - 1) / 2.) * fLayersDz[istn];
   Double_t layerGlobalZ0 = layerZ0 + stGlobalZ0;
   Double_t sideDz = fSupportLz[istn]/2. +fDriftDz+ fG10Dz+fActiveLzSector/2.; // distance between side's and layer's centers
-
+  
  
   Double_t moduleZ = sideDz; // Z position of the module center in the layer cs
   Double_t phi0 = TMath::Pi()/fNSectorsPerLayer[istn]; // azimuthal half widh of each module
@@ -456,8 +453,8 @@ TGeoVolume * CreateLayers(int istn, int ily){
   Double_t dx2 = ymax*TMath::Tan(phi0)+fOverlapR/TMath::Cos(phi0); // small x
   Double_t dz  = fActiveLzSector/2.; // thickness
   
-                    
-
+  
+  
 //define the spacer dimensions      
   Double_t tg = (dx2-dx1)/2/dy;
   Double_t dd1 = fSpacerPhi*tg;
@@ -467,42 +464,42 @@ TGeoVolume * CreateLayers(int istn, int ily){
   Double_t sdy  = dy+fSpacerR;
   Double_t sdz  = dz-0.1;
   
-  //-----------------------------------------------------------
-  Double_t dz_sD =fDriftDz/2.; //35 micron Drift thickness
+  //define Additional material as realistic GEM module
+  Double_t dz_sD =fDriftDz/2.; //35 micron copper Drift 
   Double_t dz_sG=fG10Dz/2.; // 3mm G10
-  Double_t dz_s=fCoolLz/2.;//
-  Double_t DriftZ_in=moduleZ-dz-dz_sD;//distance of the innerDrift center from layer layer center cs
+  Double_t dz_s=fCoolLz/2.;//10mm Al plate
+  Double_t DriftZ_in=moduleZ-dz-dz_sD;//distance of the inner copper Drift center from layer layer center cs
   Double_t G10Z_in=DriftZ_in-dz_sD-dz_sG;//distance of the innerG10 center from layer layer center cs
-  Double_t DriftZ_out=moduleZ+dz+dz_sD;//distance of the outerDrift center from layer layer center cs
+  Double_t DriftZ_out=moduleZ+dz+dz_sD;//distance of the outer copper Drift center from layer layer center cs
   Double_t G10Z_out=DriftZ_out+dz_sD+dz_sG;//distance of the outerG10 center from layer layer center cs
-  Double_t coolZ=G10Z_out+dz_sG+dz_s;
-  //-----------------------------------------------------------
+  Double_t coolZ=G10Z_out+dz_sG+dz_s;//distance of the cooling plate center from layer center cs
+  
   
   const Int_t Nsector=fNSectorsPerLayer[istn];
   TGeoVolume* gsector[Nsector];
 
   TVector3 pos,posDin,posGin,posAl,posDout,posGout;
   TVector3 size = TVector3(0.0, 0.0, fActiveLzSector);
-
+  
   // Add the support structure
 // Create support
-
+  
   Double_t supportDx=sqrt(rmax*rmax+dx2*dx2);
   Double_t supportDy=sqrt(rmax*rmax+dx2*dx2);
   Double_t supportDz=fSupportLz[istn]/ 2.;
-
-
+  
+  
   TString supportBoxName   = Form("shStation%02iSupportBox",istn+1);
   TString supportHoleName  = Form("shStation%02iSupportHole",istn+1);
   TString translationName  = Form("trSt%02i",istn+1);
   TString supportShapeName = Form("shSt%02iSupport",istn+1);
-
+  
   TGeoTube* shSupportHole = new TGeoTube(supportHoleName,0.,rmin,supportDz+0.001);
   TGeoBBox* shSupportBox  = new TGeoBBox(supportBoxName,supportDx,supportDy,supportDz);
-
+  
   TString expression = supportBoxName+"-"+supportHoleName;
   TGeoCompositeShape* shSupport = new TGeoCompositeShape(supportShapeName,expression);
-
+  
   TString  supportName1  = Form("muchstation%02ilayer%isupport",istn+1,ily+1);
   TGeoMedium* coolMat = gGeoMan->GetMedium(supportmedium);
 
@@ -511,34 +508,34 @@ TGeoVolume * CreateLayers(int istn, int ily){
   
   TGeoTranslation *support_trans1 = new TGeoTranslation("supportName1", 0,0,layerGlobalZ0);
   volayer->AddNode(voSupport1,0,support_trans1);
-
-
-Int_t iMod =0;
+  
+  
+  Int_t iMod =0;
 for (Int_t iSide=0;iSide<2;iSide++){
-
+  
   // Now start adding the GEM modules  
   for (Int_t iModule=0; iModule<fNSectorsPerLayer[istn]; iModule++){ 
 
-      Double_t phi  = 2 * phi0 * (iModule + 0.2);  // add 0.5 to not overlap with y-axis for left-right layer separation
-      Bool_t isBack = iModule%2; 
-      Char_t cside  = (isBack==1) ? 'b' : 'f'; 
+    Double_t phi  = 2 * phi0 * (iModule + 0.2);  // add 0.5 to not overlap with y-axis for left-right layer separation
+    Bool_t isBack = iModule%2; 
+    Char_t cside  = (isBack==1) ? 'b' : 'f'; 
      
-      // correct the x, y positions
-      pos[0] = -(ymin+dy)*sin(phi);
-      pos[1] =  (ymin+dy)*cos(phi);
-
-      // different z positions for odd/even modules
+    // correct the x, y positions
+    pos[0] = -(ymin+dy)*sin(phi);
+    pos[1] =  (ymin+dy)*cos(phi);
+    
+    // different z positions for odd/even modules
       pos[2]  =(isBack ? 1 : -1)*moduleZ + layerGlobalZ0;  //z pos for ArgonActive
-      posDin[2] =(isBack ? 1 : -1)*(DriftZ_in) + layerGlobalZ0; // Z pos for Drift innerside 
-      posGin[2] =(isBack ? 1 : -1)*(G10Z_in) + layerGlobalZ0; // Z pos for G10
-      posDout[2] =(isBack ? 1 : -1)*(DriftZ_out) + layerGlobalZ0; // Z pos for Drift outerside 
-      posGout[2] =(isBack ? 1 : -1)*(G10Z_out) + layerGlobalZ0; // Z pos for G10
+      posDin[2] =(isBack ? 1 : -1)*(DriftZ_in) + layerGlobalZ0; // Z pos for copper Drift innerside 
+      posGin[2] =(isBack ? 1 : -1)*(G10Z_in) + layerGlobalZ0; // Z pos for G10......................
+      posDout[2] =(isBack ? 1 : -1)*(DriftZ_out) + layerGlobalZ0; // Z pos for copper Drift outerside 
+      posGout[2] =(isBack ? 1 : -1)*(G10Z_out) + layerGlobalZ0; // Z pos for G10.................
       posAl[2] =(isBack ? 1 : -1)*(coolZ) + layerGlobalZ0; // Z pos for Al Cooling Plates
- 
+      
       if(iSide!=isBack)continue;
       if(iModule!=0)iMod =iModule/2;
       
-cout<<"Layer: "<<ily<<" Side: "<<cside<<" PosG10in: "<<posGin[2]<<" PosG10out: "<<posGout[2]<<" PosDriftin: "<<posDin[2]<<" PosDriftout: "<<posDout[2]<<" PosActive: "<<pos[2]<<" Al: "<<posAl[2]<<" Layer: "<<layerGlobalZ0<<endl;
+      //cout<<"Layer: "<<ily<<" Side: "<<cside<<" PosG10in: "<<posGin[2]<<" PosG10out: "<<posGout[2]<<" PosDriftin: "<<posDin[2]<<" PosDriftout: "<<posDout[2]<<" PosActive: "<<pos[2]<<" Al: "<<posAl[2]<<" Layer: "<<layerGlobalZ0<<endl;
  
       TGeoMedium* argon = gGeoMan->GetMedium(activemedium); // active medium
       TGeoMedium* noryl = gGeoMan->GetMedium(spacermedium); // spacer medium
@@ -554,7 +551,7 @@ cout<<"Layer: "<<ily<<" Side: "<<cside<<" PosG10in: "<<posGin[2]<<" PosG10out: "
       TGeoVolume* vofG10 = new TGeoVolume(fG10Name,innerG10,g10plate);
       vofG10->SetLineColor(28);
       
-      // Define and place Additional material  Drift on innerSide
+      // Define and place Additional material  copper Drift on innerSide
       TGeoTrap* innerDrift = new TGeoTrap(dz_sD,0,phi,sdy,sdx1,sdx2,0,sdy,sdx1,sdx2,0);
       innerDrift->SetName(Form("shStation%02iLayer%i%cModule%03iinner", istn, ily, cside, iModule));
       TString fDriftName = Form("muchstation%02ilayer%i%cside%03iinnercopperDrift",istn+1,ily+1,cside,iMod+1);
@@ -568,7 +565,7 @@ cout<<"Layer: "<<ily<<" Side: "<<cside<<" PosG10in: "<<posGin[2]<<" PosG10out: "
       TGeoVolume* vobG10 = new TGeoVolume(bG10Name,outerG10,g10plate);
       vobG10->SetLineColor(28);
       
-      // Define and place Additional material  Drift on outer
+      // Define and place Additional material  copper Drift on outer
       TGeoTrap* outerDrift = new TGeoTrap(dz_sD,0,phi,sdy,sdx1,sdx2,0,sdy,sdx1,sdx2,0);
       outerDrift->SetName(Form("shStation%02iLayer%i%cModule%03iouter", istn, ily, cside, iModule));
       TString bDriftName = Form("muchstation%02ilayer%i%cside%03ioutercopperDrift",istn+1,ily+1,cside,iMod+1);
@@ -582,7 +579,7 @@ cout<<"Layer: "<<ily<<" Side: "<<cside<<" PosG10in: "<<posGin[2]<<" PosG10out: "
       TString CoolName = Form("muchstation%02ilayer%i%cside%03iAluminum",istn+1,ily+1,cside,iMod+1);
       TGeoVolume* voCool = new TGeoVolume(CoolName,cool,aluminium);
       voCool->SetLineColor(18); 
-
+      
 
       // Define and place the trapezoidal GEM module in X-Y plane
       TGeoTrap* shape = new TGeoTrap(dz,0,phi,dy,dx1,dx2,0,dy,dx1,dx2,0);
@@ -600,49 +597,48 @@ cout<<"Layer: "<<ily<<" Side: "<<cside<<" PosG10in: "<<posGin[2]<<" PosG10out: "
       TGeoVolume* voFrame = new TGeoVolume(frameName,shFrame,noryl);  // add a name to the frame
       voFrame->SetLineColor(kMagenta);
 
-
+      
       // Calculate the phi angle of the sector where it has to be placed 
       Double_t angle = 180. / TMath::Pi() * phi;  // convert angle phi from rad to deg
-     
+      
       TGeoTranslation*trans2=new TGeoTranslation("",pos[0],pos[1],pos[2]);
       TGeoTranslation*trans2Din=new TGeoTranslation("",pos[0],pos[1],posDin[2]);
       TGeoTranslation*trans2Gin=new TGeoTranslation("",pos[0],pos[1],posGin[2]);
       TGeoTranslation*trans2Dout=new TGeoTranslation("",pos[0],pos[1],posDout[2]);
       TGeoTranslation*trans2Gout=new TGeoTranslation("",pos[0],pos[1],posGout[2]);
       TGeoTranslation*transAl=new TGeoTranslation("",pos[0],pos[1],posAl[2]);
-
-     // cout << "DE i: " << iModule << " x: " << pos[0] << " y: " << pos[1] << " z: " << pos[2] << " angle: " << angle <<" "<<istn<<" "<<ily<<endl;
-    
+      
+      // cout << "DE i: " << iModule << " x: " << pos[0] << " y: " << pos[1] << " z: " << pos[2] << " angle: " << angle <<" "<<istn<<" "<<ily<<endl;
+      
       TGeoRotation *r2 = new TGeoRotation("r2");
       //rotate in the vertical plane (per to z axis) with angle 
       r2->RotateZ(angle);
-
+      
       TGeoHMatrix *incline_mod = new TGeoHMatrix("");
       (*incline_mod) =  (*trans2) * (*r2);  // OK
       
-      TGeoHMatrix *incline_modGin = new TGeoHMatrix("");//Inner Drift and G10
+      TGeoHMatrix *incline_modGin = new TGeoHMatrix("");//Inner copper Drift and G10
       (*incline_modGin) =  (*trans2Gin) * (*r2);
       TGeoHMatrix *incline_modDin = new TGeoHMatrix("");
       (*incline_modDin) =  (*trans2Din) * (*r2);
       
-      TGeoHMatrix *incline_modGout = new TGeoHMatrix("");//Outer Drift and G10
+      TGeoHMatrix *incline_modGout = new TGeoHMatrix("");//Outer copper Drift and G10
       (*incline_modGout) =  (*trans2Gout) * (*r2);
       TGeoHMatrix *incline_modDout = new TGeoHMatrix("");
       (*incline_modDout) =  (*trans2Dout) * (*r2);
       
-       TGeoHMatrix *incline_modAl = new TGeoHMatrix("");//Al cooling Plate
+      TGeoHMatrix *incline_modAl = new TGeoHMatrix("");//Al cooling Plate
       (*incline_modAl) =  (*transAl) * (*r2);
       
-      volayer->AddNode(vobDrift, iMod, incline_modDout); // Drift volume Outer Side
+      volayer->AddNode(vobDrift, iMod, incline_modDout); // copper Drift volume Outer Side
       volayer->AddNode(vobG10, iMod, incline_modGout);  // G10 volume ------------
       
       volayer->AddNode(voActive, iMod, incline_mod); // add active volume 
-    // volayer->AddNode(voFrame, iMod, incline_mod);  // add spacer ------
+      // volayer->AddNode(voFrame, iMod, incline_mod);  // add spacer ------
       
-      volayer->AddNode(vofDrift, iMod, incline_modDin); // Drift volume Inner Side
+      volayer->AddNode(vofDrift, iMod, incline_modDin); //copper  Drift volume Inner Side
       volayer->AddNode(vofG10, iMod, incline_modGin);  //  G10 volume ------------
       
-     
       volayer->AddNode(voCool, iMod, incline_modAl);  // Al plate
       
      
