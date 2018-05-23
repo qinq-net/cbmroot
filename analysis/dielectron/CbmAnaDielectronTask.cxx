@@ -1977,6 +1977,7 @@ void CbmAnaDielectronTask::Finish()
 {
     TDirectory * oldir = gDirectory;
     TFile* outFile = FairRootManager::Instance()->GetOutFile();
+    cout << "CbmAnaDielectronTask outputFile:" << outFile->GetPath() << endl;
     if (outFile != NULL) {
         // Write histograms to a file
             for (UInt_t i = 0; i < fHistoList.size(); i++){
