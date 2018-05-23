@@ -2,6 +2,9 @@
 
 #include <sstream>
 #include <string.h>
+#include <glob.h>
+
+
 #include "TChain.h"
 #include "TFile.h"
 #include "TH1.h"
@@ -11,12 +14,69 @@
 #include "CbmHaddBase.h"
 #include "CbmHaddBase.h"
 
-using std::cout;
-using std::endl;
-using std::string;
-using std::stringstream;
+using namespace std;
+
+
 
 ClassImp(CbmHaddBase);
+
+
+vector<string> CbmHaddBase::GetFilesByPattern(const string& pattern)
+{
+    glob_t glob_result;
+    glob(pattern.c_str(), GLOB_TILDE, NULL, &glob_result);
+    vector<string> files;
+    for(unsigned int i=0; i < glob_result.gl_pathc; ++i){
+        files.push_back(string(glob_result.gl_pathv[i]));
+    }
+    globfree(&glob_result);
+    return files;
+}
+
+
+vector<string> CbmHaddBase::GetGoodFiles(
+        const string& pattern,
+        Int_t fileSizeLimit,
+        Int_t nofEvents)
+{
+    vector<string> files = GetFilesByPattern(pattern);
+    vector<string> goodFiles;
+    for (int i = 0; i < files.size(); i++) {
+        TFile* file = TFile::Open( (files[i] ).c_str(), "READ");
+        // TODO: Do we need to check also reco file?
+        Bool_t isGoodFile = CheckFile(file, fileSizeLimit, nofEvents);
+        if (file != NULL) file->Close();
+        if (isGoodFile) goodFiles.push_back(files[i]);
+    }
+    cout << "GetGoodFiles all:" << files.size() << " good:" << goodFiles.size() << endl;
+    return goodFiles;
+}
+
+Bool_t CbmHaddBase::CheckFileSize(
+            TFile* file,
+            Int_t fileSizeLimit)
+{
+    if (file == NULL) return false;
+    if (file->GetEND() < fileSizeLimit) return false;
+
+    return true;
+}
+
+
+Bool_t CbmHaddBase::CheckFile(
+            TFile* file,
+            Int_t fileSizeLimit,
+            Int_t nofEvents)
+{
+    if (file == NULL)  return false;
+    if (file->GetEND() < fileSizeLimit) return false;
+    TTree* tree = (TTree*)file->Get("cbmsim");
+    if (tree == NULL) return false;
+    Long64_t treeSizeAna = tree->GetEntriesFast();
+    if (treeSizeAna == nofEvents) return true;
+    return false;
+}
+
 
 
 void CbmHaddBase::AddFilesInDir(
@@ -118,32 +178,6 @@ void CbmHaddBase::CloseFilesFromList(
 			delete f;
 		}
 	}
-}
-
-
-Bool_t CbmHaddBase::CheckFileSize(
-			TFile* file,
-			Int_t fileSizeLimit)
-{
-	if (file == NULL) return false;
-	if (file->GetEND() < fileSizeLimit) return false;
-
-	return true;
-}
-
-
-Bool_t CbmHaddBase::CheckFile(
-			TFile* file,
-			Int_t fileSizeLimit,
-			Int_t nofEvents)
-{
-	if (file == NULL)  return false;
-	if (file->GetEND() < fileSizeLimit) return false;
-	TTree* tree = (TTree*)file->Get("cbmsim");
-	if (tree == NULL) return false;
-	Long64_t treeSizeAna = tree->GetEntriesFast();
-	if (treeSizeAna == nofEvents) return true;
-	return false;
 }
 
 

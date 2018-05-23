@@ -11,6 +11,9 @@
 #include "TObject.h"
 
 #include <string>
+#include <vector>
+
+using namespace std;
 
 class CbmHaddBase: public TObject {
 
@@ -29,6 +32,15 @@ public:
 			Int_t nofFiles,
 			Int_t fileSizeLimit = 50000,
 			Int_t nofEvents = 1000);
+
+
+	static vector<string> GetFilesByPattern(
+	        const string& pattern);
+
+	static vector<string> GetGoodFiles(
+	        const string& pattern,
+	        Int_t fileSizeLimit,
+	        Int_t nofEvents);
 
 private:
 	static TFile* CreateAndMergeTempTargetFile(
