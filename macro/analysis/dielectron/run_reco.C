@@ -1,30 +1,17 @@
-void run_reco(Int_t nEvents = 100)
+void run_reco(Int_t nEvents = 2)
 {
     TTree::SetMaxTreeSize(90000000000);
     TString script = TString(gSystem->Getenv("SCRIPT"));
 
     TString myName = "run_reco";
-//    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-//    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
 
-//    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
-//    TString mcFile = outDir + "mc.00000.root";
-//    TString parFile = outDir + "param.00000.root";
-//    TString recoFile = outDir + "reco.00000.root";
-
-    TString srcDir = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/trunk/";
-    cout << "srcDir: " << srcDir << endl;
-
-    TString geoSetupFile = srcDir + "macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
-
-//    TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root";
-    TString urqmdFile =  "/lustre/nyx/cbm/users/gpitsch/CbmRoot/trunk/input/urqmd.auau.10gev.centr.root";
-//    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
-//    TString outDir = "/home/aghoehne/Documents/CbmRoot/Gregor/results_dielectrons/";
-    TString outDir = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/results/results_dielectron/";
-    TString parFile = outDir + "param.00000.root";
+    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
+//    TString outDir = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/results/results_dielectron/";
     TString mcFile = outDir + "mc.00000.root";
+    TString parFile = outDir + "param.00000.root";
     TString recoFile = outDir + "reco.00000.root";
 
 
@@ -85,17 +72,14 @@ void run_reco(Int_t nEvents = 100)
 
 
     // Digitisers
-    std::cout << std::endl;
-    TString macroName = srcDir;
-    macroName += "macro/run/modules/digitize.C";
+    TString macroName = srcDir + "/macro/run/modules/digitize.C";
     std::cout << "Loading macro " << macroName << std::endl;
     gROOT->LoadMacro(macroName);
     gROOT->ProcessLine("digitize()");
 
 
     // Reconstruction tasks
-    std::cout << std::endl;
-    macroName = srcDir + "macro/run/modules/reconstruct.C";
+    macroName = srcDir + "/macro/run/modules/reconstruct.C";
     std::cout << "Loading macro " << macroName << std::endl;
     gROOT->LoadMacro(macroName);
     Bool_t recoSuccess = gROOT->ProcessLine("reconstruct()");
@@ -108,7 +92,6 @@ void run_reco(Int_t nEvents = 100)
 
     CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
     run->AddTask(matchRecoToMc);
-
 
     std::cout << std::endl << std::endl << "-I- " << myName << ": Set runtime DB" << std::endl;
     FairRuntimeDb* rtdb = run->GetRuntimeDb();
@@ -130,7 +113,6 @@ void run_reco(Int_t nEvents = 100)
 
     std::cout << "-I- " << myName << ": Starting run" << std::endl;
     run->Run(0,nEvents);
-
 
 
     // Finish

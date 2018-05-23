@@ -4,21 +4,17 @@ void run_analysis(Int_t nEvents = 2)
     TString script = TString(gSystem->Getenv("SCRIPT"));
 
     TString myName = "run_reco";
- //   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
-    TString srcDir = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/";
+    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString geoSetupFile = srcDir + "trunk/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
 
-    //    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
+    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
+    TString mcFile = outDir + "mc.00000.root";
+    TString parFile = outDir + "param.00000.root";
+    TString recoFile = outDir + "reco.00000.root";
+    TString analysisFile = outDir + "analysis.00000.root";
 
-    TString outDir = srcDir + "results/results_dielectron/";
-
-    TString mcFile = outDir + "mc.00001.root";
-    TString parFile = outDir + "param.00001.root";
-    TString recoFile = outDir + "reco.00001.root";
-    TString analysisFile = outDir + "analysis.00001.root";
-
-    TString energy = "10gev";
+    TString energy = "8gev";
     TString plutoParticle = "rho0";
 
     if (script == "yes") {

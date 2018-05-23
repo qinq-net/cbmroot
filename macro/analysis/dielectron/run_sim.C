@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 100)
+void run_sim(Int_t nEvents = 2)
 {
 
     TTree::SetMaxTreeSize(90000000000);
@@ -6,18 +6,15 @@ void run_sim(Int_t nEvents = 100)
     TString script = TString(gSystem->Getenv("SCRIPT"));
 
     TString myName = "run_sim";  // this macro's name for screen output
-//    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString srcDir = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/";
-    cout << "srcDir: " << srcDir << endl;
+    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
 
-    TString geoSetupFile = srcDir + "trunk/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+    TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root";
+//    TString urqmdFile =  "/lustre/nyx/cbm/prod/gen/urqmd/auau/4gev/";
 
-//    TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root";
-    TString urqmdFile =  "/lustre/nyx/cbm/prod/gen/urqmd/auau/4gev/";
-//    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
+    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
 //    TString outDir = "/home/aghoehne/Documents/CbmRoot/Gregor/results_dielectrons/";
-    TString outDir = srcDir + "results/results_dielectron/";
     TString parFile = outDir + "param.00000.root";
     TString mcFile = outDir + "mc.00000.root";
     TString geoFile = outDir + "geosim.00000.root";
@@ -86,10 +83,7 @@ void run_sim(Int_t nEvents = 100)
     std::cout << std:: endl << "-I- " << myName << ": Setting media file" << std::endl;
     run->SetMaterials("media.geo"); // Materials
 
-    //    TString macroName = gSystem->Getenv("VMCWORKDIR");
-    TString macroName = srcDir;
-
-    macroName += "trunk/macro/run/modules/registerSetup.C";
+    TString macroName = srcDir + "/macro/run/modules/registerSetup.C";
     std::cout << std::endl << "Loading macro " << macroName << std::endl;
     gROOT->LoadMacro(macroName);
     gROOT->ProcessLine("registerSetup()");
