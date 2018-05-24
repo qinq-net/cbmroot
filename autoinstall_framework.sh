@@ -153,6 +153,9 @@ if [ $SETUP_FAIRROOT -ge 1 ]; then
   echo "SIMPATH	now   : $SIMPATH"
   cd $CBMSRCDIR
 
+  echo PATH=$SIMPATH/bin:$PATH
+  export PATH=$SIMPATH/bin:$PATH
+  
   cd ..
   git clone https://github.com/FairRootGroup/FairRoot.git fairroot_src_$FROOTVER-fairsoft_${FSOFTVER}_root${ROOTVER}
   cd fairroot_src_$FROOTVER-fairsoft_${FSOFTVER}_root${ROOTVER}
