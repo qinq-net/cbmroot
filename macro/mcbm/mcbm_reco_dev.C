@@ -19,10 +19,7 @@
 
 
 void mcbm_reco_dev(Int_t nEvents = 2, 
-//             const char* setupName = "sis18_mcbm_25deg")
-//             const char* setupName = "sis18_mcbm_20deg_short")
-//             const char* setupName = "sis18_mcbm_20deg_long"
-               const char* setupName = "sis18_mcbm_20deg_long_dev",
+               const char* setupName = "sis18_mcbm_25deg_long_dev",
                const char* mSub      = "901101111",
                TString cSys="nini", 
                TString cEbeam="1.93gev",

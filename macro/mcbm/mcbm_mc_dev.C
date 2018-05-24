@@ -20,7 +20,7 @@
 void mcbm_mc_dev(Int_t nEvents = 2,
 		 Double_t beamRotY = 25.,
                  const char* setupName = "sis18_mcbm_25deg_long_dev",
-                 const char* mSub      = "901111111",
+                 const char* mSub      = "901101111",
                  const char* inputFile ="")
 {
 
@@ -72,7 +72,7 @@ void mcbm_mc_dev(Int_t nEvents = 2,
   Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
   Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
   Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
-  Double_t beamRotY        = 20.;    // the primary beam is at 25 degrees to the left of the mCBM setup
+  //  Double_t beamRotY        = 20.;    // the primary beam is at 25 degrees to the left of the mCBM setup
   //  Double_t beamRotY        = 25.;    // the primary beam is at 25 degrees to the left of the mCBM setup
   // ------------------------------------------------------------------------
 
