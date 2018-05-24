@@ -18,10 +18,10 @@
 
 
 void mcbm_mc(Int_t nEvents = 2,
-//           Double_t beamRotY = 25., const char* setupName = "sis18_mcbm_25deg_long",
-             Double_t beamRotY = 20., const char* setupName = "sis18_mcbm_20deg_long",
-//           Double_t beamRotY = 20., const char* setupName = "sis18_mcbm_20deg_short",
-//           Double_t beamRotY = 25., const char* setupName = "sis18_mcbm_25deg",
+             Double_t beamRotY = 25., const char* setupName = "sis18_mcbm_25deg_long",
+//             Double_t beamRotY = 20., const char* setupName = "sis18_mcbm_20deg_long",
+//             Double_t beamRotY = 20., const char* setupName = "sis18_mcbm_20deg_short",
+//             Double_t beamRotY = 25., const char* setupName = "sis18_mcbm_25deg",
              const char* inputFile ="")
 {
 
