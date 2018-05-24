@@ -24,15 +24,15 @@
 
 
 
-void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 901111111)
+void setup_sis18_mcbm_25deg_long_dev(Int_t nSetup = 901111111)
 {
    
-  TString myName = "setup_sis18_mcbm_20deg_long_dev";  // this macro's name for screen output
+  TString myName = "setup_sis18_mcbm_25deg_long_dev";  // this macro's name for screen output
 
   // -----  Geometry Tags  --------------------------------------------------
   //  TString platGeoTag      = "v18a_mcbm";    // concrete wall
   TString platGeoTag      = "v18c_mcbm";    // support table
-  TString pipeGeoTag      = "v18f_mcbm";    // 20 degree beampipe
+  TString pipeGeoTag      = "v18g_mcbm";    // 20 degree beampipe
 					    
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";
   TString stsGeoTag       = "v18g_mcbm";    // 1-1-1-2 ladder configuration
@@ -42,7 +42,7 @@ void setup_sis18_mcbm_20deg_long_dev(Int_t nSetup = 901111111)
   TString trdGeoTag       = "v18n_mcbm";    // long, without mBUCH
   TString tofGeoTag       = "v18i_mcbm";    // long distance
   TString richGeoTag      = "v18d_mcbm";    // long distance
-  TString psdGeoTag       = "v18c_mcbm";    // below the beampipe
+  TString psdGeoTag       = "v18d_mcbm";    // below the beampipe
   // ------------------------------------------------------------------------
 
 
