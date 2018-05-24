@@ -3,6 +3,7 @@
 ##   semi-automated script installing FairSoft, FairRoot and CbmRoot
 #
 
+# 24.05.2018 - switch to oct17p1 as dev version
 # 31.01.2017 - make ROOT6 the default
 # 17.12.2015 - split fairsoft directory into src and install
 # 01.12.2015 - add selection of root version
@@ -27,11 +28,14 @@ export ROOTVER=6
 #export ROOTVER=5
 
 # put your desired variants here:
-export FSOFTDEV=mar17
-export FROOTDEV=v-17.03
+export FSOFTDEV=oct17p1
+export FROOTDEV=v-17.10b
 
-export FSOFTPRO=may16p1
-export FROOTPRO=v-16.06b
+export FSOFTPRO=mar17
+export FROOTPRO=v-17.03
+
+# export FSOFTOLD=may16p1
+# export FROOTOLD=v-16.06b
 
 # former versions
 # fairsoft: mar15p2
