@@ -1,4 +1,5 @@
-void mcbm_check_overlaps(const char* setup = "sis18_mcbm_20deg_long")
+void mcbm_check_overlaps(const char* setup = "sis18_mcbm_25deg_long")
+//void mcbm_check_overlaps(const char* setup = "sis18_mcbm_20deg_long")
 {
   // 2017-11-06 - DE - adapt to mCBM
   // 2014-07-04 - DE - test CBM setups for collisions in nightly tests
