@@ -206,7 +206,7 @@ else(CBMROOT_MINIMAL)
   # for boost.
   Unset(Boost_INCLUDE_DIR CACHE)
   Unset(Boost_LIBRARY_DIRS CACHE)
-  find_package(Boost 1.48 COMPONENTS program_options thread system timer serialization regex)
+  find_package(Boost 1.48 COMPONENTS program_options thread system timer serialization regex log log_setup filesystem)
   If (Boost_FOUND)
     Set(Boost_Avail 1)
   Else (Boost_FOUND)
@@ -294,29 +294,13 @@ add_subdirectory (hadron)
 
 add_subdirectory (macro)
 #####add_subdirectory (trdcatrack)
-#add_subdirectory (tutorials/Tutorial1/src)
-#add_subdirectory (tutorials/Tutorial2/src)
 #add_subdirectory (vis)
 
+add_subdirectory(fles)
 
-# Check if the compilation flag -std=c++11 is set
-# In this case the code is compiled with the new standard and it is possible
-# to compile the fles_ipc library
-If(NOT CMAKE_CXX_FLAGS)
-  Message(STATUS "No C++11 support found. FLES_IPC library will not be build.")
-Else()
-  String(FIND ${CMAKE_CXX_FLAGS} "-std=c++11" POS_C++11)
-  If(${POS_C++11} EQUAL -1)
-    Message(STATUS "No C++11 support found. FLES_IPC library will not be build.")
-  Else()
-    Message(STATUS "C++11 support found. Build FLES_IPC library.")
-    add_subdirectory(fles)
-    Find_Library(BaseMQ_FOUND NAME BaseMQ PATHS ${FAIRROOTPATH}/lib)
-    If(BaseMQ_FOUND)
-      Message(STATUS "BaseMQ library found. Build MQTest tutorials.")
-#      add_subdirectory(tutorials/MQTest)
-    EndIf()
-  EndIf()
+# To build the MQ code the FairRoot version has at least v-17.10b 
+If(FairRoot_VERSION VERSION_GREATER_EQUAL 17.10.2)
+  add_subdirectory(MQ)
 EndIf()
 
 add_subdirectory(tutorials)
