@@ -25,8 +25,6 @@ void mcbm_reco(Int_t nEvents = 2,
                Int_t   iRun=1,
                const char* setupName = "sis18_mcbm_25deg_long")
 //               const char* setupName = "sis18_mcbm_20deg_long")
-//               const char* setupName = "sis18_mcbm_20deg_short")
-//               const char* setupName = "sis18_mcbm_25deg")
 {
   // ========================================================================
   //          Adjust this part according to your requirements
