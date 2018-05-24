@@ -66,7 +66,7 @@ ForEach(config IN LISTS cbm_config)
   Set(dep_mc ${testname})
 
   Set(testname mcbm_reco_dev_${config})
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_reco_dev.sh ${NumEvents} ${BeamAngle} \"sis18_mcbm_25deg_long_dev\" \"${config}\")
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_reco_dev.sh ${NumEvents} \"sis18_mcbm_25deg_long_dev\" \"${config}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
