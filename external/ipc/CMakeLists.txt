@@ -10,6 +10,8 @@ download_project(PROJ            fles_ipc
                  SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/ipc
 )
 
+file(COPY Timeslice.hpp DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/ipc/lib/fles_ipc)
+
 Set(INCLUDE_DIRECTORIES
 )
 
