@@ -45,8 +45,8 @@
 
 
 // Name of output file with geometry
-const TString tagVersion   = "_v17b_";
-const TString subVersion   = "sis100_1m_jpsi";
+const TString tagVersion   = "_v17b";
+const TString subVersion   = "_sis100_1m_jpsi";
 const TString geoVersion   = "much";// + tagVersion + subVersion;
 const TString FileNameSim  = geoVersion +  tagVersion + subVersion+".geo.root";
 const TString FileNameGeo  = geoVersion +  tagVersion + subVersion+"_geo.root";
@@ -155,8 +155,9 @@ void create_MUCH_geometry_v17b_jpsi() {
   TGeoVolume* top = new TGeoVolume("top", topbox, gGeoMan->GetMedium("air"));
   gGeoMan->SetTopVolume(top);
 
+  TString topName=geoVersion+tagVersion+subVersion;
 
-  TGeoVolume* much = new TGeoVolumeAssembly(geoVersion);
+  TGeoVolume* much = new TGeoVolumeAssembly(topName);
   top->AddNode(much, 1);
 
   TGeoVolume *absr = new TGeoVolumeAssembly("absorber");
