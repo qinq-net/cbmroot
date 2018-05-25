@@ -54,7 +54,6 @@ set(DEPENDENCIES
   ${BOOST_LIBS}
   fles_ipc
   CbmFlibCern2016
-  CbmBeamtime
   CbmBase
   CbmData
   Core
