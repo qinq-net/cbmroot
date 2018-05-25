@@ -327,6 +327,18 @@ private:
    std::vector< TH2 * >      fhAsicDuplicTsBitPattern;
    std::vector< TH2 * >      fhAsicGoodTsBitPattern;
 
+   TH2 * fhAsicDuplicTsEvoAsic0Chan01;
+   TH2 * fhAsicGoodTsEvoAsic0Chan01;
+   TH2 * fhAsicGoodTsMsbEvoAsic0Chan01;
+   TH2 * fhAsicDuplicTsEvoAsic0Chan09;
+   TH2 * fhAsicGoodTsEvoAsic0Chan09;
+   TH2 * fhAsicDuplicTsEvoAsic0Chan16;
+   TH2 * fhAsicGoodTsEvoAsic0Chan16;
+   UInt_t fuPulseIdx;
+   UInt_t fuPulseIdxMax;
+   TH2 * fhAsicMissedChanIdVsPulseIdx;
+   TProfile * fhAsicMissedChanGroupVsPulseIdx;
+
    std::vector<TH1 *> fhHodoChanCntGood;
    std::vector<TH2 *> fhHodoChanGoodHitRateEvo;
 

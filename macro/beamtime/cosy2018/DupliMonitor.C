@@ -63,7 +63,7 @@ void DupliMonitor(TString inFile = "",
   CbmCosy2018MonitorDupli* monitorDupli = new CbmCosy2018MonitorDupli();
   monitorDupli->SetHistoFileName( "data/DupliHistos.root" );
 //  monitorDupli->SetPrintMessage();
-  monitorDupli->SetMsOverlap();
+//  monitorDupli->SetMsOverlap();
   monitorDupli->EnableDualStsMode( kTRUE );
 //  monitorDupli->SetLongDurationLimits( 3600, 10 );
   monitorDupli->SetLongDurationLimits( 7200, 60 );

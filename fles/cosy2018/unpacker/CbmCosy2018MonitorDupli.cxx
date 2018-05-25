@@ -245,6 +245,17 @@ CbmCosy2018MonitorDupli::CbmCosy2018MonitorDupli() :
    fhAsicGoodTs(),
    fhAsicDuplicTsBitPattern(),
    fhAsicGoodTsBitPattern(),
+   fhAsicDuplicTsEvoAsic0Chan01( NULL ),
+   fhAsicGoodTsEvoAsic0Chan01( NULL ),
+   fhAsicGoodTsMsbEvoAsic0Chan01( NULL ),
+   fhAsicDuplicTsEvoAsic0Chan09( NULL ),
+   fhAsicGoodTsEvoAsic0Chan09( NULL ),
+   fhAsicDuplicTsEvoAsic0Chan16( NULL ),
+   fhAsicGoodTsEvoAsic0Chan16( NULL ),
+   fuPulseIdx( 0 ),
+   fuPulseIdxMax( 10000 ),
+   fhAsicMissedChanIdVsPulseIdx( NULL ),
+   fhAsicMissedChanGroupVsPulseIdx( NULL ),
    fhHodoChanCntGood(),
    fhHodoChanGoodHitRateEvo(),
    fhHodoX1SpillEvo(NULL),
@@ -1334,6 +1345,57 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
                                         2, -0.5,  1.5 ) );
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
+   sHistName = "fhAsicDuplicTsEvoAsic0Chan01";
+   title =  "TS of duplicated hits vs time in run for ASIC 0 chan 1; time in run [s]; TS + TS_MSB [bins]";
+   fhAsicDuplicTsEvoAsic0Chan01 = new TH2I( sHistName, title,
+                                       2*4096, -0.5, 4095.5,
+                                       2048, -0.5, 4095.5 );
+   sHistName = "fhAsicGoodTsEvoAsic0Chan01";
+   title =  "TS of good hits vs time in run for ASIC 0 chan 1; time in run [s]; TS + TS_MSB [bins]";
+   fhAsicGoodTsEvoAsic0Chan01 = new TH2I( sHistName, title,
+                                       2*4096, -0.5, 4095.5,
+                                       2048, -0.5, 4095.5 );
+   sHistName = "fhAsicGoodTsMsbEvoAsic0Chan01";
+   title =  "TS MSB of good hits vs time in run for ASIC 0 chan 1; time in run [s]; TS_MSB[0 - 8] [bins]";
+   fhAsicGoodTsMsbEvoAsic0Chan01 = new TH2I( sHistName, title,
+                                       2*4096, -0.5, 4095.5,
+                                       256, -0.5, 255.5 );
+
+   sHistName = "fhAsicDuplicTsEvoAsic0Chan09";
+   title =  "TS of duplicated hits vs time in run for ASIC 0 chan 9; time in run [s]; TS + TS_MSB [bins]";
+   fhAsicDuplicTsEvoAsic0Chan09 = new TH2I( sHistName, title,
+                                       2*4096, -0.5, 4095.5,
+                                       2048, -0.5, 4095.5 );
+   sHistName = "fhAsicGoodTsEvoAsic0Chan09";
+   title =  "TS of good hits vs time in run for ASIC 0 chan 9; time in run [s]; TS + TS_MSB [bins]";
+   fhAsicGoodTsEvoAsic0Chan09 = new TH2I( sHistName, title,
+                                       2*4096, -0.5, 4095.5,
+                                       2048, -0.5, 4095.5 );
+
+   sHistName = "fhAsicDuplicTsEvoAsic0Chan16";
+   title =  "TS of duplicated hits vs time in run for ASIC 0 chan 16; time in run [s]; TS + TS_MSB [bins]";
+   fhAsicDuplicTsEvoAsic0Chan16 = new TH2I( sHistName, title,
+                                       2*4096, -0.5, 4095.5,
+                                       2048, -0.5, 4095.5 );
+   sHistName = "fhAsicGoodTsEvoAsic0Chan16";
+   title =  "TS of good hits vs time in run for ASIC 0 chan 16; time in run [s]; TS + TS_MSB [bins]";
+   fhAsicGoodTsEvoAsic0Chan16 = new TH2I( sHistName, title,
+                                       2*4096, -0.5, 4095.5,
+                                       2048, -0.5, 4095.5 );
+
+   sHistName = "fhAsicMissedChanIdVsPulseIdx";
+   title =  "Channels present VS pulse Idx; Pulse Idx []; Channel Id []";
+   fhAsicMissedChanIdVsPulseIdx = new TH2I( sHistName, title,
+                                       fuPulseIdxMax, -0.5, fuPulseIdxMax - 0.5,
+                                       fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+
+   sHistName = "fhAsicMissedChanGroupVsPulseIdx";
+   title =  "Channels group present VS pulse Idx; Pulse Idx []; Channel Grp []";
+   fhAsicMissedChanGroupVsPulseIdx = new TProfile( sHistName, title,
+                                       fuPulseIdxMax, -0.5, fuPulseIdxMax - 0.5 );
+
+
+///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
    sHistName = "fhHodoX1SpillEvo";
@@ -1556,6 +1618,16 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
 
          server->Register("/Data", fhPulseChanCountEvo[ uXyterIdx ] );
       } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+
+      server->Register("/FebDupli", fhAsicDuplicTsEvoAsic0Chan01 );
+      server->Register("/FebDupli", fhAsicGoodTsEvoAsic0Chan01 );
+      server->Register("/FebDupli", fhAsicGoodTsMsbEvoAsic0Chan01 );
+      server->Register("/FebDupli", fhAsicDuplicTsEvoAsic0Chan09 );
+      server->Register("/FebDupli", fhAsicGoodTsEvoAsic0Chan09 );
+      server->Register("/FebDupli", fhAsicDuplicTsEvoAsic0Chan16 );
+      server->Register("/FebDupli", fhAsicGoodTsEvoAsic0Chan16 );
+      server->Register("/FebDupli", fhAsicMissedChanIdVsPulseIdx );
+      server->Register("/FebDupli", fhAsicMissedChanGroupVsPulseIdx );
 
       for( UInt_t uDpbIdx = 0; uDpbIdx < fuNrOfDpbs; ++uDpbIdx )
       {
@@ -2185,6 +2257,50 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 //====================================================================//
 
+//====================================================================//
+   TCanvas* cFebDupliTsScan = new TCanvas( "cFebDupliTsScan",
+                                    "Duplicate TS scan",
+                                    w, h);
+
+   cFebDupliTsScan->Divide( 2, 3 );
+
+   cFebDupliTsScan->cd( 1 );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhAsicGoodTs[ 0 ]->Draw( "colz" );
+
+   cFebDupliTsScan->cd( 2 );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhAsicDuplicTs[ 0 ]->Draw( "colz" );
+
+   cFebDupliTsScan->cd( 3 );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhAsicGoodTsEvoAsic0Chan01->Draw( "colz" );
+
+   cFebDupliTsScan->cd( 4 );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhAsicDuplicTsEvoAsic0Chan01->Draw( "colz" );
+
+   cFebDupliTsScan->cd( 5 );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhAsicGoodTsEvoAsic0Chan16->Draw( "colz" );
+
+   cFebDupliTsScan->cd( 6 );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogz();
+   fhAsicDuplicTsEvoAsic0Chan16->Draw( "colz" );
+//====================================================================//
+
       // Long duration rate monitoring
 /*
    if( kTRUE == fbLongHistoEnable )
@@ -2607,7 +2723,8 @@ Bool_t CbmCosy2018MonitorDupli::DoUnpack(const fles::Timeslice& ts, size_t compo
          Double_t dUnixTimeInRun = std::chrono::duration_cast< std::chrono::seconds >(tNow - ftStartTimeUnix).count();
 
          for( it  = fvmHitsInTs.begin();
-              it != fvmHitsInTs.end() && (*it).GetTs() < ulLastHitTime - 320; // 32 * 3.125 ns = 1000 ns
+              it != fvmHitsInTs.end();
+//              it != fvmHitsInTs.end() && (*it).GetTs() < ulLastHitTime - 320; // 32 * 3.125 ns = 1000 ns
               ++it )
          {
             UShort_t usAsicIdx = (*it).GetAsic();
@@ -2657,6 +2774,17 @@ Bool_t CbmCosy2018MonitorDupli::DoUnpack(const fles::Timeslice& ts, size_t compo
                      ULong64_t ulDuplHitTs = fvmLastHitsAsic[ usAsicIdx ][ fvuLastHitBufferIdx[ usAsicIdx ] ].GetTs();
 
                      fhAsicDuplicTs[ usAsicIdx ]->Fill( usChanIdx, ( ulDuplHitTs & 0x003FF ) );
+
+                     if( 0 == usAsicIdx )
+                     {
+                        if( 3 == usChanIdx )
+                           fhAsicDuplicTsEvoAsic0Chan01->Fill( dTimeSinceStartSec, ( ulDuplHitTs & 0x00FFF ) );
+                        else if( 35 == usChanIdx )
+                           fhAsicDuplicTsEvoAsic0Chan09->Fill( dTimeSinceStartSec, ( ulDuplHitTs & 0x00FFF ) );
+                        else if( 63 == usChanIdx )
+                           fhAsicDuplicTsEvoAsic0Chan16->Fill( dTimeSinceStartSec, ( ulDuplHitTs & 0x00FFF ) );
+                     } // if( 0 == usAsicIdx )
+
                      for( UInt_t uBit = 0; uBit < 14; ++uBit )
                      {
                         fhAsicDuplicTsBitPattern[ usAsicIdx ]->Fill( uBit, ( ( ulDuplHitTs >> uBit ) & 0x1) );
@@ -2786,6 +2914,19 @@ Bool_t CbmCosy2018MonitorDupli::DoUnpack(const fles::Timeslice& ts, size_t compo
                   if( 0 < fvuNbDiffFullHitAsic[ usAsicIdx ] )
                   {
                      fhAsicGoodTs[ usAsicIdx ]->Fill( usChanIdx, ( ulHitTs & 0x003FF ) );
+                     if( 0 == usAsicIdx )
+                     {
+                        if( 3 == usChanIdx )
+                        {
+                           fhAsicGoodTsEvoAsic0Chan01->Fill( dTimeSinceStartSec, ( ulHitTs & 0x00FFF ) );
+                           fhAsicGoodTsMsbEvoAsic0Chan01->Fill( dTimeSinceStartSec, ( ulHitTs & 0x0FF00 ) >> 8 );
+                        } //if( 3 == usChanIdx )
+                        else if( 35 == usChanIdx )
+                           fhAsicGoodTsEvoAsic0Chan09->Fill( dTimeSinceStartSec, ( ulHitTs & 0x00FFF ) );
+                        else if( 63 == usChanIdx )
+                           fhAsicGoodTsEvoAsic0Chan16->Fill( dTimeSinceStartSec, ( ulHitTs & 0x00FFF ) );
+                     } // if( 0 == usAsicIdx )
+
                      for( UInt_t uBit = 0; uBit < 14; ++uBit )
                      {
                         fhAsicGoodTsBitPattern[ usAsicIdx ]->Fill( uBit, ( ( ulHitTs >> uBit ) & 0x1) );
@@ -2799,963 +2940,27 @@ Bool_t CbmCosy2018MonitorDupli::DoUnpack(const fles::Timeslice& ts, size_t compo
                } // else of if( 0 == ulHitTs - fvulTimeLastHitAsicChan[ usAsicIdx ][ usChanIdx ] )
             fvulTimeLastHitAsicChan[ usAsicIdx ][ usChanIdx ] = ulHitTs;
             fviAdcLastHitAsicChan[ usAsicIdx ][ usChanIdx ] = usHitAdc;
-/*
-            if( fUnpackParHodo->GetAsicIndexHodo1() == usAsicIdx )
+
+            if( 0 == usAsicIdx && fuPulseIdx < fuPulseIdxMax )
             {
-               if( fUnpackParHodo->IsXySwappedHodo1() )
-                  bHitInX = !bHitInX;
-
-               if( bHitInX )
+               fhAsicMissedChanIdVsPulseIdx->Fill( fuPulseIdx, usChanIdx );
+               switch( usChanIdx )
                {
-                  Double_t dDtSameFeb = ( ulHitTs - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                  fhSetupSortedDtX1->Fill( dDtSameFeb );
-
-                  fLastSortedHit1X = (*it);
-                  dLastTimeX1      = ulHitTs;
-
-                  /// Compute fiber Idx of the last Hodo hits
-                  UInt_t uFiberIdxX1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan()  );
-                  if( fUnpackParHodo->IsXInvertedHodo1() )
-                     uFiberIdxX1 = fuNbChanPerAsic/2 - 1 - uFiberIdxX1;
-                  UInt_t uFiberIdxY1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan()  );
-                  if( fUnpackParHodo->IsYInvertedHodo1() )
-                     uFiberIdxY1 = fuNbChanPerAsic/2 - 1 - uFiberIdxY1;
-                  UInt_t uFiberIdxX2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan()  );
-                  if( fUnpackParHodo->IsXInvertedHodo2() )
-                     uFiberIdxX2 = fuNbChanPerAsic/2 - 1 - uFiberIdxX2;
-                  UInt_t uFiberIdxY2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan()  );
-                  if( fUnpackParHodo->IsYInvertedHodo2() )
-                     uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
-
-                  if( dTimeSinceStartSec < fdSpillEvoLength )
-                  {
-                     fhHodoX1SpillEvo->Fill( dTimeSinceStartSec, uFiberIdxX1 );
-                     fhHodoX1SpillEvoProf->Fill( dTimeSinceStartSec, uFiberIdxX1 );
-                  } // if( dTimeSinceStartSec < fdSpillEvoLength )
-
-                  dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                  dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                  dDtN1P1     = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
-                  dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
-                                  * stsxyter::kdClockCycleNs / 2.0;
-                  dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                    ) * stsxyter::kdClockCycleNs;
-                  if( kTRUE == fbDualStsEna )
-                  {
-                     dDtN2P2     = ( dLastTimeP2 - dLastTimeN2 ) * stsxyter::kdClockCycleNs;
-                     dDtN1P1N2P2 = ( ( dLastTimeN2 + dLastTimeP2 ) - ( dLastTimeN1 + dLastTimeP1 ) )
-                                     * stsxyter::kdClockCycleNs / 2.0;
-                     dDtX1Y1X2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                        - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                       ) * stsxyter::kdClockCycleNs;
-                     dDtH1H2S1S2     = (  ( dLastTimeN2 + dLastTimeP2 + dLastTimeN1 + dLastTimeP1 )
-                                        - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 )
-                                       ) * stsxyter::kdClockCycleNs / 4.0;
-                  } // if( kTRUE == fbDualStsEna )
-
-                  fhSetupSortedDtX1Y1->Fill(         dDtX1Y1 );
-                  fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-                  fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
-                  if( kTRUE == fbDualStsEna )
-                  {
-                     fhSetupSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-                     fhSetupSortedDtH1H2S1S2->Fill(     dDtH1H2S1S2 );
-                  } // if( kTRUE == fbDualStsEna )
-
-                  if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
-                  {
-                     fhSetupSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                     fhSetupSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
-
-                  if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
-                  {
-                     fhBothHodoSortedDtX1Y1->Fill(         dDtX1Y1 );
-                     fhBothHodoSortedDtX2Y2->Fill(         dDtX2Y2 );
-                     fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
-                     fhBothHodoSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-
-                     fhBothHodoSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                     fhBothHodoSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                     fhBothHodoSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
-
-                  if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtN1P1 ) < fdCoincBorderSts &&
-                      TMath::Abs( dDtN2P2 ) < fdCoincBorderSts &&
-                      TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo &&
-                      TMath::Abs( dDtN1P1N2P2 ) < 2 * fdCoincBorderSts &&
-                      TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder &&
-                      TMath::Abs( dDtX1Y1X2Y2N2P2 ) < fdCoincBorder &&
-                      TMath::Abs( dDtH1H2S1S2 ) < fdCoincBorder )
-                  {
-                     fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
-                     fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
-                     fhSystSortedDtN1P1->Fill(         dDtN1P1 );
-                     fhSystSortedDtN2P2->Fill(         dDtN2P2 );
-                     fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-
-                     fhSystSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                     fhSystSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                     fhSystSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), fLastSortedHit1P.GetChan() );
-                     fhSystSortedMapN2P2->Fill( fLastSortedHit2N.GetChan(), fLastSortedHit2P.GetChan() );
-                     fhSystSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
-                     fhSystSortedDtAllVsMapX1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX1 );
-                     fhSystSortedDtAllVsMapY1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY1 );
-                     fhSystSortedDtAllVsMapX2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX2 );
-                     fhSystSortedDtAllVsMapY2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY2 );
-
-                     Double_t dDtN1X1 = ( dLastTimeN1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtN1X2 = ( dLastTimeN1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtP1X1 = ( dLastTimeP1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtP1X2 = ( dLastTimeP1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtN1X1vsN1X2->Fill( dDtN1X1, dDtN1X2 );
-                     fhSystSortedDtP1X1vsP1X2->Fill( dDtP1X1, dDtP1X2 );
-                     fhSystSortedDtN1X1vsP1X1->Fill( dDtN1X1, dDtP1X1 );
-
-                     Double_t dDtX1Y1N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                             - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtX2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                             - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtSts1Hodo1vsSts1Hodo2->Fill( dDtX1Y1N1P1, dDtX2Y2N1P1 );
-
-                     Double_t dDtX1Y1N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                             - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtX2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                             - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtSts2Hodo1vsSts2Hodo2->Fill( dDtX1Y1N2P2, dDtX2Y2N2P2 );
-                  } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
-               } // if( bHitInX )
-                  else
-                  {
-                     Double_t dDtSameFeb = ( ulHitTs - dLastTimeY1 ) * stsxyter::kdClockCycleNs;
-                     fhSetupSortedDtY1->Fill( dDtSameFeb );
-
-                     fLastSortedHit1Y = (*it);
-                     dLastTimeY1      = ulHitTs;
-
-                     /// Compute fiber Idx of the last Hodo hits
-                     UInt_t uFiberIdxX1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan()  );
-                     if( fUnpackParHodo->IsXInvertedHodo1() )
-                        uFiberIdxX1 = fuNbChanPerAsic/2 - 1 - uFiberIdxX1;
-                     UInt_t uFiberIdxY1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan()  );
-                     if( fUnpackParHodo->IsYInvertedHodo1() )
-                        uFiberIdxY1 = fuNbChanPerAsic/2 - 1 - uFiberIdxY1;
-                     UInt_t uFiberIdxX2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan()  );
-                     if( fUnpackParHodo->IsXInvertedHodo2() )
-                        uFiberIdxX2 = fuNbChanPerAsic/2 - 1 - uFiberIdxX2;
-                     UInt_t uFiberIdxY2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan()  );
-                     if( fUnpackParHodo->IsYInvertedHodo2() )
-                        uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
-
-                     if( dTimeSinceStartSec < fdSpillEvoLength )
-                     {
-                        fhHodoY1SpillEvo->Fill( dTimeSinceStartSec, uFiberIdxY1 );
-                        fhHodoY1SpillEvoProf->Fill( dTimeSinceStartSec, uFiberIdxY1 );
-                     } // if( dTimeSinceStartSec < fdSpillEvoLength )
-
-                     dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                     dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                     dDtN1P1     = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
-                     dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
-                                   * stsxyter::kdClockCycleNs / 2.0;
-                     dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                        - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                       ) * stsxyter::kdClockCycleNs;
-                     if( kTRUE == fbDualStsEna )
-                     {
-                        dDtN2P2     = ( dLastTimeP2 - dLastTimeN2 ) * stsxyter::kdClockCycleNs;
-                        dDtN1P1N2P2 = ( ( dLastTimeN2 + dLastTimeP2 ) - ( dLastTimeN1 + dLastTimeP1 ) )
-                                        * stsxyter::kdClockCycleNs / 2.0;
-                        dDtX1Y1X2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                           - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                          ) * stsxyter::kdClockCycleNs;
-                        dDtH1H2S1S2     = (  ( dLastTimeN2 + dLastTimeP2 + dLastTimeN1 + dLastTimeP1 )
-                                           - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 )
-                                          ) * stsxyter::kdClockCycleNs / 4.0;
-                     } // if( kTRUE == fbDualStsEna )
-
-                     fhSetupSortedDtX1Y1->Fill(         dDtX1Y1 );
-                     fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-                     fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
-                     if( kTRUE == fbDualStsEna )
-                     {
-                        fhSetupSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-                        fhSetupSortedDtH1H2S1S2->Fill(     dDtH1H2S1S2 );
-                     } // if( kTRUE == fbDualStsEna )
-
-                     if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
-                     {
-                        fhSetupSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                        fhSetupSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
-                     } // if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo )
-
-                     if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                         TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                         TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
-                     {
-                        fhBothHodoSortedDtX1Y1->Fill(         dDtX1Y1 );
-                        fhBothHodoSortedDtX2Y2->Fill(         dDtX2Y2 );
-                        fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
-                        fhBothHodoSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-
-                        fhBothHodoSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                        fhBothHodoSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                        fhBothHodoSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
-                     } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
-
-                     if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                         TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                         TMath::Abs( dDtN1P1 ) < fdCoincBorderSts &&
-                         TMath::Abs( dDtN2P2 ) < fdCoincBorderSts &&
-                         TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo &&
-                         TMath::Abs( dDtN1P1N2P2 ) < 2 * fdCoincBorderSts &&
-                         TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder &&
-                         TMath::Abs( dDtX1Y1X2Y2N2P2 ) < fdCoincBorder &&
-                         TMath::Abs( dDtH1H2S1S2 ) < fdCoincBorder )
-                     {
-                        fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
-                        fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
-                        fhSystSortedDtN1P1->Fill(         dDtN1P1 );
-                        fhSystSortedDtN2P2->Fill(         dDtN2P2 );
-                        fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-
-                        fhSystSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                        fhSystSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                        fhSystSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), fLastSortedHit1P.GetChan() );
-                        fhSystSortedMapN2P2->Fill( fLastSortedHit2N.GetChan(), fLastSortedHit2P.GetChan() );
-                        fhSystSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
-                        fhSystSortedDtAllVsMapX1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX1 );
-                        fhSystSortedDtAllVsMapY1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY1 );
-                        fhSystSortedDtAllVsMapX2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX2 );
-                        fhSystSortedDtAllVsMapY2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY2 );
-
-                        Double_t dDtN1X1 = ( dLastTimeN1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                        Double_t dDtN1X2 = ( dLastTimeN1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                        Double_t dDtP1X1 = ( dLastTimeP1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                        Double_t dDtP1X2 = ( dLastTimeP1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                        fhSystSortedDtN1X1vsN1X2->Fill( dDtN1X1, dDtN1X2 );
-                        fhSystSortedDtP1X1vsP1X2->Fill( dDtP1X1, dDtP1X2 );
-                        fhSystSortedDtN1X1vsP1X1->Fill( dDtN1X1, dDtP1X1 );
-
-                        Double_t dDtX1Y1N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                                - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                   ) * stsxyter::kdClockCycleNs;
-                        Double_t dDtX2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                                - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                   ) * stsxyter::kdClockCycleNs;
-                        fhSystSortedDtSts1Hodo1vsSts1Hodo2->Fill( dDtX1Y1N1P1, dDtX2Y2N1P1 );
-
-                        Double_t dDtX1Y1N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                                - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                   ) * stsxyter::kdClockCycleNs;
-                        Double_t dDtX2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                                - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                   ) * stsxyter::kdClockCycleNs;
-                        fhSystSortedDtSts2Hodo1vsSts2Hodo2->Fill( dDtX1Y1N2P2, dDtX2Y2N2P2 );
-                     } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
-                  } // else of if( bHitInX )
-            } // if( fUnpackParHodo->GetAsicIndexHodo1() == usAsicIdx )
-            else if( fUnpackParHodo->GetAsicIndexHodo2() == usAsicIdx )
-            {
-               if( fUnpackParHodo->IsXySwappedHodo2() )
-                  bHitInX = !bHitInX;
-
-               if( bHitInX )
-               {
-                  Double_t dDtSameFeb = ( ulHitTs - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                  fhSetupSortedDtX2->Fill( dDtSameFeb );
-
-                  fLastSortedHit2X = (*it);
-                  dLastTimeX2      = ulHitTs;
-
-                  /// Compute fiber Idx of the last Hodo hits
-                  UInt_t uFiberIdxX1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan()  );
-                  if( fUnpackParHodo->IsXInvertedHodo1() )
-                     uFiberIdxX1 = fuNbChanPerAsic/2 - 1 - uFiberIdxX1;
-                  UInt_t uFiberIdxY1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan()  );
-                  if( fUnpackParHodo->IsYInvertedHodo1() )
-                     uFiberIdxY1 = fuNbChanPerAsic/2 - 1 - uFiberIdxY1;
-                  UInt_t uFiberIdxX2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan()  );
-                  if( fUnpackParHodo->IsXInvertedHodo2() )
-                     uFiberIdxX2 = fuNbChanPerAsic/2 - 1 - uFiberIdxX2;
-                  UInt_t uFiberIdxY2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan()  );
-                  if( fUnpackParHodo->IsYInvertedHodo2() )
-                     uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
-
-                  if( dTimeSinceStartSec < fdSpillEvoLength )
-                  {
-                     fhHodoX2SpillEvo->Fill( dTimeSinceStartSec, uFiberIdxX2 );
-                     fhHodoX2SpillEvoProf->Fill( dTimeSinceStartSec, uFiberIdxX2 );
-                  } // if( dTimeSinceStartSec < fdSpillEvoLength )
-
-                  dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                  dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                  dDtN1P1     = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
-                  dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
-                                * stsxyter::kdClockCycleNs / 2.0;
-                  dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                    ) * stsxyter::kdClockCycleNs;
-                  if( kTRUE == fbDualStsEna )
-                  {
-                     dDtN2P2     = ( dLastTimeP2 - dLastTimeN2 ) * stsxyter::kdClockCycleNs;
-                     dDtN1P1N2P2 = ( ( dLastTimeN2 + dLastTimeP2 ) - ( dLastTimeN1 + dLastTimeP1 ) )
-                                     * stsxyter::kdClockCycleNs / 2.0;
-                     dDtX1Y1X2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                        - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                       ) * stsxyter::kdClockCycleNs;
-                     dDtH1H2S1S2     = (  ( dLastTimeN2 + dLastTimeP2 + dLastTimeN1 + dLastTimeP1 )
-                                        - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 )
-                                       ) * stsxyter::kdClockCycleNs / 4.0;
-                  } // if( kTRUE == fbDualStsEna )
-
-                  fhSetupSortedDtX2Y2->Fill( dDtX2Y2 );
-                  fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-                  fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
-                  if( kTRUE == fbDualStsEna )
-                  {
-                     fhSetupSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-                     fhSetupSortedDtH1H2S1S2->Fill(     dDtH1H2S1S2 );
-                  } // if( kTRUE == fbDualStsEna )
-
-                  if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
-                  {
-                     fhSetupSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                     fhSetupSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
-
-                  if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
-                  {
-                     fhBothHodoSortedDtX1Y1->Fill(         dDtX1Y1 );
-                     fhBothHodoSortedDtX2Y2->Fill(         dDtX2Y2 );
-                     fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
-                     fhBothHodoSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-
-                     fhBothHodoSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                     fhBothHodoSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                     fhBothHodoSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
-
-                  if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtN1P1 ) < fdCoincBorderSts &&
-                      TMath::Abs( dDtN2P2 ) < fdCoincBorderSts &&
-                      TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo &&
-                      TMath::Abs( dDtN1P1N2P2 ) < 2 * fdCoincBorderSts &&
-                      TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder &&
-                      TMath::Abs( dDtX1Y1X2Y2N2P2 ) < fdCoincBorder &&
-                      TMath::Abs( dDtH1H2S1S2 ) < fdCoincBorder )
-                  {
-                     fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
-                     fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
-                     fhSystSortedDtN1P1->Fill(         dDtN1P1 );
-                     fhSystSortedDtN2P2->Fill(         dDtN2P2 );
-                     fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-
-                     fhSystSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                     fhSystSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                     fhSystSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), fLastSortedHit1P.GetChan() );
-                     fhSystSortedMapN2P2->Fill( fLastSortedHit2N.GetChan(), fLastSortedHit2P.GetChan() );
-                     fhSystSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
-                     fhSystSortedDtAllVsMapX1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX1 );
-                     fhSystSortedDtAllVsMapY1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY1 );
-                     fhSystSortedDtAllVsMapX2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX2 );
-                     fhSystSortedDtAllVsMapY2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY2 );
-
-                     Double_t dDtN1X1 = ( dLastTimeN1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtN1X2 = ( dLastTimeN1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtP1X1 = ( dLastTimeP1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtP1X2 = ( dLastTimeP1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtN1X1vsN1X2->Fill( dDtN1X1, dDtN1X2 );
-                     fhSystSortedDtP1X1vsP1X2->Fill( dDtP1X1, dDtP1X2 );
-                     fhSystSortedDtN1X1vsP1X1->Fill( dDtN1X1, dDtP1X1 );
-
-                     Double_t dDtX1Y1N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                             - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtX2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                             - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtSts1Hodo1vsSts1Hodo2->Fill( dDtX1Y1N1P1, dDtX2Y2N1P1 );
-
-                     Double_t dDtX1Y1N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                             - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtX2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                             - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtSts2Hodo1vsSts2Hodo2->Fill( dDtX1Y1N2P2, dDtX2Y2N2P2 );
-                  } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
-               } // if( bHitInX )
-                  else
-                  {
-                     Double_t dDtSameFeb = ( ulHitTs - dLastTimeY2 ) * stsxyter::kdClockCycleNs;
-                     fhSetupSortedDtY2->Fill( dDtSameFeb );
-
-                     fLastSortedHit2Y = (*it);
-                     dLastTimeY2      = ulHitTs;
-
-                     /// Compute fiber Idx of the last Hodo hits
-                     UInt_t uFiberIdxX1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan()  );
-                     if( fUnpackParHodo->IsXInvertedHodo1() )
-                        uFiberIdxX1 = fuNbChanPerAsic/2 - 1 - uFiberIdxX1;
-                     UInt_t uFiberIdxY1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan()  );
-                     if( fUnpackParHodo->IsYInvertedHodo1() )
-                        uFiberIdxY1 = fuNbChanPerAsic/2 - 1 - uFiberIdxY1;
-                     UInt_t uFiberIdxX2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan()  );
-                     if( fUnpackParHodo->IsXInvertedHodo2() )
-                        uFiberIdxX2 = fuNbChanPerAsic/2 - 1 - uFiberIdxX2;
-                     UInt_t uFiberIdxY2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan()  );
-                     if( fUnpackParHodo->IsYInvertedHodo2() )
-                        uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
-
-                     if( dTimeSinceStartSec < fdSpillEvoLength )
-                     {
-                        fhHodoY2SpillEvo->Fill( dTimeSinceStartSec, uFiberIdxY2 );
-                        fhHodoY2SpillEvoProf->Fill( dTimeSinceStartSec, uFiberIdxY2 );
-                     } // if( dTimeSinceStartSec < fdSpillEvoLength )
-
-                     dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                     dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                     dDtN1P1     = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
-                     dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
-                                   * stsxyter::kdClockCycleNs / 2.0;
-                     dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                        - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                       ) * stsxyter::kdClockCycleNs;
-                     if( kTRUE == fbDualStsEna )
-                     {
-                        dDtN2P2     = ( dLastTimeP2 - dLastTimeN2 ) * stsxyter::kdClockCycleNs;
-                        dDtN1P1N2P2 = ( ( dLastTimeN2 + dLastTimeP2 ) - ( dLastTimeN1 + dLastTimeP1 ) )
-                                        * stsxyter::kdClockCycleNs / 2.0;
-                        dDtX1Y1X2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                           - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                          ) * stsxyter::kdClockCycleNs;
-                        dDtH1H2S1S2     = (  ( dLastTimeN2 + dLastTimeP2 + dLastTimeN1 + dLastTimeP1 )
-                                           - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 )
-                                          ) * stsxyter::kdClockCycleNs / 4.0;
-                     } // if( kTRUE == fbDualStsEna )
-
-                     fhSetupSortedDtX2Y2->Fill( dDtX2Y2 );
-                     fhSetupSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-                     fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
-                     if( kTRUE == fbDualStsEna )
-                     {
-                        fhSetupSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-                        fhSetupSortedDtH1H2S1S2->Fill(     dDtH1H2S1S2 );
-                     } // if( kTRUE == fbDualStsEna )
-
-                     if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
-                     {
-                        fhSetupSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                        fhSetupSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
-                     } // if( TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo )
-
-                     if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                         TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                         TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
-                     {
-                        fhBothHodoSortedDtX1Y1->Fill(         dDtX1Y1 );
-                        fhBothHodoSortedDtX2Y2->Fill(         dDtX2Y2 );
-                        fhBothHodoSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
-                        fhBothHodoSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-
-                        fhBothHodoSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                        fhBothHodoSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                        fhBothHodoSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
-                     } // if( TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo )
-
-                     if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                         TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                         TMath::Abs( dDtN1P1 ) < fdCoincBorderSts &&
-                         TMath::Abs( dDtN2P2 ) < fdCoincBorderSts &&
-                         TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo &&
-                         TMath::Abs( dDtN1P1N2P2 ) < 2 * fdCoincBorderSts &&
-                         TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder &&
-                         TMath::Abs( dDtX1Y1X2Y2N2P2 ) < fdCoincBorder &&
-                         TMath::Abs( dDtH1H2S1S2 ) < fdCoincBorder )
-                     {
-                        fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
-                        fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
-                        fhSystSortedDtN1P1->Fill(         dDtN1P1 );
-                        fhSystSortedDtN2P2->Fill(         dDtN2P2 );
-                        fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-
-                        fhSystSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                        fhSystSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                        fhSystSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), fLastSortedHit1P.GetChan() );
-                        fhSystSortedMapN2P2->Fill( fLastSortedHit2N.GetChan(), fLastSortedHit2P.GetChan() );
-                        fhSystSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
-                        fhSystSortedDtAllVsMapX1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX1 );
-                        fhSystSortedDtAllVsMapY1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY1 );
-                        fhSystSortedDtAllVsMapX2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX2 );
-                        fhSystSortedDtAllVsMapY2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY2 );
-
-                        Double_t dDtN1X1 = ( dLastTimeN1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                        Double_t dDtN1X2 = ( dLastTimeN1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                        Double_t dDtP1X1 = ( dLastTimeP1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                        Double_t dDtP1X2 = ( dLastTimeP1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                        fhSystSortedDtN1X1vsN1X2->Fill( dDtN1X1, dDtN1X2 );
-                        fhSystSortedDtP1X1vsP1X2->Fill( dDtP1X1, dDtP1X2 );
-                        fhSystSortedDtN1X1vsP1X1->Fill( dDtN1X1, dDtP1X1 );
-
-                        Double_t dDtX1Y1N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                                - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                   ) * stsxyter::kdClockCycleNs;
-                        Double_t dDtX2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                                - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                   ) * stsxyter::kdClockCycleNs;
-                        fhSystSortedDtSts1Hodo1vsSts1Hodo2->Fill( dDtX1Y1N1P1, dDtX2Y2N1P1 );
-
-                        Double_t dDtX1Y1N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                                - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                   ) * stsxyter::kdClockCycleNs;
-                        Double_t dDtX2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                                - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                   ) * stsxyter::kdClockCycleNs;
-                        fhSystSortedDtSts2Hodo1vsSts2Hodo2->Fill( dDtX1Y1N2P2, dDtX2Y2N2P2 );
-                     } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
-                  } // else of if( bHitInX )
-            } // else if( fUnpackParHodo->GetAsicIndexHodo2() == usAsicIdx )
-            else if( fUnpackParSts->GetAsicIndexSts1N() == usAsicIdx )
-            {
-               Double_t dDtSameFeb = ( ulHitTs - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
-               fhSetupSortedDtN1->Fill( dDtSameFeb );
-
-               fLastSortedHit1N = (*it);
-               dLastTimeN1      = ulHitTs;
-
-               /// Compute fiber Idx of the last Hodo hits
-               UInt_t uFiberIdxX1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan()  );
-               if( fUnpackParHodo->IsXInvertedHodo1() )
-                  uFiberIdxX1 = fuNbChanPerAsic/2 - 1 - uFiberIdxX1;
-               UInt_t uFiberIdxY1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan()  );
-               if( fUnpackParHodo->IsYInvertedHodo1() )
-                  uFiberIdxY1 = fuNbChanPerAsic/2 - 1 - uFiberIdxY1;
-               UInt_t uFiberIdxX2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan()  );
-               if( fUnpackParHodo->IsXInvertedHodo2() )
-                  uFiberIdxX2 = fuNbChanPerAsic/2 - 1 - uFiberIdxX2;
-               UInt_t uFiberIdxY2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan()  );
-               if( fUnpackParHodo->IsYInvertedHodo2() )
-                  uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
-
-               dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-               dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-               dDtN1P1     = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
-               dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
-                             * stsxyter::kdClockCycleNs / 2.0;
-               dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                  - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                 ) * stsxyter::kdClockCycleNs;
-               if( kTRUE == fbDualStsEna )
-               {
-                  dDtN2P2     = ( dLastTimeP2 - dLastTimeN2 ) * stsxyter::kdClockCycleNs;
-                  dDtN1P1N2P2 = ( ( dLastTimeN2 + dLastTimeP2 ) - ( dLastTimeN1 + dLastTimeP1 ) )
-                                  * stsxyter::kdClockCycleNs / 2.0;
-                  dDtX1Y1X2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                    ) * stsxyter::kdClockCycleNs;
-                  dDtH1H2S1S2     = (  ( dLastTimeN2 + dLastTimeP2 + dLastTimeN1 + dLastTimeP1 )
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 )
-                                    ) * stsxyter::kdClockCycleNs / 4.0;
-               } // if( kTRUE == fbDualStsEna )
-
-               fhSetupSortedDtN1P1->Fill( dDtN1P1 );
-               fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
-               if( kTRUE == fbDualStsEna )
-               {
-                  fhSetupSortedDtN1P1N2P2->Fill(     dDtN1P1N2P2 );
-                  fhSetupSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-                  fhSetupSortedDtH1H2S1S2->Fill(     dDtH1H2S1S2 );
-               } // if( kTRUE == fbDualStsEna )
-
-               if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
-               {
-                  fhSetupSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), fLastSortedHit1P.GetChan() );
-                  fhSetupSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
-               } // if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
-
-               if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                   TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                   TMath::Abs( dDtN1P1 ) < fdCoincBorderSts &&
-                   TMath::Abs( dDtN2P2 ) < fdCoincBorderSts &&
-                   TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo &&
-                   TMath::Abs( dDtN1P1N2P2 ) < 2 * fdCoincBorderSts &&
-                   TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder &&
-                   TMath::Abs( dDtX1Y1X2Y2N2P2 ) < fdCoincBorder &&
-                   TMath::Abs( dDtH1H2S1S2 ) < fdCoincBorder )
-               {
-                  fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
-                  fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
-                  fhSystSortedDtN1P1->Fill(         dDtN1P1 );
-                  fhSystSortedDtN2P2->Fill(         dDtN2P2 );
-                  fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-
-                  fhSystSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                  fhSystSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                  fhSystSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), fLastSortedHit1P.GetChan() );
-                  fhSystSortedMapN2P2->Fill( fLastSortedHit2N.GetChan(), fLastSortedHit2P.GetChan() );
-                  fhSystSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
-                  fhSystSortedDtAllVsMapX1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX1 );
-                  fhSystSortedDtAllVsMapY1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY1 );
-                  fhSystSortedDtAllVsMapX2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX2 );
-                  fhSystSortedDtAllVsMapY2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY2 );
-
-                  Double_t dDtN1X1 = ( dLastTimeN1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtN1X2 = ( dLastTimeN1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtP1X1 = ( dLastTimeP1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtP1X2 = ( dLastTimeP1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                  fhSystSortedDtN1X1vsN1X2->Fill( dDtN1X1, dDtN1X2 );
-                  fhSystSortedDtP1X1vsP1X2->Fill( dDtP1X1, dDtP1X2 );
-                  fhSystSortedDtN1X1vsP1X1->Fill( dDtN1X1, dDtP1X1 );
-
-                  Double_t dDtX1Y1N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                          - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                             ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtX2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                          - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                             ) * stsxyter::kdClockCycleNs;
-                  fhSystSortedDtSts1Hodo1vsSts1Hodo2->Fill( dDtX1Y1N1P1, dDtX2Y2N1P1 );
-
-                  Double_t dDtX1Y1N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                          - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                             ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtX2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                          - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                             ) * stsxyter::kdClockCycleNs;
-                  fhSystSortedDtSts2Hodo1vsSts2Hodo2->Fill( dDtX1Y1N2P2, dDtX2Y2N2P2 );
-               } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
-            } // if( fUnpackParSts->GetAsicIndexSts1N() == usAsicIdx )
-            else if( fUnpackParSts->GetAsicIndexSts1P() == usAsicIdx )
-            {
-               Double_t dDtSameFeb = ( ulHitTs - dLastTimeP1 ) * stsxyter::kdClockCycleNs;
-               fhSetupSortedDtP1->Fill( dDtSameFeb );
-
-               fLastSortedHit1P = (*it);
-               dLastTimeP1      = ulHitTs;
-
-               /// Compute fiber Idx of the last Hodo hits
-               UInt_t uFiberIdxX1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan()  );
-               if( fUnpackParHodo->IsXInvertedHodo1() )
-                  uFiberIdxX1 = fuNbChanPerAsic/2 - 1 - uFiberIdxX1;
-               UInt_t uFiberIdxY1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan()  );
-               if( fUnpackParHodo->IsYInvertedHodo1() )
-                  uFiberIdxY1 = fuNbChanPerAsic/2 - 1 - uFiberIdxY1;
-               UInt_t uFiberIdxX2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan()  );
-               if( fUnpackParHodo->IsXInvertedHodo2() )
-                  uFiberIdxX2 = fuNbChanPerAsic/2 - 1 - uFiberIdxX2;
-               UInt_t uFiberIdxY2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan()  );
-               if( fUnpackParHodo->IsYInvertedHodo2() )
-                  uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
-
-               dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-               dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-               dDtN1P1     = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
-               dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
-                             * stsxyter::kdClockCycleNs / 2.0;
-               dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                  - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                 ) * stsxyter::kdClockCycleNs;
-               if( kTRUE == fbDualStsEna )
-               {
-                  dDtN2P2     = ( dLastTimeP2 - dLastTimeN2 ) * stsxyter::kdClockCycleNs;
-                  dDtN1P1N2P2 = ( ( dLastTimeN2 + dLastTimeP2 ) - ( dLastTimeN1 + dLastTimeP1 ) )
-                                  * stsxyter::kdClockCycleNs / 2.0;
-                  dDtX1Y1X2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                    ) * stsxyter::kdClockCycleNs;
-                  dDtH1H2S1S2     = (  ( dLastTimeN2 + dLastTimeP2 + dLastTimeN1 + dLastTimeP1 )
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 )
-                                    ) * stsxyter::kdClockCycleNs / 4.0;
-               } // if( kTRUE == fbDualStsEna )
-
-               fhSetupSortedDtN1P1->Fill( dDtN1P1 );
-               fhSetupSortedDtX1Y1X2Y2N1P1->Fill( dDtX1Y1X2Y2N1P1 );
-               if( kTRUE == fbDualStsEna )
-               {
-                  fhSetupSortedDtN1P1N2P2->Fill(     dDtN1P1N2P2 );
-                  fhSetupSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-                  fhSetupSortedDtH1H2S1S2->Fill(     dDtH1H2S1S2 );
-               } // if( kTRUE == fbDualStsEna )
-
-               if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
-               {
-                  fhSetupSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), fLastSortedHit1P.GetChan() );
-                  fhSetupSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
-               } // if( TMath::Abs( dDtN1P1 ) < fdCoincBorderSts )
-
-               if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                   TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                   TMath::Abs( dDtN1P1 ) < fdCoincBorderSts &&
-                   TMath::Abs( dDtN2P2 ) < fdCoincBorderSts &&
-                   TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo &&
-                   TMath::Abs( dDtN1P1N2P2 ) < 2 * fdCoincBorderSts &&
-                   TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder &&
-                   TMath::Abs( dDtX1Y1X2Y2N2P2 ) < fdCoincBorder &&
-                   TMath::Abs( dDtH1H2S1S2 ) < fdCoincBorder )
-               {
-                  fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
-                  fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
-                  fhSystSortedDtN1P1->Fill(         dDtN1P1 );
-                  fhSystSortedDtN2P2->Fill(         dDtN2P2 );
-                  fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-
-                  fhSystSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                  fhSystSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                  fhSystSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), fLastSortedHit1P.GetChan() );
-                  fhSystSortedMapN2P2->Fill( fLastSortedHit2N.GetChan(), fLastSortedHit2P.GetChan() );
-                  fhSystSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
-                  fhSystSortedDtAllVsMapX1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX1 );
-                  fhSystSortedDtAllVsMapY1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY1 );
-                  fhSystSortedDtAllVsMapX2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX2 );
-                  fhSystSortedDtAllVsMapY2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY2 );
-
-                  Double_t dDtN1X1 = ( dLastTimeN1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtN1X2 = ( dLastTimeN1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtP1X1 = ( dLastTimeP1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtP1X2 = ( dLastTimeP1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                  fhSystSortedDtN1X1vsN1X2->Fill( dDtN1X1, dDtN1X2 );
-                  fhSystSortedDtP1X1vsP1X2->Fill( dDtP1X1, dDtP1X2 );
-                  fhSystSortedDtN1X1vsP1X1->Fill( dDtN1X1, dDtP1X1 );
-
-                  Double_t dDtX1Y1N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                          - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                             ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtX2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                          - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                             ) * stsxyter::kdClockCycleNs;
-                  fhSystSortedDtSts1Hodo1vsSts1Hodo2->Fill( dDtX1Y1N1P1, dDtX2Y2N1P1 );
-
-                  Double_t dDtX1Y1N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                          - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                             ) * stsxyter::kdClockCycleNs;
-                  Double_t dDtX2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                          - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                             ) * stsxyter::kdClockCycleNs;
-                  fhSystSortedDtSts2Hodo1vsSts2Hodo2->Fill( dDtX1Y1N2P2, dDtX2Y2N2P2 );
-               } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
-            } // else if( fUnpackParSts->GetAsicIndexSts1P() == usAsicIdx )
-            else if( kTRUE == fbDualStsEna )
-            {
-               if( fUnpackParSts->GetAsicIndexSts2N() == usAsicIdx )
-               {
-                  Double_t dDtSameFeb = ( ulHitTs - dLastTimeN2 ) * stsxyter::kdClockCycleNs;
-                  fhSetupSortedDtN2->Fill( dDtSameFeb );
-
-                  fLastSortedHit2N = (*it);
-                  dLastTimeN2      = ulHitTs;
-
-                  /// Compute fiber Idx of the last Hodo hits
-                  UInt_t uFiberIdxX1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan()  );
-                  if( fUnpackParHodo->IsXInvertedHodo1() )
-                     uFiberIdxX1 = fuNbChanPerAsic/2 - 1 - uFiberIdxX1;
-                  UInt_t uFiberIdxY1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan()  );
-                  if( fUnpackParHodo->IsYInvertedHodo1() )
-                     uFiberIdxY1 = fuNbChanPerAsic/2 - 1 - uFiberIdxY1;
-                  UInt_t uFiberIdxX2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan()  );
-                  if( fUnpackParHodo->IsXInvertedHodo2() )
-                     uFiberIdxX2 = fuNbChanPerAsic/2 - 1 - uFiberIdxX2;
-                  UInt_t uFiberIdxY2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan()  );
-                  if( fUnpackParHodo->IsYInvertedHodo2() )
-                     uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
-
-                  dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                  dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                  dDtN1P1     = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
-                  dDtN2P2     = ( dLastTimeP2 - dLastTimeN2 ) * stsxyter::kdClockCycleNs;
-                  dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
-                                * stsxyter::kdClockCycleNs / 2.0;
-                  dDtN1P1N2P2 = ( ( dLastTimeN2 + dLastTimeP2 ) - ( dLastTimeN1 + dLastTimeP1 ) )
-                                  * stsxyter::kdClockCycleNs / 2.0;
-                  dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                    ) * stsxyter::kdClockCycleNs;
-                  dDtX1Y1X2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                    ) * stsxyter::kdClockCycleNs;
-                  dDtH1H2S1S2     = (  ( dLastTimeN2 + dLastTimeP2 + dLastTimeN1 + dLastTimeP1 )
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 )
-                                    ) * stsxyter::kdClockCycleNs / 4.0;
-
-                  fhSetupSortedDtN2P2->Fill( dDtN2P2 );
-                  fhSetupSortedDtN1P1N2P2->Fill(     dDtN1P1N2P2 );
-                  fhSetupSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-                  fhSetupSortedDtH1H2S1S2->Fill(     dDtH1H2S1S2 );
-
-                  if( TMath::Abs( dDtN2P2 ) < fdCoincBorderSts )
-                  {
-                     fhSetupSortedMapN2P2->Fill( fLastSortedHit2N.GetChan(), fLastSortedHit2P.GetChan() );
-                     fhSetupSortedCntEvoN2P2->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtN2P2 ) < fdCoincBorderSts )
-
-                  if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtN1P1 ) < fdCoincBorderSts &&
-                      TMath::Abs( dDtN2P2 ) < fdCoincBorderSts &&
-                      TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo &&
-                      TMath::Abs( dDtN1P1N2P2 ) < 2 * fdCoincBorderSts &&
-                      TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder &&
-                      TMath::Abs( dDtX1Y1X2Y2N2P2 ) < fdCoincBorder &&
-                      TMath::Abs( dDtH1H2S1S2 ) < fdCoincBorder )
-                  {
-                     fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
-                     fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
-                     fhSystSortedDtN1P1->Fill(         dDtN1P1 );
-                     fhSystSortedDtN2P2->Fill(         dDtN2P2 );
-                     fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-
-                     fhSystSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                     fhSystSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                     fhSystSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), fLastSortedHit1P.GetChan() );
-                     fhSystSortedMapN2P2->Fill( fLastSortedHit2N.GetChan(), fLastSortedHit2P.GetChan() );
-                     fhSystSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
-                     fhSystSortedDtAllVsMapX1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX1 );
-                     fhSystSortedDtAllVsMapY1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY1 );
-                     fhSystSortedDtAllVsMapX2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX2 );
-                     fhSystSortedDtAllVsMapY2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY2 );
-
-                     Double_t dDtN1X1 = ( dLastTimeN1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtN1X2 = ( dLastTimeN1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtP1X1 = ( dLastTimeP1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtP1X2 = ( dLastTimeP1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtN1X1vsN1X2->Fill( dDtN1X1, dDtN1X2 );
-                     fhSystSortedDtP1X1vsP1X2->Fill( dDtP1X1, dDtP1X2 );
-                     fhSystSortedDtN1X1vsP1X1->Fill( dDtN1X1, dDtP1X1 );
-
-                     Double_t dDtX1Y1N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                             - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtX2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                             - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtSts1Hodo1vsSts1Hodo2->Fill( dDtX1Y1N1P1, dDtX2Y2N1P1 );
-
-                     Double_t dDtX1Y1N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                             - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtX2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                             - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtSts2Hodo1vsSts2Hodo2->Fill( dDtX1Y1N2P2, dDtX2Y2N2P2 );
-                  } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
-               } // if( fUnpackParSts->GetAsicIndexSts2N() == usAsicIdx )
-               else if( fUnpackParSts->GetAsicIndexSts2P() == usAsicIdx )
-               {
-                  Double_t dDtSameFeb = ( ulHitTs - dLastTimeP2 ) * stsxyter::kdClockCycleNs;
-                  fhSetupSortedDtP2->Fill( dDtSameFeb );
-
-                  fLastSortedHit2P = (*it);
-                  dLastTimeP2      = ulHitTs;
-
-                  /// Compute fiber Idx of the last Hodo hits
-                  UInt_t uFiberIdxX1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1X.GetChan()  );
-                  if( fUnpackParHodo->IsXInvertedHodo1() )
-                     uFiberIdxX1 = fuNbChanPerAsic/2 - 1 - uFiberIdxX1;
-                  UInt_t uFiberIdxY1 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit1Y.GetChan()  );
-                  if( fUnpackParHodo->IsYInvertedHodo1() )
-                     uFiberIdxY1 = fuNbChanPerAsic/2 - 1 - uFiberIdxY1;
-                  UInt_t uFiberIdxX2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2X.GetChan()  );
-                  if( fUnpackParHodo->IsXInvertedHodo2() )
-                     uFiberIdxX2 = fuNbChanPerAsic/2 - 1 - uFiberIdxX2;
-                  UInt_t uFiberIdxY2 = fUnpackParHodo->GetChannelToFiberMap( fLastSortedHit2Y.GetChan()  );
-                  if( fUnpackParHodo->IsYInvertedHodo2() )
-                     uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;
-
-                  dDtX1Y1     = ( dLastTimeY1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                  dDtX2Y2     = ( dLastTimeY2 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                  dDtN1P1     = ( dLastTimeP1 - dLastTimeN1 ) * stsxyter::kdClockCycleNs;
-                  dDtN2P2     = ( dLastTimeP2 - dLastTimeN2 ) * stsxyter::kdClockCycleNs;
-                  dDtX1Y1X2Y2 = ( ( dLastTimeX2 + dLastTimeY2 ) - ( dLastTimeX1 + dLastTimeY1 ) )
-                                * stsxyter::kdClockCycleNs / 2.0;
-                  dDtN1P1N2P2 = ( ( dLastTimeN2 + dLastTimeP2 ) - ( dLastTimeN1 + dLastTimeP1 ) )
-                                  * stsxyter::kdClockCycleNs / 2.0;
-                  dDtX1Y1X2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                    ) * stsxyter::kdClockCycleNs;
-                  dDtX1Y1X2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 ) / 4.0
-                                    ) * stsxyter::kdClockCycleNs;
-                  dDtH1H2S1S2     = (  ( dLastTimeN2 + dLastTimeP2 + dLastTimeN1 + dLastTimeP1 )
-                                     - ( dLastTimeX2 + dLastTimeY2 + dLastTimeX1 + dLastTimeY1 )
-                                    ) * stsxyter::kdClockCycleNs / 4.0;
-
-
-                  fhSetupSortedDtN2P2->Fill( dDtN2P2 );
-                  fhSetupSortedDtN1P1N2P2->Fill(     dDtN1P1N2P2 );
-                  fhSetupSortedDtX1Y1X2Y2N2P2->Fill( dDtX1Y1X2Y2N2P2 );
-                  fhSetupSortedDtH1H2S1S2->Fill(     dDtH1H2S1S2 );
-
-                  if( TMath::Abs( dDtN2P2 ) < fdCoincBorderSts )
-                  {
-                     fhSetupSortedMapN2P2->Fill( fLastSortedHit2N.GetChan(), fLastSortedHit2P.GetChan() );
-                     fhSetupSortedCntEvoN2P2->Fill( dTimeSinceStartSec );
-                  } // if( TMath::Abs( dDtN2P2 ) < fdCoincBorderSts )
-
-                  if( TMath::Abs( dDtX1Y1 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtX2Y2 ) < fdCoincBorderHodo &&
-                      TMath::Abs( dDtN1P1 ) < fdCoincBorderSts &&
-                      TMath::Abs( dDtN2P2 ) < fdCoincBorderSts &&
-                      TMath::Abs( dDtX1Y1X2Y2 ) < 2 * fdCoincBorderHodo &&
-                      TMath::Abs( dDtN1P1N2P2 ) < 2 * fdCoincBorderSts &&
-                      TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder &&
-                      TMath::Abs( dDtX1Y1X2Y2N2P2 ) < fdCoincBorder &&
-                      TMath::Abs( dDtH1H2S1S2 ) < fdCoincBorder )
-                  {
-                     fhSystSortedDtX1Y1->Fill(         dDtX1Y1 );
-                     fhSystSortedDtX2Y2->Fill(         dDtX2Y2 );
-                     fhSystSortedDtN1P1->Fill(         dDtN1P1 );
-                     fhSystSortedDtN2P2->Fill(         dDtN2P2 );
-                     fhSystSortedDtX1Y1X2Y2->Fill(     dDtX1Y1X2Y2 );
-
-                     fhSystSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
-                     fhSystSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
-                     fhSystSortedMapN1P1->Fill( fLastSortedHit1N.GetChan(), fLastSortedHit1P.GetChan() );
-                     fhSystSortedMapN2P2->Fill( fLastSortedHit2N.GetChan(), fLastSortedHit2P.GetChan() );
-                     fhSystSortedCntEvoN1P1->Fill( dTimeSinceStartSec );
-                     fhSystSortedDtAllVsMapX1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX1 );
-                     fhSystSortedDtAllVsMapY1->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY1 );
-                     fhSystSortedDtAllVsMapX2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxX2 );
-                     fhSystSortedDtAllVsMapY2->Fill( dDtX1Y1X2Y2N1P1, uFiberIdxY2 );
-
-                     Double_t dDtN1X1 = ( dLastTimeN1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtN1X2 = ( dLastTimeN1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtP1X1 = ( dLastTimeP1 - dLastTimeX1 ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtP1X2 = ( dLastTimeP1 - dLastTimeX2 ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtN1X1vsN1X2->Fill( dDtN1X1, dDtN1X2 );
-                     fhSystSortedDtP1X1vsP1X2->Fill( dDtP1X1, dDtP1X2 );
-                     fhSystSortedDtN1X1vsP1X1->Fill( dDtN1X1, dDtP1X1 );
-
-                     Double_t dDtX1Y1N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                             - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtX2Y2N1P1 = (  ( dLastTimeN1 + dLastTimeP1 ) / 2.0
-                                             - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtSts1Hodo1vsSts1Hodo2->Fill( dDtX1Y1N1P1, dDtX2Y2N1P1 );
-
-                     Double_t dDtX1Y1N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                             - ( dLastTimeX1 + dLastTimeY1 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     Double_t dDtX2Y2N2P2 = (  ( dLastTimeN2 + dLastTimeP2 ) / 2.0
-                                             - ( dLastTimeX2 + dLastTimeY2 ) / 2.0
-                                                ) * stsxyter::kdClockCycleNs;
-                     fhSystSortedDtSts2Hodo1vsSts2Hodo2->Fill( dDtX1Y1N2P2, dDtX2Y2N2P2 );
-                  } // if( TMath::Abs( dDtX1Y1X2Y2N1P1 ) < fdCoincBorder )
-               } // else if( fUnpackParSts->GetAsicIndexSts1P() == usAsicIdx )
-            } // else if( kTRUE == fbDualStsEna )
-*/
+                  case 31:
+                     fhAsicMissedChanGroupVsPulseIdx->Fill( fuPulseIdx, 0 );
+                     break;
+                  case 35:
+                     fhAsicMissedChanGroupVsPulseIdx->Fill( fuPulseIdx, 1 );
+                     break;
+                  case 39:
+                     fhAsicMissedChanGroupVsPulseIdx->Fill( fuPulseIdx, 2 );
+                     break;
+                  default:
+                  break;
+               } // switch( usChanIdx )
+            } // if( 0 == usAsicIdx && fuPulseIdx < fuPulseIdxMax )
          } // loop on hits untils hits within 100 ns of last one or last one itself are reached
+         fuPulseIdx ++;
 
          // Remove all hits which were already used
          fvmHitsInTs.erase( fvmHitsInTs.begin(), it );
@@ -4095,7 +3300,7 @@ void CbmCosy2018MonitorDupli::Finish()
    LOG(INFO) << "CbmCosy2018MonitorDupli done saving histos " << FairLogger::endl;
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
 
-   SaveAllHistos();
+//   SaveAllHistos();
 
 }
 
@@ -4290,6 +3495,15 @@ void CbmCosy2018MonitorDupli::SaveAllHistos( TString sFileName )
       fhHodoChanGoodHitRateEvo[ uXyterIdx ]->Write();
       fhPulseChanCountEvo[ uXyterIdx ]->Write();
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+   fhAsicGoodTsEvoAsic0Chan01->Write();
+   fhAsicGoodTsMsbEvoAsic0Chan01->Write();
+   fhAsicDuplicTsEvoAsic0Chan01->Write();
+   fhAsicGoodTsEvoAsic0Chan09->Write();
+   fhAsicDuplicTsEvoAsic0Chan09->Write();
+   fhAsicGoodTsEvoAsic0Chan16->Write();
+   fhAsicDuplicTsEvoAsic0Chan16->Write();
+   fhAsicMissedChanIdVsPulseIdx->Write();
+   fhAsicMissedChanGroupVsPulseIdx->Write();
 
    for( UInt_t uDpbIdx = 0; uDpbIdx < fuNrOfDpbs; ++uDpbIdx )
    {
@@ -4494,11 +3708,29 @@ void CbmCosy2018MonitorDupli::ResetAllHistos()
       fhAsicDuplicCompTs[ uXyterIdx ]->Reset();
       fhAsicDuplicTsLsb[ uXyterIdx ]->Reset();
       fhAsicDuplicTsMsb[ uXyterIdx ]->Reset();
+      fhAsicDuplicCompTsBitThere[ uXyterIdx ]->Reset();
+      fhAsicDuplicTsLsbBitThere[ uXyterIdx ]->Reset();
+      fhAsicDuplicTsMsbBitThere[ uXyterIdx ]->Reset();
+      fhAsicDuplicTs[ uXyterIdx ]->Reset();
+      fhAsicGoodTs[ uXyterIdx ]->Reset();
+      fhAsicDuplicTsBitPattern[ uXyterIdx ]->Reset();
+      fhAsicGoodTsBitPattern[ uXyterIdx ]->Reset();
 
       fhHodoChanCntGood[ uXyterIdx ]->Reset();
       fhHodoChanGoodHitRateEvo[ uXyterIdx ]->Reset();
       fhPulseChanCountEvo[ uXyterIdx ]->Reset();
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+
+   fhAsicGoodTsEvoAsic0Chan01->Reset();
+   fhAsicGoodTsMsbEvoAsic0Chan01->Reset();
+   fhAsicDuplicTsEvoAsic0Chan01->Reset();
+   fhAsicGoodTsEvoAsic0Chan09->Reset();
+   fhAsicDuplicTsEvoAsic0Chan09->Reset();
+   fhAsicGoodTsEvoAsic0Chan16->Reset();
+   fhAsicDuplicTsEvoAsic0Chan16->Reset();
+   fuPulseIdx = 0;
+   fhAsicMissedChanIdVsPulseIdx->Reset();
+   fhAsicMissedChanGroupVsPulseIdx->Reset();
 
    for( UInt_t uDpbIdx = 0; uDpbIdx < fuNrOfDpbs; ++uDpbIdx )
    {
