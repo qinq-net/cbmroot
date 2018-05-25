@@ -299,7 +299,10 @@ add_subdirectory (macro)
 add_subdirectory(fles)
 
 # To build the MQ code the FairRoot version has at least v-17.10b 
-If(FairRoot_VERSION VERSION_GREATER_EQUAL 17.10.2)
+# Older CMake versions don't understand "VERSION_GREATER_EQUAL"
+#If(FairRoot_VERSION VERSION_GREATER_EQUAL 17.10.2)
+If(NOT FairRoot_VERSION VERSION_LESS 17.10.2)
+  Message("Build MQ subdirectory.")
   add_subdirectory(MQ)
 EndIf()
 
