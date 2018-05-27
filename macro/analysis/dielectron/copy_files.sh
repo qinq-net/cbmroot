@@ -1,7 +1,7 @@
 #####!/bin/sh
 
-mainDirFrom=/lustre/nyx/cbm/users/slebedev/cbm/data/lmvm/test6/8gev/
-mainDirTo=/u/slebedev/Baykal/lmvm/test6/8gev/
+mainDirFrom=/lustre/nyx/cbm/users/slebedev/cbm/data/lmvm/may18_100k/8gev/
+mainDirTo=/u/slebedev/Baykal/lmvm/may18_100k/8gev/
 fileNameAna=analysis.auau.8gev.centr.all.root
 fileNameLitqa=litqa.auau.8gev.centr.all.root
 
@@ -15,7 +15,7 @@ copy_func() {
 }
 
 copy_all_pluto_particles() {
-  copy_func ${1} ${2} ${3} rho0
+  #copy_func ${1} ${2} ${3} rho0
   copy_func ${1} ${2} ${3} omegaepem
   copy_func ${1} ${2} ${3} omegadalitz
   copy_func ${1} ${2} ${3} phi 

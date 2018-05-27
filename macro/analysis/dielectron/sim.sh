@@ -19,7 +19,7 @@ XXXX=$(printf "%04d" "$SLURM_ARRAY_TASK_ID")
 export SCRIPT=yes
 
 # Number of events to run
-nevents=2
+nevents=1000
 
 # setup the run environment
 source ${cbmrootConfigPath}
@@ -76,7 +76,7 @@ fi
 # run the root simulation
 root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
 root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
-#root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
+root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
 root -b -l -q "${macro_dir}/run_analysis.C(${nevents})"
 
 export SCRIPT=no

@@ -89,6 +89,11 @@ void run_reco(Int_t nEvents = 2)
     }
     std::cout << "-I-" << myName << ": " << macroName << " excuted successfully" << std::endl;
 
+    if (setup->IsActive(kTrd)) {
+	CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN("CbmTrdSetTracksPidANN","CbmTrdSetTracksPidANN");
+	trdSetTracksPidAnnTask->SetTRDGeometryType("h++");
+	run->AddTask(trdSetTracksPidAnnTask);
+    }
 
     CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
     run->AddTask(matchRecoToMc);
