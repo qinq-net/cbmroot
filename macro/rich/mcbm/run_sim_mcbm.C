@@ -8,12 +8,13 @@ void run_sim_mcbm(Int_t nEvents = 100)
     TString myName = "run_sim_mcbm";  // this macro's name for screen output
     TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-//    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis18_mcbm_20deg_long.C";
-    TString geoSetupFile = srcDir +"/geometry/setup/setup_sis18_mcbm_20deg_long.C";
+    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis18_mcbm_20deg_long.C";
+//    TString geoSetupFile = srcDir +"/geometry/setup/setup_sis18_mcbm_20deg_long.C";
 
-    TString inFile = srcDir + "/input/urqmd.auau.1.24gev.centr.00000.root";
-    TString outDir = "/home/aghoehne/Documents/CbmRoot/Gregor/";	
-//    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/mcbm/";
+    //TString inFile = srcDir + "/input/urqmd.auau.1.24gev.centr.00000.root";
+    TString inFile = srcDir + "/input/urqmd.agag.1.65gev.centr.00001.root";
+ //   TString outDir = "/home/aghoehne/Documents/CbmRoot/Gregor/";
+    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/mcbm/";
     TString parFile = outDir + "param.00000.root";
     TString mcFile = outDir + "mc.00000.root";
     TString geoFile = outDir + "sis18_mcbm_20deg_long_geofile_full.root";

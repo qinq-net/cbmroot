@@ -1,4 +1,3 @@
-
 void run_reco_urqmdtest(Int_t nEvents = 20)
 {
     TTree::SetMaxTreeSize(90000000000);
@@ -24,8 +23,6 @@ void run_reco_urqmdtest(Int_t nEvents = 20)
     }
 
     remove(recoFile.Data());
-
-
 
     TString setupFunct = "do_setup()";
     std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;

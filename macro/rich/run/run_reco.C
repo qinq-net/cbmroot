@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 100)
+void run_reco(Int_t nEvents = 20)
 {
     TTree::SetMaxTreeSize(90000000000);
     TString script = TString(gSystem->Getenv("SCRIPT"));
@@ -6,13 +6,13 @@ void run_reco(Int_t nEvents = 100)
     TString myName = "run_reco";
     TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_v18a_1e.C";
+    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100.C";
 
     TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
     TString mcFile = outDir + "mc.00000.root";
     TString parFile = outDir + "param.00000.root";
     TString recoFile = outDir + "reco.00000.root";
-    std::string resultDir = "results_recoqa/";
+    std::string resultDir = "results_recoqa_newqa/";
 
     if (script == "yes") {
         mcFile = TString(gSystem->Getenv("MC_FILE"));
@@ -33,23 +33,22 @@ void run_reco(Int_t nEvents = 100)
 
     std::cout << std::endl<< "-I- " << myName << ": Defining parameter files " << std::endl;
     TList *parFileList = new TList();
-//    TString geoTag;
-//
-//    // - TRD digitisation parameters
-//    if ( CbmSetup::Instance()->GetGeoTag(kTrd, geoTag) ) {
-//        TObjString* trdFile = new TObjString(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
-//        parFileList->Add(trdFile);
-//        std::cout << "-I- " << myName << ": Using parameter file " << trdFile->GetString() << std::endl;
-//    }
-//    // - TOF digitisation parameters
-//    if ( CbmSetup::Instance()->GetGeoTag(kTof, geoTag) ) {
-//        TObjString* tofFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
-//        parFileList->Add(tofFile);
-//        std::cout << "-I- " << myName << ": Using parameter file " << tofFile->GetString() << std::endl;
-//        TObjString* tofBdfFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
-//        parFileList->Add(tofBdfFile);
-//        std::cout << "-I- " << myName << ": Using parameter file " << tofBdfFile->GetString() << std::endl;
-//    }
+    TString geoTag;
+    // - TRD digitisation parameters
+    if ( CbmSetup::Instance()->GetGeoTag(kTrd, geoTag) ) {
+        TObjString* trdFile = new TObjString(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
+        parFileList->Add(trdFile);
+        std::cout << "-I- " << myName << ": Using parameter file " << trdFile->GetString() << std::endl;
+    }
+    // - TOF digitisation parameters
+    if ( CbmSetup::Instance()->GetGeoTag(kTof, geoTag) ) {
+        TObjString* tofFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
+        parFileList->Add(tofFile);
+        std::cout << "-I- " << myName << ": Using parameter file " << tofFile->GetString() << std::endl;
+        TObjString* tofBdfFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digibdf.par");
+        parFileList->Add(tofBdfFile);
+        std::cout << "-I- " << myName << ": Using parameter file " << tofBdfFile->GetString() << std::endl;
+    }
 
     TStopwatch timer;
     timer.Start();
@@ -96,20 +95,20 @@ void run_reco(Int_t nEvents = 100)
     CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
     run->AddTask(matchRecoToMc);
 
-    // RICH reco QA
-    CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
-    richRecoQa->SetOutputDir(resultDir);
-    run->AddTask(richRecoQa);
+//    // RICH reco QA
+//    CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
+//    richRecoQa->SetOutputDir(resultDir);
+//    run->AddTask(richRecoQa);
 
 //    // Reconstruction Qa
     CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
     trackingQa->SetMinNofPointsSts(4);
     trackingQa->SetUseConsecutivePointsInSts(true);
-   // trackingQa->SetMinNofPointsTrd(minNofPointsTrd);
+    trackingQa->SetMinNofPointsTrd(2);
     trackingQa->SetMinNofPointsMuch(10);
     trackingQa->SetMinNofPointsTof(1);
     trackingQa->SetQuota(0.7);
-   // trackingQa->SetMinNofHitsTrd(minNofPointsTrd);
+    trackingQa->SetMinNofHitsTrd(2);
     trackingQa->SetMinNofHitsMuch(10);
     trackingQa->SetVerbose(0);
     trackingQa->SetMinNofHitsRich(7);
@@ -125,22 +124,22 @@ void run_reco(Int_t nEvents = 100)
     trackingQa->SetTrackCategories(trackCat);
     trackingQa->SetRingCategories(richCat);
     run->AddTask(trackingQa);
-//
-//    CbmLitFitQa* fitQa = new CbmLitFitQa();
-//    fitQa->SetMvdMinNofHits(0);
-//    fitQa->SetStsMinNofHits(6);
-//    fitQa->SetMuchMinNofHits(10);
-//   // fitQa->SetTrdMinNofHits(minNofPointsTrd);
-//    fitQa->SetOutputDir(resultDir);
-//    //run->AddTask(fitQa);
-//
-//    CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
-//    clusteringQa->SetOutputDir(resultDir);
-//    //run->AddTask(clusteringQa);
 
-    //CbmLitTofQa* tofQa = new CbmLitTofQa();
-    //tofQa->SetOutputDir(std::string(resultDir));
-    //run->AddTask(tofQa);
+    CbmLitFitQa* fitQa = new CbmLitFitQa();
+    fitQa->SetMvdMinNofHits(0);
+    fitQa->SetStsMinNofHits(6);
+    fitQa->SetMuchMinNofHits(10);
+    fitQa->SetTrdMinNofHits(2);
+    fitQa->SetOutputDir(resultDir);
+    run->AddTask(fitQa);
+
+    CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
+    clusteringQa->SetOutputDir(resultDir);
+    run->AddTask(clusteringQa);
+
+    CbmLitTofQa* tofQa = new CbmLitTofQa();
+    tofQa->SetOutputDir(std::string(resultDir));
+   // run->AddTask(tofQa);
 
 
     std::cout << std::endl << std::endl << "-I- " << myName << ": Set runtime DB" << std::endl;

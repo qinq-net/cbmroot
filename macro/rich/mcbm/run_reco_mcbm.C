@@ -1,4 +1,4 @@
-void run_reco_mcbm(Int_t nEvents = 100)
+void run_reco_mcbm(Int_t nEvents = 1000)
 {
 
     TTree::SetMaxTreeSize(90000000000);
@@ -10,8 +10,8 @@ void run_reco_mcbm(Int_t nEvents = 100)
  //   TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis18_mcbm_20deg_long.C";
     TString geoSetupFile = srcDir +"/geometry/setup/setup_sis18_mcbm_20deg_long.C";
 
-//    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/mcbm/";
-    TString outDir = "/home/aghoehne/Documents/CbmRoot/Gregor/";	
+    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/mcbm/";
+   // TString outDir = "/home/aghoehne/Documents/CbmRoot/Gregor/";
     TString mcFile = outDir + "mc.00000.root";
     TString parFile = outDir + "param.00000.root";
     TString recoFile = outDir + "reco.00000.root";

@@ -16,10 +16,6 @@ void run_sim_urqmdtest(Int_t nEvents = 20)
     TString mcFile = outDir + "mc.00000.root";
     TString geoFile = outDir + "geosim.00000.root";
 
-    remove(parFile.Data());
-    remove(mcFile.Data());
-    remove(geoFile.Data());
-
     if (script == "yes") {
         inFile = TString(gSystem->Getenv("IN_FILE"));
         mcFile = TString(gSystem->Getenv("MC_FILE"));
@@ -27,6 +23,9 @@ void run_sim_urqmdtest(Int_t nEvents = 20)
         geoFile = TString(gSystem->Getenv("GEOSIM_FILE"));
         geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
     }
+    remove(parFile.Data());
+    remove(mcFile.Data());
+    remove(geoFile.Data());
 
     // Target geometry
     TString  targetElement   = "Gold";
