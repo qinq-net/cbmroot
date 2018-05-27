@@ -151,7 +151,8 @@ public:
             const CbmRichHit* hit,
             const TClonesArray* richDigis,
             CbmMCDataArray* richPoints,
-            CbmMCDataArray* mcTracks);
+            CbmMCDataArray* mcTracks,
+            Int_t eventNumber);
     
     static std::vector<Int_t> GetMcTrackMotherIdsForRichHit(
             const CbmRichHit* hit,

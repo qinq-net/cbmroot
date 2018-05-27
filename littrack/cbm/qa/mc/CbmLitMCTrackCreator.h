@@ -52,15 +52,9 @@ public:
     
     /**
      * \brief Creates array of CbmLitMCTracks for current event.
-     * Has to be executed in Init() function of the task.
      */
-    void CreateMC();
+    void Create(Int_t eventNum);
     
-    /**
-     * \brief Creates array of CbmLitMCTracks for current event.
-     * Has to be executed in Exec() function of the task.
-     */
-    void CreateReco();
     
     /**
      * \brief Check whether a track exists in the array.
@@ -104,20 +98,22 @@ private:
      * \brief Add MC points from a certain detector.
      * \param[in] detId Detector identificator.
      * \param[in] array Array of FairMCPoint.
+     * \param[in] iEvent Event index
      */
     void AddPoints(
                    ECbmModuleId detId,
-                   CbmMCDataArray* array);
+                   CbmMCDataArray* array,
+                   Int_t iEvent);
     
     /**
      * \brief Calculate and set number of RICH hits for MC track.
      */
-    void AddRichHits();
+    void AddRichHits(Int_t iEvent);
     
     /**
      * \brief Fit Rich MC points using ellipse fitter and fill ellipse parameters.
      */
-    void AddRingParameters();
+    void AddRingParameters(Int_t iEvent);
     
     /**
      * \brief Convert FairMCPoint to CbmLitMCPoint.
@@ -135,7 +131,7 @@ private:
     /**
      * \brief Fill maps for MC points to station id.
      */
-    void FillStationMaps();
+    void FillStationMaps(Int_t iEvent);
     
     
     void FairMCPointCoordinatesAndMomentumToLitMCPoint(

@@ -791,7 +791,7 @@ void CbmMatchRecoToMC::MatchRichRings(
             const CbmRichHit* hit = static_cast<const CbmRichHit*>(richHits->At(ring->GetHit(iHit)));
             if ( NULL == hit ) continue;
 
-            vector<pair<Int_t, Int_t> > motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
+            vector<pair<Int_t, Int_t> > motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks, fEventNumber);
             for (UInt_t i = 0; i < motherIds.size(); i++) {
                 ringMatch->AddLink(1., motherIds[i].second, motherIds[i].first);
             }
@@ -807,7 +807,7 @@ void CbmMatchRecoToMC::MatchRichRings(
             for (Int_t iHit = 0; iHit < nofHits; iHit++) {
                 const CbmRichHit* hit = static_cast<const CbmRichHit*>(richHits->At(ring->GetHit(iHit)));
                 if ( NULL == hit ) continue;
-                vector<pair<Int_t, Int_t> > motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
+                vector<pair<Int_t, Int_t> > motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks, fEventNumber);
                 if(std::find(motherIds.begin(), motherIds.end(), std::make_pair(bestTrackEventId, bestTrackId)) != motherIds.end()) {
                     trueCounter++;
                 } else {
@@ -831,7 +831,8 @@ vector<pair<Int_t, Int_t> > CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
         const CbmRichHit* hit,
         const TClonesArray* richDigis,
         CbmMCDataArray* richPoints,
-        CbmMCDataArray* mcTracks)
+        CbmMCDataArray* mcTracks,
+        Int_t eventNumber)
 {
     vector<pair<Int_t, Int_t> > result;
     if ( NULL == hit ) return result;
@@ -846,19 +847,19 @@ vector<pair<Int_t, Int_t> > CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
         Int_t pointId = links[i].GetIndex();
         if (pointId < 0) continue; // noise hit
 
-        const CbmRichPoint* pMCpt = static_cast<const CbmRichPoint*>(richPoints->Get(0, fEventNumber, pointId));
+        const CbmRichPoint* pMCpt = static_cast<const CbmRichPoint*>(richPoints->Get(0, eventNumber, pointId));
         if ( NULL == pMCpt ) continue;
         Int_t mcTrackIndex = pMCpt->GetTrackID();
         if ( mcTrackIndex < 0 ) continue;
         //TODO: Currently we support only legacy mode of CbmMCDataArray
-        const CbmMCTrack *mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, fEventNumber, mcTrackIndex));
+        const CbmMCTrack *mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNumber, mcTrackIndex));
        // CbmMCTrack* pMCtr = (CbmMCTrack*) mcTracks->At(mcTrackIndex);
         if ( NULL == mcTrack ) continue;
         if ( mcTrack->GetPdgCode() != 50000050) continue; // select only Cherenkov photons
         Int_t motherId = mcTrack->GetMotherId();
         // several photons can have same mother track
         // count only unique motherIds
-        pair<Int_t, Int_t> val = std::make_pair(fEventNumber, motherId);
+        pair<Int_t, Int_t> val = std::make_pair(eventNumber, motherId);
         if(std::find(result.begin(), result.end(), val) == result.end()) {
             result.push_back(val);
         }

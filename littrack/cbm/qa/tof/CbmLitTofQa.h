@@ -89,7 +89,7 @@ private:
     */
    void CreateHistograms();
 
-   void ProcessMC();
+   void ProcessMC(Int_t iEvent);
 
    void ProcessGlobalTracks();
 
@@ -134,7 +134,7 @@ private:
 //#endif
 
    set<pair<Int_t, Int_t> > fMCTrackIdForTofHits; // Set of MC track IDs for all existing TOF hits
-   //set<pair<Int_t, Int_t> > fMCTrackIdForTofPoints; // Set of MC track IDs for all existing TOF points
+   set<pair<Int_t, Int_t> > fMCTrackIdForTofPoints; // Set of MC track IDs for all existing TOF points
 
    ClassDef(CbmLitTofQa, 1)
 };

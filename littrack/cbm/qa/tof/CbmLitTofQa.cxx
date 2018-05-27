@@ -50,8 +50,8 @@ CbmLitTofQa::CbmLitTofQa():
    fKFFitter(),
    fTrackCategories(),
    fTrackAcceptanceFunctions(),
-   fMCTrackIdForTofHits()//,
-   //fMCTrackIdForTofPoints()
+   fMCTrackIdForTofHits(),
+   fMCTrackIdForTofPoints()
 {
    FillTrackCategoriesAndAcceptanceFunctions();
 }
@@ -74,8 +74,9 @@ void CbmLitTofQa::Exec(
    Option_t* opt)
 {
    static Int_t nofEvents = 0;
-   std::cout << "CbmLitTofQa::Exec: event=" << nofEvents++ << std::endl;
-   ProcessMC();
+   nofEvents++;
+   std::cout << "CbmLitTofQa::Exec: event=" << nofEvents << std::endl;
+   ProcessMC(nofEvents - 1);
    ProcessGlobalTracks();
    ProcessTofHits();
    ProcessTofTracks();
@@ -185,10 +186,10 @@ void CbmLitTofQa::CreateHistograms()
    fHM->Add(name, new TH1F(name.c_str(), string(name + ";Time [ns];Counter").c_str(), 2000, 0., 36.));
 }
 
-void CbmLitTofQa::ProcessMC()
+void CbmLitTofQa::ProcessMC(Int_t iEvent)
 {
    fMCTrackIdForTofHits.clear();
-   //fMCTrackIdForTofPoints.clear();
+   fMCTrackIdForTofPoints.clear();
 
    Int_t nofHits = fTofHits->GetEntriesFast();
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
@@ -201,15 +202,11 @@ void CbmLitTofQa::ProcessMC()
       fMCTrackIdForTofHits.insert(make_pair(tofPointEventNo, tofPoint->GetTrackID()));
    }
 
-   /*for (Int_t iEventNo = 0; fTofPoints->Size(0, iEventNo) >= 0; ++iEventNo)
-   {
-      Int_t nofPoints = fTofPoints->Size(0, iEventNo);
-      
-      for (Int_t iPoint = 0; iPoint < nofPoints; iPoint++) {
-         const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->Get(0, iEventNo, iPoint));
-         fMCTrackIdForTofPoints.insert(pair<Int_t, Int_t> (iEventNo, tofPoint->GetTrackID()));
-      }
-   }*/
+   Int_t nofPoints = fTofPoints->Size(0, iEvent);
+   for (Int_t iPoint = 0; iPoint < nofPoints; iPoint++) {
+       const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->Get(0, iEvent, iPoint));
+       fMCTrackIdForTofPoints.insert(pair<Int_t, Int_t> (iEvent, tofPoint->GetTrackID()));
+   }
 }
 
 void CbmLitTofQa::ProcessGlobalTracks()
@@ -275,7 +272,7 @@ void CbmLitTofQa::ProcessGlobalTracks()
     	  string category = fTrackCategories[iCat];
     	  LitTrackAcceptanceFunction function = fTrackAcceptanceFunctions.find(category)->second;
     	  Bool_t categoryOk = function(fMCTracks, tofMCEventId, stsMCTrackId);
-    	  //Bool_t accTofOk = fMCTrackIdForTofPoints.find(stsMCTrackId) != fMCTrackIdForTofPoints.end();
+    	  //Bool_t accTofOk = fMCTrackIdForTofPoints.find(make_pair(tofMCEventId, stsMCTrackId)) != fMCTrackIdForTofPoints.end();
     	  Bool_t accTofOk = fMCTrackIdForTofHits.find(make_pair(tofMCEventId, stsMCTrackId)) != fMCTrackIdForTofHits.end();
 
     	  if (categoryOk && chiSqPrimaryOk) {

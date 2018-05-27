@@ -121,45 +121,42 @@ InitStatus CbmLitClusteringQa::Init()
    InitMuchGeoScheme(fMuchDigiFileName);
 
    CreateHistograms();
-   FillEventCounterHistogramsMC();
    
-   FillHitEfficiencyHistogramsMC(fStsPoints, "Sts", kSts);
-   FillHitEfficiencyHistogramsMC(fTrdPoints, "Trd", kTrd);
-   FillHitEfficiencyHistogramsMC(fMuchPoints, "Much", kMuch);
    return kSUCCESS;
 }
 
 void CbmLitClusteringQa::Exec(
     Option_t* opt)
 {
-   FillEventCounterHistogramsReco();
+    fHM->H1("hen_EventNo_ClusteringQa")->Fill(0.5);
+    Int_t eventNum = fHM->H1("hen_EventNo_ClusteringQa")->GetEntries() - 1;
+    std::cout << "CbmLitClusteringQa::Exec: event=" << eventNum << std::endl;
 
-   ProcessPoints(fStsPoints, "Sts", kSts);
-   ProcessPoints(fTrdPoints, "Trd", kTrd);
-   ProcessPoints(fMuchPoints, "Much", kMuch);
+    FillEventCounterHistograms(eventNum);
 
-   ProcessDigis(fStsDigis, fStsDigiMatches, "Sts", kSts);
-   ProcessDigis(fTrdDigis, fTrdDigiMatches, "Trd", kTrd);
-   ProcessDigis(fMuchDigis, fMuchDigiMatches, "Much", kMuch);
+    ProcessPoints(eventNum, fStsPoints, "Sts", kSts);
+    ProcessPoints(eventNum, fTrdPoints, "Trd", kTrd);
+    ProcessPoints(eventNum, fMuchPoints, "Much", kMuch);
 
-   ProcessClusters(fStsClusters, fStsClusterMatches, "Sts", kSts);
-   ProcessClusters(fTrdClusters, fTrdClusterMatches, "Trd", kTrd);
-   ProcessClusters(fMuchClusters, fMuchClusterMatches, "Much", kMuch);
+    ProcessDigis(fStsDigis, fStsDigiMatches, "Sts", kSts);
+    ProcessDigis(fTrdDigis, fTrdDigiMatches, "Trd", kTrd);
+    ProcessDigis(fMuchDigis, fMuchDigiMatches, "Much", kMuch);
 
-   ProcessHits(fStsHits, fStsHitMatches,"Sts", kSts);
-   ProcessHits(fTrdHits, fTrdHitMatches,"Trd", kTrd);
-   ProcessHits(fMuchPixelHits, fMuchPixelHitMatches, "Much", kMuch);
+    ProcessClusters(fStsClusters, fStsClusterMatches, "Sts", kSts);
+    ProcessClusters(fTrdClusters, fTrdClusterMatches, "Trd", kTrd);
+    ProcessClusters(fMuchClusters, fMuchClusterMatches, "Much", kMuch);
 
-   FillResidualAndPullHistograms(fStsPoints, fStsHits, fStsHitMatches, "Sts", kSts);
-   FillResidualAndPullHistograms(fTrdPoints, fTrdHits, fTrdHitMatches, "Trd", kTrd);
-   FillResidualAndPullHistograms(fMuchPoints, fMuchPixelHits, fMuchPixelHitMatches, "Much", kMuch);
+    ProcessHits(fStsHits, fStsHitMatches,"Sts", kSts);
+    ProcessHits(fTrdHits, fTrdHitMatches,"Trd", kTrd);
+    ProcessHits(fMuchPixelHits, fMuchPixelHitMatches, "Much", kMuch);
 
-   FillHitEfficiencyHistogramsReco(fStsPoints, fStsHits, fStsHitMatches, "Sts", kSts);
-   FillHitEfficiencyHistogramsReco(fTrdPoints, fTrdHits, fTrdHitMatches, "Trd", kTrd);
-   FillHitEfficiencyHistogramsReco(fMuchPoints, fMuchPixelHits, fMuchPixelHitMatches, "Much", kMuch);
+    FillResidualAndPullHistograms(fStsPoints, fStsHits, fStsHitMatches, "Sts", kSts);
+    FillResidualAndPullHistograms(fTrdPoints, fTrdHits, fTrdHitMatches, "Trd", kTrd);
+    FillResidualAndPullHistograms(fMuchPoints, fMuchPixelHits, fMuchPixelHitMatches, "Much", kMuch);
 
-   fHM->H1("hen_EventNo_ClusteringQa")->Fill(0.5);
-   std::cout << "CbmLitClusteringQa::Exec: event=" << fHM->H1("hen_EventNo_ClusteringQa")->GetEntries() << std::endl;
+    FillHitEfficiencyHistograms(eventNum, fStsPoints, fStsHits, fStsHitMatches, "Sts", kSts);
+    FillHitEfficiencyHistograms(eventNum, fTrdPoints, fTrdHits, fTrdHitMatches, "Trd", kTrd);
+    FillHitEfficiencyHistograms(eventNum, fMuchPoints, fMuchPixelHits, fMuchPixelHitMatches, "Much", kMuch);
 }
 
 void CbmLitClusteringQa::Finish()
@@ -256,21 +253,20 @@ Int_t CbmLitClusteringQa::GetStationId(
 }
 
 void CbmLitClusteringQa::ProcessPoints(
+      Int_t iEvent,
       CbmMCDataArray* points,
       const string& detName,
-      ECbmModuleId detId)
+      ECbmModuleId detId
+      )
 {
    string histName = "hno_NofObjects_" + detName + "Points_Station";
    if (NULL == points || !fHM->Exists(histName)) return;
-   for (Int_t i = 0; points->Size(0, i) >= 0; ++i) {
-      Int_t evSize = points->Size(0, i);
+      Int_t evSize = points->Size(0, iEvent);
       
-      for (Int_t j = 0; j < evSize; ++j)
-      {
-         const FairMCPoint* point = static_cast<const FairMCPoint*>(points->Get(0, i, j));
+      for (Int_t iP = 0; iP < evSize; iP++) {
+         const FairMCPoint* point = static_cast<const FairMCPoint*>(points->Get(0, iEvent, iP));
          fHM->H1(histName)->Fill(GetStationId(point->GetDetectorID(), detId));
       }
-   }
 }
 
 void CbmLitClusteringQa::ProcessDigis(
@@ -338,41 +334,36 @@ void CbmLitClusteringQa::ProcessHits(
    }
 }
 
-void CbmLitClusteringQa::FillEventCounterHistogramsMC()
+void CbmLitClusteringQa::FillEventCounterHistograms(Int_t iEvent)
 {
-   for (Int_t i = 0; fMCTracks->Size(0, i) >= 0; ++i)
-   {
-      if (NULL != fMvdPoints && fHM->Exists("hno_NofObjects_MvdPoints_Event")) fHM->H1("hno_NofObjects_MvdPoints_Event")->Fill(fMvdPoints->Size(0, i));
-      if (NULL != fStsPoints && fHM->Exists("hno_NofObjects_StsPoints_Event")) fHM->H1("hno_NofObjects_StsPoints_Event")->Fill(fStsPoints->Size(0, i));
-      if (NULL != fRichPoints && fHM->Exists("hno_NofObjects_RichPoints_Event")) fHM->H1("hno_NofObjects_RichPoints_Event")->Fill(fRichPoints->Size(0, i));
-      if (NULL != fTrdPoints && fHM->Exists("hno_NofObjects_TrdPoints_Event")) fHM->H1("hno_NofObjects_TrdPoints_Event")->Fill(fTrdPoints->Size(0, i));
-      if (NULL != fMuchPoints && fHM->Exists("hno_NofObjects_MuchPoints_Event")) fHM->H1("hno_NofObjects_MuchPoints_Event")->Fill(fMuchPoints->Size(0, i));
-      if (NULL != fTofPoints && fHM->Exists("hno_NofObjects_TofPoints_Event")) fHM->H1("hno_NofObjects_TofPoints_Event")->Fill(fTofPoints->Size(0, i));
-   }
-}
 
-void CbmLitClusteringQa::FillEventCounterHistogramsReco()
-{
-   if (NULL != fMvdDigis && fHM->Exists("hno_NofObjects_MvdDigis_Event")) fHM->H1("hno_NofObjects_MvdDigis_Event")->Fill(fMvdDigis->GetEntriesFast());
-   if (NULL != fMvdClusters && fHM->Exists("hno_NofObjects_MvdClusters_Event")) fHM->H1("hno_NofObjects_MvdClusters_Event")->Fill(fMvdClusters->GetEntriesFast());
-   if (NULL != fMvdHits && fHM->Exists("hno_NofObjects_MvdHits_Event")) fHM->H1("hno_NofObjects_MvdHits_Event")->Fill(fMvdHits->GetEntriesFast());
+    if (NULL != fMvdPoints && fHM->Exists("hno_NofObjects_MvdPoints_Event")) fHM->H1("hno_NofObjects_MvdPoints_Event")->Fill(fMvdPoints->Size(0, iEvent));
+    if (NULL != fStsPoints && fHM->Exists("hno_NofObjects_StsPoints_Event")) fHM->H1("hno_NofObjects_StsPoints_Event")->Fill(fStsPoints->Size(0, iEvent));
+    if (NULL != fRichPoints && fHM->Exists("hno_NofObjects_RichPoints_Event")) fHM->H1("hno_NofObjects_RichPoints_Event")->Fill(fRichPoints->Size(0, iEvent));
+    if (NULL != fTrdPoints && fHM->Exists("hno_NofObjects_TrdPoints_Event")) fHM->H1("hno_NofObjects_TrdPoints_Event")->Fill(fTrdPoints->Size(0, iEvent));
+    if (NULL != fMuchPoints && fHM->Exists("hno_NofObjects_MuchPoints_Event")) fHM->H1("hno_NofObjects_MuchPoints_Event")->Fill(fMuchPoints->Size(0, iEvent));
+    if (NULL != fTofPoints && fHM->Exists("hno_NofObjects_TofPoints_Event")) fHM->H1("hno_NofObjects_TofPoints_Event")->Fill(fTofPoints->Size(0, iEvent));
 
-   if (NULL != fStsDigis && fHM->Exists("hno_NofObjects_StsDigis_Event")) fHM->H1("hno_NofObjects_StsDigis_Event")->Fill(fStsDigis->GetEntriesFast());
-   if (NULL != fStsClusters && fHM->Exists("hno_NofObjects_StsClusters_Event")) fHM->H1("hno_NofObjects_StsClusters_Event")->Fill(fStsClusters->GetEntriesFast());
-   if (NULL != fStsHits && fHM->Exists("hno_NofObjects_StsHits_Event")) fHM->H1("hno_NofObjects_StsHits_Event")->Fill(fStsHits->GetEntriesFast());
+    if (NULL != fMvdDigis && fHM->Exists("hno_NofObjects_MvdDigis_Event")) fHM->H1("hno_NofObjects_MvdDigis_Event")->Fill(fMvdDigis->GetEntriesFast());
+    if (NULL != fMvdClusters && fHM->Exists("hno_NofObjects_MvdClusters_Event")) fHM->H1("hno_NofObjects_MvdClusters_Event")->Fill(fMvdClusters->GetEntriesFast());
+    if (NULL != fMvdHits && fHM->Exists("hno_NofObjects_MvdHits_Event")) fHM->H1("hno_NofObjects_MvdHits_Event")->Fill(fMvdHits->GetEntriesFast());
 
-   if (NULL != fRichHits && fHM->Exists("hno_NofObjects_RichHits_Event")) fHM->H1("hno_NofObjects_RichHits_Event")->Fill(fRichHits->GetEntriesFast());
+    if (NULL != fStsDigis && fHM->Exists("hno_NofObjects_StsDigis_Event")) fHM->H1("hno_NofObjects_StsDigis_Event")->Fill(fStsDigis->GetEntriesFast());
+    if (NULL != fStsClusters && fHM->Exists("hno_NofObjects_StsClusters_Event")) fHM->H1("hno_NofObjects_StsClusters_Event")->Fill(fStsClusters->GetEntriesFast());
+    if (NULL != fStsHits && fHM->Exists("hno_NofObjects_StsHits_Event")) fHM->H1("hno_NofObjects_StsHits_Event")->Fill(fStsHits->GetEntriesFast());
 
-   if (NULL != fTrdDigis && fHM->Exists("hno_NofObjects_TrdDigis_Event")) fHM->H1("hno_NofObjects_TrdDigis_Event")->Fill(fTrdDigis->GetEntriesFast());
-   if (NULL != fTrdClusters && fHM->Exists("hno_NofObjects_TrdClusters_Event")) fHM->H1("hno_NofObjects_TrdClusters_Event")->Fill(fTrdClusters->GetEntriesFast());
-   if (NULL != fTrdHits && fHM->Exists("hno_NofObjects_TrdHits_Event")) fHM->H1("hno_NofObjects_TrdHits_Event")->Fill(fTrdHits->GetEntriesFast());
+    if (NULL != fRichHits && fHM->Exists("hno_NofObjects_RichHits_Event")) fHM->H1("hno_NofObjects_RichHits_Event")->Fill(fRichHits->GetEntriesFast());
 
-   if (NULL != fMuchDigis && fHM->Exists("hno_NofObjects_MuchDigis_Event")) fHM->H1("hno_NofObjects_MuchDigis_Event")->Fill(fMuchDigis->GetEntriesFast());
-   if (NULL != fMuchClusters && fHM->Exists("hno_NofObjects_MuchClusters_Event")) fHM->H1("hno_NofObjects_MuchClusters_Event")->Fill(fMuchClusters->GetEntriesFast());
-   if (NULL != fMuchPixelHits && fHM->Exists("hno_NofObjects_MuchPixelHits_Event")) fHM->H1("hno_NofObjects_MuchPixelHits_Event")->Fill(fMuchPixelHits->GetEntriesFast());
-   if (NULL != fMuchStrawHits && fHM->Exists("hno_NofObjects_MuchStrawHits_Event")) fHM->H1("hno_NofObjects_MuchStrawHits_Event")->Fill(fMuchStrawHits->GetEntriesFast());
+    if (NULL != fTrdDigis && fHM->Exists("hno_NofObjects_TrdDigis_Event")) fHM->H1("hno_NofObjects_TrdDigis_Event")->Fill(fTrdDigis->GetEntriesFast());
+    if (NULL != fTrdClusters && fHM->Exists("hno_NofObjects_TrdClusters_Event")) fHM->H1("hno_NofObjects_TrdClusters_Event")->Fill(fTrdClusters->GetEntriesFast());
+    if (NULL != fTrdHits && fHM->Exists("hno_NofObjects_TrdHits_Event")) fHM->H1("hno_NofObjects_TrdHits_Event")->Fill(fTrdHits->GetEntriesFast());
 
-   if (NULL != fTofHits && fHM->Exists("hno_NofObjects_TofHits_Event")) fHM->H1("hno_NofObjects_TofHits_Event")->Fill(fTofHits->GetEntriesFast());
+    if (NULL != fMuchDigis && fHM->Exists("hno_NofObjects_MuchDigis_Event")) fHM->H1("hno_NofObjects_MuchDigis_Event")->Fill(fMuchDigis->GetEntriesFast());
+    if (NULL != fMuchClusters && fHM->Exists("hno_NofObjects_MuchClusters_Event")) fHM->H1("hno_NofObjects_MuchClusters_Event")->Fill(fMuchClusters->GetEntriesFast());
+    if (NULL != fMuchPixelHits && fHM->Exists("hno_NofObjects_MuchPixelHits_Event")) fHM->H1("hno_NofObjects_MuchPixelHits_Event")->Fill(fMuchPixelHits->GetEntriesFast());
+    if (NULL != fMuchStrawHits && fHM->Exists("hno_NofObjects_MuchStrawHits_Event")) fHM->H1("hno_NofObjects_MuchStrawHits_Event")->Fill(fMuchStrawHits->GetEntriesFast());
+
+    if (NULL != fTofHits && fHM->Exists("hno_NofObjects_TofHits_Event")) fHM->H1("hno_NofObjects_TofHits_Event")->Fill(fTofHits->GetEntriesFast());
 }
 
 void CbmLitClusteringQa::FillResidualAndPullHistograms(
@@ -420,50 +411,38 @@ void CbmLitClusteringQa::FillResidualAndPullHistograms(
    }
 }
 
-void CbmLitClusteringQa::FillHitEfficiencyHistogramsMC(
-      CbmMCDataArray* points,
-      const string& detName,
-      ECbmModuleId detId)
-{
-   if (NULL == points) return;
-   string accName = "hhe_" + detName + "_All_Acc_Station";
-   if (NULL == points || !fHM->Exists(accName)) return;
-   for (Int_t i = 0; points->Size(0, i) >= 0; ++i) {
-      Int_t evSize = points->Size(0, i);
-      
-      for (Int_t j = 0; j < evSize; ++j)
-      {
-         const FairMCPoint* point = static_cast<const FairMCPoint*>(points->Get(0, i, j));
-         fHM->H1(accName)->Fill(GetStationId(point->GetDetectorID(), detId));
-      }
-   }
-}
-
-void CbmLitClusteringQa::FillHitEfficiencyHistogramsReco(
+void CbmLitClusteringQa::FillHitEfficiencyHistograms(
+      Int_t iEvent,
       CbmMCDataArray* points,
       const TClonesArray* hits,
       const TClonesArray* hitMatches,
       const string& detName,
       ECbmModuleId detId)
 {
-   if (NULL == points || NULL == hits || NULL == hitMatches) return;
-   string accName = "hhe_" + detName + "_All_Acc_Station";
-   if (NULL == points || !fHM->Exists(accName)) return;
+    if (NULL == points || NULL == hits || NULL == hitMatches) return;
+    string accName = "hhe_" + detName + "_All_Acc_Station";
+    if (NULL == points || !fHM->Exists(accName)) return;
 
-   string recName = "hhe_" + detName + "_All_Rec_Station";
-   string cloneName = "hhe_" + detName + "_All_Clone_Station";
-   set<pair<Int_t, Int_t> > mcPointSet; // IDs of MC points
-   Int_t nofHits = hits->GetEntriesFast();
-   for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-      const CbmPixelHit* hit = static_cast<const CbmPixelHit*>(hits->At(iHit));
-      const CbmMatch* match = static_cast<const CbmMatch*>(hitMatches->At(iHit));
-      if (mcPointSet.find(make_pair(match->GetMatchedLink().GetEntry(), match->GetMatchedLink().GetIndex())) == mcPointSet.end()) {
-         fHM->H1(recName)->Fill(GetStationId(hit->GetAddress(), detId));
-         mcPointSet.insert(make_pair(match->GetMatchedLink().GetEntry(), match->GetMatchedLink().GetIndex()));
-      } else {
-         fHM->H1(cloneName)->Fill(GetStationId(hit->GetAddress(), detId));
-      }
-   }
+    Int_t evSize = points->Size(0, iEvent);
+    for (Int_t iP = 0; iP < evSize; iP++) {
+        const FairMCPoint* point = static_cast<const FairMCPoint*>(points->Get(0, iEvent, iP));
+        fHM->H1(accName)->Fill(GetStationId(point->GetDetectorID(), detId));
+    }
+
+    string recName = "hhe_" + detName + "_All_Rec_Station";
+    string cloneName = "hhe_" + detName + "_All_Clone_Station";
+    set<pair<Int_t, Int_t> > mcPointSet; // IDs of MC points
+    Int_t nofHits = hits->GetEntriesFast();
+    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
+        const CbmPixelHit* hit = static_cast<const CbmPixelHit*>(hits->At(iHit));
+        const CbmMatch* match = static_cast<const CbmMatch*>(hitMatches->At(iHit));
+        if (mcPointSet.find(make_pair(match->GetMatchedLink().GetEntry(), match->GetMatchedLink().GetIndex())) == mcPointSet.end()) {
+            fHM->H1(recName)->Fill(GetStationId(hit->GetAddress(), detId));
+            mcPointSet.insert(make_pair(match->GetMatchedLink().GetEntry(), match->GetMatchedLink().GetIndex()));
+        } else {
+            fHM->H1(cloneName)->Fill(GetStationId(hit->GetAddress(), detId));
+        }
+    }
 }
 
 void CbmLitClusteringQa::CreateHistograms()

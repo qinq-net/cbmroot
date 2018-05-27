@@ -78,7 +78,6 @@ InitStatus CbmLitFitQa::Init()
     ReadDataBranches();
     fMCTrackCreator = CbmLitMCTrackCreator::Instance();
     fKFFitter.Init();
-    fMCTrackCreator->CreateMC();
     return kSUCCESS;
 }
 
@@ -86,8 +85,9 @@ void CbmLitFitQa::Exec(
                        Option_t* opt)
 {
     static Int_t nofEvents = 0;
-    std::cout << "CbmLitFitQa::Exec: event=" << nofEvents++ << std::endl;
-    fMCTrackCreator->CreateReco();
+    nofEvents++;
+    std::cout << "CbmLitFitQa::Exec: event=" <<  nofEvents<< std::endl;
+    fMCTrackCreator->Create(nofEvents - 1);
     ProcessGlobalTracks();
     ProcessTrackParamsAtVertex();
     ProcessTrackMomentumAtVertex();

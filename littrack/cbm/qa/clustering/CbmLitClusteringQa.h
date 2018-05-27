@@ -68,6 +68,7 @@ private:
     void InitMuchGeoScheme(const string& digiFileName);
 
     void ProcessPoints(
+          Int_t iEvent,
           CbmMCDataArray* points,
           const string& detName,
           ECbmModuleId detId);
@@ -93,12 +94,7 @@ private:
     /**
      *
      */
-    void FillEventCounterHistogramsMC();
-    
-    /**
-     *
-     */
-    void FillEventCounterHistogramsReco();
+    void FillEventCounterHistograms(Int_t iEvent);
 
     /**
      *
@@ -132,12 +128,8 @@ private:
           const string& detName,
           ECbmModuleId detId);
 
-    void FillHitEfficiencyHistogramsMC(
-          CbmMCDataArray* points,
-          const string& detName,
-          ECbmModuleId detId);
-    
-    void FillHitEfficiencyHistogramsReco(
+    void FillHitEfficiencyHistograms(
+          Int_t iEvent,
           CbmMCDataArray* points,
           const TClonesArray* hits,
           const TClonesArray* hitMatches,

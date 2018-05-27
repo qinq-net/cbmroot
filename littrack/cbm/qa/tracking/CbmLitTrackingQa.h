@@ -217,7 +217,7 @@ private:
     * \brief Loop over the MC tracks. Check track acceptance for different cases.
     * Fill histograms of accepted and reconstructed tracks.
     */
-   void ProcessMcTracks();
+   void ProcessMcTracks(Int_t iEvent);
 
 //   /**
 //    * \brief Calculate efficiency histograms.
