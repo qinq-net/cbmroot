@@ -1034,7 +1034,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
             return p1.second.size() < p2.second.size();
          });
             
-      if (maxIter->second.size() < 0.7 * nofStations)
+      if (maxIter->second.size() < int(0.7 * nofStations))
          continue;
          
       ++gNofNonGhosts;
@@ -1083,7 +1083,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
 
       /*for (map<Int_t, Int_t>::const_iterator maxIter = matches.begin(); maxIter != matches.end(); ++maxIter)
       {
-         if (maxIter->second >= 0.7 * nofStations)
+         if (maxIter->second >= int(0.7 * nofStations))
          {
             ++gNofClones;
             Int_t origTrackInd = maxIter->first;
@@ -1158,7 +1158,7 @@ void CbmBinnedTrackerQA::Exec(Option_t* opt)
       
       for (map<Int_t, Int_t>::const_iterator j = matches.begin(); j != matches.end(); ++j)
       {
-         if (j->second >= 0.7 * nofStations)
+         if (j->second >= int(0.7 * nofStations))
          {
             const CbmGlobalTrack* anotherTrack = static_cast<const CbmGlobalTrack*> (fGlobalTracks->At(j->first));
             
@@ -1978,7 +1978,7 @@ void CbmBinnedTrackerQA::Finish()
                return p1.second < p2.second;
             });
             
-         if (maxIter->second < 0.7 * fSettings->GetNofStations())
+         if (maxIter->second < int(0.7 * fSettings->GetNofStations()))
          {
             if (trackDesc.isPrimary)
             {

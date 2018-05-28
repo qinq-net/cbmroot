@@ -113,7 +113,6 @@ public:
         fVertexPseudoStation->SetMaxX(0.1);
         fVertexPseudoStation->Init();
         fVertexPseudoStation->AddHit(kRef, &fVertex, -1);
-        fChiSqCut = fStations.size() * cbmBinnedSigmaSq * 3;
         
         for (std::map<Double_t, CbmBinnedStation*>::const_iterator i = fStations.begin(); i != fStations.end(); ++i)
         {
@@ -123,6 +122,8 @@ public:
         
         if (fCanSkipHits < 0)
             fCanSkipHits = 0.3 * fStationArray.size();
+        
+        fChiSqCut = (fStations.size() - fCanSkipHits) * cbmBinnedSigmaSq * 3;
     }
     
     Double_t GetBeamDxSq() const { return fBeamDxSq; }
@@ -822,8 +823,13 @@ private:
                     CbmTrackParam2 updKfParams = aStation->Extrapolate(kfParams, hit->GetZ());                    
                     Double_t updChiSq = chiSq;
                     CbmBinnedStation::Update(updKfParams, hit, updChiSq);
+                    
+                    Double_t chiSqCut = fChiSqCut;
+                    
+                    if (length - (isPrimary ? 1 : 0) > fNofStations - fCanSkipHits)
+                        chiSqCut += (length - (isPrimary ? 1 : 0) - fNofStations + fCanSkipHits) * cbmBinnedSigmaSq * 3;
                 
-                    if (updChiSq > fChiSqCut || updChiSq > bestChiSq)
+                    if (updChiSq > chiSqCut || updChiSq > bestChiSq)
                         return;
                     else
                     {
@@ -953,7 +959,7 @@ private:
             
             for (std::map<Track*, int>::iterator j = cloneNofs.begin(); j != cloneNofs.end(); ++j)
             {
-                if (j->second < 0.7 * track->fLength)
+                if (j->second < int(0.7 * track->fLength))
                     continue;
                 
                 Track* track2 = j->first;

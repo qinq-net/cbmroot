@@ -31,6 +31,7 @@ Set(SRCS
   CbmBinnedTrackerConfigurator.cxx
   CbmBinnedTrackerTask.cxx
   CbmBinnedTrackerQA.cxx
+  CbmBinnedTrackerQANew.cxx
   ContFactory.cxx
   Settings.cxx
   CbmTrackParam2.cxx
