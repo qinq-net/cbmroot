@@ -98,7 +98,7 @@ void CbmRichGeoManager::InitPmtCyl()
             const Double_t* curNodeTr = curMatrix->GetTranslation();
             const Double_t* curNodeRot = curMatrix->GetRotationMatrix();
             
-            curMatrix->Print();
+            //curMatrix->Print();
             
             double pmtX = curNodeTr[0];
             double pmtY = curNodeTr[1];
