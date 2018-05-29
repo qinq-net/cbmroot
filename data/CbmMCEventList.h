@@ -6,6 +6,7 @@
 #ifndef CBMMCEVENTLIST_H
 #define CBMMCEVENTLIST_H 1
 
+#include <string>
 #include <map>
 #include <utility>
 
@@ -25,30 +26,34 @@ class CbmMCEventList: public TNamed
 
   public:
 
-    /** Standard constructor **/
+    /** @brief Standard constructor **/
     CbmMCEventList();
 
-    /** Destructor **/
+
+    /** @brief Destructor **/
     virtual ~CbmMCEventList();
 
-    /** Delete all event entries **/
+
+    /** @brief Delete all event entries **/
     virtual void Clear(Option_t*) {
       fEvents.clear();
-      fNofEvents = 0;
     }
 
-    /** Event start time
+
+    /** @brief Event start time
      ** @param event  MC event number
      ** @param file   MC input file number
      ** @value MC event start time [ns]
+     **
+     ** Returns -1. if the event is not present in the list.
      **/
-    Double_t GetEventTime(Int_t event, Int_t file = 0) {
-      if (fEvents.find(file) == fEvents.end()) return -1.;
-      if (fEvents[file].find(event) == fEvents[file].end()) return -1.;
-      return fEvents[file][event];
-    }
+    Double_t GetEventTime(Int_t event, Int_t file = 0) const;
 
-    Int_t GetNofEvents() const { return fNofEvents; }
+
+    /** @brief Number of events in the list
+     ** @value Number of events
+     **/
+    Int_t GetNofEvents() const;
 
 
     /** Insert an event with its start time into the event list
@@ -57,12 +62,12 @@ class CbmMCEventList: public TNamed
      ** @param time   MC event start time [ns]
      */
     void Insert(Int_t event, Int_t file, Double_t time) {
-      if ( GetEventTime(event, file) < 0. ) fNofEvents++;
       fEvents[file][event] = time;
     }
 
-    /** Screen info **/
-    virtual void Print(Option_t* opt = "") const;
+
+    /** Status to string **/
+    std::string ToString() const;
 
 
   private:
@@ -70,11 +75,10 @@ class CbmMCEventList: public TNamed
     /** Event container. Implemented as std::map:
      ** Input file number -> ( event number -> event time )
      **/
-   std:: map<Int_t, std::map<Int_t, Double_t>> fEvents;
+    std::map<Int_t, std::map<Int_t, Double_t>> fEvents;
 
-    Int_t fNofEvents;  /// Number of events in list
 
-  ClassDef(CbmMCEventList, 1)
+    ClassDef(CbmMCEventList, 2)
     ;
 };
 

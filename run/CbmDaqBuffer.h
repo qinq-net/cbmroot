@@ -73,6 +73,13 @@ class CbmDaqBuffer
     }
 
 
+    /** @brief Pointer to next raw data object for a given detector
+     ** @param iDet  detector type (ECbmModuleId)
+     ** @return pointer to raw data object
+     **/
+    CbmDigi* GetNextData(Int_t iDet);
+
+
     /** Pointer to next raw data object for a given detector
      ** up to given time
      ** @param iDet  detector type (e.g. kSTS)
@@ -81,7 +88,7 @@ class CbmDaqBuffer
      **
      ** If the argument time is negative, no time limit is set.
      **/
-    CbmDigi* GetNextData(Int_t iDet, Double_t time = -1.);
+    CbmDigi* GetNextData(Int_t iDet, Double_t time);
 
 
     /** Current buffer size

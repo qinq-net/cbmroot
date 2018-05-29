@@ -118,6 +118,12 @@ class CbmTimeSlice : public TNamed
     void SetEmpty(Bool_t isEmpty = kTRUE) { fIsEmpty = isEmpty; }
 
 
+    /** @brief Set start time
+     ** @param time Start time [ns]
+     **/
+    void SetStartTime(Double_t time) { fStartTime = time; }
+
+
     /** Consistency check
      ** Tests data to be in defined time interval and ordered w.r.t. time.
      ** @return kTRUE if OK, else kFALSE

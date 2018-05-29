@@ -11,6 +11,7 @@
 #include "TList.h"
 #include "TNamed.h"
 #include "TString.h"
+#include "CbmDaq.h"
 #include "CbmDefs.h"
 #include "CbmDigitizeInfo.h"
 
@@ -116,15 +117,18 @@ class CbmDigitization : public TNamed
      ** In the event-by-event mode, one time slice will be created for
      ** each input event. There will be no interference between events.
      **/
-    void SetEventMode(Bool_t choice = kTRUE) { fEventMode = choice; }
+    void SetEventMode(Bool_t choice = kTRUE) {
+      fDaq->SetEventMode(choice);
+    }
 
 
     /** @brief Set the output file name
      ** @param path  Name of output file
+     ** @param overwrite Overwrite output file if already existing
      **
      ** If the directory of the file does not exist, it will be created.
      **/
-    void SetOutputFile(TString fileName);
+    void SetOutputFile(TString fileName, Bool_t overwrite = kFALSE);
 
 
     /** @brief Set the parameter file name
@@ -143,20 +147,20 @@ class CbmDigitization : public TNamed
      ** for all input data will be created.
      **/
      void SetTimeSliceInterval(Double_t interval) {
-       fTimeSliceInterval = interval;
+       fDaq->SetTimeSliceInterval(interval);
      }
 
 
   private:
 
     std::map<Int_t, CbmDigitizeInfo*> fDigitizers;
+    CbmDaq* fDaq;
     std::vector<TString> fInputFiles;
     std::vector<Double_t> fEventRates;
     TString fOutFile;
     TString fParRootFile;
     TList fParAsciiFiles;
-    Bool_t fEventMode;
-    Double_t fTimeSliceInterval;
+    Bool_t fOverwriteOutput;
     Bool_t fGenerateRunInfo;
     Bool_t fMonitor;
     Int_t fRun;

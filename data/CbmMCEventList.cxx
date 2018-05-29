@@ -5,39 +5,71 @@
 
 #include "CbmMCEventList.h"
 
+#include <sstream>
 #include "FairLogger.h"
+
 
 using std::map;
 using std::pair;
+using std::string;
+using std::stringstream;
+
 
 // -----   Constructor   ------------------------------------------------------
 CbmMCEventList::CbmMCEventList()
-    : fEvents(), fNofEvents(0) {
+    : TNamed("MCEventList", "List of MC events"), fEvents()
+{
 }
 // ----------------------------------------------------------------------------
+
+
 
 // -----   Destructor   -------------------------------------------------------
 CbmMCEventList::~CbmMCEventList() {
 }
 // ----------------------------------------------------------------------------
 
-// -----   Print to screen   --------------------------------------------------
-void CbmMCEventList::Print(Option_t*) const {
-  LOG(INFO) << "Number of MC events in list: " << fEvents.size()
-	       << FairLogger::endl;
-  map<Int_t, map<Int_t, Double_t> >::const_iterator it1 = fEvents.begin();
-  while (it1 != fEvents.end()) {
-    map<Int_t, Double_t>::const_iterator it2 = (it1->second).begin();
-    while (it2 != (it1->second).end()) {
-      LOG(DEBUG) << "File " << it1->first << ", event " << it2->first
-		    << ", event time " << it2->second << " ns"
-		    << FairLogger::endl;
-      it2++;
-    } //# events
-    it1++;
-  } //# files
+
+
+// -----   Get start time of a MC event   -------------------------------------
+Double_t CbmMCEventList::GetEventTime(Int_t event, Int_t file) const {
+  auto it1 = fEvents.find(file);
+  if ( it1 == fEvents.end() ) return -1.;
+  auto it2 = it1->second.find(event);
+  if ( it2 == it1->second.end() ) return -1.;
+  return it2->second;
 }
 // ----------------------------------------------------------------------------
+
+
+
+// -----  Get number of events in the list   ----------------------------------
+Int_t CbmMCEventList::GetNofEvents() const {
+  Int_t nEvents = 0;
+  for (auto it = fEvents.begin(); it != fEvents.end(); it++)
+    nEvents += it->second.size();
+  return nEvents;
+}
+// ----------------------------------------------------------------------------
+
+
+
+// -----   Status info   ------------------------------------------------------
+string CbmMCEventList::ToString() const {
+  stringstream ss;
+  ss << fName << ": " << GetNofEvents() << " MC events in list\n";
+  if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG) ) {
+    for (auto it1 = fEvents.begin(); it1 != fEvents.end(); it1++) {
+      for (auto it2 = it1->second.begin(); it2 != it1->second.end(); it2++) {
+        ss << "File " << it1->first << ", event " << it2->first
+            << ", event time " << it2->second << " ns\n";
+      } //# events
+    } // #files
+  } //? debug
+  return ss.str();
+}
+// ----------------------------------------------------------------------------
+
 
 ClassImp(CbmMCEventList)
 

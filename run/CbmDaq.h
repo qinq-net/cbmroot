@@ -8,15 +8,16 @@
 #ifndef CBMDAQ_H
 #define CBMDAQ_H 1
 
+#include <map>
+#include <string>
 #include "TStopwatch.h"
 #include "FairTask.h"
+#include "CbmDaqBuffer.h"
 #include "CbmMCEventList.h"
 #include "CbmTimeSlice.h"
-#include "CbmDigitization.h"
 
 
 class TClonesArray;
-class CbmDaqBuffer;
 class CbmDigi;
 
 
@@ -60,51 +61,44 @@ class CbmDaq : public FairTask
     virtual InitStatus Init();
 
 
+    /** @brief Set event-by-event mode
+     ** @param choice  If kTRUE, digitisation will be done event-by-event
+     **
+     ** In the event-by-event mode, one time slice will be created for
+     ** each input event. There will be no interference between events.
+     **/
+    void SetEventMode(Bool_t choice = kTRUE) { fEventMode = choice; }
+
+
     /** @brief Set the time-slice interval
      ** @param interval  Duration of a time-slice [ns]
      **/
     void SetTimeSliceInterval(Double_t interval) {
-      fDuration = interval;
+      fTimeSliceInterval = interval;
     }
 
 
   private:
 
-    Bool_t fEventMode;  ///< Flag for event-by-event mode
-    Double_t fSystemTime;          ///< Current system time [ns]
-    Double_t fCurrentStartTime;    ///< Start time of current time slice [ns]
+    Bool_t   fEventMode;           ///< Flag for event-by-event mode
+    Double_t fTimeSliceInterval;   ///< Time-slice interval [ns]
+    Double_t fBufferTime;          ///< Maximal time disorder of input data [ns]
+    Bool_t   fStoreEmptySlices;    ///< Flag to store also empty time slices
+    Double_t fTimeEventPrevious;   ///< Time of previous event [ns]
 
-    /** Duration of time slice [ns] **/
-    Double_t fDuration;
+    Int_t fNofEvents;             ///< Number of processed events
+    Int_t fNofDigis;              ///< Total number of processed digis
+    Int_t fNofTimeSlices;         ///< Number of time slices
+    Int_t fNofTimeSlicesEmpty;    ///< Number of empty time slices
+    Double_t fTimeDigiFirst;      ///< Time of first digi
+    Double_t fTimeDigiLast;       ///< Time of last digi
+    Double_t fTimeSliceFirst;     ///< Start time of first time slice
+    Double_t fTimeSliceLast;      ///< Stop time of last time slice
 
-    Double_t fBufferTime; ///< Maximal time disorder of input data
-
-    /** Flag whether empty time-slices should be filled to the tree **/
-    Bool_t fStoreEmptySlices;
-
-    /** Timer **/
-    TStopwatch fTimer;
-
-    /** Counters **/
-    Int_t fNofSteps;             ///< Number of execute steps
-    Int_t fNofDigis;             ///< Total number of processed digis
-    Int_t fNofTimeSlices;        ///< Number of time slices
-    Int_t fNofTimeSlicesEmpty;   ///< Number of empty time slices
-    Double_t fTimeDigiFirst;     ///< Time of first digi
-    Double_t fTimeDigiLast;      ///< Time of last digi
-    Double_t fTimeSliceFirst;    ///< Start time of first time slice
-    Double_t fTimeSliceLast;     ///< Stop time of last time slice
-
-    /** Output array (digis) **/
-    std::map<Int_t, TClonesArray*> fDigis;
-
-    /** Pointer to current time slice **/
-    CbmTimeSlice* fTimeSlice;
-
-    /** Pointer to CbmDaqBuffer instance  **/
-    CbmDaqBuffer* fBuffer;
-    
-    /** MC event list (all events) **/
+    TStopwatch fTimer;              //! Stop watch
+    std::map<Int_t, TClonesArray*> fDigis;  //! Output arrays (digis)
+    CbmTimeSlice* fTimeSlice;       //! Current time slice
+    CbmDaqBuffer* fBuffer;          //! DaqBuffer instance
     CbmMCEventList fEventList;      //!  MC event list (all)
     CbmMCEventList* fEventsCurrent; //! MC events for current time slice
 
@@ -127,10 +121,16 @@ class CbmDaq : public FairTask
     Int_t CopyEventList();
 
 
-    /** Copy data (digi) from the DaqBuffer into the output array
+    /** @brief Copy data (digi) from the DaqBuffer into the output array
      ** @param digi  Pointer to digi object
      **/
     void FillData(CbmDigi* digi);
+
+
+    /** @brief Fill all data from the buffer into the current time slice
+     ** @return Number of digis filled into the time slice
+     **/
+    Int_t FillTimeSlice();
 
 
     /** Fill data from the buffer into the current time slice
@@ -140,13 +140,17 @@ class CbmDaq : public FairTask
      ** If fillTime is negative (default), all data from the buffer
      ** are copied to the time slice.
      **/
-    Int_t FillTimeSlice(Double_t fillTime = -1.);
+    Int_t FillTimeSlice(Double_t fillTime);
 
 
     /** Screen log of the range of MC events contributing to the
      ** current time slice
      **/
     void PrintCurrentEventRange() const;
+
+
+    /** @brief Info for current time slice **/
+    std::string CurrentTimeSliceInfo();
 
 
     /** Register input and entry number of a MC event contributing data
@@ -166,7 +170,7 @@ class CbmDaq : public FairTask
     CbmDaq(const CbmDaq&) = delete;
     CbmDaq& operator=(const CbmDaq&) = delete;
     
-    ClassDef(CbmDaq,1);
+    ClassDef(CbmDaq, 2);
 
 };
 

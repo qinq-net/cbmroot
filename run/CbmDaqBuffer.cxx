@@ -68,6 +68,32 @@ Double_t CbmDaqBuffer::GetLastTime() const {
 
 
 // -----   Access to next data   ---------------------------------------------
+CbmDigi* CbmDaqBuffer::GetNextData(Int_t iDet) {
+
+  // --- Check for system ID
+  if ( iDet >= kNofSystems ) {
+    LOG(WARNING) << "DaqBuffer: Illegal system ID " << iDet
+                 << FairLogger::endl;
+    return NULL;
+  }
+
+  // --- Check for empty buffer
+  if ( ! fData[iDet].size() ) return NULL;
+
+  // --- Get data from buffer
+  CbmDigi* digi = NULL;
+  multimap<Double_t, CbmDigi*>::iterator it = fData[iDet].begin();
+  CbmDigi* test = it->second;
+  digi = test;
+  fData[iDet].erase(it);
+
+  return digi;
+}
+// ---------------------------------------------------------------------------
+
+
+
+// -----   Access to next data with time limit  ------------------------------
 CbmDigi* CbmDaqBuffer::GetNextData(Int_t iDet, Double_t time) {
 
 
@@ -85,7 +111,7 @@ CbmDigi* CbmDaqBuffer::GetNextData(Int_t iDet, Double_t time) {
   CbmDigi* digi = NULL;
   multimap<Double_t, CbmDigi*>::iterator it = fData[iDet].begin();
   CbmDigi* test = it->second;
-  if ( time < 0. || test->GetTime() < time ) {
+  if ( test->GetTime() < time ) {
     digi = test;
     fData[iDet].erase(it);
   }

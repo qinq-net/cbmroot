@@ -16,7 +16,6 @@
 #include "FairParAsciiFileIo.h"
 #include "FairParRootFileIo.h"
 #include "FairRuntimeDb.h"
-#include "CbmDaq.h"
 #include "CbmMuchDigitizeGem.h"
 #include "CbmMvdDigitizer.h"
 #include "CbmPsdSimpleDigitizer.h"
@@ -34,13 +33,13 @@
 CbmDigitization::CbmDigitization() :
   TNamed("CbmDigitization", "Digitisation Run"),
   fDigitizers(),
+  fDaq(new CbmDaq()),
   fInputFiles(),
   fEventRates(),
   fOutFile(),
   fParRootFile(),
   fParAsciiFiles(),
-  fEventMode(kFALSE),
-  fTimeSliceInterval(-1.),
+  fOverwriteOutput(kFALSE),
   fGenerateRunInfo(kTRUE),
   fMonitor(kTRUE),
   fRun(0)
@@ -74,8 +73,7 @@ Int_t CbmDigitization::AddInput(TString fileName, Double_t eventRate) {
 // -----   Check input file   -----------------------------------------------
 Int_t CbmDigitization::CheckInputFile() {
 
-  LOG(INFO) << fName << ": check input branches..." << FairLogger::endl;
-  Int_t nBranches = 0;
+  // --- Open input file and get tree
   TFile* file = new TFile(fInputFiles[0]);
   assert(file);
   LOG(INFO) << fName << ": opening first input file " << fInputFiles[0]
@@ -83,6 +81,15 @@ Int_t CbmDigitization::CheckInputFile() {
   TTree* tree = dynamic_cast<TTree*>(file->Get("cbmsim"));
   assert(tree);
 
+  // --- Get run id from event header
+  FairMCEventHeader* header = new FairMCEventHeader();
+  tree->SetBranchAddress("MCEventHeader.", &header);
+  tree->GetEntry(0);
+  fRun = header->GetRunID();
+  LOG(INFO) << fName << ": run id is " << fRun << FairLogger::endl;
+
+  // --- Search for input branches
+  Int_t nBranches = 0;
   for (auto it = fDigitizers.begin(); it != fDigitizers.end(); it++) {
     TBranch* branch = tree->GetBranch(it->second->GetBranchName().Data());
     if ( branch ) {
@@ -94,12 +101,7 @@ Int_t CbmDigitization::CheckInputFile() {
     } //? branch found
   } //# systems
 
-  FairMCEventHeader* header = new FairMCEventHeader();
-  tree->SetBranchAddress("MCEventHeader.", &header);
-  tree->GetEntry(0);
-  fRun = header->GetRunID();
-  LOG(INFO) << fName << ": run id is " << fRun << FairLogger::endl;
-
+  // --- Clean up and finish
   delete tree;
   file->Close();
   delete file;
@@ -199,14 +201,6 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   std::cout << std::endl << std::endl;
   LOG(INFO) << "==================================================="
       << FairLogger::endl;
-  if ( fEventMode ) LOG(INFO) << fName << ": running in event-by-event mode"
-      << FairLogger::endl << FairLogger::endl;
-  else {
-    LOG(INFO) << fName << ": time-slice interval is ";
-    if ( fTimeSliceInterval < 0. ) LOG(INFO) << "infinity.";
-    else LOG(INFO) << fTimeSliceInterval << "ns.";
-    LOG(INFO) << FairLogger::endl << FairLogger::endl;
-  }
 
   // --- Look for input branches
   Int_t nBranches = CheckInputFile();
@@ -222,9 +216,13 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
 
   // --- Create CbmRunAna
   CbmRunAna* run = new CbmRunAna();
+  run->SetAsync();
   run->SetGenerateRunInfo(fGenerateRunInfo);
-  if ( fGenerateRunInfo ) LOG(INFO) << "Generate run info" << FairLogger::endl;
+  if ( fGenerateRunInfo ) LOG(INFO) << fName
+      << ": Run info will be generated." << FairLogger::endl;
   FairMonitor::GetMonitor()->EnableMonitor(fMonitor);
+  if ( fMonitor ) LOG(INFO) << fName << ": Monitor is enabled."
+      << FairLogger::endl << FairLogger::endl;
 
   // --- Add input files
   Int_t nInputs = fInputFiles.size();
@@ -232,13 +230,13 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
     FairFileSource* source = new FairFileSource(fInputFiles.at(iInput));
     source->SetEventMeanTime(1.e9 / fEventRates.at(iInput));
     run->SetSource(source);
-    LOG(INFO) << fName << ": use input file " << fInputFiles.at(iInput)
+    LOG(INFO) << fName << ": Use input file " << fInputFiles.at(iInput)
         << FairLogger::endl;
   }
 
   // --- Set output file
   run->SetOutputFile(fOutFile);
-  LOG(INFO) << fName << ": output file is " << fOutFile
+  LOG(INFO) << fName << ": Output file is " << fOutFile
       << FairLogger::endl << FairLogger::endl;
 
   // --- Register digitisers
@@ -246,21 +244,17 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
     FairTask* digitizer = it->second->GetDigitizer();
     if ( it->second->IsActive() && digitizer != nullptr ) {
       run->AddTask(digitizer);
-      LOG(INFO) << fName << ": added task " << digitizer->GetName()
+      LOG(INFO) << fName << ": Added task " << digitizer->GetName()
           << FairLogger::endl;
     } //? active and digitizer instance present
   } //# digitizers
 
   // --- Register DAQ
-  if ( ! fEventMode ) {
-    CbmDaq* daq = new CbmDaq();
-    daq->SetTimeSliceInterval(fTimeSliceInterval);
-    run->AddTask(daq);
-  }
+  run->AddTask(fDaq);
 
   // --- Set runtime database
   std::cout << std::endl;
-  LOG(INFO) << fName << ": setting runtime DB " << FairLogger::endl;
+  LOG(INFO) << fName << ": Setting runtime DB " << FairLogger::endl;
   LOG(INFO) << fName << ": ROOT I/O is " << fParRootFile << FairLogger::endl;
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIoRoot = new FairParRootFileIo();
@@ -277,13 +271,13 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
   TString parFile;
   parFile = srcDir + "/parameters/trd/trd_" + trdGeo + ".digi.par";
-  LOG(INFO) << fName << ": adding " << parFile << FairLogger::endl;
+  LOG(INFO) << fName << ": Adding " << parFile << FairLogger::endl;
   AddParameterAsciiFile(parFile);
   parFile = srcDir + "/parameters/tof/tof_" + tofGeo + ".digi.par";
-  LOG(INFO) << fName << ": adding " << parFile << FairLogger::endl;
+  LOG(INFO) << fName << ": Adding " << parFile << FairLogger::endl;
   AddParameterAsciiFile(parFile);
   parFile = srcDir + "/parameters/tof/tof_" + tofGeo + ".digibdf.par";
-  LOG(INFO) << fName << ": adding " << parFile << FairLogger::endl;
+  LOG(INFO) << fName << ": Adding " << parFile << FairLogger::endl;
   AddParameterAsciiFile(parFile);
   FairParAsciiFileIo* parIoAscii = new FairParAsciiFileIo();
   parIoAscii->open(&fParAsciiFiles, "in");
@@ -303,7 +297,7 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   std::cout << std::endl << std::endl;
   LOG(INFO) << "==================================================="
       << FairLogger::endl;
-  LOG(INFO) << fName << ": initialising run..." << FairLogger::endl;
+  LOG(INFO) << fName << ": Initialising run..." << FairLogger::endl;
   run->Init();
   rtdb->setOutput(parIoRoot);
   rtdb->saveOutput();
@@ -314,7 +308,7 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   std::cout << std::endl << std::endl << std::endl;
   LOG(INFO) << "==================================================="
       << FairLogger::endl;
-  LOG(INFO) << fName << ": starting run..." << FairLogger::endl;
+  LOG(INFO) << fName << ": Starting run..." << FairLogger::endl;
   if ( event2 < 0 ) {
     if ( event1 >= 0 ) run->Run(0, event1 - 1);  // Run event1 events
     else run->Run();                             // Run all events in input
@@ -325,7 +319,7 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
     else run->Run(event1, event1);                     // Run only event1
   }
   std::cout << std::endl;
-  LOG(INFO) << fName << ": run finished." << FairLogger::endl;
+  LOG(INFO) << fName << ": Run finished." << FairLogger::endl;
   LOG(INFO) << "==================================================="
       << FairLogger::endl;
 
@@ -378,7 +372,14 @@ void CbmDigitization::SetDigitizer(Int_t system, FairTask* digitizer,
 
 
 // -----   Set the output file   --------------------------------------------
-void CbmDigitization::SetOutputFile(TString path) {
+void CbmDigitization::SetOutputFile(TString path, Bool_t overwrite) {
+
+  // --- Protect against overwriting an existing file
+  if ( ( ! gSystem->AccessPathName(path.Data()) )  && ( ! overwrite ) ) {
+    LOG(FATAL) << fName << ": output file " << path
+    << " already exists!" << FairLogger::endl;
+    return;
+  }
 
   // --- If the directory does not yet exist, create it
   const char* directory = gSystem->DirName(path.Data());
