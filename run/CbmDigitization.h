@@ -8,10 +8,15 @@
 
 #include <map>
 #include <vector>
+#include "TList.h"
 #include "TNamed.h"
+#include "TString.h"
 #include "CbmDefs.h"
 #include "CbmDigitizeInfo.h"
 
+#include "FairLogger.h"
+#include "TSystem.h"
+class TGeoManager;
 
 
 class CbmDigitization : public TNamed
@@ -34,6 +39,36 @@ class CbmDigitization : public TNamed
     Int_t AddInput(TString fileName, Double_t eventRate = -1.);
 
 
+    /** @brief Add an ASCII parameter file
+     ** @param fileName  Name of parameter file
+     **
+     ** All ASCII parameter files will be concatenated and used
+     ** as second input to the runtime database.
+     */
+    void AddParameterAsciiFile(TString fileName) {
+      fParAsciiFiles.Add(new TObjString(fileName.Data()));
+    }
+
+
+    /** @brief Enable resource monitoring (default is kTRUE)
+     ** @param choice If kTRUE, resources will be monitored
+     **/
+    void EnableMonitor(Bool_t choice = kTRUE) {
+      fMonitor = choice;
+    }
+
+
+    /** @brief Write run info (default is kTRUE)
+     ** @param choice  If kTRUE, run info will be written
+     **
+     ** The run info comprises CPU and memory consumption for each event.
+     ** It will be written to a separate ROOT file.
+     */
+    void GenerateRunInfo(Bool_t choice = kTRUE) {
+      fGenerateRunInfo = choice;
+    }
+
+
     /** @brief Deactivate a system for digitisation
      ** @param system System ID (ECbmModuleId)
      **
@@ -50,7 +85,7 @@ class CbmDigitization : public TNamed
     /** @brief Process nEvents from input, starting with the first event
      ** @param nEvents  Number of events to process
      **/
-    void Run(Int_t nEvents) { Run(0, nEvents-1); }
+    void Run(Int_t nEvents) { Run(0, nEvents); }
 
 
     /** @brief Process input from event1 to event2
@@ -75,16 +110,41 @@ class CbmDigitization : public TNamed
                       Bool_t persistent = kTRUE);
 
 
-    /** @brief Set the output file name
-     ** @param fileName  Name of output file
+    /** @brief Set event-by-event mode
+     ** @param choice  If kTRUE, digitisation will be done event-by-event
+     **
+     ** In the event-by-event mode, one time slice will be created for
+     ** each input event. There will be no interference between events.
      **/
-    void SetOutputFile(TString fileName) { fOutFile = fileName; }
+    void SetEventMode(Bool_t choice = kTRUE) { fEventMode = choice; }
+
+
+    /** @brief Set the output file name
+     ** @param path  Name of output file
+     **
+     ** If the directory of the file does not exist, it will be created.
+     **/
+    void SetOutputFile(TString fileName);
 
 
     /** @brief Set the parameter file name
      ** @param fileName  Name of output file
      **/
-    void SetParameterFile(TString fileName) { fParFile = fileName; }
+    void SetParameterRootFile(TString fileName);
+
+
+    /** @brief Set the time-slice interval
+     ** @param interval  Duration of time-slices [ns]
+     **
+     ** The raw data will be sorted into time-slices of the specified
+     ** duration.
+     **
+     ** If the time-slice interval is negative (default), one time-slice
+     ** for all input data will be created.
+     **/
+     void SetTimeSliceInterval(Double_t interval) {
+       fTimeSliceInterval = interval;
+     }
 
 
   private:
@@ -93,23 +153,22 @@ class CbmDigitization : public TNamed
     std::vector<TString> fInputFiles;
     std::vector<Double_t> fEventRates;
     TString fOutFile;
-    TString fParFile;
+    TString fParRootFile;
+    TList fParAsciiFiles;
     Bool_t fEventMode;
+    Double_t fTimeSliceInterval;
+    Bool_t fGenerateRunInfo;
+    Bool_t fMonitor;
+    Int_t fRun;
 
 
     /** @brief Check the presence of input arrays (MCPoint) in the tree.
      ** @value Number of MCPoint arrays found in the tree.
      **
-     ** For each present input array, the corresponding digitizer will be
-     ** instantiated.
-     **/
-    Int_t CheckInputArrays();
-
-    /** @brief Check the presence of input arrays (MCPoint) in the tree.
-     ** @value Number of MCPoint arrays found in the tree.
-     **
-     ** For each present input array, the corresponding digitizer will be
-     ** instantiated.
+     ** The tree of the first input file is searched for input branches
+     ** (MCPoint). For each present input branch, the corresponding
+     ** digitizer will be instantiated. In addition, the run number
+     ** is extracted from the MCEventHeader.
      **/
     Int_t CheckInputFile();
 
@@ -123,15 +182,20 @@ class CbmDigitization : public TNamed
     Int_t CreateDigitizers();
 
 
-    /** @brief Set the input array names
+    /** @brief Get the geometry tag of a system from a TGeoManager
+     ** @param system  Detector system (ECbmModuleId)
+     ** @param geo     Pointer to TGeoManager
+     ** @value Geometry tag
      **
-     ** The names are fixed by convention and hard-coded here.
+     ** The implementation assumes that the top-level volume name of each
+     ** system in the geometry contains the geometry tag in the form of
+     ** e.g., sts_v16g
      **/
-    void SetArrayNames();
+    TString GetGeoTag(Int_t system, TGeoManager* geo);
 
 
     /** @brief Default settings for digitizers **/
-    void SetDefaults();
+    void SetDefaultBranches();
 
 
     ClassDef(CbmDigitization, 1);

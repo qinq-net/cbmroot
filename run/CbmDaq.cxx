@@ -26,10 +26,11 @@
 using namespace std;
 
 // =====   Constructor   =====================================================
-CbmDaq::CbmDaq(Double_t timeSliceSize) : FairTask("Daq"),
+CbmDaq::CbmDaq(Double_t interval) : FairTask("Daq"),
+                   fEventMode(kFALSE),
                    fSystemTime(0.),
                    fCurrentStartTime (1000.),
-                   fDuration (timeSliceSize),
+                   fDuration (interval),
                    fBufferTime(500.),
                    fStoreEmptySlices(kTRUE),
                    fTimer(),
@@ -70,10 +71,10 @@ void CbmDaq::CloseTimeSlice() {
   } //? empty time slice
   else
   LOG(INFO) << GetName() << ": closing time slice from " << fTimeSlice->GetStartTime()
-            << " to " << fTimeSlice->GetEndTime() << " ns, data: ";
+            << " to " << fTimeSlice->GetEndTime() << " ns, data:";
   for (Int_t detector = kMvd; detector < kNofSystems; detector++) {
     if ( fDigis[detector] == nullptr ) continue;
-    LOG(INFO) << CbmModuleList::GetModuleNameCaps(detector)
+    LOG(INFO) << " " << CbmModuleList::GetModuleNameCaps(detector) << " "
     << fDigis[detector]->GetEntriesFast();
   }
   LOG(INFO) << FairLogger::endl;
@@ -143,25 +144,40 @@ void CbmDaq::Exec(Option_t*) {
   LOG(DEBUG) << GetName() << ": " << fBuffer->ToString()
                        << FairLogger::endl;
 
-  // Fill data from the buffers into the time slice
-  Double_t fillTime = fSystemTime - fBufferTime;
-  while ( kTRUE ) {
 
-    if ( fillTime < fTimeSlice->GetEndTime() ) {
-      FillTimeSlice(fillTime);
-      break;
-    }
-    else {
-      FillTimeSlice(fTimeSlice->GetEndTime());
-      CloseTimeSlice();
-    }
+  // --- Time-based mode
+  if ( ( ! fEventMode ) && fDuration > 0. ) {
+    // Fill data from the buffers into the time slice
+    Double_t fillTime = fSystemTime - fBufferTime;
+    while ( kTRUE ) {
+      if ( fillTime < fTimeSlice->GetEndTime() ) {
+        FillTimeSlice(fillTime);
+        break;
+      }  //? time-slice not closed
+      else {
+        FillTimeSlice(fTimeSlice->GetEndTime());
+        CloseTimeSlice();
+      } //? time-slice closed
+    } //# time-slice loop
+  } //? Time-based mode
 
-  }
+  // --- Time-based mode (one time-slice for all data)
+  if ( ( ! fEventMode ) && fDuration < 0. ) {
+    // Fill data from the buffers into the time slice
+    Double_t fillTime = fSystemTime - fBufferTime;
+    FillTimeSlice(fillTime);
+  } //? Time-based mode, one time-slice for all data
+
+  // --- Event-based mode
+  else {
+    // Fill all data from the buffer into the time slice
+    FillTimeSlice(-1.);
+    CloseTimeSlice();
+  } //? Event-based mode
 
   // --- DaqBuffer info
   LOG(DEBUG) << GetName() << ": " << fBuffer->ToString()
 			           << FairLogger::endl;
-
 
   // --- Store event start time in event list
   Int_t file  = FairRunAna::Instance()->GetEventHeader()->GetInputFileId();
@@ -302,10 +318,15 @@ void CbmDaq::Finish() {
   LOG(INFO) << FairLogger::endl;
   LOG(INFO) << fName << ": End of run" << FairLogger::endl;
 
-  while ( fBuffer->GetSize() ) {  // time slice loop until buffer is emptied
+  if ( ! fEventMode ) {
 
-    FillTimeSlice(fTimeSlice->GetEndTime());
-    CloseTimeSlice();
+    while ( fBuffer->GetSize() ) {  // time slice loop until buffer is emptied
+      Double_t fillTime = ( fDuration < 0. ? -1. : fTimeSlice->GetEndTime());
+      LOG(INFO) << "Buffer size is " << fBuffer->GetSize()
+          << " fill time is " << fillTime << FairLogger::endl;
+      FillTimeSlice(fillTime);
+      CloseTimeSlice();
+    } //? buffer has still content
 
     // --- DaqBuffer and time slice info
   	LOG(DEBUG) << GetName() << ": " << fBuffer->ToString()
@@ -313,13 +334,19 @@ void CbmDaq::Finish() {
   	LOG(DEBUG) << GetName() << ": " << fTimeSlice->ToString()
   			       << FairLogger::endl << FairLogger::endl;
 
-  }
+  } //? time-based mode
 
-	LOG(DEBUG) << GetName() << ": " << fBuffer->ToString()
+  else {
+    if ( fBuffer->GetSize() ) LOG(FATAL) << fName
+        << ": non-empty buffer at finish in event-by-event mode!"
+        << FairLogger::endl;
+  } //? event-by-event mode
+
+  LOG(DEBUG) << GetName() << ": " << fBuffer->ToString()
 			       << FairLogger::endl;
   LOG(INFO)  << GetName() << ": run finished." << FairLogger::endl;
-	std::cout << std::endl;
-	LOG(INFO) << "=====================================" << FairLogger::endl;
+  std::cout << std::endl;
+  LOG(INFO) << "=====================================" << FairLogger::endl;
 	LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
 	LOG(INFO) << "Events:       " << setw(10) << right << fNofSteps
 						<< FairLogger::endl;

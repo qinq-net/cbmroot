@@ -7,16 +7,21 @@
 
 #include <cassert>
 #include "TClonesArray.h"
+#include "TGeoManager.h"
+#include "TROOT.h"
 #include "FairFileSource.h"
 #include "FairLogger.h"
+#include "FairMCEventHeader.h"
+#include "FairMonitor.h"
 #include "FairParAsciiFileIo.h"
 #include "FairParRootFileIo.h"
-#include "FairRunAna.h"
 #include "FairRuntimeDb.h"
+#include "CbmDaq.h"
 #include "CbmMuchDigitizeGem.h"
 #include "CbmMvdDigitizer.h"
 #include "CbmPsdSimpleDigitizer.h"
 #include "CbmRichDigitizer.h"
+#include "CbmRunAna.h"
 #include "CbmStsDigitize.h"
 #include "CbmSetup.h"
 #include "CbmTofDigitizerBDF.h"
@@ -32,10 +37,15 @@ CbmDigitization::CbmDigitization() :
   fInputFiles(),
   fEventRates(),
   fOutFile(),
-  fParFile(),
-  fEventMode(kFALSE)
+  fParRootFile(),
+  fParAsciiFiles(),
+  fEventMode(kFALSE),
+  fTimeSliceInterval(-1.),
+  fGenerateRunInfo(kTRUE),
+  fMonitor(kTRUE),
+  fRun(0)
 {
-  SetDefaults();
+  SetDefaultBranches();
 }
 // --------------------------------------------------------------------------
 
@@ -50,6 +60,9 @@ CbmDigitization::~CbmDigitization() {
 
 // -----   Add an input file   ----------------------------------------------
 Int_t CbmDigitization::AddInput(TString fileName, Double_t eventRate) {
+  if ( gSystem->AccessPathName(fileName) )
+    LOG(FATAL) << fName << ": input file " << fileName << " does not exist!"
+      << FairLogger::endl;
   fInputFiles.push_back(fileName);
   fEventRates.push_back(eventRate);
   return fInputFiles.size();
@@ -58,43 +71,14 @@ Int_t CbmDigitization::AddInput(TString fileName, Double_t eventRate) {
 
 
 
-// -----   Check input arrays   ---------------------------------------------
-Int_t CbmDigitization::CheckInputArrays() {
-
-  TClonesArray* test = nullptr;
-  Int_t nArrays = 0;
-
-  // --- Get FairRootManager instance
-  FairRootManager* ioman = FairRootManager::Instance();
-  assert ( ioman );
-
-  // --- Search arrays for detector systems
-  for (Int_t module = kRef; module < kNofSystems; module++) {
-    if ( fDigitizers.find(module) != fDigitizers.end() ) {
-      TString array = fDigitizers[module]->GetBranchName();
-      test = dynamic_cast<TClonesArray*> (ioman->GetObject(array.Data()));
-      if ( test ) {
-        LOG(INFO) << fName << ": found array " << array << FairLogger::endl;
-        fDigitizers[module]->SetPresent();
-        nArrays++;
-      } //? Array found
-    } //? Array name known
-  } //# Modules
-
-  return nArrays;
-}
-// --------------------------------------------------------------------------
-
-
-
-// -----   Check input arrays   ---------------------------------------------
+// -----   Check input file   -----------------------------------------------
 Int_t CbmDigitization::CheckInputFile() {
 
   LOG(INFO) << fName << ": check input branches..." << FairLogger::endl;
   Int_t nBranches = 0;
   TFile* file = new TFile(fInputFiles[0]);
   assert(file);
-  LOG(INFO) << fName << ": opening input file " << fInputFiles[0]
+  LOG(INFO) << fName << ": opening first input file " << fInputFiles[0]
             << FairLogger::endl;
   TTree* tree = dynamic_cast<TTree*>(file->Get("cbmsim"));
   assert(tree);
@@ -110,10 +94,17 @@ Int_t CbmDigitization::CheckInputFile() {
     } //? branch found
   } //# systems
 
+  FairMCEventHeader* header = new FairMCEventHeader();
+  tree->SetBranchAddress("MCEventHeader.", &header);
+  tree->GetEntry(0);
+  fRun = header->GetRunID();
+  LOG(INFO) << fName << ": run id is " << fRun << FairLogger::endl;
+
   delete tree;
   file->Close();
   delete file;
   return nBranches;
+  delete header;
 }
 // --------------------------------------------------------------------------
 
@@ -179,13 +170,45 @@ void CbmDigitization::Deactivate(Int_t system) {
 
 
 
+// -----   Get a system geometry tag   --------------------------------------
+TString CbmDigitization::GetGeoTag(Int_t system, TGeoManager* geo) {
+
+  TString geoTag;
+  TString sysName = CbmModuleList::GetModuleName(system);
+  Int_t sysLength = sysName.Length() + 1;
+  gGeoManager->CdTop();
+  TGeoNode* cave = gGeoManager->GetCurrentNode();  // cave
+  for (Int_t iNode = 0; iNode < cave->GetNdaughters(); iNode++) {
+    TString volName = cave->GetDaughter(iNode)->GetVolume()->GetName();
+     if ( volName.Contains(sysName.Data(), TString::kIgnoreCase) ) {
+       geoTag = TString(volName(sysLength, volName.Length() - sysLength));
+       break;
+     } //? node is MUCH
+  } //# top level nodes
+
+  return geoTag;
+}
+// --------------------------------------------------------------------------
+
+
+
 // -----   Execute digitisation run   ---------------------------------------
 void CbmDigitization::Run(Int_t event1, Int_t event2) {
 
-  // --- Look for input branches
+  // --- Run info
   std::cout << std::endl << std::endl;
   LOG(INFO) << "==================================================="
       << FairLogger::endl;
+  if ( fEventMode ) LOG(INFO) << fName << ": running in event-by-event mode"
+      << FairLogger::endl << FairLogger::endl;
+  else {
+    LOG(INFO) << fName << ": time-slice interval is ";
+    if ( fTimeSliceInterval < 0. ) LOG(INFO) << "infinity.";
+    else LOG(INFO) << fTimeSliceInterval << "ns.";
+    LOG(INFO) << FairLogger::endl << FairLogger::endl;
+  }
+
+  // --- Look for input branches
   Int_t nBranches = CheckInputFile();
   TString word = (nBranches == 1 ? "branch" : "branches");
   LOG(INFO) << fName << ": " << nBranches << " input " << word << " found"
@@ -197,14 +220,17 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   LOG(INFO) << fName << ": " << nDigis << word << " instantiated."
       << FairLogger::endl << FairLogger::endl;
 
-  // --- Create FairRunAna
-  FairRunAna* run = new FairRunAna();
+  // --- Create CbmRunAna
+  CbmRunAna* run = new CbmRunAna();
+  run->SetGenerateRunInfo(fGenerateRunInfo);
+  if ( fGenerateRunInfo ) LOG(INFO) << "Generate run info" << FairLogger::endl;
+  FairMonitor::GetMonitor()->EnableMonitor(fMonitor);
 
   // --- Add input files
   Int_t nInputs = fInputFiles.size();
   for (Int_t iInput = 0; iInput < nInputs; iInput++) {
     FairFileSource* source = new FairFileSource(fInputFiles.at(iInput));
-    //source->SetEventMeanTime(fEventRates.at(iInput));
+    source->SetEventMeanTime(1.e9 / fEventRates.at(iInput));
     run->SetSource(source);
     LOG(INFO) << fName << ": use input file " << fInputFiles.at(iInput)
         << FairLogger::endl;
@@ -225,15 +251,50 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
     } //? active and digitizer instance present
   } //# digitizers
 
+  // --- Register DAQ
+  if ( ! fEventMode ) {
+    CbmDaq* daq = new CbmDaq();
+    daq->SetTimeSliceInterval(fTimeSliceInterval);
+    run->AddTask(daq);
+  }
+
   // --- Set runtime database
   std::cout << std::endl;
   LOG(INFO) << fName << ": setting runtime DB " << FairLogger::endl;
+  LOG(INFO) << fName << ": ROOT I/O is " << fParRootFile << FairLogger::endl;
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIoRoot = new FairParRootFileIo();
-  FairParAsciiFileIo* parIoAscii = new FairParAsciiFileIo();
-  parIoRoot->open(fParFile.Data(), "UPDATE");
+  parIoRoot->open(fParRootFile.Data(), "UPDATE");
   rtdb->setFirstInput(parIoRoot);
-  LOG(INFO) << fName << ": ROOt I/O is " << fParFile << FairLogger::endl;
+
+  // --- Get geometry from runtime database
+  rtdb->getContainer("FairGeoParSet");
+  rtdb->initContainers(fRun);
+
+  // --- Add parameter files for TRD and TOF
+  TString tofGeo = GetGeoTag(kTof, gGeoManager);
+  TString trdGeo = GetGeoTag(kTrd, gGeoManager);
+  TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+  TString parFile;
+  parFile = srcDir + "/parameters/trd/trd_" + trdGeo + ".digi.par";
+  LOG(INFO) << fName << ": adding " << parFile << FairLogger::endl;
+  AddParameterAsciiFile(parFile);
+  parFile = srcDir + "/parameters/tof/tof_" + tofGeo + ".digi.par";
+  LOG(INFO) << fName << ": adding " << parFile << FairLogger::endl;
+  AddParameterAsciiFile(parFile);
+  parFile = srcDir + "/parameters/tof/tof_" + tofGeo + ".digibdf.par";
+  LOG(INFO) << fName << ": adding " << parFile << FairLogger::endl;
+  AddParameterAsciiFile(parFile);
+  FairParAsciiFileIo* parIoAscii = new FairParAsciiFileIo();
+  parIoAscii->open(&fParAsciiFiles, "in");
+  rtdb->setSecondInput(parIoAscii);
+
+  // --- Delete TGeoManager (will be initialised again from FairRunAna)
+  if (gROOT->GetVersionInt() >= 60602) {
+    gGeoManager->GetListOfVolumes()->Delete();
+    gGeoManager->GetListOfShapes()->Delete();
+    delete gGeoManager;
+  }
   LOG(INFO) << "==================================================="
       << FairLogger::endl;
 
@@ -244,8 +305,15 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
       << FairLogger::endl;
   LOG(INFO) << fName << ": initialising run..." << FairLogger::endl;
   run->Init();
+  rtdb->setOutput(parIoRoot);
+  rtdb->saveOutput();
+  LOG(INFO) << "==================================================="
+      << FairLogger::endl;
 
   // --- Run digitisation
+  std::cout << std::endl << std::endl << std::endl;
+  LOG(INFO) << "==================================================="
+      << FairLogger::endl;
   LOG(INFO) << fName << ": starting run..." << FairLogger::endl;
   if ( event2 < 0 ) {
     if ( event1 >= 0 ) run->Run(0, event1 - 1);  // Run event1 events
@@ -256,9 +324,15 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
     if ( event1 <= event2 ) run->Run(event1, event2);  // Run from event1 to event2
     else run->Run(event1, event1);                     // Run only event1
   }
+  std::cout << std::endl;
+  LOG(INFO) << fName << ": run finished." << FairLogger::endl;
+  LOG(INFO) << "==================================================="
+      << FairLogger::endl;
 
-
-
+  // --- Resource monitoring
+  std::cout << std::endl << std::endl;
+  LOG(INFO) << fName << ": CPU consumption" << FairLogger::endl;
+  if (fMonitor) { FairMonitor::GetMonitor()->Print(); }
 
 }
 // --------------------------------------------------------------------------
@@ -266,7 +340,7 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
 
 
 // -----   Set default info   -----------------------------------------------
-void CbmDigitization::SetDefaults() {
+void CbmDigitization::SetDefaultBranches() {
   fDigitizers[kMvd]  = new CbmDigitizeInfo(kMvd,  "MvdPoint"  );
   fDigitizers[kSts]  = new CbmDigitizeInfo(kSts,  "StsPoint"  );
   fDigitizers[kRich] = new CbmDigitizeInfo(kRich, "RichPoint" );
@@ -300,6 +374,38 @@ void CbmDigitization::SetDigitizer(Int_t system, FairTask* digitizer,
 
 }
 // --------------------------------------------------------------------------
+
+
+
+// -----   Set the output file   --------------------------------------------
+void CbmDigitization::SetOutputFile(TString path) {
+
+  // --- If the directory does not yet exist, create it
+  const char* directory = gSystem->DirName(path.Data());
+  if ( gSystem->AccessPathName(directory) ) {
+    Int_t success  = gSystem->mkdir(directory, kTRUE);
+    if ( success == -1 ) LOG(FATAL) << fName << ": output directory "
+        << directory << " does not exist and cannot be created!"
+        << FairLogger::endl;
+    else LOG(INFO) << fName << ": created directory " << directory
+        << FairLogger::endl;
+  }
+
+  fOutFile = path;
+}
+// --------------------------------------------------------------------------
+
+
+
+// -----    Set the ROOT parameter file   -----------------------------------
+void CbmDigitization::SetParameterRootFile(TString fileName) {
+  if ( gSystem->AccessPathName(fileName) )
+    LOG(FATAL) << fName << ": parameter file " << fileName
+    << " does not exist!" << FairLogger::endl;
+  fParRootFile = fileName;
+}
+// --------------------------------------------------------------------------
+
 
 
 ClassImp(CbmDigitization);

@@ -85,7 +85,7 @@ CbmDigi* CbmDaqBuffer::GetNextData(Int_t iDet, Double_t time) {
   CbmDigi* digi = NULL;
   multimap<Double_t, CbmDigi*>::iterator it = fData[iDet].begin();
   CbmDigi* test = it->second;
-  if ( test->GetTime() < time ) {
+  if ( time < 0. || test->GetTime() < time ) {
     digi = test;
     fData[iDet].erase(it);
   }

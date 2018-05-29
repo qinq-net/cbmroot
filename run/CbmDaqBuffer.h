@@ -72,13 +72,16 @@ class CbmDaqBuffer
       return (--fData[iDet].end())->second->GetTime();
     }
 
+
     /** Pointer to next raw data object for a given detector
      ** up to given time
      ** @param iDet  detector type (e.g. kSTS)
      ** @param time  maximal time [ns]
      ** @return pointer to raw data object
+     **
+     ** If the argument time is negative, no time limit is set.
      **/
-    CbmDigi* GetNextData(Int_t iDet, Double_t time);
+    CbmDigi* GetNextData(Int_t iDet, Double_t time = -1.);
 
 
     /** Current buffer size

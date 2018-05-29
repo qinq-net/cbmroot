@@ -12,6 +12,7 @@
 #include "FairTask.h"
 #include "CbmMCEventList.h"
 #include "CbmTimeSlice.h"
+#include "CbmDigitization.h"
 
 
 class TClonesArray;
@@ -32,30 +33,46 @@ class CbmDigi;
  **/
 class CbmDaq : public FairTask
 {
+
   public:
 
     /** @brief Constructor
-     ** @param timeSliceSize  Duration of time slices [ns]
+     ** @param interval  Duration of a time-slice [ns]
+     **
+     ** By default, the DAQ will run in time-based mode. The event-based mode
+     ** can be selected by the method SetEventMode.
+     ** If the time-slice interval is negative (default), all data will be
+     ** written into one time-slice. Otherwise, time-slice of equal intervals
+     ** will be created.
      **/
-    CbmDaq(Double_t timeSliceSize = 1000.);
+    CbmDaq(Double_t interval = -1.);
 
 
-    /** Destructor   **/
+   /** @brief Destructor   **/
     ~CbmDaq();
 
 
-    /** Task execution **/
+    /** @brief Task execution **/
     virtual void Exec(Option_t* opt);
 
 
-    /** Task initialisation **/
+    /** @brief Initialisation **/
     virtual InitStatus Init();
+
+
+    /** @brief Set the time-slice interval
+     ** @param interval  Duration of a time-slice [ns]
+     **/
+    void SetTimeSliceInterval(Double_t interval) {
+      fDuration = interval;
+    }
 
 
   private:
 
-    Double_t fSystemTime;        ///< Current system time [ns]
-    Double_t fCurrentStartTime;  ///< Start time of current time slice [ns]
+    Bool_t fEventMode;  ///< Flag for event-by-event mode
+    Double_t fSystemTime;          ///< Current system time [ns]
+    Double_t fCurrentStartTime;    ///< Start time of current time slice [ns]
 
     /** Duration of time slice [ns] **/
     Double_t fDuration;
@@ -119,8 +136,11 @@ class CbmDaq : public FairTask
     /** Fill data from the buffer into the current time slice
      ** @param fillTime Maximum time for digis to be filled
      ** @return Number of digis filled into the time slice
+     **
+     ** If fillTime is negative (default), all data from the buffer
+     ** are copied to the time slice.
      **/
-    Int_t FillTimeSlice(Double_t fillTime);
+    Int_t FillTimeSlice(Double_t fillTime = -1.);
 
 
     /** Screen log of the range of MC events contributing to the
