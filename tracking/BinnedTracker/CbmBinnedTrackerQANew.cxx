@@ -15,31 +15,24 @@
 #include "CbmMatch.h"
 #include "CbmTrdCluster.h"
 #include "CbmMCTrack.h"
+#include "CbmStsPoint.h"
+#include "CbmMuchPoint.h"
+#include "geo/CbmMuchGeoScheme.h"
+#include "CbmTofPoint.h"
 
 using namespace std;
 
 struct MCTrackDesc
 {
-    //set<Int_t> stsMCPoints;
-    //set<Int_t> muchMCPoints;
-    map<Int_t, pair<UInt_t, set<Int_t> > > trdMCPointMap = {};// Map an MC point index to TRD station number and a set of reconstructed global track indices.
-    //set<Int_t> tofMCPoints;
-    
-    /*set<Int_t> stsHits;
-    set<Int_t> muchHits;
-    set<Int_t> trdHits;
-    set<Int_t> tofHits;*/
-    
-    //map<Int_t, int> recoTracks;
+    map<Int_t, pair<UInt_t, set<Int_t> > > stsMCPointMap = map<Int_t, pair<UInt_t, set<Int_t> > > ();
+    map<Int_t, pair<UInt_t, set<Int_t> > > muchMCPointMap = map<Int_t, pair<UInt_t, set<Int_t> > > ();
+    map<Int_t, pair<UInt_t, set<Int_t> > > trdMCPointMap = map<Int_t, pair<UInt_t, set<Int_t> > > ();// Map an MC point index to TRD station number and a set of reconstructed global track indices.
+    map<Int_t, set<Int_t> > tofMCPointMap = map<Int_t, set<Int_t> > ();
     Int_t pdg = -1;
     Int_t parentInd = -1;
 };
 
 static vector<vector<MCTrackDesc> > gMCTracks;
-
-CbmBinnedTrackerQANew::CbmBinnedTrackerQANew()
-{
-}
 
 InitStatus CbmBinnedTrackerQANew::Init()
 {
@@ -94,6 +87,94 @@ InitStatus CbmBinnedTrackerQANew::Init()
    if (0 == fGlobalTracks)
       fLogger->Fatal(MESSAGE_ORIGIN, "No global tracks in the input file");
    
+   if (fSettings->Use(kSts))
+   {
+      fStsTracks = static_cast<TClonesArray*> (ioman->GetObject("StsTrack"));
+   
+      if (0 == fStsTracks)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No sts tracks in the input file");
+      
+      fStsHits = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
+   
+      if (0 == fStsHits)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No sts hits in the input file");
+      
+      fStsClusters = static_cast<TClonesArray*> (ioman->GetObject("StsCluster"));
+   
+      if (0 == fStsClusters)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No sts clusters in the input file");
+      
+      fStsDigis = static_cast<TClonesArray*> (ioman->GetObject("StsDigi"));
+   
+      if (0 == fStsDigis)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No sts digis in the input file");
+      
+      fStsPoints = mcManager->InitBranch("StsPoint");
+   
+      if (0 == fStsPoints)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No sts MC points in the input file");
+      
+      for (Int_t i = 0; fStsPoints->Size(0, i) >= 0; ++i)
+      {
+         Int_t nofPoints = fStsPoints->Size(0, i);
+         vector<MCTrackDesc>& tracks = gMCTracks[i];
+      
+         for (Int_t j = 0; j < nofPoints; ++j)
+         {
+            const CbmStsPoint* stsPoint = static_cast<const CbmStsPoint*> (fStsPoints->Get(0, i, j));
+            Int_t trackId = stsPoint->GetTrackID();
+            Int_t stationNumber = CbmStsSetup::Instance()->GetStationNumber(stsPoint->GetDetectorID());
+            auto& trackDesk = tracks[trackId];
+            trackDesk.stsMCPointMap[j] = { stationNumber, set<Int_t>() };
+         }
+      }
+   }// if (fSettings->Use(kSts))
+   
+   if (fSettings->Use(kMuch))
+   {
+      fMuchTracks = static_cast<TClonesArray*> (ioman->GetObject("MuchTrack"));
+   
+      if (0 == fMuchTracks)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No much tracks in the input file");
+      
+      fMuchHits = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
+   
+      if (0 == fMuchHits)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No much hits in the input file");
+      
+      fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
+   
+      if (0 == fMuchClusters)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No much clusters in the input file");
+      
+      fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
+   
+      if (0 == fMuchDigis)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No much digis in the input file");
+      
+      fMuchPoints = mcManager->InitBranch("MuchPoint");
+   
+      if (0 == fMuchPoints)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No much MC points in the input file");
+      
+      for (Int_t i = 0; fMuchPoints->Size(0, i) >= 0; ++i)
+      {
+         Int_t nofPoints = fMuchPoints->Size(0, i);
+         vector<MCTrackDesc>& tracks = gMCTracks[i];
+      
+         for (Int_t j = 0; j < nofPoints; ++j)
+         {
+            const CbmMuchPoint* muchPoint = static_cast<const CbmMuchPoint*> (fMuchPoints->Get(0, i, j));
+            Int_t trackId = muchPoint->GetTrackID();
+            int muchStationNumber = CbmMuchGeoScheme::GetStationIndex(muchPoint->GetDetectorID());
+            int layerNumber = CbmMuchGeoScheme::GetLayerIndex(muchPoint->GetDetectorID());
+            int stationNumber = muchStationNumber * 3 + layerNumber;
+            auto& trackDesk = tracks[trackId];
+            trackDesk.muchMCPointMap[j] = { stationNumber, set<Int_t>() };
+         }
+      }
+   }// if (fSettings->Use(kMuch))
+   
    if (fSettings->Use(kTrd))
    {
       fTrdTracks = static_cast<TClonesArray*> (ioman->GetObject("TrdTrack"));
@@ -135,7 +216,49 @@ InitStatus CbmBinnedTrackerQANew::Init()
             trackDesk.trdMCPointMap[j] = { stationNumber, set<Int_t>() };
          }
       }
-   }
+   }// if (fSettings->Use(kTrd))
+   
+   if (fSettings->Use(kTof))
+   {
+      fTofHits = static_cast<TClonesArray*> (ioman->GetObject("TofHit"));
+   
+      if (0 == fTofHits)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No tof hits in the input file");
+   
+      fTofHitDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("TofDigiMatch"));
+   
+      if (0 == fTofHitDigiMatches)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No tof hit to digi matches in the input file");
+   
+      fTofDigiPointMatches = static_cast<TClonesArray*> (ioman->GetObject("TofDigiMatchPoints"));
+   
+      if (0 == fTofDigiPointMatches)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No tof digi to point matches in the input file");
+      
+      fTofDigis = static_cast<TClonesArray*> (ioman->GetObject("TofDigi"));
+   
+      if (0 == fTofDigis)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No tof digis in the input file");
+      
+      fTofPoints = mcManager->InitBranch("TofPoint");
+   
+      if (0 == fTofPoints)
+         fLogger->Fatal(MESSAGE_ORIGIN, "No tof MC points in the input file");
+      
+      for (Int_t i = 0; fTofPoints->Size(0, i) >= 0; ++i)
+      {
+         Int_t nofPoints = fTofPoints->Size(0, i);
+         vector<MCTrackDesc>& tracks = gMCTracks[i];
+      
+         for (Int_t j = 0; j < nofPoints; ++j)
+         {
+            const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*> (fTofPoints->Get(0, i, j));
+            Int_t trackId = tofPoint->GetTrackID();
+            auto& trackDesk = tracks[trackId];
+            trackDesk.tofMCPointMap[j] = { set<Int_t>() };
+         }
+      }
+   }// if (fSettings->Use(kTof))
    
    return kSUCCESS;
 }
