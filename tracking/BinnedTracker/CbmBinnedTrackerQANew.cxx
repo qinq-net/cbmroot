@@ -22,7 +22,7 @@ struct MCTrackDesc
 {
     //set<Int_t> stsMCPoints;
     //set<Int_t> muchMCPoints;
-    map<Int_t, pair<UInt_t, set<Int_t> > > trdMCPointMap;// Map an MC point index to TRD station number and a set of reconstructed global track indices.
+    map<Int_t, pair<UInt_t, set<Int_t> > > trdMCPointMap = {};// Map an MC point index to TRD station number and a set of reconstructed global track indices.
     //set<Int_t> tofMCPoints;
     
     /*set<Int_t> stsHits;
@@ -31,8 +31,8 @@ struct MCTrackDesc
     set<Int_t> tofHits;*/
     
     //map<Int_t, int> recoTracks;
-    Int_t pdg;
-    Int_t parentInd;
+    Int_t pdg = -1;
+    Int_t parentInd = -1;
 };
 
 static vector<vector<MCTrackDesc> > gMCTracks;
@@ -132,7 +132,7 @@ InitStatus CbmBinnedTrackerQANew::Init()
             Int_t trackId = trdPoint->GetTrackID();
             int stationNumber = CbmTrdAddress::GetLayerId(trdPoint->GetModuleAddress());
             auto& trackDesk = tracks[trackId];
-            trackDesk.trdMCPointMap[j] = { stationNumber, {} };
+            trackDesk.trdMCPointMap[j] = { stationNumber, set<Int_t>() };
          }
       }
    }
