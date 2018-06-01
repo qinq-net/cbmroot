@@ -43,10 +43,6 @@
 #include "CbmMCTrack.h"
 #include "CbmMCEpoch.h"
 //#include "CbmMCBuffer.h"
-#include "CbmDaqBuffer.h"
-
-
-// Includes from ROOT
 #include "TObjArray.h"
 #include "TDatabasePDG.h"
 #include "TFile.h"
@@ -59,6 +55,7 @@
 #include <iomanip>
 #include <cstring>
 #include <sstream>
+#include "../../base/CbmDaqBuffer.h"
 
 using std::fixed;
 using std::right;

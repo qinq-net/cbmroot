@@ -7,6 +7,8 @@
 #pragma link C++ class CbmAddress;
 
 //#pragma link C++ class CbmDigiManager+;
+#pragma link C++ class CbmDigitizer;
+#pragma link C++ class CbmDaqBuffer;
 #pragma link C++ class CbmPropagator+;
 #pragma link C++ class CbmTrdTrackFitter+;
 #pragma link C++ class CbmTrdTrackFinder+;

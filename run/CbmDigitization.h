@@ -11,12 +11,12 @@
 #include "TList.h"
 #include "TNamed.h"
 #include "TString.h"
+#include "TSystem.h"
+#include "FairLogger.h"
 #include "CbmDaq.h"
 #include "CbmDefs.h"
 #include "CbmDigitizeInfo.h"
 
-#include "FairLogger.h"
-#include "TSystem.h"
 class TGeoManager;
 
 
@@ -104,11 +104,11 @@ class CbmDigitization : public TNamed
      **
      ** This method has to be called from the macro level, if a digitizer
      ** different from the default one or with different settings than the
-     ** default ones is to be used. The respective digitizer has to be instantiated
-     ** before. The ownership is passed to this class.
+     ** default ones is to be used. The respective digitizer has to be
+     ** instantiated before. The ownership is passed to this class.
      **/
-    void SetDigitizer(Int_t system, FairTask* digitizer, TString branch = "",
-                      Bool_t persistent = kTRUE);
+    void SetDigitizer(Int_t system, CbmDigitizer* digitizer,
+                      TString branch = "", Bool_t persistent = kTRUE);
 
 
     /** @brief Set event-by-event mode
@@ -149,6 +149,17 @@ class CbmDigitization : public TNamed
      void SetTimeSliceInterval(Double_t interval) {
        fDaq->SetTimeSliceInterval(interval);
      }
+
+
+     /** @brief Store all time-slices
+      ** @param choice If kTRUE; also empty slices will be stored.
+      **
+      ** By default, only time slices containing data are filled into the tree.
+      **/
+     void StoreAllTimeSlices(Bool_t choice = kTRUE) {
+       fDaq->StoreAllTimeSlices(choice);
+     }
+
 
 
   private:

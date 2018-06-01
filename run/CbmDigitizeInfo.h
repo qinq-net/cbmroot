@@ -9,7 +9,7 @@
 
 #include "TObject.h"
 #include "TString.h"
-#include "FairTask.h"
+#include "CbmDigitizer.h"
 
 
 /** @class CbmDigitizeInfo
@@ -35,7 +35,7 @@ class CbmDigitizeInfo : public TObject
      **/
     CbmDigitizeInfo(Int_t system = -1,
                     TString branch = "",
-                    FairTask* digitizer = nullptr,
+                    CbmDigitizer* digitizer = nullptr,
                     Bool_t present = kFALSE,
                     Bool_t active = kTRUE,
                     Bool_t persistent = kTRUE) :
@@ -58,10 +58,11 @@ class CbmDigitizeInfo : public TObject
      **/
     TString GetBranchName() const { return fBranch; }
 
+
     /** @brief Get digitizer
      ** @value Pointer to digitizer instance
      **/
-    FairTask* GetDigitizer() const { return fDigitizer; }
+    CbmDigitizer* GetDigitizer() const { return fDigitizer; }
 
 
     /** @brief Activity flag
@@ -90,7 +91,7 @@ class CbmDigitizeInfo : public TObject
     /** @brief Set digitizer instance
      ** @param digitizer Pointer to digitizer instance
      **/
-    void SetDigitizer(FairTask* digitizer) { fDigitizer = digitizer; }
+    void SetDigitizer(CbmDigitizer* digitizer) { fDigitizer = digitizer; }
 
 
     /** @brief Set persistence flag
@@ -107,12 +108,12 @@ class CbmDigitizeInfo : public TObject
 
   private:
 
-    Int_t     fSystem;      // System ID (ECbmModuleId)
-    TString   fBranch;      // Branch (array) name
-    FairTask* fDigitizer;   // Pointer to digitizer instance
-    Bool_t    fPresent;     // Data branch is present in input tree
-    Bool_t    fActive;      // Digitizer is active
-    Bool_t    fPersistent;  // Digitizer output is persistent
+    Int_t         fSystem;      // System ID (ECbmModuleId)
+    TString       fBranch;      // Branch (array) name
+    CbmDigitizer* fDigitizer;   // Pointer to digitizer instance
+    Bool_t        fPresent;     // Data branch is present in input tree
+    Bool_t        fActive;      // Digitizer is active
+    Bool_t        fPersistent;  // Digitizer output is persistent
 
     ClassDef(CbmDigitizeInfo, 1);
 

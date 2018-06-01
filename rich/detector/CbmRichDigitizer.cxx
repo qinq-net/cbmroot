@@ -19,9 +19,8 @@
 #include "FairRunAna.h"
 #include "FairRunSim.h"
 #include "FairEventHeader.h"
-#include "CbmDaqBuffer.h"
-
 #include <iostream>
+#include "../../base/CbmDaqBuffer.h"
 
 using namespace std;
 

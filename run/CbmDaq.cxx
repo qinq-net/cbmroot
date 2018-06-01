@@ -19,7 +19,7 @@
 #include "CbmRichDigi.h"
 #include "CbmMuchDigi.h"
 #include "CbmTrdDigi.h"
-#include "CbmTofDigi.h"
+#include "CbmTofDigiExp.h"
 #include "CbmPsdDigi.h"
 
 
@@ -36,6 +36,7 @@ using std::stringstream;
 // =====   Constructor   =====================================================
 CbmDaq::CbmDaq(Double_t interval) : FairTask("Daq"),
                    fEventMode(kFALSE),
+                   fLegacy(kFALSE),
                    fTimeSliceInterval(interval),
                    fBufferTime(500.),
                    fStoreEmptySlices(kFALSE),
@@ -50,11 +51,13 @@ CbmDaq::CbmDaq(Double_t interval) : FairTask("Daq"),
                    fTimeSliceLast(-1.),
                    fTimer(),
                    fDigis(),
+                   fDigitizers(),
                    fTimeSlice(nullptr),
                    fBuffer(nullptr),
                    fEventList(),
                    fEventsCurrent(nullptr),
-                   fEventRange(){
+                   fEventRange() {
+  fBuffer = CbmDaqBuffer::Instance();
 }
 // ===========================================================================
 
@@ -72,15 +75,15 @@ void CbmDaq::CloseTimeSlice() {
 
   // --- Time slice status
   if ( fTimeSlice->IsEmpty() ) {
-    LOG(DEBUG) << "----- " << fName << ": Closing " << CurrentTimeSliceInfo()
+    LOG(DEBUG) << "----- " << fName << ": Closing " << fTimeSlice->ToString()
         << FairLogger::endl;
     fNofTimeSlicesEmpty++;
   }
-  else LOG(INFO) << "----- " << fName << ": Closing " << CurrentTimeSliceInfo()
+  else LOG(INFO) << "----- " << fName << ": Closing " << fTimeSlice->ToString()
       << FairLogger::endl;
 
   // --- Fill current time slice into tree (if required)
-  if ( fStoreEmptySlices || (!fTimeSlice->IsEmpty()) ) {
+  if ( fStoreEmptySlices || (! fTimeSlice->IsEmpty()) ) {
     Int_t nMCEvents = CopyEventList();
     LOG(DEBUG) << GetName() << ": " << nMCEvents
         << " MC " << (nMCEvents == 1 ? "event" : "events" )
@@ -128,31 +131,6 @@ Int_t CbmDaq::CopyEventList() {
   } //# files
 
   return nMCEvents;
-}
-// ===========================================================================
-
-
-
-// =====   Info on current time slice   ======================================
-string CbmDaq::CurrentTimeSliceInfo() {
-  Bool_t empty = kTRUE;
-  stringstream ss;
-  if ( fTimeSlice->GetDuration() < 0. )
-    ss << "time slice: interval flexible, data: ";
-  else
-    ss << "timeSlice: interval [" << fixed << setprecision(3)
-       << fTimeSlice->GetStartTime() << ", " << fTimeSlice->GetEndTime()
-       << "] ns, data: ";
-  for (Int_t detector = kMvd; detector < kNofSystems; detector++) {
-    if ( fDigis[detector] == nullptr ) continue;
-    if ( fDigis[detector]->GetEntriesFast() ) {
-      ss << " " << CbmModuleList::GetModuleNameCaps(detector) << " "
-          << fDigis[detector]->GetEntriesFast();
-      empty = kFALSE;
-    } //? digis for detector
-  } //# detectors
-  if ( empty ) ss << " empty";
-  return ss.str();
 }
 // ===========================================================================
 
@@ -226,7 +204,7 @@ void CbmDaq::Exec(Option_t*) {
 
     // Fill all data from the buffer into the time slice and close the
     // time slice.
-    nDigis = FillTimeSlice();
+    nDigis = FillTimeSlice(-1., kFALSE);
     fTimeSlice->SetStartTime(eventTime);
     if ( fNofEvents == 0 ) fTimeSliceFirst = eventTime;
     CloseTimeSlice();
@@ -243,7 +221,7 @@ void CbmDaq::Exec(Option_t*) {
 
   // --- Event log
   fTimer.Stop();
-  LOG(INFO) << "+ " << setw(15) << GetName() << ": Event  " << setw(6)
+  LOG(INFO) << "+ " << setw(15) << GetName() << ": Event " << setw(6)
                     << right << event << " at " << fixed
                     << setprecision(3) << eventTime
                     << " ns, " << nDigis << " digis transported. Exec time "
@@ -261,6 +239,11 @@ void CbmDaq::Exec(Option_t*) {
 // =====   Fill a data (digi) object into the its output array   =============
 void CbmDaq::FillData(CbmDigi* data) {
 
+  /** This method is used in the legacy mode to write digis into the
+   ** output arrays. In the new framework, this is performed
+   ** by the digitizers themselves.
+   **/
+
   Int_t iDet = data->GetSystemId();
   if ( fDigis[iDet] == nullptr ) {
     LOG(FATAL) << GetName() << ": received digi from "
@@ -275,42 +258,42 @@ void CbmDaq::FillData(CbmDigi* data) {
     case kMvd: {
       CbmMvdDigi* digi = static_cast<CbmMvdDigi*>(data);
       new ( (*(fDigis[kMvd]))[nDigis] ) CbmMvdDigi(*digi);
-      fTimeSlice->SetEmpty(kFALSE);
+      fTimeSlice->AddData(kMvd);
       break;
     }
 
     case kSts: {
       CbmStsDigi* digi = static_cast<CbmStsDigi*>(data);
       new ( (*(fDigis[kSts]))[nDigis] ) CbmStsDigi(*digi);
-      fTimeSlice->SetEmpty(kFALSE);
+      fTimeSlice->AddData(kSts);
       break;
     }
 
     case kRich: {
       CbmRichDigi* digi = static_cast<CbmRichDigi*>(data);
       new ( (*(fDigis[kRich]))[nDigis] ) CbmRichDigi(*digi);
-      fTimeSlice->SetEmpty(kFALSE);
+      fTimeSlice->AddData(kRich);
       break;
     }
 
     case kMuch: {
       CbmMuchDigi* digi = static_cast<CbmMuchDigi*>(data);
       new ( (*(fDigis[kMuch]))[nDigis] ) CbmMuchDigi(*digi);
-      fTimeSlice->SetEmpty(kFALSE);
+      fTimeSlice->AddData(kMuch);
       break;
     }
 
     case kTrd: {
       CbmTrdDigi* digi = static_cast<CbmTrdDigi*>(data);
       new ( (*(fDigis[kTrd]))[nDigis] ) CbmTrdDigi(*digi);
-      fTimeSlice->SetEmpty(kFALSE);
+      fTimeSlice->AddData(kTrd);
       break;
     }
 
     case kTof: {
       CbmTofDigiExp* digi = static_cast<CbmTofDigiExp*>(data);
       new ( (*(fDigis[kTof]))[nDigis] ) CbmTofDigiExp(*digi);
-      fTimeSlice->SetEmpty(kFALSE);
+      fTimeSlice->AddData(kTof);
       break;
     }
 
@@ -321,69 +304,35 @@ void CbmDaq::FillData(CbmDigi* data) {
       break;
 
   }  // detector switch
-}
-// ===========================================================================
 
-
-
-// =====   Copy all buffer data to the time slice   ==========================
-Int_t CbmDaq::FillTimeSlice() {
-
-  Int_t nDigis = 0.;
-  LOG(DEBUG) << fName << ": Fill all data into current time slice"
-      << FairLogger::endl;
-
-  // --- Loop over all detector systems
-  for (Int_t iDet = kRef; iDet < kNofSystems; iDet++) {
-
-    // --- Loop over digis from DaqBuffer and fill them into current time slice
-    CbmDigi* digi = fBuffer->GetNextData(iDet);
-    while (digi) {
-
-      LOG(DEBUG2) << fName << ": Inserting digi with detector ID "
-             << digi->GetAddress() << " at time " << digi->GetTime()
-             << " into current time slice" << FairLogger::endl;
-      FillData(digi);
-      if ( !fNofDigis && !nDigis ) fTimeDigiFirst = digi->GetTime();
-      fTimeDigiLast = TMath::Max(fTimeDigiLast, digi->GetTime());
-      RegisterEvent(digi);
-      nDigis++;
-
-      // --- Delete data and get next one from buffer
-      delete digi;
-      digi = fBuffer->GetNextData(iDet);
-    }  //? Valid digi from buffer
-
-  }  // Detector loop
-
-  LOG(DEBUG) << GetName() << ": Filled " << nDigis << " digis into "
-        << CurrentTimeSliceInfo() << FairLogger::endl;
-  fNofDigis += nDigis;
-
-  return nDigis;
 }
 // ===========================================================================
 
 
 
 // =====   Fill current time slice with data from buffers   ==================
-Int_t CbmDaq::FillTimeSlice(Double_t fillTime) {
+Int_t CbmDaq::FillTimeSlice(Double_t fillTime, Bool_t limit) {
 
   Int_t nDigis = 0;
-  LOG(DEBUG) << fName << ": Fill data up to t = " << fillTime
-          << " into current time slice" << FairLogger::endl;
+  if ( limit ) LOG(DEBUG) << fName << ": Fill data up to t = " << fillTime
+      << " into current time slice" << FairLogger::endl;
+  else LOG(DEBUG) << fName << ": Fill all data into current time slice"
+      << FairLogger::endl;
 
+  CbmDigi* digi = nullptr;
   // --- Loop over all detector systems
   for (Int_t iDet = kRef; iDet < kNofSystems; iDet++) {
 
     // --- Loop over digis from DaqBuffer and fill them into current time slice
-    CbmDigi* digi = fBuffer->GetNextData(iDet, fillTime);
+    digi = ( limit ? fBuffer->GetNextData(iDet, fillTime) :
+        fBuffer->GetNextData(iDet) );
     while (digi) {
 
       LOG(DEBUG2) << fName << ": Inserting digi with detector ID "
-		     << digi->GetAddress() << " at time " << digi->GetTime()
-		     << " into current time slice" << FairLogger::endl;
-      FillData(digi);
+          << digi->GetAddress() << " at time " << digi->GetTime()
+          << " into current time slice" << FairLogger::endl;
+      if ( ! fLegacy ) WriteData(digi);
+      else FillData(digi);  // Legacy mode
       if ( !fNofDigis && !nDigis ) fTimeDigiFirst = digi->GetTime();
       fTimeDigiLast = TMath::Max(fTimeDigiLast, digi->GetTime());
       RegisterEvent(digi);
@@ -391,18 +340,14 @@ Int_t CbmDaq::FillTimeSlice(Double_t fillTime) {
 
       // --- Delete data and get next one from buffer
       delete digi;
-      digi = fBuffer->GetNextData(iDet, fillTime);
+      digi = ( limit ? fBuffer->GetNextData(iDet, fillTime) :
+          fBuffer->GetNextData(iDet) );
     }  //? Valid digi from buffer
 
   }  // Detector loop
 
-  // Adjust time slice limits in case of event-by-event or single time slice
-  if ( fEventMode || fTimeSliceInterval < 0. ) {
-
-  }
-
   LOG(DEBUG) << GetName() << ": Filled " << nDigis << " digis into "
-		<< CurrentTimeSliceInfo() << FairLogger::endl;
+      << fTimeSlice->ToString() << FairLogger::endl;
   fNofDigis += nDigis;
 
   return nDigis;
@@ -414,24 +359,30 @@ Int_t CbmDaq::FillTimeSlice(Double_t fillTime) {
 // =====   End-of-run action   ===============================================
 void CbmDaq::Finish() {
 
-  std::cout << std::endl;
-  LOG(DEBUG) << fName << ": End of run" << FairLogger::endl;
-  LOG(DEBUG) << fBuffer->ToString() << FairLogger::endl;
-
   if ( ! fEventMode ) { // time-based mode
+
+    std::cout << std::endl;
+    LOG(INFO) << fName << ": Finish run" << FairLogger::endl;
+    LOG(INFO) << fBuffer->ToString() << FairLogger::endl;
+    Int_t nDigis = 0;
 
     if ( fTimeSliceInterval > 0. ) {  // regular time-slices
       while ( fBuffer->GetSize() ) {  // time slice loop until buffer is empty
-        FillTimeSlice(fTimeSlice->GetEndTime());
+        nDigis += FillTimeSlice(fTimeSlice->GetEndTime());
         CloseTimeSlice();
       } //# time slices
     } //? regular time slices
 
     else {  // all data into one time-slice
-      FillTimeSlice();
+      nDigis += FillTimeSlice(-1., kFALSE);
       CloseTimeSlice();
     } //? all data into one time-slice
 
+    LOG(INFO) << fName << ": " << nDigis << " digis transported."
+        << FairLogger::endl;
+    LOG(INFO) << fBuffer->ToString()
+                         << FairLogger::endl;
+    LOG(INFO) << fName << ": run finished." << FairLogger::endl;
   } //? time-based mode
 
 
@@ -440,11 +391,6 @@ void CbmDaq::Finish() {
         << ": non-empty buffer at finish in event-by-event mode!"
         << FairLogger::endl;
   } //? event-by-event mode
-
-
-  LOG(DEBUG) << fBuffer->ToString()
-			           << FairLogger::endl;
-  LOG(DEBUG) << fName << ": run finished." << FairLogger::endl;
 
   std::cout << std::endl;
   LOG(INFO) << "=====================================" << FairLogger::endl;
@@ -497,38 +443,36 @@ InitStatus CbmDaq::Init() {
 
   // Register output branch EventList
   fEventsCurrent = new CbmMCEventList();
-  FairRootManager::Instance()->Register("MCEventList.", "Event list",
+  FairRootManager::Instance()->Register("MCEventList.", "DAQ",
                                         fEventsCurrent, kTRUE);
 
-  // Register output branches (CbmDigi)
-  for (Int_t detector = kMvd; detector < kNofSystems; detector++) {
-    TString className = "Cbm";
-    TString branchName = "";
+  // In legacy mode: register output branches (CbmDigi)
+  if ( fLegacy ) {
+    for (Int_t detector = kMvd; detector < kNofSystems; detector++) {
+      TString className = "Cbm";
+      TString branchName = "";
 
-    switch (detector) {
-      case kMvd:  branchName = "MvdDigi";  break;
-      case kSts:  branchName = "StsDigi";  break;
-      case kRich: branchName = "RichDigi"; break;
-      case kMuch: branchName = "MuchDigi"; break;
-      case kTrd:  branchName = "TrdDigi";  break;
-      case kTof:  branchName = "TofDigiExp";  break;
-      case kPsd:  branchName = "PsdDigi";  break;
-      default: break;
-    } //? detector
-    if ( branchName.IsNull() ) continue;
-    className += branchName;
+      switch (detector) {
+        case kMvd:  branchName = "MvdDigi";  break;
+        case kSts:  branchName = "StsDigi";  break;
+        case kRich: branchName = "RichDigi"; break;
+        case kMuch: branchName = "MuchDigi"; break;
+        case kTrd:  branchName = "TrdDigi";  break;
+        case kTof:  branchName = "TofDigiExp";  break;
+        case kPsd:  branchName = "PsdDigi";  break;
+        default: break;
+      } //? detector
+      if ( branchName.IsNull() ) continue;
+      className += branchName;
 
-    fDigis[detector] = new TClonesArray(className.Data(), 1000);
-    FairRootManager::Instance()->Register(branchName.Data(), "",
-                                          fDigis[detector],IsOutputBranchPersistent(branchName));
-    LOG(INFO) << GetName() << ": Registered branch " << branchName
-        << FairLogger::endl;
+      fDigis[detector] = new TClonesArray(className.Data(), 1000);
+      FairRootManager::Instance()->Register(branchName.Data(), "",
+                                            fDigis[detector],IsOutputBranchPersistent(branchName));
+      LOG(INFO) << GetName() << ": Registered branch " << branchName
+          << FairLogger::endl;
 
-  } //? systems
-
-
-  // Get Daq Buffer
-  fBuffer = CbmDaqBuffer::Instance();
+    } //# systems
+  } //? legacy
 
   // Set initial times
   fTimeEventPrevious = -1.;
@@ -604,6 +548,29 @@ void CbmDaq::RegisterEvent(CbmDigi* digi) {
 
 }
 // ===========================================================================
+
+
+
+// =====   Write data to output   ============================================
+void CbmDaq::WriteData(CbmDigi* digi) {
+
+  // --- Get corresponding system
+  Int_t system = digi->GetSystemId();
+  if ( fDigitizers.find(system) == fDigitizers.end() )
+    LOG(FATAL) << fName << ": No corresponding digitizer for system ID "
+      << system << FairLogger::endl;
+
+  // --- Call write method of corresponding digitizer
+  CbmDigitizer* digitizer = fDigitizers.at(system);
+  assert(digitizer);
+  digitizer->WriteDigi(digi);
+  fTimeSlice->AddData(system);
+
+}
+// ===========================================================================
+
+
+
 
 ClassImp(CbmDaq)
 

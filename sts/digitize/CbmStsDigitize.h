@@ -8,7 +8,7 @@
 
 #include <map>
 #include "TStopwatch.h"
-#include "FairTask.h"
+#include "CbmDigitizer.h"
 #include "CbmMatch.h"
 #include "CbmStsDigitizeParameters.h"
 
@@ -31,7 +31,7 @@ class CbmStsSetup;
  ** buffered data prior to the MC time of the current event are read out
  ** and stored in the output.
  **/
-class CbmStsDigitize : public FairTask
+class CbmStsDigitize : public CbmDigitizer
 {
 
  public:
@@ -160,6 +160,17 @@ class CbmStsDigitize : public FairTask
   void SetGenerateNoise(Bool_t choise = kTRUE);
 
 
+  /** @brief Set legacy mode
+   ** @param choice  If kTRUE, will run in legacy mode
+   **
+   ** In the legacy mode, data are directly written to the output,
+   ** without sending them to DAQ.
+   **/
+  void SetLegacyMode(Bool_t choice = kTRUE) {
+    fIsLegacy = choice;
+  }
+
+
   /** @brief Set the file name with module parameters
    ** @param fileName  File name with module parameters
    **
@@ -234,12 +245,17 @@ class CbmStsDigitize : public FairTask
   }
 
 
+  /** @brief Write a digi to the output tree
+   ** @param digi  Pointer to digi object
+   **/
+  virtual void WriteDigi(CbmDigi* digi);
+
 
 
  private:
 
-  Int_t  fMode;       ///< Run mode. 0 = stream, 1 = event
   Bool_t fIsInitialised;   ///< kTRUE if Init() was called
+  Bool_t fIsLegacy;        ///< Legacy mode (without DAQ)
 
   Int_t  fEnergyLossModel;  ///< Energy loss model
   Bool_t fUseLorentzShift;
@@ -294,26 +310,33 @@ class CbmStsDigitize : public FairTask
   Double_t fTimeDigiLast;       ///< Time of last digi sent to DAQ
 
   // --- Event counters
-  Int_t          fNofPoints;    ///< Number of points processed in Exec
-  Int_t          fNofSignalsF;  ///< Number of signals on front side
-  Int_t          fNofSignalsB;  ///< Number of signals on back side
-  Int_t          fNofDigis;     ///< Number of created digis in Exec
+  Int_t fNofPoints;    ///< Number of points processed in Exec
+  Int_t fNofSignalsF;  ///< Number of signals on front side
+  Int_t fNofSignalsB;  ///< Number of signals on back side
+  Int_t fNofDigis;     ///< Number of created digis in Exec
 
   // --- Run counters
-  Int_t          fNofEvents;      ///< Total number of events processed
-  Double_t       fNofPointsTot;   ///< Total number of points processed
-  Double_t       fNofSignalsFTot; ///< Number of signals on front side
-  Double_t       fNofSignalsBTot; ///< Number of signals on back side
-  Double_t       fNofDigisTot;    ///< Total number of digis created
-  Double_t       fNofNoiseTot;    ///< Total number of noise digis
-  Double_t       fTimeTot;        ///< Total execution time
+  Int_t    fNofEvents;      ///< Total number of events processed
+  Double_t fNofPointsTot;   ///< Total number of points processed
+  Double_t fNofSignalsFTot; ///< Number of signals on front side
+  Double_t fNofSignalsBTot; ///< Number of signals on back side
+  Double_t fNofDigisTot;    ///< Total number of digis created
+  Double_t fNofNoiseTot;    ///< Total number of noise digis
+  Double_t fTimeTot;        ///< Total execution time
 
 
-  /** Status of the analog buffers **/
+  /** @brief Number of signals in the analogue buffers
+   ** @value nSignals  Sum of number of signals in all modules
+   **/
+  Int_t BufferSize() const;
+
+
+  /** @brief Status of the analogue buffers
+   ** @param[out] nSignals  Sum of number of signals in alll modules
+   ** @value String output
+   **/
   std::string BufferStatus() const;
 
-  /** Status of the analog buffers **/
-  std::string BufferStatus2() const;
 
   /** End-of-run action **/
   virtual void Finish();

@@ -76,7 +76,7 @@ Int_t CbmDigitization::CheckInputFile() {
   // --- Open input file and get tree
   TFile* file = new TFile(fInputFiles[0]);
   assert(file);
-  LOG(INFO) << fName << ": opening first input file " << fInputFiles[0]
+  LOG(INFO) << fName << ": Opening first input file " << fInputFiles[0]
             << FairLogger::endl;
   TTree* tree = dynamic_cast<TTree*>(file->Get("cbmsim"));
   assert(tree);
@@ -86,14 +86,14 @@ Int_t CbmDigitization::CheckInputFile() {
   tree->SetBranchAddress("MCEventHeader.", &header);
   tree->GetEntry(0);
   fRun = header->GetRunID();
-  LOG(INFO) << fName << ": run id is " << fRun << FairLogger::endl;
+  LOG(INFO) << fName << ": Run id is " << fRun << FairLogger::endl;
 
   // --- Search for input branches
   Int_t nBranches = 0;
   for (auto it = fDigitizers.begin(); it != fDigitizers.end(); it++) {
     TBranch* branch = tree->GetBranch(it->second->GetBranchName().Data());
     if ( branch ) {
-      LOG(INFO) << fName << ": found branch " << it->second->GetBranchName()
+      LOG(INFO) << fName << ": Found branch " << it->second->GetBranchName()
           << " for system " << CbmModuleList::GetModuleNameCaps(it->first)
           << FairLogger::endl;
       it->second->SetPresent();
@@ -115,7 +115,7 @@ Int_t CbmDigitization::CheckInputFile() {
 // -----   Create the digitisers   ------------------------------------------
 Int_t CbmDigitization::CreateDigitizers() {
 
-  LOG(INFO) << fName << ": create default digitisers: ";
+  LOG(INFO) << fName << ": Create default digitisers: ";
   Int_t nDigis = 0;
   for (auto it = fDigitizers.begin(); it != fDigitizers.end(); it++) {
 
@@ -131,27 +131,27 @@ Int_t CbmDigitization::CreateDigitizers() {
     Int_t system = it->first;
     switch (system) {
       case kMvd:
-        fDigitizers[system]->SetDigitizer(new CbmMvdDigitizer());
+        //fDigitizers[system]->SetDigitizer(new CbmMvdDigitizer());
         LOG(INFO) << "MVD "; nDigis++; break;
       case kSts:
         fDigitizers[system]->SetDigitizer(new CbmStsDigitize());
         LOG(INFO) << "STS "; nDigis++; break;
       case kRich:
-        fDigitizers[system]->SetDigitizer(new CbmRichDigitizer());
+        //fDigitizers[system]->SetDigitizer(new CbmRichDigitizer());
         LOG(INFO) << "RICH "; nDigis++; break;
      case kMuch:
-        fDigitizers[system]->SetDigitizer(new CbmMuchDigitizeGem());
+        //fDigitizers[system]->SetDigitizer(new CbmMuchDigitizeGem());
         LOG(INFO) << "MUCH "; nDigis++; break;
       case kTrd:
-        fDigitizers[system]->SetDigitizer(new CbmTrdDigitizerPRF());
+        //fDigitizers[system]->SetDigitizer(new CbmTrdDigitizerPRF());
         LOG(INFO) << "TRD "; nDigis++; break;
       case kTof:
-        fDigitizers[system]->SetDigitizer(new CbmTofDigitizerBDF());
+        //fDigitizers[system]->SetDigitizer(new CbmTofDigitizerBDF());
         LOG(INFO) << "TOF "; nDigis++; break;
       case kPsd:
-        fDigitizers[system]->SetDigitizer(new CbmPsdSimpleDigitizer());
+        //fDigitizers[system]->SetDigitizer(new CbmPsdSimpleDigitizer());
         LOG(INFO) << "PSD "; nDigis++; break;
-     default: LOG(FATAL) << fName << ": unknown system " << system
+     default: LOG(FATAL) << fName << ": Unknown system " << system
           << FairLogger::endl; break;
     } //? system
   } //# present systems
@@ -230,8 +230,13 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
     FairFileSource* source = new FairFileSource(fInputFiles.at(iInput));
     source->SetEventMeanTime(1.e9 / fEventRates.at(iInput));
     run->SetSource(source);
-    LOG(INFO) << fName << ": Use input file " << fInputFiles.at(iInput)
-        << FairLogger::endl;
+    if ( ! fDaq->IsEventMode() )
+      LOG(INFO) << fName << ": Use input file " << fInputFiles.at(iInput)
+      << " at event rate " << fEventRates.at(iInput) << " / s "
+      << FairLogger::endl;
+    else
+      LOG(INFO) << fName << ": Use input file " << fInputFiles.at(iInput)
+      << FairLogger::endl;
   }
 
   // --- Set output file
@@ -241,8 +246,12 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
 
   // --- Register digitisers
   for (auto it = fDigitizers.begin(); it != fDigitizers.end(); it++) {
-    FairTask* digitizer = it->second->GetDigitizer();
+    CbmDigitizer* digitizer = it->second->GetDigitizer();
     if ( it->second->IsActive() && digitizer != nullptr ) {
+      digitizer->SetDaqBuffer(fDaq->GetBuffer());
+      LOG(INFO) << fDaq->GetBuffer() << FairLogger::endl;
+      fDaq->SetDigitizer(it->first, digitizer);
+      if ( fDaq->IsEventMode() ) digitizer->SetEventMode();
       run->AddTask(digitizer);
       LOG(INFO) << fName << ": Added task " << digitizer->GetName()
           << FairLogger::endl;
@@ -348,8 +357,8 @@ void CbmDigitization::SetDefaultBranches() {
 
 
 // -----   Set digitizer explicitly   ---------------------------------------
-void CbmDigitization::SetDigitizer(Int_t system, FairTask* digitizer,
-                               TString branch, Bool_t persistent) {
+void CbmDigitization::SetDigitizer(Int_t system, CbmDigitizer* digitizer,
+                                   TString branch, Bool_t persistent) {
 
   // Digitizer already present: replace
   if ( fDigitizers.find(system) != fDigitizers.end() ) {

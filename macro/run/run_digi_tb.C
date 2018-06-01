@@ -94,6 +94,7 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
 
   // ----- STS digitiser
   CbmStsDigitize* stsDigi = new CbmStsDigitize();
+  stsDigi->SetLegacyMode();
   run->AddTask(stsDigi);
 
   CbmTrdRadiator *radiator = new CbmTrdRadiator(kTRUE,"K++");
@@ -107,7 +108,8 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   run->AddTask(tofDigi);
  
   // ----- DAQ
-  FairTask* daq = new CbmDaq(timeSliceSize);
+  CbmDaq* daq = new CbmDaq(timeSliceSize);
+  daq->SetLegacyMode();
   run->AddTask(daq);
   
   // -----  Parameter database   --------------------------------------------

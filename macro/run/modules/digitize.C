@@ -46,6 +46,8 @@ void digitize()
 	if ( setup->IsActive(kSts) ) {
 
 	  CbmStsDigitize* stsDigi = new CbmStsDigitize();
+	  stsDigi->SetEventMode();
+	  stsDigi->SetLegacyMode();
 	  run->AddTask(stsDigi);
       std::cout << "-I- digitize: Added task " << stsDigi->GetName()
 				<< std::endl;

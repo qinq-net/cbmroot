@@ -8,9 +8,6 @@
 #include "plugins/tasks/CbmMvdSensorDigitizerTBTask.h"
 #include "tools/CbmMvdGeoHandler.h"
 #include "CbmMvdDetector.h"
-#include "CbmDaqBuffer.h"
-
-// Includes from FAIR
 #include "FairRootManager.h"
 #include "FairModule.h"
 #include "FairLogger.h"
@@ -23,6 +20,7 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
+#include "../base/CbmDaqBuffer.h"
 
 
 using namespace::std;

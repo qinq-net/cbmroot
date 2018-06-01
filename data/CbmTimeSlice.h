@@ -6,14 +6,11 @@
 #ifndef CBMTIMESLICE_H
 #define CBMTIMESLICE_H 1
 
+#include <map>
 #include <string>
-#include <vector>
-
 #include "TNamed.h"
-#include "CbmStsDigi.h"
-#include "CbmMuchDigi.h"
-#include "CbmTofDigiExp.h"
-#include "CbmDigi.h"
+#include "CbmMatch.h"
+
 
 #ifndef __CINT__ // for BOOST serialization
 // boost
@@ -46,20 +43,23 @@ class CbmTimeSlice : public TNamed
     /** Destructor **/
     ~CbmTimeSlice();
 
-    /** Access to data
-     ** @param iDet   detector type
-     ** @param index  index of data object in array
-     ** @return pointer to data object
-     **/
-    //CbmDigi* GetData(ECbmModuleId iDet, UInt_t index);
 
-
-    /** Get size of raw data container for given detector
+    /** @brief Add data to time-slice
+     ** @param detector  system ID (ECbmModuleId)
      **
-     ** @param iDet   detector type
-     ** @return size of raw data container (number of digis)
-     */
-    //Int_t GetDataSize(ECbmModuleId iDet) const;
+     ** Just for bookkeeping. The respective counter will be incremented.
+     **/
+    void AddData(Int_t detector) {
+      fNofData[detector]++;
+      fIsEmpty = kFALSE;
+    }
+
+
+    /** @brief Get size of raw data container for given detector
+     ** @param detector  system ID (ECbmModuleId)
+     ** @value Size of raw data container (number of digis)
+     **/
+    Int_t GetNofData(Int_t detector) const;
 
 
     /** Duration of time slice
@@ -87,19 +87,10 @@ class CbmTimeSlice : public TNamed
     Double_t GetEndTime() const { return fStartTime + fDuration; }
 
 
-    /** Copy data into the time slice
-     **
-     ** Data will only be copied if their time fits into the time slice
-     **
-     ** @param digi  pointer to data object
-     **/
-    //void InsertData(CbmDigi* digi);
-
-
     /** Check whether time slice contains data
      ** @return kTRUE if time slice contains data
      **/
-    Bool_t IsEmpty() const { return fIsEmpty; }
+    Bool_t IsEmpty() const { return fNofData.empty(); }
 
 
     /** Reset the time slice
@@ -112,23 +103,10 @@ class CbmTimeSlice : public TNamed
     void Reset(Double_t start, Double_t duration);
 
 
-    /** Set the flag whether the time slice is empty
-     ** @param isEmpty  kTRUE is time slice contains no data
-     **/
-    void SetEmpty(Bool_t isEmpty = kTRUE) { fIsEmpty = isEmpty; }
-
-
     /** @brief Set start time
      ** @param time Start time [ns]
      **/
     void SetStartTime(Double_t time) { fStartTime = time; }
-
-
-    /** Consistency check
-     ** Tests data to be in defined time interval and ordered w.r.t. time.
-     ** @return kTRUE if OK, else kFALSE
-     **/
-    //Bool_t SelfTest();
 
 
     /** Status to string **/
@@ -139,9 +117,6 @@ class CbmTimeSlice : public TNamed
     template <class Archive>
     void serialize(Archive& ar, const unsigned int /*version*/)
     {
-       // ar& fStsData;
-       // ar& fMuchData;
-       // ar& fStartTime;
         ar& fDuration;
         ar& fIsEmpty;
     }
@@ -151,9 +126,7 @@ class CbmTimeSlice : public TNamed
     Double_t fStartTime;                 ///< start time [ns]
     Double_t fDuration;                  ///< duration [ns]
     Bool_t   fIsEmpty;                   ///< Flag for containing no data
-    //std::vector<CbmStsDigi> fStsData;    ///< raw data container for STS
-    //std::vector<CbmMuchDigi> fMuchData;  ///< raw data container for MUCH
-    //std::vector<CbmTofDigiExp> fTofData; ///< raw data container for TOF
+    std::map<Int_t, Int_t> fNofData;     ///< systemId -> Number of digis
     CbmMatch fMatch;                     ///< link time slice to events
 
     
@@ -162,7 +135,7 @@ class CbmTimeSlice : public TNamed
     friend class boost::serialization::access;
     #endif // for BOOST serialization
 
-    ClassDef(CbmTimeSlice,3)
+    ClassDef(CbmTimeSlice, 4)
 };
 
 #endif /* CBMTIMESLICE_H */

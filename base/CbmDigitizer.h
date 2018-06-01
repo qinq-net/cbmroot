@@ -1,0 +1,79 @@
+/** @file CbmDigitizer.h
+ ** @author Volker Friese <v.friese@gsi.de>
+ ** @date 01.06.2018
+ **/
+
+#ifndef CBMDIGITIZER_H
+#define CBMDIGITIZER_H 1
+
+#include "FairTask.h"
+#include "CbmDaqBuffer.h"
+
+class CbmDigi;
+
+
+/** @class CbmDigitizer
+ ** @brief Abstract base class for CBM digitisation tasks
+ ** @author Volker Friese <v.friese@gsi.de>
+ ** @date 01 June 2018
+ **
+ ** Derived classes have to implement the abstract method WriteDigi.
+ **/
+class CbmDigitizer : public FairTask
+{
+
+  public:
+
+    /** @brief Constructor **/
+    CbmDigitizer();
+
+
+    /** @brief Constructor with name
+     ** @param name Task name
+     **/
+    CbmDigitizer(const char* name);
+
+
+    /** @brief Destructor **/
+    virtual ~CbmDigitizer();
+
+
+    /** @brief Send a digi object to the DAQ
+     ** @param digi  Pointer to digi object
+     **/
+    void SendDigi(CbmDigi* digi);
+
+
+    /** @brief Set the DAQ buffer instance **/
+    void SetDaqBuffer(CbmDaqBuffer* buffer) {
+      fDaqBuffer = buffer;
+    }
+
+
+    /** @brief Set event-by-event mode
+     ** @param Choice If kTRUE, the digitizer will run in event-by-event mode
+     **/
+    void SetEventMode(Bool_t choice = kTRUE) { fEventMode = choice; }
+
+
+    /** @brief Write a digi object to the output array
+     ** @param digi Pointer to digi object
+     **
+     ** A copy of the digi object has to be created and inserted into
+     ** the output array registered to the FairRootManager in the Init method.
+     ** The corresponding match object has to be treated accordingly.
+     ** This method will be called from CbmDaq.
+     **/
+    virtual void WriteDigi(CbmDigi* digi) = 0;
+
+
+  protected:
+
+    Bool_t fEventMode;
+    CbmDaqBuffer* fDaqBuffer;
+
+
+    ClassDef(CbmDigitizer, 1);
+};
+
+#endif /* CBMDIGITIZER_H */

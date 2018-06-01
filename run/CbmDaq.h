@@ -12,7 +12,9 @@
 #include <string>
 #include "TStopwatch.h"
 #include "FairTask.h"
+
 #include "CbmDaqBuffer.h"
+#include "CbmDigitizer.h"
 #include "CbmMCEventList.h"
 #include "CbmTimeSlice.h"
 
@@ -57,8 +59,20 @@ class CbmDaq : public FairTask
     virtual void Exec(Option_t* opt);
 
 
+    /** @brief Get DaqBuffer instance
+     ** @value Pointer to instance of CbmDaqBuffer
+     **/
+    CbmDaqBuffer* GetBuffer() const { return fBuffer; }
+
+
     /** @brief Initialisation **/
     virtual InitStatus Init();
+
+
+    /** @brief Check whether DAQ runs in event-by-event mode
+     ** @value kTRUE if DAQ is in event-by-event mode
+     **/
+    Bool_t IsEventMode() { return fEventMode; }
 
 
     /** @brief Set event-by-event mode
@@ -70,6 +84,26 @@ class CbmDaq : public FairTask
     void SetEventMode(Bool_t choice = kTRUE) { fEventMode = choice; }
 
 
+    /** @brief Set the digitizer for a given system
+     ** @param system  System Id (ECbmModuleId)
+     ** @param digitizer  Pointer to digitizer instance
+     **/
+    void SetDigitizer(Int_t system, CbmDigitizer* digitizer) {
+      fDigitizers[system] = digitizer;
+    }
+
+
+    /** @brief Set legacy mode
+     ** @param choice If kTRUE, legacy mode is enabled.
+     **
+     ** In legacy mode, the output arrays are registered
+     ** and digis are written by CbmDaq.
+     **/
+    void SetLegacyMode(Bool_t choice = kTRUE) {
+      fLegacy = choice;
+    }
+
+
     /** @brief Set the time-slice interval
      ** @param interval  Duration of a time-slice [ns]
      **/
@@ -78,9 +112,20 @@ class CbmDaq : public FairTask
     }
 
 
+    /** @brief Store all time-slices
+     ** @param choice If kTRUE; also empty slices will be stored.
+     **
+     ** By default, only time slices containing data are filled into the tree.
+     **/
+    void StoreAllTimeSlices(Bool_t choice = kTRUE) {
+      fStoreEmptySlices = choice;
+    }
+
+
   private:
 
     Bool_t   fEventMode;           ///< Flag for event-by-event mode
+    Bool_t   fLegacy;              ///< Flag for legacy mode
     Double_t fTimeSliceInterval;   ///< Time-slice interval [ns]
     Double_t fBufferTime;          ///< Maximal time disorder of input data [ns]
     Bool_t   fStoreEmptySlices;    ///< Flag to store also empty time slices
@@ -97,6 +142,7 @@ class CbmDaq : public FairTask
 
     TStopwatch fTimer;              //! Stop watch
     std::map<Int_t, TClonesArray*> fDigis;  //! Output arrays (digis)
+    std::map<Int_t, CbmDigitizer*> fDigitizers; //!
     CbmTimeSlice* fTimeSlice;       //! Current time slice
     CbmDaqBuffer* fBuffer;          //! DaqBuffer instance
     CbmMCEventList fEventList;      //!  MC event list (all)
@@ -127,30 +173,21 @@ class CbmDaq : public FairTask
     void FillData(CbmDigi* digi);
 
 
-    /** @brief Fill all data from the buffer into the current time slice
-     ** @return Number of digis filled into the time slice
-     **/
-    Int_t FillTimeSlice();
-
-
     /** Fill data from the buffer into the current time slice
      ** @param fillTime Maximum time for digis to be filled
+     ** @param limit Apply time limit for filling from buffer
      ** @return Number of digis filled into the time slice
      **
-     ** If fillTime is negative (default), all data from the buffer
+     ** If limit if kFALSE, all data from the buffer
      ** are copied to the time slice.
      **/
-    Int_t FillTimeSlice(Double_t fillTime);
+    Int_t FillTimeSlice(Double_t fillTime, Bool_t limit = kTRUE);
 
 
     /** Screen log of the range of MC events contributing to the
      ** current time slice
      **/
     void PrintCurrentEventRange() const;
-
-
-    /** @brief Info for current time slice **/
-    std::string CurrentTimeSliceInfo();
 
 
     /** Register input and entry number of a MC event contributing data
@@ -165,6 +202,13 @@ class CbmDaq : public FairTask
 
     /** At end of run: Process the remaining data in the CbmDaqBuffer  **/
     virtual void Finish();
+
+
+    /** @brief Trigger data write to the output
+     ** @param digi  Pointer to digi object
+     **/
+    void WriteData(CbmDigi* digi);
+
 
     /** Copy constructor and assignment operator are not allowed. **/
     CbmDaq(const CbmDaq&) = delete;
