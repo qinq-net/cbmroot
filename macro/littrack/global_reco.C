@@ -153,6 +153,8 @@ void global_reco(Int_t nEvents = 10, // number of events
     } else if (stsHitProducerType == "new") {
       // --- The following calls the STS digitizer with default settings
       CbmStsDigitize* stsDigi = new CbmStsDigitize();
+      stsDigi->SetEventMode();
+      stsDigi->SetLegacyMode();
       run->AddTask(stsDigi);
       
       // -----   STS Cluster Finder   --------------------------------------------

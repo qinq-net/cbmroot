@@ -51,7 +51,9 @@ void much_reco(
 
 
   // -----   STS digitizer   -------------------------------------------------
-  FairTask* stsDigi = new CbmStsDigitize();
+  CbmStsDigitize* stsDigi = new CbmStsDigitize();
+  stsDigi->SetEventMode();
+  stsDigi->SetLegacyMode();
   run->AddTask(stsDigi);
   // -------------------------------------------------------------------------
 
