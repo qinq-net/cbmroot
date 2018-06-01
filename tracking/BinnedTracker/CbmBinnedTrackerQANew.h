@@ -28,6 +28,7 @@
 class CbmBinnedTrackerQANew : public FairTask
 {
 public:
+    CbmBinnedTrackerQANew();
     CbmBinnedTrackerQANew(const CbmBinnedTrackerQANew&) = delete;
     CbmBinnedTrackerQANew& operator=(const CbmBinnedTrackerQANew&) = delete;
     InitStatus Init();// Overridden from FairTask
