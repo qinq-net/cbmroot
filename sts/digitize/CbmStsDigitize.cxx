@@ -124,16 +124,10 @@ CbmStsDigitize::CbmStsDigitize()
 
 // -----   Destructor   ----------------------------------------------------
 CbmStsDigitize::~CbmStsDigitize() {
-  if ( fDigis ) {
-    fDigis->Delete();
-    delete fDigis;
-  }
-  if ( fMatches ) {
-    fMatches->Delete();
-    delete fMatches;
-  }
-
+  LOG(DEBUG) << "Destructing " << fName << FairLogger::endl;
   Reset();
+  delete fDigis;
+  delete fMatches;
 }
 // -------------------------------------------------------------------------
 

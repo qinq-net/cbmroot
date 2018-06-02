@@ -52,6 +52,11 @@ CbmDigitization::CbmDigitization() :
 
 // -----   Destructor   -----------------------------------------------------
 CbmDigitization::~CbmDigitization() {
+  LOG(DEBUG) << "Destructing " << fName << FairLogger::endl;
+  for ( auto it = fDigitizers.begin(); it != fDigitizers.end(); it++) {
+    if ( it->second ) delete it->second;
+  } //# CbmDigitizeInfos
+  // CbmDaq and the digitizers are destructed by FairRun.
 }
 // --------------------------------------------------------------------------
 
@@ -105,8 +110,8 @@ Int_t CbmDigitization::CheckInputFile() {
   delete tree;
   file->Close();
   delete file;
-  return nBranches;
   delete header;
+  return nBranches;
 }
 // --------------------------------------------------------------------------
 
@@ -335,7 +340,24 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   // --- Resource monitoring
   std::cout << std::endl << std::endl;
   LOG(INFO) << fName << ": CPU consumption" << FairLogger::endl;
-  if (fMonitor) { FairMonitor::GetMonitor()->Print(); }
+  if (fMonitor) FairMonitor::GetMonitor()->Print();
+  std::cout << std::endl;
+
+
+  // --- Clean up
+  // TODO: I confess I do not know why the TGeoManager has to be deleted here.
+  // As far as I can see, the same code is called from ~FairRunaAna().
+  // But if I do not do it, I get an error like
+  // root.exe(11905,0x7fff7d1a1300) malloc: *** error for object 0x7f811d201860:
+  // pointer being freed was not allocated
+  if (gGeoManager) {
+    if (gROOT->GetVersionInt() >= 60602) {
+      gGeoManager->GetListOfVolumes()->Delete();
+      gGeoManager->GetListOfShapes()->Delete();
+    }
+    delete gGeoManager;
+  }
+  delete run;
 
 }
 // --------------------------------------------------------------------------
