@@ -77,6 +77,7 @@ TofTools/CbmTofGeoHandler.cxx
 
 TofData/CbmTofCell.cxx
 
+TofDigi/CbmTofDigitize.cxx
 TofDigi/CbmTofDigitizerBDF.cxx
 
 TofReco/CbmTofSimpClusterizer.cxx 

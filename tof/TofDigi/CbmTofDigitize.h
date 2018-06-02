@@ -1,68 +1,52 @@
-/** @file CbmTofDigitizerBDF.h
+/** @file CbmTofDigitize.h
  ** @author Pierre-Alain Loizeau <loizeau@physi.uni-heidelberg.de>
  ** @date 19.07.2013
  **/
 
-/** @class CbmTofDigitizerBDF
+/** @class CbmTofDigitize
  ** @brief CBM ToF digitizer using beam data distributions as hit/cluster models
  ** @author Pierre-Alain Loizeau <loizeau@physi.uni-heidelberg.de>
  ** @version 1.0
  **/
-#ifndef CBMTOFDIGITIZERBDF_H
-#define CBMTOFDIGITIZERBDF_H  1
+#ifndef CBMTOFDIGITIZE_H
+#define CBMTOFDIGITIZE_H  1
 
-// TOF Classes and includes
-   // Input/Output
-class CbmTofPoint;
+#include <vector>
+#include "TH1.h"
+#include "TH2.h"
+#include "TStopwatch.h"
+#include "TTimeStamp.h"
+#include "CbmDigitizer.h"
+
+class TClonesArray;
+class TRandom3;
+class CbmTofCell;
 class CbmTofDigi;
+class CbmTofDigiBdfPar;
 class CbmTofDigiExp;
-   // Geometry
-class CbmTofGeoHandler;
 class CbmTofDetectorId;
 class CbmTofDigiPar;
-class CbmTofDigiBdfPar;
-class CbmTofCell;
+class CbmTofGeoHandler;
+class CbmTofPoint;
 
-// FAIR classes and includes
-#include "FairTask.h"
 
-// ROOT Classes and includes
-class TClonesArray;
-class TH1;
-class TH2;
-#include "TTimeStamp.h"
-#include "TStopwatch.h"
-class TRandom3;
-
-// C++ Classes and includes
-#include <vector>
-
-class TofChargeDistributions
-{
-   public:
-      TofChargeDistributions(){};
-      ~TofChargeDistributions(){};
-      Double_t Gauss1D( Double_t *px, Double_t *par );
-      Double_t Gauss2D( Double_t *px, Double_t *par );
-};
-
-class CbmTofDigitizerBDF : public FairTask
+class CbmTofDigitize : public CbmDigitizer
 {
    public:
 
       /**
        ** @brief Constructor.
        **/
-      CbmTofDigitizerBDF();
+      CbmTofDigitize();
 
       /**
        ** @brief Constructor.
        **/
-      CbmTofDigitizerBDF(const char *name, Int_t verbose = 1);
+      CbmTofDigitize(const char *name, Int_t verbose = 1);
       /**
        ** @brief Destructor.
        **/
-      virtual ~CbmTofDigitizerBDF();
+      virtual ~CbmTofDigitize();
 
       /**
        ** @brief Inherited from FairTask.
@@ -84,6 +68,11 @@ class CbmTofDigitizerBDF : public FairTask
        **/
       virtual void Finish();
 
+      /** @brief Write a digi to the output
+       ** @param digi  Pointer to digi object
+       **/
+      virtual void WriteDigi(CbmDigi* digi);
+
       void SetInputFileName (TString FileName) { fsBeamInputFile = FileName; }
 
       Bool_t   SetHistoFileName( TString sFilenameIn = "./tofDigiBdf.hst.root" );
@@ -96,17 +85,16 @@ class CbmTofDigitizerBDF : public FairTask
 
       inline void SetDigiTimeConvFactor  (Double_t dfac)  { fdDigiTimeConvFactor    = dfac;}
 
-   protected:
 
-   private:
+    private:
       /**
        ** @brief Copy constructor.
        **/
-      CbmTofDigitizerBDF(const CbmTofDigitizerBDF&);
+      CbmTofDigitize(const CbmTofDigitize&);
       /**
        ** @brief Copy operator.
        **/
-      CbmTofDigitizerBDF& operator=(const CbmTofDigitizerBDF&);
+      CbmTofDigitize& operator=(const CbmTofDigitize&);
 
       // Functions common for all clusters approximations
       /**
@@ -238,6 +226,7 @@ class CbmTofDigitizerBDF : public FairTask
        **/
       void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
 
+
       // Fee properties and constants
       Double_t            fdFeeGainSigma;
       Double_t            fdFeeTotThr;
@@ -349,7 +338,7 @@ class CbmTofDigitizerBDF : public FairTask
       Double_t fdCurrentEventTime;
       Double_t fdDigiTimeConvFactor;
 
-   ClassDef(CbmTofDigitizerBDF, 3);
+   ClassDef(CbmTofDigitize, 1);
 };
 
-#endif // CBMTOFDIGITIZERBDF_H
+#endif // CBMTOFDIGITIZE_H

@@ -23,7 +23,7 @@
 #include "CbmRunAna.h"
 #include "CbmStsDigitize.h"
 #include "CbmSetup.h"
-#include "CbmTofDigitizerBDF.h"
+#include "CbmTofDigitize.h"
 #include "CbmTrdDigitizerPRF.h"
 
 
@@ -146,7 +146,7 @@ Int_t CbmDigitization::CreateDigitizers() {
         //fDigitizers[system]->SetDigitizer(new CbmTrdDigitizerPRF());
         LOG(INFO) << "TRD "; nDigis++; break;
       case kTof:
-        //fDigitizers[system]->SetDigitizer(new CbmTofDigitizerBDF());
+        fDigitizers[system]->SetDigitizer(new CbmTofDigitize());
         LOG(INFO) << "TOF "; nDigis++; break;
       case kPsd:
         //fDigitizers[system]->SetDigitizer(new CbmPsdSimpleDigitizer());
@@ -228,7 +228,8 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   Int_t nInputs = fInputFiles.size();
   for (Int_t iInput = 0; iInput < nInputs; iInput++) {
     FairFileSource* source = new FairFileSource(fInputFiles.at(iInput));
-    source->SetEventMeanTime(1.e9 / fEventRates.at(iInput));
+    if ( ! fDaq->IsEventMode() )
+      source->SetEventMeanTime(1.e9 / fEventRates.at(iInput));
     run->SetSource(source);
     if ( ! fDaq->IsEventMode() )
       LOG(INFO) << fName << ": Use input file " << fInputFiles.at(iInput)
@@ -249,7 +250,6 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
     CbmDigitizer* digitizer = it->second->GetDigitizer();
     if ( it->second->IsActive() && digitizer != nullptr ) {
       digitizer->SetDaqBuffer(fDaq->GetBuffer());
-      LOG(INFO) << fDaq->GetBuffer() << FairLogger::endl;
       fDaq->SetDigitizer(it->first, digitizer);
       if ( fDaq->IsEventMode() ) digitizer->SetEventMode();
       run->AddTask(digitizer);

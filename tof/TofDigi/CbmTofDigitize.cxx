@@ -1,70 +1,61 @@
-/** @file CbmTofDigitizerBDF.cxx
+/** @file CbmTofDigitize.cxx
  ** @author Pierre-Alain Loizeau <loizeau@physi.uni-heidelberg.de>
  ** @date 19.07.2013
  **/
 
-#include "CbmTofDigitizerBDF.h"
+#include "CbmTofDigitize.h"
 
-// TOF Classes and includes
-#include "CbmTofPoint.h"      // in cbmdata/tof
-#include "CbmTofDigi.h"       // in cbmdata/tof
-#include "CbmTofDigiExp.h"    // in cbmdata/tof
-#include "CbmTofGeoHandler.h" // in tof/TofTools
-#include "CbmTofDetectorId_v12b.h" // in cbmdata/tof
-#include "CbmTofDetectorId_v14a.h" // in cbmdata/tof
-#include "CbmTofCell.h"       // in tof/TofData
-#include "CbmTofDigiPar.h"    // in tof/TofParam
-#include "CbmTofDigiBdfPar.h" // in tof/TofParam
-#include "CbmTofAddress.h"    // in cbmdata/tof
+// C++ includes
+#include <cassert>
 
-// CBMroot classes and includes
-#include "CbmLink.h"
-#include "CbmMCTrack.h"
-#include "CbmMatch.h"
-#include "CbmDaqBuffer.h"
+// ROOT includes
+#include "TClonesArray.h"
+#include "TDirectory.h"
+#include "TF2.h"
+#include "TGeoManager.h"
+#include "TMath.h"
+#include "TLine.h"
+#include "TRandom3.h"
+#include "TROOT.h"
+#include "TVector3.h"
 
 // FAIR classes and includes
+#include "FairEventHeader.h"
+#include "FairMCEventHeader.h"
+#include "FairLogger.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
 #include "FairRunSim.h"
 #include "FairRuntimeDb.h"
-#include "FairLogger.h"
-#include "FairMCEventHeader.h" // from CbmStsDigitize, for GetEventInfo
-#include "FairEventHeader.h" // from CbmStsDigitize, for GetEventInfo
 
-// ROOT Classes and includes
-#include "TClonesArray.h"
-#include "TMath.h"
-#include "TLine.h"
-#include "TRandom3.h"
-#include "TF2.h"
-#include "TVector3.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TDirectory.h"
-#include "TROOT.h"
-#include "TGeoManager.h"
+// CBM includes
+#include "CbmDaqBuffer.h"
+#include "CbmLink.h"
+#include "CbmMCTrack.h"
+#include "CbmMatch.h"
+#include "CbmTofAddress.h"    // in cbmdata/tof
+#include "CbmTofDigi.h"       // in cbmdata/tof
+#include "CbmTofDigiExp.h"    // in cbmdata/tof
+#include "CbmTofPoint.h"      // in cbmdata/tof
 
-// C++ Classes and includes
+// TOF includes
+#include "CbmTofCell.h"            // in tof/TofData
+#include "CbmTofDetectorId_v12b.h" // in cbmdata/tof
+#include "CbmTofDetectorId_v14a.h" // in cbmdata/tof
+#include "CbmTofDigiPar.h"         // in tof/TofParam
+#include "CbmTofDigiBdfPar.h"      // in tof/TofParam
+#include "CbmTofGeoHandler.h"      // in tof/TofTools
 
-using std::endl;
+
 using std::cout;
+using std::endl;
+using std::fixed;
+using std::right;
+using std::setprecision;
+using std::setw;
 
 // Gauss Integration Constants
 const Int_t    kiNbIntPts = 2;
-Double_t TofChargeDistributions::Gauss1D( Double_t *px, Double_t *par )
-{
-   Double_t x = px[0];
-   Double_t res = par[0]*TMath::Gaus(x,par[1],par[2]);
-   return res;
-}
-Double_t TofChargeDistributions::Gauss2D( Double_t *px, Double_t *par )
-{
-   Double_t x = px[0];
-   Double_t y = px[1];
-   Double_t res = par[0]*TMath::Gaus(x,par[1],par[2])*TMath::Gaus(y,par[3],par[4]);
-   return res;
-}
 
 // If enabled add an offset depending on the strip length by making the full propagation time
 // to each strips end
@@ -73,8 +64,8 @@ Double_t TofChargeDistributions::Gauss2D( Double_t *px, Double_t *par )
 //#define FULL_PROPAGATION_TIME
 
 /************************************************************************************/
-CbmTofDigitizerBDF::CbmTofDigitizerBDF():
-   FairTask("CbmTofDigitizerBDF"),
+CbmTofDigitize::CbmTofDigitize():
+   CbmDigitizer("TofDigitize"),
    fdFeeGainSigma(0.),
    fdFeeTotThr(0.),
    fdTimeResElec(0.),
@@ -148,8 +139,8 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
 
 }
 
-CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose):
-   FairTask(TString(name),verbose),
+CbmTofDigitize::CbmTofDigitize(const char *name, Int_t verbose):
+   CbmDigitizer(name),
    fdFeeGainSigma(0.),
    fdFeeTotThr(0.),
    fdTimeResElec(0.),
@@ -223,7 +214,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose):
 
 }
 
-CbmTofDigitizerBDF::~CbmTofDigitizerBDF()
+CbmTofDigitize::~CbmTofDigitize()
 {
    if( fGeoHandler )
       delete fGeoHandler;
@@ -232,46 +223,49 @@ CbmTofDigitizerBDF::~CbmTofDigitizerBDF()
 
 /************************************************************************************/
 // FairTasks inherited functions
-InitStatus CbmTofDigitizerBDF::Init()
+InitStatus CbmTofDigitize::Init()
 {
-   // If the task CbmDaq is found, send time-based output to it.
-   FairTask* daq = FairRun::Instance()->GetTask("Daq");
-   if ( daq )
-   {
-     LOG(INFO) << GetName() << ": Sending time-based output to DAQ." << FairLogger::endl;
-     fbTimeBasedOutput = kTRUE;
-   }
+  std::cout << std::endl;
+  LOG(INFO) << "=========================================================="
+      << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl
+      << FairLogger::endl;
+  if ( fEventMode ) LOG(INFO) << GetName() << ": Using event mode."
+      << FairLogger::endl;
 
-   // If input file was not set explicitly, use default one
-   if ( fsBeamInputFile.IsNull() ) {
-     TString fileName = gSystem->Getenv("VMCWORKDIR");
-     fileName += "/parameters/tof/test_bdf_input.root";
-     SetInputFileName(fileName);
-   }
+  // If input file was not set explicitly, use default one
+  if ( fsBeamInputFile.IsNull() ) {
+    TString fileName = gSystem->Getenv("VMCWORKDIR");
+    fileName += "/parameters/tof/test_bdf_input.root";
+    SetInputFileName(fileName);
+    LOG(INFO) << GetName() << ": Using default parameter file "
+        << fileName << FairLogger::endl;
+  }
 
-   if( kFALSE == RegisterInputs() )
-      return kFATAL;
+  if( kFALSE == RegisterInputs() )
+    return kFATAL;
 
-   if( kFALSE == RegisterOutputs() )
-      return kFATAL;
+  if( kFALSE == RegisterOutputs() ) return kFATAL;
 
-   if( kFALSE == InitParameters() )
-      return kFATAL;
+  if( kFALSE == InitParameters() )
+    return kFATAL;
 
-   if( kFALSE == LoadBeamtimeValues() )
-      return kFATAL;
+  if( kFALSE == LoadBeamtimeValues() )
+    return kFATAL;
 
-   if( kFALSE == CreateHistos() )
-      return kFATAL;
+  if( kFALSE == CreateHistos() )
+    return kFATAL;
 
-
-
-   return kSUCCESS;
+  LOG(INFO) << GetName() << ": Initialisation successful"
+      << FairLogger::endl;
+  LOG(INFO) << "=========================================================="
+      << FairLogger::endl;
+  return kSUCCESS;
 }
 
-void CbmTofDigitizerBDF::SetParContainers()
+void CbmTofDigitize::SetParContainers()
 {
-   LOG(INFO)<<" CbmTofDigitizerBDF => Get the digi parameters for tof"<<FairLogger::endl;
+   LOG(INFO)<<" CbmTofDigitize => Get the digi parameters for tof"<<FairLogger::endl;
 
    // Get Base Container
    FairRun* ana = FairRun::Instance();
@@ -284,27 +278,28 @@ void CbmTofDigitizerBDF::SetParContainers()
               (rtdb->getContainer("CbmTofDigiBdfPar"));
 }
 
-void CbmTofDigitizerBDF::Exec(Option_t* /*option*/)
+void CbmTofDigitize::Exec(Option_t* /*option*/)
 {
    // --- Start timer and reset counters
 	fTimer.Start();
 
    // Get FairEventHeader information for CbmLink objects
    GetEventInfo(fiCurrentFileId, fiCurrentEventId, fdCurrentEventTime);
+   LOG(DEBUG) << fName << ": Processing event " << fiCurrentEventId << " at "
+       << fdCurrentEventTime << " ns" << FairLogger::endl;
 
    fTofDigisColl->Clear("C");
-//   fTofDigiMatchPointsColl->Clear("C"); // Not enough => CbmMatch has no Clear functions!!
    fTofDigiMatchPointsColl->Delete();
-
-
    fiNbDigis = 0;
+   Int_t nPoints = fTofPointsColl->GetEntriesFast();
 
-   LOG(DEBUG1)<<" CbmTofDigitizerBDF => New event"<<FairLogger::endl;
    fStart.Set();
+   LOG(DEBUG) << fName << ": Using cluster model " << fDigiBdfPar->GetClusterModel()
+       << FairLogger::endl;
    switch( fDigiBdfPar->GetClusterModel() )
    {
       case 0:
-         DigitizeDirectClusterSize();
+         DigitizeDirectClusterSize(); break;
       case 1:
          DigitizeFlatDisc();
          break;
@@ -320,31 +315,34 @@ void CbmTofDigitizerBDF::Exec(Option_t* /*option*/)
    fdDigitizeTime = fStop.GetSec() - fStart.GetSec()
                     + (fStop.GetNanoSec() - fStart.GetNanoSec())/1e9;
 
+   LOG(DEBUG) << fName << ": Merge digis " << FairLogger::endl;
    MergeSameChanDigis();
    fStart.Set();
    fdMergeTime    = fStart.GetSec() - fStop.GetSec()
                     + (fStart.GetNanoSec() - fStop.GetNanoSec())/1e9;
 
-   FillHistos();
-
    // --- Counters
    fTimer.Stop();
    fiNofEvents++;
+   fdNofPointsTot   += nPoints;
    fdNofDigisTot    += fiNbDigis;
    fdTimeTot        += fTimer.RealTime();
+
+   // --- Event log
+   LOG(INFO) << "+ " << setw(15) << GetName() << ": Event " << setw(6)
+          << right << fiCurrentEventId << " at " << fixed << setprecision(3)
+          << fdCurrentEventTime << " ns, points: " << nPoints
+          << ", digis: " << fiNbDigis << ". Exec time " << setprecision(6)
+          << fTimer.RealTime() << " s." << FairLogger::endl;
+
 }
 
-void CbmTofDigitizerBDF::Finish()
+void CbmTofDigitize::Finish()
 {
-   WriteHistos();
-   // Prevent them from being sucked in by the CbmHadronAnalysis WriteHistograms method
-   DeleteHistos();
-
-   // Clear the cluster size and efficiency histos copies inside the parameter
-   fDigiBdfPar->ClearHistos();
+   std::cout << std::endl;
+   LOG(INFO) << "=====================================" << FairLogger::endl;
 
    // Final printout for reference
-   LOG(INFO) << "=====================================" << FairLogger::endl;
    LOG(INFO) << GetName() << ": Run summary (Time includes Hist filling)" << FairLogger::endl;
    LOG(INFO) << "Events processed    : " << fiNofEvents << FairLogger::endl;
    if( fbMcTrkMonitor )
@@ -365,72 +363,72 @@ void CbmTofDigitizerBDF::Finish()
    } // if( fbMcTrkMonitor )
    LOG(INFO) << "Real time per event : " << fdTimeTot      / static_cast<Double_t>(fiNofEvents)
              << " s" << FairLogger::endl;
+
+   WriteHistos();
+   // Prevent them from being sucked in by the CbmHadronAnalysis WriteHistograms method
+   DeleteHistos();
+
+   // Clear the cluster size and efficiency histos copies inside the parameter
+   fDigiBdfPar->ClearHistos();
    LOG(INFO) << "=====================================" << FairLogger::endl;
 }
 
 /************************************************************************************/
 // Functions common for all clusters approximations
-Bool_t   CbmTofDigitizerBDF::RegisterInputs()
+Bool_t   CbmTofDigitize::RegisterInputs()
 {
    FairRootManager *fManager = FairRootManager::Instance();
 
    fTofPointsColl  = (TClonesArray *) fManager->GetObject("TofPoint");
    if( NULL == fTofPointsColl)
    {
-      LOG(ERROR)<<"CbmTofDigitizerBDF::RegisterInputs => Could not get the TofPoint TClonesArray!!!"<<FairLogger::endl;
+      LOG(ERROR)<<"CbmTofDigitize::RegisterInputs => Could not get the TofPoint TClonesArray!!!"<<FairLogger::endl;
       return kFALSE;
    } // if( NULL == fTofPointsColl)
 
    fMcTracksColl   = (TClonesArray *) fManager->GetObject("MCTrack");
    if( NULL == fMcTracksColl)
    {
-      LOG(ERROR)<<"CbmTofDigitizerBDF::RegisterInputs => Could not get the MCTrack TClonesArray!!!"<<FairLogger::endl;
+      LOG(ERROR)<<"CbmTofDigitize::RegisterInputs => Could not get the MCTrack TClonesArray!!!"<<FairLogger::endl;
       return kFALSE;
    } // if( NULL == fMcTracksColl)
 
    return kTRUE;
 }
-Bool_t   CbmTofDigitizerBDF::RegisterOutputs()
+Bool_t   CbmTofDigitize::RegisterOutputs()
 {
    FairRootManager* rootMgr = FairRootManager::Instance();
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    {
       fTofDigisColl = new TClonesArray("CbmTofDigiExp");
-   } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
-      else
-      {
-         if(fbTimeBasedOutput)
-         {
-            LOG(ERROR)<<"CbmTofDigitizerBDF::RegisterOutputs => For time-based output, set 'UseExpDigi' to '1' in your *.digibdf.par file!!!"<<FairLogger::endl;
-            return kFALSE;
-         }
-
-         fTofDigisColl = new TClonesArray("CbmTofDigi");
-      } // else of if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+      LOG(INFO) << fName << ": Use TofDigiExp" << FairLogger::endl;
+   } //? expanded digi
+   else
+   {
+     fTofDigisColl = new TClonesArray("CbmTofDigi");
+     LOG(INFO) << fName << ": Use TofDigi" << FairLogger::endl;
+   } //? compressed digi
    fTofDigiMatchPointsColl = new TClonesArray("CbmMatch",100000);
 
-   if(!fbTimeBasedOutput)
-   {
-      // Flag check to control whether digis are written in ouput root file
-      rootMgr->Register( "TofDigi","Tof", fTofDigisColl, IsOutputBranchPersistent("TofDigi"));
-      rootMgr->Register( "TofDigiMatchPoints","Tof", fTofDigiMatchPointsColl, IsOutputBranchPersistent("TofDigiMatchPoints"));
-   }
+   // Flag check to control whether digis are written in output root file
+   rootMgr->Register( "TofDigi","TOF", fTofDigisColl, IsOutputBranchPersistent("TofDigi"));
+   rootMgr->Register( "TofDigiMatch","TOF", fTofDigiMatchPointsColl, IsOutputBranchPersistent("TofDigiMatchPoints"));
 
    return kTRUE;
 }
-Bool_t   CbmTofDigitizerBDF::InitParameters()
+Bool_t   CbmTofDigitize::InitParameters()
 {
    // Initialize the TOF GeoHandler
    Bool_t isSimulation=kFALSE;
    Int_t iGeoVersion = fGeoHandler->Init(isSimulation);
    if( k12b > iGeoVersion )
    {
-      LOG(ERROR)<<"CbmTofDigitizerBDF::InitParameters => Only compatible with geometries after v12b !!!"
+      LOG(ERROR)<<"CbmTofDigitize::InitParameters => Only compatible with geometries after v12b !!!"
                 <<FairLogger::endl;
       return kFALSE;
    }
 
-   LOG(INFO)<<"CbmTofDigitizerBDF::InitParameters: GeoVersion "<<iGeoVersion<<FairLogger::endl;
+   LOG(INFO) << fName << ": GeoVersion " << iGeoVersion <<FairLogger::endl;
 
    switch(iGeoVersion){
       case k12b:
@@ -440,19 +438,19 @@ Bool_t   CbmTofDigitizerBDF::InitParameters()
          fTofId = new CbmTofDetectorId_v14a();
          break;
       default:
-         LOG(ERROR)<<"CbmTofDigitizerBDF::InitParameters: Invalid Detector ID "<<iGeoVersion<<FairLogger::endl;
+         LOG(ERROR)<<"CbmTofDigitize::InitParameters: Invalid Detector ID "<<iGeoVersion<<FairLogger::endl;
    }
    return kTRUE;
 }
-Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
+Bool_t   CbmTofDigitize::LoadBeamtimeValues()
 {
-   LOG(INFO)<<"CbmTofDigitizerBDF::LoadBeamtimeValues from "<<fsBeamInputFile
- 	    <<FairLogger::endl;
+   LOG(INFO) << fName << ": Load beamtime values from " << fsBeamInputFile
+ 	    << FairLogger::endl;
 
    fDigiBdfPar->SetInputFile(fsBeamInputFile);
 
    // Printout option for crosscheck
-   LOG(DEBUG)<<"  CbmTofDigitizerBDF::LoadBeamtimeValues Digi Par contains "
+   LOG(DEBUG)<<"  CbmTofDigitize::LoadBeamtimeValues Digi Par contains "
              << fDigiPar->GetNrOfModules() << " cells " <<FairLogger::endl;
 
    // Add Param printout only if DEBUG level ON
@@ -460,7 +458,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
       fDigiBdfPar->printParams();
 
    if(kFALSE == fDigiBdfPar->LoadBeamtimeHistos()){
-     LOG(FATAL)<<"CbmTofDigitizerBDF::LoadBeamtimeValues: Cluster properties from testbeam could not be loaded! "<<FairLogger::endl;
+     LOG(FATAL)<<"CbmTofDigitize::LoadBeamtimeValues: Cluster properties from testbeam could not be loaded! "<<FairLogger::endl;
      return kFATAL;
    }
 
@@ -476,7 +474,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
    // Generate the gain/fee channel matrix
    Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
 
-   LOG(DEBUG2)<<"CbmTofDigitizerBDF::LoadBeamtimeValues: ini gain values for SmTypes "
+   LOG(DEBUG2)<<"CbmTofDigitize::LoadBeamtimeValues: ini gain values for SmTypes "
 	      << iNbSmTypes
 	      << FairLogger::endl;
 
@@ -493,7 +491,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
 
    for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
    {
-      LOG(DEBUG2)<<"CbmTofDigitizerBDF::LoadBeamtimeValues => Gain for SM type "<<iSmType<<FairLogger::endl;
+      LOG(DEBUG2)<<"CbmTofDigitize::LoadBeamtimeValues => Gain for SM type "<<iSmType<<FairLogger::endl;
       Int_t iNbSm  = fDigiBdfPar->GetNbSm(  iSmType);
       Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
 
@@ -515,7 +513,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
 
          for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
          {
-            LOG(DEBUG2)<<"CbmTofDigitizerBDF::LoadBeamtimeValues => Gain for SM/Rpc "<<iSm<<"/"<<iRpc<<FairLogger::endl;
+            LOG(DEBUG2)<<"CbmTofDigitize::LoadBeamtimeValues => Gain for SM/Rpc "<<iSm<<"/"<<iRpc<<FairLogger::endl;
             Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
             Int_t iNbSides = 2 - fDigiBdfPar->GetChanType( iSmType, iRpc );
 
@@ -533,7 +531,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
                   fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide] =
                         randFeeGain.Gaus( 1.0, fdFeeGainSigma);
                   if( fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide] <0.0 )
-                     LOG(ERROR)<<"CbmTofDigitizerBDF::LoadBeamtimeValues => Neg. Gain for SM/Rpc "<<iSm<<"/"<<iRpc
+                     LOG(ERROR)<<"CbmTofDigitize::LoadBeamtimeValues => Neg. Gain for SM/Rpc "<<iSm<<"/"<<iRpc
                                <<" "<<fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide]<<FairLogger::endl;
                  } // if( 0 < fdFeeGainSigma )
                  else fdChannelGain[iSmType][iSm*iNbRpc + iRpc][iCh*iNbSides + iSide] = 1;
@@ -551,7 +549,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
    fh1ClusterTotProb.resize( iNbSmTypes );
    for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
    {
-      LOG(DEBUG2)<<"CbmTofDigitizerBDF::LoadBeamtimeValues => SM type "<<iSmType<<FairLogger::endl;
+      LOG(DEBUG2)<<"CbmTofDigitize::LoadBeamtimeValues => SM type "<<iSmType<<FairLogger::endl;
 
       if( 0 == fDigiBdfPar->GetClusterModel() )
       {
@@ -598,7 +596,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
                // Single value using the beamtime cluster size distribution mean
                // => Just copy pointer to the beamtime histogram
                fh1ClusterSizeProb[iSmType] = fDigiBdfPar->GetClustSizeHist(iSmType);
-               LOG(DEBUG)<<"CbmTofDigitizerBDF::LoadBeamtimeValues => SM type "<<iSmType
+               LOG(DEBUG)<<"CbmTofDigitize::LoadBeamtimeValues => SM type "<<iSmType
                           <<" Mean Cluster Size "<<(fh1ClusterSizeProb[iSmType]->GetMean())<<FairLogger::endl;
                break;
             }
@@ -607,7 +605,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
                // from beamtime cluster size distribution
                // Ingo tip: use Landau distribution until it matchs
                fh1ClusterSizeProb[iSmType] = fDigiBdfPar->GetClustSizeHist(iSmType);
-               LOG(DEBUG)<<"CbmTofDigitizerBDF::LoadBeamtimeValues => SM type "<<iSmType
+               LOG(DEBUG)<<"CbmTofDigitize::LoadBeamtimeValues => SM type "<<iSmType
                           <<" Mean Cluster Size "<<(fh1ClusterSizeProb[iSmType]->GetMean())<<FairLogger::endl;
             }
             default:
@@ -698,7 +696,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
          } // for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
       } // else of if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
 
-   LOG(DEBUG) << "CbmTofDigitizerBDF::LoadBeamtimeValues: GeoVersion "
+   LOG(DEBUG) << "CbmTofDigitize::LoadBeamtimeValues: GeoVersion "
               << fGeoHandler->GetGeoVersion() << FairLogger::endl;
 
    // TEST stupid stuffs
@@ -752,7 +750,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
 }
 /************************************************************************************/
 // Histogramming functions
-Bool_t   CbmTofDigitizerBDF::CreateHistos()
+Bool_t   CbmTofDigitize::CreateHistos()
 {
    if(!fbMonitorHistos)
    {
@@ -841,7 +839,7 @@ Bool_t   CbmTofDigitizerBDF::CreateHistos()
 
    return kTRUE;
 }
-Bool_t   CbmTofDigitizerBDF::FillHistos()
+Bool_t   CbmTofDigitize::FillHistos()
 {
    if(!fbMonitorHistos)
    {
@@ -885,6 +883,7 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
       // --- Update run Counters
       fdNofTofMcTrkTot += iNbTofTracks;
    } // if( fbMcTrkMonitor )
+   LOG(INFO) << "Monitor tracks" << FairLogger::endl;
 
    // Tof Points info
    CbmTofPoint  *pTofPt;
@@ -915,6 +914,8 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
          fhTofPtsPosVsGap[iGap]->Fill(  vPntPos.X(),  vPntPos.Y() );
       } // if( fbMcTrkMonitor )
    } // for(Int_t iPtInd = 0; iPtInd < nTofPoint; iPtInd++)
+   LOG(INFO) << "Monitor points" << FairLogger::endl;
+
 
    fhDigiMergeTime->Fill( fdMergeTime );
    fhEvtProcTime->Fill( dProcessTime );
@@ -928,16 +929,22 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
    // Assume for the occupancy that we can only have one Digi per electronic channel
    // No Multiple hits/digi in same event!
    fhElecChOccup->Fill( 100.0*(Double_t)nTofDigi/(Double_t)fiNbElecChTot );
+   LOG(INFO) << "Monitor 1" << FairLogger::endl;
 
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    {
+     LOG(INFO) << "Monitor 2" << FairLogger::endl;
       CbmTofDigiExp *pDigi;
       for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
       {
+        LOG(INFO) << "Digi " << iDigInd << FairLogger::endl;
          pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
+         assert(pDigi);
          CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);
+         assert(digiMatch);
          CbmLink L0 = digiMatch->GetMatchedLink();
          CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At( L0.GetIndex());
+         assert(point);
 
          if( pDigi->GetTot() < 0 )
             cout<<iDigInd<<"/"<<nTofDigi<<" "<<pDigi->GetTot()<<endl;
@@ -952,6 +959,8 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
    } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
       else
       {
+        LOG(INFO) << "Monitor 3" << FairLogger::endl;
+
          CbmTofDigi *pDigi;
          for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
          {
@@ -972,21 +981,57 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
 
 //   fhMeanFiredPerPoint->Fill( nTofFired / (Double_t)nTofPoint);
    fhMeanFiredPerTrack->Fill( nTofFired/(Double_t)iNbTofTracks );
+   LOG(INFO) << "Monitor time" << FairLogger::endl;
 
    return kTRUE;
 }
-Bool_t CbmTofDigitizerBDF::SetHistoFileName( TString sFilenameIn )
+Bool_t CbmTofDigitize::SetHistoFileName( TString sFilenameIn )
 {
    fsHistoOutFilename = sFilenameIn;
    return kTRUE;
 }
-Bool_t   CbmTofDigitizerBDF::WriteHistos()
+
+void CbmTofDigitize::WriteDigi(CbmDigi* digi) {
+
+  if( fDigiBdfPar->UseExpandedDigi() ) {
+
+    // --- Assert that it is a TofDigiExp
+    CbmTofDigiExp* tofDigi = dynamic_cast<CbmTofDigiExp*>(digi);
+    if ( ! tofDigi ) LOG(FATAL) << fName
+        << ": not a valid TofDigiExp pointer!" << FairLogger::endl;
+
+    assert(fTofDigisColl);
+    assert(fTofDigiMatchPointsColl);
+    Int_t nDigis = fTofDigisColl->GetEntriesFast();
+    new( (*fTofDigisColl)[nDigis] ) CbmTofDigiExp(*tofDigi);
+    new( (*fTofDigiMatchPointsColl)[nDigis] ) CbmMatch(*(tofDigi->GetMatch()));
+
+  } //? use expanded digi
+
+  else {  // use compressed digi
+
+    // --- Assert that it is a TofDigi
+    CbmTofDigi* tofDigi = dynamic_cast<CbmTofDigi*>(digi);
+    if ( ! tofDigi ) LOG(FATAL) << fName
+        << ": not a valid TofDigi pointer!" << FairLogger::endl;
+
+    assert(fTofDigisColl);
+    assert(fTofDigiMatchPointsColl);
+    Int_t nDigis = fTofDigisColl->GetEntriesFast();
+    new( (*fTofDigisColl)[nDigis] ) CbmTofDigi(*tofDigi);
+    new( (*fTofDigiMatchPointsColl)[nDigis] ) CbmMatch(*(tofDigi->GetMatch()));
+
+  }  //? use compressed digi
+
+} // WriteDigi
+
+Bool_t   CbmTofDigitize::WriteHistos()
 {
    if( "" == fsHistoOutFilename || !fbMonitorHistos )
    {
-      LOG(INFO) << "CbmTofDigitizerBDF::WriteHistos => Control histograms will not be written to disk!"
+      LOG(INFO) << "CbmTofDigitize::WriteHistos => Control histograms will not be written to disk!"
                 << FairLogger::endl;
-      LOG(INFO) << "CbmTofDigitizerBDF::WriteHistos => To change this behavior please provide a full path "
+      LOG(INFO) << "CbmTofDigitize::WriteHistos => To change this behavior please provide a full path "
                 << "with the SetHistoFileName method"
                 << FairLogger::endl;
       return kTRUE;
@@ -1046,7 +1091,7 @@ Bool_t   CbmTofDigitizerBDF::WriteHistos()
 
    return kTRUE;
 }
-Bool_t   CbmTofDigitizerBDF::DeleteHistos()
+Bool_t   CbmTofDigitize::DeleteHistos()
 {
    if(!fbMonitorHistos)
    {
@@ -1099,7 +1144,7 @@ Bool_t   CbmTofDigitizerBDF::DeleteHistos()
 // Functions for the merging of "gap digis" and "multiple hits digis" into "channel digis"
 // TODO: FEE double hit discrimination capability (using Time distance between Digis)
 // TODO: Charge summing up
-Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
+Bool_t   CbmTofDigitize::MergeSameChanDigis()
 {
    Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -1190,48 +1235,33 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                           fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
                         }
 
-                        new((*fTofDigisColl)[fiNbDigis]) CbmTofDigiExp(
-                              *fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
+                        // I have to create a new digi here because of the strange way the buffers are constructed.
+                        // This digi will be deleted by CbmDaq.
+                        // The original digi will be deleted below, together with the unused digis from the buffer.
+                        CbmTofDigiExp* digi = new CbmTofDigiExp(*(fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]));
+                        digi->SetTime(digi->GetTime() * fdDigiTimeConvFactor + fdCurrentEventTime);  // ns->ps
+                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fiCurrentEventId,fiCurrentFileId ));
+                        digi->SetMatch(digiMatch);
 
-			CbmTofDigiExp* tDigi = (CbmTofDigiExp *)fTofDigisColl->At(fiNbDigis);
-			tDigi->SetTime(tDigi->GetTime()*fdDigiTimeConvFactor); // ns -> ps
+                        CbmLink LP = digiMatch->GetMatchedLink();
+                        Int_t lp=LP.GetIndex();
 
                         LOG(DEBUG1)<<Form("Add digi %d (%zu) match of (%d,%d,%d,%d,%d) at pos %d",
                               iChosenDigi, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size(),
                               iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
 
-                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fiCurrentEventId,fiCurrentFileId ));
+                        // Send digi to DAQ
+                        SendDigi(digi);
 
-                        // In time-based mode, 'CbmDaq::FillTimeSlice' takes care of deleting the digi objects.
-                        if(fbTimeBasedOutput)
-                        {
-                          CbmTofDigiExp* tNewDigi = new CbmTofDigiExp(*fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
-                          tNewDigi->SetTime(tNewDigi->GetTime() + fdCurrentEventTime);
-                          tNewDigi->SetMatch(digiMatch);
-
-                          CbmDaqBuffer::Instance()->InsertData(tNewDigi);
-                        }
-
-                        new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
-                        CbmLink LP = digiMatch->GetMatchedLink();
-                        Int_t lp=LP.GetIndex();
-
-                        // In time-based mode, calling '~CbmDigi()' when destroying the digi object in 'CbmDaq::FillTimeSlice'
-                        // takes care of deleting the match object as well.
-                        if(!fbTimeBasedOutput)
-                        {
-                          delete digiMatch;
-                        }
-
-                        LOG(DEBUG1)<<"CbmTofDigitizerBDF:: TofDigiMatchColl entry "
-                             <<fTofDigiMatchPointsColl->GetEntries()-1
+                        LOG(DEBUG1)<<"CbmTofDigitize:: TofDigiMatchColl entry "
+                             <<fTofDigiMatchPointsColl->GetEntries()
                              <<", Poi: "<<fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]
                              <<", lp: "<<lp
                              <<", MCt: "<<((CbmTofPoint*) fTofPointsColl->At(lp))->GetTrackID()
                              <<FairLogger::endl;
 
                         if(lp != fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] )
-                          LOG(ERROR)<<Form("CbmTofDigitizerBDF::MergeSameChanDigis inconsistent links: %d <-> %d for (%d,%d,%d,%d,%d)",
+                          LOG(ERROR)<<Form("CbmTofDigitize::MergeSameChanDigis inconsistent links: %d <-> %d for (%d,%d,%d,%d,%d)",
                                lp, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],
                                iSmType,iSm,iRpc,iCh,iSide)<<FairLogger::endl;
 
@@ -1326,30 +1356,31 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                           fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
                         }
 
-			LOG(DEBUG1)<<Form(" New Tof Digi %d %d %d %d %d %d",iSmType,iSm,iRpc,iCh,iSide,iChosenDigi)<<FairLogger::endl;
+                        LOG(DEBUG1)<<Form(" New Tof Digi %d %d %d %d %d %d",iSmType,iSm,iRpc,iCh,iSide,iChosenDigi)<<FairLogger::endl;
 
-                        new((*fTofDigisColl)[fiNbDigis]) CbmTofDigi(
-                              *fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
-
-			CbmTofDigiExp* tDigi = (CbmTofDigiExp *)fTofDigisColl->At(fiNbDigis);
-			tDigi->SetTime(tDigi->GetTime()*fdDigiTimeConvFactor); // ns -> ps
-
+                        // I have to create a new digi here because of the strange way the buffers are constructed.
+                        // This digi will be deleted by CbmDaq.
+                        // The original digi will be deleted below, together with the unused digis from the buffer.
+ 			            CbmTofDigi* digi = new CbmTofDigi(*(fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]));
+			            digi->SetTime(digi->GetTime()*fdDigiTimeConvFactor + fdCurrentEventTime); // ns -> ps
                         digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fiCurrentEventId,fiCurrentFileId ));
+			            digi->SetMatch(digiMatch);
 
-                        new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
                         CbmLink LP = digiMatch->GetMatchedLink();
                         Int_t lp=LP.GetIndex();
-                        delete digiMatch;
 
-                        LOG(DEBUG1)<<"CbmTofDigitizerBDF:: TofDigiMatchColl entry "
-                             <<fTofDigiMatchPointsColl->GetEntries()-1
+                        // Send digi to DAQ
+                        SendDigi(digi);
+
+                        LOG(DEBUG1)<<"CbmTofDigitize:: TofDigiMatchColl entry "
+                             <<fTofDigiMatchPointsColl->GetEntries()
                              <<", Poi: "<<fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]
                              <<", lp: "<<lp
                              <<", MCt: "<<((CbmTofPoint*) fTofPointsColl->At(lp))->GetTrackID()
                              <<FairLogger::endl;
 
                         if(lp != fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] )
-                          LOG(ERROR)<<Form("CbmTofDigitizerBDF::MergeSameChanDigis inconsistent links: %d <-> %d for (%d,%d,%d,%d,%d)",
+                          LOG(ERROR)<<Form("CbmTofDigitize::MergeSameChanDigis inconsistent links: %d <-> %d for (%d,%d,%d,%d,%d)",
                                lp, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],
                                iSmType,iSm,iRpc,iCh,iSide)<<FairLogger::endl;
 
@@ -1371,7 +1402,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
 }
 /************************************************************************************/
 // Functions for the Cluster Radius generation
-Double_t CbmTofDigitizerBDF::GenerateClusterRadius( Int_t iSmType, Int_t iRpc )
+Double_t CbmTofDigitize::GenerateClusterRadius( Int_t iSmType, Int_t iRpc )
 {
    Double_t dClusterRadius = 0;
    Int_t    iChType = fDigiBdfPar->GetChanType( iSmType, iRpc );
@@ -1403,10 +1434,10 @@ Double_t CbmTofDigitizerBDF::GenerateClusterRadius( Int_t iSmType, Int_t iRpc )
          } // if( 0 == iChType)
             else
             {
-               LOG(ERROR)<<"CbmTofDigitizerBDF::GenerateClusterRadius => Cluster Radius "
+               LOG(ERROR)<<"CbmTofDigitize::GenerateClusterRadius => Cluster Radius "
                      <<"obtention from cluster size not implemented for pads, Sm type "
                      <<iSmType<<" Rpc "<<iRpc<<FairLogger::endl;
-               LOG(ERROR)<<"CbmTofDigitizerBDF::GenerateClusterRadius => Test "
+               LOG(ERROR)<<"CbmTofDigitize::GenerateClusterRadius => Test "
                      <<" Sm type "<<iSmType<<" Rpc "<<iRpc
                      <<" Type "<<iChType<<" Type "<<(Int_t)iChType<<FairLogger::endl;
                return kFALSE;
@@ -1442,10 +1473,10 @@ Double_t CbmTofDigitizerBDF::GenerateClusterRadius( Int_t iSmType, Int_t iRpc )
          } // if( 0 == iChType)
             else
             {
-               LOG(ERROR)<<"CbmTofDigitizerBDF::GenerateClusterRadius => Cluster Radius "
+               LOG(ERROR)<<"CbmTofDigitize::GenerateClusterRadius => Cluster Radius "
                      <<"obtention from cluster size not implemented for pads, Sm type "
                      <<iSmType<<" Rpc "<<iRpc<<FairLogger::endl;
-               LOG(ERROR)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Test 2"
+               LOG(ERROR)<<"CbmTofDigitize::DigitizeFlatDisc => Test 2"
                      <<" Sm type "<<iSmType<<" Rpc "<<iRpc
                      <<" Type "<<iChType<<FairLogger::endl;
                return kFALSE;
@@ -1454,7 +1485,7 @@ Double_t CbmTofDigitizerBDF::GenerateClusterRadius( Int_t iSmType, Int_t iRpc )
       } // case 1:
       default:
       {
-         LOG(ERROR)<<"CbmTofDigitizerBDF::GenerateClusterRadius => Wrong Cluster Radius method , Sm type "
+         LOG(ERROR)<<"CbmTofDigitize::GenerateClusterRadius => Wrong Cluster Radius method , Sm type "
                      <<iSmType<<" Rpc "<<iRpc<<FairLogger::endl;
          dClusterRadius = 0;
          break;
@@ -1464,7 +1495,7 @@ Double_t CbmTofDigitizerBDF::GenerateClusterRadius( Int_t iSmType, Int_t iRpc )
 }
 /************************************************************************************/
 // Functions for a direct use of the cluster size
-Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
+Bool_t   CbmTofDigitize::DigitizeDirectClusterSize()
 {
    // Uniform distribution in ]0;x]
    // gRandom->Uniform(x);
@@ -1500,7 +1531,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       Int_t iNbTofTracks     = 0;
       Int_t iNbTofTracksPrim = 0;
 
-      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize: " << nTofPoint
+      LOG(DEBUG1) << "CbmTofDigitize::DigitizeDirectClusterSize: " << nTofPoint
                  << " points in Tof for this event with " << nMcTracks
                  << " MC tracks "<< FairLogger::endl;
       for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
@@ -1513,9 +1544,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
 
       //Some numbers on TOF distributions
-      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize: " << iNbTofTracks
+      LOG(DEBUG1) << "CbmTofDigitize::DigitizeDirectClusterSize: " << iNbTofTracks
                  << " tracks in Tof " << FairLogger::endl;
-      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize: " << iNbTofTracksPrim
+      LOG(DEBUG1) << "CbmTofDigitize::DigitizeDirectClusterSize: " << iNbTofTracksPrim
                  << " tracks in Tof from vertex" << FairLogger::endl;
    } // if( fbMcTrkMonitor )
 
@@ -1546,7 +1577,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
    // digi timestamps in event-based mode. In time-based mode, event start time
    // reconstruction is not considered here.
    Double_t dStartJitter = 0.;
-   if(!fbTimeBasedOutput)
+   if( fEventMode )
    {
      dStartJitter = gRandom->Gaus( 0.0, fDigiBdfPar->GetStartTimeRes() );
    }
@@ -1557,7 +1588,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       pPoint = (CbmTofPoint*) fTofPointsColl->At( iPntInd );
       if( NULL == pPoint )
       {
-         LOG(WARNING)<<"CbmTofDigitizerBDF::DigitizeDirectClusterSize => Be careful: hole in the CbmTofPoint TClonesArray!"
+         LOG(WARNING)<<"CbmTofDigitize::DigitizeDirectClusterSize => Be careful: hole in the CbmTofPoint TClonesArray!"
                      <<FairLogger::endl;
          continue;
       } // if( pPoint )
@@ -1586,11 +1617,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       {
          if( fbAllowPointsWithoutTrack )
             continue;
-            else LOG(FATAL) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize => TofPoint without valid MC track Index, "
+            else LOG(FATAL) << "CbmTofDigitize::DigitizeDirectClusterSize => TofPoint without valid MC track Index, "
                             << " track was probably cut at the transport level! "
                             << " Pnt Idx: " << iPntInd << " Trk Idx: " << iTrkId << "\n"
                             << "=============> To allow this kind of points and simply jump them, "
-                            << "call CbmTofDigitizerBDF::AllowPointsWithoutTrack() in your macro!!"
+                            << "call CbmTofDigitize::AllowPointsWithoutTrack() in your macro!!"
                             << FairLogger::endl;
       } // if( iTrkId < 0 )
 
@@ -1610,7 +1641,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
          || iRpc     < 0. || iNbRpc     <= iRpc
          || iChannel < 0. || iNbCh      <= iChannel )
       {
-	 LOG(ERROR)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId) <<" SMType: "<<iSmType;
+	 LOG(ERROR)<<Form("CbmTofDigitize => det ID 0x%08x",iDetId) <<" SMType: "<<iSmType;
          LOG(ERROR)<<" SModule: "<<iSM<<" of "<<iNbSm+1;
          LOG(ERROR)<<" Module: "<<iRpc<<" of "<<iNbRpc+1;
          LOG(ERROR)<<" Gap: "<<iGap;
@@ -1681,7 +1712,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 
       if( 1 == iChType)
       {
-         LOG(ERROR)<<"CbmTofDigitizerBDF::DigitizeDirectClusterSize => This method "
+         LOG(ERROR)<<"CbmTofDigitize::DigitizeDirectClusterSize => This method "
                <<"is not available for pads!!"<<FairLogger::endl;
          return kFALSE;
       } // if( 1 == iChType)
@@ -2001,7 +2032,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 }
 /************************************************************************************/
 // Functions for a simple "Flat disc" cluster approximation
-Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
+Bool_t   CbmTofDigitize::DigitizeFlatDisc()
 {
    // Uniform distribution in ]0;x]
    // gRandom->Uniform(x);
@@ -2037,7 +2068,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       Int_t iNbTofTracks     = 0;
       Int_t iNbTofTracksPrim = 0;
 
-      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeFlatDisc: " << nTofPoint
+      LOG(DEBUG1) << "CbmTofDigitize::DigitizeFlatDisc: " << nTofPoint
                  << " points in Tof for this event with " << nMcTracks
                  << " MC tracks "<< FairLogger::endl;
       for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
@@ -2050,9 +2081,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
 
       //Some numbers on TOF distributions
-      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeFlatDisc: " << iNbTofTracks
+      LOG(DEBUG1) << "CbmTofDigitize::DigitizeFlatDisc: " << iNbTofTracks
                   << " tracks in Tof " << FairLogger::endl;
-      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeFlatDisc: " << iNbTofTracksPrim
+      LOG(DEBUG1) << "CbmTofDigitize::DigitizeFlatDisc: " << iNbTofTracksPrim
                   << " tracks in Tof from vertex" << FairLogger::endl;
    } // if( fbMcTrkMonitor )
 
@@ -2094,7 +2125,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       pPoint = (CbmTofPoint*) fTofPointsColl->At( iPntInd );
       if( NULL == pPoint )
       {
-         LOG(WARNING)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Be careful: hole in the CbmTofPoint TClonesArray!"<<endl;
+         LOG(WARNING)<<"CbmTofDigitize::DigitizeFlatDisc => Be careful: hole in the CbmTofPoint TClonesArray!"<<endl;
          continue;
       } // if( pPoint )
 
@@ -2121,11 +2152,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       {
          if( fbAllowPointsWithoutTrack )
             continue;
-            else LOG(FATAL) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize => TofPoint without valid MC track Index, "
+            else LOG(FATAL) << "CbmTofDigitize::DigitizeDirectClusterSize => TofPoint without valid MC track Index, "
                             << " track was probably cut at the transport level! "
                             << " Pnt Idx: " << iPntInd << " Trk Idx: " << iTrkId << "\n"
                             << "=============> To allow this kind of points and simply jump them, "
-                            << "call CbmTofDigitizerBDF::AllowPointsWithoutTrack() in your macro!!"
+                            << "call CbmTofDigitize::AllowPointsWithoutTrack() in your macro!!"
                             << FairLogger::endl;
       } // if( iTrkId < 0 )
 
@@ -2134,7 +2165,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          // Get pointer to the MC-Track info
          pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkId );
 
-         LOG(DEBUG1)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId)
+         LOG(DEBUG1)<<Form("CbmTofDigitize => det ID 0x%08x",iDetId)
           <<", GeoVersion "<< fGeoHandler->GetGeoVersion()<<", SMType: "<<iSmType
           <<" SModule: "<<iSM<<" of "<<iNbSm+1
           <<" Module: "<<iRpc<<" of "<<iNbRpc+1
@@ -2156,7 +2187,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          || iRpc     < 0. || iNbRpc     <= iRpc
          || iChannel < 0. || iNbCh      <= iChannel )
       {
-	 LOG(ERROR)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId)
+	 LOG(ERROR)<<Form("CbmTofDigitize => det ID 0x%08x",iDetId)
 		   <<", GeoVersion "<< fGeoHandler->GetGeoVersion()<<", SMType: "<<iSmType;
          LOG(ERROR)<<" SModule: "<<iSM<<" of "<<iNbSm+1;
          LOG(ERROR)<<" Module: "<<iRpc<<" of "<<iNbRpc+1;
@@ -2164,7 +2195,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          LOG(FATAL)<<" Cell: "<<iChannel<<" of "<<iNbCh+1 <<FairLogger::endl;
          continue;
       } // if error on channel data
-      LOG(DEBUG2)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Check Point "<<iPntInd
+      LOG(DEBUG2)<<"CbmTofDigitize::DigitizeFlatDisc => Check Point "<<iPntInd
             <<" Sm type "<<iSmType<<" SM "<<iSM<<" Rpc "<<iRpc<<" Channel "<<iChannel
             <<" Type "<<iChType<<" Orient. "<<fDigiBdfPar->GetChanOrient( iSmType, iRpc )<<FairLogger::endl;
 
@@ -2205,7 +2236,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       //    (1-p)^NGaps with p = gap efficiency and Ngaps the number of gaps in this RPC
       // This results in the relation: p = 1 - (1 - P)^(1/Ngaps)
       //         with P = RPC efficiency from beamtime
-      LOG(DEBUG2)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Eff = "
+      LOG(DEBUG2)<<"CbmTofDigitize::DigitizeFlatDisc => Eff = "
 		 <<fDigiBdfPar->GetGapEfficiency(iSmType, iRpc)
 		 <<FairLogger::endl;
 
@@ -2221,7 +2252,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       pPoint->Position( vPntPos );
       fChannelInfo = fDigiPar->GetCell(iChanId);
       if (NULL == fChannelInfo) {
-	LOG(WARNING) << "CbmTofDigitizerBDF::DigitizeFlatDisc: No DigPar for iChanId = "
+	LOG(WARNING) << "CbmTofDigitize::DigitizeFlatDisc: No DigPar for iChanId = "
 		     << Form("0x%08x, addr 0x%08x",iChanId,(unsigned int)iDetId)<<FairLogger::endl;
 	continue;
       }
@@ -2269,7 +2300,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       // Calculate the fraction of the charge in central channel
       Double_t dChargeCentral = dClustCharge * ComputeClusterAreaOnChannel(
                                     iChanId, dClusterSize, poipos_local[0], poipos_local[1]);
-      LOG(DEBUG2)<<"CbmTofDigitizerBDF::DigitizeFlatDisc: ChargeCentral "<<dChargeCentral
+      LOG(DEBUG2)<<"CbmTofDigitize::DigitizeFlatDisc: ChargeCentral "<<dChargeCentral
 		 <<", "<<dClustCharge
 		 <<Form(", 0x%08x",iChanId)<<", "<<dClusterSize<<", "<<poipos_local[0]<<", "<<poipos_local[1]<<", "<<poipos_local[2]
 		 <<FairLogger::endl;
@@ -2277,11 +2308,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       dChargeCentral /= dClustArea;
       if( dClustCharge +0.0000001 < dChargeCentral )
       {
-         LOG(ERROR)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Central Charge "
+         LOG(ERROR)<<"CbmTofDigitize::DigitizeFlatDisc => Central Charge "
                    <<dChargeCentral<<" "<<dClustCharge<<" "<<dClustCharge-dChargeCentral
                    <<" "<<(ComputeClusterAreaOnChannel(iChanId, dClusterSize, poipos_local[0], poipos_local[1]))<<" "<<dClustArea
                    <<FairLogger::endl;
-         LOG(ERROR)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Check Point "<<iPntInd
+         LOG(ERROR)<<"CbmTofDigitize::DigitizeFlatDisc => Check Point "<<iPntInd
                      <<" Sm type "<<iSmType<<" SM "<<iSM<<" Rpc "<<iRpc<<" Channel "<<iChannel
                      <<" Type "<<iChType<<" Orient. "<<fDigiBdfPar->GetChanOrient( iSmType, iRpc )<<FairLogger::endl;
       } // if( dClustCharge +0.0000001 < dChargeCentral )
@@ -2589,7 +2620,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
             fChannelInfo = fDigiPar->GetCell( iSideChId );
 
 	    if(NULL == fChannelInfo){
-	      LOG(ERROR)<<"CbmTofDigitizerBDF::DigitizeFlatDisc: Invalid channel "
+	      LOG(ERROR)<<"CbmTofDigitize::DigitizeFlatDisc: Invalid channel "
 			<<iSideChId<<" "<<iSmType<<" "<<iSM<<" "<<iRpc<<" "<<iChanInd+1
 			<<FairLogger::endl;
 	      continue;
@@ -2601,9 +2632,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
             dChargeSideCh /= dClustArea;
             if( dClustCharge  + 0.0000001 < dChargeSideCh )
             {
-               LOG(ERROR)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Side Charge "
+               LOG(ERROR)<<"CbmTofDigitize::DigitizeFlatDisc => Side Charge "
                          <<dChargeSideCh<<" "<<dClustCharge<<" "<<dClustArea<<FairLogger::endl;
-               LOG(ERROR)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Check Point "<<iPntInd
+               LOG(ERROR)<<"CbmTofDigitize::DigitizeFlatDisc => Check Point "<<iPntInd
                            <<" Sm type "<<iSmType<<" SM "<<iSM<<" Rpc "<<iRpc<<" Channel "<<iChanInd
                            <<" Type "<<iChType<<" Orient. "<<fDigiBdfPar->GetChanOrient( iSmType, iRpc )<<FairLogger::endl;
             } // if( dClustCharge  + 0.0000001 < dChargeSideCh )
@@ -2954,7 +2985,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 }
 /************************************************************************************/
 // Functions for a 2D Gauss cluster approximation
-Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
+Bool_t CbmTofDigitize::DigitizeGaussCharge()
 {
    // Uniform distribution in ]0;x]
    // gRandom->Uniform(x);
@@ -2990,7 +3021,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       Int_t iNbTofTracks     = 0;
       Int_t iNbTofTracksPrim = 0;
 
-      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeGaussCharge: " << nTofPoint
+      LOG(DEBUG1) << "CbmTofDigitize::DigitizeGaussCharge: " << nTofPoint
                  << " points in Tof for this event with " << nMcTracks
                  << " MC tracks "<< FairLogger::endl;
       for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
@@ -3003,9 +3034,9 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
 
       //Some numbers on TOF distributions
-      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeGaussCharge: " << iNbTofTracks
+      LOG(DEBUG1) << "CbmTofDigitize::DigitizeGaussCharge: " << iNbTofTracks
                  << " tracks in Tof " << FairLogger::endl;
-      LOG(DEBUG1) << "CbmTofDigitizerBDF::DigitizeGaussCharge: " << iNbTofTracksPrim
+      LOG(DEBUG1) << "CbmTofDigitize::DigitizeGaussCharge: " << iNbTofTracksPrim
                  << " tracks in Tof from vertex" << FairLogger::endl;
    } // if( fbMcTrkMonitor )
 
@@ -3047,7 +3078,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       pPoint = (CbmTofPoint*) fTofPointsColl->At( iPntInd );
       if( NULL == pPoint )
       {
-         LOG(WARNING)<<"CbmTofDigitizerBDF::DigitizeGaussCharge => Be careful: hole in the CbmTofPoint TClonesArray!"<<endl;
+         LOG(WARNING)<<"CbmTofDigitize::DigitizeGaussCharge => Be careful: hole in the CbmTofPoint TClonesArray!"<<endl;
          continue;
       } // if( pPoint )
 
@@ -3073,11 +3104,11 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       {
          if( fbAllowPointsWithoutTrack )
             continue;
-            else LOG(FATAL) << "CbmTofDigitizerBDF::DigitizeDirectClusterSize => TofPoint without valid MC track Index, "
+            else LOG(FATAL) << "CbmTofDigitize::DigitizeDirectClusterSize => TofPoint without valid MC track Index, "
                             << " track was probably cut at the transport level! "
                             << " Pnt Idx: " << iPntInd << " Trk Idx: " << iTrkId << "\n"
                             << "=============> To allow this kind of points and simply jump them, "
-                            << "call CbmTofDigitizerBDF::AllowPointsWithoutTrack() in your macro!!"
+                            << "call CbmTofDigitize::AllowPointsWithoutTrack() in your macro!!"
                             << FairLogger::endl;
       } // if( iTrkId < 0 )
 
@@ -3097,7 +3128,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
          || iRpc     < 0. || iNbRpc     < iRpc
          || iChannel < 0. || iNbCh      < iChannel )
       {
-	 LOG(ERROR)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId) <<" SMType: "<<iSmType;
+	 LOG(ERROR)<<Form("CbmTofDigitize => det ID 0x%08x",iDetId) <<" SMType: "<<iSmType;
          LOG(ERROR)<<" SModule: "<<iSM<<" of "<<iNbSm+1;
          LOG(ERROR)<<" Module: "<<iRpc<<" of "<<iNbRpc+1;
          LOG(ERROR)<<" Gap: "<<iGap;
@@ -3943,7 +3974,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 }
 /************************************************************************************/
 // Auxiliary functions
-Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
+Double_t CbmTofDigitize::ComputeClusterAreaOnChannel(
       Int_t iChanId, Double_t dClustRadius,
       Double_t dClustCentX, Double_t dClustCentY)
 {
@@ -3983,7 +4014,7 @@ Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
                         ( dCornersR[2] < dClustRadius ? 1 : 0 ) +
                         ( dCornersR[3] < dClustRadius ? 1 : 0 );
 
-   LOG(DEBUG3)<<"CbmTofDigitizerBDF::ComputeClusterAreaOnChannel => Check "<<iNbCornersIn<<" Radius "<<dClustRadius
+   LOG(DEBUG3)<<"CbmTofDigitize::ComputeClusterAreaOnChannel => Check "<<iNbCornersIn<<" Radius "<<dClustRadius
             <<" "<<dCornersR[0]<<" "<<dCornersR[1]<<" "<<dCornersR[2]<<" "<<dCornersR[3]<<FairLogger::endl;
 
    switch( iNbCornersIn )
@@ -4006,7 +4037,7 @@ Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
             // First disc area
             Double_t dArea = dClustRadius * dClustRadius * TMath::Pi();
 
-	    LOG(DEBUG3)<<"CbmTofDigitizerBDF::ComputeClusterAreaOnChannel => CC in Ch "<<dArea
+	    LOG(DEBUG3)<<"CbmTofDigitize::ComputeClusterAreaOnChannel => CC in Ch "<<dArea
 		       <<FairLogger::endl;
 
             // Now check for each edge if it cuts the cluster circle
@@ -4021,7 +4052,7 @@ Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
             if( TMath::Abs( dEdgeR[3] ) < dClustRadius )
                dArea -= DiscSectionArea( dClustRadius, TMath::Abs( dEdgeR[3] ) );
             if(dArea < 0.0)
-               LOG(ERROR)<<"CbmTofDigitizerBDF::ComputeClusterAreaOnChannel => Neg. area! "<<dArea<<" Radius "<<dClustRadius
+               LOG(ERROR)<<"CbmTofDigitize::ComputeClusterAreaOnChannel => Neg. area! "<<dArea<<" Radius "<<dClustRadius
                            <<" "<<dEdgeR[0]<<" "<<dEdgeR[1]<<" "<<dEdgeR[2]<<" "<<dEdgeR[3]<<FairLogger::endl;
             return dArea;
          } // Cluster center inside channel
@@ -4032,7 +4063,7 @@ Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
                // If it is the case, the area on the channel is the disc section area
                // If no crossing => no common area of cluster and channel
 
-	      LOG(DEBUG3)<<"CbmTofDigitizerBDF::ComputeClusterAreaOnChannel => CC out Ch "<<dClustRadius
+	      LOG(DEBUG3)<<"CbmTofDigitize::ComputeClusterAreaOnChannel => CC out Ch "<<dClustRadius
                          <<" "<<dEdgeR[0]<<" "<<dEdgeR[1]<<" "<<dEdgeR[2]<<" "<<dEdgeR[3]
 			 <<FairLogger::endl;
 
@@ -4418,19 +4449,19 @@ Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
 /************************************************************************************/
 // Auxiliary functions
    // Area
-Double_t CbmTofDigitizerBDF::TriangleArea( Double_t dXa, Double_t dYa, Double_t dXb, Double_t dYb,
+Double_t CbmTofDigitize::TriangleArea( Double_t dXa, Double_t dYa, Double_t dXb, Double_t dYb,
                                              Double_t dXc, Double_t dYc )
 {
    Double_t dArea = 0.5*( (dXa - dXc)*(dYb - dYa) -(dXa - dXb)*(dYc - dYa) );
    return TMath::Abs( dArea );
 }
-Double_t CbmTofDigitizerBDF::DiscSectionArea( Double_t dDiscRadius, Double_t dDistBaseToCenter)
+Double_t CbmTofDigitize::DiscSectionArea( Double_t dDiscRadius, Double_t dDistBaseToCenter)
 {
    if( dDiscRadius < dDistBaseToCenter ||
          dDiscRadius <= 0 ||
          dDistBaseToCenter < 0 )
    {
-      LOG(ERROR)<<"CbmTofDigitizerBDF::DiscSectionArea => Invalid Input values!! Disc radius "
+      LOG(ERROR)<<"CbmTofDigitize::DiscSectionArea => Invalid Input values!! Disc radius "
                 <<dDiscRadius<<" and Base distance "<<dDistBaseToCenter<<FairLogger::endl;
       return 0.0;
    }
@@ -4447,7 +4478,7 @@ Double_t CbmTofDigitizerBDF::DiscSectionArea( Double_t dDiscRadius, Double_t dDi
 }
    //----------------------------------------------------------------------------//
    // Points
-Double_t CbmTofDigitizerBDF::CircleIntersectPosX( Int_t iChanId, Double_t dClustRadius,
+Double_t CbmTofDigitize::CircleIntersectPosX( Int_t iChanId, Double_t dClustRadius,
                                                      Double_t dClustCentX, Double_t dClustCentY,
                                                      Bool_t bUpperSide )
 {
@@ -4472,7 +4503,7 @@ Double_t CbmTofDigitizerBDF::CircleIntersectPosX( Int_t iChanId, Double_t dClust
          // => return 0.0, faulty call to this function
          else
          {
-            LOG(ERROR)<<"CbmTofDigitizerBDF::CircleIntersectPosX => Invalid values: "
+            LOG(ERROR)<<"CbmTofDigitize::CircleIntersectPosX => Invalid values: "
                       <<" 0 or 2 intersections with cluster aligned on channel "<<FairLogger::endl;
             return 0.0;
          } // else of if( dEdgeCentDistY == dClustRadius )
@@ -4503,19 +4534,19 @@ Double_t CbmTofDigitizerBDF::CircleIntersectPosX( Int_t iChanId, Double_t dClust
       // => return 0.0, faulty call to this function
          else
          {
-            LOG(ERROR)<<"CbmTofDigitizerBDF::CircleIntersectPosX => Invalid values: "
+            LOG(ERROR)<<"CbmTofDigitize::CircleIntersectPosX => Invalid values: "
                       <<" 0 intersection at all (negative root = "<<dRoot
                       <<") "<<FairLogger::endl;
             TString sTemp = Form( " Radius = %5.4f ClustX = %6.3f ClustY = %6.3f Side = %1d EdgeY = %6.3f ChanX = %6.3f ChanY = %6.3f Channel = %6d",
                   dClustRadius, dClustCentX, dClustCentY, bUpperSide, dEdgePosY, dChanCentPosX, dChanCentPosY, iChanId );
-            LOG(ERROR)<<"CbmTofDigitizerBDF::CircleIntersectPosX => Input values: "
+            LOG(ERROR)<<"CbmTofDigitize::CircleIntersectPosX => Input values: "
                       <<sTemp
                       <<FairLogger::endl;
             return 0.0;
          } // else of if( 0.0 <= dRoot )
    } // else of if( dChanCentPosX == dClustCentX )
 }
-Double_t CbmTofDigitizerBDF::CircleIntersectPosY( Int_t iChanId, Double_t dClustRadius,
+Double_t CbmTofDigitize::CircleIntersectPosY( Int_t iChanId, Double_t dClustRadius,
                                                      Double_t dClustCentX, Double_t dClustCentY,
                                                      Bool_t bRightSide )
 {
@@ -4540,7 +4571,7 @@ Double_t CbmTofDigitizerBDF::CircleIntersectPosY( Int_t iChanId, Double_t dClust
          // => return 0.0, faulty call to this function
          else
          {
-            LOG(ERROR)<<"CbmTofDigitizerBDF::CircleIntersectPosY => Invalid values: "
+            LOG(ERROR)<<"CbmTofDigitize::CircleIntersectPosY => Invalid values: "
                       <<" 0 or 2 intersections with cluster aligned on channel "<<FairLogger::endl;
             return 0.0;
          } // else of if( dEdgeCentDistX == dClustRadius )
@@ -4574,19 +4605,19 @@ Double_t CbmTofDigitizerBDF::CircleIntersectPosY( Int_t iChanId, Double_t dClust
       // => return 0.0, faulty call to this function
          else
          {
-            LOG(ERROR)<<"CbmTofDigitizerBDF::CircleIntersectPosY => Invalid values: "
+            LOG(ERROR)<<"CbmTofDigitize::CircleIntersectPosY => Invalid values: "
                       <<" 0 intersection at all (negative root = "<<dRoot
                       <<") "<<FairLogger::endl;
             TString sTemp = Form( " Radius = %5.4f ClustX = %6.3f ClustY = %6.3f Side = %1d EdgeX = %6.3f ChanX = %6.3f ChanY = %6.3f Channel = %6d",
                   dClustRadius, dClustCentX, dClustCentY, bRightSide, dEdgePosX, dChanCentPosX, dChanCentPosY, iChanId );
-            LOG(ERROR)<<"CbmTofDigitizerBDF::CircleIntersectPosY => Input values: "
+            LOG(ERROR)<<"CbmTofDigitize::CircleIntersectPosY => Input values: "
                       <<sTemp
                       <<FairLogger::endl;
             return 0.0;
          } // else of if( 0.0 <= dRoot )
    } // else of if( dChanCentPosX == dClustCentX )
 }
-Double_t  CbmTofDigitizerBDF::DistanceCircleToBase(
+Double_t  CbmTofDigitize::DistanceCircleToBase(
       Double_t dClustRadius,
       Double_t dBaseXa, Double_t dBaseYa, Double_t dBaseXb, Double_t dBaseYb )
 {
@@ -4600,18 +4631,18 @@ Double_t  CbmTofDigitizerBDF::DistanceCircleToBase(
       return TMath::Sqrt( dRoot  );
       else
       {
-         LOG(ERROR)<<"CbmTofDigitizerBDF::DistanceCircleToBase => Invalid values: "
+         LOG(ERROR)<<"CbmTofDigitize::DistanceCircleToBase => Invalid values: "
                    <<" base end-points not on circle (negative root"<<dRoot
                       <<") "<<FairLogger::endl;
          TString sTemp = Form( " Radius = %5.4f Xa = %6.3f Ya = %6.3f Xb = %6.3f Yb = %6.3f ",
                dClustRadius, dBaseXa, dBaseYa, dBaseXb, dBaseYb );
-         LOG(ERROR)<<"CbmTofDigitizerBDF::DistanceCircleToBase => Input values: "
+         LOG(ERROR)<<"CbmTofDigitize::DistanceCircleToBase => Input values: "
                    <<sTemp
                    <<FairLogger::endl;
          return 0.0;
       } // else of if( 0.0 <= dRoot )
 }
-void CbmTofDigitizerBDF::GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime)
+void CbmTofDigitize::GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime)
 {
     // --- In a FairRunAna, take the information from FairEventHeader
     if ( FairRunAna::Instance() )

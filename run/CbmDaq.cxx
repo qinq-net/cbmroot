@@ -328,6 +328,13 @@ Int_t CbmDaq::FillTimeSlice(Double_t fillTime, Bool_t limit) {
         fBuffer->GetNextData(iDet) );
     while (digi) {
 
+      // --- Consistency check
+      if ( digi->GetTime() < fTimeSlice->GetStartTime() )
+        LOG(FATAL) << fName << ": digi from system "
+        << CbmModuleList::GetModuleNameCaps(digi->GetSystemId())
+        << " at time " << digi->GetTime() << " for " << fTimeSlice->ToString()
+        << FairLogger::endl;
+
       LOG(DEBUG2) << fName << ": Inserting digi with detector ID "
           << digi->GetAddress() << " at time " << digi->GetTime()
           << " into current time slice" << FairLogger::endl;
@@ -478,7 +485,7 @@ InitStatus CbmDaq::Init() {
   fTimeEventPrevious = -1.;
   if ( fEventMode ) fTimeSliceInterval = -1.;
   fTimeSlice->Reset(0., fTimeSliceInterval);
-  fTimeSliceFirst = -1.;
+  fTimeSliceFirst =  0.;
   fTimeSliceLast  = -1.;
 
 

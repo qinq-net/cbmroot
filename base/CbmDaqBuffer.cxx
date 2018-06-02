@@ -4,6 +4,7 @@
  **/
 
 
+#include <cassert>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -44,13 +45,28 @@ CbmDaqBuffer::~CbmDaqBuffer() {
 // -----   Time of first raw data   ------------------------------------------
 Double_t CbmDaqBuffer::GetFirstTime() const {
   Double_t time = -1.;
+  Bool_t firstDetector = kTRUE;
   for (Int_t iDet = kRef; iDet < kNofSystems; iDet++) {
     if ( GetSize(iDet) ) {
-        if ( time < 0. ) time = GetFirstTime(iDet);
-        else time = ( time < GetFirstTime(iDet) ? time : GetFirstTime(iDet) );
-    }
-  }
+      if ( firstDetector ) {
+        time = GetFirstTime(iDet);
+        firstDetector = kFALSE;
+      } //? first detector with data
+      else time = ( time < GetFirstTime(iDet) ? time : GetFirstTime(iDet) );
+    }  //? detector has data
+  } //# detectors
   return time;
+}
+// ---------------------------------------------------------------------------
+
+
+
+// -----   Time of first raw data for detector  ------------------------------
+Double_t CbmDaqBuffer::GetFirstTime(Int_t iDet) const {
+  if ( iDet < kRef || iDet >= kNofSystems ) return -1.;
+  if ( ! GetSize(iDet) ) return -1.;
+  assert ( (fData[iDet].begin())->second );
+  return (fData[iDet].begin())->second->GetTime();
 }
 // ---------------------------------------------------------------------------
 
@@ -59,9 +75,28 @@ Double_t CbmDaqBuffer::GetFirstTime() const {
 // -----   Time of last raw data   -------------------------------------------
 Double_t CbmDaqBuffer::GetLastTime() const {
   Double_t time = -1.;
-  for (Int_t iDet = kRef; iDet < kNofSystems; iDet++)
-    time = ( time > GetLastTime(iDet) ? time : GetLastTime(iDet) );
+  Bool_t firstDetector = kTRUE;
+  for (Int_t iDet = kRef; iDet < kNofSystems; iDet++) {
+    if ( GetSize(iDet) ) {
+      if ( firstDetector ) {
+        time = GetLastTime(iDet);
+        firstDetector = kFALSE;
+      } //? first detector
+      else time = ( time > GetLastTime(iDet) ? time : GetLastTime(iDet) );
+    } //? detector has data
+  } //# detectors
   return time;
+}
+// ---------------------------------------------------------------------------
+
+
+
+// -----   Time of last raw data for detector  -------------------------------
+Double_t CbmDaqBuffer::GetLastTime(Int_t iDet) const {
+  if ( iDet < kRef || iDet >= kNofSystems ) return -1.;
+  if ( ! GetSize(iDet) ) return -1.;
+  assert ( (--fData[iDet].begin())->second );
+  return (--fData[iDet].end())->second->GetTime();
 }
 // ---------------------------------------------------------------------------
 
@@ -177,26 +212,6 @@ CbmDaqBuffer* CbmDaqBuffer::Instance() {
 // ---------------------------------------------------------------------------
 
 
-string CbmDaqBuffer::ToString() const {
-	stringstream ss;
-	ss << "DaqBuffer: ";
-	Int_t size = GetSize();
-	if ( ! size ) {
-		ss << "empty";
-		return ss.str();
-	}
-	TString sysName;
-  for (Int_t det = kRef; det < kNofSystems; det++) {
-    if ( GetSize(det) ) {
-      sysName = CbmModuleList::GetModuleNameCaps(det);
-      ss << sysName << " " << GetSize(det) << "  ";
-    }
-  }
-  ss << "from " << fixed << setprecision(3) << GetFirstTime() << " ns to "
-  	 << GetLastTime() << " ns";
-
-  return ss.str();
-}
 
 // -----   Print status   ----------------------------------------------------
 void CbmDaqBuffer::PrintStatus() const {
@@ -213,10 +228,34 @@ void CbmDaqBuffer::PrintStatus() const {
       LOG(INFO) << sysName << " " << GetSize(det) << "  ";
     }
   }
-  LOG(INFO) << FairLogger::endl;
   LOG(INFO) << "\t     " << "Total: " << GetSize() << " from "
             << fixed << setprecision(3) << GetFirstTime() << " ns to "
             << GetLastTime() << " ns" << FairLogger::endl;
+}
+// ---------------------------------------------------------------------------
+
+
+
+// -----   Status to string   ------------------------------------------------
+string CbmDaqBuffer::ToString() const {
+  stringstream ss;
+  ss << "DaqBuffer: ";
+  Int_t size = GetSize();
+  if ( ! size ) {
+    ss << "empty";
+    return ss.str();
+  }
+  TString sysName;
+  for (Int_t det = kRef; det < kNofSystems; det++) {
+    if ( GetSize(det) ) {
+      sysName = CbmModuleList::GetModuleNameCaps(det);
+      ss << sysName << " " << GetSize(det) << "  ";
+    }
+  }
+  ss << "Total: " << size << " from " << fixed << setprecision(3)
+    << GetFirstTime() << " ns to " << GetLastTime() << " ns";
+
+  return ss.str();
 }
 // ---------------------------------------------------------------------------
 

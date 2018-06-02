@@ -49,11 +49,7 @@ class CbmDaqBuffer
      ** @param iDet  detector type (e.g. kSTS)
      ** @return time of first data [ns]
      */
-    Double_t GetFirstTime(Int_t iDet) const {
-      if ( iDet < kRef || iDet >= kNofSystems ) return -1.;
-      if ( ! GetSize(iDet) ) return -1.;
-      return (fData[iDet].begin())->second->GetTime();
-    }
+    Double_t GetFirstTime(Int_t iDet) const;
 
 
     /** Time of last data for all detectors
@@ -66,11 +62,7 @@ class CbmDaqBuffer
      ** @param iDet  detector type (e.g. kSTS)
      ** @return time of last data [ns]
      */
-    Double_t GetLastTime(Int_t iDet) const {
-      if ( iDet < kRef || iDet >= kNofSystems ) return -1.;
-      if ( ! GetSize(iDet) ) return -1.;
-      return (--fData[iDet].end())->second->GetTime();
-    }
+    Double_t GetLastTime(Int_t iDet) const;
 
 
     /** @brief Pointer to next raw data object for a given detector
