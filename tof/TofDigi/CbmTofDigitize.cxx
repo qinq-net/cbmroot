@@ -7,6 +7,7 @@
 
 // C++ includes
 #include <cassert>
+#include <iomanip>
 
 // ROOT includes
 #include "TClonesArray.h"
