@@ -95,7 +95,7 @@ Double_t CbmDaqBuffer::GetLastTime() const {
 Double_t CbmDaqBuffer::GetLastTime(Int_t iDet) const {
   if ( iDet < kRef || iDet >= kNofSystems ) return -1.;
   if ( ! GetSize(iDet) ) return -1.;
-  assert ( (--fData[iDet].begin())->second );
+  assert ( (--fData[iDet].end())->second );
   return (--fData[iDet].end())->second->GetTime();
 }
 // ---------------------------------------------------------------------------
