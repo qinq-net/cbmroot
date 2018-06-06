@@ -24,7 +24,6 @@ CbmRichPmt::CbmRichPmt()
    fRefractiveIndex(-1.),
    fPmtDataMap()
 {
-    LOG(INFO) << "CbmRichPmt init QE" << FairLogger::endl;
 	InitQE();
 }
 
@@ -101,6 +100,9 @@ void CbmRichPmt::ClearMap()
 void CbmRichPmt::InitQE()
 {
     // See CbmRichPmtType.h for on details about each Pmt detector type
+
+    LOG(DEBUG) << "CbmRichPmt init QE" << FairLogger::endl;
+
 
     ClearMap();
 

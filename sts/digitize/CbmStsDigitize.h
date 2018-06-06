@@ -81,12 +81,6 @@ class CbmStsDigitize : public CbmDigitizer
   Int_t GetELossModel() const{return fDigiPar->GetELossModel();}
 
 
-  /** Get current event time
-   ** @value Current event time [ns]
-   **/
-  Double_t GetEventTime() { return fEventTimeCurrent; }
-
-
   /** Get number of signals front side **/
   Int_t GetNofSignalsF() const {return fNofSignalsF;}
 
@@ -101,6 +95,10 @@ class CbmStsDigitize : public CbmDigitizer
 
   /** Re-initialisation **/
   virtual InitStatus ReInit();
+
+
+  /** @brief Clear data arrays **/
+  virtual void ResetArrays();
 
 
   /** @brief Set the default module parameters
@@ -302,9 +300,6 @@ class CbmStsDigitize : public CbmDigitizer
   // --- Time of last processed StsPoint (for stream mode)
   Double_t fTimePointLast;
 
-  // --- Time of current event (for stream mode)
-  Double_t fEventTimeCurrent;   ///< Time of current event [ns]
-
   // --- Digi times (for stream mode, in each step)
   Double_t fTimeDigiFirst;      ///< Time of first digi sent to DAQ
   Double_t fTimeDigiLast;       ///< Time of last digi sent to DAQ
@@ -355,7 +350,8 @@ class CbmStsDigitize : public CbmDigitizer
    ** event number from FaurEventHeader::GetMCEntryNumber() is
    ** generator-dependent.
    **/
-  void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
+  //void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
+  // TODO: Is now in base class CbmDigitize. Can be removed here after validation.
 
 
   /** Initialisation **/
@@ -380,8 +376,8 @@ class CbmStsDigitize : public CbmDigitizer
   		              CbmLink* link = NULL);
 
 
-  /** Reset step-wise counters **/
-  void Reset();
+  /** @brief Reset event counters **/
+  void ResetCounters();
 
 
   /** Prevent usage of copy constructor and assignment operator **/

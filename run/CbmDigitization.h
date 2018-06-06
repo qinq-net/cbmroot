@@ -188,13 +188,13 @@ class CbmDigitization : public TNamed
     Int_t CheckInputFile();
 
 
-    /** @brief Instantiate the digitisers for the active systems
+    /** @brief Instantiate the default digitisers for the active systems
      ** @value Number of instantiated digitisers
      **
      ** For systems not having explicitly defined their digitizers,
      ** the default digitisers are instantiated.
      **/
-    Int_t CreateDigitizers();
+    Int_t CreateDefaultDigitizers();
 
 
     /** @brief Get the geometry tag of a system from a TGeoManager

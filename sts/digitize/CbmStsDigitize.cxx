@@ -101,7 +101,6 @@ CbmStsDigitize::CbmStsDigitize()
   fSensorConditionFile(),
   fModuleParameterFile(),
   fTimePointLast(-1.),
-  fEventTimeCurrent(0.),
   fTimeDigiFirst(-1.),
   fTimeDigiLast(-1.),
   fNofPoints(0),
@@ -116,7 +115,7 @@ CbmStsDigitize::CbmStsDigitize()
   fNofNoiseTot(0.),
   fTimeTot()
 { 
-  Reset();
+  ResetCounters();
 }
 // -------------------------------------------------------------------------
 
@@ -125,7 +124,7 @@ CbmStsDigitize::CbmStsDigitize()
 // -----   Destructor   ----------------------------------------------------
 CbmStsDigitize::~CbmStsDigitize() {
   LOG(DEBUG) << "Destructing " << fName << FairLogger::endl;
-  Reset();
+  ResetArrays();
   delete fDigis;
   delete fMatches;
 }
@@ -226,10 +225,9 @@ void CbmStsDigitize::CreateDigi(Int_t address, UShort_t channel,
 // -----   Task execution   ------------------------------------------------
 void CbmStsDigitize::Exec(Option_t* /*opt*/) {
 
-
   // --- Start timer and reset counters
   fTimer.Start();
-  Reset();
+  ResetCounters();
 
   // --- For debug: status of analogue buffers
   if ( gLogger->IsLogNeeded(DEBUG)) {
@@ -238,20 +236,21 @@ void CbmStsDigitize::Exec(Option_t* /*opt*/) {
   }
 
   // --- Store previous event time.  Get current event time.
-  Int_t eventNumber = FairRootManager::Instance()->GetEntryNr();
-  Double_t eventTimePrevious = fEventTimeCurrent;
-  fEventTimeCurrent = FairRun::Instance()->GetEventHeader()->GetEventTime();
+  Double_t eventTimePrevious = fCurrentEventTime;
+  GetEventInfo();
 
   // --- Generate noise from previous to current event time
   if ( fDigiPar->GetGenerateNoise() ) {
     Int_t nNoise = 0;
+    Double_t tNoiseStart = fNofEvents ? eventTimePrevious : 0.;
+    Double_t tNoiseEnd   = fCurrentEventTime;
     for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++)
-      nNoise += fSetup->GetModule(iModule)->GenerateNoise(eventTimePrevious,
-                                                          fEventTimeCurrent);
+      nNoise += fSetup->GetModule(iModule)->GenerateNoise(tNoiseStart,
+                                                          tNoiseEnd);
     fNofNoiseTot += Double_t(nNoise);
     LOG(INFO) << "+ " << setw(20) << GetName() << ": Generated  " << nNoise
-        << " noise signals from t = " << eventTimePrevious << " ns to "
-        << fEventTimeCurrent << " ns" << FairLogger::endl;
+        << " noise signals from t = " << tNoiseStart << " ns to "
+        << tNoiseEnd << " ns" << FairLogger::endl;
   }
 
   // --- Analogue response: Process the input array of StsPoints
@@ -270,7 +269,7 @@ void CbmStsDigitize::Exec(Option_t* /*opt*/) {
   // --- that time minus a safety margin depending on the module properties
   // --- (dead time and time resolution). In event mode, the readout time
   // --- is set to -1., meaning to digitise everything in the readout buffers.
-  Double_t readoutTime = fEventMode ? -1. : fEventTimeCurrent;
+  Double_t readoutTime = fEventMode ? -1. : fCurrentEventTime;
 
   // --- Digital response: Process buffers of all modules
   ProcessAnalogBuffers(readoutTime);
@@ -282,8 +281,8 @@ void CbmStsDigitize::Exec(Option_t* /*opt*/) {
 
   // --- Event log
   LOG(INFO) << "+ " << setw(15) << GetName() << ": Event " << setw(6)
-         << right << eventNumber << " at " << fixed << setprecision(3)
-         << fEventTimeCurrent << " ns, points: " << fNofPoints
+         << right << fCurrentEvent << " at " << fixed << setprecision(3)
+         << fCurrentEventTime << " ns, points: " << fNofPoints
          << ", signals: " << fNofSignalsF << " / " << fNofSignalsB
          << ", digis: " << fNofDigis << ". Exec time " << setprecision(6)
          << fTimer.RealTime() << " s." << FairLogger::endl;
@@ -307,7 +306,7 @@ void CbmStsDigitize::Finish() {
 
   // --- Start timer and reset counters
   fTimer.Start();
-  Reset();
+  ResetCounters();
   Int_t nSignals;
   Double_t t1;
   Double_t t2;
@@ -382,7 +381,7 @@ void CbmStsDigitize::Finish() {
 // -------------------------------------------------------------------------
 
 
-
+/** Is now in base class CbmDigitizer. Can be removed here after validation.
 // -----   Get event information   -----------------------------------------
 void CbmStsDigitize::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
                                   Double_t& eventTime) {
@@ -409,6 +408,7 @@ void CbmStsDigitize::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
 
 }
 // -------------------------------------------------------------------------
+**/
 
 void CbmStsDigitize::SetParContainers()
 {
@@ -558,12 +558,8 @@ void CbmStsDigitize::ProcessAnalogBuffers(Double_t readoutTime) {
 void CbmStsDigitize::ProcessMCEvent() {
 
   // --- MC Event info (input file, entry number, start time)
-  Int_t    inputNr   = 0;
-  Int_t    eventNr   = 0;
-  Double_t eventTime = 0.;
-  GetEventInfo(inputNr, eventNr, eventTime);
-  LOG(DEBUG) << GetName() << ": Processing event " << eventNr
-      << " from input " << inputNr << " at t = " << eventTime
+  LOG(DEBUG) << GetName() << ": Processing event " << fCurrentEvent
+      << " from input " << fCurrentInput << " at t = " << fCurrentEventTime
       << " ns with " << fPoints->GetEntriesFast() << " StsPoints "
       << FairLogger::endl;
 
@@ -572,7 +568,7 @@ void CbmStsDigitize::ProcessMCEvent() {
   assert ( fPoints );
   for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
     const CbmStsPoint* point = (const CbmStsPoint*) fPoints->At(iPoint);
-    CbmLink* link = new CbmLink(1., iPoint, eventNr, inputNr);
+    CbmLink* link = new CbmLink(1., iPoint, fCurrentEvent, fCurrentInput);
 
     // --- Discard secondaries if the respective flag is set
     if ( fDigiPar->GetDiscardSecondaries() ) {
@@ -584,7 +580,7 @@ void CbmStsDigitize::ProcessMCEvent() {
       } //? MC track present
     } //? discard secondaries
 
-    ProcessPoint(point, eventTime, link);
+    ProcessPoint(point, fCurrentEventTime, link);
     fNofPoints++;
     delete link;
   }  //# StsPoints
@@ -656,12 +652,19 @@ InitStatus CbmStsDigitize::ReInit() {
 
 
 
-// -----   Private method Reset   ------------------------------------------
-void CbmStsDigitize::Reset() {
-  fTimeDigiFirst = fTimeDigiLast = -1.;
-  fNofPoints = fNofSignalsF = fNofSignalsB = fNofDigis = 0;
+// -----   Clear the output data arrays   ----------------------------------
+void CbmStsDigitize::ResetArrays() {
   if ( fDigis ) fDigis->Delete();
   if ( fMatches ) fMatches->Delete();
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Reset event counters   ------------------------------------------
+void CbmStsDigitize::ResetCounters() {
+  fTimeDigiFirst = fTimeDigiLast = -1.;
+  fNofPoints = fNofSignalsF = fNofSignalsB = fNofDigis = 0;
 }
 // -------------------------------------------------------------------------
 

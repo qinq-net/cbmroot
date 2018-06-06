@@ -38,6 +38,18 @@ class CbmDigitizer : public FairTask
     virtual ~CbmDigitizer();
 
 
+    /** @brief Get event information **/
+    void GetEventInfo();
+
+
+    /** @brief Current event time
+     ** @value Start time of current event [ns]
+     **/
+    Double_t GetEventTime() const {
+      return fCurrentEventTime;
+    }
+
+
     /** @brief Send a digi object to the DAQ
      ** @param digi  Pointer to digi object
      **/
@@ -56,6 +68,14 @@ class CbmDigitizer : public FairTask
     void SetEventMode(Bool_t choice = kTRUE) { fEventMode = choice; }
 
 
+    /** @brief Reset the output arrays
+     **
+     ** This method is called from CbmDaq after a tree->Fill is triggered.
+     ** To be implemented by the derived class.
+     **/
+    virtual void ResetArrays() = 0;
+
+
     /** @brief Write a digi object to the output array
      ** @param digi Pointer to digi object
      **
@@ -70,6 +90,9 @@ class CbmDigitizer : public FairTask
   protected:
 
     Bool_t fEventMode;
+    Int_t fCurrentInput;
+    Int_t fCurrentEvent;
+    Double_t fCurrentEventTime;
     CbmDaqBuffer* fDaqBuffer;
 
 

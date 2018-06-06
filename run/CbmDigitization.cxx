@@ -118,7 +118,7 @@ Int_t CbmDigitization::CheckInputFile() {
 
 
 // -----   Create the digitisers   ------------------------------------------
-Int_t CbmDigitization::CreateDigitizers() {
+Int_t CbmDigitization::CreateDefaultDigitizers() {
 
   LOG(INFO) << fName << ": Create default digitisers: ";
   Int_t nDigis = 0;
@@ -142,7 +142,7 @@ Int_t CbmDigitization::CreateDigitizers() {
         fDigitizers[system]->SetDigitizer(new CbmStsDigitize());
         LOG(INFO) << "STS "; nDigis++; break;
       case kRich:
-        //fDigitizers[system]->SetDigitizer(new CbmRichDigitizer());
+        fDigitizers[system]->SetDigitizer(new CbmRichDigitizer());
         LOG(INFO) << "RICH "; nDigis++; break;
      case kMuch:
         //fDigitizers[system]->SetDigitizer(new CbmMuchDigitizeGem());
@@ -214,7 +214,7 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
       << FairLogger::endl << FairLogger::endl;
 
   // --- Create default digitizers
-  Int_t nDigis = CreateDigitizers();
+  Int_t nDigis = CreateDefaultDigitizers();
   word = (nDigis == 1 ? " digitiser" : " digitisers");
   LOG(INFO) << fName << ": " << nDigis << word << " instantiated."
       << FairLogger::endl << FairLogger::endl;

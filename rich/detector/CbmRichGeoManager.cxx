@@ -24,7 +24,7 @@ CbmRichGeoManager::CbmRichGeoManager()
 
 void CbmRichGeoManager::InitGeometry() {
     
-    LOG(INFO) << "CbmRichGeoManager::InitGeometry" << endl;
+    LOG(INFO) << "CbmRichGeoManager::InitGeometry" << FairLogger::endl;
     
     fGP = new CbmRichRecGeoPar();
     //TODO: get refractive index from material
@@ -33,16 +33,19 @@ void CbmRichGeoManager::InitGeometry() {
     DetectGeometryType();
     
     if (fGP->fGeometryType == CbmRichGeometryTypeTwoWings) {
-        cout << "Init CbmRichGeometryTypeTwoWings" << endl;
+        LOG(INFO) << "CbmRichGeoManager: Init CbmRichGeometryTypeTwoWings"
+            << FairLogger::endl;
         InitPmt();
     } else if (fGP->fGeometryType == CbmRichGeometryTypeCylindrical) {
-        cout << "Init CbmRichGeometryTypeCylindrical" << endl;
+        LOG(INFO) << "CbmRichGeoManager: Init CbmRichGeometryTypeCylindrical"
+            << FairLogger::endl;
         InitPmtCyl();
     } else if (fGP->fGeometryType == CbmRichGeometryTypeNotDefined) {
        // Fatal("CbmRichGeoManager::InitGeometry()", " Geometry type is CbmRichGeometryTypeNotDefined. Geometry could not be defined automatically.");
-        cout<< endl << endl << "CbmRichGeoManager::InitGeometry(): Geometry type is CbmRichGeometryTypeNotDefined. Geometry could not be defined automatically." << endl << endl;
+      cout << endl << endl;
+      LOG(ERROR) << "CbmRichGeoManager::InitGeometry(): Geometry type is CbmRichGeometryTypeNotDefined. Geometry could not be defined automatically."
+          << FairLogger::endl;
     }
-    
     
     InitMirror();
     

@@ -57,7 +57,9 @@ void digitize()
 
   // -----   RICH Digitiser   ------------------------------------------------
 	if ( setup->IsActive(kRich) ) {
-		FairTask* richDigi = new CbmRichDigitizer();
+		CbmRichDigitizer* richDigi = new CbmRichDigitizer();
+		richDigi->SetEventMode();
+		richDigi->SetLegacyMode();
 		run->AddTask(richDigi);
 		std::cout << "-I- digitize: Added task " << richDigi->GetName()
 				      << std::endl;

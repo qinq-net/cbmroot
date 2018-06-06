@@ -68,6 +68,9 @@ class CbmTofDigitize : public CbmDigitizer
        **/
       virtual void Finish();
 
+
+      virtual void ResetArrays();
+
       /** @brief Write a digi to the output
        ** @param digi  Pointer to digi object
        **/
@@ -214,7 +217,7 @@ class CbmTofDigitize : public CbmDigitizer
                                         Double_t dBaseXa, Double_t dBaseYa,
                                         Double_t dBaseXb, Double_t dBaseYb );
 
-      /** Get event information
+      /** Get event information     (Is now in base class)
        ** @param[out]  eventNumber  Number of MC event
        ** @param[out]  inputNumber  Number of input
        ** @param[out]  eventTime    Start time of event [ns]
@@ -223,8 +226,8 @@ class CbmTofDigitize : public CbmDigitizer
        ** is taken from FairEventHeader. If the task is run with
        ** FairRunSim, the FairEventHeader is not filled, so the
        ** respective information is taken from FairMCEventHeader.
-       **/
       void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
+       **/
 
 
       // Fee properties and constants
@@ -333,9 +336,9 @@ class CbmTofDigitize : public CbmDigitizer
       Bool_t fbTimeBasedOutput;
       Bool_t fbAllowPointsWithoutTrack;
 
-      Int_t fiCurrentFileId;
-      Int_t fiCurrentEventId;
-      Double_t fdCurrentEventTime;
+      //Int_t fiCurrentFileId;   is now in base class
+      //Int_t fiCurrentEventId;  is now in base class
+      //Double_t fdCurrentEventTime; is now in base class
       Double_t fdDigiTimeConvFactor;
 
    ClassDef(CbmTofDigitize, 1);

@@ -109,6 +109,10 @@ void CbmDaq::CloseTimeSlice() {
     if ( fDigis[detector] ) fDigis[detector]->Delete();
   }
 
+  // --- Call ResetArrays from digitizers
+  for (auto it = fDigitizers.begin(); it != fDigitizers.end(); it++)
+    it->second->ResetArrays();
+
 }
 // ===========================================================================
 
@@ -329,11 +333,13 @@ Int_t CbmDaq::FillTimeSlice(Double_t fillTime, Bool_t limit) {
     while (digi) {
 
       // --- Consistency check
-      if ( digi->GetTime() < fTimeSlice->GetStartTime() )
-        LOG(FATAL) << fName << ": digi from system "
-        << CbmModuleList::GetModuleNameCaps(digi->GetSystemId())
-        << " at time " << digi->GetTime() << " for " << fTimeSlice->ToString()
-        << FairLogger::endl;
+      if ( fTimeSlice->GetDuration() > 0. ) {
+        if ( digi->GetTime() < fTimeSlice->GetStartTime() )
+          LOG(FATAL) << fName << ": digi from system "
+          << CbmModuleList::GetModuleNameCaps(digi->GetSystemId())
+          << " at time " << digi->GetTime() << " for " << fTimeSlice->ToString()
+          << FairLogger::endl;
+      }
 
       LOG(DEBUG2) << fName << ": Inserting digi with detector ID "
           << digi->GetAddress() << " at time " << digi->GetTime()

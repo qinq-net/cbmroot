@@ -9,9 +9,11 @@
 #include "CbmRichDigi.h"
 #include "TGeoManager.h"
 #include "CbmRichDigiMapManager.h"
+#include "CbmRichGeoManager.h"
 #include "TClonesArray.h"
 #include "CbmRichPoint.h"
 #include "TRandom.h"
+#include "TStopwatch.h"
 #include "CbmLink.h"
 #include "CbmMCTrack.h"
 #include "CbmMatch.h"
@@ -19,24 +21,30 @@
 #include "FairRunAna.h"
 #include "FairRunSim.h"
 #include "FairEventHeader.h"
+#include <cassert>
+#include <iomanip>
 #include <iostream>
 #include "../../base/CbmDaqBuffer.h"
 
 using namespace std;
 
 CbmRichDigitizer::CbmRichDigitizer()
- : FairTask("CbmRichDigitizer"),
+ : CbmDigitizer("RichDigitizer"),
+   fLegacy(kFALSE),
    fEventNum(0),
    fMode(CbmRichDigitizerModeEvents),
    fDetectorType(CbmRichPmtTypeCosy17NoWls),
    fRichPoints(NULL),
    fRichDigis(NULL),
    fMcTracks(NULL),
+   fNofPoints(0.),
+   fNofDigis(0.),
+   fTimeTot(0.),
    fPmt(),
    fCrossTalkProbability(0.02),
    fNoiseHitRate(0.2),
    fDigisMap(),
-   fEventTime(0.),
+   //fEventTime(0.),
    fTimeResolution(2.)
 {
 
@@ -50,8 +58,16 @@ CbmRichDigitizer::~CbmRichDigitizer()
 
 InitStatus CbmRichDigitizer::Init()
 {
-   FairTask* daq = FairRun::Instance()->GetTask("Daq");
-   if ( daq != NULL ) {
+
+  // Screen output
+  std::cout << std::endl;
+  LOG(INFO) << "=========================================================="
+      << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl
+      << FairLogger::endl;
+
+   //FairTask* daq = FairRun::Instance()->GetTask("Daq");
+   if ( ! fEventMode ) {
       LOG(INFO) << "CbmRichDigitizer uses TimeBased mode." << FairLogger::endl;
       fMode = CbmRichDigitizerModeTimeBased;
    } else {
@@ -61,16 +77,28 @@ InitStatus CbmRichDigitizer::Init()
 
    FairRootManager* manager = FairRootManager::Instance();
 
+   // --- Initialise helper singletons in order not to do it in event
+   // --- processing (spoils timing measurement)
+   CbmRichDigiMapManager::GetInstance();
+   CbmRichGeoManager::GetInstance();
+
    fRichPoints = (TClonesArray*)manager->GetObject("RichPoint");
    if (NULL == fRichPoints) { Fatal("CbmRichDigitizer::Init","No RichPoint array!"); }
 
    fMcTracks = (TClonesArray *)manager->GetObject("MCTrack");
    if (NULL == fMcTracks) { Fatal("CbmRichDigitizer::Init","No MCTrack array!"); }
 
-   if (fMode == CbmRichDigitizerModeEvents) {
+   if ( (! fLegacy) || fEventMode ) {
       fRichDigis = new TClonesArray("CbmRichDigi");
       manager->Register("RichDigi","RICH", fRichDigis, IsOutputBranchPersistent("RichDigi"));
    }
+
+   // --- Screen output
+   LOG(INFO) << GetName() << ": Initialisation successful"
+       << FairLogger::endl;
+   LOG(INFO) << "=========================================================="
+       << FairLogger::endl;
+   std::cout << std::endl;
 
    return kSUCCESS;
 }
@@ -78,9 +106,13 @@ InitStatus CbmRichDigitizer::Init()
 void CbmRichDigitizer::Exec(
       Option_t* /*option*/)
 {
+    TStopwatch timer;
+    timer.Start();
+
 	fEventNum++;
-	LOG(INFO) << "CbmRichDigitizer event  " << fEventNum << FairLogger::endl;
-	if (fRichDigis != NULL) {
+	LOG(DEBUG) << fName << ": Event  " << fEventNum << FairLogger::endl;
+
+	if (fLegacy && fRichDigis != NULL) {
 	   fRichDigis->Delete();
 	}
         for(auto itr = fDigisMap.begin(); itr !=fDigisMap.end(); itr++) {
@@ -88,21 +120,40 @@ void CbmRichDigitizer::Exec(
         }
 	fDigisMap.clear();
 
-	Int_t eventNumber = FairRootManager::Instance()->GetEntryNr();
-	Double_t oldEventTime = fEventTime;
-	fEventTime = FairRun::Instance()->GetEventHeader()->GetEventTime();
+	Double_t oldEventTime = fCurrentEventTime;
+	GetEventInfo();
 
-	LOG(INFO) << "EventNumber:" << eventNumber << " fEventTime:" << fEventTime << FairLogger::endl;
+	LOG(DEBUG) << fName << ": EventNumber: " << fCurrentEvent << ", EventTime: "
+	    << fCurrentEventTime << FairLogger::endl;
 
-	GenerateNoiseBetweenEvents(oldEventTime, fEventTime);
+	GenerateNoiseBetweenEvents(oldEventTime, fCurrentEventTime);
 
-	ProcessMcEvent();
+	Int_t nPoints = ProcessMcEvent();
 
-	AddDigisToOutputArray();
+	Int_t nDigis = AddDigisToOutputArray();
+
+
+	// --- Statistics
+    timer.Stop();
+	fNofPoints += nPoints;
+	fNofDigis  += nDigis;
+	fTimeTot += timer.RealTime();
+
+	// --- Event log
+	LOG(INFO) << "+ " << setw(15) << GetName() << ": Event " << setw(6)
+	          << right << fCurrentEvent << " at " << fixed << setprecision(3)
+	          << fCurrentEventTime << " ns, points: " << nPoints
+	          << ", digis: " << nDigis << ". Exec time " << setprecision(6)
+	          << timer.RealTime() << " s."
+	          << FairLogger::endl;
+
+
 }
 
-void CbmRichDigitizer::ProcessMcEvent()
+Int_t CbmRichDigitizer::ProcessMcEvent()
 {
+
+  /** Is already in base class
    Int_t eventNum = FairRootManager::Instance()->GetEntryNr();
    Int_t inputNum = 0;
    Double_t eventTime = 0.;
@@ -113,17 +164,21 @@ void CbmRichDigitizer::ProcessMcEvent()
    if (  FairRunAna::Instance() == NULL && FairRunSim::Instance() == NULL){
       LOG(FATAL)  << "CbmRichDigitizer: neither SIM nor ANA run." << FairLogger::endl;
    }
+   **/
 
    Int_t nofRichPoints = fRichPoints->GetEntries();
-   LOG(INFO) << "CbmRichDigitizer: EventNum:" << eventNum << " InputNum:" << inputNum << " EventTime:" << eventTime
+   LOG(DEBUG) << fName << ": EventNum:" << fCurrentEvent << " InputNum:"
+       << fCurrentInput << " EventTime:" << fCurrentEventTime
                  << " nofRichPoints:" << nofRichPoints << FairLogger::endl;
 
    for(Int_t j = 0; j < nofRichPoints; j++){
       CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(j);
-      ProcessPoint(point, j, eventNum, inputNum);
+      ProcessPoint(point, j, fCurrentEvent, fCurrentInput);
    }
 
-   AddNoiseDigis(eventNum, inputNum);
+   AddNoiseDigis(fCurrentEvent, fCurrentInput);
+
+   return nofRichPoints;
 }
 
 void CbmRichDigitizer::GenerateNoiseBetweenEvents(Double_t oldEventTime, Double_t newEventTime)
@@ -160,7 +215,7 @@ void CbmRichDigitizer::ProcessPoint(CbmRichPoint* point, Int_t pointId, Int_t ev
 		isDetected = true;
 	}
 
-	Double_t time = fEventTime + point->GetTime();
+	Double_t time = fCurrentEventTime + point->GetTime();
 	Double_t  deltaT = gRandom->Gaus(0., fTimeResolution);
 	time += deltaT;
 	if (isDetected) {
@@ -171,7 +226,23 @@ void CbmRichDigitizer::ProcessPoint(CbmRichPoint* point, Int_t pointId, Int_t ev
 
 void CbmRichDigitizer::Finish()
 {
-	if (fRichDigis != NULL) fRichDigis->Delete();
+	if (fLegacy && fRichDigis != NULL) fRichDigis->Delete();
+
+	  std::cout << std::endl;
+	  LOG(INFO) << "=====================================" << FairLogger::endl;
+	  LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
+	  LOG(INFO) << "Events processed    : " << fEventNum << FairLogger::endl;
+	  LOG(INFO) << "RichPoint / event   : " << setprecision(1)
+	                              << fNofPoints / Double_t(fEventNum)
+	                              << FairLogger::endl;
+	  LOG(INFO) << "RichDigi / event    : "
+	      << fNofDigis  / Double_t(fEventNum) << FairLogger::endl;
+	  LOG(INFO) << "Digis per point     : " << setprecision(6)
+	                              << fNofDigis / fNofPoints << FairLogger::endl;
+	  LOG(INFO) << "Real time per event : " << fTimeTot / Double_t(fEventNum)
+	                              << " s" << FairLogger::endl;
+	  LOG(INFO) << "=====================================" << FairLogger::endl;
+
 }
 
 void CbmRichDigitizer::AddCrossTalkDigis(
@@ -205,11 +276,13 @@ void CbmRichDigitizer::AddCrossTalkDigis(
    }
 }
 
-void CbmRichDigitizer::AddDigisToOutputArray()
+Int_t CbmRichDigitizer::AddDigisToOutputArray()
 {
    Int_t nofDigis = 0;
-   if ( fMode == CbmRichDigitizerModeTimeBased ) {
-      for(auto const &dm : fDigisMap) {
+
+   if ( fLegacy ) {
+     if ( ! fEventMode ) {  // time-based
+       for(auto const &dm : fDigisMap) {
          CbmRichDigi* digi = new CbmRichDigi();
          digi->SetAddress(dm.second->GetAddress());
          CbmMatch* digiMatch = new CbmMatch(*dm.second->GetMatch());
@@ -217,9 +290,9 @@ void CbmRichDigitizer::AddDigisToOutputArray()
          digi->SetTime(dm.second->GetTime());
          CbmDaqBuffer::Instance()->InsertData(digi);
          nofDigis++;
-      }
-   } else if ( fMode == CbmRichDigitizerModeEvents ){
-      for(auto const &dm : fDigisMap) {
+       }
+     } else { // event-by-event
+       for(auto const &dm : fDigisMap) {
          new((*fRichDigis)[nofDigis]) CbmRichDigi();
          CbmRichDigi* digi = (CbmRichDigi*)fRichDigis->At(nofDigis);
          digi->SetAddress(dm.second->GetAddress());
@@ -227,11 +300,24 @@ void CbmRichDigitizer::AddDigisToOutputArray()
          digi->SetMatch(digiMatch);
          digi->SetTime(dm.second->GetTime());
          nofDigis++;
-      }
-   }
-   //CbmDaqBuffer::Instance()->PrintStatus();
+       }
+     }
+   } //? legacy mode
 
-	LOG(INFO) << "Number of RICH digis: " << nofDigis << FairLogger::endl;
+   else {  // new mode
+     for(auto const &dm : fDigisMap) {
+       CbmRichDigi* digi = new CbmRichDigi();
+       digi->SetAddress(dm.second->GetAddress());
+       CbmMatch* digiMatch = new CbmMatch(*dm.second->GetMatch());
+       digi->SetMatch(digiMatch);
+       digi->SetTime(dm.second->GetTime());
+       SendDigi(digi);
+       nofDigis++;
+     } //# digis in map
+   } //? new mode
+
+	LOG(DEBUG) << "Number of RICH digis: " << nofDigis << FairLogger::endl;
+	return nofDigis;
 }
 
 void CbmRichDigitizer::AddNoiseDigis(
@@ -240,12 +326,12 @@ void CbmRichDigitizer::AddNoiseDigis(
 {
     Int_t nofPixels = CbmRichDigiMapManager::GetInstance().GetAddresses().size();
     Int_t nofNoiseDigis = fNoiseHitRate * nofPixels / 100.;
-    LOG(INFO) << "CbmRichDigitizer NofAllPixels:" << nofPixels << " nofNoiseDigis:" << nofNoiseDigis << FairLogger::endl;
+    LOG(DEBUG) << "CbmRichDigitizer NofAllPixels:" << nofPixels << " nofNoiseDigis:" << nofNoiseDigis << FairLogger::endl;
 	for(Int_t j = 0; j < nofNoiseDigis; j++) {
 		Int_t address = CbmRichDigiMapManager::GetInstance().GetRandomAddress();
 		CbmLink link(1., -1, eventNum, inputNum);
 		// TODO: what time to assign for noise hits
-		Double_t time = fEventTime + gRandom->Gaus(20., 2.);
+		Double_t time = fCurrentEventTime + gRandom->Gaus(20., 2.);
 		AddDigi(address, time, link);
 	}
 }
@@ -269,5 +355,21 @@ void CbmRichDigitizer::AddDigi(Int_t address, Double_t time, const CbmLink& link
 	}
 
 }
+
+
+void CbmRichDigitizer::WriteDigi(CbmDigi* digi) {
+  CbmRichDigi* thisDigi = dynamic_cast<CbmRichDigi*>(digi);
+  assert (thisDigi);
+  Int_t nDigis = fRichDigis->GetEntriesFast();
+  new ((*fRichDigis)[nDigis]) CbmRichDigi(*thisDigi);
+}
+
+
+void CbmRichDigitizer::ResetArrays() {
+  LOG(DEBUG) << fName << ": Resetting output arrays with size "
+      << fRichDigis->GetEntriesFast();
+  if ( fRichDigis ) fRichDigis->Delete();
+}
+
 
 ClassImp(CbmRichDigitizer)

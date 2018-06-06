@@ -10,8 +10,8 @@
 #ifndef CBM_RICH_DIGITIZER
 #define CBM_RICH_DIGITIZER
 
-#include "FairTask.h"
 #include <map>
+#include "CbmDigitizer.h"
 #include "CbmRichPmt.h"
 #include "CbmRichPmtType.h"
 
@@ -33,7 +33,7 @@ enum CbmRichDigitizerModeEnum { CbmRichDigitizerModeEvents = 0, CbmRichDigitizer
 * \author S.Lebedev
 * \date 2015
 **/
-class CbmRichDigitizer : public FairTask
+class CbmRichDigitizer : public CbmDigitizer
 {
 public:
    /**
@@ -63,6 +63,9 @@ public:
     */
    virtual void Finish();
 
+   /** @brief Reset output arrays **/
+   virtual void ResetArrays();
+
    /**
     * \brief Set crosstalk probability.
     */
@@ -88,6 +91,14 @@ public:
     */
    //void SetSigmaMirror(Double_t sigMirror) {fSigmaMirror = sigMirror;}
 
+
+   /** @brief Set legacy mode
+    ** @param choice If kTRUE, run in legacy mode
+    **/
+   void SetLegacyMode(Bool_t choice = kTRUE) {
+     fLegacy = choice;
+   }
+
    /**
     * \brief Set Rich digitizer mode (CbmRichDigitizerModeEnum).
     */
@@ -98,7 +109,16 @@ public:
     */
    void SetTimeResolution(Double_t dt){ fTimeResolution = dt; }
 
+
+   /** @brief Write a digi to the output
+    ** @param digi  Pointer to digi object
+    **/
+   virtual void WriteDigi(CbmDigi* digi);
+
+
 private:
+
+   Bool_t fLegacy;
    Int_t fEventNum;
 
    CbmRichDigitizerModeEnum fMode;
@@ -107,6 +127,10 @@ private:
    TClonesArray* fRichDigis; // RICH digis (output array)
    TClonesArray* fMcTracks; // Monte-Carlo tracks
 
+   Double_t fNofPoints;  ///< total number of MCPoints processed
+   Double_t fNofDigis;   ///< total number of digis created
+   Double_t fTimeTot; ///< sum of execution time
+
    CbmRichPmt fPmt;
    Double_t fCrossTalkProbability; // probability of the crosstalk for direct neighbor for one pixel
    Double_t fNoiseHitRate; // in [%] nofNoiseDigitsPerEvent = fNoiseHitRate * NofAllPixels / 100.
@@ -114,7 +138,7 @@ private:
 
    map<Int_t, CbmRichDigi*> fDigisMap; //map which contains all fired digis, one digi per pixel
 
-   Double_t fEventTime; // time of the current event
+   //Double_t fEventTime; // TODO: is already in base class
    Double_t fTimeResolution; // in ns
 
    /*
@@ -141,13 +165,15 @@ private:
 
    /*
     * \brief Add all the fired digis to the output array
+    * \@value Number of digis written
     */
-   void AddDigisToOutputArray();
+   Int_t AddDigisToOutputArray();
 
    /*
     * \brief Process current MC event.
+    * \value Number of processed RichPoints
     */
-   void ProcessMcEvent();
+   Int_t ProcessMcEvent();
 
    /*
     * \brief Generate noise between events.

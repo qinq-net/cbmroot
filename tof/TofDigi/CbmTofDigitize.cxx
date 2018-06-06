@@ -132,9 +132,9 @@ CbmTofDigitize::CbmTofDigitize():
    fbMcTrkMonitor(kFALSE),
    fbTimeBasedOutput(kFALSE),
    fbAllowPointsWithoutTrack(kFALSE),
-   fiCurrentFileId(-1),
-   fiCurrentEventId(-1),
-   fdCurrentEventTime(0.),
+   //fiCurrentFileId(-1),
+   //fiCurrentEventId(-1),
+   //fdCurrentEventTime(0.),
    fdDigiTimeConvFactor(1.)
 {
 
@@ -207,9 +207,9 @@ CbmTofDigitize::CbmTofDigitize(const char *name, Int_t verbose):
    fbMcTrkMonitor(kFALSE),
    fbTimeBasedOutput(kFALSE),
    fbAllowPointsWithoutTrack(kFALSE),
-   fiCurrentFileId(-1),
-   fiCurrentEventId(-1),
-   fdCurrentEventTime(0.),
+   //fiCurrentFileId(-1),
+   //fiCurrentEventId(-1),
+   //fdCurrentEventTime(0.),
    fdDigiTimeConvFactor(1.)
 {
 
@@ -285,12 +285,10 @@ void CbmTofDigitize::Exec(Option_t* /*option*/)
 	fTimer.Start();
 
    // Get FairEventHeader information for CbmLink objects
-   GetEventInfo(fiCurrentFileId, fiCurrentEventId, fdCurrentEventTime);
-   LOG(DEBUG) << fName << ": Processing event " << fiCurrentEventId << " at "
-       << fdCurrentEventTime << " ns" << FairLogger::endl;
+   GetEventInfo();
+   LOG(DEBUG) << fName << ": Processing event " << fCurrentEvent << " at "
+       << fCurrentEventTime << " ns" << FairLogger::endl;
 
-   fTofDigisColl->Clear("C");
-   fTofDigiMatchPointsColl->Delete();
    fiNbDigis = 0;
    Int_t nPoints = fTofPointsColl->GetEntriesFast();
 
@@ -331,8 +329,8 @@ void CbmTofDigitize::Exec(Option_t* /*option*/)
 
    // --- Event log
    LOG(INFO) << "+ " << setw(15) << GetName() << ": Event " << setw(6)
-          << right << fiCurrentEventId << " at " << fixed << setprecision(3)
-          << fdCurrentEventTime << " ns, points: " << nPoints
+          << right << fCurrentEvent << " at " << fixed << setprecision(3)
+          << fCurrentEventTime << " ns, points: " << nPoints
           << ", digis: " << fiNbDigis << ". Exec time " << setprecision(6)
           << fTimer.RealTime() << " s." << FairLogger::endl;
 
@@ -1026,6 +1024,12 @@ void CbmTofDigitize::WriteDigi(CbmDigi* digi) {
 
 } // WriteDigi
 
+
+void CbmTofDigitize::ResetArrays() {
+  fTofDigisColl->Delete();
+  fTofDigiMatchPointsColl->Delete();
+}
+
 Bool_t   CbmTofDigitize::WriteHistos()
 {
    if( "" == fsHistoOutFilename || !fbMonitorHistos )
@@ -1199,7 +1203,7 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                         {
                            // Store Link with weight 0 to have a trace of MC tracks firing the channel
                            // but whose Digi is not propagated to next stage
-                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fiCurrentEventId,fiCurrentFileId ));
+                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fCurrentEvent,fCurrentInput ));
 
                           if( fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
@@ -1240,8 +1244,8 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                         // This digi will be deleted by CbmDaq.
                         // The original digi will be deleted below, together with the unused digis from the buffer.
                         CbmTofDigiExp* digi = new CbmTofDigiExp(*(fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]));
-                        digi->SetTime(digi->GetTime() * fdDigiTimeConvFactor + fdCurrentEventTime);  // ns->ps
-                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fiCurrentEventId,fiCurrentFileId ));
+                        digi->SetTime(digi->GetTime() * fdDigiTimeConvFactor + fCurrentEventTime);  // ns->ps
+                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fCurrentEvent,fCurrentInput));
                         digi->SetMatch(digiMatch);
 
                         CbmLink LP = digiMatch->GetMatchedLink();
@@ -1320,7 +1324,7 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                         {
                            // Store Link with weight 0 to have a trace of MC tracks firing the channel
                            // but whose Digi is not propagated to next stage
-                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fiCurrentEventId,fiCurrentFileId ));
+                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fCurrentEvent,fCurrentInput ));
 
                            if( fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
@@ -1363,8 +1367,8 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                         // This digi will be deleted by CbmDaq.
                         // The original digi will be deleted below, together with the unused digis from the buffer.
  			            CbmTofDigi* digi = new CbmTofDigi(*(fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]));
-			            digi->SetTime(digi->GetTime()*fdDigiTimeConvFactor + fdCurrentEventTime); // ns -> ps
-                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fiCurrentEventId,fiCurrentFileId ));
+			            digi->SetTime(digi->GetTime()*fdDigiTimeConvFactor + fCurrentEventTime); // ns -> ps
+                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fCurrentEvent,fCurrentInput ));
 			            digi->SetMatch(digiMatch);
 
                         CbmLink LP = digiMatch->GetMatchedLink();
@@ -4643,6 +4647,8 @@ Double_t  CbmTofDigitize::DistanceCircleToBase(
          return 0.0;
       } // else of if( 0.0 <= dRoot )
 }
+
+/** Now in base class
 void CbmTofDigitize::GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime)
 {
     // --- In a FairRunAna, take the information from FairEventHeader
@@ -4667,4 +4673,5 @@ void CbmTofDigitize::GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& even
       eventTime = 0.;
     }
 }
+**/
 /************************************************************************************/
