@@ -58,7 +58,7 @@ Bool_t Cosy2018TestCluster::CheckAddHit( stsxyter::FinalHit hitCandidate )
       if( fusFirstChannel <= usChan + 1 &&
           usChan <= fusLastChannel + 1 )
       {
-         fdMeanTime   = ( fdMeanTime * fvHits.size() + hitCandidate.GetTs() ) / ( fvHits.size() + 1 );
+         fdMeanTime   = ( fdMeanTime * fvHits.size() + hitCandidate.GetTs() * stsxyter::kdClockCycleNs ) / ( fvHits.size() + 1 );
 
          fdWeightedCenter = fdWeightedCenter * fusTotalAdc + usChan * hitCandidate.GetAdc();
 
@@ -1921,22 +1921,22 @@ void CbmCosy2018MonitorEfficiency::CreateHistograms()
    sHistName = "fhClusterAdcVsSizeS1N_MatchS1";
    title = "Adc distribution per cluster vs cluster size, STS 1 N, if match with P side; Adc [];  Cluster Sz [Ch]; Cnts []";
    fhClusterAdcVsSizeS1N_MatchS1 = new TH2I(sHistName, title,
-                               2*stsxyter::kuHitNbAdcBins, -0.5, 2*stsxyter::kuHitNbAdcBins -0.5,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
    sHistName = "fhClusterAdcVsSizeS1P_MatchS1";
    title = "Adc distribution per cluster vs cluster size, STS 1 P, if match with N side; Adc [];  Cluster Sz [Ch]; Cnts []";
    fhClusterAdcVsSizeS1P_MatchS1 = new TH2I(sHistName, title,
-                               2*stsxyter::kuHitNbAdcBins, -0.5, 2*stsxyter::kuHitNbAdcBins -0.5,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
    sHistName = "fhClusterAdcVsSizeS2N_MatchS2";
    title = "Adc distribution per cluster vs cluster size, STS 2 N, if match with P side; Adc [];  Cluster Sz [Ch]; Cnts []";
    fhClusterAdcVsSizeS2N_MatchS2 = new TH2I(sHistName, title,
-                               2*stsxyter::kuHitNbAdcBins, -0.5, 2*stsxyter::kuHitNbAdcBins -0.5,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
    sHistName = "fhClusterAdcVsSizeS2P_MatchS2";
    title = "Adc distribution per cluster vs cluster size, STS 2 P, if match with N side; Adc [];  Cluster Sz [Ch]; Cnts []";
    fhClusterAdcVsSizeS2P_MatchS2 = new TH2I(sHistName, title,
-                               2*stsxyter::kuHitNbAdcBins, -0.5, 2*stsxyter::kuHitNbAdcBins -0.5,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
    ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
