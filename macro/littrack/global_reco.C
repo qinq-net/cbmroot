@@ -289,6 +289,8 @@ void global_reco(Int_t nEvents = 10, // number of events
       }
       
         CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
+        richDigitizer->SetLegacyMode();
+        richDigitizer->SetEventMode();
         run->AddTask(richDigitizer);
         
         CbmRichHitProducer* richHitProd	= new CbmRichHitProducer();

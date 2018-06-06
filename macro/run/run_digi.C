@@ -77,7 +77,7 @@ void run_digi(Int_t nEvents = 2,
 
   // - TOF digitisation parameters
   if ( setup->GetGeoTag(kTof, geoTag) ) {
-  	TObjString* tofFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
+  	TObjString* tofFile = new TObjString(srcDir + "/parameters/tof/toftest_" + geoTag + ".digi.par");
   	parFileList->Add(tofFile);
     std::cout << "-I- " << myName << ": Using parameter file "
     		      << tofFile->GetString() << std::endl;
