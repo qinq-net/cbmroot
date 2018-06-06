@@ -32,6 +32,24 @@ class CbmDigi;
 class CbmCern2017UnpackParHodo;
 class CbmCern2017UnpackParSts;
 
+///++++++++ Adrian ADC analysis, to be moved in other class! +++++///
+class Cosy2018TestCluster
+{
+public:
+   Cosy2018TestCluster( stsxyter::FinalHit hitFirst );
+
+   Bool_t CheckAddHit( stsxyter::FinalHit hitCandidate );
+
+   std::vector< stsxyter::FinalHit > fvHits;
+   Double_t fdMeanTime;
+   UShort_t fusTotalAdc;
+   UShort_t fusFirstChannel;
+   UShort_t fusLastChannel;
+   Double_t fdWeightedCenter;
+
+};
+///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
+
 class CbmCosy2018MonitorEfficiency: public CbmTSUnpack
 {
 public:
@@ -467,6 +485,30 @@ private:
    TProfile2D * fhTestMapHodoS1P;
    TProfile2D * fhTestMapHodoS2N;
    TProfile2D * fhTestMapHodoS2P;
+
+   ///++++++++ Adrian ADC analysis, to be moved in other class! +++++///
+   TH2 * fhDtNeighborChansS1N;
+   TH2 * fhDtNeighborChansS1P;
+   TH2 * fhDtNeighborChansS2N;
+   TH2 * fhDtNeighborChansS2P;
+   std::vector< stsxyter::FinalHit > fvLastHitChanS1N;
+   std::vector< stsxyter::FinalHit > fvLastHitChanS1P;
+   std::vector< stsxyter::FinalHit > fvLastHitChanS2N;
+   std::vector< stsxyter::FinalHit > fvLastHitChanS2P;
+   std::vector< Cosy2018TestCluster > fvClustersS1N; //!
+   std::vector< Cosy2018TestCluster > fvClustersS1P; //!
+   std::vector< Cosy2018TestCluster > fvClustersS2N; //!
+   std::vector< Cosy2018TestCluster > fvClustersS2P; //!
+   TH2 * fhClusterAdcVsSizeS1N;
+   TH2 * fhClusterAdcVsSizeS1P;
+   TH2 * fhClusterAdcVsSizeS2N;
+   TH2 * fhClusterAdcVsSizeS2P;
+   TH2 * fhClusterAdcVsSizeS1N_MatchS1;
+   TH2 * fhClusterAdcVsSizeS1P_MatchS1;
+   TH2 * fhClusterAdcVsSizeS2N_MatchS2;
+   TH2 * fhClusterAdcVsSizeS2P_MatchS2;
+   ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
+
 
    void CreateHistograms();
 
