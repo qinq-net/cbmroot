@@ -515,6 +515,25 @@ private:
    TH2 * fhClusterS1P_AdcNbMatchS1N;
    TH2 * fhClusterS2N_AdcNbMatchS2P;
    TH2 * fhClusterS2P_AdcNbMatchS2N;
+   
+   TH2 * fhDtNeighborChansH1X;
+   TH2 * fhDtNeighborChansH1Y;
+   TH2 * fhDtNeighborChansH2X;
+   TH2 * fhDtNeighborChansH2Y;
+   std::vector< stsxyter::FinalHit > fvLastHitChanH1X;
+   std::vector< stsxyter::FinalHit > fvLastHitChanH1Y;
+   std::vector< stsxyter::FinalHit > fvLastHitChanH2X;
+   std::vector< stsxyter::FinalHit > fvLastHitChanH2Y;
+   std::vector< Cosy2018TestCluster > fvClustersH1X; //!
+   std::vector< Cosy2018TestCluster > fvClustersH1Y; //!
+   std::vector< Cosy2018TestCluster > fvClustersH2X; //!
+   std::vector< Cosy2018TestCluster > fvClustersH2Y; //!
+   TH2 * fhClusterAdcVsSizeH1X;
+   TH2 * fhClusterAdcVsSizeH1Y;
+   TH2 * fhClusterAdcVsSizeH2X;
+   TH2 * fhClusterAdcVsSizeH2Y;
+   TH2 * fhClusterPosition_MatchH1;
+   TH2 * fhClusterPosition_MatchH2;
    ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
 

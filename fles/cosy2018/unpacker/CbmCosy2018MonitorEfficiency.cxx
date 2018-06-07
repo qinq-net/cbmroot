@@ -423,7 +423,25 @@ CbmCosy2018MonitorEfficiency::CbmCosy2018MonitorEfficiency() :
    fhClusterS1N_AdcNbMatchS1P(NULL),
    fhClusterS1P_AdcNbMatchS1N(NULL),
    fhClusterS2N_AdcNbMatchS2P(NULL),
-   fhClusterS2P_AdcNbMatchS2N(NULL)
+   fhClusterS2P_AdcNbMatchS2N(NULL),
+   fhDtNeighborChansH1X(NULL),
+   fhDtNeighborChansH1Y(NULL),
+   fhDtNeighborChansH2X(NULL),
+   fhDtNeighborChansH2Y(NULL),
+   fvLastHitChanH1X(),
+   fvLastHitChanH1Y(),
+   fvLastHitChanH2X(),
+   fvLastHitChanH2Y(),
+   fvClustersH1X(),
+   fvClustersH1Y(),
+   fvClustersH2X(),
+   fvClustersH2Y(),
+   fhClusterAdcVsSizeH1X(NULL),
+   fhClusterAdcVsSizeH1Y(NULL),
+   fhClusterAdcVsSizeH2X(NULL),
+   fhClusterAdcVsSizeH2Y(NULL),
+   fhClusterPosition_MatchH1(NULL),
+   fhClusterPosition_MatchH2(NULL)
    ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 {
 }
@@ -634,6 +652,11 @@ Bool_t CbmCosy2018MonitorEfficiency::ReInitContainers()
    fvLastHitChanS1P.resize( fuNbChanPerAsic );
    fvLastHitChanS2N.resize( fuNbChanPerAsic );
    fvLastHitChanS2P.resize( fuNbChanPerAsic );
+   
+   fvLastHitChanH1X.resize( fuNbChanPerAsic/2 );
+   fvLastHitChanH1Y.resize( fuNbChanPerAsic/2 );
+   fvLastHitChanH2X.resize( fuNbChanPerAsic/2 );
+   fvLastHitChanH2Y.resize( fuNbChanPerAsic/2 );
 
    LOG(INFO) << "CbmCosy2018MonitorEfficiency::ReInitContainers =>  Dual STS mode:  " << fbDualStsEna
                 << FairLogger::endl;
@@ -708,6 +731,9 @@ void CbmCosy2018MonitorEfficiency::SetPositionsMmZ( Double_t dPosH1, Double_t dP
 
 void CbmCosy2018MonitorEfficiency::CreateHistograms()
 {
+   LOG(INFO) << "Create histograms for " << GetName()
+         << FairLogger::endl;
+         
    TString sHistName{""};
    TString title{""};
 
@@ -1903,27 +1929,26 @@ void CbmCosy2018MonitorEfficiency::CreateHistograms()
                                   101, -50.5 * stsxyter::kdClockCycleNs, 50.5 * stsxyter::kdClockCycleNs,
                                   fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
 
-
    // Adc Distribution
    sHistName = "fhClusterAdcVsSizeS1N";
    title = "Adc distribution per cluster vs cluster size, STS 1 N; Adc [];  Cluster Sz [Ch]; Cnts []";
    fhClusterAdcVsSizeS1N = new TH2I(sHistName, title,
-                               2*stsxyter::kuHitNbAdcBins, -0.5, 2*stsxyter::kuHitNbAdcBins -0.5,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
    sHistName = "fhClusterAdcVsSizeS1P";
    title = "Adc distribution per cluster vs cluster size, STS 1 P; Adc [];  Cluster Sz [Ch]; Cnts []";
    fhClusterAdcVsSizeS1P = new TH2I(sHistName, title,
-                               2*stsxyter::kuHitNbAdcBins, -0.5, 2*stsxyter::kuHitNbAdcBins -0.5,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
    sHistName = "fhClusterAdcVsSizeS2N";
    title = "Adc distribution per cluster vs cluster size, STS 2 N; Adc [];  Cluster Sz [Ch]; Cnts []";
    fhClusterAdcVsSizeS2N = new TH2I(sHistName, title,
-                               2*stsxyter::kuHitNbAdcBins, -0.5, 2*stsxyter::kuHitNbAdcBins -0.5,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
    sHistName = "fhClusterAdcVsSizeS2P";
    title = "Adc distribution per cluster vs cluster size, STS 2 P; Adc [];  Cluster Sz [Ch]; Cnts []";
    fhClusterAdcVsSizeS2P = new TH2I(sHistName, title,
-                               2*stsxyter::kuHitNbAdcBins, -0.5, 2*stsxyter::kuHitNbAdcBins -0.5,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
 
    sHistName = "fhClusterAdcVsSizeS1N_MatchS1";
@@ -1988,6 +2013,63 @@ void CbmCosy2018MonitorEfficiency::CreateHistograms()
    fhClusterS2P_AdcNbMatchS2N = new TH2I(sHistName, title,
                                3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+
+                                  
+   sHistName = "fhDtNeighborChansH1X";
+   title = "Dt to hits on neighbors, per channel, in Hodo 1 X; Dt( ch + 1 - ch) [ns]; Strip []; Counts []";
+   fhDtNeighborChansH1X = new TH2I( sHistName, title,
+                                  101, -50.5 * stsxyter::kdClockCycleNs, 50.5 * stsxyter::kdClockCycleNs,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+
+   sHistName = "fhDtNeighborChansH1Y";
+   title = "Dt to hits on neighbors, per channel, in Hodo 1 Y; Dt( ch + 1 - ch) [ns]; Channel []; Counts []";
+   fhDtNeighborChansH1Y = new TH2I( sHistName, title,
+                                  101, -50.5 * stsxyter::kdClockCycleNs, 50.5 * stsxyter::kdClockCycleNs,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+
+   sHistName = "fhDtNeighborChansH2X";
+   title = "Dt to hits on neighbors, per channel, in Hodo 2 X; Dt( ch + 1 - ch) [ns]; Channel []; Counts []";
+   fhDtNeighborChansH2X = new TH2I( sHistName, title,
+                                  101, -50.5 * stsxyter::kdClockCycleNs, 50.5 * stsxyter::kdClockCycleNs,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+
+   sHistName = "fhDtNeighborChansH2Y";
+   title = "Dt to hits on neighbors, per channel, in Hodo 2 Y; Dt( ch + 1 - ch) [ns]; Channel []; Counts []";
+   fhDtNeighborChansH2Y = new TH2I( sHistName, title,
+                                  101, -50.5 * stsxyter::kdClockCycleNs, 50.5 * stsxyter::kdClockCycleNs,
+                                  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+
+   sHistName = "fhClusterAdcVsSizeH1X";
+   title = "Adc distribution per cluster vs cluster size, Hodo 1 X; Adc [];  Cluster Sz [Ch]; Cnts []";
+   fhClusterAdcVsSizeH1X = new TH2I(sHistName, title,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
+                               fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+   sHistName = "fhClusterAdcVsSizeH1Y";
+   title = "Adc distribution per cluster vs cluster size, Hodo 1 Y; Adc [];  Cluster Sz [Ch]; Cnts []";
+   fhClusterAdcVsSizeH1Y = new TH2I(sHistName, title,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
+                               fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+   sHistName = "fhClusterAdcVsSizeH2X";
+   title = "Adc distribution per cluster vs cluster size, Hodo 2 X; Adc [];  Cluster Sz [Ch]; Cnts []";
+   fhClusterAdcVsSizeH2X = new TH2I(sHistName, title,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
+                               fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
+   sHistName = "fhClusterAdcVsSizeH2Y";
+   title = "Adc distribution per cluster vs cluster size, Hodo 2 Y; Adc [];  Cluster Sz [Ch]; Cnts []";
+   fhClusterAdcVsSizeH2Y = new TH2I(sHistName, title,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
+                               fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );             
+ 
+   sHistName = "fhClusterPosition_MatchH1";
+   title = "Cluste position, Hodo 1 XY match; X [];  Y []; Cnts []";
+   fhClusterPosition_MatchH1 = new TH2I(sHistName, title,
+                               fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
+                               fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );  
+   sHistName = "fhClusterPosition_MatchH2";
+   title = "Cluste position, Hodo 2 XY match; X [];  Y []; Cnts []";
+   fhClusterPosition_MatchH2 = new TH2I(sHistName, title,
+                               fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
+                               fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );           
    ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
 /*
@@ -2241,6 +2323,17 @@ void CbmCosy2018MonitorEfficiency::CreateHistograms()
       server->Register("/Adc", fhClusterS1P_AdcNbMatchS1N );
       server->Register("/Adc", fhClusterS2N_AdcNbMatchS2P );
       server->Register("/Adc", fhClusterS2P_AdcNbMatchS2N );
+      
+      server->Register("/Adc", fhDtNeighborChansH1X );
+      server->Register("/Adc", fhDtNeighborChansH1Y );
+      server->Register("/Adc", fhDtNeighborChansH2X );
+      server->Register("/Adc", fhDtNeighborChansH2Y );
+      server->Register("/Adc", fhClusterAdcVsSizeH1X );
+      server->Register("/Adc", fhClusterAdcVsSizeH1Y );
+      server->Register("/Adc", fhClusterAdcVsSizeH2X );
+      server->Register("/Adc", fhClusterAdcVsSizeH2Y );
+      server->Register("/Adc", fhClusterPosition_MatchH1 );
+      server->Register("/Adc", fhClusterPosition_MatchH2 );
 
       server->RegisterCommand("/Reset_All_Hodo", "bCosy2018ResetEfficiency=kTRUE");
       server->RegisterCommand("/Write_All_Hodo", "bCosy2018WriteEfficiency=kTRUE");
@@ -2984,6 +3077,7 @@ Bool_t CbmCosy2018MonitorEfficiency::DoUnpack(const fles::Timeslice& ts, size_t 
 
          stsxyter::MessType typeMess = mess.GetMessType();
          fmMsgCounter[ typeMess ] ++;
+         
          fhHodoMessType->Fill( static_cast< uint16_t > (typeMess) );
          fhHodoMessTypePerDpb->Fill( fuCurrDpbIdx, static_cast< uint16_t > (typeMess) );
 
@@ -3286,6 +3380,40 @@ Bool_t CbmCosy2018MonitorEfficiency::DoUnpack(const fles::Timeslice& ts, size_t 
                      fhMapBestPairsH1->Fill( dPosX, dPosY );
                   } // if( 0 < uNbY1CoincPerX1 )
                   fhNbY1CoincPerX1->Fill( uNbY1CoincPerX1 );
+
+   ///++++++++ Adrian ADC analysis, to be moved in other class! +++++///
+                  if( 0 < uFiberIdxX1 )
+                  {
+                     Double_t dDtPrevChan = ( static_cast< Double_t >( (*it).GetTs() ) - static_cast< Double_t >( fvLastHitChanH1X[ uFiberIdxX1 - 1].GetTs() )
+                                            ) * stsxyter::kdClockCycleNs;
+
+                     fhDtNeighborChansH1X->Fill( dDtPrevChan, uFiberIdxX1 - 1 );
+                  } // if( 0 < (*it).GetChan() )
+                  if( uFiberIdxX1 < fuNbChanPerAsic/2 - 1 )
+                  {
+                     Double_t dDtNextChan = ( static_cast< Double_t >( fvLastHitChanH1X[ uFiberIdxX1 + 1 ].GetTs() ) - static_cast< Double_t >( (*it).GetTs() )
+                                            ) * stsxyter::kdClockCycleNs;
+
+                     fhDtNeighborChansH1X->Fill( dDtNextChan, uFiberIdxX1 );
+                  } // if( 0 < (*it).GetChan() )
+
+                  fvLastHitChanH1X[ uFiberIdxX1 ] = (*it);
+
+                  Bool_t bFoundCluster = kFALSE;
+                  for( UInt_t uCluster = 0; uCluster < fvClustersH1X.size(); ++uCluster )
+                  {
+                     if( kTRUE == fvClustersH1X[ uCluster ].CheckAddHit( (*it) ) )
+                     {
+                        bFoundCluster = kTRUE;
+                        break;
+                     } // if( kTRUE == fvClustersH1X[ uCluster ].CheckAddHit( (*it) ) )
+                  } // for( UInt_t uCluster = 0; uCluster < fvClustersH1X.size(); ++uCluster )
+                  if( kFALSE == bFoundCluster )
+                  {
+                     Cosy2018TestCluster newClust( (*it) );
+                     fvClustersH1X.push_back( newClust );
+                  } // if( kFALSE == bFoundCluster )
+   ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
                } // if( bHitInX )
                   else
                   {
@@ -3350,6 +3478,40 @@ Bool_t CbmCosy2018MonitorEfficiency::DoUnpack(const fles::Timeslice& ts, size_t 
                         fhSetupSortedMapX1Y1->Fill( uFiberIdxX1, uFiberIdxY1 );
                         fhSetupSortedCntEvoX1Y1->Fill( dTimeSinceStartSec );
                      } // if( fdCoincMinHodo < dDtX1Y1 && dDtX1Y1 < fdCoincMaxHodo )
+
+   ///++++++++ Adrian ADC analysis, to be moved in other class! +++++///
+                     if( 0 < uFiberIdxY1 )
+                     {
+                        Double_t dDtPrevChan = ( static_cast< Double_t >( (*it).GetTs() ) - static_cast< Double_t >( fvLastHitChanH1Y[ uFiberIdxY1 - 1].GetTs() )
+                                               ) * stsxyter::kdClockCycleNs;
+
+                        fhDtNeighborChansH1Y->Fill( dDtPrevChan, uFiberIdxY1 - 1 );
+                     } // if( 0 < (*it).GetChan() )
+                     if( uFiberIdxY1 < fuNbChanPerAsic/2 - 1 )
+                     {
+                        Double_t dDtNextChan = ( static_cast< Double_t >( fvLastHitChanH1Y[ uFiberIdxY1 + 1 ].GetTs() ) - static_cast< Double_t >( (*it).GetTs() )
+                                               ) * stsxyter::kdClockCycleNs;
+
+                        fhDtNeighborChansH1Y->Fill( dDtNextChan, uFiberIdxY1 );
+                     } // if( 0 < (*it).GetChan() )
+
+                     fvLastHitChanH1Y[ uFiberIdxY1 ] = (*it);
+
+                     Bool_t bFoundCluster = kFALSE;
+                     for( UInt_t uCluster = 0; uCluster < fvClustersH1Y.size(); ++uCluster )
+                     {
+                        if( kTRUE == fvClustersH1Y[ uCluster ].CheckAddHit( (*it) ) )
+                        {
+                           bFoundCluster = kTRUE;
+                           break;
+                        } // if( kTRUE == fvClustersH1Y[ uCluster ].CheckAddHit( (*it) ) )
+                     } // for( UInt_t uCluster = 0; uCluster < fvClustersH1Y.size(); ++uCluster )
+                     if( kFALSE == bFoundCluster )
+                     {
+                        Cosy2018TestCluster newClust( (*it) );
+                        fvClustersH1Y.push_back( newClust );
+                     } // if( kFALSE == bFoundCluster )
+   ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
                   } // else of if( bHitInX )
             } // if( fUnpackParHodo->GetAsicIndexHodo1() == usAsicIdx )
             else if( fUnpackParHodo->GetAsicIndexHodo2() == usAsicIdx )
@@ -3462,6 +3624,40 @@ Bool_t CbmCosy2018MonitorEfficiency::DoUnpack(const fles::Timeslice& ts, size_t 
                      fhMapBestPairsH2->Fill( dPosX, dPosY );
                   } // if( 0 < uNbY2CoincPerX2 )
                   fhNbY2CoincPerX2->Fill( uNbY2CoincPerX2 );
+
+   ///++++++++ Adrian ADC analysis, to be moved in other class! +++++///
+                  if( 0 < uFiberIdxX2 )
+                  {
+                     Double_t dDtPrevChan = ( static_cast< Double_t >( (*it).GetTs() ) - static_cast< Double_t >( fvLastHitChanH2X[ uFiberIdxX2 - 1].GetTs() )
+                                            ) * stsxyter::kdClockCycleNs;
+
+                     fhDtNeighborChansH2X->Fill( dDtPrevChan, uFiberIdxX2 - 1 );
+                  } // if( 0 < (*it).GetChan() )
+                  if( uFiberIdxX2 < fuNbChanPerAsic/2 - 1 )
+                  {
+                     Double_t dDtNextChan = ( static_cast< Double_t >( fvLastHitChanH2X[ uFiberIdxX2 + 1 ].GetTs() ) - static_cast< Double_t >( (*it).GetTs() )
+                                            ) * stsxyter::kdClockCycleNs;
+
+                     fhDtNeighborChansH2X->Fill( dDtNextChan, uFiberIdxX2 );
+                  } // if( 0 < (*it).GetChan() )
+
+                  fvLastHitChanH2X[ uFiberIdxX2 ] = (*it);
+
+                  Bool_t bFoundCluster = kFALSE;
+                  for( UInt_t uCluster = 0; uCluster < fvClustersH2X.size(); ++uCluster )
+                  {
+                     if( kTRUE == fvClustersH2X[ uCluster ].CheckAddHit( (*it) ) )
+                     {
+                        bFoundCluster = kTRUE;
+                        break;
+                     } // if( kTRUE == fvClustersH2X[ uCluster ].CheckAddHit( (*it) ) )
+                  } // for( UInt_t uCluster = 0; uCluster < fvClustersH2X.size(); ++uCluster )
+                  if( kFALSE == bFoundCluster )
+                  {
+                     Cosy2018TestCluster newClust( (*it) );
+                     fvClustersH2X.push_back( newClust );
+                  } // if( kFALSE == bFoundCluster )
+   ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
                } // if( bHitInX )
                   else
                   {
@@ -3526,6 +3722,40 @@ Bool_t CbmCosy2018MonitorEfficiency::DoUnpack(const fles::Timeslice& ts, size_t 
                         fhSetupSortedMapX2Y2->Fill( uFiberIdxX2, uFiberIdxY2 );
                         fhSetupSortedCntEvoX2Y2->Fill( dTimeSinceStartSec );
                      } // if( fdCoincMinHodo < dDtX2Y2 && dDtX2Y2 < fdCoincMaxHodo )
+
+   ///++++++++ Adrian ADC analysis, to be moved in other class! +++++///
+                     if( 0 < uFiberIdxY2 )
+                     {
+                        Double_t dDtPrevChan = ( static_cast< Double_t >( (*it).GetTs() ) - static_cast< Double_t >( fvLastHitChanH2Y[ uFiberIdxY2 - 1].GetTs() )
+                                               ) * stsxyter::kdClockCycleNs;
+
+                        fhDtNeighborChansH2Y->Fill( dDtPrevChan, uFiberIdxY2 - 1 );
+                     } // if( 0 < (*it).GetChan() )
+                     if( uFiberIdxY2 < fuNbChanPerAsic/2 - 1 )
+                     {
+                        Double_t dDtNextChan = ( static_cast< Double_t >( fvLastHitChanH2Y[ uFiberIdxY2 + 1 ].GetTs() ) - static_cast< Double_t >( (*it).GetTs() )
+                                               ) * stsxyter::kdClockCycleNs;
+
+                        fhDtNeighborChansH2Y->Fill( dDtNextChan, uFiberIdxY2 );
+                     } // if( 0 < (*it).GetChan() )
+
+                     fvLastHitChanH2Y[ uFiberIdxY2 ] = (*it);
+
+                     Bool_t bFoundCluster = kFALSE;
+                     for( UInt_t uCluster = 0; uCluster < fvClustersH2Y.size(); ++uCluster )
+                     {
+                        if( kTRUE == fvClustersH2Y[ uCluster ].CheckAddHit( (*it) ) )
+                        {
+                           bFoundCluster = kTRUE;
+                           break;
+                        } // if( kTRUE == fvClustersH2Y[ uCluster ].CheckAddHit( (*it) ) )
+                     } // for( UInt_t uCluster = 0; uCluster < fvClustersH2Y.size(); ++uCluster )
+                     if( kFALSE == bFoundCluster )
+                     {
+                        Cosy2018TestCluster newClust( (*it) );
+                        fvClustersH2Y.push_back( newClust );
+                     } // if( kFALSE == bFoundCluster )
+   ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
                   } // else of if( bHitInX )
             } // else if( fUnpackParHodo->GetAsicIndexHodo2() == usAsicIdx )
             else if( fUnpackParSts->GetAsicIndexSts1N() == usAsicIdx )
@@ -4147,6 +4377,74 @@ Bool_t CbmCosy2018MonitorEfficiency::DoUnpack(const fles::Timeslice& ts, size_t 
          fvClustersS1P.clear();
          fvClustersS2N.clear();
          fvClustersS2P.clear();
+
+      
+         for( UInt_t uClusterX = 0; uClusterX < fvClustersH1X.size(); ++uClusterX )
+         {
+            fhClusterAdcVsSizeH1X->Fill( fvClustersH1X[ uClusterX ].fusTotalAdc, fvClustersH1X[ uClusterX ].fvHits.size() );
+
+            UInt_t uNbMatches = 0;
+            for( UInt_t uClusterY = 0; uClusterY < fvClustersH1Y.size(); ++uClusterY )
+            {
+               Double_t dDtHodo1 = fvClustersH1Y[ uClusterY ].fdMeanTime - fvClustersH1X[ uClusterX ].fdMeanTime;
+               if( fdCoincMinHodo < dDtHodo1 )
+               {
+                  if( dDtHodo1 < fdCoincMaxHodo )
+                  {
+                     UInt_t uFiberIdxX1 = fUnpackParHodo->GetChannelToFiberMap( fvClustersH1X[ uClusterX ].fdWeightedCenter  );
+                     if( fUnpackParHodo->IsXInvertedHodo1() )
+                        uFiberIdxX1 = fuNbChanPerAsic/2 - 1 - uFiberIdxX1;
+                     UInt_t uFiberIdxY1 = fUnpackParHodo->GetChannelToFiberMap( fvClustersH1Y[ uClusterY ].fdWeightedCenter  );
+                     if( fUnpackParHodo->IsYInvertedHodo1() )
+                        uFiberIdxY1 = fuNbChanPerAsic/2 - 1 - uFiberIdxY1;
+                     fhClusterPosition_MatchH1->Fill( uFiberIdxX1, uFiberIdxY1 );
+
+                     uNbMatches ++;
+                  } // if( dDtSts1 < fdCoincMaxSts1 )
+               } // if( fdCoincMinSts1 < dDtSts1 )
+            } // for( UInt_t uClusterY = 0; uClusterY < fvClustersH1Y.size(); ++uClusterY )
+         } // for( UInt_t uClusterX = 0; uClusterX < fvClustersH1X.size(); ++uClusterX )
+
+         for( UInt_t uClusterY = 0; uClusterY < fvClustersH1Y.size(); ++uClusterY )
+         {
+            fhClusterAdcVsSizeH1Y->Fill( fvClustersH1Y[ uClusterY ].fusTotalAdc, fvClustersH1Y[ uClusterY ].fvHits.size() );
+         } // for( UInt_t uClusterY = 0; uClusterY < fvClustersH1Y.size(); ++uClusterY )
+
+         for( UInt_t uClusterX = 0; uClusterX < fvClustersH2X.size(); ++uClusterX )
+         {
+            fhClusterAdcVsSizeH2X->Fill( fvClustersH2X[ uClusterX ].fusTotalAdc, fvClustersH2X[ uClusterX ].fvHits.size() );
+
+            UInt_t uNbMatches = 0;
+            for( UInt_t uClusterY = 0; uClusterY < fvClustersH2Y.size(); ++uClusterY )
+            {
+               Double_t dDtHodo2 = fvClustersH2Y[ uClusterY ].fdMeanTime - fvClustersH2X[ uClusterX ].fdMeanTime;
+               if( fdCoincMinHodo < dDtHodo2 )
+               {
+                  if( dDtHodo2 < fdCoincMaxHodo )
+                  {
+                     UInt_t uFiberIdxX2 = fUnpackParHodo->GetChannelToFiberMap( fvClustersH2X[ uClusterX ].fdWeightedCenter  );
+                     if( fUnpackParHodo->IsXInvertedHodo2() )
+                        uFiberIdxX2 = fuNbChanPerAsic/2 - 1 - uFiberIdxX2;
+                     UInt_t uFiberIdxY2 = fUnpackParHodo->GetChannelToFiberMap( fvClustersH2Y[ uClusterY ].fdWeightedCenter  );
+                     if( fUnpackParHodo->IsYInvertedHodo2() )
+                        uFiberIdxY2 = fuNbChanPerAsic/2 - 1 - uFiberIdxY2;   
+                     fhClusterPosition_MatchH2->Fill( uFiberIdxX2, uFiberIdxY2 );
+
+                     uNbMatches ++;
+                  } // if( dDtSts2 < fdCoincMaxSts2 )
+               } // if( fdCoincMinSts2 < dDtSts2 )
+            } // for( UInt_t uClusterY = 0; uClusterY < fvClustersH2Y.size(); ++uClusterY )
+         } // for( UInt_t uClusterX = 0; uClusterX < fvClustersH2X.size(); ++uClusterX )
+
+         for( UInt_t uClusterY = 0; uClusterY < fvClustersH2Y.size(); ++uClusterY )
+         {
+            fhClusterAdcVsSizeH2Y->Fill( fvClustersH2Y[ uClusterY ].fusTotalAdc, fvClustersH2Y[ uClusterY ].fvHits.size() );
+         } // for( UInt_t uCluster = 0; uCluster < fvClustersH2Y.size(); ++uCluster )
+
+         fvClustersH1X.clear();
+         fvClustersH1Y.clear();
+         fvClustersH2X.clear();
+         fvClustersH2Y.clear();
    ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
          // Remove all hits which were already used
@@ -5472,6 +5770,28 @@ void CbmCosy2018MonitorEfficiency::SaveAllHistos( TString sFileName )
    fhClusterAdcVsSizeS2N_MatchS2->Write();
    fhClusterAdcVsSizeS2P_MatchS2->Write();
 
+   fhClusterS1N_CenterNbMatchS1P->Write();
+   fhClusterS1P_CenterNbMatchS1N->Write();
+   fhClusterS2N_CenterNbMatchS2P->Write();
+   fhClusterS2P_CenterNbMatchS2N->Write();
+
+   fhClusterS1N_AdcNbMatchS1P->Write();
+   fhClusterS1P_AdcNbMatchS1N->Write();
+   fhClusterS2N_AdcNbMatchS2P->Write();
+   fhClusterS2P_AdcNbMatchS2N->Write();
+
+   fhDtNeighborChansH1X->Write();
+   fhDtNeighborChansH1Y->Write();
+   fhDtNeighborChansH2X->Write();
+   fhDtNeighborChansH2Y->Write();
+
+   fhClusterAdcVsSizeH1X->Write();
+   fhClusterAdcVsSizeH1Y->Write();
+   fhClusterAdcVsSizeH2X->Write();
+   fhClusterAdcVsSizeH2Y->Write();
+   fhClusterPosition_MatchH1->Write();
+   fhClusterPosition_MatchH2->Write();
+   
    gDirectory->cd("..");
    ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
@@ -5687,6 +6007,28 @@ void CbmCosy2018MonitorEfficiency::ResetAllHistos()
    fhClusterAdcVsSizeS1P_MatchS1->Reset();
    fhClusterAdcVsSizeS2N_MatchS2->Reset();
    fhClusterAdcVsSizeS2P_MatchS2->Reset();
+
+   fhClusterS1N_CenterNbMatchS1P->Reset();
+   fhClusterS1P_CenterNbMatchS1N->Reset();
+   fhClusterS2N_CenterNbMatchS2P->Reset();
+   fhClusterS2P_CenterNbMatchS2N->Reset();
+
+   fhClusterS1N_AdcNbMatchS1P->Reset();
+   fhClusterS1P_AdcNbMatchS1N->Reset();
+   fhClusterS2N_AdcNbMatchS2P->Reset();
+   fhClusterS2P_AdcNbMatchS2N->Reset();
+
+   fhDtNeighborChansH1X->Reset();
+   fhDtNeighborChansH1Y->Reset();
+   fhDtNeighborChansH2X->Reset();
+   fhDtNeighborChansH2Y->Reset();
+   
+   fhClusterAdcVsSizeH1X->Reset();
+   fhClusterAdcVsSizeH1Y->Reset();
+   fhClusterAdcVsSizeH2X->Reset();
+   fhClusterAdcVsSizeH2Y->Reset();
+   fhClusterPosition_MatchH1->Reset();
+   fhClusterPosition_MatchH2->Reset();
    ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
    for( UInt_t uLinks = 0; uLinks < kiMaxNbFlibLinks; ++uLinks )
