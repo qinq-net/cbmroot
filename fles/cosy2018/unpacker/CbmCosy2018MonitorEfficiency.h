@@ -507,6 +507,14 @@ private:
    TH2 * fhClusterAdcVsSizeS1P_MatchS1;
    TH2 * fhClusterAdcVsSizeS2N_MatchS2;
    TH2 * fhClusterAdcVsSizeS2P_MatchS2;
+   TH2 * fhClusterS1N_CenterNbMatchS1P;
+   TH2 * fhClusterS1P_CenterNbMatchS1N;
+   TH2 * fhClusterS2N_CenterNbMatchS2P;
+   TH2 * fhClusterS2P_CenterNbMatchS2N;
+   TH2 * fhClusterS1N_AdcNbMatchS1P;
+   TH2 * fhClusterS1P_AdcNbMatchS1N;
+   TH2 * fhClusterS2N_AdcNbMatchS2P;
+   TH2 * fhClusterS2P_AdcNbMatchS2N;
    ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
 

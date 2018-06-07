@@ -415,7 +415,15 @@ CbmCosy2018MonitorEfficiency::CbmCosy2018MonitorEfficiency() :
    fhClusterAdcVsSizeS1N_MatchS1(NULL),
    fhClusterAdcVsSizeS1P_MatchS1(NULL),
    fhClusterAdcVsSizeS2N_MatchS2(NULL),
-   fhClusterAdcVsSizeS2P_MatchS2(NULL)
+   fhClusterAdcVsSizeS2P_MatchS2(NULL),
+   fhClusterS1N_CenterNbMatchS1P(NULL),
+   fhClusterS1P_CenterNbMatchS1N(NULL),
+   fhClusterS2N_CenterNbMatchS2P(NULL),
+   fhClusterS2P_CenterNbMatchS2N(NULL),
+   fhClusterS1N_AdcNbMatchS1P(NULL),
+   fhClusterS1P_AdcNbMatchS1N(NULL),
+   fhClusterS2N_AdcNbMatchS2P(NULL),
+   fhClusterS2P_AdcNbMatchS2N(NULL)
    ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 {
 }
@@ -1938,6 +1946,48 @@ void CbmCosy2018MonitorEfficiency::CreateHistograms()
    fhClusterAdcVsSizeS2P_MatchS2 = new TH2I(sHistName, title,
                                3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+
+   sHistName = "fhClusterS1N_CenterNbMatchS1P";
+   title = "Nb match P side vs center strip, STS 1 N; Center [ch];  Nb Match [cluster]; Cnts []";
+   fhClusterS1N_CenterNbMatchS1P = new TH2I(sHistName, title,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+   sHistName = "fhClusterS1P_CenterNbMatchS1N";
+   title = "Nb match N side vs center strip, STS 1 P; Center [ch];  Nb Match [cluster]; Cnts []";
+   fhClusterS1P_CenterNbMatchS1N = new TH2I(sHistName, title,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+   sHistName = "fhClusterS2N_CenterNbMatchS2P";
+   title = "Nb match P side vs center strip, STS 2 N; Center [ch];  Nb Match [cluster]; Cnts []";
+   fhClusterS2N_CenterNbMatchS2P = new TH2I(sHistName, title,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+   sHistName = "fhClusterS2P_CenterNbMatchS2N";
+   title = "Nb match N side vs center strip, STS 2 P; Center [ch];  Nb Match [cluster]; Cnts []";
+   fhClusterS2P_CenterNbMatchS2N = new TH2I(sHistName, title,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+
+   sHistName = "fhClusterS1N_AdcNbMatchS1P";
+   title = "Adc distribution per cluster vs Nb matches with P cluster, STS 1 N; Adc [];  Nb Match [clusters]; Cnts []";
+   fhClusterS1N_AdcNbMatchS1P = new TH2I(sHistName, title,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+   sHistName = "fhClusterS1P_AdcNbMatchS1N";
+   title = "Adc distribution per cluster vs Nb matches with N cluster, STS 1 P; Adc [];  Nb Match [clusters]; Cnts []";
+   fhClusterS1P_AdcNbMatchS1N = new TH2I(sHistName, title,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+   sHistName = "fhClusterS2N_AdcNbMatchS2P";
+   title = "Adc distribution per cluster vs Nb matches with P cluster, STS 2 N; Adc [];  Nb Match [clusters]; Cnts []";
+   fhClusterS2N_AdcNbMatchS2P = new TH2I(sHistName, title,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
+   sHistName = "fhClusterS2P_AdcNbMatchS2N";
+   title = "Adc distribution per cluster vs Nb matches with N cluster, STS 2 P; Adc [];  Nb Match [clusters]; Cnts []";
+   fhClusterS2P_AdcNbMatchS2N = new TH2I(sHistName, title,
+                               3*stsxyter::kuHitNbAdcBins, -0.5, 3*stsxyter::kuHitNbAdcBins -0.5,
+                               fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
    ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
 /*
@@ -2182,6 +2232,15 @@ void CbmCosy2018MonitorEfficiency::CreateHistograms()
       server->Register("/Adc", fhClusterAdcVsSizeS1P_MatchS1 );
       server->Register("/Adc", fhClusterAdcVsSizeS2N_MatchS2 );
       server->Register("/Adc", fhClusterAdcVsSizeS2P_MatchS2 );
+
+      server->Register("/Adc", fhClusterS1N_CenterNbMatchS1P );
+      server->Register("/Adc", fhClusterS1P_CenterNbMatchS1N );
+      server->Register("/Adc", fhClusterS2N_CenterNbMatchS2P );
+      server->Register("/Adc", fhClusterS2P_CenterNbMatchS2N );
+      server->Register("/Adc", fhClusterS1N_AdcNbMatchS1P );
+      server->Register("/Adc", fhClusterS1P_AdcNbMatchS1N );
+      server->Register("/Adc", fhClusterS2N_AdcNbMatchS2P );
+      server->Register("/Adc", fhClusterS2P_AdcNbMatchS2N );
 
       server->RegisterCommand("/Reset_All_Hodo", "bCosy2018ResetEfficiency=kTRUE");
       server->RegisterCommand("/Write_All_Hodo", "bCosy2018WriteEfficiency=kTRUE");
@@ -3976,6 +4035,7 @@ Bool_t CbmCosy2018MonitorEfficiency::DoUnpack(const fles::Timeslice& ts, size_t 
          {
             fhClusterAdcVsSizeS1N->Fill( fvClustersS1N[ uClusterN ].fusTotalAdc, fvClustersS1N[ uClusterN ].fvHits.size() );
 
+            UInt_t uNbMatches = 0;
             for( UInt_t uClusterP = 0; uClusterP < fvClustersS1P.size(); ++uClusterP )
             {
                Double_t dDtSts1 = fvClustersS1P[ uClusterP ].fdMeanTime - fvClustersS1N[ uClusterN ].fdMeanTime;
@@ -3990,20 +4050,50 @@ Bool_t CbmCosy2018MonitorEfficiency::DoUnpack(const fles::Timeslice& ts, size_t 
 
                      fhClusterAdcVsSizeS1N_MatchS1->Fill( fvClustersS1N[ uClusterN ].fusTotalAdc, fvClustersS1N[ uClusterN ].fvHits.size() );
                      fhClusterAdcVsSizeS1P_MatchS1->Fill( fvClustersS1P[ uClusterP ].fusTotalAdc, fvClustersS1P[ uClusterP ].fvHits.size() );
+
+                     uNbMatches ++;
                   } // if( dDtSts1 < fdCoincMaxSts1 )
                } // if( fdCoincMinSts1 < dDtSts1 )
             } // for( UInt_t uClusterP = 0; uClusterP < fvClustersS1P.size(); ++uClusterP )
+
+            fhClusterS1N_CenterNbMatchS1P->Fill( fvClustersS1N[ uClusterN ].fdWeightedCenter, uNbMatches );
+            fhClusterS1N_AdcNbMatchS1P->Fill( fvClustersS1N[ uClusterN ].fusTotalAdc, uNbMatches );
          } // for( UInt_t uClusterN = 0; uClusterN < fvClustersS1N.size(); ++uClusterN )
 
          for( UInt_t uClusterP = 0; uClusterP < fvClustersS1P.size(); ++uClusterP )
          {
             fhClusterAdcVsSizeS1P->Fill( fvClustersS1P[ uClusterP ].fusTotalAdc, fvClustersS1P[ uClusterP ].fvHits.size() );
+
+            UInt_t uNbMatches = 0;
+            for( UInt_t uClusterN = 0; uClusterN < fvClustersS1N.size(); ++uClusterN )
+            {
+               Double_t dDtSts1 = fvClustersS1P[ uClusterP ].fdMeanTime - fvClustersS1N[ uClusterN ].fdMeanTime;
+               if( fdCoincMinSts1 < dDtSts1 )
+               {
+                  if( dDtSts1 < fdCoincMaxSts1 )
+                  {
+                     // Ignore unphysical pairs
+                     if( kFALSE == CheckPhysPairSensor1( fvClustersS1N[ uClusterN ].fdWeightedCenter,
+                                                         fvClustersS1P[ uClusterP ].fdWeightedCenter ) )
+                        continue;
+
+                     fhClusterAdcVsSizeS1N_MatchS1->Fill( fvClustersS1N[ uClusterN ].fusTotalAdc, fvClustersS1N[ uClusterN ].fvHits.size() );
+                     fhClusterAdcVsSizeS1P_MatchS1->Fill( fvClustersS1P[ uClusterP ].fusTotalAdc, fvClustersS1P[ uClusterP ].fvHits.size() );
+
+                     uNbMatches ++;
+                  } // if( dDtSts1 < fdCoincMaxSts1 )
+               } // if( fdCoincMinSts1 < dDtSts1 )
+            } // for( UInt_t uClusterN = 0; uClusterN < fvClustersS1N.size(); ++uClusterN )
+
+            fhClusterS1P_CenterNbMatchS1N->Fill( fvClustersS1P[ uClusterP ].fdWeightedCenter, uNbMatches );
+            fhClusterS1P_AdcNbMatchS1N->Fill( fvClustersS1P[ uClusterP ].fusTotalAdc, uNbMatches );
          } // for( UInt_t uClusterP = 0; uClusterP < fvClustersS1P.size(); ++uClusterP )
 
          for( UInt_t uClusterN = 0; uClusterN < fvClustersS2N.size(); ++uClusterN )
          {
             fhClusterAdcVsSizeS2N->Fill( fvClustersS2N[ uClusterN ].fusTotalAdc, fvClustersS2N[ uClusterN ].fvHits.size() );
 
+            UInt_t uNbMatches = 0;
             for( UInt_t uClusterP = 0; uClusterP < fvClustersS2P.size(); ++uClusterP )
             {
                Double_t dDtSts2 = fvClustersS2P[ uClusterP ].fdMeanTime - fvClustersS2N[ uClusterN ].fdMeanTime;
@@ -4018,14 +4108,40 @@ Bool_t CbmCosy2018MonitorEfficiency::DoUnpack(const fles::Timeslice& ts, size_t 
 
                      fhClusterAdcVsSizeS2N_MatchS2->Fill( fvClustersS2N[ uClusterN ].fusTotalAdc, fvClustersS2N[ uClusterN ].fvHits.size() );
                      fhClusterAdcVsSizeS2P_MatchS2->Fill( fvClustersS2P[ uClusterP ].fusTotalAdc, fvClustersS2P[ uClusterP ].fvHits.size() );
+
+                     uNbMatches ++;
                   } // if( dDtSts2 < fdCoincMaxSts2 )
                } // if( fdCoincMinSts2 < dDtSts2 )
             } // for( UInt_t uClusterP = 0; uClusterP < fvClustersS2P.size(); ++uClusterP )
+
+            fhClusterS2N_CenterNbMatchS2P->Fill( fvClustersS2N[ uClusterN ].fdWeightedCenter, uNbMatches );
+            fhClusterS2N_AdcNbMatchS2P->Fill( fvClustersS2N[ uClusterN ].fusTotalAdc, uNbMatches );
          } // for( UInt_t uClusterN = 0; uClusterN < fvClustersS2N.size(); ++uClusterN )
 
          for( UInt_t uClusterP = 0; uClusterP < fvClustersS2P.size(); ++uClusterP )
          {
             fhClusterAdcVsSizeS2P->Fill( fvClustersS2P[ uClusterP ].fusTotalAdc, fvClustersS2P[ uClusterP ].fvHits.size() );
+
+            UInt_t uNbMatches = 0;
+            for( UInt_t uClusterN = 0; uClusterN < fvClustersS2N.size(); ++uClusterN )
+            {
+               Double_t dDtSts2 = fvClustersS2P[ uClusterP ].fdMeanTime - fvClustersS2N[ uClusterN ].fdMeanTime;
+               if( fdCoincMinSts2 < dDtSts2 )
+               {
+                  if( dDtSts2 < fdCoincMaxSts2 )
+                  {
+                     // Ignore unphysical pairs
+                     if( kFALSE == CheckPhysPairSensor1( fvClustersS2N[ uClusterN ].fdWeightedCenter,
+                                                         fvClustersS2P[ uClusterP ].fdWeightedCenter ) )
+                        continue;
+
+                     uNbMatches ++;
+                  } // if( dDtSts2 < fdCoincMaxSts2 )
+               } // if( fdCoincMinSts2 < dDtSts2 )
+            } // for( UInt_t uClusterN = 0; uClusterN < fvClustersS2N.size(); ++uClusterN )
+
+            fhClusterS2P_CenterNbMatchS2N->Fill( fvClustersS2P[ uClusterP ].fdWeightedCenter, uNbMatches );
+            fhClusterS2P_AdcNbMatchS2N->Fill( fvClustersS2P[ uClusterP ].fusTotalAdc, uNbMatches );
          } // for( UInt_t uCluster = 0; uCluster < fvClustersS2P.size(); ++uCluster )
          fvClustersS1N.clear();
          fvClustersS1P.clear();
