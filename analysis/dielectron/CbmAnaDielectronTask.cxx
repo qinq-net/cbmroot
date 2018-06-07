@@ -296,7 +296,7 @@ fh_piprim_minus_rapidity_mc(NULL),
 fh_pi0prim_rapidity_mc(NULL),
 fh_etaprim_rapidity_mc(NULL)
 {
-    // weight for rho0 = 0.001081; omega_ee = 0.0026866; omega_dalitz = 0.02242; phi = 0.00039552; pi0 = 4.38   ------ for 25 GeV
+    // weight for rho0 = 0.001081; omega_ee = 0.0026866; omega_dalitz = 0.02242; phi = 0.00039552; pi0 = 4.38   ------ Au + Au, for 25 GeV central collision
     fWeight = 0.0;
     fUseRich = true;
     fUseTrd = true;
@@ -2026,6 +2026,8 @@ void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const
         if (particle == "omegadalitz") this->SetWeight(1.2 * 7.7e-5);
         // weight phi = Multiplicity * Branching Ratio = 0.1 * 2.97e-4 for 25 AGeV beam energy
         if (particle == "phi") this->SetWeight(0.1 * 2.97e-4);
+        
+        //Later section for 4gev!!
     } else {
         cout << "-ERROR- CbmAnaDielectronTask::SetEnergyAndParticle energy or particle is not correct, energy:"
                 << energy << " particle:" << particle << endl;

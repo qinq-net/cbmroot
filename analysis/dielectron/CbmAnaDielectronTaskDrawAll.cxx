@@ -208,12 +208,22 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
     sQgp->GetXaxis()->SetRangeUser(0, 2.);
     sPhi->GetXaxis()->SetRangeUser(0, 2.);
     
+/*    
     if (step == kMc) {
         DrawH1({coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sQgp, sPhi},
                 {"", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99);
     } else {
         DrawH1({sbg, bg, coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sQgp, sPhi},
                 {"", "", "", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99);
+    }
+  */  
+  
+    if (step == kMc) {
+        DrawH1({coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sQgp, sPhi},
+                {"", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
+    } else {
+        DrawH1({sbg, bg, coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sQgp, sPhi},
+                {"", "", "", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
     }
     
     string yTitle = "dN/dM_{ee} [GeV/c^{2}]^{-1}";
