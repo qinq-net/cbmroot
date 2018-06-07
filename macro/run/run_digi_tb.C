@@ -97,11 +97,6 @@ void run_digi_tb(Int_t nEvents = 2, const char* setupName = "sis100_electron")
   stsDigi->SetLegacyMode();
   run->AddTask(stsDigi);
 
-  // ----- RICH digitizer
-  CbmRichDigitizer* richDigi = new CbmRichDigitizer();
-  richDigi->SetLegacyMode();
-  run->AddTask(richDigi);
-
   CbmTrdRadiator *radiator = new CbmTrdRadiator(kTRUE,"K++");
   FairTask* trdDigi = new CbmTrdDigitizerPRF(radiator);
   run->AddTask(trdDigi);
