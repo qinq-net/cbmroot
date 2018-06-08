@@ -35,7 +35,6 @@
  // #pragma link C++ class CbmGet4EventMonitor;
 #endif // NOT BUILD_BEAMTIME_LIB
 
-#pragma link C++ class CbmDaqBuffer;
 #pragma link C++ class CbmFiberHodoMapping;
 #pragma link C++ class CbmSpadicTriggerComp;
 #pragma link C++ class CbmTrdTestBeamTools;

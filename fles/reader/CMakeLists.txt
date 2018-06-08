@@ -67,7 +67,6 @@ Set(SRCS
   CbmFlibFileSource.cxx
 #  CbmNxFlibFileSource.cxx
   CbmFlibFileSourceNew.cxx
-  CbmDaqBuffer.cxx
   CbmFiberHodoMapping.cxx
 
   unpacker/CbmTSUnpackSpadic.cxx

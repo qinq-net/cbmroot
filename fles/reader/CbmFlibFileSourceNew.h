@@ -17,6 +17,7 @@
 
 #include "FairSource.h"
 #include "CbmTSUnpack.h"
+#include "CbmDaqBuffer.h"
 
 #include "TString.h"
 #include "TClonesArray.h"
@@ -27,7 +28,7 @@
 #include <memory>
 #include <map>
 
-class CbmDaqBuffer;
+//class CbmDaqBuffer;
 
 class CbmFlibFileSourceNew : public FairSource
 {
