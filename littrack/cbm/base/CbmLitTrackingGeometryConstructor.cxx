@@ -88,7 +88,16 @@ template<class T> void CbmLitTrackingGeometryConstructor::GetMuchLayout(
 
    CbmLitFieldGridCreator gridCreator;
 
-   const TGeoNode* much = static_cast<const TGeoNode*>(fGeo->GetTopNode()->GetNodes()->FindObject("much_0"));
+   TGeoNode* much = nullptr;
+   TObjArray* nodes = gGeoManager->GetTopVolume()->GetNodes();
+   for (Int_t iNode = 0; iNode < nodes->GetEntriesFast(); iNode++) {
+      TGeoNode* node = (TGeoNode*) nodes->At(iNode);
+      if (TString(node->GetName()).Contains("much", TString::kIgnoreCase)) { // Top MUCH node
+        much = node;
+        break;
+      }
+   }
+   assert(much);
    TObjArray* muchNodes = much->GetNodes();
    Int_t currentStation = 0;
    Int_t currentLayer = 0;
