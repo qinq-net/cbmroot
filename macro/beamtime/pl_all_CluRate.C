@@ -28,7 +28,7 @@ void pl_all_CluRate(Int_t iNSt=6, Double_t Tstart=0., Double_t Tend=800.)
  TH1 *h;
  TH2 *h2;
  const Int_t   iType[6]={5,4,6,2,9,8};
- const Int_t  iSmNum[6]={1,1,1,2,3,3};
+ const Int_t  iSmNum[6]={3,1,1,2,3,3};
  const Int_t iRpcNum[6]={1,1,2,1,2,1};
  
  Int_t iCanv=0;

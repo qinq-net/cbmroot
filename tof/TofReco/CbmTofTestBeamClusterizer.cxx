@@ -945,8 +945,25 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
    for (Int_t iS=0; iS< fDigiBdfPar->GetNbSmTypes(); iS++){
      Double_t YSCAL=50.;
      if (fPosYMaxScal !=0.) YSCAL=fPosYMaxScal;
-     Int_t iUCellId  = CbmTofAddress::GetUniqueAddress(0,0,0,0,iS);
-     fChannelInfo = fDigiPar->GetCell(iUCellId);
+
+     Int_t iUCellId(0);
+     fChannelInfo = NULL;
+
+     // Cover the case that the geometry file does not contain the module
+     // indexed with 0 of a certain module type BUT modules with higher indices.
+     for(Int_t iSM = 0; iSM < fDigiBdfPar->GetNbSm(iS); iSM++)
+     {
+       iUCellId  = CbmTofAddress::GetUniqueAddress(iSM,0,0,0,iS);
+       fChannelInfo = fDigiPar->GetCell(iUCellId);
+
+       // Retrieve geometry information from the first module of a certain
+       // module type that is found in the geometry file.
+       if(NULL != fChannelInfo)
+       {
+         continue;
+       }
+     }
+
      if(NULL == fChannelInfo){
          LOG(WARNING)<<"No DigiPar for SmType "
                    <<Form("%d, 0x%08x", iS, iUCellId)

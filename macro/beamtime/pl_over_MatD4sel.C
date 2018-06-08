@@ -1,6 +1,6 @@
 void pl_over_MatD4sel(TString sysinfo="")
 {
- gROOT->LoadMacro("pl_Datime.C");
+ gROOT->LoadMacro(((TString)gSystem->Getenv("VMCWORKDIR") + "/macro/beamtime/pl_Datime.C").Data());
 
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 

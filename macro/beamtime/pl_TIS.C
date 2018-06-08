@@ -1,5 +1,5 @@
 void pl_TIS(TString sysinfo="", Double_t dFracMax=0.1){
- gROOT->LoadMacro("pl_Datime.C");
+ gROOT->LoadMacro(((TString)gSystem->Getenv("VMCWORKDIR") + "/macro/beamtime/pl_Datime.C").Data());
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
   TCanvas *can = new TCanvas("can","can",48,55,450,600);

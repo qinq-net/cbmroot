@@ -1,6 +1,15 @@
-void save_hst(TString cstr="status.hst.root"){
+void save_hst(TString cstr="status.hst.root", Bool_t bROOT = kFALSE){
  cout << "save all histograms to file "<<cstr.Data()<<endl;
- TIter next(gDirectory->GetList());
+ TList* tHistoList(NULL);
+ if(bROOT)
+ {
+  tHistoList = gROOT->GetList();
+ }
+ else
+ {
+  tHistoList = gDirectory->GetList();
+ }
+ TIter next(tHistoList);
  // Write histogramms to the file
  TFile *fHist = new TFile(cstr,"RECREATE");
  {

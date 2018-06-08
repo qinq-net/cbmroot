@@ -18,7 +18,7 @@ title->SetFillColor(16);
 title->SetTextFont(52);
 title->Draw();
 */
-  pTime=new TDatime();
+ TDatime *pTime=new TDatime();
   //cout << " add time stamp to canvas " <<pTime->GetDate() << ", "<<pTime->GetTime() <<endl;
   TPaveText *pt = new TPaveText(.90,.975,.99,.99,"blNDC");
   pt->SetBorderSize(0);

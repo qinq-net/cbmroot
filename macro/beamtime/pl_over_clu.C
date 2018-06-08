@@ -14,6 +14,7 @@ gStyle->SetOptStat(kTRUE);
  TH1 *h;
  TH1 *h1;
  TH2 *h2;
+ TH1 *h2y;
  void fit_ybox(const char *hname);
  void fit_ybox(const char *hname, Double_t ysize);
  // if (h!=NULL) h->Delete();

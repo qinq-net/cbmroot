@@ -29,6 +29,7 @@
 #pragma link C++ class CbmTofFindTracks+;
 #pragma link C++ class CbmTofTrackFinderNN+;
 #pragma link C++ class LKFMinuit+;
+#pragma link C++ class CbmTofBuildDigiEvents+;
 
 #pragma link C++ class CbmTofTests+;
 
