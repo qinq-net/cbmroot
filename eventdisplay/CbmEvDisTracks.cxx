@@ -7,7 +7,6 @@
 #include "FairEventManager.h"           // for FairEventManager
 #include "FairRootManager.h"            // for FairRootManager
 
-#include "Riosfwd.h"                    // for ostream
 #include "TClonesArray.h"               // for TClonesArray
 #include "TEveManager.h"                // for TEveManager, gEve
 #include "TEvePathMark.h"               // for TEvePathMark
@@ -23,6 +22,7 @@
 
 #include <string.h>                     // for NULL, strcmp
 #include <iostream>                     // for operator<<, basic_ostream, etc
+#include <iosfwd>                       // for ostream
 
 using std::cout;
 using std::endl;

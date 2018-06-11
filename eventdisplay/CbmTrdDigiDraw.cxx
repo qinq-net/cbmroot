@@ -17,7 +17,6 @@
 #include "FairRuntimeDb.h"              // for FairRuntimeDb
 #include "FairLogger.h"
 
-#include "Riosfwd.h"                    // for ostream
 #include "TClonesArray.h"               // for TClonesArray
 #include "TEveBoxSet.h"                 // for TEveBoxSet, etc
 #include "TEveManager.h"                // for TEveManager, gEve

@@ -9,7 +9,6 @@
 
 #include "CbmPixelHit.h"                // for CbmPixelHit
 
-#include "Riosfwd.h"                    // for ostream
 #include "TVector3.h"                   // for TVector3
 
 #include <iosfwd>                       // for ostream

@@ -5,6 +5,8 @@
 
 #include "RlogFileDefault.hpp"
 
+#include <iostream>
+
 using namespace std;
 
 // all definitions in namespace CbmNet

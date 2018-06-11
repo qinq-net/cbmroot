@@ -28,7 +28,13 @@ PMesh::PMesh(Int_t psize, const Char_t * name):TF1(name,"0", 0, 1) {
     fXmax      = 0.;
 
     fNpx       = psize-1;
-    fType      = 0;
+
+#if ( ROOT_VERSION_CODE >= ROOT_VERSION(6,12,0) )
+    fType      = static_cast<TF1::EFType>(0);
+#else
+    fType = 0;
+#endif
+
     //    fFunction  = 0;
     fNdim = 1;
     
