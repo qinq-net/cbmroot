@@ -47,6 +47,7 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
 	TStopwatch timer;
 	timer.Start();
 	std::map<Int_t, CbmEvent*> eventMap;
+	Int_t nEvents = 0;
 
 	// Clear output array
 	fEvents->Delete();
@@ -64,21 +65,22 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
 	    // This implementation uses only MC event number from
         // the matched link, i.e. that with the largest weight.
         // Can be refined later on.
-	    Int_t eventNr = digi->GetMatch()->GetMatchedLink().GetEntry();
+	    Int_t mcEventNr = digi->GetMatch()->GetMatchedLink().GetEntry();
 
         // Ignore digis with missing event number (noise)
-        if ( eventNr < 0 ) {
+        if ( mcEventNr < 0 ) {
           nNoise++;
           continue;
         }
 
         // Get event pointer. If event is not yet present, create it.
         CbmEvent* event = NULL;
-        if ( eventMap.find(eventNr) == eventMap.end() ) {
-            event = new ( (*fEvents)[eventNr] ) CbmEvent(eventNr);
-            eventMap[eventNr] = event;
+        if ( eventMap.find(mcEventNr) == eventMap.end() ) {
+            event = new ( (*fEvents)[nEvents] ) CbmEvent(nEvents);
+            eventMap[mcEventNr] = event;
+            nEvents++;
         }
-        else event = eventMap.at(eventNr);
+        else event = eventMap.at(mcEventNr);
 
         // Fill digi index into event
         switch (detector) {
@@ -102,6 +104,7 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
 
 	fNofEntries++;
 	timer.Stop();
+	assert( nEvents == fEvents->GetEntriesFast() );
 
   // --- Execution log
   std::cout << std::endl;
