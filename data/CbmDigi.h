@@ -87,9 +87,11 @@ class CbmDigi : public TObject
   /** Set pointer to link collection **/
   void SetMatch(CbmMatch* match) { fMatch = match; }
 
+
   /** Output information **/
-  virtual std::string ToString() const = 0;
+  virtual std::string ToString() const;
    
+
  protected:
 
   CbmMatch* fMatch; ///< Monte-Carlo match information

@@ -1,40 +1,14 @@
-/** Macro for detector response simulation (digitisation)
- **
- ** The detector response produces a raw data file from the transport
- ** data, which serves as input for reconstruction. Raw data will
- ** be delivered in time-slice format (one tree entry per time-slice).
- **
- ** The first five arguments to the macro call represent the minimal 
- ** information to be passed to the digitization run. In addition, 
- ** the mode (time-based as default, or event-by-event) can be specified.
- ** By default, already existing output files will not be overwritten
- ** to prevent accidental data loss.
- **
- ** If the time-slice length is negative, all data will be in one
- ** time-slice.
- **
- ** For the file names, the following conventions are applied:
- ** Input file:     [dataSet].tra.root
- ** Parameter file: [dataSet].par.root
- ** Output file:    [dataSet].raw.root
- ** If different names are wanted, they have to be specified
- ** explicitely in the macro.
- **
- ** For further options to modify the run settings, consult
- ** the documentation of the CbmDigitization class.
- ** 
- ** @author Volker Friese <v.friese@gsi.de>
- ** @date 8 June 2018
+/**
+ * \file much_digi.C
+ * \author Volker Friese <v.friese@gsi.de>
+ * \date 11.06.2018
+ * \brief Digitization macro for MUCH.
+ *
+ * Digitization is event-by-event
  **/
 
 
-void run_digi(
-	Int_t nEvents = 2,                // Number of events to process
-	TString dataSet = "test",         // Dataset for file names
-	Double_t eventRate = 1.e7,        // Interaction rate [1/s]
-	Double_t timeSliceLength = 1.e4,  // Length of time-slice [ns]
-	Bool_t eventMode = kFALSE         // Event-by-event mode
-)
+void much_digi(Int_t nEvents = 3, Int_t flag = 0)
 {
 
   // --- Logger settings ----------------------------------------------------
@@ -49,18 +23,14 @@ void run_digi(
  
 
   // -----   File names   ---------------------------------------------------
-  TString inFile  = dataSet + ".tra.root";
-  TString parFile = dataSet + ".par.root";
-  TString outFile = dataSet + ".raw.root";
-  if ( eventMode ) outFile = dataSet + ".event.raw.root";
+  TString inFile  = "data/mc.root";
+  TString parFile = "data/params.root";
+  TString outFile = "data/raw.root";
   // ------------------------------------------------------------------------
   
   
   // -----   Remove old CTest runtime dependency file  ----------------------
-  TString dataDir = gSystem->DirName(dataSet);
-  TString dataName = gSystem->BaseName(dataSet);
-  TString depFile = Remove_CTest_Dependency_File(dataDir, "run_digi_event",
-                                                 dataName);
+  TString depFile = Remove_CTest_Dependency_File("data", "much_digi");
   // ------------------------------------------------------------------------
 
 
@@ -73,11 +43,10 @@ void run_digi(
   // -----   Digitization run   ---------------------------------------------
   CbmDigitization run;
   
-  run.AddInput(inFile, eventRate);
+  run.AddInput(inFile);
   run.SetOutputFile(outFile, overwrite);
   run.SetParameterRootFile(parFile);
-  run.SetTimeSliceInterval(timeSliceLength);
-  run.SetEventMode(eventMode);
+  run.SetEventMode();
   
   run.Run(nEvents);
   // ------------------------------------------------------------------------

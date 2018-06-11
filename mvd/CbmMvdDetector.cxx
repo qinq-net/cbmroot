@@ -163,7 +163,7 @@ void CbmMvdDetector::AddSensor(TString clearName, TString fullName, TString node
     misalignment[1] = ((2*randArray[0])-1) * fepsilon[1]; 
     misalignment[2] = ((2*randArray[0])-1) * fepsilon[2]; 
     sensor->SetMisalignment(misalignment);
-    LOG(DEBUG) << "new sensor " << myname << " to detector added at station: " << stationNr << FairLogger::endl;
+    LOG(DEBUG1) << "new sensor " << myname << " to detector added at station: " << stationNr << FairLogger::endl;
 } 
  
 // ----------------------------------------------------------------------
@@ -286,7 +286,7 @@ if(!initialized)
     {
     
     sensor=(CbmMvdSensor*)fSensorArray->At(j);
-    LOG(DEBUG) << "Init Sensor " << sensor->GetName() << FairLogger::endl;
+    LOG(DEBUG1) << "Init Sensor " << sensor->GetName() << FairLogger::endl;
     sensor->Init();
     }
 

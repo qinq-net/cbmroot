@@ -383,18 +383,20 @@ Bool_t   CbmTofSimpClusterizer::RegisterInputs()
 {
    FairRootManager *fManager = FairRootManager::Instance();
 
+   /** VF: The task should run without MC input
    fTofPointsColl  = (TClonesArray *) fManager->GetObject("TofPoint");
    if( NULL == fTofPointsColl)
    {
       LOG(ERROR)<<"CbmTofSimpClusterizer::RegisterInputs => Could not get the TofPoint TClonesArray!!!"<<FairLogger::endl;
       return kFALSE;
    } // if( NULL == fTofPointsColl)
+   **/
+   fTofPointsColl = nullptr;
 
    fMcTracksColl   = (TClonesArray *) fManager->GetObject("MCTrack");
    if( NULL == fMcTracksColl)
    {
-      LOG(ERROR)<<"CbmTofSimpClusterizer::RegisterInputs => Could not get the MCTrack TClonesArray!!!"<<FairLogger::endl;
-      return kFALSE;
+      LOG(INFO)<<"CbmTofSimpClusterizer: No MCTrack array."<<FairLogger::endl;
    } // if( NULL == fMcTracksColl)
 
    fTofDigisColl   = (TClonesArray *) fManager->GetObject("TofDigi");
@@ -922,7 +924,7 @@ Bool_t   CbmTofSimpClusterizer::FillHistos()
                            + (fStop.GetNanoSec() - fStart.GetNanoSec())/1e9 );
    Int_t iNbTofHits  = fTofHitsColl->GetEntries();
 
-   if( fbMcTrkMonitor )
+   if( fbMcTrkMonitor && fMcTracksColl )
    {
       Int_t iNbTracks   = fMcTracksColl->GetEntries();
 

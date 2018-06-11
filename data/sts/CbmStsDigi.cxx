@@ -8,7 +8,8 @@
 #include <sstream>
 #include "CbmStsAddress.h"
 
-using namespace std;
+using std::string;
+using std::stringstream;
 
 // --- String output
 string CbmStsDigi::ToString() const {

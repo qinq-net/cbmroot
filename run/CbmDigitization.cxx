@@ -75,6 +75,22 @@ Int_t CbmDigitization::AddInput(TString fileName, Double_t eventRate) {
 
 
 
+// -----   Add an ASCII parameter file   ------------------------------------
+Bool_t CbmDigitization::AddParameterAsciiFile(TString fileName) {
+  if ( gSystem->AccessPathName(fileName.Data()) ) {
+    LOG(WARNING) << fName << ": Parameter file " << fileName
+    << " does not exist!" << FairLogger::endl;
+    return kFALSE;
+  }
+  fParAsciiFiles.Add(new TObjString(fileName.Data()));
+  LOG(INFO) << fName << ": Adding parameter file" << fileName
+      << FairLogger::endl;
+  return kTRUE;
+}
+// --------------------------------------------------------------------------
+
+
+
 // -----   Check input file   -----------------------------------------------
 Int_t CbmDigitization::CheckInputFile() {
 
@@ -133,10 +149,17 @@ Int_t CbmDigitization::CreateDefaultDigitizers() {
     // --- Skip if a digitizer was set explicitly
     if ( it->second->GetDigitizer() != nullptr ) continue;
 
+    // --- Skip MVD for time-based mode
+    if ( it->first == kMvd && ( ! fDaq->IsEventMode() ) ) {
+      LOG(INFO) << "MVD digitizer is not available "
+          << "in time-based mode. ";
+      continue;
+    }
+
     Int_t system = it->first;
     switch (system) {
       case kMvd:
-        //fDigitizers[system]->SetDigitizer(new CbmMvdDigitizer());
+        fDigitizers[system]->SetDigitizer(new CbmMvdDigitizer());
         LOG(INFO) << "MVD "; nDigis++; break;
       case kSts:
         fDigitizers[system]->SetDigitizer(new CbmStsDigitize());
@@ -145,16 +168,16 @@ Int_t CbmDigitization::CreateDefaultDigitizers() {
         fDigitizers[system]->SetDigitizer(new CbmRichDigitizer());
         LOG(INFO) << "RICH "; nDigis++; break;
      case kMuch:
-        //fDigitizers[system]->SetDigitizer(new CbmMuchDigitizeGem());
+        fDigitizers[system]->SetDigitizer(new CbmMuchDigitizeGem());
         LOG(INFO) << "MUCH "; nDigis++; break;
       case kTrd:
-        //fDigitizers[system]->SetDigitizer(new CbmTrdDigitizerPRF());
+        fDigitizers[system]->SetDigitizer(new CbmTrdDigitizerPRF());
         LOG(INFO) << "TRD "; nDigis++; break;
       case kTof:
         fDigitizers[system]->SetDigitizer(new CbmTofDigitize());
         LOG(INFO) << "TOF "; nDigis++; break;
       case kPsd:
-        //fDigitizers[system]->SetDigitizer(new CbmPsdSimpleDigitizer());
+        fDigitizers[system]->SetDigitizer(new CbmPsdSimpleDigitizer());
         LOG(INFO) << "PSD "; nDigis++; break;
      default: LOG(FATAL) << fName << ": Unknown system " << system
           << FairLogger::endl; break;
@@ -180,6 +203,7 @@ void CbmDigitization::Deactivate(Int_t system) {
 // -----   Get a system geometry tag   --------------------------------------
 TString CbmDigitization::GetGeoTag(Int_t system, TGeoManager* geo) {
 
+  assert(geo);
   TString geoTag;
   TString sysName = CbmModuleList::GetModuleName(system);
   Int_t sysLength = sysName.Length() + 1;
@@ -273,36 +297,42 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIoRoot = new FairParRootFileIo();
   parIoRoot->open(fParRootFile.Data(), "UPDATE");
-  rtdb->setFirstInput(parIoRoot);
+  rtdb->setSecondInput(parIoRoot);
+  rtdb->Print();
 
   // --- Get geometry from runtime database
   rtdb->getContainer("FairGeoParSet");
   rtdb->initContainers(fRun);
 
-  // --- Add parameter files for TRD and TOF
+  // --- Add default parameter files for TRD and TOF
   TString tofGeo = GetGeoTag(kTof, gGeoManager);
   TString trdGeo = GetGeoTag(kTrd, gGeoManager);
   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
   TString parFile;
   parFile = srcDir + "/parameters/trd/trd_" + trdGeo + ".digi.par";
-  LOG(INFO) << fName << ": Adding " << parFile << FairLogger::endl;
   AddParameterAsciiFile(parFile);
   parFile = srcDir + "/parameters/tof/tof_" + tofGeo + ".digi.par";
-  LOG(INFO) << fName << ": Adding " << parFile << FairLogger::endl;
   AddParameterAsciiFile(parFile);
   parFile = srcDir + "/parameters/tof/tof_" + tofGeo + ".digibdf.par";
-  LOG(INFO) << fName << ": Adding " << parFile << FairLogger::endl;
   AddParameterAsciiFile(parFile);
   FairParAsciiFileIo* parIoAscii = new FairParAsciiFileIo();
-  parIoAscii->open(&fParAsciiFiles, "in");
-  rtdb->setSecondInput(parIoAscii);
+  if ( fParAsciiFiles.IsEmpty() ) {
+    LOG(INFO) << fName << ": No ASCII input to parameter database"
+        << FairLogger::endl;
+    //rtdb->closeSecondInput();
+    rtdb->setFirstInput(parIoRoot);
+  }
+  else {
+    parIoAscii->open(&fParAsciiFiles, "in");
+    rtdb->setFirstInput(parIoAscii);
+  } //? Parameter list not empty
 
   // --- Delete TGeoManager (will be initialised again from FairRunAna)
   if (gROOT->GetVersionInt() >= 60602) {
     gGeoManager->GetListOfVolumes()->Delete();
     gGeoManager->GetListOfShapes()->Delete();
     delete gGeoManager;
-  }
+  } //? ROOT version
   LOG(INFO) << "==================================================="
       << FairLogger::endl;
 
@@ -384,9 +414,13 @@ void CbmDigitization::SetDigitizer(Int_t system, CbmDigitizer* digitizer,
 
   // Digitizer already present: replace
   if ( fDigitizers.find(system) != fDigitizers.end() ) {
-    LOG(WARNING) << fName << ": replacing "
-        << fDigitizers[system]->GetDigitizer()->GetName()
-        << " by " << digitizer->GetName() << FairLogger::endl;
+    CbmDigitizer* oldDigitizer = fDigitizers[system]->GetDigitizer();
+    if ( oldDigitizer != nullptr ) {
+      LOG(WARNING) << fName << ": replacing "
+          << oldDigitizer->GetName()
+          << " by " << digitizer->GetName() << FairLogger::endl;
+      delete oldDigitizer;
+    }
     if ( ! branch.IsNull() ) fDigitizers[system]->SetBranchName(branch);
     fDigitizers[system]->SetDigitizer(digitizer);
     fDigitizers[system]->SetActive();

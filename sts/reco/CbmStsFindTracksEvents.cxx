@@ -39,7 +39,7 @@ using std::setprecision;
 // -----   Standard constructor   ------------------------------------------
 CbmStsFindTracksEvents::CbmStsFindTracksEvents(CbmStsTrackFinder* finder,
 				                                       Bool_t useMvd)
-  : FairTask("StsFindTracks"),
+  : FairTask("StsFindTracksEvents"),
     fUseMvd(useMvd),
     fFinder(finder),
     fEvents(NULL),

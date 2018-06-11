@@ -15,7 +15,7 @@ using namespace std;
 void much_sim(TString inputSignal = "",
               TString inputBgr = "",
               TString outFile = "",
-              Int_t nEvents = 2)
+              Int_t nEvents = 3)
 {
   // ========================================================================
   //          Adjust this part according to your requirements

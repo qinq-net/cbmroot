@@ -344,7 +344,7 @@ template <class Data> class CbmReadoutBuffer : public FairWriteoutBuffer {
 		 **/
 		Int_t ReadOutData(Double_t time, std::vector<Data*>& dataList) {
 
-			LOG(INFO) << "RO Buffer: read out at t = " << time << ", buffer size "
+			LOG(DEBUG) << "RO Buffer: read out at t = " << time << ", buffer size "
 					      << fBuffer.size() << FairLogger::endl;
 			if ( ! dataList.empty() ) dataList.clear();
 

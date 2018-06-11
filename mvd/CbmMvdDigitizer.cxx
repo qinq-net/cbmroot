@@ -26,6 +26,7 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 
 using std::cout;
@@ -34,7 +35,7 @@ using std::vector;
 
 // -----   Default constructor   ------------------------------------------
 CbmMvdDigitizer::CbmMvdDigitizer() 
-  : FairTask("MVDDigitizer"),
+  : CbmDigitizer("MmdDigitizer"),
     fMode(0),
     fShowDebugHistos(kFALSE),
     fNoiseSensors(kFALSE),
@@ -64,7 +65,7 @@ CbmMvdDigitizer::CbmMvdDigitizer()
 
 // -----   Standard constructor   ------------------------------------------
 CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose) 
-  : FairTask(name, iVerbose),
+  : CbmDigitizer(name),
     fMode(iMode),
     fShowDebugHistos(kFALSE),
     fNoiseSensors(kFALSE),
@@ -108,33 +109,51 @@ void CbmMvdDigitizer::Exec(Option_t* /*opt*/){
 using namespace std;
 
 fTimer.Start();
+GetEventInfo(); // event number and time
 	
-fDigis->Delete();
-fDigiMatch->Delete();
-fMcPileUp->Delete();
-
 BuildEvent();
+Int_t nPoints = fInputPoints->GetEntriesFast();
+Int_t nDigis = 0;
 if(fInputPoints->GetEntriesFast() > 0)
    {
-   if(fVerbose) cout << "//----------------------------------------//";
-   if(fVerbose) cout << endl << "Send Input" << endl;
+   LOG(DEBUG) << "//----------------------------------------//" << FairLogger::endl;
+   LOG(DEBUG) << fName << ": Send Input" << FairLogger::endl;
    fDetector->SendInput(fInputPoints);
-   LOG(DEBUG) << "Execute DigitizerPlugin Nr. "<< fDigiPluginNr << FairLogger::endl;
+   LOG(DEBUG) << fName << ": Execute DigitizerPlugin Nr. "<< fDigiPluginNr
+       << FairLogger::endl;
    fDetector->Exec(fDigiPluginNr);
-   if(fVerbose) cout << "End Chain" << endl;
-   if(fVerbose) cout << "Start writing Digis" << endl;  
-   fDigis->AbsorbObjects(fDetector->GetOutputDigis(),0,fDetector->GetOutputArray(fDigiPluginNr)->GetEntriesFast()-1); 
-   LOG(DEBUG) << "Total of " << fDigis->GetEntriesFast() << " digis in this Event" << FairLogger::endl;
-   if(fVerbose) cout << "Start writing DigiMatchs" << endl;  
-   fDigiMatch->AbsorbObjects(fDetector->GetOutputDigiMatchs(),0,fDetector->GetOutputDigiMatchs()->GetEntriesFast()-1);
-   if(fVerbose) cout << "Total of " << fDigiMatch->GetEntriesFast() << " digisMatch in this Event" << endl; 
-   if(fVerbose) cout  << "//----------------------------------------//" << endl ;
-   LOG(INFO) << "+ " << setw(20) << GetName() << ": Created: " 
-        << fDigis->GetEntriesFast() << " digis in " 
-        << fixed << setprecision(6) << fTimer.RealTime() << " s" << FairLogger::endl;
+   LOG(DEBUG) << fName << ": End Chain" << FairLogger::endl;
+
+   // --- Send produced digis to DAQ
+   TClonesArray* digis = fDetector->GetOutputDigis();
+   for (Int_t index = 0; index < digis->GetEntriesFast(); index++) {
+     CbmMvdDigi* digi = dynamic_cast<CbmMvdDigi*>(digis->At(index));
+     SendDigi(digi);
+     nDigis++;
+   }
+   // TODO: (VF) There seem to be no entries in the match array, nor matches
+   // attached to the digi object
+   LOG(DEBUG) << fName << ": Sent " << nDigis << " digis to DAQ" << FairLogger::endl;
+
+   //fDigis->AbsorbObjects(fDetector->GetOutputDigis(),0,fDetector->GetOutputArray(fDigiPluginNr)->GetEntriesFast()-1);
+   //LOG(DEBUG) << "Total of " << fDigis->GetEntriesFast() << " digis in this Event" << FairLogger::endl;
+   //if(fVerbose) cout << "Start writing DigiMatchs" << endl;
+   //fDigiMatch->AbsorbObjects(fDetector->GetOutputDigiMatchs(),0,fDetector->GetOutputDigiMatchs()->GetEntriesFast()-1);
+   //if(fVerbose) cout << "Total of " << fDigiMatch->GetEntriesFast() << " digisMatch in this Event" << endl;
+   LOG(DEBUG) << "//----------------------------------------//" << FairLogger::endl;
+   //LOG(INFO) << "+ " << setw(20) << GetName() << ": Created: "
+   //     << fDigis->GetEntriesFast() << " digis in "
+   //     << fixed << setprecision(6) << fTimer.RealTime() << " s" << FairLogger::endl;
    }
 
+// --- Event log
 fTimer.Stop();
+LOG(INFO) << "+ " << setw(15) << GetName() << ": Event " << setw(6)
+           << right << fCurrentEvent << " at " << fixed << setprecision(3)
+           << fCurrentEventTime << " ns, points: " << nPoints
+           << ", digis: " << nDigis << ". Exec time " << setprecision(6)
+           << fTimer.RealTime() << " s." << FairLogger::endl;
+
 }
 // -----------------------------------------------------------------------------
 
@@ -250,7 +269,19 @@ void CbmMvdDigitizer::Reset() {
     fDigis->Delete();
 
 }
-// -------------------------------------------------------------------------  
+// -------------------------------------------------------------------------
+
+
+
+// -----   Reset output arrays   -------------------------------------------
+void CbmMvdDigitizer::ResetArrays() {
+  fDigis->Delete();
+  fDigiMatch->Delete();
+  fMcPileUp->Delete();
+}
+// -------------------------------------------------------------------------
+
+
 
 // -----   Private method GetMvdGeometry   ---------------------------------
 void CbmMvdDigitizer::GetMvdGeometry() {
@@ -356,12 +387,24 @@ void CbmMvdDigitizer::BuildEvent() {
 
 
   // ----- At last: Screen output
-  LOG(INFO) << "+ " << GetName() << "::BuildEvent: original "
+  LOG(DEBUG) << "+ " << GetName() << "::BuildEvent: original "
 			   << nOrig << ", pileup " << nPile << ", delta "
 			   << nElec << ", total " << nOrig+nPile+nElec
 			   << " MvdPoints" << FairLogger::endl;
 
 
+}
+// -----------------------------------------------------------------------------
+
+
+
+// -----   Write a digi to the output   ----------------------------------------
+void CbmMvdDigitizer::WriteDigi(CbmDigi* digi) {
+  CbmMvdDigi* mvdDigi = dynamic_cast<CbmMvdDigi*>(digi);
+  assert(mvdDigi);
+  Int_t index = fDigis->GetEntriesFast();
+  if ( digi->GetMatch() ) new ((*fDigiMatch)[index]) CbmMatch( *(digi->GetMatch()) );
+  new ((*fDigis)[index]) CbmMvdDigi(*mvdDigi);
 }
 // -----------------------------------------------------------------------------
 

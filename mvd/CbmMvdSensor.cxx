@@ -138,14 +138,14 @@ void CbmMvdSensor::SetAlignment(TGeoHMatrix* alignmentMatrix) {
 // -------Initialization tools  -----------------------------------------------------
 void CbmMvdSensor::ReadSensorGeometry(TString nodeName) {
    
-  LOG(DEBUG) << "-I- nodeName is " << nodeName <<  FairLogger::endl;
+  LOG(DEBUG1) << "-I- nodeName is " << nodeName <<  FairLogger::endl;
 
   if(fMCMatrix) {delete fMCMatrix;}; //delete local copy of the position information
 
   TGeoVolume* volume;
   gGeoManager->cd(nodeName);
   volume = gGeoManager->GetCurrentVolume();
-  LOG(DEBUG) << "At volume: " << volume->GetName() << FairLogger::endl;
+  LOG(DEBUG2) << "At volume: " << volume->GetName() << FairLogger::endl;
   fShape = (TGeoBBox*) volume->GetShape();
   fMCMatrix=(TGeoHMatrix*)(gGeoManager->GetCurrentMatrix())->Clone(nodeName+"_MC_Matrix");
   fMCMatrix->SetName(nodeName+"_MC_Matrix");
@@ -153,8 +153,8 @@ void CbmMvdSensor::ReadSensorGeometry(TString nodeName) {
     Double_t first[3], last[3];
     PixelToLocal(0,0,first);
     PixelToLocal(fSensorData->GetNPixelsX(), fSensorData->GetNPixelsY(),last);
-    LOG(DEBUG)<< "pixel 0,0 at: "<< first[0] << ", " << first[1] << " Local"<< FairLogger::endl;
-    LOG(DEBUG)<< "pixel " << fSensorData->GetNPixelsX() << " " << fSensorData->GetNPixelsY() <<" at: "<< last[0] << ", " << last[1]<< " Local" << FairLogger::endl;
+    LOG(DEBUG2)<< "pixel 0,0 at: "<< first[0] << ", " << first[1] << " Local"<< FairLogger::endl;
+    LOG(DEBUG2)<< "pixel " << fSensorData->GetNPixelsX() << " " << fSensorData->GetNPixelsY() <<" at: "<< last[0] << ", " << last[1]<< " Local" << FairLogger::endl;
 
      Double_t* tempCoordinate;
 
@@ -169,9 +169,9 @@ void CbmMvdSensor::ReadSensorGeometry(TString nodeName) {
 	for(Int_t i=0;i<3;i++){tempCoordinate[i]=tempCoordinate[i]+epsilon[i];}
 	fRecoMatrix->SetTranslation(tempCoordinate);
         PixelToTop(0, 0, past);
-	LOG(DEBUG)<< "shifted pixel 0,0 to: "<< past[0] << ", " << past[1] << " at z = " << past[2] << FairLogger::endl;
+	LOG(DEBUG2)<< "shifted pixel 0,0 to: "<< past[0] << ", " << past[1] << " at z = " << past[2] << FairLogger::endl;
 	LocalToTop(local, global);
-        LOG(DEBUG)<< "shifted local center to: "<< global[0] << ", " << global[1] << " at z = " << global[2] << FairLogger::endl;
+        LOG(DEBUG2)<< "shifted local center to: "<< global[0] << ", " << global[1] << " at z = " << global[2] << FairLogger::endl;
     }
      else
 	{tempCoordinate=fRecoMatrix->GetTranslation();}

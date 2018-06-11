@@ -8,16 +8,22 @@
 
 #include "CbmPsdDigi.h"
 
+#include <sstream>
 #include "FairLogger.h"
+
+using std::string;
+using std::stringstream;
 
 
 // -----   Default constructor   -------------------------------------------
 
 CbmPsdDigi::CbmPsdDigi() 
-  : TObject(),
+  : CbmDigi(),
     fModuleID(-1),
     fSectionID(-1),
-    fEdep(-1)                      // SELIM: simplification matrix [10][44] -> simple double
+    fEdep(-1),
+    fTime(0.)
+// SELIM: simplification matrix [10][44] -> simple double
 {
   /*
   for (Int_t i=0; i<10; i++)       // SELIM: simplification matrix [10][44] -> simple double
@@ -27,11 +33,12 @@ CbmPsdDigi::CbmPsdDigi()
 }
 
 
-CbmPsdDigi::CbmPsdDigi(Int_t section, Int_t module, Double_t edep)
-  : TObject(),
+CbmPsdDigi::CbmPsdDigi(Int_t section, Int_t module, Double_t edep, Double_t time)
+  : CbmDigi(),
     fModuleID(module),
     fSectionID(section),
-    fEdep(edep)                     // SELIM: simplification matrix [10][44] -> simple double
+    fEdep(edep),
+    fTime(time)
 {
   /*
   for (Int_t i=0; i<10; i++)        // SELIM: simplification matrix [10][44] -> simple double
@@ -46,12 +53,17 @@ CbmPsdDigi::CbmPsdDigi(Int_t section, Int_t module, Double_t edep)
 CbmPsdDigi::~CbmPsdDigi() { }
 // -------------------------------------------------------------------------
 
-void CbmPsdDigi::Print(Option_t*) const {
-  LOG(INFO) <<"module : "<<fModuleID <<" section    : "<<fSectionID <<
-    " ELoss "<<fEdep << FairLogger::endl;
 
-
+// -----   String output   -------------------------------------------------
+string CbmPsdDigi::ToString() const {
+   stringstream ss;
+   ss << "PsdDigi: Module " << fModuleID << " | Section " << fSectionID
+      << " | charge " << fEdep << " | time " << fTime;
+   return ss.str();
 }
+// -------------------------------------------------------------------------
+
+
 
 
 ClassImp(CbmPsdDigi)

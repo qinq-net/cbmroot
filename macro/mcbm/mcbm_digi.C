@@ -18,7 +18,7 @@
  ** Parameter file: [dataSet].par.root
  ** Output file:    [dataSet].raw.root
  ** If different names are wanted, they have to be specified
- ** explicitely in the macro.
+ ** explicitly in the macro.
  **
  ** For further options to modify the run settings, consult
  ** the documentation of the CbmDigitization class.
@@ -28,12 +28,12 @@
  **/
 
 
-void run_digi(
+void mcbm_digi(
 	Int_t nEvents = 2,                // Number of events to process
 	TString dataSet = "test",         // Dataset for file names
 	Double_t eventRate = 1.e7,        // Interaction rate [1/s]
 	Double_t timeSliceLength = 1.e4,  // Length of time-slice [ns]
-	Bool_t eventMode = kFALSE         // Event-by-event mode
+	Bool_t eventMode = kTRUE         // Event-by-event mode
 )
 {
 
@@ -79,6 +79,33 @@ void run_digi(
   run.SetTimeSliceInterval(timeSliceLength);
   run.SetEventMode(eventMode);
   
+  // --- The MUCH digitizer is set explicitly since the geometry tag cannot
+  // --- be inferred from the top MUCH volume, so the correct parameter
+  // --- file cannot be specified.
+  // --- The MUCH geometry tag is taken from the setup sis18_mcbm_25deg_long.
+  TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+
+  TString muchGeoTag = "v18g_mcbm";
+  Int_t muchFlag = 1;  // mcbm mode
+  TString muchParFile = srcDir;
+  muchParFile = muchParFile + "/parameters/much/much_" + muchGeoTag(0,4)
+                            + "_digi_sector.root";
+  CbmDigitizer* muchDigi = new CbmMuchDigitizeGem(muchParFile.Data(),muchFlag);
+  run.SetDigitizer(kMuch, muchDigi);
+
+  // --- The parameter files for TRD and TOF have to be added by hand
+  // --- since the geometry nodes do not follow the naming convention.
+  // --- The geometry tags are taken from the setup sis18_mcbm_25deg_long.
+  TString trdGeoTag = "v18o_mcbm";
+  TString trdFile = srcDir + "/parameters/trd/trd_" + trdGeoTag + ".digi.par";
+  run.AddParameterAsciiFile(trdFile.Data());
+
+  TString tofGeoTag = "v18i_mcbm";
+  TString tofFile1 = srcDir + "/parameters/tof/tof_" + tofGeoTag + ".digi.par";
+  run.AddParameterAsciiFile(tofFile1.Data());
+  TString tofFile2 = srcDir + "/parameters/tof/tof_" + tofGeoTag + ".digibdf.par";
+  run.AddParameterAsciiFile(tofFile2.Data());
+
   run.Run(nEvents);
   // ------------------------------------------------------------------------
 

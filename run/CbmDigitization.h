@@ -42,13 +42,12 @@ class CbmDigitization : public TNamed
 
     /** @brief Add an ASCII parameter file
      ** @param fileName  Name of parameter file
+     ** @value kTRUE is file is found
      **
      ** All ASCII parameter files will be concatenated and used
      ** as second input to the runtime database.
      */
-    void AddParameterAsciiFile(TString fileName) {
-      fParAsciiFiles.Add(new TObjString(fileName.Data()));
-    }
+    Bool_t AddParameterAsciiFile(TString fileName);
 
 
     /** @brief Enable resource monitoring (default is kTRUE)

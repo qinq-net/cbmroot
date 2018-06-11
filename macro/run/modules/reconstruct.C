@@ -131,7 +131,7 @@ Bool_t reconstruct()
   // -----   Track finding in (MVD+) STS    -----------------------------------------
   CbmKF* kalman = new CbmKF();
   run->AddTask(kalman);
-  CbmL1* l1 = new CbmL1();
+  CbmL1* l1 = new CbmL1("L1", 0);
   // --- Material budget file names
   TString mvdGeoTag;
   if ( setup->GetGeoTag(kMvd, mvdGeoTag) ) {

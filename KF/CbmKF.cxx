@@ -143,7 +143,7 @@ InitStatus CbmKF::Init()
   
   FairRootManager *fManger = FairRootManager::Instance();
   Bool_t useMVD = 0;
-  if(fManger->GetObject("MvdPoint")) useMVD = 1;
+  if(fManger->GetObject("MvdDigi")) useMVD = 1;
   //CbmMvdGeoPar* MvdPar = reinterpret_cast<CbmMvdGeoPar*>(RunDB->findContainer("CbmMvdGeoPar"));
   if( useMVD ){
     CbmMvdDetector* mvdDetector = CbmMvdDetector::Instance();

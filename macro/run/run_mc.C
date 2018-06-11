@@ -4,24 +4,23 @@
 //
 // V. Friese   22/02/2007
 //
-// Version 2016-02-05
+// Version 2018-06-09
 //
 // For the setup (geometry and field), predefined setups can be chosen
-// by the second argument. A list of available setups is given below.
-// The input file can be defined explicitly in this macro or by the
-// third argument. If none of these options are chosen, a default
+// by the second argument. Available setups are in geometry/setup.
+// The input file by the last argument. If none is specified, a default
 // input file distributed with the source code is selected.
 //
+// The output file will be named [output].tra.root.
+// A parameter file [output].par.root will be created.
+// The geometry (TGeoManager) will be written into [output].geo.root.
 // --------------------------------------------------------------------------
 
 
-void run_mc(Int_t nEvents = 2,
-		        const char* setupName = "sis100_electron",
-//                        const char* setupName = "sis100_debug",
-//                        const char* setupName = "sis100_hadron",
-//                        const char* setupName = "sis100_muon_jpsi",
-//                        const char* setupName = "sis100_muon_lmvm",
-		        const char* inputFile = "")
+void run_mc(Int_t nEvents = 3,
+		    const char* setupName = "sis100_electron",
+		    const char* output = "test",
+		    const char* inputFile = "")
 {
 
   // ========================================================================
@@ -34,11 +33,16 @@ void run_mc(Int_t nEvents = 2,
 
 
   // -----   In- and output file names   ------------------------------------
-  TString inFile = ""; // give here or as argument; otherwise default is taken
-  TString outDir  = "data/";
-  TString outFile = outDir + setupName + "_test.mc.root";
-  TString parFile = outDir + setupName + "_params.root";
-  TString geoFile = outDir + setupName + "_geofile_full.root";
+  TString dataset(output);
+  TString outFile = dataset + ".tra.root";
+  TString parFile = dataset + ".par.root";
+  TString geoFile = dataset + ".geo.root";
+  std::cout << std::endl;
+  TString defaultInputFile = srcDir + "/input/urqmd.auau.10gev.centr.root";
+  TString inFile;
+  if ( strcmp(inputFile, "") == 0 ) inFile = defaultInputFile;
+  else inFile = inputFile;
+  std::cout << "-I- " << myName << ": Using input file " << inFile << std::endl;
   // ------------------------------------------------------------------------
 
 
@@ -99,7 +103,8 @@ void run_mc(Int_t nEvents = 2,
 
   
   // -----   Remove old CTest runtime dependency file   ---------------------
-  TString depFile = Remove_CTest_Dependency_File(outDir, "run_mc" , setupName);
+  TString workdir(gSystem->DirName(output));
+  TString depFile = Remove_CTest_Dependency_File(workdir, "run_mc" , setupName);
   // ------------------------------------------------------------------------
 
 
@@ -131,19 +136,6 @@ void run_mc(Int_t nEvents = 2,
   // CbmSetup::Instance()->SetModule(ESystemId, const char*, Bool_t) or
   // CbmSetup::Instance()->SetActive(ESystemId, Bool_t)
   // See the class documentation of CbmSetup.
-  // ------------------------------------------------------------------------
-
-
-  // -----   Input file   ---------------------------------------------------
-  std::cout << std::endl;
-  TString defaultInputFile = srcDir + "/input/urqmd.auau.10gev.centr.root";
-  if ( inFile.IsNull() ) {  // Not defined in the macro explicitly
-  	if ( strcmp(inputFile, "") == 0 ) {  // not given as argument to the macro
-  		inFile = defaultInputFile;
-  	}
-  	else inFile = inputFile;
-  }
-  std::cout << "-I- " << myName << ": Using input file " << inFile << std::endl;
   // ------------------------------------------------------------------------
 
 

@@ -93,17 +93,6 @@ class CbmDaq : public FairTask
     }
 
 
-    /** @brief Set legacy mode
-     ** @param choice If kTRUE, legacy mode is enabled.
-     **
-     ** In legacy mode, the output arrays are registered
-     ** and digis are written by CbmDaq.
-     **/
-    void SetLegacyMode(Bool_t choice = kTRUE) {
-      fLegacy = choice;
-    }
-
-
     /** @brief Set the time-slice interval
      ** @param interval  Duration of a time-slice [ns]
      **/
@@ -125,7 +114,6 @@ class CbmDaq : public FairTask
   private:
 
     Bool_t   fEventMode;           ///< Flag for event-by-event mode
-    Bool_t   fLegacy;              ///< Flag for legacy mode
     Double_t fTimeSliceInterval;   ///< Time-slice interval [ns]
     Double_t fBufferTime;          ///< Maximal time disorder of input data [ns]
     Bool_t   fStoreEmptySlices;    ///< Flag to store also empty time slices
@@ -214,7 +202,7 @@ class CbmDaq : public FairTask
     CbmDaq(const CbmDaq&) = delete;
     CbmDaq& operator=(const CbmDaq&) = delete;
     
-    ClassDef(CbmDaq, 2);
+    ClassDef(CbmDaq, 3);
 
 };
 

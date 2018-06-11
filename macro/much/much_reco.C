@@ -13,13 +13,12 @@ flag =0 for sis 100 geometry
 flag = 1 for mini-cbm geometry
  */
 
-void much_reco(
-		Int_t nEvents = 100, Int_t flag=0)
+void much_reco( Int_t nEvents = 3, Int_t flag = 0)
 {
-   TString dir  = "data/"; // Output directory
-   TString mcFile = dir + "mc.root"; // MC transport file
-   TString parFile = dir + "params.root"; // Parameters file
-   TString globalRecoFile = dir + "global.reco.0000.root"; // Output file with reconstructed tracks and hits
+   TString mcFile = "data/mc.root";
+   TString rawFile = "data/raw.root";
+   TString parFile = "data/params.root"; // Parameters file
+   TString recoFile = "data/reco.root"; // Output file with reconstructed tracks and hits
 
    // Digi files
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
@@ -34,9 +33,10 @@ void much_reco(
 	timer.Start();
 
 	FairRunAna* run = new FairRunAna();
-	run->SetInputFile(mcFile);
-	run->SetOutputFile(globalRecoFile);
-        run->SetGenerateRunInfo(kTRUE);
+	run->SetInputFile(rawFile);
+	run->AddFriend(mcFile);
+	run->SetOutputFile(recoFile);
+    run->SetGenerateRunInfo(kTRUE);
   Bool_t hasFairMonitor = Has_Fair_Monitor();
   if (hasFairMonitor) {
     FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
@@ -47,15 +47,6 @@ void much_reco(
   mcManager->AddFile(mcFile);
   run->AddTask(mcManager);
   // ------------------------------------------------------------------------
-
-
-
-  // -----   STS digitizer   -------------------------------------------------
-  CbmStsDigitize* stsDigi = new CbmStsDigitize();
-  stsDigi->SetEventMode();
-  stsDigi->SetLegacyMode();
-  run->AddTask(stsDigi);
-  // -------------------------------------------------------------------------
 
 
   // -----   STS Cluster Finder   --------------------------------------------
@@ -83,11 +74,6 @@ void much_reco(
    // --------------------------------------------------------------------------
 
    // ----- MUCH hits----------   ----------------------------------------------
-   CbmMuchDigitizeGem* muchDigitize = new CbmMuchDigitizeGem(muchDigiFile.Data(), flag);
-   run->AddTask(muchDigitize);
-//   CbmMuchDigitizeStraws* strawDigitize = new CbmMuchDigitizeStraws(muchDigiFile.Data());
-//   run->AddTask(strawDigitize);
-
    CbmMuchFindHitsGem* muchFindHits = new CbmMuchFindHitsGem(muchDigiFile.Data(), flag);
    run->AddTask(muchFindHits);
 //   CbmMuchFindHitsStraws* strawFindHits = new CbmMuchFindHitsStraws(muchDigiFile.Data());
@@ -132,7 +118,7 @@ void much_reco(
    Double_t rtime = timer.RealTime();
    Double_t ctime = timer.CpuTime();
    cout << "Macro finished successfully." << endl;
-   cout << "Output file is "    << globalRecoFile << endl;
+   cout << "Output file is "    << recoFile << endl;
    cout << "Parameter file is " << parFile << endl;
    cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
    cout << endl;

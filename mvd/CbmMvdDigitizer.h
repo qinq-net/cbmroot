@@ -8,19 +8,18 @@
 #ifndef CBMMVDDIGITIZER_H
 #define CBMMVDDIGITIZER_H 1
 
-#include "FairTask.h"
+#include "CbmDigitizer.h"
 
 #include "TString.h"
 #include "TStopwatch.h"
 
-class FairTask;
 class CbmMvdDetector;
 class CbmMvdPileupManager;
 
 using std::pair;
 
 
-class CbmMvdDigitizer : public FairTask
+class CbmMvdDigitizer : public CbmDigitizer
 {
  
  public:
@@ -54,6 +53,17 @@ class CbmMvdDigitizer : public FairTask
   void ShowDebugHistograms() {fShowDebugHistos = kTRUE;}
 
   void SetProduceNoise(){fNoiseSensors = kTRUE;};
+
+
+  /** @brief Clear data arrays **/
+  virtual void ResetArrays();
+
+
+  /** @brief Write a digi to the output tree
+   ** @param digi  Pointer to digi object
+   **/
+  virtual void WriteDigi(CbmDigi* digi);
+
 
 private:
 /** Hit producer mode (0 = MAPS, 1 = Ideal) **/

@@ -334,36 +334,44 @@ Int_t CbmLitTrackingGeometryConstructor::GetNofTrdStations()
 
 Int_t CbmLitTrackingGeometryConstructor::GetNofMuchStations()
 {
-   static Bool_t firstTime = true;
-   if (firstTime) {
-      fNofMuchStations = 0;
-      const TGeoNode* much = static_cast<const TGeoNode*>(fGeo->GetTopNode()->GetNodes()->FindObject("much_0"));
-      if (NULL == much) { // No MUCH detector return 0 stations
-         firstTime = false;
-         return fNofMuchStations;
+  static Bool_t firstTime = true;
+  if (firstTime) {
+    fNofMuchStations = 0;
+    TGeoNode* much = nullptr;
+    TObjArray* nodes = gGeoManager->GetTopVolume()->GetNodes();
+    for (Int_t iNode = 0; iNode < nodes->GetEntriesFast(); iNode++) {
+      TGeoNode* node = (TGeoNode*) nodes->At(iNode);
+      if (TString(node->GetName()).Contains("much", TString::kIgnoreCase)) { // Top MUCH node
+        much = node;
+        break;
       }
-      TObjArray* muchNodes = much->GetNodes();
-      for (Int_t iMuchNode = 0; iMuchNode < muchNodes->GetEntriesFast(); iMuchNode++) {
-         const TGeoNode* muchNode = static_cast<const TGeoNode*>(muchNodes->At(iMuchNode));
-         if (TString(muchNode->GetName()).Contains("station")) {
-           // old structure defined in ASCII geometry
-           if (TString(muchNode->GetName()).Contains("muchstation")) {
-             TObjArray* layerNodes = muchNode->GetNodes();
-             fNofMuchStations += layerNodes->GetEntriesFast();
-           } else {
-             // New structure defined in ROOT geometry files
-             TObjArray* muchSubNodes = muchNode->GetNodes();
-             for (Int_t iMuchSubNode = 0; iMuchSubNode < muchSubNodes->GetEntriesFast(); iMuchSubNode++) {
-               const TGeoNode* muchSubNode = static_cast<const TGeoNode*>(muchSubNodes->At(iMuchSubNode));
-               TObjArray* layerNodes = muchSubNode->GetNodes();
-               fNofMuchStations += layerNodes->GetEntriesFast();
-             }
-           }
-         }
-      }
+    }
+    if (NULL == much) { // No MUCH detector return 0 stations
       firstTime = false;
-   }
-   return fNofMuchStations;
+      return fNofMuchStations;
+    }
+    TObjArray* muchNodes = much->GetNodes();
+    for (Int_t iMuchNode = 0; iMuchNode < muchNodes->GetEntriesFast(); iMuchNode++) {
+      const TGeoNode* muchNode = static_cast<const TGeoNode*>(muchNodes->At(iMuchNode));
+      if (TString(muchNode->GetName()).Contains("station")) {
+        // old structure defined in ASCII geometry
+        if (TString(muchNode->GetName()).Contains("muchstation")) {
+          TObjArray* layerNodes = muchNode->GetNodes();
+          fNofMuchStations += layerNodes->GetEntriesFast();
+        } else {
+          // New structure defined in ROOT geometry files
+          TObjArray* muchSubNodes = muchNode->GetNodes();
+          for (Int_t iMuchSubNode = 0; iMuchSubNode < muchSubNodes->GetEntriesFast(); iMuchSubNode++) {
+            const TGeoNode* muchSubNode = static_cast<const TGeoNode*>(muchSubNodes->At(iMuchSubNode));
+            TObjArray* layerNodes = muchSubNode->GetNodes();
+            fNofMuchStations += layerNodes->GetEntriesFast();
+          }
+        }
+      }
+    }
+    firstTime = false;
+  }
+  return fNofMuchStations;
 }
 
 Int_t CbmLitTrackingGeometryConstructor::GetNofMuchAbsorbers()

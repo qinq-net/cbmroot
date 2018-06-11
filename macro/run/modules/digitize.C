@@ -47,7 +47,7 @@ void digitize()
 
 	  CbmStsDigitize* stsDigi = new CbmStsDigitize();
 	  stsDigi->SetEventMode();
-	  stsDigi->SetLegacyMode();
+	  //stsDigi->SetLegacyMode();
 	  run->AddTask(stsDigi);
       std::cout << "-I- digitize: Added task " << stsDigi->GetName()
 				<< std::endl;
@@ -59,7 +59,7 @@ void digitize()
 	if ( setup->IsActive(kRich) ) {
 		CbmRichDigitizer* richDigi = new CbmRichDigitizer();
 		richDigi->SetEventMode();
-		richDigi->SetLegacyMode();
+		//richDigi->SetLegacyMode();
 		run->AddTask(richDigi);
 		std::cout << "-I- digitize: Added task " << richDigi->GetName()
 				      << std::endl;

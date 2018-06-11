@@ -92,13 +92,6 @@ public:
    //void SetSigmaMirror(Double_t sigMirror) {fSigmaMirror = sigMirror;}
 
 
-   /** @brief Set legacy mode
-    ** @param choice If kTRUE, run in legacy mode
-    **/
-   void SetLegacyMode(Bool_t choice = kTRUE) {
-     fLegacy = choice;
-   }
-
    /**
     * \brief Set Rich digitizer mode (CbmRichDigitizerModeEnum).
     */
@@ -118,7 +111,6 @@ public:
 
 private:
 
-   Bool_t fLegacy;
    Int_t fEventNum;
 
    CbmRichDigitizerModeEnum fMode;
@@ -201,7 +193,7 @@ private:
     */
    CbmRichDigitizer& operator=(const CbmRichDigitizer&);
 
-   ClassDef(CbmRichDigitizer,1)
+   ClassDef(CbmRichDigitizer, 2)
 };
 
 #endif

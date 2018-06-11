@@ -158,17 +158,6 @@ class CbmStsDigitize : public CbmDigitizer
   void SetGenerateNoise(Bool_t choise = kTRUE);
 
 
-  /** @brief Set legacy mode
-   ** @param choice  If kTRUE, will run in legacy mode
-   **
-   ** In the legacy mode, data are directly written to the output,
-   ** without sending them to DAQ.
-   **/
-  void SetLegacyMode(Bool_t choice = kTRUE) {
-    fIsLegacy = choice;
-  }
-
-
   /** @brief Set the file name with module parameters
    ** @param fileName  File name with module parameters
    **
@@ -253,7 +242,6 @@ class CbmStsDigitize : public CbmDigitizer
  private:
 
   Bool_t fIsInitialised;   ///< kTRUE if Init() was called
-  Bool_t fIsLegacy;        ///< Legacy mode (without DAQ)
 
   Int_t  fEnergyLossModel;  ///< Energy loss model
   Bool_t fUseLorentzShift;
@@ -386,7 +374,7 @@ class CbmStsDigitize : public CbmDigitizer
 
 
 
-  ClassDef(CbmStsDigitize,3);
+  ClassDef(CbmStsDigitize, 4);
 
 };
 

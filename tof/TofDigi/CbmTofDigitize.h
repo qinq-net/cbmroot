@@ -280,9 +280,6 @@ class CbmTofDigitize : public CbmDigitizer
       TClonesArray          * fTofDigiMatchPointsColl; // MC original points
       Int_t  fiNbDigis;                       // Index of the CbmTofDigi/CbmTofDigiExp TClonesArray
 
-      // Generic
-      Int_t fVerbose;
-
       // Output file name and path
       TString fsHistoOutFilename;
       // Histograms

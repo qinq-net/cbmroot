@@ -226,7 +226,7 @@ void CbmMvdGeoHandler::NavigateTo(
       fGeoPathHash = path.Hash();
       fCurrentVolume = gGeoManager->GetCurrentVolume();
       TString name = fCurrentVolume->GetName();
-      LOG(DEBUG) << "this volume is " << name << FairLogger::endl;
+      LOG(DEBUG2) << "this volume is " << name << FairLogger::endl;
       fVolumeShape = (TGeoBBox*)fCurrentVolume->GetShape();
       Double_t local[3] = {0., 0., 0.};  // Local center of volume
       gGeoManager->LocalToMaster(local, fGlobal);
@@ -242,12 +242,12 @@ void CbmMvdGeoHandler::NavigateTo(
         else
 	    LOG(FATAL) <<  "couldn't find Station in volume name, something seems fishy " << FairLogger::endl;
 
-	LOG(DEBUG) << "I am in path: " << path << FairLogger::endl;
-        LOG(DEBUG) << "I am: " << name << FairLogger::endl;
-	LOG(DEBUG) << "I am on station: " << fStationNumber << FairLogger::endl;
-	LOG(DEBUG) << "I am at X: " << fGlobal[0] << FairLogger::endl;
-	LOG(DEBUG) << "I am at Y: " << fGlobal[1] << FairLogger::endl;
-	LOG(DEBUG) << "I am at Z: " << fGlobal[2] << FairLogger::endl;
+	LOG(DEBUG2) << "I am in path: " << path << FairLogger::endl;
+    LOG(DEBUG2) << "I am: " << name << FairLogger::endl;
+	LOG(DEBUG2) << "I am on station: " << fStationNumber << FairLogger::endl;
+	LOG(DEBUG2) << "I am at X: " << fGlobal[0] << FairLogger::endl;
+	LOG(DEBUG2) << "I am at Y: " << fGlobal[1] << FairLogger::endl;
+	LOG(DEBUG2) << "I am at Z: " << fGlobal[2] << FairLogger::endl;
 
 	local[0] = fVolumeShape->GetDX();
         local[1] = fVolumeShape->GetDY();
@@ -491,7 +491,7 @@ Int_t iStation = 0;
 		      {
 		      fSensorHolding = Form("/sensor_%d", SensNr);
                       fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
-		      LOG(DEBUG) << "looking for " << fnodeName << FairLogger::endl;
+		      LOG(DEBUG1) << "looking for " << fnodeName << FairLogger::endl;
                       Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
 		      if(nodeFound)
 		        {
@@ -504,7 +504,7 @@ Int_t iStation = 0;
 			    fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0, StatNr);
 		       	iStation++;
 			FillParameter();
-                         LOG(DEBUG) << "found " << fSensorHolding + "/" + fSensorName <<  " number: " << fVolId << "  and added to MVD Detector" << FairLogger::endl;
+                         LOG(DEBUG1) << "found " << fSensorHolding + "/" + fSensorName <<  " number: " << fVolId << "  and added to MVD Detector" << FairLogger::endl;
 			}
                       else break;
 

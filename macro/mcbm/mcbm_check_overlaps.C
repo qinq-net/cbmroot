@@ -20,7 +20,7 @@ void mcbm_check_overlaps(const char* setup = "sis18_mcbm_25deg_long")
   Int_t benchmarkNumber = 0;
 
   TString outDir  = "data/";
-  TString geoFile = outDir + setup + "_geofile_full.root";
+  TString geoFile = outDir + setup + ".geo.root";
   TFile* f = new TFile(geoFile);
 
   gGeoManager = (TGeoManager*) f->Get("FAIRGeom"); 

@@ -10,16 +10,16 @@
 #define CBMPSDSimpleDigitizer_H 1
 
 
-#include "FairTask.h"
+#include "CbmDigitizer.h"
 
-#include <TRandom3.h>
+#include "TRandom3.h"
 
 #define N_PSD_MODS 44
 #define N_PSD_SECT 10
 
 class TClonesArray;
 
-class CbmPsdSimpleDigitizer : public FairTask
+class CbmPsdSimpleDigitizer : public CbmDigitizer
 {
 
  public:
@@ -40,9 +40,26 @@ class CbmPsdSimpleDigitizer : public FairTask
   virtual void Exec(Option_t* opt);
 
 
+  /** @brief End-of-run action **/
+  virtual void Finish();
+
+
+  /** @brief Reset output arrays **/
+  virtual void ResetArrays();
+
+
+  /** @brief Write data to output array
+   ** @param digi  Pointer to digi object
+   **/
+  virtual void WriteDigi(CbmDigi* digi);
+
+
  private:
-  Int_t             fNDigis;
-  TRandom3*         fRandom3;
+
+  Int_t fNofEvents;
+  Double_t fNofPoints;
+  Double_t fNofDigis;
+  Double_t fTimeTot;
 
   /** Input array of CbmPsdPoints **/
   TClonesArray* fPointArray;
@@ -52,8 +69,6 @@ class CbmPsdSimpleDigitizer : public FairTask
 
   CbmPsdSimpleDigitizer(const CbmPsdSimpleDigitizer&);
   CbmPsdSimpleDigitizer operator=(const CbmPsdSimpleDigitizer&);
-  /** Reset eventwise counters **/
-  void Reset();
 
   ClassDef(CbmPsdSimpleDigitizer,1);
 

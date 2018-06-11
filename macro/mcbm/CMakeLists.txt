@@ -1,5 +1,6 @@
 # start of test CBM setups from geometry/setup
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_mc.C)
+GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_digi.C)
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_reco.C)
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_check_overlaps.C)
 # disable dev tests - GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_mc_dev.C)
@@ -26,18 +27,36 @@ ForEach(setup IN LISTS cbm_setup)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_mc.sh ${NumEvents} ${BeamAngle} \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  
   Set(dep_mc ${testname})
-
-  Set(testname mcbm_reco_${setup})
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_reco.sh ${NumEvents} ${BeamAngle} \"${setup}\")
-  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+  
+  Set(testname mcbm_digi_event_${setup})
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_digi.sh ${NumEvents} \"data/${setup}_test\" 0. 0. 1)
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
   Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
   Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+  Set(dep_digi_event ${testname})
+  
+  Set(testname mcbm_digi_${setup})
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_digi.sh ${NumEvents} \"data/${setup}_test\")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
+  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
+  Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+  Set(dep_digi_event ${testname})
+  
+ 
+  #Set(testname mcbm_reco_${setup})
+  #Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_reco.sh ${NumEvents} ${BeamAngle} \"${setup}\")
+  #Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+  #Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+  #Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_mc})
+  #Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
+  #Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
-  Set(dep_reco ${testname})
+  #Set(dep_reco ${testname})
 
   Set(testname mcbm_overlap_${setup})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_check_overlaps.sh \"${setup}\")

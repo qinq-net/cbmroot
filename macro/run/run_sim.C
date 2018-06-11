@@ -43,8 +43,8 @@ void run_sim(Int_t nEvents = 2,
   // -----   In- and output file names   ------------------------------------
   TString inFile = ""; // give here or as argument; otherwise default is taken
   TString outDir  = "data/";
-  TString outFile = outDir + setupName + "_test.raw.root";
-  TString parFile = outDir + setupName + "_params.root";
+  TString outFile = outDir + setupName + "_test.tra.root";
+  TString parFile = outDir + setupName + "_test.par.root";
   TString geoFile = outDir + setupName + "_geofile_full.root";
   // ------------------------------------------------------------------------
 

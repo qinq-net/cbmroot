@@ -17,7 +17,7 @@
 #ifndef CBMMUCHDIGITIZEGEM_H
 #define CBMMUCHDIGITIZEGEM_H 1
 #define NTIMEBINS 200
-#include "FairTask.h"
+#include "CbmDigitizer.h"
 
 #include "TStopwatch.h"
 #include "TPolyLine.h"
@@ -58,7 +58,7 @@ static double l_not_e     = 0.36;
 static const Double_t gkResponsePeriod = 400.;
 //static const Int_t gkResponseBin = 1;
 
-class CbmMuchDigitizeGem : public FairTask{
+class CbmMuchDigitizeGem : public CbmDigitizer {
   public:
 
     /** Default constructor **/
@@ -148,7 +148,6 @@ class CbmMuchDigitizeGem : public FairTask{
     Bool_t BufferSignals(Int_t,Double_t,Double_t);
     CbmMuchDigi* ConvertSignalToDigi(CbmMuchSignal*); //Converting Analog Signal to Digital Digi
 
-    void SetDaq(Bool_t daq) {fDaq = daq;} // Setting Event by event mode by fDaq =0 and Time based by fDaq=1
     void SetMcChain(TChain* mcChain) {fMcChain=mcChain;}
     void SetDeadTime(Double_t deadTime) {fDeadTime = deadTime; } 
     void SetDriftVelocity(Double_t velocity) {fDriftVelocity = velocity; }
@@ -159,6 +158,11 @@ class CbmMuchDigitizeGem : public FairTask{
     void SetTimeOverThreshold(Bool_t tot) {fTOT = tot; }
     TArrayD fgDeltaResponse; // Signal shape on delta function response
     void SetLight(Bool_t islight){fIsLight = islight;}
+
+    virtual void ResetArrays();
+    virtual void WriteDigi(CbmDigi*);
+
+
   private:
     Int_t              fAlgorithm;     // Algorithm
     CbmMuchGeoScheme*  fGeoScheme;     // Main object responsible for geometry
@@ -181,7 +185,6 @@ class CbmMuchDigitizeGem : public FairTask{
     Double_t           fDTime;         // Time resolution [ns]
     Double_t           fDeadPadsFrac;  // Probability to find a dead pad
     TStopwatch         fTimer;         // Timer
-    Bool_t             fDaq;           // Daq digitizer fDaq=1. Default fDaq=0 - event-by-event
     TChain*            fMcChain;       // Chain of McFiles with McTrack info    
     Double_t           fDeadTime;      // Channel dead time [ns]
     Double_t           fDriftVelocity; // Drift Velocity [um/ns]
@@ -238,17 +241,6 @@ class CbmMuchDigitizeGem : public FairTask{
     Bool_t AddCharge(CbmMuchSectorRadial* s,UInt_t ne, Int_t iPoint, Double_t time, Double_t driftTime, Double_t phi1, Double_t phi2);
     void AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint, Double_t time, Double_t driftTime);
     void Reset();
- /** Get event information
-  ** @param[out]  eventNumber  Number of MC event
-  ** @param[out]  inputNumber  Number of input
-  ** @param[out]  eventTime    Start time of event [ns]
-  **
-  ** In case of being run with FairRunAna, this information
-  ** is taken from FairEventHeader. If the task is run with
-  ** FairRunSim, the FairEventHeader is not filled, so the
-  ** respective information is taken from FairMCEventHeader.
- **/
-  void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
     
     ClassDef(CbmMuchDigitizeGem,1)
 };

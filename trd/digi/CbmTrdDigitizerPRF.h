@@ -1,7 +1,7 @@
 #ifndef CBMTRDDIGITIZERPRF_H
 #define CBMTRDDIGITIZERPRF_H
 
-#include "FairTask.h"
+#include "CbmDigitizer.h"
 #include "TRandom3.h"
 #include <map>
 #include <vector>
@@ -16,7 +16,7 @@ class CbmMatch;
 class TClonesArray;
 class CbmTrdTriangle;
 
-class CbmTrdDigitizerPRF : public FairTask {
+class CbmTrdDigitizerPRF : public CbmDigitizer {
  public:
 
   /**
@@ -50,6 +50,17 @@ class CbmTrdDigitizerPRF : public FairTask {
   void SetTriggerThreshold(Double_t minCharge); 
   void SetPadPlaneScanArea(Int_t column, Int_t row);
   void SetCbmLinkWeightDistance(Bool_t dist);
+
+  /** @brief Reset output arrays **/
+  virtual void ResetArrays();
+
+
+  /** @brief Write data to output
+   ** @param digi Pointer to digi object to be written
+   **/
+  virtual void WriteDigi(CbmDigi* digi);
+
+
  private:
 
   CbmTrdDigitizerPRF& operator=(const CbmTrdDigitizerPRF&);
@@ -91,7 +102,6 @@ class CbmTrdDigitizerPRF : public FairTask {
   //adding drifttime based on values of a Garfield simulation; Drifttime is position dependant so it is random until the charge is distributed inside the gas volume
   Double_t AddDrifttime(Double_t x);
 
-  void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
 
   /**
    * \brief Build digits for the triangular pad geometry
@@ -114,7 +124,6 @@ class CbmTrdDigitizerPRF : public FairTask {
   void SplitTrackPathTriang(const CbmTrdPoint* point, Double_t ELoss, Double_t ELossTR);
   
   Bool_t fDebug;
-  Bool_t fStream;
   Bool_t fNoiseDigis;
   Bool_t fTrianglePads;
   Bool_t fCbmLinkWeightDistance;
@@ -140,11 +149,6 @@ class CbmTrdDigitizerPRF : public FairTask {
   Int_t fModuleId;
   Int_t fBufferAddress;
   Int_t fMCPointId;
-
-  // event info
-  Int_t fInputNr      = 0;  // input file ID
-  Int_t fEventNr      = 0;  // event ID or mc entry number
-  Double_t fEventTime = 0.; // event time
 
   TClonesArray* fPoints; //! Trd MC points
   TClonesArray* fDigis; //! TRD digis

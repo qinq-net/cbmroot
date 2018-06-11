@@ -18,11 +18,12 @@
 #define CBMPSDDIGI_H 1
 
 
-#include "TObject.h"
+#include "CbmDigi.h"
 
 #include <vector>
+#include "CbmDefs.h"
 
-class CbmPsdDigi : public TObject
+class CbmPsdDigi : public CbmDigi
 {
 
  public:
@@ -30,7 +31,7 @@ class CbmPsdDigi : public TObject
   /**   Default constructor   **/
   CbmPsdDigi() ;
   
-  CbmPsdDigi(Int_t section, Int_t module, Double_t edep) ;
+  CbmPsdDigi(Int_t section, Int_t module, Double_t edep, Double_t time = 0.) ;
   
   
   /**   Destructor   **/
@@ -50,8 +51,32 @@ class CbmPsdDigi : public TObject
   Int_t GetSectionID() const { return fSectionID; }
   void SetSectionID(Int_t sec) {  fSectionID = sec; }
 
-  void Print(Option_t* = "") const;
+
+  /** @Address
+   ** @value Unique address
+   **
+   ** TODO: Since there is no addressing scheme for the PSD, for the time being
+   ** kPsd is returned.
+   **/
+  virtual Int_t GetAddress() const { return kPsd; }
+
+
+  /** @brief System ID (PSD)
+   ** @value kPsd
+   **/
+  virtual Int_t GetSystemId() const { return kPsd; };
+
+
+  /** @brief Time
+   ** @value Time of measurement [ns]
+   **/
+  virtual Double_t GetTime() const { return fTime; }
+
   
+  /** @brief Info to string **/
+  virtual std::string ToString() const;
+
+
  private:
 
 
@@ -60,9 +85,10 @@ class CbmPsdDigi : public TObject
   Int_t fModuleID;
   Int_t fSectionID;
   Double_t fEdep;//[10][44];       // SELIM: simplification matrix [10][44] -> simple double 
+  Double_t fTime;
 
   
-  ClassDef(CbmPsdDigi,1);
+  ClassDef(CbmPsdDigi, 2);
 
 };
 

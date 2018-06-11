@@ -23,8 +23,9 @@ void much_seg_sector(TString mcFile = "",
   }
   //  if (inDigiFile == "") {
   if (inDigiFile == "") {
+    TString srcDir = gSystem->Getenv("VMCWORKDIR");
     //inDigiFile = "data/much_digi_sector_mcbm.seg";
-    inDigiFile = "data/much_digi_sector_4station.seg";
+    inDigiFile = srcDir + "/macro/much/data/much_digi_sector_4station.seg";
   }
  
   if (outDigiFile=="") {
@@ -64,7 +65,8 @@ void much_seg_sector(TString mcFile = "",
   // ------------------------------------------------------------------------
 
   // -----  Segmentation task  ----------------------------------------------
-  CbmMuchSegmentSector* seg = new CbmMuchSegmentSector(inDigiFile.Data(), outDigiFile.Data(),flag);
+  CbmMuchSegmentSector* seg = new CbmMuchSegmentSector(inDigiFile,
+                                                       outDigiFile,flag);
   // seg->DebugSwitchOn();
   fRun->AddTask(seg);
   // ------------------------------------------------------------------------

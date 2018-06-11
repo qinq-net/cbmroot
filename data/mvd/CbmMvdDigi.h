@@ -55,7 +55,7 @@ public:
 
     Int_t    GetRefId() const { return fRefId; };   
 
-    std::string ToString() const { return std::string{""}; }
+    std::string ToString() const { return CbmDigi::ToString(); }
 
     //these functions are only for littrack
     Int_t GetDominatorX(){ return 0;};

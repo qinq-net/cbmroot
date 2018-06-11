@@ -36,7 +36,6 @@ using std::stringstream;
 // =====   Constructor   =====================================================
 CbmDaq::CbmDaq(Double_t interval) : FairTask("Daq"),
                    fEventMode(kFALSE),
-                   fLegacy(kFALSE),
                    fTimeSliceInterval(interval),
                    fBufferTime(500.),
                    fStoreEmptySlices(kFALSE),
@@ -240,80 +239,6 @@ void CbmDaq::Exec(Option_t*) {
 
 
 
-// =====   Fill a data (digi) object into the its output array   =============
-void CbmDaq::FillData(CbmDigi* data) {
-
-  /** This method is used in the legacy mode to write digis into the
-   ** output arrays. In the new framework, this is performed
-   ** by the digitizers themselves.
-   **/
-
-  Int_t iDet = data->GetSystemId();
-  if ( fDigis[iDet] == nullptr ) {
-    LOG(FATAL) << GetName() << ": received digi from "
-        << CbmModuleList::GetModuleNameCaps(iDet)
-        << " but have no corresponding output array!" << FairLogger::endl;
-    return;
-  }
-  Int_t nDigis = fDigis[iDet]->GetEntriesFast();
-
-  switch ( iDet ) {
-
-    case kMvd: {
-      CbmMvdDigi* digi = static_cast<CbmMvdDigi*>(data);
-      new ( (*(fDigis[kMvd]))[nDigis] ) CbmMvdDigi(*digi);
-      fTimeSlice->AddData(kMvd);
-      break;
-    }
-
-    case kSts: {
-      CbmStsDigi* digi = static_cast<CbmStsDigi*>(data);
-      new ( (*(fDigis[kSts]))[nDigis] ) CbmStsDigi(*digi);
-      fTimeSlice->AddData(kSts);
-      break;
-    }
-
-    case kRich: {
-      CbmRichDigi* digi = static_cast<CbmRichDigi*>(data);
-      new ( (*(fDigis[kRich]))[nDigis] ) CbmRichDigi(*digi);
-      fTimeSlice->AddData(kRich);
-      break;
-    }
-
-    case kMuch: {
-      CbmMuchDigi* digi = static_cast<CbmMuchDigi*>(data);
-      new ( (*(fDigis[kMuch]))[nDigis] ) CbmMuchDigi(*digi);
-      fTimeSlice->AddData(kMuch);
-      break;
-    }
-
-    case kTrd: {
-      CbmTrdDigi* digi = static_cast<CbmTrdDigi*>(data);
-      new ( (*(fDigis[kTrd]))[nDigis] ) CbmTrdDigi(*digi);
-      fTimeSlice->AddData(kTrd);
-      break;
-    }
-
-    case kTof: {
-      CbmTofDigiExp* digi = static_cast<CbmTofDigiExp*>(data);
-      new ( (*(fDigis[kTof]))[nDigis] ) CbmTofDigiExp(*digi);
-      fTimeSlice->AddData(kTof);
-      break;
-    }
-
-    default:
-      TString sysName = CbmModuleList::GetModuleName(iDet);
-      LOG(WARNING) << "CbmDaq: System " << sysName
-                   << " is not implemented yet!" << FairLogger::endl;
-      break;
-
-  }  // detector switch
-
-}
-// ===========================================================================
-
-
-
 // =====   Fill current time slice with data from buffers   ==================
 Int_t CbmDaq::FillTimeSlice(Double_t fillTime, Bool_t limit) {
 
@@ -334,7 +259,10 @@ Int_t CbmDaq::FillTimeSlice(Double_t fillTime, Bool_t limit) {
 
       // --- Consistency check
       if ( fTimeSlice->GetDuration() > 0. ) {
-        if ( digi->GetTime() < fTimeSlice->GetStartTime() )
+        // Negative times in the first TS are allowed. They can happen if the
+        // event time is small compared to the time resolution of the detector.
+        if ( digi->GetTime() > 0. &&
+             digi->GetTime() < fTimeSlice->GetStartTime() )
           LOG(FATAL) << fName << ": digi from system "
           << CbmModuleList::GetModuleNameCaps(digi->GetSystemId())
           << " at time " << digi->GetTime() << " for " << fTimeSlice->ToString()
@@ -344,8 +272,7 @@ Int_t CbmDaq::FillTimeSlice(Double_t fillTime, Bool_t limit) {
       LOG(DEBUG2) << fName << ": Inserting digi with detector ID "
           << digi->GetAddress() << " at time " << digi->GetTime()
           << " into current time slice" << FairLogger::endl;
-      if ( ! fLegacy ) WriteData(digi);
-      else FillData(digi);  // Legacy mode
+      WriteData(digi);
       if ( !fNofDigis && !nDigis ) fTimeDigiFirst = digi->GetTime();
       fTimeDigiLast = TMath::Max(fTimeDigiLast, digi->GetTime());
       RegisterEvent(digi);
@@ -454,38 +381,10 @@ InitStatus CbmDaq::Init() {
   FairRootManager::Instance()->Register("TimeSlice.",
                                         "DAQ", fTimeSlice, kTRUE);
 
-  // Register output branch EventList
+  // Register output branch MCEventList
   fEventsCurrent = new CbmMCEventList();
   FairRootManager::Instance()->Register("MCEventList.", "DAQ",
                                         fEventsCurrent, kTRUE);
-
-  // In legacy mode: register output branches (CbmDigi)
-  if ( fLegacy ) {
-    for (Int_t detector = kMvd; detector < kNofSystems; detector++) {
-      TString className = "Cbm";
-      TString branchName = "";
-
-      switch (detector) {
-        case kMvd:  branchName = "MvdDigi";  break;
-        case kSts:  branchName = "StsDigi";  break;
-        case kRich: branchName = "RichDigi"; break;
-        case kMuch: branchName = "MuchDigi"; break;
-        case kTrd:  branchName = "TrdDigi";  break;
-        case kTof:  branchName = "TofDigiExp";  break;
-        case kPsd:  branchName = "PsdDigi";  break;
-        default: break;
-      } //? detector
-      if ( branchName.IsNull() ) continue;
-      className += branchName;
-
-      fDigis[detector] = new TClonesArray(className.Data(), 1000);
-      FairRootManager::Instance()->Register(branchName.Data(), "",
-                                            fDigis[detector],IsOutputBranchPersistent(branchName));
-      LOG(INFO) << GetName() << ": Registered branch " << branchName
-          << FairLogger::endl;
-
-    } //# systems
-  } //? legacy
 
   // Set initial times
   fTimeEventPrevious = -1.;
@@ -493,7 +392,6 @@ InitStatus CbmDaq::Init() {
   fTimeSlice->Reset(0., fTimeSliceInterval);
   fTimeSliceFirst =  0.;
   fTimeSliceLast  = -1.;
-
 
   LOG(INFO) << GetName() << ": Initialisation successful"
       << FairLogger::endl;
@@ -536,7 +434,7 @@ void CbmDaq::RegisterEvent(CbmDigi* digi) {
 
   assert(digi);
   CbmMatch* match = digi->GetMatch();
-  assert(match);
+  if ( match == nullptr ) return;
   for (Int_t iLink = 0; iLink < match->GetNofLinks(); iLink++) {
 
     Int_t file = match->GetLink(iLink).GetFile();

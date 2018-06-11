@@ -3,7 +3,9 @@
 // -----                  Created 15/05/12  by  Alla & SELIM & FLORIAN -----
 // -----                 Modified 17/03/18  by  Sergey Morozov         -----
 // -------------------------------------------------------------------------
+#include <iomanip>
 #include <iostream>
+#include <cassert>
 
 #include "TClonesArray.h"
 
@@ -14,16 +16,23 @@
 #include "CbmPsdSimpleDigitizer.h"
 #include "CbmPsdPoint.h"
 #include "TMath.h"
+#include "TStopwatch.h"
 
 using std::cout;
 using std::endl;
+using std::setw;
+using std::right;
+using std::fixed;
+using std::setprecision;
 
 
 // -----   Default constructor   -------------------------------------------
 CbmPsdSimpleDigitizer::CbmPsdSimpleDigitizer() :
-  FairTask("Simple Psd Digitizer",1),
-  fNDigis(0),
-  fRandom3(NULL),
+  CbmDigitizer("PsdDigitizer"),
+  fNofEvents(0),
+  fNofPoints(0.),
+  fNofDigis(0.),
+  fTimeTot(0.),
   fPointArray(NULL),
   fDigiArray(NULL)
 {
@@ -48,46 +57,42 @@ CbmPsdSimpleDigitizer::~CbmPsdSimpleDigitizer()
 // -----   Public method Init   --------------------------------------------
 InitStatus CbmPsdSimpleDigitizer::Init() {
 
-  fRandom3 = new TRandom3();
-
   // Get RootManager
   FairRootManager* ioman = FairRootManager::Instance();
-  if ( ! ioman )
-  {
-      LOG(FATAL) << "CbmPsdSimpleDigitizer::Init: RootManager not instantised!" << FairLogger::endl;    //FLORIAN
-      return kFATAL;
-  }
+  assert(ioman),
 
   // Get input array
   fPointArray = (TClonesArray*) ioman->GetObject("PsdPoint");
-  if ( ! fPointArray )
-  {
-      LOG(FATAL) << "CbmPsdSimpleDigitizer::Init: No PSDPoint array!" << FairLogger::endl;             //FLORIAN
-      return kERROR;
-  }
+  assert(fPointArray);
 
   // Create and register output array
   fDigiArray = new TClonesArray("CbmPsdDigi", 1000);
   ioman->Register("PsdDigi", "PSD", fDigiArray, IsOutputBranchPersistent("PsdDigi"));
 
-  cout << "-I- CbmPsdSimpleDigitizer: Intialisation successfull " << kSUCCESS<< endl;
+  // Statistics
+  fNofEvents = 0;
+  fNofPoints = 0;
+  fNofDigis  = 0.;
+  fTimeTot = 0.;
+
+  LOG(INFO) << fName << ": Initialisation successful " << kSUCCESS
+      << FairLogger::endl;
   return kSUCCESS;
 
 }
-
-
 // -------------------------------------------------------------------------
 
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmPsdSimpleDigitizer::Exec(Option_t* /*opt*/) {
+void CbmPsdSimpleDigitizer::Exec(Option_t*) {
 
-  cout<<" CbmPsdSimpleDigitizer::Exec begin "<<endl;
-  // Reset output array
-   if ( ! fDigiArray ) Fatal("Exec", "No PsdDigi array");
-  Reset();  // SELIM: reset!!!
-   
+  TStopwatch timer;
+  timer.Start();
+
+  LOG(DEBUG) << fName << ": processing event " << fCurrentEvent
+      << " at t = " << fCurrentEventTime << " ns" << FairLogger::endl;
+
   // Declare some variables
   CbmPsdPoint* point = NULL;
   Int_t modID   = -1;        // module ID
@@ -97,7 +102,6 @@ void CbmPsdSimpleDigitizer::Exec(Option_t* /*opt*/) {
   memset(edep, 0,(N_PSD_SECT*N_PSD_MODS)*sizeof(Double_t));
 
   TVector3 pos;       // Position vector
-  fNDigis=0;
 
   //for (Int_t imod=0; imod<100; imod++)                   //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
   for (Int_t imod=0; imod<N_PSD_MODS; imod++)//marina
@@ -108,9 +112,11 @@ void CbmPsdSimpleDigitizer::Exec(Option_t* /*opt*/) {
       }
   }
 
+  // Event info (for event time)
+  GetEventInfo();
+
   // Loop over PsdPoints
   Int_t nPoints = fPointArray->GetEntriesFast();
-  cout<<" nPoints "<<nPoints<<endl;
 
   Int_t sec;
 
@@ -133,6 +139,7 @@ void CbmPsdSimpleDigitizer::Exec(Option_t* /*opt*/) {
 
   }// Loop over MCPoints
 
+  Int_t nDigis = 0;
       for (Int_t imod=0; imod<N_PSD_MODS; imod++) {
         for (Int_t isec=0; isec<N_PSD_SECT; isec++) {
 	  //if (edep[isec][imod]<=0.) cout << "!!  edep  !! : " << edep[isec][imod] << endl;
@@ -141,30 +148,79 @@ void CbmPsdSimpleDigitizer::Exec(Option_t* /*opt*/) {
             Double_t eLossMIP = edep[isec][imod] / 0.005; // 5MeV per MIP
             Double_t pixPerMIP = 15.; // 15 pix per MIP
             Double_t eLossMIPSmeared =
-                 fRandom3->Gaus(eLossMIP * pixPerMIP,sqrt(eLossMIP * pixPerMIP)) / pixPerMIP;
+                 gRandom->Gaus(eLossMIP * pixPerMIP,sqrt(eLossMIP * pixPerMIP)) / pixPerMIP;
             Double_t eLossSmeared = eLossMIPSmeared * 0.005;
-            Double_t eNoise = fRandom3->Gaus(0,15) / 50. * 0.005;
+            Double_t eNoise = gRandom->Gaus(0,15) / 50. * 0.005;
             eLossSmeared += eNoise;
-
-	    new ((*fDigiArray)[fNDigis]) CbmPsdDigi(isec+1, imod+1, eLossSmeared);
-	    fNDigis++;
-	    cout <<"CbmPsdSimpleDigitizer " <<fNDigis <<" " <<isec+1 <<" " <<imod+1 <<" " << eLossSmeared <<endl; 
+            // V.F. The digi time is set to the event time. This is a workaround only
+            // to integrate PSD in the common digitisation scheme.
+            CbmPsdDigi* digi = new CbmPsdDigi(isec+1, imod+1,
+                                              eLossSmeared, fCurrentEventTime);
+            SendDigi(digi);
+	    nDigis++;
+	    LOG(DEBUG1) << fName << ": Digi " << nDigis << " Section " << isec+1
+	        << " Module " << imod+1 << " energy " << eLossSmeared <<endl;
 	  }
         }// section
       }//module
 
-  // Event summary
-  cout << "-I- CbmPsdSimpleDigitizer: " <<fNDigis<< " CbmPsdDigi created." << endl;
 
+
+  // --- Event log
+  timer.Stop();
+  LOG(INFO) << "+ " << setw(15) << GetName() << ": Event " << setw(6)
+         << right << fCurrentEvent << " at " << fixed << setprecision(3)
+         << fCurrentEventTime << " ns, points: " << nPoints
+         << ", digis: " << nDigis << ". Exec time " << setprecision(6)
+         << timer.RealTime() << " s." << FairLogger::endl;
+
+  // --- Run statistics
+  fNofEvents++;
+  fNofPoints += nPoints;
+  fNofDigis += nDigis;
+  fTimeTot += timer.RealTime();
 }
 // -------------------------------------------------------------------------
 
-// -----   Private method Reset   ------------------------------------------
-void CbmPsdSimpleDigitizer::Reset() {
- fNDigis = 0;
- if ( fDigiArray ) fDigiArray->Delete();
 
+
+// -----   End-of-run   ----------------------------------------------------
+void CbmPsdSimpleDigitizer::Finish() {
+  std::cout << std::endl;
+  LOG(INFO) << "=====================================" << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
+  LOG(INFO) << "Events processed    : " << fNofEvents << FairLogger::endl;
+  LOG(INFO) << "PsdPoint / event    : " << setprecision(1)
+    << fNofPoints / Double_t(fNofEvents)
+    << FairLogger::endl;
+  LOG(INFO) << "PsdDigi / event     : " << fNofDigis  / Double_t(fNofEvents)
+    << FairLogger::endl;
+  LOG(INFO) << "Digis per point     : " << setprecision(6)
+    << fNofDigis / fNofPoints << FairLogger::endl;
+  LOG(INFO) << "Real time per event : " << fTimeTot / Double_t(fNofEvents)
+    << " s" << FairLogger::endl;
+  LOG(INFO) << "=====================================" << FairLogger::endl;
 }
+// -------------------------------------------------------------------------
+
+
+
+// -----   Reset output arrays   -------------------------------------------
+void CbmPsdSimpleDigitizer::ResetArrays() {
+  if ( fDigiArray ) fDigiArray->Delete();
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Write data to arrays   ------------------------------------------
+void CbmPsdSimpleDigitizer::WriteDigi(CbmDigi* digi) {
+  CbmPsdDigi* myDigi = dynamic_cast<CbmPsdDigi*>(digi);
+  assert(myDigi);
+  Int_t index = fDigiArray->GetEntriesFast();
+  new ((*fDigiArray)[index]) CbmPsdDigi(*myDigi);
+}
+// -------------------------------------------------------------------------
 
 
 ClassImp(CbmPsdSimpleDigitizer)

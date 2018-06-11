@@ -42,11 +42,14 @@ using std::make_pair;
 using std::max;
 using std::fabs;
 using std::pair;
+using std::setw;
+using std::fixed;
+using std::setprecision;
+using std::right;
 
 CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
-  :FairTask("CbmTrdDigitizerPRF"),
+  :CbmDigitizer("TrdDigitizerPRF"),
    fDebug(false),
-   fStream(false),
    fNoiseDigis(false),
    fTrianglePads(false),
    fCbmLinkWeightDistance(false),
@@ -96,6 +99,16 @@ CbmTrdDigitizerPRF::~CbmTrdDigitizerPRF()
 
 InitStatus CbmTrdDigitizerPRF::Init()
 {
+  std::cout << std::endl;
+  LOG(INFO) << "=========================================================="
+      << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl
+      << FairLogger::endl;
+  if ( fEventMode ) LOG(INFO) << GetName() << ": Using event-by-event mode."
+      << FairLogger::endl;
+
+  Bool_t persistency=IsOutputBranchPersistent("TrdDigi");
+
   FairRootManager* ioman = FairRootManager::Instance();
   if (ioman == NULL) LOG(FATAL) << "CbmTrdDigitizerPRF::Init: No FairRootManager" << FairLogger::endl;
 
@@ -105,54 +118,51 @@ InitStatus CbmTrdDigitizerPRF::Init()
   fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
   if (fMCTracks == NULL) LOG(FATAL) << "CbmTrdDigitizerPRF::Init: No MCTrack array" << FairLogger::endl;
 
-
-  if (fRadiator != NULL)
-    fRadiator->Init();
-
-  if (fSigma_noise_keV > 0.0){
-    fNoise = new TRandom3();
-  }
-
-  // If the task CbmDaq is found, run in stream mode; else in event mode.
-  FairTask* daq = FairRun::Instance()->GetTask("Daq");
-  if ( daq ) {
-    LOG(INFO) << GetName() << ": Using stream mode."
-              << FairLogger::endl;
-    fStream = true;
-  }  //? stream mode
-  else {
-    LOG(INFO) << GetName() << ": Using event mode."
-              << FairLogger::endl;
-    fStream = false;
-  }
-
-
-  Bool_t persistency=IsOutputBranchPersistent("TrdDigi");
-  if(fStream)  persistency=kFALSE;
-
-  fDigis = new TClonesArray("CbmTrdDigi", 100); 
+  fDigis = new TClonesArray("CbmTrdDigi", 100);
   ioman->Register("TrdDigi", "TRD Digis", fDigis, persistency);
-  
+
   fDigiMatches = new TClonesArray("CbmMatch", 100);
   ioman->Register("TrdDigiMatch", "TRD Digis", fDigiMatches, persistency);
 
+  if (fSigma_noise_keV > 0.0) {
+    fNoise = new TRandom3();
+    LOG(INFO) << fName << ": Noise sigma = " << fSigma_noise_keV
+        << " keV" << FairLogger::endl;
+  }
+
+  if ( fRadiator == nullptr ) {
+    LOG(INFO) << fName << ": Using default radiator K++" << FairLogger::endl;
+    fRadiator = new CbmTrdRadiator(kTRUE, "K++");
+  }
+  fRadiator->Init();
+
+  // --- Check presence of digitisation parameters
+  if ( ! fDigiPar ) {
+    LOG(ERROR) << fName << ": No digitization parameters available!"
+        << FairLogger::endl;
+    return kFATAL;
+  }
+
+  LOG(INFO) << GetName() << ": Initialisation successful"
+      << FairLogger::endl;
+  LOG(INFO) << "=========================================================="
+      << FairLogger::endl;
+  std::cout << std::endl;
   
   return kSUCCESS;
 }
 
 void CbmTrdDigitizerPRF::Exec(Option_t*)
 {
-  LOG(INFO) << "================ TRD PRF Digitizer ===============" << FairLogger::endl;
-  LOG(INFO) << " Noise width:     " << fSigma_noise_keV << " keV"<< FairLogger::endl;
-  fDigis->Delete();
-  fDigiMatches->Delete();
+  LOG(DEBUG) << "================ TRD PRF Digitizer ===============" << FairLogger::endl;
+  LOG(DEBUG) << " Noise width:     " << fSigma_noise_keV << " keV"<< FairLogger::endl;
 
   fDebug = false;
   TStopwatch timer;
   timer.Start();
 
   /// get event info (once per event, used later in the matching)
-  GetEventInfo(fInputNr, fEventNr, fEventTime);
+  GetEventInfo();
 
   fnoDigis=0;
   Int_t nofLatticeHits = 0;
@@ -197,7 +207,7 @@ void CbmTrdDigitizerPRF::Exec(Option_t*)
     ELossdEdX = point->GetEnergyLoss();
     ELoss = ELossTR + ELossdEdX;
     if (ELoss > fMinimumChargeTH)  nofPointsAboveThreshold++;
-    fCurrentTime =fEventTime + point->GetTime()+ AddDrifttime(fNoise->Uniform(0,239))*1000;  //convert to ns; Drifttime is still random, but could get position dependant;
+    fCurrentTime = fCurrentEventTime + point->GetTime()+ AddDrifttime(fNoise->Uniform(0,239))*1000;  //convert to ns; Drifttime is still random, but could get position dependant;
     
     // Find node corresponding to the point in the center between entrance and exit MC-point coordinates
     Double_t meanX = (point->GetXOut() + point->GetXIn()) / 2.;
@@ -224,35 +234,41 @@ void CbmTrdDigitizerPRF::Exec(Option_t*)
   }
 
   // Fill data from internally used stl map into output TClonesArray; used in event based mode
-  if(!fStream){
-    Int_t iDigi = 0;
-    std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it;
-    for (it = fDigiMap.begin() ; it != fDigiMap.end(); it++) {
-      new ((*fDigis)[iDigi]) CbmTrdDigi(*(it->second.first));
-      new ((*fDigiMatches)[iDigi]) CbmMatch(*(it->second.second));
-      delete it->second.first;
-      delete it->second.second;
-      iDigi++;
-      fnoDigis++;
-    }
-    fDigiMap.clear();
-  }
+  Int_t iDigi = 0;
+  for (auto it = fDigiMap.begin() ; it != fDigiMap.end(); it++) {
 
-  fLastEventTime=fEventTime;
+    CbmTrdDigi* digi = it->second.first;
+    CbmMatch* match = it->second.second;
+    digi->SetMatch(match);
+    SendDigi(digi);
+    iDigi++;
+    fnoDigis++;
+  }
+  fDigiMap.clear();
+
+  fLastEventTime = fCurrentEventTime;
 
   Double_t digisOverPoints = (nofPoints > 0) ? fnoDigis / nofPoints : 0;
   Double_t latticeHitsOverElectrons = (nofElectrons > 0) ? (Double_t) nofLatticeHits / (Double_t) nofElectrons : 0;
-  LOG(INFO) << "CbmTrdDigitizerPRF::Exec Points:               " << nofPoints << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizerPRF::Exec PointsAboveThreshold: " << nofPointsAboveThreshold << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizerPRF::Exec Digis:                " << fnoDigis << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizerPRF::Exec digis/points:         " << digisOverPoints << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizerPRF::Exec BackwardTracks:       " << nofBackwardTracks << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizerPRF::Exec LatticeHits:          " << nofLatticeHits  << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizerPRF::Exec Electrons:            " << nofElectrons << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizerPRF::Exec latticeHits/electrons:" << latticeHitsOverElectrons << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizerPRF::Exec Points:               " << nofPoints << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizerPRF::Exec PointsAboveThreshold: " << nofPointsAboveThreshold << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizerPRF::Exec Digis:                " << fnoDigis << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizerPRF::Exec digis/points:         " << digisOverPoints << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizerPRF::Exec BackwardTracks:       " << nofBackwardTracks << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizerPRF::Exec LatticeHits:          " << nofLatticeHits  << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizerPRF::Exec Electrons:            " << nofElectrons << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizerPRF::Exec latticeHits/electrons:" << latticeHitsOverElectrons << FairLogger::endl;
   timer.Stop();
-  LOG(INFO) << "CbmTrdDigitizerPRF::Exec real time=" << timer.RealTime()
+  LOG(DEBUG) << "CbmTrdDigitizerPRF::Exec real time=" << timer.RealTime()
             << " CPU time=" << timer.CpuTime() << FairLogger::endl;
+
+  // --- Event log
+  LOG(INFO) << "+ " << setw(15) << GetName() << ": Event " << setw(6)
+         << right << fCurrentEvent << " at " << fixed << setprecision(3)
+         << fCurrentEventTime << " ns, points: " << nofPoints
+         << ", lattice hits: " << nofLatticeHits
+         << ", digis: " << fnoDigis << ". Exec time " << setprecision(6)
+         << timer.RealTime() << " s." << FairLogger::endl;
 }
 
 
@@ -398,8 +414,8 @@ void CbmTrdDigitizerPRF::ScanPadPlane(const Double_t* local_point, Double_t clus
 	Double_t clusterchargeTR=chargeFraction * clusterELossTR;
 
 	//either give the digi information to a map for event based mode or to a buffer for time based mode; the PRF decreases quickly and the channel has to see a fraction of the trigger charge
-	if(!fStream && (clustercharge+clusterchargeTR)>fMinimumChargeTH/30.)             AddDigi(fMCPointId, address, clustercharge, clusterchargeTR, fCurrentTime);
-	if(fStream  && (clustercharge+clusterchargeTR)>fMinimumChargeTH/30.)             AddDigitoBuffer(fMCPointId, address, clustercharge, clusterchargeTR, fCurrentTime);
+	if( fEventMode && (clustercharge+clusterchargeTR)>fMinimumChargeTH/30.)             AddDigi(fMCPointId, address, clustercharge, clusterchargeTR, fCurrentTime);
+	if( (! fEventMode )  && (clustercharge+clusterchargeTR)>fMinimumChargeTH/30.)             AddDigitoBuffer(fMCPointId, address, clustercharge, clusterchargeTR, fCurrentTime);
       } // for iCol
 
     } // for iRow
@@ -428,7 +444,7 @@ void CbmTrdDigitizerPRF::AddDigi(Int_t pointId, Int_t address, Double_t charge, 
     if(!fTrianglePads) AddNoise(charge);
     
     CbmMatch* digiMatch = new CbmMatch();
-    digiMatch->AddLink(CbmLink(weighting, pointId, fEventNr, fInputNr));
+    digiMatch->AddLink(CbmLink(weighting, pointId, fCurrentEvent, fCurrentInput));
     fDigiMap[address] = make_pair(new CbmTrdDigi(address, 0., time, fTrianglePads), digiMatch);
     it = fDigiMap.find(address);
     it->second.first->SetCharge(charge, up);
@@ -438,7 +454,7 @@ void CbmTrdDigitizerPRF::AddDigi(Int_t pointId, Int_t address, Double_t charge, 
     it->second.first->AddCharge(charge, up);
     it->second.first->AddChargeTR(chargeTR, up);
     it->second.first->SetTime(max(time, it->second.first->GetTime()));
-    it->second.second->AddLink(CbmLink(weighting, pointId, fEventNr, fInputNr));
+    it->second.second->AddLink(CbmLink(weighting, pointId, fCurrentEvent, fCurrentInput));
   }
   //if(fTrianglePads) cout<<it->second.first->ToString();
 }
@@ -458,14 +474,14 @@ void CbmTrdDigitizerPRF::AddDigitoBuffer(Int_t pointId, Int_t address, Double_t 
 
   //compare times of the buffer content with the actual time and process the buffer if collecttime is over
   Bool_t eventtime=false;
-  if(fEventTime>0.000) eventtime=true;
+  if(fCurrentEventTime>0.000) eventtime=true;
   if(eventtime)        CheckTime(address);
 
   AddNoise(charge);
 
   //fill digis in the buffer
   CbmMatch* digiMatch = new CbmMatch();
-  digiMatch->AddLink(CbmLink(weighting, pointId, fEventNr, fInputNr));
+  digiMatch->AddLink(CbmLink(weighting, pointId, fCurrentEvent, fCurrentInput));
   CbmTrdDigi* digi= new CbmTrdDigi(address, charge, time, fTrianglePads);
   digi->SetCharge(charge, up);
   digi->SetChargeTR(chargeTR, up);
@@ -477,30 +493,7 @@ void CbmTrdDigitizerPRF::AddDigitoBuffer(Int_t pointId, Int_t address, Double_t 
 }
 
 
-// -------------------------------------------------------------------------
-void CbmTrdDigitizerPRF::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
-				      Double_t& eventTime)
-{
-  // --- The event number is taken from the FairRootManager
-  eventNr = FairRootManager::Instance()->GetEntryNr();
 
-   // --- In a FairRunAna, take the information from FairEventHeader
-  if ( FairRunAna::Instance() ) {
-    FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
-    inputNr   = event->GetInputFileId();
-    eventTime = event->GetEventTime();
-  }
-
-  // --- In a FairRunSim, the input number and event time are always zero;
-  // --- only the event number is retrieved.
-  else {
-    if ( ! FairRunSim::Instance() )
-      LOG(FATAL) << GetName() << ": neither SIM nor ANA run." 
-		 << FairLogger::endl;
-    inputNr   = 0;
-    eventTime = 0.;
-  }
-}
 
 void CbmTrdDigitizerPRF::SetTriangularPads(Bool_t triangles)
 {
@@ -713,7 +706,7 @@ void CbmTrdDigitizerPRF::CheckTime(Int_t address){
 
 void CbmTrdDigitizerPRF::NoiseTime(){
 
-  fCurrentTime=fNoise->Uniform(fLastEventTime,fEventTime);
+  fCurrentTime=fNoise->Uniform(fLastEventTime,fCurrentEventTime);
   
 }
 
@@ -1141,6 +1134,27 @@ void CbmTrdDigitizerPRF::ScanPadPlaneTriangleAB(const Double_t* point, Double_t 
     }
   }
 }
+
+
+// -----   Reset output arrays   --------------------------------------------
+void CbmTrdDigitizerPRF::ResetArrays() {
+  fDigis->Delete();
+  fDigiMatches->Delete();
+}
+// --------------------------------------------------------------------------
+
+
+
+// -----   Write data to output   -------------------------------------------
+void CbmTrdDigitizerPRF::WriteDigi(CbmDigi* digi) {
+  CbmTrdDigi* trdDigi = dynamic_cast<CbmTrdDigi*>(digi);
+  CbmMatch* match = trdDigi->GetMatch();
+  assert(trdDigi);
+  Int_t index = fDigis->GetEntriesFast();
+  new ((*fDigis)[index]) CbmTrdDigi(*trdDigi);
+  new ((*fDigiMatches)[index]) CbmMatch(*match);
+}
+// --------------------------------------------------------------------------
 
 ClassImp(CbmTrdDigitizerPRF)
 			 

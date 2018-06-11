@@ -24,7 +24,7 @@ void mvd_qa3_digitize( const char* setup = "sis100_electron")
     TString parFile =outDir+ "params.root";
 
     // Output file
-    TString outFile =outDir+ "mvd.recoQA.root";
+    TString outFile =outDir+ "mvd.rawQA.root";
 
     // Background file (MC events, for pile-up)
     TString bgFile = inFile;
@@ -68,27 +68,13 @@ void mvd_qa3_digitize( const char* setup = "sis100_electron")
     timer.Start();
     // ------------------------------------------------------------------------
 
-    // -----   Reconstruction run   -------------------------------------------
-    FairRunAna *fRun= new FairRunAna();
-    fRun->SetInputFile(inFile);
-    fRun->SetOutputFile(outFile);
-    Bool_t hasFairMonitor = Has_Fair_Monitor();
-    if (hasFairMonitor) {
-      FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
-    }
-    // ------------------------------------------------------------------------
 
-    // ----- Mc Data Manager   ------------------------------------------------
-    CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-    mcManager->AddFile(inFile);
-    fRun->AddTask(mcManager);
-    // ------------------------------------------------------------------------
-  
+
+
 
     // -------   MVD Digitiser   ----------------------------------------------
     CbmMvdDigitizer* digi = new CbmMvdDigitizer("MVDDigitiser", 0, iVerbose);
-    cout << "Adding Task:  CbmMvdDigitiser... " << endl;
-    fRun->AddTask(digi);
+    std::cout << "Adding Task:  CbmMvdDigitiser... " << std::endl;
     
     //--- Pile Up -------
     
@@ -107,79 +93,39 @@ void mvd_qa3_digitize( const char* setup = "sis100_electron")
     //digi->SetDeltaEvents(pileUpInMVD*100); // for simulation assumes 1% target
 
     //digi->ShowDebugHistograms();
-    
-
-  // -----   MVD Clusterfinder   ---------------------------------------------
-  CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("MVD Clusterfinder", 0, iVerbose);
-  fRun->AddTask(mvdCluster);
-  // -------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
     
-    CbmMvdHitfinder* mvd_hit   = new CbmMvdHitfinder("MVDFindHits", 0, iVerbose);
-    mvd_hit->UseClusterfinder(kTRUE);
-    fRun->AddTask(mvd_hit);
+    // -----   Digitization run   ---------------------------------------------
+    CbmDigitization run;
 
-    //----------------------------------------------------------------------------
-    // -----  Parameter database   -----------------------------------------------
-    FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
-    FairParRootFileIo*  parIo1 = new FairParRootFileIo();
-    parIo1->open(parFile.Data());
+    run.AddInput(inFile);
+    run.SetOutputFile(outFile, kTRUE);
+    run.SetParameterRootFile(parFile);
+    run.SetEventMode();
 
-    rtdb->setFirstInput(parIo1);
-    rtdb->setOutput(parIo1);
-    rtdb->saveOutput();
-    rtdb->print();
-    // ---------------------------------------------------------------------------
-
-
-
-    // -----   Run initialisation   ----------------------------------------------
-    fRun->Init();
-    // ---------------------------------------------------------------------------
-
-
-
-    // -----   Start run   -------------------------------------------------------
-    fRun->Run(0,nEvents);
-    // ---------------------------------------------------------------------------
-
+    run.SetDigitizer(kMvd, digi);
+    
+    run.Run(nEvents);
+    // ------------------------------------------------------------------------
 
 
     // -----   Finish   ----------------------------------------------------------
     timer.Stop();
     Double_t rtime = timer.RealTime();
     Double_t ctime = timer.CpuTime();
-    cout << endl << endl;
-    cout << "Macro finished succesfully." << endl;
-    cout << "Output file is "    << outFile << endl;
-    cout << "Parameter file is " << parFile << endl;
-    cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
-    cout << endl;
+    std::cout << std::endl << std::endl;
+    std::cout << "Macro finished successfully." << std::endl;
+    std::cout << "Output file is "    << outFile << std::endl;
+    std::cout << "Parameter file is " << parFile << std::endl;
+    std::cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << std::endl;
+    std::cout << std::endl;
     // ---------------------------------------------------------------------------
 
-  if (hasFairMonitor) {
-    // Extract the maximal used memory an add is as Dart measurement
-    // This line is filtered by CTest and the value send to CDash
-    FairSystemInfo sysInfo;
-    Float_t maxMemory=sysInfo.GetMaxMemory();
-    cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
-    cout << maxMemory;
-    cout << "</DartMeasurement>" << endl;
 
-    Float_t cpuUsage=ctime/rtime;
-    cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
-    cout << cpuUsage;
-    cout << "</DartMeasurement>" << endl;
-
-    FairMonitor* tempMon = FairMonitor::GetMonitor();
-    tempMon->Print();
-  }
-  //  delete run;
-
-  cout << " Test passed" << endl;
-  cout << " All ok " << endl;
+  std::cout << " Test passed" << std::endl;
+  std::cout << " All ok " << std::endl;
 
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
-  RemoveGeoManager();
 }

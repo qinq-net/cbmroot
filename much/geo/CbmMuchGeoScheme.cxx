@@ -102,8 +102,7 @@ CbmMuchGeoScheme::CbmMuchGeoScheme()
     Rmax(-1.),
     Dx2(-1.)
 {
-
-  Info("CbmMuchGeoScheme", "CbmMuchGeoScheme created");
+  LOG(DEBUG) << "CbmMuchGeoScheme created" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

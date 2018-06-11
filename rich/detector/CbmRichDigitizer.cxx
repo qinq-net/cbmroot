@@ -30,7 +30,6 @@ using namespace std;
 
 CbmRichDigitizer::CbmRichDigitizer()
  : CbmDigitizer("RichDigitizer"),
-   fLegacy(kFALSE),
    fEventNum(0),
    fMode(CbmRichDigitizerModeEvents),
    fDetectorType(CbmRichPmtTypeCosy17NoWls),
@@ -88,10 +87,8 @@ InitStatus CbmRichDigitizer::Init()
    fMcTracks = (TClonesArray *)manager->GetObject("MCTrack");
    if (NULL == fMcTracks) { Fatal("CbmRichDigitizer::Init","No MCTrack array!"); }
 
-   if ( (! fLegacy) || fEventMode ) {
-      fRichDigis = new TClonesArray("CbmRichDigi");
-      manager->Register("RichDigi","RICH", fRichDigis, IsOutputBranchPersistent("RichDigi"));
-   }
+   fRichDigis = new TClonesArray("CbmRichDigi");
+   manager->Register("RichDigi","RICH", fRichDigis, IsOutputBranchPersistent("RichDigi"));
 
    // --- Screen output
    LOG(INFO) << GetName() << ": Initialisation successful"
@@ -112,12 +109,9 @@ void CbmRichDigitizer::Exec(
 	fEventNum++;
 	LOG(DEBUG) << fName << ": Event  " << fEventNum << FairLogger::endl;
 
-	if (fLegacy && fRichDigis != NULL) {
-	   fRichDigis->Delete();
+	for(auto itr = fDigisMap.begin(); itr !=fDigisMap.end(); itr++) {
+	  delete itr->second;
 	}
-        for(auto itr = fDigisMap.begin(); itr !=fDigisMap.end(); itr++) {
-          delete itr->second;
-        }
 	fDigisMap.clear();
 
 	Double_t oldEventTime = fCurrentEventTime;
@@ -226,8 +220,6 @@ void CbmRichDigitizer::ProcessPoint(CbmRichPoint* point, Int_t pointId, Int_t ev
 
 void CbmRichDigitizer::Finish()
 {
-	if (fLegacy && fRichDigis != NULL) fRichDigis->Delete();
-
 	  std::cout << std::endl;
 	  LOG(INFO) << "=====================================" << FairLogger::endl;
 	  LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
@@ -242,7 +234,6 @@ void CbmRichDigitizer::Finish()
 	  LOG(INFO) << "Real time per event : " << fTimeTot / Double_t(fEventNum)
 	                              << " s" << FairLogger::endl;
 	  LOG(INFO) << "=====================================" << FairLogger::endl;
-
 }
 
 void CbmRichDigitizer::AddCrossTalkDigis(
@@ -278,46 +269,20 @@ void CbmRichDigitizer::AddCrossTalkDigis(
 
 Int_t CbmRichDigitizer::AddDigisToOutputArray()
 {
-   Int_t nofDigis = 0;
+  Int_t nofDigis = 0;
 
-   if ( fLegacy ) {
-     if ( ! fEventMode ) {  // time-based
-       for(auto const &dm : fDigisMap) {
-         CbmRichDigi* digi = new CbmRichDigi();
-         digi->SetAddress(dm.second->GetAddress());
-         CbmMatch* digiMatch = new CbmMatch(*dm.second->GetMatch());
-         digi->SetMatch(digiMatch);
-         digi->SetTime(dm.second->GetTime());
-         CbmDaqBuffer::Instance()->InsertData(digi);
-         nofDigis++;
-       }
-     } else { // event-by-event
-       for(auto const &dm : fDigisMap) {
-         new((*fRichDigis)[nofDigis]) CbmRichDigi();
-         CbmRichDigi* digi = (CbmRichDigi*)fRichDigis->At(nofDigis);
-         digi->SetAddress(dm.second->GetAddress());
-         CbmMatch* digiMatch = new CbmMatch(*dm.second->GetMatch());
-         digi->SetMatch(digiMatch);
-         digi->SetTime(dm.second->GetTime());
-         nofDigis++;
-       }
-     }
-   } //? legacy mode
+  for(auto const &dm : fDigisMap) {
+    CbmRichDigi* digi = new CbmRichDigi();
+    digi->SetAddress(dm.second->GetAddress());
+    CbmMatch* digiMatch = new CbmMatch(*dm.second->GetMatch());
+    digi->SetMatch(digiMatch);
+    digi->SetTime(dm.second->GetTime());
+    SendDigi(digi);
+    nofDigis++;
+  } //# digis in map
 
-   else {  // new mode
-     for(auto const &dm : fDigisMap) {
-       CbmRichDigi* digi = new CbmRichDigi();
-       digi->SetAddress(dm.second->GetAddress());
-       CbmMatch* digiMatch = new CbmMatch(*dm.second->GetMatch());
-       digi->SetMatch(digiMatch);
-       digi->SetTime(dm.second->GetTime());
-       SendDigi(digi);
-       nofDigis++;
-     } //# digis in map
-   } //? new mode
-
-	LOG(DEBUG) << "Number of RICH digis: " << nofDigis << FairLogger::endl;
-	return nofDigis;
+  LOG(DEBUG) << "Number of RICH digis: " << nofDigis << FairLogger::endl;
+  return nofDigis;
 }
 
 void CbmRichDigitizer::AddNoiseDigis(

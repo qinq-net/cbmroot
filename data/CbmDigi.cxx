@@ -4,12 +4,20 @@
  **/
 
 #include "CbmDigi.h"
+
+#include <sstream>
 #include "CbmMatch.h"
 
 #include "FairMultiLinkedData.h"
 
 #include <memory>
 #include <utility> // std::forward
+
+
+using std::string;
+using std::stringstream;
+
+
 
 // -----   Default constructor   -------------------------------------------
 CbmDigi::CbmDigi() 
@@ -33,7 +41,9 @@ CbmDigi::CbmDigi(const CbmDigi& rhs)
 } 
 // -------------------------------------------------------------------------
 
-// -----   Move constructor  ----------------------------------------
+
+
+// -----   Move constructor  -----------------------------------------------
 CbmDigi::CbmDigi(CbmDigi&& other)
   : TObject(std::forward<CbmDigi>(other)), // should be std::forward
     fMatch(nullptr)
@@ -42,6 +52,8 @@ CbmDigi::CbmDigi(CbmDigi&& other)
 	other.fMatch = nullptr;
 }
 // -------------------------------------------------------------------------
+
+
 
 // -----   Assignment operator (deep copy)  --------------------------------
 CbmDigi& CbmDigi::operator=(const CbmDigi& rhs) 
@@ -58,6 +70,8 @@ CbmDigi& CbmDigi::operator=(const CbmDigi& rhs)
 }
 // -------------------------------------------------------------------------
 
+
+
 // -----   Assignment operator (deep copy)  --------------------------------
 CbmDigi& CbmDigi::operator=(CbmDigi&& other)
 {
@@ -72,11 +86,24 @@ CbmDigi& CbmDigi::operator=(CbmDigi&& other)
 }
 // -------------------------------------------------------------------------
 
+
+
 // -----   Destructor   ----------------------------------------------------
 CbmDigi::~CbmDigi() {
   if ( fMatch) delete fMatch;
 }
 // -------------------------------------------------------------------------
+
+
+
+// -----   Info to string   ------------------------------------------------
+string CbmDigi::ToString() const {
+  stringstream ss;
+  ss << "Digi: address " << GetAddress() << " | time " << GetTime();
+  return ss.str();
+}
+// -------------------------------------------------------------------------
+
 
 // The following functions are only implemented for the unit tests.
 // They can only be called from a derived class via CbmDigi::GetAddress()

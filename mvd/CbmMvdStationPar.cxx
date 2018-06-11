@@ -40,9 +40,8 @@ CbmMvdStationPar::~CbmMvdStationPar() {
 // -----   Public method Print   -------------------------------------------
 void CbmMvdStationPar::Print(Option_t* /*opt*/) const {
 
-cout 	<< endl << "--I--" << GetName() << "--I--" << endl
-	<< endl << "Initialized ParameterFile with " << fZPositions.size() << " Stations" << endl
-	<< endl << "-------------------------------------------------------------------------" << endl;
+LOG(INFO) << "MvdStationPar: Initialized parameter file with "
+    << fZPositions.size() << " stations" << FairLogger::endl;
 
 LOG(DEBUG) <<"Z Postion station 0: " << GetZPosition(0) << FairLogger::endl;
 LOG(DEBUG) <<"Z Postion station 1: " << GetZPosition(1) << FairLogger::endl;

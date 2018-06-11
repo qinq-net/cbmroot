@@ -67,7 +67,6 @@ CbmStsDigitizeParameters* fDigiPar; ///< Digitisation parameters
 CbmStsDigitize::CbmStsDigitize()
 : CbmDigitizer("StsDigitize"),
   fIsInitialised(kFALSE),
-  fIsLegacy(kFALSE),
   fEnergyLossModel(2),
   fUseLorentzShift(kTRUE),
   fUseDiffusion(kTRUE),
@@ -200,14 +199,7 @@ void CbmStsDigitize::CreateDigi(Int_t address, UShort_t channel,
   digi->SetMatch(digiMatch);
 
   // Send the digi to DAQ
-  if ( ! fIsLegacy ) SendDigi(digi);
-
-  // Legacy mode: event-by-event, the data are written to the
-  // output, time-based, they are sent to DAQ
-  else {
-    if ( fEventMode ) WriteDigi(digi);
-    else CbmDaqBuffer::Instance()->InsertData(digi);
-  }
+  SendDigi(digi);
 
   fNofDigis++;
   LOG(DEBUG3) << GetName() << ": created digi at " << time
@@ -459,21 +451,18 @@ InitStatus CbmStsDigitize::Init() {
   fTracks = (TClonesArray*) ioman->GetObject("MCTrack");
   assert ( fTracks );
 
-  if ( (! fIsLegacy) || fEventMode ) {
+  // Register output array (StsDigi)
+  fDigis = new TClonesArray("CbmStsDigi",1000);
+  ioman->Register("StsDigi", "STS", fDigis,
+                  IsOutputBranchPersistent("StsDigi"));
 
-    // Register output array (CbmStsDigi)
-    fDigis = new TClonesArray("CbmStsDigi",1000);
-    ioman->Register("StsDigi", "STS", fDigis,
-                    IsOutputBranchPersistent("StsDigi"));
+  // Register output array (StsDigiMatch)
+  // For backward compatibility only; the match object is already member
+  // of CbmStsDigi.
+  fMatches = new TClonesArray("CbmMatch", 1000);
+  ioman->Register("StsDigiMatch", "STS", fMatches,
+                  IsOutputBranchPersistent("StsDigiMatch"));
 
-    // Register output array (CbmStsDigiMatch)
-    // For backward compatibility only; the match object is already member
-    // of CbmStsDigi.
-    fMatches = new TClonesArray("CbmMatch", 1000);
-    ioman->Register("StsDigiMatch", "STS", fMatches,
-                    IsOutputBranchPersistent("StsDigiMatch"));
-
-  }
 
   // --- Screen output
   LOG(INFO) << GetName() << ": Initialisation successful"
