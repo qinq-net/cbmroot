@@ -48,7 +48,7 @@ using std::setprecision;
 using std::right;
 
 CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
-  :CbmDigitizer("TrdDigitizerPRF"),
+  :CbmDigitize("TrdDigitizerPRF"),
    fDebug(false),
    fNoiseDigis(false),
    fTrianglePads(false),

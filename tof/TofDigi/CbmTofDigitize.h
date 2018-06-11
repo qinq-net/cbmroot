@@ -16,7 +16,7 @@
 #include "TH2.h"
 #include "TStopwatch.h"
 #include "TTimeStamp.h"
-#include "CbmDigitizer.h"
+#include "CbmDigitize.h"
 
 class TClonesArray;
 class TRandom3;
@@ -30,7 +30,7 @@ class CbmTofGeoHandler;
 class CbmTofPoint;
 
 
-class CbmTofDigitize : public CbmDigitizer
+class CbmTofDigitize : public CbmDigitize
 {
    public:
 

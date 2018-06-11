@@ -65,7 +65,7 @@ CbmStsDigitizeParameters* fDigiPar; ///< Digitisation parameters
 
 // -----   Standard constructor   ------------------------------------------
 CbmStsDigitize::CbmStsDigitize()
-: CbmDigitizer("StsDigitize"),
+: CbmDigitize("StsDigitize"),
   fIsInitialised(kFALSE),
   fEnergyLossModel(2),
   fUseLorentzShift(kTRUE),

@@ -35,7 +35,7 @@ using std::vector;
 
 // -----   Default constructor   ------------------------------------------
 CbmMvdDigitizer::CbmMvdDigitizer() 
-  : CbmDigitizer("MmdDigitizer"),
+  : CbmDigitize("MmdDigitizer"),
     fMode(0),
     fShowDebugHistos(kFALSE),
     fNoiseSensors(kFALSE),
@@ -65,7 +65,7 @@ CbmMvdDigitizer::CbmMvdDigitizer()
 
 // -----   Standard constructor   ------------------------------------------
 CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose) 
-  : CbmDigitizer(name),
+  : CbmDigitize(name),
     fMode(iMode),
     fShowDebugHistos(kFALSE),
     fNoiseSensors(kFALSE),

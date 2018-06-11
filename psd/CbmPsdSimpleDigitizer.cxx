@@ -28,7 +28,7 @@ using std::setprecision;
 
 // -----   Default constructor   -------------------------------------------
 CbmPsdSimpleDigitizer::CbmPsdSimpleDigitizer() :
-  CbmDigitizer("PsdDigitizer"),
+  CbmDigitize("PsdDigitizer"),
   fNofEvents(0),
   fNofPoints(0.),
   fNofDigis(0.),

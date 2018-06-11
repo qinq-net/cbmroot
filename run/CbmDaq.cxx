@@ -472,7 +472,7 @@ void CbmDaq::WriteData(CbmDigi* digi) {
       << system << FairLogger::endl;
 
   // --- Call write method of corresponding digitizer
-  CbmDigitizer* digitizer = fDigitizers.at(system);
+  CbmDigitize* digitizer = fDigitizers.at(system);
   assert(digitizer);
   digitizer->WriteDigi(digi);
   fTimeSlice->AddData(system);

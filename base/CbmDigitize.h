@@ -1,10 +1,10 @@
-/** @file CbmDigitizer.h
+/** @file CbmDigitize.h
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 01.06.2018
  **/
 
-#ifndef CBMDIGITIZER_H
-#define CBMDIGITIZER_H 1
+#ifndef CBMDIGITIZE_H
+#define CBMDIGITIZE_H 1
 
 #include "FairTask.h"
 #include "CbmDaqBuffer.h"
@@ -12,30 +12,30 @@
 class CbmDigi;
 
 
-/** @class CbmDigitizer
+/** @class CbmDigitize
  ** @brief Abstract base class for CBM digitisation tasks
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 01 June 2018
  **
  ** Derived classes have to implement the abstract method WriteDigi.
  **/
-class CbmDigitizer : public FairTask
+class CbmDigitize : public FairTask
 {
 
   public:
 
     /** @brief Constructor **/
-    CbmDigitizer();
+    CbmDigitize();
 
 
     /** @brief Constructor with name
      ** @param name Task name
      **/
-    CbmDigitizer(const char* name);
+    CbmDigitize(const char* name);
 
 
     /** @brief Destructor **/
-    virtual ~CbmDigitizer();
+    virtual ~CbmDigitize();
 
 
     /** @brief Get event information **/
@@ -96,7 +96,7 @@ class CbmDigitizer : public FairTask
     CbmDaqBuffer* fDaqBuffer;
 
 
-    ClassDef(CbmDigitizer, 1);
+    ClassDef(CbmDigitize, 1);
 };
 
-#endif /* CBMDIGITIZER_H */
+#endif /* CBMDIGITIZE_H */

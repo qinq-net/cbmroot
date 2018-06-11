@@ -69,7 +69,7 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmMuchDigitizeGem::CbmMuchDigitizeGem()
-  : CbmDigitizer("MuchDigitizeGem"),
+  : CbmDigitize("MuchDigitizeGem"),
     fgDeltaResponse(),
     fAlgorithm(1),
     fGeoScheme(CbmMuchGeoScheme::Instance()),
@@ -141,7 +141,7 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem()
 
 // -------------------------------------------------------------------------
 CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag) 
-  : CbmDigitizer("MuchDigitizeGem"),
+  : CbmDigitize("MuchDigitizeGem"),
     fgDeltaResponse(),
     fAlgorithm(1),
     fGeoScheme(CbmMuchGeoScheme::Instance()),

@@ -90,7 +90,7 @@ void mcbm_digi(
   TString muchParFile = srcDir;
   muchParFile = muchParFile + "/parameters/much/much_" + muchGeoTag(0,4)
                             + "_digi_sector.root";
-  CbmDigitizer* muchDigi = new CbmMuchDigitizeGem(muchParFile.Data(),muchFlag);
+  CbmDigitize* muchDigi = new CbmMuchDigitizeGem(muchParFile.Data(),muchFlag);
   run.SetDigitizer(kMuch, muchDigi);
 
   // --- The parameter files for TRD and TOF have to be added by hand

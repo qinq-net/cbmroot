@@ -1,9 +1,9 @@
-/** @file CbmDigitizer.cxx
+/** @file CbmDigitize.cxx
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 01.06.2018
  **/
 
-#include "CbmDigitizer.h"
+#include "CbmDigitize.h"
 
 #include "FairEventHeader.h"
 #include "FairRunAna.h"
@@ -13,7 +13,7 @@
 
 
 // -----   Default constructor   --------------------------------------------
-CbmDigitizer::CbmDigitizer() :
+CbmDigitize::CbmDigitize() :
     FairTask("Digitizer"),
     fEventMode(kFALSE),
     fCurrentInput(-1),
@@ -26,7 +26,7 @@ CbmDigitizer::CbmDigitizer() :
 
 
 // -----   Default constructor   --------------------------------------------
-CbmDigitizer::CbmDigitizer(const char* name) :
+CbmDigitize::CbmDigitize(const char* name) :
     FairTask(name),
     fEventMode(kFALSE),
     fCurrentInput(-1),
@@ -39,7 +39,7 @@ CbmDigitizer::CbmDigitizer(const char* name) :
 
 
 // -----   Get event information   ------------------------------------------
-void CbmDigitizer::GetEventInfo() {
+void CbmDigitize::GetEventInfo() {
 
   // --- The event number is taken from the FairRootManager
   fCurrentEvent = FairRootManager::Instance()->GetEntryNr();
@@ -61,7 +61,7 @@ void CbmDigitizer::GetEventInfo() {
 
 
 // -----   Send a digi to the DAQ   -----------------------------------------
-void CbmDigitizer::SendDigi(CbmDigi* digi) {
+void CbmDigitize::SendDigi(CbmDigi* digi) {
   assert(fDaqBuffer);
   fDaqBuffer->InsertData(digi);
 }
@@ -70,9 +70,9 @@ void CbmDigitizer::SendDigi(CbmDigi* digi) {
 
 
 // -----   Destructor   -----------------------------------------------------
-CbmDigitizer::~CbmDigitizer() {
+CbmDigitize::~CbmDigitize() {
 }
 // --------------------------------------------------------------------------
 
 
-ClassImp(CbmDigitizer)
+ClassImp(CbmDigitize)

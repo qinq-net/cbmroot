@@ -29,7 +29,7 @@
 using namespace std;
 
 CbmRichDigitizer::CbmRichDigitizer()
- : CbmDigitizer("RichDigitizer"),
+ : CbmDigitize("RichDigitizer"),
    fEventNum(0),
    fMode(CbmRichDigitizerModeEvents),
    fDetectorType(CbmRichPmtTypeCosy17NoWls),

@@ -8,7 +8,7 @@
 #ifndef CBMMVDDIGITIZER_H
 #define CBMMVDDIGITIZER_H 1
 
-#include "CbmDigitizer.h"
+#include "CbmDigitize.h"
 
 #include "TString.h"
 #include "TStopwatch.h"
@@ -19,7 +19,7 @@ class CbmMvdPileupManager;
 using std::pair;
 
 
-class CbmMvdDigitizer : public CbmDigitizer
+class CbmMvdDigitizer : public CbmDigitize
 {
  
  public:

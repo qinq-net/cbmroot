@@ -66,7 +66,7 @@ const Int_t    kiNbIntPts = 2;
 
 /************************************************************************************/
 CbmTofDigitize::CbmTofDigitize():
-   CbmDigitizer("TofDigitize"),
+   CbmDigitize("TofDigitize"),
    fdFeeGainSigma(0.),
    fdFeeTotThr(0.),
    fdTimeResElec(0.),
@@ -140,7 +140,7 @@ CbmTofDigitize::CbmTofDigitize():
 }
 
 CbmTofDigitize::CbmTofDigitize(const char *name, Int_t verbose):
-   CbmDigitizer(name),
+   CbmDigitize(name),
    fdFeeGainSigma(0.),
    fdFeeTotThr(0.),
    fdTimeResElec(0.),

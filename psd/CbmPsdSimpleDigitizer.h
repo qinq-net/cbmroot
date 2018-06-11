@@ -10,7 +10,7 @@
 #define CBMPSDSimpleDigitizer_H 1
 
 
-#include "CbmDigitizer.h"
+#include "CbmDigitize.h"
 
 #include "TRandom3.h"
 
@@ -19,7 +19,7 @@
 
 class TClonesArray;
 
-class CbmPsdSimpleDigitizer : public CbmDigitizer
+class CbmPsdSimpleDigitizer : public CbmDigitize
 {
 
  public:

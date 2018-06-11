@@ -35,7 +35,7 @@ CbmAddress.cxx
 #CbmDigiManager.cxx
 CbmPropagator.cxx
 
-CbmDigitizer.cxx
+CbmDigitize.cxx
 CbmDaqBuffer.cxx
 
 CbmTrdTrackFinder.cxx  

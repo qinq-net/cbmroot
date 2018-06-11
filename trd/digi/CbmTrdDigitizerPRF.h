@@ -1,7 +1,7 @@
 #ifndef CBMTRDDIGITIZERPRF_H
 #define CBMTRDDIGITIZERPRF_H
 
-#include "CbmDigitizer.h"
+#include "CbmDigitize.h"
 #include "TRandom3.h"
 #include <map>
 #include <vector>
@@ -16,7 +16,7 @@ class CbmMatch;
 class TClonesArray;
 class CbmTrdTriangle;
 
-class CbmTrdDigitizerPRF : public CbmDigitizer {
+class CbmTrdDigitizerPRF : public CbmDigitize {
  public:
 
   /**

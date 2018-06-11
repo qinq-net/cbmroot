@@ -9,7 +9,7 @@
 
 #include "TObject.h"
 #include "TString.h"
-#include "CbmDigitizer.h"
+#include "CbmDigitize.h"
 
 
 /** @class CbmDigitizeInfo
@@ -35,7 +35,7 @@ class CbmDigitizeInfo : public TObject
      **/
     CbmDigitizeInfo(Int_t system = -1,
                     TString branch = "",
-                    CbmDigitizer* digitizer = nullptr,
+                    CbmDigitize* digitizer = nullptr,
                     Bool_t present = kFALSE,
                     Bool_t active = kTRUE,
                     Bool_t persistent = kTRUE) :
@@ -62,7 +62,7 @@ class CbmDigitizeInfo : public TObject
     /** @brief Get digitizer
      ** @value Pointer to digitizer instance
      **/
-    CbmDigitizer* GetDigitizer() const { return fDigitizer; }
+    CbmDigitize* GetDigitizer() const { return fDigitizer; }
 
 
     /** @brief Activity flag
@@ -91,7 +91,7 @@ class CbmDigitizeInfo : public TObject
     /** @brief Set digitizer instance
      ** @param digitizer Pointer to digitizer instance
      **/
-    void SetDigitizer(CbmDigitizer* digitizer) { fDigitizer = digitizer; }
+    void SetDigitizer(CbmDigitize* digitizer) { fDigitizer = digitizer; }
 
 
     /** @brief Set persistence flag
@@ -110,7 +110,7 @@ class CbmDigitizeInfo : public TObject
 
     Int_t         fSystem;      // System ID (ECbmModuleId)
     TString       fBranch;      // Branch (array) name
-    CbmDigitizer* fDigitizer;   // Pointer to digitizer instance
+    CbmDigitize*  fDigitizer;   // Pointer to digitizer instance
     Bool_t        fPresent;     // Data branch is present in input tree
     Bool_t        fActive;      // Digitizer is active
     Bool_t        fPersistent;  // Digitizer output is persistent

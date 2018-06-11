@@ -17,7 +17,7 @@
 #ifndef CBMMUCHDIGITIZEGEM_H
 #define CBMMUCHDIGITIZEGEM_H 1
 #define NTIMEBINS 200
-#include "CbmDigitizer.h"
+#include "CbmDigitize.h"
 
 #include "TStopwatch.h"
 #include "TPolyLine.h"
@@ -58,7 +58,7 @@ static double l_not_e     = 0.36;
 static const Double_t gkResponsePeriod = 400.;
 //static const Int_t gkResponseBin = 1;
 
-class CbmMuchDigitizeGem : public CbmDigitizer {
+class CbmMuchDigitizeGem : public CbmDigitize {
   public:
 
     /** Default constructor **/

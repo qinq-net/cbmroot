@@ -8,7 +8,7 @@
 
 #include <map>
 #include "TStopwatch.h"
-#include "CbmDigitizer.h"
+#include "CbmDigitize.h"
 #include "CbmMatch.h"
 #include "CbmStsDigitizeParameters.h"
 
@@ -31,7 +31,7 @@ class CbmStsSetup;
  ** buffered data prior to the MC time of the current event are read out
  ** and stored in the output.
  **/
-class CbmStsDigitize : public CbmDigitizer
+class CbmStsDigitize : public CbmDigitize
 {
 
  public:

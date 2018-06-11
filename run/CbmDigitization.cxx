@@ -276,7 +276,7 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
 
   // --- Register digitisers
   for (auto it = fDigitizers.begin(); it != fDigitizers.end(); it++) {
-    CbmDigitizer* digitizer = it->second->GetDigitizer();
+    CbmDigitize* digitizer = it->second->GetDigitizer();
     if ( it->second->IsActive() && digitizer != nullptr ) {
       digitizer->SetDaqBuffer(fDaq->GetBuffer());
       fDaq->SetDigitizer(it->first, digitizer);
@@ -409,12 +409,12 @@ void CbmDigitization::SetDefaultBranches() {
 
 
 // -----   Set digitizer explicitly   ---------------------------------------
-void CbmDigitization::SetDigitizer(Int_t system, CbmDigitizer* digitizer,
+void CbmDigitization::SetDigitizer(Int_t system, CbmDigitize* digitizer,
                                    TString branch, Bool_t persistent) {
 
   // Digitizer already present: replace
   if ( fDigitizers.find(system) != fDigitizers.end() ) {
-    CbmDigitizer* oldDigitizer = fDigitizers[system]->GetDigitizer();
+    CbmDigitize* oldDigitizer = fDigitizers[system]->GetDigitizer();
     if ( oldDigitizer != nullptr ) {
       LOG(WARNING) << fName << ": replacing "
           << oldDigitizer->GetName()

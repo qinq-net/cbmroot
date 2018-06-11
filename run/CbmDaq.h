@@ -14,7 +14,7 @@
 #include "FairTask.h"
 
 #include "CbmDaqBuffer.h"
-#include "CbmDigitizer.h"
+#include "CbmDigitize.h"
 #include "CbmMCEventList.h"
 #include "CbmTimeSlice.h"
 
@@ -88,7 +88,7 @@ class CbmDaq : public FairTask
      ** @param system  System Id (ECbmModuleId)
      ** @param digitizer  Pointer to digitizer instance
      **/
-    void SetDigitizer(Int_t system, CbmDigitizer* digitizer) {
+    void SetDigitizer(Int_t system, CbmDigitize* digitizer) {
       fDigitizers[system] = digitizer;
     }
 
@@ -130,7 +130,7 @@ class CbmDaq : public FairTask
 
     TStopwatch fTimer;              //! Stop watch
     std::map<Int_t, TClonesArray*> fDigis;  //! Output arrays (digis)
-    std::map<Int_t, CbmDigitizer*> fDigitizers; //!
+    std::map<Int_t, CbmDigitize *> fDigitizers; //!
     CbmTimeSlice* fTimeSlice;       //! Current time slice
     CbmDaqBuffer* fBuffer;          //! DaqBuffer instance
     CbmMCEventList fEventList;      //!  MC event list (all)

@@ -18,6 +18,7 @@
 #include "CbmDigitizeInfo.h"
 
 class TGeoManager;
+class CbmDigitize;
 
 
 class CbmDigitization : public TNamed
@@ -106,7 +107,7 @@ class CbmDigitization : public TNamed
      ** default ones is to be used. The respective digitizer has to be
      ** instantiated before. The ownership is passed to this class.
      **/
-    void SetDigitizer(Int_t system, CbmDigitizer* digitizer,
+    void SetDigitizer(Int_t system, CbmDigitize* digitizer,
                       TString branch = "", Bool_t persistent = kTRUE);
 
 

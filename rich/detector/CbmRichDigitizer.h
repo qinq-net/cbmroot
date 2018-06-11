@@ -11,7 +11,7 @@
 #define CBM_RICH_DIGITIZER
 
 #include <map>
-#include "CbmDigitizer.h"
+#include "CbmDigitize.h"
 #include "CbmRichPmt.h"
 #include "CbmRichPmtType.h"
 
@@ -33,7 +33,7 @@ enum CbmRichDigitizerModeEnum { CbmRichDigitizerModeEvents = 0, CbmRichDigitizer
 * \author S.Lebedev
 * \date 2015
 **/
-class CbmRichDigitizer : public CbmDigitizer
+class CbmRichDigitizer : public CbmDigitize
 {
 public:
    /**
