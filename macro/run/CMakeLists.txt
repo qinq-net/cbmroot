@@ -10,7 +10,7 @@ GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/check_overlaps.C)
 File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINARY_DIR}/macro/run)
 
 # Define the number of events to run
-Set(NumEvents 1)
+Set(NumEvents 3)
 
 # Define the different setups to be tested
 If($ENV{ctest_model} MATCHES Nightly)
@@ -68,14 +68,17 @@ ForEach(setup IN LISTS cbm_setup)
   #Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
   #Set(dep_qa ${testname})
   
-  # --- Geometry checking
-  Set(testname run_overlap_${setup})
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/check_overlaps.sh \"data/${setup}_test\")
-  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "900")
-  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_transport})
-  Set(_FileName_Dependency data/run_transport_${setup}_ok)
-  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+  
+  # --- Geometry checking; only for nightly test
+  If($ENV{ctest_model} MATCHES Nightly)
+  	Set(testname run_overlap_${setup})
+  	Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/check_overlaps.sh \"data/${setup}_test\")
+  	Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "900")
+  	Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+  	Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_transport})
+  	Set(_FileName_Dependency data/run_transport_${setup}_ok)
+  	Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+  EndIf()
  
 EndForEach(setup IN LISTS cbm_setup)
 # end of test CBM setups from geometry/setup

@@ -1,7 +1,7 @@
 # start of test CBM setups from geometry/setup
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_mc.C)
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_digi.C)
-GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_reco.C)
+GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_reco_event.C)
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_check_overlaps.C)
 # disable dev tests - GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_mc_dev.C)
 # disable dev tests - GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_reco_dev.C)
@@ -11,7 +11,7 @@ GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mcbm/mcbm_check_overlaps.C
 File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINARY_DIR}/macro/mcbm)
 
 # Define the number of events to run
-Set(NumEvents 2)
+Set(NumEvents 10)
 Set(BeamAngle 25)
 
 # Define the different setups to be tested
@@ -37,6 +37,15 @@ ForEach(setup IN LISTS cbm_setup)
   Set(_FileName_Dependency data/mcbm_mc_${setup}_ok)
   Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
   Set(dep_digi_event ${testname})
+  
+  Set(testname mcbm_reco_event_${setup})
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_reco_event.sh ${NumEvents} \"data/${setup}_test\")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
+  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_digi_event})
+  Set(_FileName_Dependency data/mcbm_digi_event_${setup}_test_ok)
+  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+  Set(dep_reco_event ${testname})
   
   Set(testname mcbm_digi_${setup})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/mcbm/mcbm_digi.sh ${NumEvents} \"data/${setup}_test\")

@@ -29,7 +29,7 @@
 
 
 void mcbm_digi(
-	Int_t nEvents = 2,                // Number of events to process
+	Int_t nEvents = 3,                // Number of events to process
 	TString dataSet = "test",         // Dataset for file names
 	Double_t eventRate = 1.e7,        // Interaction rate [1/s]
 	Double_t timeSliceLength = 1.e4,  // Length of time-slice [ns]
@@ -59,7 +59,8 @@ void mcbm_digi(
   // -----   Remove old CTest runtime dependency file  ----------------------
   TString dataDir = gSystem->DirName(dataSet);
   TString dataName = gSystem->BaseName(dataSet);
-  TString depFile = Remove_CTest_Dependency_File(dataDir, "run_digi_event",
+  TString testName = (eventMode ? "mcbm_digi_event" : "mcbm_digi");
+  TString depFile = Remove_CTest_Dependency_File(dataDir, testName,
                                                  dataName);
   // ------------------------------------------------------------------------
 

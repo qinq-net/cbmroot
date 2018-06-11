@@ -59,7 +59,8 @@ void run_digi(
   // -----   Remove old CTest runtime dependency file  ----------------------
   TString dataDir = gSystem->DirName(dataSet);
   TString dataName = gSystem->BaseName(dataSet);
-  TString depFile = Remove_CTest_Dependency_File(dataDir, "run_digi_event",
+  TString testName = (eventMode ? "run_digi_event" : "run_digi");
+  TString depFile = Remove_CTest_Dependency_File(dataDir, testName,
                                                  dataName);
   // ------------------------------------------------------------------------
 
