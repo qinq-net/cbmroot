@@ -298,12 +298,21 @@ add_subdirectory (macro)
 
 add_subdirectory(fles)
 
+
+# Extract the FairSoft version from fairsoft-config
+# The version info is of the form Major.Minor e.g. 18.5 and
+# is stored in the variable FairSoft_VERSION
+FairSoftVersion()
+Message("FairSoft Version: ${FairSoft_VERSION}")
+
 # To build the MQ code the FairRoot version has at least v-17.10b 
 # Older CMake versions don't understand "VERSION_GREATER_EQUAL"
 #If(FairRoot_VERSION VERSION_GREATER_EQUAL 17.10.2)
 If(NOT FairRoot_VERSION VERSION_LESS 17.10.2)
   Message("Build MQ subdirectory.")
-  add_subdirectory(MQ)
+  If(NOT FairSoft_VERSION VERSION_GREATER 17.10)
+    add_subdirectory(MQ)
+  EndIf()
 EndIf()
 
 add_subdirectory(tutorials)
