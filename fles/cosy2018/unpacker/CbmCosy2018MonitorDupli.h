@@ -318,22 +318,30 @@ private:
    std::vector< TH2 * >      fhAsicDuplicDtLastHits;
    std::vector< TH2 * >      fhAsicDuplicCompTs;
    std::vector< TH2 * >      fhAsicDuplicTsLsb;
-   std::vector< TH2 * >      fhAsicDuplicTsMsb;
+   std::vector< TH2 * >      fhAsicDuplicTsMsbAsic;
    std::vector< TH2 * >      fhAsicDuplicCompTsBitThere;
    std::vector< TH2 * >      fhAsicDuplicTsLsbBitThere;
    std::vector< TH2 * >      fhAsicDuplicTsMsbBitThere;
    std::vector< TH2 * >      fhAsicDuplicTs;
    std::vector< TH2 * >      fhAsicGoodTs;
+   std::vector< TH2 * >      fhAsicDuplicTsMsb;
+   std::vector< TH2 * >      fhAsicGoodTsMsb;
+   std::vector< TH2 * >      fhAsicDuplicTsFull;
+   std::vector< TH2 * >      fhAsicGoodTsFull;
    std::vector< TH2 * >      fhAsicDuplicTsBitPattern;
    std::vector< TH2 * >      fhAsicGoodTsBitPattern;
 
    TH2 * fhAsicDuplicTsEvoAsic0Chan01;
    TH2 * fhAsicGoodTsEvoAsic0Chan01;
    TH2 * fhAsicGoodTsMsbEvoAsic0Chan01;
+   TH2 * fhAsicGoodTsFullEvoAsic0Chan01;
+   TProfile * fhAsicGoodTsFullEvoProfAsic0Chan01;
    TH2 * fhAsicDuplicTsEvoAsic0Chan09;
    TH2 * fhAsicGoodTsEvoAsic0Chan09;
+   TProfile * fhAsicGoodTsFullEvoProfAsic0Chan09;
    TH2 * fhAsicDuplicTsEvoAsic0Chan16;
    TH2 * fhAsicGoodTsEvoAsic0Chan16;
+   TProfile * fhAsicGoodTsFullEvoProfAsic0Chan16;
    UInt_t fuPulseIdx;
    UInt_t fuPulseIdxMax;
    TH2 * fhAsicMissedChanIdVsPulseIdx;
@@ -360,6 +368,10 @@ private:
    std::vector< ULong64_t > fvuAsicTimeLastPulse;
    std::vector< std::vector< Bool_t > > fvbPulseThereChan;
    std::vector< TH2 * > fhPulseChanCountEvo;
+
+   TH2* fhHodoChanHitRateEvoZoom;
+   UInt_t fuNbTsMsbSinceLastHit;
+   UInt_t fuNbHitsLastTsMsb;
 
    void CreateHistograms();
 

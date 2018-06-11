@@ -237,23 +237,31 @@ CbmCosy2018MonitorDupli::CbmCosy2018MonitorDupli() :
    fhAsicDuplicDtLastHits(),
    fhAsicDuplicCompTs(),
    fhAsicDuplicTsLsb(),
-   fhAsicDuplicTsMsb(),
+   fhAsicDuplicTsMsbAsic(),
    fhAsicDuplicCompTsBitThere(),
    fhAsicDuplicTsLsbBitThere(),
    fhAsicDuplicTsMsbBitThere(),
    fhAsicDuplicTs(),
    fhAsicGoodTs(),
+   fhAsicDuplicTsMsb(),
+   fhAsicGoodTsMsb(),
+   fhAsicDuplicTsFull(),
+   fhAsicGoodTsFull(),
    fhAsicDuplicTsBitPattern(),
    fhAsicGoodTsBitPattern(),
    fhAsicDuplicTsEvoAsic0Chan01( NULL ),
    fhAsicGoodTsEvoAsic0Chan01( NULL ),
    fhAsicGoodTsMsbEvoAsic0Chan01( NULL ),
+   fhAsicGoodTsFullEvoAsic0Chan01( NULL ),
+   fhAsicGoodTsFullEvoProfAsic0Chan01( NULL ),
    fhAsicDuplicTsEvoAsic0Chan09( NULL ),
    fhAsicGoodTsEvoAsic0Chan09( NULL ),
+   fhAsicGoodTsFullEvoProfAsic0Chan09( NULL ),
    fhAsicDuplicTsEvoAsic0Chan16( NULL ),
    fhAsicGoodTsEvoAsic0Chan16( NULL ),
+   fhAsicGoodTsFullEvoProfAsic0Chan16( NULL ),
    fuPulseIdx( 0 ),
-   fuPulseIdxMax( 10000 ),
+   fuPulseIdxMax( 32000 ),
    fhAsicMissedChanIdVsPulseIdx( NULL ),
    fhAsicMissedChanGroupVsPulseIdx( NULL ),
    fhHodoChanCntGood(),
@@ -270,7 +278,10 @@ CbmCosy2018MonitorDupli::CbmCosy2018MonitorDupli() :
    fcMsSizeAll(NULL),
    fvuAsicTimeLastPulse(),
    fvbPulseThereChan(),
-   fhPulseChanCountEvo()
+   fhPulseChanCountEvo(),
+   fhHodoChanHitRateEvoZoom(NULL),
+   fuNbTsMsbSinceLastHit(0),
+   fuNbHitsLastTsMsb(0)
 {
 }
 
@@ -1296,9 +1307,9 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
                                        fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                                        256, -0.5, 255.5 ) );
 
-      sHistName = Form( "fhAsicDuplicTsMsb%02u", uXyterIdx);
+      sHistName = Form( "fhAsicDuplicTsMsbAsic%02u", uXyterIdx);
       title =  "ASIC TS MSB of duplicated hit and previous hits; Nth Previous hit [N]; TS MSB [bins]";
-      fhAsicDuplicTsMsb.push_back( new TH2I( sHistName, title,
+      fhAsicDuplicTsMsbAsic.push_back( new TH2I( sHistName, title,
                                        fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                                        64, -0.5, 63.5 ) );
 
@@ -1321,16 +1332,40 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
                                        6, -0.5, 5.5 ) );
 
       sHistName = Form( "fhAsicDuplicTs%02u", uXyterIdx);
-      title =  "TS of duplicated hit vs its channel index; Channel []; TS + TS_MSB [bins]";
+      title =  "TS of duplicated hit vs its channel index; Channel []; TS [bins]";
       fhAsicDuplicTs.push_back( new TH2I( sHistName, title,
                                           fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
-                                          1024, -0.5, 1023.5 ) );
+                                          256, -0.5, 255.5 ) );
 
       sHistName = Form( "fhAsicGoodTs%02u", uXyterIdx);
-      title =  "TS of good hit vs its channel index; Channel []; TS + TS_MSB [bins]";
+      title =  "TS of good hit vs its channel index; Channel []; TS [bins]";
       fhAsicGoodTs.push_back( new TH2I( sHistName, title,
                                           fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
-                                          1024, -0.5, 1023.5 ) );
+                                          256, -0.5, 255.5 ) );
+
+      sHistName = Form( "fhAsicDuplicTsMsb%02u", uXyterIdx);
+      title =  "TS MSB of duplicated hit vs its channel index; Channel []; TS_MSB [bins]";
+      fhAsicDuplicTsMsb.push_back( new TH2I( sHistName, title,
+                                          fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                          256, -0.5, 255.5 ) );
+
+      sHistName = Form( "fhAsicGoodTsMsb%02u", uXyterIdx);
+      title =  "TS MSB of good hit vs its channel index; Channel []; TS_MSB [bins]";
+      fhAsicGoodTsMsb.push_back( new TH2I( sHistName, title,
+                                          fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                          256, -0.5, 255.5 ) );
+
+      sHistName = Form( "fhAsicDuplicTsFull%02u", uXyterIdx);
+      title =  "Full TS of duplicated hit vs its channel index; Channel []; TS + TS_MSB [bins]";
+      fhAsicDuplicTsFull.push_back( new TH2I( sHistName, title,
+                                          fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                          16384, -0.5, 16383.5 ) );
+
+      sHistName = Form( "fhAsicGoodTsFull%02u", uXyterIdx);
+      title =  "Full TS of good hit vs its channel index; Channel []; TS + TS_MSB [bins]";
+      fhAsicGoodTsFull.push_back( new TH2I( sHistName, title,
+                                          fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                          16384, -0.5, 16383.5 ) );
 
       sHistName = Form( "fhAsicDuplicTsBitPattern%02u", uXyterIdx);
       title =  "Bits pattern in duplicated hit; TS Bit; ON/OFF?";
@@ -1356,10 +1391,19 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
                                        2*4096, -0.5, 4095.5,
                                        2048, -0.5, 4095.5 );
    sHistName = "fhAsicGoodTsMsbEvoAsic0Chan01";
-   title =  "TS MSB of good hits vs time in run for ASIC 0 chan 1; time in run [s]; TS_MSB[0 - 8] [bins]";
+   title =  "TS MSB of good hits vs time in run for ASIC 0 chan 1; time in run [s]; TS_MSB[0 - 7] [bins]";
    fhAsicGoodTsMsbEvoAsic0Chan01 = new TH2I( sHistName, title,
                                        2*4096, -0.5, 4095.5,
                                        256, -0.5, 255.5 );
+   sHistName = "fhAsicGoodTsFullEvoAsic0Chan01";
+   title =  "Full TS of good hits vs time in run for ASIC 0 chan 1; time in run [s]; TS + TS_MSB [bins]";
+   fhAsicGoodTsFullEvoAsic0Chan01 = new TH2I( sHistName, title,
+                                       4*900, -0.5, 899.5,
+                                       16384, -0.5, 16383.5 );
+   sHistName = "fhAsicGoodTsFullEvoProfAsic0Chan01";
+   title =  "Full TS of good hits vs time in run for ASIC 0 chan 1; time in run [s]; TS + TS_MSB [bins]";
+   fhAsicGoodTsFullEvoProfAsic0Chan01 = new TProfile( sHistName, title,
+                                       4*3600, -0.5, 3599.5 );
 
    sHistName = "fhAsicDuplicTsEvoAsic0Chan09";
    title =  "TS of duplicated hits vs time in run for ASIC 0 chan 9; time in run [s]; TS + TS_MSB [bins]";
@@ -1371,6 +1415,10 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
    fhAsicGoodTsEvoAsic0Chan09 = new TH2I( sHistName, title,
                                        2*4096, -0.5, 4095.5,
                                        2048, -0.5, 4095.5 );
+   sHistName = "fhAsicGoodTsFullEvoProfAsic0Chan09";
+   title =  "Full TS of good hits vs time in run for ASIC 0 chan 9; time in run [s]; TS + TS_MSB [bins]";
+   fhAsicGoodTsFullEvoProfAsic0Chan09 = new TProfile( sHistName, title,
+                                       4*3600, -0.5, 3599.5 );
 
    sHistName = "fhAsicDuplicTsEvoAsic0Chan16";
    title =  "TS of duplicated hits vs time in run for ASIC 0 chan 16; time in run [s]; TS + TS_MSB [bins]";
@@ -1382,6 +1430,11 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
    fhAsicGoodTsEvoAsic0Chan16 = new TH2I( sHistName, title,
                                        2*4096, -0.5, 4095.5,
                                        2048, -0.5, 4095.5 );
+   sHistName = "fhAsicGoodTsFullEvoProfAsic0Chan16";
+   title =  "Full TS of good hits vs time in run for ASIC 0 chan 16; time in run [s]; TS + TS_MSB [bins]";
+   fhAsicGoodTsFullEvoProfAsic0Chan16 = new TProfile( sHistName, title,
+                                       4*3600, -0.5, 3599.5 );
+
 
    sHistName = "fhAsicMissedChanIdVsPulseIdx";
    title =  "Channels present VS pulse Idx; Pulse Idx []; Channel Id []";
@@ -1448,6 +1501,13 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
                                               fuNbChanPerAsic, 0.5, fuNbChanPerAsic + 0.5 ) );
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 
+///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
+
+   sHistName = "fhHodoChanHitRateEvoZoom";
+   title = "Hits per second & channel in StsXyter 000; Time [s]; Channel []; Hits []";
+   fhHodoChanHitRateEvoZoom = new TH2I( sHistName, title,
+                                             2000, 0, 50,
+                                             fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 );
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
 /*
@@ -1602,12 +1662,16 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
          server->Register("/FebDupli", fhAsicDuplicDtLastHits[ uXyterIdx ] );
          server->Register("/FebDupli", fhAsicDuplicCompTs[ uXyterIdx ] );
          server->Register("/FebDupli", fhAsicDuplicTsLsb[ uXyterIdx ] );
-         server->Register("/FebDupli", fhAsicDuplicTsMsb[ uXyterIdx ] );
+         server->Register("/FebDupli", fhAsicDuplicTsMsbAsic[ uXyterIdx ] );
          server->Register("/FebDupli", fhAsicDuplicCompTsBitThere[ uXyterIdx ] );
          server->Register("/FebDupli", fhAsicDuplicTsLsbBitThere[ uXyterIdx ] );
          server->Register("/FebDupli", fhAsicDuplicTsMsbBitThere[ uXyterIdx ] );
          server->Register("/FebDupli", fhAsicDuplicTs[ uXyterIdx ] );
          server->Register("/FebDupli", fhAsicGoodTs[ uXyterIdx ] );
+         server->Register("/FebDupli", fhAsicDuplicTsMsb[ uXyterIdx ] );
+         server->Register("/FebDupli", fhAsicGoodTsMsb[ uXyterIdx ] );
+         server->Register("/FebDupli", fhAsicDuplicTsFull[ uXyterIdx ] );
+         server->Register("/FebDupli", fhAsicGoodTsFull[ uXyterIdx ] );
          server->Register("/FebDupli", fhAsicDuplicTsBitPattern[ uXyterIdx ] );
          server->Register("/FebDupli", fhAsicGoodTsBitPattern[ uXyterIdx ] );
 
@@ -1622,10 +1686,15 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
       server->Register("/FebDupli", fhAsicDuplicTsEvoAsic0Chan01 );
       server->Register("/FebDupli", fhAsicGoodTsEvoAsic0Chan01 );
       server->Register("/FebDupli", fhAsicGoodTsMsbEvoAsic0Chan01 );
+      server->Register("/FebDupli", fhAsicGoodTsFullEvoAsic0Chan01 );
+      server->Register("/FebDupli", fhAsicGoodTsFullEvoProfAsic0Chan01 );
       server->Register("/FebDupli", fhAsicDuplicTsEvoAsic0Chan09 );
       server->Register("/FebDupli", fhAsicGoodTsEvoAsic0Chan09 );
+      server->Register("/FebDupli", fhAsicGoodTsFullEvoProfAsic0Chan09 );
       server->Register("/FebDupli", fhAsicDuplicTsEvoAsic0Chan16 );
       server->Register("/FebDupli", fhAsicGoodTsEvoAsic0Chan16 );
+      server->Register("/FebDupli", fhAsicGoodTsFullEvoProfAsic0Chan16 );
+
       server->Register("/FebDupli", fhAsicMissedChanIdVsPulseIdx );
       server->Register("/FebDupli", fhAsicMissedChanGroupVsPulseIdx );
 
@@ -1654,6 +1723,9 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
       server->Register("/Spill", fhHodoY1SpillEvoProf );
       server->Register("/Spill", fhHodoX2SpillEvoProf );
       server->Register("/Spill", fhHodoY2SpillEvoProf );
+
+      server->Register("/FebDupli", fhHodoChanHitRateEvoZoom );
+
 
       server->RegisterCommand("/Reset_All_Hodo", "bCosy2018ResetDupliHistos=kTRUE");
       server->RegisterCommand("/Write_All_Hodo", "bCosy2018WriteDupliHistos=kTRUE");
@@ -2253,7 +2325,7 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
       gPad->SetGridx();
       gPad->SetGridy();
       gPad->SetLogz();
-      fhAsicDuplicTsMsb[ uXyterIdx ]->Draw( "colz" );
+      fhAsicDuplicTsMsbAsic[ uXyterIdx ]->Draw( "colz" );
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 //====================================================================//
 
@@ -2280,25 +2352,25 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
    gPad->SetGridx();
    gPad->SetGridy();
    gPad->SetLogz();
-   fhAsicGoodTsEvoAsic0Chan01->Draw( "colz" );
+   fhAsicGoodTsMsb[ 0 ]->Draw( "colz" );
 
    cFebDupliTsScan->cd( 4 );
    gPad->SetGridx();
    gPad->SetGridy();
    gPad->SetLogz();
-   fhAsicDuplicTsEvoAsic0Chan01->Draw( "colz" );
+   fhAsicDuplicTsMsb[ 0 ]->Draw( "colz" );
 
    cFebDupliTsScan->cd( 5 );
    gPad->SetGridx();
    gPad->SetGridy();
    gPad->SetLogz();
-   fhAsicGoodTsEvoAsic0Chan16->Draw( "colz" );
+   fhAsicGoodTsFull[ 0 ]->Draw( "colz" );
 
    cFebDupliTsScan->cd( 6 );
    gPad->SetGridx();
    gPad->SetGridy();
    gPad->SetLogz();
-   fhAsicDuplicTsEvoAsic0Chan16->Draw( "colz" );
+   fhAsicDuplicTsFull[ 0 ]->Draw( "colz" );
 //====================================================================//
 
       // Long duration rate monitoring
@@ -2773,15 +2845,17 @@ Bool_t CbmCosy2018MonitorDupli::DoUnpack(const fles::Timeslice& ts, size_t compo
                      UInt_t uBitPattMsb  = 0;
                      ULong64_t ulDuplHitTs = fvmLastHitsAsic[ usAsicIdx ][ fvuLastHitBufferIdx[ usAsicIdx ] ].GetTs();
 
-                     fhAsicDuplicTs[ usAsicIdx ]->Fill( usChanIdx, ( ulDuplHitTs & 0x003FF ) );
+                     fhAsicDuplicTs[ usAsicIdx ]->Fill( usChanIdx,     ( ulDuplHitTs & 0x000FF ) );
+                     fhAsicDuplicTsMsb[ usAsicIdx ]->Fill( usChanIdx,  ( ulDuplHitTs & 0x0FF00 ) >> 8 );
+                     fhAsicDuplicTsFull[ usAsicIdx ]->Fill( usChanIdx, ( ulDuplHitTs & 0x03FFF ) );
 
                      if( 0 == usAsicIdx )
                      {
-                        if( 3 == usChanIdx )
+                        if( 0 == usChanIdx )
                            fhAsicDuplicTsEvoAsic0Chan01->Fill( dTimeSinceStartSec, ( ulDuplHitTs & 0x00FFF ) );
-                        else if( 35 == usChanIdx )
+                        else if( 20 == usChanIdx )
                            fhAsicDuplicTsEvoAsic0Chan09->Fill( dTimeSinceStartSec, ( ulDuplHitTs & 0x00FFF ) );
-                        else if( 63 == usChanIdx )
+                        else if( 99 == usChanIdx )
                            fhAsicDuplicTsEvoAsic0Chan16->Fill( dTimeSinceStartSec, ( ulDuplHitTs & 0x00FFF ) );
                      } // if( 0 == usAsicIdx )
 
@@ -2813,7 +2887,7 @@ Bool_t CbmCosy2018MonitorDupli::DoUnpack(const fles::Timeslice& ts, size_t compo
                         fhAsicDuplicDtLastHits[ usAsicIdx ]->Fill( dDt, uPrevHit );
                         fhAsicDuplicCompTs[ usAsicIdx ]->Fill( uPrevHit, uCompTs );
                         fhAsicDuplicTsLsb[ usAsicIdx ]->Fill(  uPrevHit, uTsLsb );
-                        fhAsicDuplicTsMsb[ usAsicIdx ]->Fill(  uPrevHit, uTsMsb );
+                        fhAsicDuplicTsMsbAsic[ usAsicIdx ]->Fill(  uPrevHit, uTsMsb );
 
                         for( UInt_t uBit = 0; uBit < 8; ++uBit )
                         {
@@ -2913,18 +2987,28 @@ Bool_t CbmCosy2018MonitorDupli::DoUnpack(const fles::Timeslice& ts, size_t compo
 
                   if( 0 < fvuNbDiffFullHitAsic[ usAsicIdx ] )
                   {
-                     fhAsicGoodTs[ usAsicIdx ]->Fill( usChanIdx, ( ulHitTs & 0x003FF ) );
+                     fhAsicGoodTs[ usAsicIdx ]->Fill( usChanIdx,     ( ulHitTs & 0x000FF ) );
+                     fhAsicGoodTsMsb[ usAsicIdx ]->Fill( usChanIdx,  ( ulHitTs & 0x0FF00 ) >> 8 );
+                     fhAsicGoodTsFull[ usAsicIdx ]->Fill( usChanIdx, ( ulHitTs & 0x03FFF ) );
                      if( 0 == usAsicIdx )
                      {
-                        if( 3 == usChanIdx )
+                        if( 0 == usChanIdx )
                         {
-                           fhAsicGoodTsEvoAsic0Chan01->Fill( dTimeSinceStartSec, ( ulHitTs & 0x00FFF ) );
-                           fhAsicGoodTsMsbEvoAsic0Chan01->Fill( dTimeSinceStartSec, ( ulHitTs & 0x0FF00 ) >> 8 );
+                           fhAsicGoodTsEvoAsic0Chan01->Fill( dTimeSinceStartSec,     ( ulHitTs & 0x00FFF ) );
+                           fhAsicGoodTsMsbEvoAsic0Chan01->Fill( dTimeSinceStartSec,  ( ulHitTs & 0x0FF00 ) >> 8 );
+                           fhAsicGoodTsFullEvoAsic0Chan01->Fill( dTimeSinceStartSec, ( ulHitTs & 0x03FFF ) );
+                           fhAsicGoodTsFullEvoProfAsic0Chan01->Fill( dTimeSinceStartSec, ( ulHitTs & 0x03FFF ) );
                         } //if( 3 == usChanIdx )
-                        else if( 35 == usChanIdx )
+                        else if( 20 == usChanIdx )
+                        {
                            fhAsicGoodTsEvoAsic0Chan09->Fill( dTimeSinceStartSec, ( ulHitTs & 0x00FFF ) );
-                        else if( 63 == usChanIdx )
+                           fhAsicGoodTsFullEvoProfAsic0Chan09->Fill( dTimeSinceStartSec, ( ulHitTs & 0x03FFF ) );
+                        } // else if( 20 == usChanIdx )
+                        else if( 99 == usChanIdx )
+                        {
                            fhAsicGoodTsEvoAsic0Chan16->Fill( dTimeSinceStartSec, ( ulHitTs & 0x00FFF ) );
+                           fhAsicGoodTsFullEvoProfAsic0Chan16->Fill( dTimeSinceStartSec, ( ulHitTs & 0x03FFF ) );
+                        } // else if( 99 == usChanIdx )
                      } // if( 0 == usAsicIdx )
 
                      for( UInt_t uBit = 0; uBit < 14; ++uBit )
@@ -3064,21 +3148,7 @@ void CbmCosy2018MonitorDupli::FillHitInfo( stsxyter::Message mess, const UShort_
 */
    fvmHitsInTs.push_back( stsxyter::FinalHit( fvulChanLastHitTime[ uAsicIdx ][ usChan ], usRawAdc, uAsicIdx, usChan ) );
 
-/*
-      LOG(INFO) << " TS " << std::setw( 12 ) << fulCurrentTsIdx
-                << " MS " << std::setw( 12 ) << fulCurrentMsIdx
-                << " MsInTs " << std::setw( 3 ) << uMsIdx
-                << " Asic " << std::setw( 2 ) << uAsicIdx
-                << " Channel " << std::setw( 3 ) << usChan
-                << " ADC " << std::setw( 3 ) << usRawAdc
-                << " TS " << std::setw( 3 )  << usRawTs // 9 bits TS
-                << " SX TsMsb " << std::setw( 2 ) << ( fvulCurrentTsMsb[fuCurrDpbIdx] & 0x1F ) // Total StsXyter TS = 14 bits => 9b Hit TS + lower 5b TS_MSB after DPB
-                << " DPB TsMsb " << std::setw( 6 ) << ( fvulCurrentTsMsb[fuCurrDpbIdx] >> 5 ) // Total StsXyter TS = 14 bits => 9b Hit TS + lower 5b of TS_MSB after DPB
-                << " TsMsb " << std::setw( 7 ) << fvulCurrentTsMsb[fuCurrDpbIdx]
-                << " MsbCy " << std::setw( 4 ) << fvuCurrentTsMsbCycle[fuCurrDpbIdx]
-                << " Time " << std::setw ( 12 ) << fvulChanLastHitTime[ uAsicIdx ][ usChan ]
-                << FairLogger::endl;
-*/
+
    if( fuPrintMessagesIdx < kuNbPrintMessages )
 //   if( ( 5949 == fulCurrentTsIdx ) )
    {
@@ -3105,6 +3175,8 @@ void CbmCosy2018MonitorDupli::FillHitInfo( stsxyter::Message mess, const UShort_
    Double_t dTimeSinceStartSec = (fvdChanLastHitTime[ uAsicIdx ][ usChan ] - fdStartTime)* 1e-9;
    Double_t dTimeSinceStartMin = dTimeSinceStartSec / 60.0;
    fhHodoChanHitRateEvo[ uAsicIdx ]->Fill( dTimeSinceStartSec , usChan );
+   if( 0 == uAsicIdx )
+      fhHodoChanHitRateEvoZoom->Fill( dTimeSinceStartSec , usChan );
    fhHodoFebRateEvo[ uAsicIdx ]->Fill(   dTimeSinceStartSec );
    fhHodoChanHitRateEvoLong[ uAsicIdx ]->Fill( dTimeSinceStartMin, usChan, 1.0/60.0 );
    fhHodoFebRateEvoLong[ uAsicIdx ]->Fill(   dTimeSinceStartMin, 1.0/60.0 );
@@ -3137,6 +3209,80 @@ void CbmCosy2018MonitorDupli::FillHitInfo( stsxyter::Message mess, const UShort_
             fhFractionAsics->Fill( uXyterIdx, 0.0 );
          }
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+/*
+   if( 596.51 < dTimeSinceStartSec && dTimeSinceStartSec < 597.07 &&
+       0 == uAsicIdx && 3 == usChan )
+      LOG(INFO) << " TS " << std::setw( 12 ) << fulCurrentTsIdx
+                << " MS " << std::setw( 12 ) << fulCurrentMsIdx
+                << " ADC " << std::setw( 3 ) << usRawAdc
+                << " TS " << std::setw( 3 )  << usRawTs // 9 bits TS
+                << " SX TsMsb " << std::setw( 2 ) << ( fvulCurrentTsMsb[fuCurrDpbIdx] & 0x1F ) // Total StsXyter TS = 14 bits => 9b Hit TS + lower 5b TS_MSB after DPB
+                << " DPB TsMsb " << std::setw( 6 ) << ( fvulCurrentTsMsb[fuCurrDpbIdx] >> 5 ) // Total StsXyter TS = 14 bits => 9b Hit TS + lower 5b of TS_MSB after DPB
+                << " TsMsb " << std::setw( 7 ) << fvulCurrentTsMsb[fuCurrDpbIdx]
+                << " MsbCy " << std::setw( 4 ) << fvuCurrentTsMsbCycle[fuCurrDpbIdx]
+                << " Time " << std::setw ( 12 ) << fvulChanLastHitTime[ uAsicIdx ][ usChan ]
+                << " Time " << std::setw ( 5 ) << dTimeSinceStartSec
+                << FairLogger::endl;
+*/
+
+   // Print TS jumps
+//   if( (ulOldHitTime & 0x00003C00) != (fvulChanLastHitTime[ uAsicIdx ][ usChan ] & 0x00003C00) && ( 255 != (ulOldHitTime & 0xFF) ) && (255 != (usRawTs & 0xFF) ))
+/*
+   if( 0 == usChan &&
+       ( ( (ulOldHitTime & 0x00003FFF) + 2 < (fvulChanLastHitTime[ uAsicIdx ][ usChan ] & 0x00003FFF ) ) ||
+         ( (ulOldHitTime & 0x00003FFF) > (fvulChanLastHitTime[ uAsicIdx ][ usChan ] & 0x00003FFF ) + 2 ) ) &&
+       ( ( 11620 > (fvulChanLastHitTime[ uAsicIdx ][ usChan ] & 0x00003FFF ) ) ||
+         ( 11630 < (fvulChanLastHitTime[ uAsicIdx ][ usChan ] & 0x00003FFF ) ) )
+      )
+   {
+      Long64_t ulNewHitTime = fvulChanLastHitTime[ uAsicIdx ][ usChan ];
+      LOG(INFO) << " Old Hit chan " << std::setw( 3 ) << usChan
+                << " TS " << std::setw( 3 )  << (ulOldHitTime & 0xFF) // 8 bits TS
+                << " Full TS " << std::setw( 5 )  << (ulOldHitTime & 0x3FFF) // Total StsXyter TS = 14 bits => 9b Hit TS + lower 5b of TS_MSB after DPB
+                << " SX TsMsb " << std::setw( 2 ) << ( ( ulOldHitTime >>  8 ) & 0x3 ) // 2 lower bits of TS_MSB from overlap bits in hit frame or from DPB
+                << " DPB TsMsb " << std::setw( 9 ) << ( (ulOldHitTime >> 10 ) & 0xF ) // 4 (+16) higher bits of TS_MSB from DPB
+                << " TsMsb " << std::setw( 9 ) << (ulOldHitTime >> 8)
+                << " MsbCy " << std::setw( 4 ) << fvuCurrentTsMsbCycle[fuCurrDpbIdx]
+                << " Time " << std::setw ( 12 ) << ulOldHitTime
+                << " Time " << std::setw ( 5 ) << (ulOldHitTime * stsxyter::kdClockCycleNs - fdStartTime)* 1e-9
+                << FairLogger::endl;
+      LOG(INFO) << " New Hit chan " << std::setw( 3 ) << usChan
+                << " TS " << std::setw( 3 )  << (ulNewHitTime & 0xFF) // 8 bits TS
+                << " Full TS " << std::setw( 5 )  << (ulNewHitTime & 0x3FFF) // Total StsXyter TS = 14 bits => 9b Hit TS + lower 5b of TS_MSB after DPB
+                << " SX TsMsb " << std::setw( 2 ) << ( ( ulNewHitTime >>  8 ) & 0x3 ) // 2 lower bits of TS_MSB from overlap bits in hit frame or from DPB
+                << " DPB TsMsb " << std::setw( 9 ) << ( (ulNewHitTime >> 10 ) & 0xF ) // 4 (+16) higher bits of TS_MSB from DPB
+                << " TsMsb " << std::setw( 9 ) << (ulNewHitTime >> 8)
+                << " MsbCy " << std::setw( 4 ) << fvuCurrentTsMsbCycle[fuCurrDpbIdx]
+                << " Time " << std::setw ( 12 ) << fvulChanLastHitTime[ uAsicIdx ][ usChan ]
+                << " Time " << std::setw ( 5 ) << dTimeSinceStartSec
+                << FairLogger::endl;
+    } // if( ulOldHitTime & 0x00003C00 != fvulChanLastHitTime[ uAsicIdx ][ usChan ] & 0x00003C00 )
+*/
+   if( 0 == usChan )
+   {
+/*
+      if( 22.2 < dTimeSinceStartSec && dTimeSinceStartSec < 22.6 )
+//      if( (443.574 < dTimeSinceStartSec && dTimeSinceStartSec < 443.575) || 32 != fuNbTsMsbSinceLastHit )
+//      if( 32 != fuNbTsMsbSinceLastHit )
+      {
+         Long64_t ulNewHitTime = fvulChanLastHitTime[ uAsicIdx ][ usChan ];
+         LOG(INFO) << fuNbTsMsbSinceLastHit << " TS_MSB since last hit on channel 0 "
+                   << FairLogger::endl;
+         LOG(INFO) << " New Hit chan " << std::setw( 3 ) << usChan
+                   << " TS " << std::setw( 3 )  << (ulNewHitTime & 0xFF) // 8 bits TS
+                   << " Full TS " << std::setw( 5 )  << (ulNewHitTime & 0x3FFF) // Total StsXyter TS = 14 bits => 9b Hit TS + lower 5b of TS_MSB after DPB
+                   << " SX TsMsb " << std::setw( 2 ) << ( ( ulNewHitTime >>  8 ) & 0x3 ) // 2 lower bits of TS_MSB from overlap bits in hit frame or from DPB
+                   << " DPB TsMsb " << std::setw( 9 ) << ( (ulNewHitTime >> 10 ) & 0xF ) // 4 (+16) higher bits of TS_MSB from DPB
+                   << " TsMsb " << std::setw( 9 ) << (ulNewHitTime >> 8)
+                   << " MsbCy " << std::setw( 4 ) << fvuCurrentTsMsbCycle[fuCurrDpbIdx]
+                   << " Time " << std::setw ( 12 ) << fvulChanLastHitTime[ uAsicIdx ][ usChan ]
+                   << " Time " << std::setw ( 5 ) << dTimeSinceStartSec
+                   << FairLogger::endl;
+       } // if( 443.573 < dTimeSinceStartSec && dTimeSinceStartSec < 443.672 )
+*/
+      fuNbTsMsbSinceLastHit = 0;
+   } // if( 0 == usChan )
+   fuNbHitsLastTsMsb++;
 
    /// Pulse counting for pulser
    if( 0 == fvuAsicTimeLastPulse[ uAsicIdx ] )
@@ -3181,6 +3327,7 @@ void CbmCosy2018MonitorDupli::FillTsMsbInfo( stsxyter::Message mess, UInt_t uMes
                 << " TsMsb "  << std::setw( 5 ) << uVal
                 << FairLogger::endl;
 */
+
 /*
    if( (uVal != fvulCurrentTsMsb[fuCurrDpbIdx] + 1) && 0 < uVal  &&
        !( 1 == uMessIdx && usVal == fvulCurrentTsMsb[fuCurrDpbIdx] ) ) // 1st TS_MSB in MS is always a repeat of the last one in previous MS!
@@ -3197,6 +3344,8 @@ void CbmCosy2018MonitorDupli::FillTsMsbInfo( stsxyter::Message mess, UInt_t uMes
                 << FairLogger::endl;
    } // if( (uVal != fvulCurrentTsMsb[fuCurrDpbIdx] + 1) && 0 < uVal )
 */
+   if( uVal != fvulCurrentTsMsb[fuCurrDpbIdx] )
+      fuNbTsMsbSinceLastHit++;
 
    // Update Status counters
    if( uVal < fvulCurrentTsMsb[fuCurrDpbIdx] )
@@ -3228,12 +3377,33 @@ void CbmCosy2018MonitorDupli::FillTsMsbInfo( stsxyter::Message mess, UInt_t uMes
                              + static_cast< ULong64_t >( stsxyter::kuTsCycleNbBins )
                              * static_cast< ULong64_t >( fvuCurrentTsMsbCycle[fuCurrDpbIdx] );
 
+   // Check Starting point of histos with time as X axis
+   if( 0 < fdStartTime )
+   {
+      Double_t dTimeSinceStartSec = ( ulNewTsMsbTime * stsxyter::kdClockCycleNs - fdStartTime)* 1e-9;
+/*
+//      if( 443.573 < dTimeSinceStartSec && dTimeSinceStartSec < 443.672 )
+      if( 443.574 < dTimeSinceStartSec && dTimeSinceStartSec < 443.575 )
+         LOG(INFO) << " TS " << std::setw( 12 ) << fulCurrentTsIdx
+                   << " MS " << std::setw( 12 ) << fulCurrentMsIdx
+                   << " TsMsb " << std::setw( 9 ) << uVal
+                   << " MsbCy " << std::setw( 5 ) << fvuCurrentTsMsbCycle[fuCurrDpbIdx]
+                   << " Time " << std::setw ( 12 ) << ulNewTsMsbTime
+                   << " Time " << std::setw ( 5 ) << dTimeSinceStartSec
+                   << " Nb Hits last TS_MSB " << fuNbHitsLastTsMsb
+                   << FairLogger::endl;
+*/
+      fuNbHitsLastTsMsb = 0;
+   } // if( 0 < fdStartTime )
+
+
    Double_t dUpdatePeriodInSec = 1;
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
       Double_t dTimeInS = ( ulNewTsMsbTime - fvulStartTimeLastS[ uXyterIdx ] )
                           * stsxyter::kdClockCycleNs
                           * 1e-9;
+
       if( dUpdatePeriodInSec <= dTimeInS || (ulNewTsMsbTime < fvulStartTimeLastS[ uXyterIdx ] ) )
       {
          UInt_t uNbHitsTotal = fvuNbHitDiffTsAsicLastS[ uXyterIdx ] + fvuNbHitSameTsAsicLastS[ uXyterIdx ];
@@ -3367,6 +3537,7 @@ void CbmCosy2018MonitorDupli::SaveAllHistos( TString sFileName )
       } // if( kTRUE == fbLongHistoEnable )
 */
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+   fhHodoChanHitRateEvoZoom->Write();
 
 /*
    fhSetupSortedDtX1Y1->Write();
@@ -3489,7 +3660,14 @@ void CbmCosy2018MonitorDupli::SaveAllHistos( TString sFileName )
       fhAsicDuplicDtLastHits[ uXyterIdx ]->Write();
       fhAsicDuplicCompTs[ uXyterIdx ]->Write();
       fhAsicDuplicTsLsb[ uXyterIdx ]->Write();
+      fhAsicDuplicTsMsbAsic[ uXyterIdx ]->Write();
+
+      fhAsicDuplicTs[ uXyterIdx ]->Write();
+      fhAsicGoodTs[ uXyterIdx ]->Write();
       fhAsicDuplicTsMsb[ uXyterIdx ]->Write();
+      fhAsicGoodTsMsb[ uXyterIdx ]->Write();
+      fhAsicDuplicTsFull[ uXyterIdx ]->Write();
+      fhAsicGoodTsFull[ uXyterIdx ]->Write();
 
       fhHodoChanCntGood[ uXyterIdx ]->Write();
       fhHodoChanGoodHitRateEvo[ uXyterIdx ]->Write();
@@ -3497,11 +3675,15 @@ void CbmCosy2018MonitorDupli::SaveAllHistos( TString sFileName )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    fhAsicGoodTsEvoAsic0Chan01->Write();
    fhAsicGoodTsMsbEvoAsic0Chan01->Write();
+   fhAsicGoodTsFullEvoAsic0Chan01->Write();
+   fhAsicGoodTsFullEvoProfAsic0Chan01->Write();
    fhAsicDuplicTsEvoAsic0Chan01->Write();
    fhAsicGoodTsEvoAsic0Chan09->Write();
    fhAsicDuplicTsEvoAsic0Chan09->Write();
+   fhAsicGoodTsFullEvoProfAsic0Chan09->Write();
    fhAsicGoodTsEvoAsic0Chan16->Write();
    fhAsicDuplicTsEvoAsic0Chan16->Write();
+   fhAsicGoodTsFullEvoProfAsic0Chan16->Write();
    fhAsicMissedChanIdVsPulseIdx->Write();
    fhAsicMissedChanGroupVsPulseIdx->Write();
 
@@ -3592,6 +3774,7 @@ void CbmCosy2018MonitorDupli::ResetAllHistos()
       } // if( kTRUE == fbLongHistoEnable )
 */
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+   fhHodoChanHitRateEvoZoom->Reset();
 
    fhSetupSortedDtX1Y1->Reset();
    fhSetupSortedDtX2Y2->Reset();
@@ -3707,12 +3890,16 @@ void CbmCosy2018MonitorDupli::ResetAllHistos()
       fhAsicDuplicDtLastHits[ uXyterIdx ]->Reset();
       fhAsicDuplicCompTs[ uXyterIdx ]->Reset();
       fhAsicDuplicTsLsb[ uXyterIdx ]->Reset();
-      fhAsicDuplicTsMsb[ uXyterIdx ]->Reset();
+      fhAsicDuplicTsMsbAsic[ uXyterIdx ]->Reset();
       fhAsicDuplicCompTsBitThere[ uXyterIdx ]->Reset();
       fhAsicDuplicTsLsbBitThere[ uXyterIdx ]->Reset();
       fhAsicDuplicTsMsbBitThere[ uXyterIdx ]->Reset();
       fhAsicDuplicTs[ uXyterIdx ]->Reset();
       fhAsicGoodTs[ uXyterIdx ]->Reset();
+      fhAsicDuplicTsMsb[ uXyterIdx ]->Reset();
+      fhAsicGoodTsMsb[ uXyterIdx ]->Reset();
+      fhAsicDuplicTsFull[ uXyterIdx ]->Reset();
+      fhAsicGoodTsFull[ uXyterIdx ]->Reset();
       fhAsicDuplicTsBitPattern[ uXyterIdx ]->Reset();
       fhAsicGoodTsBitPattern[ uXyterIdx ]->Reset();
 
@@ -3723,11 +3910,15 @@ void CbmCosy2018MonitorDupli::ResetAllHistos()
 
    fhAsicGoodTsEvoAsic0Chan01->Reset();
    fhAsicGoodTsMsbEvoAsic0Chan01->Reset();
+   fhAsicGoodTsFullEvoAsic0Chan01->Reset();
+   fhAsicGoodTsFullEvoProfAsic0Chan01->Reset();
    fhAsicDuplicTsEvoAsic0Chan01->Reset();
    fhAsicGoodTsEvoAsic0Chan09->Reset();
    fhAsicDuplicTsEvoAsic0Chan09->Reset();
+   fhAsicGoodTsFullEvoProfAsic0Chan09->Reset();
    fhAsicGoodTsEvoAsic0Chan16->Reset();
    fhAsicDuplicTsEvoAsic0Chan16->Reset();
+   fhAsicGoodTsFullEvoProfAsic0Chan16->Reset();
    fuPulseIdx = 0;
    fhAsicMissedChanIdVsPulseIdx->Reset();
    fhAsicMissedChanGroupVsPulseIdx->Reset();
