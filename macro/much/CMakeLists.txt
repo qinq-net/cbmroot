@@ -18,7 +18,7 @@ GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/much/much_digi.C)
 add_test(much_digi ${CBMROOT_BINARY_DIR}/macro/much/much_digi.sh)
 SET_TESTS_PROPERTIES(much_digi PROPERTIES TIMEOUT "450")
 SET_TESTS_PROPERTIES(much_digi PROPERTIES PASS_REGULAR_EXPRESSION "TestPassed;All ok")
-SET_TESTS_PROPERTIES(much_digi PROPERTIES DEPENDS much_sim)
+SET_TESTS_PROPERTIES(much_digi PROPERTIES DEPENDS much_seg)
 Set_Tests_Properties(much_seg PROPERTIES REQUIRED_FILES data/much_sim_ok)
 
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/much/much_reco.C)
