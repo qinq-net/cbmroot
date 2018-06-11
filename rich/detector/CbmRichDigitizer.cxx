@@ -41,10 +41,10 @@ CbmRichDigitizer::CbmRichDigitizer()
    fTimeTot(0.),
    fPmt(),
    fCrossTalkProbability(0.02),
-   fNoiseHitRate(0.2),
+   fNoiseDigiRate(5.),
    fDigisMap(),
-   //fEventTime(0.),
-   fTimeResolution(2.)
+   fTimeResolution(1.),
+   fDarkRatePerPixel(1000)
 {
 
 }
@@ -60,10 +60,8 @@ InitStatus CbmRichDigitizer::Init()
 
   // Screen output
   std::cout << std::endl;
-  LOG(INFO) << "=========================================================="
-      << FairLogger::endl;
-  LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl
-      << FairLogger::endl;
+  LOG(INFO) << "==========================================================" << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl << FairLogger::endl;
 
    //FairTask* daq = FairRun::Instance()->GetTask("Daq");
    if ( ! fEventMode ) {
@@ -91,10 +89,8 @@ InitStatus CbmRichDigitizer::Init()
    manager->Register("RichDigi","RICH", fRichDigis, IsOutputBranchPersistent("RichDigi"));
 
    // --- Screen output
-   LOG(INFO) << GetName() << ": Initialisation successful"
-       << FairLogger::endl;
-   LOG(INFO) << "=========================================================="
-       << FairLogger::endl;
+   LOG(INFO) << GetName() << ": Initialisation successful" << FairLogger::endl;
+   LOG(INFO) << "==========================================================" << FairLogger::endl;
    std::cout << std::endl;
 
    return kSUCCESS;
@@ -117,8 +113,7 @@ void CbmRichDigitizer::Exec(
 	Double_t oldEventTime = fCurrentEventTime;
 	GetEventInfo();
 
-	LOG(DEBUG) << fName << ": EventNumber: " << fCurrentEvent << ", EventTime: "
-	    << fCurrentEventTime << FairLogger::endl;
+	LOG(DEBUG) << fName << ": EventNumber: " << fCurrentEvent << ", EventTime: " << fCurrentEventTime << FairLogger::endl;
 
 	GenerateNoiseBetweenEvents(oldEventTime, fCurrentEventTime);
 
@@ -146,23 +141,8 @@ void CbmRichDigitizer::Exec(
 
 Int_t CbmRichDigitizer::ProcessMcEvent()
 {
-
-  /** Is already in base class
-   Int_t eventNum = FairRootManager::Instance()->GetEntryNr();
-   Int_t inputNum = 0;
-   Double_t eventTime = 0.;
-   if ( FairRunAna::Instance() != NULL && FairRunAna::Instance()->GetEventHeader() != NULL) {
-      inputNum   = FairRunAna::Instance()->GetEventHeader()->GetInputFileId();
-      eventTime = FairRunAna::Instance()->GetEventHeader()->GetEventTime();
-   }
-   if (  FairRunAna::Instance() == NULL && FairRunSim::Instance() == NULL){
-      LOG(FATAL)  << "CbmRichDigitizer: neither SIM nor ANA run." << FairLogger::endl;
-   }
-   **/
-
    Int_t nofRichPoints = fRichPoints->GetEntries();
-   LOG(DEBUG) << fName << ": EventNum:" << fCurrentEvent << " InputNum:"
-       << fCurrentInput << " EventTime:" << fCurrentEventTime
+   LOG(DEBUG) << fName << ": EventNum:" << fCurrentEvent << " InputNum:" << fCurrentInput << " EventTime:" << fCurrentEventTime
                  << " nofRichPoints:" << nofRichPoints << FairLogger::endl;
 
    for(Int_t j = 0; j < nofRichPoints; j++){
@@ -177,7 +157,19 @@ Int_t CbmRichDigitizer::ProcessMcEvent()
 
 void CbmRichDigitizer::GenerateNoiseBetweenEvents(Double_t oldEventTime, Double_t newEventTime)
 {
-   // TODO: Implement this method
+    Int_t nofPixels = CbmRichDigiMapManager::GetInstance().GetAddresses().size();
+    Double_t dT = newEventTime - oldEventTime;
+    Double_t nofNoisePixels = nofPixels * dT * (fDarkRatePerPixel / 1.e9);
+
+    LOG(DEBUG) << "CbmRichDigitizer::GenerateNoiseBetweenEvents deltaTime:" << dT << " nofPixels:" << nofPixels
+            << " nofNoisePixels:" <<nofNoisePixels << FairLogger::endl;
+
+    for(Int_t j = 0; j < nofNoisePixels; j++) {
+        Int_t address = CbmRichDigiMapManager::GetInstance().GetRandomAddress();
+        CbmLink link(1., -1, -1, -1);
+        Double_t time = gRandom->Uniform(oldEventTime, newEventTime);
+        AddDigi(address, time, link);
+    }
 }
 
 void CbmRichDigitizer::ProcessPoint(CbmRichPoint* point, Int_t pointId, Int_t eventNum, Int_t inputNum)
@@ -290,15 +282,18 @@ void CbmRichDigitizer::AddNoiseDigis(
         Int_t inputNum)
 {
     Int_t nofPixels = CbmRichDigiMapManager::GetInstance().GetAddresses().size();
-    Int_t nofNoiseDigis = fNoiseHitRate * nofPixels / 100.;
-    LOG(DEBUG) << "CbmRichDigitizer NofAllPixels:" << nofPixels << " nofNoiseDigis:" << nofNoiseDigis << FairLogger::endl;
-	for(Int_t j = 0; j < nofNoiseDigis; j++) {
-		Int_t address = CbmRichDigiMapManager::GetInstance().GetRandomAddress();
-		CbmLink link(1., -1, eventNum, inputNum);
-		// TODO: what time to assign for noise hits
-		Double_t time = fCurrentEventTime + gRandom->Gaus(20., 2.);
-		AddDigi(address, time, link);
-	}
+    Double_t dT = 50.; //ns
+    Double_t nofRichPoints = fRichPoints->GetEntries();
+    Double_t nofNoiseDigis = nofRichPoints * nofPixels * dT * (fNoiseDigiRate / 1.e9);
+
+    LOG(INFO) << "CbmRichDigitizer::AddNoiseDigis NofAllPixels:" << nofPixels << " nofNoiseDigis:" << nofNoiseDigis << FairLogger::endl;
+    for(Int_t j = 0; j < nofNoiseDigis; j++) {
+        Int_t address = CbmRichDigiMapManager::GetInstance().GetRandomAddress();
+        CbmLink link(1., -1, eventNum, inputNum);
+        // TODO: what time to assign for noise hits
+        Double_t time = fCurrentEventTime + gRandom->Uniform(0, dT);
+        AddDigi(address, time, link);
+    }
 }
 
 void CbmRichDigitizer::AddDigi(Int_t address, Double_t time, const CbmLink& link)

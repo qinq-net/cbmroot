@@ -111,6 +111,8 @@ qa/CbmRichTestSim.cxx
 qa/CbmRichTestHits.cxx 
 qa/CbmRichRingFitterQa.cxx
 qa/CbmRichGeoOpt.cxx
+qa/CbmRichRecoTbMcQa.cxx
+qa/CbmRichRecoTbRecoQa.cxx
 #qa/CbmRichParallelQa.cxx 
 selection/CbmRichRingSelectAnn.cxx
 prototype/CbmRichProt.cxx
@@ -175,6 +177,8 @@ qa/CbmRichGeoTest.h
 qa/CbmRichUrqmdTest.h
 qa/CbmRichGeoOpt.h
 qa/CbmRichRecoQa.h
+qa/CbmRichRecoTbMcQa.h
+qa/CbmRichRecoTbRecoQa.h
 prototype/beamtime/CbmRichTrbUnpack.h
 prototype/beamtime/CbmRichTrbUnpack2.h
 prototype/beamtime/CbmTrbEdgeMatcher.h

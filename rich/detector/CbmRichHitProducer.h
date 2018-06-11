@@ -93,6 +93,7 @@ private:
     void AddHit(
                 CbmEvent* event,
                 TVector3 &posHit,
+                Double_t time,
                 Int_t index);
     
     /**

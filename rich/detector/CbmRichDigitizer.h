@@ -77,9 +77,10 @@ public:
    void SetDetectorType(CbmRichPmtTypeEnum detType){ fDetectorType = detType;}
 
    /**
-    * \brief Set noise hit rate in [%]. nofNoiseDigitsPerEvent = fNoiseHitRate * NofAllPixels / 100.
+    * \brief noise rate per McRichPoint / per  pixel / per second :
+             hofNoiseDigis = nofRichPoints * nofPixels * dT(50 ns) * (fNoiseDigiRate / 1.e9);
     */
-   void SetNoiseHitRate(Double_t noise) {fNoiseHitRate = noise;}
+   void SetNoiseDigiRate(Double_t noise) {fNoiseDigiRate = noise;}
 
    /**
     * \brief Set collection efficiency for photoelectrons in PMT optics.
@@ -125,13 +126,15 @@ private:
 
    CbmRichPmt fPmt;
    Double_t fCrossTalkProbability; // probability of the crosstalk for direct neighbor for one pixel
-   Double_t fNoiseHitRate; // in [%] nofNoiseDigitsPerEvent = fNoiseHitRate * NofAllPixels / 100.
+   Double_t fNoiseDigiRate; // noise rate per McRichPoint / per  pixel / per second :
+                            // hofNoiseDigis = nofRichPoints * nofPixels * dT(50 ns) * (fNoiseDigiRate / 1.e9);
    CbmRichPmtTypeEnum fDetectorType;
 
    map<Int_t, CbmRichDigi*> fDigisMap; //map which contains all fired digis, one digi per pixel
 
    //Double_t fEventTime; // TODO: is already in base class
    Double_t fTimeResolution; // in ns
+   Double_t fDarkRatePerPixel; // dark rate per pixel in Hz
 
    /*
     * \brief Add crasstalk digis to the output array for the digi assuming fCrossTalkProbability

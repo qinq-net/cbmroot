@@ -117,7 +117,7 @@ void CbmRichHitProducer::ProcessDigi(
     TVector3 detPoint;
 
     CbmRichGeoManager::GetInstance().RotatePoint(&posPoint, &detPoint, !fRotationNeeded);
-    AddHit(event, detPoint, digiIndex);
+    AddHit(event, detPoint, digi->GetTime(), digiIndex);
 }
 
 
@@ -125,6 +125,7 @@ void CbmRichHitProducer::ProcessDigi(
 void CbmRichHitProducer::AddHit(
         CbmEvent* event,
         TVector3 &posHit,
+        Double_t time,
         Int_t index)
 {
     Int_t nofHits = fRichHits->GetEntriesFast();
@@ -134,6 +135,7 @@ void CbmRichHitProducer::AddHit(
     hit->SetDx(fHitError);
     hit->SetDy(fHitError);
     hit->SetRefId(index);
+    hit->SetTime(time);
 
     if (event != NULL) {
         event->AddData(kRichHit, nofHits);
