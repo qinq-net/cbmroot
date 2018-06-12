@@ -43,7 +43,7 @@ public:
    }
 
    Bool_t IsPmtTdc(UInt_t tdcId) const {
-      return ( ((tdcId & 0x000f) >= 0) && ((tdcId & 0x000f) <= 3) && ((tdcId >> 8) == 0) ) ||
+      return ( ((tdcId & 0x000f) <= 3) && ((tdcId >> 8) == 0) ) ||
       (tdcId == 0x0100 || tdcId == 0x0101 || tdcId == 0x0102 || tdcId == 0x0103);
    }
 

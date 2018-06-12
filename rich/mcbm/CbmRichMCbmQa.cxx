@@ -258,7 +258,7 @@ void CbmRichMCbmQa::Exec(Option_t* /*option*/)
             if (point == NULL) continue;
 
             Int_t mcTrackIdPoint = point->GetTrackID();
-            if (mcTrackIdPoint == NULL) continue;
+            if (mcTrackIdPoint < 0) continue;
             CbmMCTrack* mcTrack = (CbmMCTrack*)fMCTracks->At(mcTrackIdPoint);
             if (mcTrack == NULL) continue;
 
