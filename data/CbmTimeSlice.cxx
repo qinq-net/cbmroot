@@ -10,6 +10,7 @@
 
 #include "CbmTimeSlice.h"
 
+#include "FairLogger.h"
 #include "CbmModuleList.h"
 
 using std::stringstream;
@@ -18,12 +19,16 @@ using std::string;
 using std::setprecision;
 
 
-// -----   Default constructor   ---------------------------------------------
+// -----   Constructor for flexible time-slice   ----------------------------
 CbmTimeSlice::CbmTimeSlice() 
  : TNamed(),
-   fStartTime(0.), 
-   fDuration(0.),
+   fStartTime(-1.),
+   fLength(-1.),
+   fIsFlexible(kTRUE),
    fIsEmpty(kTRUE),
+   fNofData(),
+   fTimeDataFirst(0.),
+   fTimeDataLast(0.),
    fMatch()
 {
 }
@@ -31,12 +36,16 @@ CbmTimeSlice::CbmTimeSlice()
 
 
 
-// -----   Standard constructor   --------------------------------------------
+// -----   Constructor for fixed-length time-slice   -------------------------
 CbmTimeSlice::CbmTimeSlice(Double_t start, Double_t duration)
  : TNamed(),
    fStartTime(start), 
-   fDuration(duration),
+   fLength(duration),
+   fIsFlexible(kFALSE),
    fIsEmpty(kTRUE),
+   fNofData(),
+   fTimeDataFirst(0.),
+   fTimeDataLast(0.),
    fMatch()
 {
 }
@@ -46,6 +55,38 @@ CbmTimeSlice::CbmTimeSlice(Double_t start, Double_t duration)
 
 // -----   Destructor   ------------------------------------------------------
 CbmTimeSlice::~CbmTimeSlice() {
+}
+// ---------------------------------------------------------------------------
+
+
+
+// -----   Add data with time stamp   ----------------------------------------
+Bool_t CbmTimeSlice::AddData(Int_t detector, Double_t time) {
+
+  // Check for out of bounds
+  if ( ! fIsFlexible ) {
+    if ( time < fStartTime || time > GetEndTime() )  {
+      LOG(ERROR) << "Trying to add data at t = " << time << " ns to "
+          << "time slice [ " << fStartTime << ", " << GetEndTime()
+          << " ] ns !" << FairLogger::endl;
+      return kFALSE;
+    } //? out of bounds
+  } //? fixed-length
+
+  // Update bookkeeping
+  if ( fIsEmpty ) {
+    fTimeDataFirst = time;
+    fTimeDataLast = time;
+  } //? time-slice empty
+  else {
+    if ( time < fTimeDataFirst ) fTimeDataFirst = time;
+    if ( time > fTimeDataLast ) fTimeDataLast = time;
+  } //? time-slice not empty
+
+  fNofData[detector]++;
+  fIsEmpty = kFALSE;
+
+  return kTRUE;
 }
 // ---------------------------------------------------------------------------
 
@@ -62,11 +103,13 @@ Int_t CbmTimeSlice::GetNofData(Int_t detector) const {
 
 
 // ----- Reset time slice   --------------------------------------------------
-void CbmTimeSlice::Reset(Double_t start, Double_t duration) {
+void CbmTimeSlice::Reset(Double_t start, Double_t length) {
   fNofData.clear();
   fIsEmpty = kTRUE;
   fStartTime = start;
-  fDuration = duration;
+  fLength = length;
+  fTimeDataFirst = 0.;
+  fTimeDataLast = 0.;
   fMatch.ClearLinks();
 }
 // ---------------------------------------------------------------------------
@@ -76,14 +119,18 @@ void CbmTimeSlice::Reset(Double_t start, Double_t duration) {
 // -----   Status info   -----------------------------------------------------
 string CbmTimeSlice::ToString() const {
   stringstream ss;
-  if ( fDuration < 0. ) ss << "TimeSlice: interval flexible, Data: ";
-  else ss << "TimeSlice: interval [" << fixed << setprecision(3) << fStartTime
-      << ", " << GetEndTime() << "] ns, Data: ";
+  if ( fIsFlexible) ss << "Time slice [flexible], data: ";
+  else ss << "Time slice [" << fixed << setprecision(3) << fStartTime
+      << ", " << GetEndTime() << "] ns, data: ";
   if ( IsEmpty() ) ss << "empty";
-  else for ( auto it = fNofData.begin(); it != fNofData.end(); it++) {
-    if ( it->second ) ss << CbmModuleList::GetModuleNameCaps(it->first)
+  else {
+    ss << "[" << fixed << setprecision(3) << fTimeDataFirst
+        << ", " << fTimeDataLast << "] ns, ";
+    for ( auto it = fNofData.begin(); it != fNofData.end(); it++) {
+      if ( it->second ) ss << CbmModuleList::GetModuleNameCaps(it->first)
     << " " << it->second << " ";
-  }
+    } //# detectors
+  } //? time-slice not empty
   return ss.str();
 }
 // ---------------------------------------------------------------------------

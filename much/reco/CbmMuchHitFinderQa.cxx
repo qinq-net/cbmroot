@@ -51,8 +51,8 @@ using std::endl;
 CbmMuchHitFinderQa::CbmMuchHitFinderQa(const char* name, Int_t verbose)
   :FairTask(name,verbose),
    fGeoScheme( CbmMuchGeoScheme::Instance()),
-   //fGeoFileName("much.digi.root"),
-   //fFileName("performance.root"),
+   fGeoFileName(),
+   fFileName(),
    fSignalPoints(0),
    fSignalHits(0),
    fVerbose(verbose),

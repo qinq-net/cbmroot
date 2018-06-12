@@ -263,7 +263,7 @@ void CbmStsTimeBasedQa::ProcessDigisAndPoints(const vector<CbmStsDigi> digis, Cb
 {
   Int_t CellSize = 100;
   Int_t nCells = 1;
-  if (fDaq) nCells = fTimeSlice->GetDuration() / CellSize;
+  if (fDaq) nCells = fTimeSlice->GetLength() / CellSize;
   fMCinCell.resize(nCells);
   for ( Int_t i = 0; i < nCells; i++ ) fMCinCell[i] = 0;
 
@@ -387,7 +387,7 @@ void CbmStsTimeBasedQa::ProcessHits(const TClonesArray* hits, const TClonesArray
 {	//TODO Add histogram for matched Points
   Int_t CellSize = 100;
   Int_t nCells = 1;
-  if(fDaq) nCells = fTimeSlice->GetDuration() / CellSize;
+  if(fDaq) nCells = fTimeSlice->GetLength() / CellSize;
   fHitsinCell.resize(nCells);
   fEffinCell.resize(nCells);
   for ( Int_t i = 0; i < nCells; i++ ) {

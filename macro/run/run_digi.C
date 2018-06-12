@@ -77,7 +77,7 @@ void run_digi(
   run.AddInput(inFile, eventRate);
   run.SetOutputFile(outFile, overwrite);
   run.SetParameterRootFile(parFile);
-  run.SetTimeSliceInterval(timeSliceLength);
+  run.SetTimeSliceLength(timeSliceLength);
   run.SetEventMode(eventMode);
   
   run.Run(nEvents);

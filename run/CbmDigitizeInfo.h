@@ -115,6 +115,16 @@ class CbmDigitizeInfo : public TObject
     Bool_t        fActive;      // Digitizer is active
     Bool_t        fPersistent;  // Digitizer output is persistent
 
+
+    /** @brief Copy constructor forbidden **/
+    CbmDigitizeInfo(const CbmDigitizeInfo&) = delete;
+
+
+    /** @brief Assignment operator forbidden **/
+    CbmDigitizeInfo operator=(const CbmDigitizeInfo&) = delete;
+
+
+
     ClassDef(CbmDigitizeInfo, 1);
 
 };

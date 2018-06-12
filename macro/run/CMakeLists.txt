@@ -21,6 +21,11 @@ EndIf()
 
 ForEach(setup IN LISTS cbm_setup)
 
+  # The test dependencies are set such that parallel execution is prevented, even is there is no logical
+  # dependence. The reason is that all runs (for a given setup) use the same ROOT parameter file,
+  # and concurrent access to this file results in erros.
+  # The logical dependences are expressed in the required "ok" files.
+
   # --- Transport run, using run_transport.C
   Set(testname run_transport_${setup})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_transport.sh ${NumEvents} \"${setup}\" \"data/${setup}_test\")
@@ -53,9 +58,10 @@ ForEach(setup IN LISTS cbm_setup)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_digi.sh ${NumEvents} \"data/${setup}_test\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_transport})
+  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_reco_event})
   Set(_FileName_Dependency data/run_transport_${setup}_ok)
   Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+  Set(dep_digi ${testname})
   
   # --- QA run
   # --- I have to check the macro first for being up-to-date
@@ -68,14 +74,13 @@ ForEach(setup IN LISTS cbm_setup)
   #Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
   #Set(dep_qa ${testname})
   
-  
   # --- Geometry checking; only for nightly test
   If($ENV{ctest_model} MATCHES Nightly)
   	Set(testname run_overlap_${setup})
   	Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/check_overlaps.sh \"data/${setup}_test\")
   	Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "900")
   	Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  	Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_transport})
+  	Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_digi})
   	Set(_FileName_Dependency data/run_transport_${setup}_ok)
   	Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
   EndIf()

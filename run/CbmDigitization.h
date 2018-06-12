@@ -137,17 +137,17 @@ class CbmDigitization : public TNamed
     void SetParameterRootFile(TString fileName);
 
 
-    /** @brief Set the time-slice interval
-     ** @param interval  Duration of time-slices [ns]
+    /** @brief Set length of the time-slices
+     ** @param length  Length of time-slices [ns]
      **
      ** The raw data will be sorted into time-slices of the specified
-     ** duration.
+     ** length.
      **
-     ** If the time-slice interval is negative (default), one time-slice
+     ** If the time-slice length is negative (default), one time-slice
      ** for all input data will be created.
      **/
-     void SetTimeSliceInterval(Double_t interval) {
-       fDaq->SetTimeSliceInterval(interval);
+     void SetTimeSliceLength(Double_t length) {
+       fDaq->SetTimeSliceLength(length);
      }
 
 
@@ -175,6 +175,14 @@ class CbmDigitization : public TNamed
     Bool_t fGenerateRunInfo;
     Bool_t fMonitor;
     Int_t fRun;
+
+
+    /** @brief Copy constructor forbidden **/
+    CbmDigitization(const CbmDigitization&) = delete;
+
+
+    /** @brief Assignment operator forbidden **/
+    CbmDigitization operator=(const CbmDigitization&) = delete;
 
 
     /** @brief Check the presence of input arrays (MCPoint) in the tree.

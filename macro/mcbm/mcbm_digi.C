@@ -30,7 +30,7 @@
 
 void mcbm_digi(
 	Int_t nEvents = 3,                // Number of events to process
-	TString dataSet = "test",         // Dataset for file names
+	TString dataSet = "test",         // Data set for file names
 	Double_t eventRate = 1.e7,        // Interaction rate [1/s]
 	Double_t timeSliceLength = 1.e4,  // Length of time-slice [ns]
 	Bool_t eventMode = kTRUE         // Event-by-event mode
@@ -77,7 +77,7 @@ void mcbm_digi(
   run.AddInput(inFile, eventRate);
   run.SetOutputFile(outFile, overwrite);
   run.SetParameterRootFile(parFile);
-  run.SetTimeSliceInterval(timeSliceLength);
+  run.SetTimeSliceLength(timeSliceLength);
   run.SetEventMode(eventMode);
   
   // --- The MUCH digitizer is set explicitly since the geometry tag cannot

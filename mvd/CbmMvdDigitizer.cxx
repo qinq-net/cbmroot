@@ -128,6 +128,7 @@ if(fInputPoints->GetEntriesFast() > 0)
    TClonesArray* digis = fDetector->GetOutputDigis();
    for (Int_t index = 0; index < digis->GetEntriesFast(); index++) {
      CbmMvdDigi* digi = dynamic_cast<CbmMvdDigi*>(digis->At(index));
+     assert(digi);
      SendDigi(digi);
      nDigis++;
    }

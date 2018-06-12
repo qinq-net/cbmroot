@@ -95,6 +95,16 @@ class CbmDigitize : public FairTask
     Double_t fCurrentEventTime;
     CbmDaqBuffer* fDaqBuffer;
 
+  private:
+
+
+    /** @brief Copy constructor forbidden **/
+    CbmDigitize(const CbmDigitize&) = delete;
+
+
+    /** @brief Assignment operator forbidden **/
+    void operator=(const CbmDigitize&) = delete;
+
 
     ClassDef(CbmDigitize, 1);
 };

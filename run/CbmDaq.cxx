@@ -36,7 +36,7 @@ using std::stringstream;
 // =====   Constructor   =====================================================
 CbmDaq::CbmDaq(Double_t interval) : FairTask("Daq"),
                    fEventMode(kFALSE),
-                   fTimeSliceInterval(interval),
+                   fTimeSliceLength(interval),
                    fBufferTime(500.),
                    fStoreEmptySlices(kFALSE),
                    fTimeEventPrevious(-1.),
@@ -90,7 +90,7 @@ void CbmDaq::CloseTimeSlice() {
     FairRootManager::Instance()->Fill();
   }
 
-  if ( fEventMode || fTimeSliceInterval < 0. )
+  if ( fEventMode || fTimeSliceLength < 0. )
     fTimeSliceLast = fTimeSlice->GetStartTime();
   else
     fTimeSliceLast = fTimeSlice->GetEndTime();
@@ -98,8 +98,8 @@ void CbmDaq::CloseTimeSlice() {
   if ( gLogger->IsLogNeeded(DEBUG) ) PrintCurrentEventRange();
 
   // --- Reset time slice with new time interval
-  Double_t startTime = fTimeSlice->GetStartTime() + fTimeSliceInterval;
-  fTimeSlice->Reset(startTime, fTimeSliceInterval);
+  Double_t startTime = fTimeSlice->GetStartTime() + fTimeSliceLength;
+  fTimeSlice->Reset(startTime, fTimeSliceLength);
   fEventRange.clear();
   fEventsCurrent->Clear("");
 
@@ -162,7 +162,7 @@ void CbmDaq::Exec(Option_t*) {
   if ( ! fEventMode ) {
 
     // Time-slices of equal duration
-    if ( fTimeSliceInterval > 0. ) {
+    if ( fTimeSliceLength > 0. ) {
 
       // The time slice can only be filled up to the previous event time
       // because digitizers may generate noise between the previous event
@@ -258,7 +258,7 @@ Int_t CbmDaq::FillTimeSlice(Double_t fillTime, Bool_t limit) {
     while (digi) {
 
       // --- Consistency check
-      if ( fTimeSlice->GetDuration() > 0. ) {
+      if ( fTimeSlice->GetLength() > 0. ) {
         // Negative times in the first TS are allowed. They can happen if the
         // event time is small compared to the time resolution of the detector.
         if ( digi->GetTime() > 0. &&
@@ -306,7 +306,7 @@ void CbmDaq::Finish() {
     LOG(INFO) << fBuffer->ToString() << FairLogger::endl;
     Int_t nDigis = 0;
 
-    if ( fTimeSliceInterval > 0. ) {  // regular time-slices
+    if ( fTimeSliceLength > 0. ) {  // regular time-slices
       while ( fBuffer->GetSize() ) {  // time slice loop until buffer is empty
         nDigis += FillTimeSlice(fTimeSlice->GetEndTime());
         CloseTimeSlice();
@@ -369,15 +369,20 @@ InitStatus CbmDaq::Init() {
   if ( fEventMode ) LOG(INFO) << fName << ": running in event mode."
       << FairLogger::endl;
   else {
-    LOG(INFO) << fName << ": time-slice interval is ";
-    if ( fTimeSliceInterval < 0. ) LOG(INFO) << "infinity.";
-    else LOG(INFO) << fTimeSliceInterval << " ns.";
+    LOG(INFO) << fName << ": time-slice length is ";
+    if ( fTimeSliceLength < 0. ) LOG(INFO) << "flexible.";
+    else LOG(INFO) << fTimeSliceLength << " ns.";
     LOG(INFO) << FairLogger::endl;
   } //? time-based mode
 
+  // Set initial times
+  fTimeEventPrevious = -1.;
+  if ( fEventMode ) fTimeSliceLength = -1.;
+  if ( fTimeSliceLength < 0. ) fTimeSlice = new CbmTimeSlice(); // flexible TS
+  else fTimeSlice = new CbmTimeSlice(0., fTimeSliceLength); // fixed-length TS
+  fTimeSliceFirst =  fTimeSlice->GetStartTime();
 
   // Register output branch TimeSlice
-  fTimeSlice = new CbmTimeSlice();
   FairRootManager::Instance()->Register("TimeSlice.",
                                         "DAQ", fTimeSlice, kTRUE);
 
@@ -385,13 +390,6 @@ InitStatus CbmDaq::Init() {
   fEventsCurrent = new CbmMCEventList();
   FairRootManager::Instance()->Register("MCEventList.", "DAQ",
                                         fEventsCurrent, kTRUE);
-
-  // Set initial times
-  fTimeEventPrevious = -1.;
-  if ( fEventMode ) fTimeSliceInterval = -1.;
-  fTimeSlice->Reset(0., fTimeSliceInterval);
-  fTimeSliceFirst =  0.;
-  fTimeSliceLast  = -1.;
 
   LOG(INFO) << GetName() << ": Initialisation successful"
       << FairLogger::endl;
@@ -474,8 +472,8 @@ void CbmDaq::WriteData(CbmDigi* digi) {
   // --- Call write method of corresponding digitizer
   CbmDigitize* digitizer = fDigitizers.at(system);
   assert(digitizer);
+  fTimeSlice->AddData(system, digi->GetTime());
   digitizer->WriteDigi(digi);
-  fTimeSlice->AddData(system);
 
 }
 // ===========================================================================

@@ -93,11 +93,11 @@ class CbmDaq : public FairTask
     }
 
 
-    /** @brief Set the time-slice interval
-     ** @param interval  Duration of a time-slice [ns]
+    /** @brief Set the time-slice length
+     ** @param length  Length of a time-slice [ns]
      **/
-    void SetTimeSliceInterval(Double_t interval) {
-      fTimeSliceInterval = interval;
+    void SetTimeSliceLength(Double_t length) {
+      fTimeSliceLength = length;
     }
 
 
@@ -114,7 +114,7 @@ class CbmDaq : public FairTask
   private:
 
     Bool_t   fEventMode;           ///< Flag for event-by-event mode
-    Double_t fTimeSliceInterval;   ///< Time-slice interval [ns]
+    Double_t fTimeSliceLength  ;   ///< Time-slice length [ns]
     Double_t fBufferTime;          ///< Maximal time disorder of input data [ns]
     Bool_t   fStoreEmptySlices;    ///< Flag to store also empty time slices
     Double_t fTimeEventPrevious;   ///< Time of previous event [ns]
