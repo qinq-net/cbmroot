@@ -182,7 +182,7 @@ public:
         
         FindClones();
         
-        std::cout << "Reconstructed " << fTracks.size() << " tracks" << std::endl;
+        std::cout << "Reconstructed " << count_if(fTracks.begin(), fTracks.end(), [](const Track* t) { return !t->fIsClone; }) << " tracks" << std::endl;
     }
     
     std::list<Track*>::const_iterator GetTracksBegin() const { return fTracks.begin(); }
