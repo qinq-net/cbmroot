@@ -1,26 +1,15 @@
 void eventDisplay(const char* setup = "sis100_electron")
 {
-//  TString dataDir   = "data/";
-//  TString InputFile = dataDir + setup + "_test.mc.root";
-//  TString ParFile   = dataDir + setup + "_params.root";
-//
-  //TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
-  //   TString ParFile =  outDir + "param.rich.0.root";
-  //   TString InputFile = outDir + "mc.rich.0.root";
-  //   TString outFile = outDir + "eventDisplay.0.root";
-
-     TString ParFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/param.1.root";
-     TString outFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/eventDisplay.1.root";
-     TString InputFile = "/Users/slebedev/Development/cbm/data/sim/rich/reco/mc.1.root";
-
-
+  TString dataDir   = "data/";
+  TString InputFile = dataDir + setup + "_test.mc.root";
+  TString ParFile   = dataDir + setup + "_params.root";
 
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *fRun= new FairRunAna();
 
   FairFileSource* inputSource = new FairFileSource(InputFile.Data());
   fRun->SetSource(inputSource);
-  fRun->SetOutputFile(outFile);
+  fRun->SetOutputFile(dataDir + setup + "_test.root");
 
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
   FairParRootFileIo* parInput1 = new FairParRootFileIo();
@@ -29,24 +18,24 @@ void eventDisplay(const char* setup = "sis100_electron")
 
   FairEventManager *fMan  = new FairEventManager();
   FairMCTracks     *Track = new FairMCTracks ("Monte-Carlo Tracks");
-//
-//  FairMCPointDraw  *MvdPoint      = new FairMCPointDraw ("MvdPoint",      kBlack,  kFullSquare);
-//  FairMCPointDraw  *StsPoint      = new FairMCPointDraw ("StsPoint",      kBlue,   kFullSquare);
-    FairMCPointDraw  *RichPoint     = new FairMCPointDraw ("RichPoint",     kOrange, kFullSquare);
-//  FairMCPointDraw  *RefPlanePoint = new FairMCPointDraw ("RefPlanePoint", kPink,   kFullSquare);
-//  FairMCPointDraw  *TrdPoint      = new FairMCPointDraw ("TrdPoint",      kCyan,   kFullSquare);
-//  FairMCPointDraw  *TofPoint      = new FairMCPointDraw ("TofPoint",      kGreen,  kFullSquare);
-//  FairMCPointDraw  *EcalPoint     = new FairMCPointDraw ("EcalPoint",     kYellow, kFullSquare);
+
+  FairMCPointDraw  *MvdPoint      = new FairMCPointDraw ("MvdPoint",      kBlack,  kFullSquare);
+  FairMCPointDraw  *StsPoint      = new FairMCPointDraw ("StsPoint",      kBlue,   kFullSquare);
+  FairMCPointDraw  *RichPoint     = new FairMCPointDraw ("RichPoint",     kOrange, kFullSquare);
+  FairMCPointDraw  *RefPlanePoint = new FairMCPointDraw ("RefPlanePoint", kPink,   kFullSquare);
+  FairMCPointDraw  *TrdPoint      = new FairMCPointDraw ("TrdPoint",      kCyan,   kFullSquare);
+  FairMCPointDraw  *TofPoint      = new FairMCPointDraw ("TofPoint",      kGreen,  kFullSquare);
+  FairMCPointDraw  *EcalPoint     = new FairMCPointDraw ("EcalPoint",     kYellow, kFullSquare);
 
   fMan->AddTask(Track);
-//
-//  fMan->AddTask(MvdPoint);
-//  fMan->AddTask(StsPoint);
+
+  fMan->AddTask(MvdPoint);
+  fMan->AddTask(StsPoint);
   fMan->AddTask(RichPoint);
-//  fMan->AddTask(RefPlanePoint);
-//  fMan->AddTask(TrdPoint);
-//  fMan->AddTask(TofPoint);
-//  fMan->AddTask(EcalPoint);
+  fMan->AddTask(RefPlanePoint);
+  fMan->AddTask(TrdPoint);
+  fMan->AddTask(TofPoint);
+  fMan->AddTask(EcalPoint);
  
     
   //  fMan->Init(1,4,10000);
