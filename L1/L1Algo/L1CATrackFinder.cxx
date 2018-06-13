@@ -1495,6 +1495,8 @@ void L1Algo::CATrackFinder()
   //      xStep = 2.05;
         
   vStsHitsUnused = &vStsDontUsedHits_Buf;
+  
+
         
   for( int iS = 0; iS < NStations; ++iS ) 
   {      

@@ -33,6 +33,26 @@
 #include "setup/CbmStsSetup.h"
 #include "setup/CbmStsStation.h"
 
+#include "CbmTrdDigiPar.h"
+#include "CbmTrdModule.h"
+
+#include "CbmTofDigiPar.h"    // in tof/TofParam
+#include "CbmTofCell.h"
+
+#include "TGeoCompositeShape.h"
+#include "TGeoArb8.h"
+#include "TGeoBoolNode.h"
+#include "TGeoManager.h"
+
+#include "CbmGeoMuchPar.h"
+#include "CbmMuchGeoScheme.h"
+#include "CbmMuchStation.h"
+#include "CbmMuchModuleGem.h"
+#include "TGeoManager.h"
+#include "CbmMuchPad.h"
+#include "TGeoNode.h"
+#include <list>
+
 #include "TVector3.h"
 #include "TVectorD.h"
 #include "TMatrixD.h"
@@ -72,7 +92,7 @@ vHitStore(),
 vMCPoints(),
 nMvdPoints(0),
 vMCPoints_in_Time_Slice(),
-NStation(0), NMvdStations(0), NStsStations(0), // number of detector stations (all\sts\mvd)
+NStation(0), NMvdStations(0), NStsStations(0), NMuchStations(0), // number of detector stations (all\sts\mvd)
 fPerformance(0),
 fSTAPDataMode(0),
 fSTAPDataDir(""),
@@ -81,6 +101,9 @@ fTrackingLevel(2),  // really doesn't used
 fMomentumCutOff(0.1),  // really doesn't used
 fGhostSuppression(1),  // really doesn't used
 fUseMVD(0),  // really doesn't used
+fUseMUCH(0), 
+fUseTRD(0), 
+fUseTOF(0),
 
 PrimVtx(),
 fTimeSlice(nullptr),
@@ -98,12 +121,28 @@ listStsHits(0),
 listStsHitMatch(0),
 listStsClusterMatch(0),
 
-	       
-
 listMvdPts(0),
 listMvdHits(0),
 listMvdDigiMatches(0),
 listMvdHitMatches(0),
+
+nMuchPoints(0),
+fMuchPoints(nullptr),
+listMuchHitMatches(nullptr),
+fDigiMatchesMuch(nullptr),
+fClustersMuch(nullptr),
+fMuchPixelHits(nullptr),
+fMuchStrawHits(nullptr),
+fDigisMuch(nullptr),
+fTrdDigiPar(nullptr),
+fTrdPoints(nullptr),
+listTrdHits(nullptr),
+fTofPoints(nullptr),
+fTrdHitMatches(nullptr),
+fTofHitDigiMatches(nullptr),
+fTofHits(nullptr),
+fDigiPar(nullptr),
+
 fPerfFile(nullptr), 
 fHistoDir(nullptr),     
 vStsHits(),
@@ -116,6 +155,9 @@ histodir(nullptr),
 fFindParticlesMode(),
 fStsMatBudgetFileName(""),
 fMvdMatBudgetFileName(""),
+fMuchMatBudgetFileName(""),
+fTrdMatBudgetFileName(""),
+fTofMatBudgetFileName(""),
 fExtrapolateToTheEndOfSTS(false),
 fTimesliceMode(0),
 fTopoPerformance(nullptr),
@@ -132,7 +174,7 @@ vHitStore(),
 vMCPoints(),
 nMvdPoints(0),
 vMCPoints_in_Time_Slice(),
-NStation(0), NMvdStations(0), NStsStations(0), // number of detector stations (all\sts\mvd)
+NStation(0), NMvdStations(0), NStsStations(0), NMuchStations(0), // number of detector stations (all\sts\mvd)
 fPerformance(_fPerformance),
 fSTAPDataMode(fSTAPDataMode_),
 fSTAPDataDir(fSTAPDataDir_),
@@ -141,6 +183,10 @@ fTrackingLevel(2),  // really doesn't used
 fMomentumCutOff(0.1),  // really doesn't used
 fGhostSuppression(1),  // really doesn't used
 fUseMVD(0),  // really doesn't used
+fUseMUCH(0), 
+fUseTRD(0), 
+fUseTOF(0),
+
 
 PrimVtx(),
 fTimeSlice(nullptr),
@@ -162,6 +208,24 @@ listMvdPts(0),
 listMvdHits(0),
 listMvdDigiMatches(0),
 listMvdHitMatches(0),
+
+nMuchPoints(0),
+fMuchPoints(nullptr),
+listMuchHitMatches(nullptr),
+fDigiMatchesMuch(nullptr),
+fClustersMuch(nullptr),
+fMuchPixelHits(nullptr),
+fMuchStrawHits(nullptr),
+fDigisMuch(nullptr),
+fTrdDigiPar(nullptr),
+fTrdPoints(nullptr),
+listTrdHits(nullptr),
+fTrdHitMatches(nullptr),
+fTofPoints(nullptr),
+fTofHitDigiMatches(nullptr),
+fTofHits(nullptr),
+fDigiPar(nullptr),
+
 fPerfFile(nullptr),
 fHistoDir(nullptr),
 vStsHits(),
@@ -174,6 +238,9 @@ histodir(nullptr),
 fFindParticlesMode(findParticleMode_),
 fStsMatBudgetFileName(""),
 fMvdMatBudgetFileName(""),
+fMuchMatBudgetFileName(""),
+fTrdMatBudgetFileName(""),
+fTofMatBudgetFileName(""),
 fExtrapolateToTheEndOfSTS(false),
 fTimesliceMode(0),
 fTopoPerformance(nullptr),
@@ -194,6 +261,96 @@ void CbmL1::SetParContainers()
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
   rtdb->getContainer("CbmGeoPassivePar");
   rtdb->getContainer("CbmGeoStsPar");
+  fDigiPar = (CbmTofDigiPar*) (rtdb->getContainer("CbmTofDigiPar"));
+  rtdb->getContainer("CbmGeoTofPar");
+  fTrdDigiPar = (CbmTrdDigiPar*)(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdDigiPar"));
+
+}
+
+static void FindGeoChild(TGeoNode *node, const char *name, list<TGeoNode*>& results)
+{
+  Int_t nofChildren = node->GetNdaughters();
+  for (Int_t i = 0; i < nofChildren; ++i)
+  {
+    TGeoNode* child = node->GetDaughter(i);
+    TString childName(child->GetName());
+    if (childName.Contains(name, TString::kIgnoreCase))
+      results.push_back(child);
+  }
+}
+
+void CbmL1::HandleGeometry(vector <float> &Rho, vector <float> &Rad)
+{
+TGeoNavigator* pNavigator = gGeoManager->GetCurrentNavigator();
+gGeoManager->cd("/cave_1");
+list<TGeoNode*> detectors;
+FindGeoChild(gGeoManager->GetCurrentNode(), "much", detectors);
+
+for (list<TGeoNode*>::iterator i = detectors.begin(); i != detectors.end(); ++i)
+{ 
+TGeoNode *detector = *i;
+pNavigator->CdDown(detector);
+         list<TGeoNode*> stations;
+         FindGeoChild(detector, "station", stations);
+         int stationNumber = 0;
+         for (list<TGeoNode*>::iterator j = stations.begin(); j != stations.end(); ++j)
+         {
+            TGeoNode* station = *j;
+            pNavigator->CdDown(station);
+            list<TGeoNode*> muchstations;
+            FindGeoChild(station, "muchstation", muchstations);
+            int muchstationnumber = 0;
+         for (list<TGeoNode*>::iterator p = muchstations.begin(); p != muchstations.end(); ++p)
+         {
+            TGeoNode* muchstation = *p;
+            pNavigator->CdDown(muchstation);
+
+            list<TGeoNode*> layers;
+            FindGeoChild(muchstation, "layer", layers);
+            int layerNumber = 0;
+
+
+            for (list<TGeoNode*>::iterator k = layers.begin(); k != layers.end(); ++k)
+            {
+
+               TGeoNode* layer = *k;
+               pNavigator->CdDown(layer);
+
+               list<TGeoNode*> actives;
+               FindGeoChild(layer, "active", actives);
+
+               for (list<TGeoNode*>::iterator l = actives.begin(); l != actives.end(); ++l)
+               {
+                  TGeoNode* active = *l;
+                  pNavigator->CdDown(active);
+                 // TGeoCompositeShape* cs = dynamic_cast<TGeoCompositeShape*> (active->GetVolume()->GetShape());
+                  
+                  TGeoVolume* absVol = gGeoManager->GetCurrentVolume();
+                  
+
+                  
+                  const TGeoBBox* absShape = static_cast<const TGeoBBox*> (absVol->GetShape());
+                 // Double_t radLength = absVol->GetMaterial()->GetRadLen();
+                  Double_t length = 2 * absShape->GetDZ();
+                              
+                  Rho.push_back(absVol->GetMaterial()->GetDensity());
+                  Rad.push_back(absVol->GetMaterial()->GetDensity()*length);
+
+                  pNavigator->CdUp();
+               }
+
+               pNavigator->CdUp();
+               ++layerNumber;
+            }
+            
+               pNavigator->CdUp();
+               ++muchstationnumber;
+            }
+
+            ++stationNumber;
+            pNavigator->CdUp();
+         }         
+}
 }
 
 InitStatus CbmL1::ReInit()
@@ -250,9 +407,30 @@ InitStatus CbmL1::Init()
   }
 
   histodir = gROOT->mkdir("L1");
+  
+  RunDB = Run->GetRuntimeDb();
+  MuchPar = reinterpret_cast<CbmGeoMuchPar*>(RunDB->findContainer("CbmGeoMuchPar"));
+  Nodes = MuchPar->GetStations();
+  
+  // turn on reconstruction in sub-detectors
+  
+#ifdef mCBM   
+  fUseMUCH = 1;
+  fUseTRD = 1;
+  fUseTOF = 1;
+#endif
+
+#ifndef mCBM  
+  fUseMUCH = 0;
+  fUseTRD = 0;
+  fUseTOF = 0;
+#endif
 
   fStsPoints = 0;
   fMvdPoints = 0;
+  fMuchPoints = 0;
+  fTrdPoints = 0;
+  fTofPoints = 0;
   fMCTracks  = 0;
 
 
@@ -283,6 +461,47 @@ InitStatus CbmL1::Init()
   listStsClusterMatch = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("StsClusterMatch") );
 
   listStsHits = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("StsHit") );
+  
+    if( !fUseMUCH ){
+      fMuchPixelHits = 0;
+      fMuchStrawHits = 0;
+      
+      fDigisMuch = 0;
+      fDigiMatchesMuch = 0;
+      fClustersMuch = 0;
+      
+      fMuchPoints = 0;
+      listMuchHitMatches = 0;
+
+  } else {
+  
+  
+      fMuchPixelHits = (TClonesArray*) fManger->GetObject("MuchPixelHit");
+  
+      fMuchStrawHits = (TClonesArray*) fManger->GetObject("MuchStrawHit");
+  }
+  
+  if( !fUseTRD ){
+    fTrdPoints = 0;
+    fTrdHitMatches = 0;
+    fTrdPoints = 0;
+    listTrdHits = 0;
+
+  } else {
+    
+    listTrdHits = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("TrdHit") );
+  }
+  
+   if( !fUseTOF ){
+      fTofPoints = 0;
+      fTofHitDigiMatches = 0;
+      fTofHits = 0;
+
+  } else {
+  
+  
+      fTofHits = (TClonesArray*) fManger->GetObject("TofHit");
+  }
 
   if (fPerformance){
     CbmMCDataManager* mcManager = (CbmMCDataManager*) fManger->GetObject("MCDataManager");  
@@ -318,10 +537,50 @@ InitStatus CbmL1::Init()
       if(!listMvdHitMatches&&listMvdPts)
         std::cout << "No listMvdHitMatches provided, performance is not done correctly" << std::endl;
     }
+    
+  if( !fUseTRD ){
+    fTrdPoints = 0;
+    fTrdHitMatches = 0;
+    fTrdPoints = 0;
+
+    } else {
+      fTrdHitMatches = (TClonesArray*) fManger->GetObject("TrdHitMatch");
+      fTrdPoints = mcManager->InitBranch("TrdPoint");
+    }
+    
+  if( !fUseMUCH ){     
+      fMuchPoints = 0;
+      listMuchHitMatches = 0;
+
+  } else {
+
+        fDigisMuch       = (TClonesArray*) fManger->GetObject("MuchDigi");
+        fDigiMatchesMuch = (TClonesArray*) fManger->GetObject("MuchDigiMatch");
+        fClustersMuch    = (TClonesArray*) fManger->GetObject("MuchCluster");
+        fMuchPoints = mcManager->InitBranch("MuchPoint");
+        listMuchHitMatches = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("MuchPixelHitMatch") );
+  }
+  
+  if( !fUseTOF ){
+      fTofPoints = 0;
+      fTofHitDigiMatches = 0;
+  } else {
+
+         fTofPoints = mcManager->InitBranch("TofPoint");
+         fTofHitDigiMatches = static_cast<TClonesArray*> (fManger->GetObject("TofHitMatch"));
+  }
+    
   }
   else{
     listMvdPts = 0;
     listMvdHitMatches = 0;
+    fTrdPoints = 0;
+    fTrdHitMatches = 0;
+    fTrdPoints = 0;
+    fMuchPoints = 0;
+    listMuchHitMatches = 0;
+    fTofPoints = 0;
+    fTofHitDigiMatches = 0;
   }
   if( !fUseMVD ){
     listMvdHits = 0;
@@ -331,7 +590,12 @@ InitStatus CbmL1::Init()
 
   NMvdStations = 0;
   NStsStations = 0;
+  NMuchStations = 0;
+  NTrdStations = 0;
+  NTOFStation = 0;
   NStation = 0;
+  
+  if (fUseTOF) NTOFStation = 1;
 
   algo = & algo_static;
 
@@ -347,12 +611,94 @@ InitStatus CbmL1::Init()
     geo.push_back(B[1]);
     geo.push_back(B[2]);
   }
+  
+  
+  // count number and Z-position of MuCh stations
+    vector <float> zPositionMuch, RhoMuch, RadLenMuch;  
+    if (fUseMUCH) {
       
+      for (Int_t i=0;i<Nodes->GetEntries();i++) {
+      
+      CbmMuchStation* station = (CbmMuchStation*) Nodes->At(i);
+      Int_t nLayers = station->GetNLayers();
+      
+        for(Int_t iLayer = 0; iLayer < nLayers; iLayer++){
+        CbmMuchLayer* layer = station->GetLayer(iLayer);
+        zPositionMuch.push_back(layer->GetZ());
+        NMuchStations++;          
+        }
+      }
+     
+     HandleGeometry(RhoMuch, RadLenMuch);   
+   }
+   
+   // count TRD stations 
+   if (fUseTRD)
+   {  
+      Int_t layerCounter = 0;
+      TObjArray* topNodes = gGeoManager->GetTopNode()->GetNodes();
+      for (Int_t iTopNode = 0; iTopNode < topNodes->GetEntriesFast(); iTopNode++) {
+         TGeoNode* topNode = static_cast<TGeoNode*>(topNodes->At(iTopNode));
+         if (TString(topNode->GetName()).Contains("trd")) {
+            TObjArray* layers = topNode->GetNodes();
+            for (Int_t iLayer = 0; iLayer < layers->GetEntriesFast(); iLayer++) {
+               TGeoNode* layer = static_cast<TGeoNode*>(layers->At(iLayer));
+               if (TString(layer->GetName()).Contains("layer")) {
+                  layerCounter++;
+               }
+            }
+         }
+      }     
+   NTrdStations = layerCounter;
+  }
+   
+  // count ToF parameters   
+  
+  float z_average = 0;
+  
+  float z_min = 100000;
+  float z_max = 0;
+  
+  float r_max = 0;
+  float r_min = 100000;
+ 
+   if (fUseTOF)
+  {  
+     
+  Int_t nrOfCells = fDigiPar->GetNrOfModules();
+  
+  for (Int_t icell = 0; icell < nrOfCells; ++icell) {
+    
+    Int_t cellId = fDigiPar->GetCellId(icell);
+      CbmTofCell   *fCellInfo =fDigiPar->GetCell(cellId);
+ 
+      Double_t x = fCellInfo->GetX();
+      Double_t y = fCellInfo->GetY();
+      Double_t z = fCellInfo->GetZ();
+//       Double_t dx = fCellInfo->GetSizex();
+//       Double_t dy = fCellInfo->GetSizey();   
+      
+      if (z<z_min) z_min = z;
+      if (z>z_max) z_max = z;
+      
+      if (x<r_min) r_min = x;
+      if (x>r_max) r_max = x;
+      
+      if (y<r_min) r_min = y;
+      if (y>r_max) r_max = y;
+      
+      
+      z_average+=z;    
+  }
+ }  
+    
+    
   NMvdStations = ( fUseMVD ) ? CbmKF::Instance()->vMvdMaterial.size() : 0;
   NStsStations = CbmStsSetup::Instance()->GetNofStations();
-  NStation = NMvdStations + NStsStations;
+  NStation = NMvdStations + NStsStations + NMuchStations + NTrdStations + NTOFStation;
   geo.push_back(NStation);
   geo.push_back(NMvdStations);
+  geo.push_back(NStsStations);
 
   // field
   const int M=5; // polinom order
@@ -415,7 +761,7 @@ InitStatus CbmL1::Init()
   {
     double C[3][N];
     double z = 0;
-    double Xmax, Ymax;
+    double Xmax = 0, Ymax= 0;
     if( ist<NMvdStations ){
       
       
@@ -426,6 +772,7 @@ InitStatus CbmL1::Init()
         
 
       CbmKFTube &t = CbmKF::Instance()->vMvdMaterial[ist];
+      geo.push_back(1);
       geo.push_back(t.z);
       geo.push_back(t.dz);
       geo.push_back(t.r);
@@ -439,9 +786,13 @@ InitStatus CbmL1::Init()
       geo.push_back(b_sigma);
       z = t.z;
       Xmax = Ymax = t.R;
-    }else{
+    }
+    
+    
+    if( ist>=NMvdStations && ist<(NMvdStations+NStsStations)) 
+    {
       CbmStsStation* station = CbmStsSetup::Instance()->GetStation(ist - NMvdStations);
-  
+      geo.push_back(0);
       geo.push_back(station->GetZ());
       geo.push_back(station->GetSensorD());
       geo.push_back(0);
@@ -468,6 +819,95 @@ InitStatus CbmL1::Init()
 
       Xmax = station->GetXmax();
       Ymax = station->GetYmax();
+    }
+    
+    if( (ist < (NMvdStations + NStsStations + NMuchStations))&& (ist >= (NMvdStations + NStsStations)) ){
+      
+      int iStation = (ist - NMvdStations - NStsStations)/3;
+      
+      
+      CbmMuchStation* station = (CbmMuchStation*) Nodes->At(iStation);
+      
+      Int_t nLayers = station->GetNLayers();
+
+      CbmMuchLayer* layer = station->GetLayer((ist - NMvdStations - NStsStations)%3);
+         
+      CbmMuchModuleGem* module = (CbmMuchModuleGem*)  CbmMuchGeoScheme::Instance()->GetModule(0,0,0,0);
+         
+      vector<CbmMuchPad*> pads = module->GetPads();
+      
+      geo.push_back(2);
+      geo.push_back(layer->GetZ());      
+      geo.push_back(layer->GetDz());
+      geo.push_back(station->GetRmin());
+      geo.push_back(station->GetRmax());
+      geo.push_back(RadLenMuch[iStation]);
+
+      fscal f_phi=0, f_sigma=1*pads[0]->GetDx()/TMath::Sqrt(12), b_phi=3.14159265358/2., b_sigma=1*pads[0]->GetDy()/TMath::Sqrt(12);
+      geo.push_back(f_phi);
+      geo.push_back(f_sigma);
+      geo.push_back(b_phi);
+      geo.push_back(b_sigma);
+       
+      z = station->GetZ();
+
+      Xmax = station->GetRmax();
+      Ymax = station->GetRmax();
+    }
+    
+    int num = 0;
+    
+    if( (ist < (NMvdStations + NStsStations+NTrdStations+NMuchStations))&& (ist >= (NMvdStations + NStsStations+NMuchStations)) ){
+      
+      
+
+      if ((ist - NMvdStations - NStsStations-NMuchStations)==0) num = 0;
+      if ((ist - NMvdStations - NStsStations-NMuchStations)==1) num = 1;
+      if ((ist - NMvdStations - NStsStations-NMuchStations)==2) num = 2;
+      if ((ist - NMvdStations - NStsStations-NMuchStations)==3) num = 3;
+      if ((ist - NMvdStations - NStsStations-NMuchStations)==4) num = 4;
+      
+     // if (num==4) continue;
+      
+
+      int ModuleId = fTrdDigiPar->GetModuleId(num);
+         
+      CbmTrdModule* module = ( CbmTrdModule*) fTrdDigiPar->GetModule(ModuleId);
+      
+      
+      if (num==0||num==2||num==4) geo.push_back(3);
+      if (num==1||num==3) geo.push_back(6);
+      geo.push_back(module->GetZ());
+      
+      geo.push_back(2*module->GetSizeZ());
+      geo.push_back(0);
+      geo.push_back(module->GetSizeX());
+      geo.push_back(10);
+      
+      fscal f_phi=0, f_sigma=1/10000, b_phi=3.14159265358/2., b_sigma=1/10000;
+      geo.push_back(f_phi);
+      geo.push_back(f_sigma);
+      geo.push_back(b_phi);
+      geo.push_back(b_sigma);
+      Xmax = Ymax = 20;
+
+    }
+    
+    if( (ist < (NMvdStations + NStsStations+NTrdStations+NMuchStations+NTOFStation))&& (ist >= (NMvdStations + NStsStations+NMuchStations+NTrdStations)) ){
+
+      geo.push_back(4);
+      geo.push_back(z_average);
+      geo.push_back(z_max - z_min);
+      geo.push_back(0);
+      geo.push_back(r_max); 
+      geo.push_back(10);
+      
+      fscal f_phi=0, f_sigma=1/10000, b_phi=3.14159265358/2., b_sigma=1/10000;
+      geo.push_back(f_phi);
+      geo.push_back(f_sigma);
+      geo.push_back(b_phi);
+      geo.push_back(b_sigma);
+      Xmax = Ymax = 20;
     }
 
     double dx = 1.; // step for the field approximation
@@ -557,7 +997,7 @@ InitStatus CbmL1::Init()
   
   algo->fRadThick.resize(algo->NStations);
 
-  // Read STS and MVD Radiation Thickness table
+// Read STS  MVD TRD MuCh ToF Radiation Thickness table
   TString stationName = "Radiation Thickness [%], Station";
   if ( fUseMVD ) {
     if ( fMvdMatBudgetFileName != "" ) {
@@ -612,7 +1052,7 @@ InitStatus CbmL1::Init()
     TFile* oldfile = gFile;
     TFile *rlFile = new TFile(fStsMatBudgetFileName);
     cout << "STS Material budget file is " << fStsMatBudgetFileName << ".\n";
-    for( int j = 1, iSta = algo->NMvdStations; iSta < algo->NStations; iSta++, j++ ) {
+    for( int j = 1, iSta = algo->NMvdStations; iSta < (algo->NMvdStations+NStsStations); iSta++, j++ ) {
       TString stationNameSts = stationName;
       stationNameSts += j;
       TProfile2D* hStaRadLen = (TProfile2D*) rlFile->Get(stationNameSts);
@@ -641,8 +1081,170 @@ InitStatus CbmL1::Init()
   }
   else {
     cout << "No STS material budget file is found. Homogenious budget will be used" << endl;
-    for( int iSta = algo->NMvdStations; iSta < algo->NStations; iSta++ ) {
+    for( int iSta = algo->NMvdStations; iSta < (algo->NMvdStations+NStsStations); iSta++ ) {
       cout << iSta << endl;
+      algo->fRadThick[iSta].SetBins(1, 100);
+      algo->fRadThick[iSta].table.resize(1);
+      algo->fRadThick[iSta].table[0].resize(1);
+      algo->fRadThick[iSta].table[0][0] = algo->vStations[iSta].materialInfo.RadThick[0];
+    }
+  }
+  
+  if ( fUseMUCH )
+    if (fMuchMatBudgetFileName != "") {
+    TFile* oldfile = gFile;
+    TFile *rlFile = new TFile(fMuchMatBudgetFileName);
+    cout << "Much Material budget file is " << fMuchMatBudgetFileName << ".\n";
+    for( int j = 1, iSta = (NStsStations+NMvdStations); iSta < (NStsStations+NMvdStations+NMuchStations); iSta++, j++ ) {
+      TString stationNameSts = stationName;
+      stationNameSts += j;
+      TProfile2D* hStaRadLen = (TProfile2D*) rlFile->Get(stationNameSts);
+      if ( !hStaRadLen ) {
+        cout << "L1: incorrect " << fMuchMatBudgetFileName << " file. No " << stationNameSts << "\n";
+        exit(1);
+      }
+      
+
+      const int NBins = hStaRadLen->GetNbinsX(); // should be same in Y
+        const float RMax = hStaRadLen->GetXaxis()->GetXmax(); // should be same as min
+        algo->fRadThick[iSta].SetBins(NBins,RMax);
+        algo->fRadThick[iSta].table.resize(NBins);
+
+        for( int iB = 0; iB < NBins; iB++ ) {
+          algo->fRadThick[iSta].table[iB].resize(NBins);
+          float hole = 0;
+          for( int iB2 = 0; iB2 < NBins; iB2++ ) {
+            algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
+            // Correction for holes in material map
+            //if(algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0])
+            
+              if(iB2 > 0 && iB2<NBins-1)
+              algo->fRadThick[iSta].table[iB][iB2] = TMath::Min(0.01 * hStaRadLen->GetBinContent(iB,iB2-1),
+                                                            0.01 * hStaRadLen->GetBinContent(iB,iB2+1));
+            // Correction for the incorrect harcoded value of RadThick of MVD stations
+              
+            if(algo->fRadThick[iSta].table[iB][iB2] > 0.0015) hole = algo->fRadThick[iSta].table[iB][iB2];
+            if(algo->fRadThick[iSta].table[iB][iB2] < 0.0015)
+              algo->fRadThick[iSta].table[iB][iB2]  = hole;
+//              algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];
+          }
+        }
+      }
+    rlFile->Close();
+    rlFile->Delete();
+    gFile = oldfile;
+  }
+  else {
+    cout << "No Much material budget file is found. Homogenious budget will be used" << endl;
+    for( int iSta = (NStsStations+NMvdStations); iSta < (NStsStations+NMvdStations+NMuchStations); iSta++ ) {
+      algo->fRadThick[iSta].SetBins(1, 100);
+      algo->fRadThick[iSta].table.resize(1);
+      algo->fRadThick[iSta].table[0].resize(1);
+      algo->fRadThick[iSta].table[0][0] = algo->vStations[iSta].materialInfo.RadThick[0];
+    }
+  }
+  
+  if ( fUseTRD )
+      if (fTrdMatBudgetFileName != "") {
+    TFile* oldfile = gFile;
+    TFile *rlFile = new TFile(fTrdMatBudgetFileName);
+    cout << "TRD Material budget file is " << fTrdMatBudgetFileName << ".\n";
+    for( int j = 1, iSta = (NStsStations+NMvdStations+NMuchStations); iSta < (NStsStations+NMvdStations+NMuchStations+NTrdStations); iSta++, j++ ) {
+      TString stationNameSts = stationName;
+      stationNameSts += j;
+      TProfile2D* hStaRadLen = (TProfile2D*) rlFile->Get(stationNameSts);
+      if ( !hStaRadLen ) {
+        cout << "L1: incorrect " << fTrdMatBudgetFileName << " file. No " << stationNameSts << "\n";
+        exit(1);
+      }
+      
+
+      const int NBins = hStaRadLen->GetNbinsX(); // should be same in Y
+        const float RMax = hStaRadLen->GetXaxis()->GetXmax(); // should be same as min
+        algo->fRadThick[iSta].SetBins(NBins,RMax);
+        algo->fRadThick[iSta].table.resize(NBins);
+
+        for( int iB = 0; iB < NBins; iB++ ) {
+          algo->fRadThick[iSta].table[iB].resize(NBins);
+          float hole = 0;
+          for( int iB2 = 0; iB2 < NBins; iB2++ ) {
+            algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
+            // Correction for holes in material map
+            //if(algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0])
+            
+              if(iB2 > 0 && iB2<NBins-1)
+              algo->fRadThick[iSta].table[iB][iB2] = TMath::Min(0.01 * hStaRadLen->GetBinContent(iB,iB2-1),
+                                                            0.01 * hStaRadLen->GetBinContent(iB,iB2+1));
+            // Correction for the incorrect harcoded value of RadThick of MVD stations
+              
+            if(algo->fRadThick[iSta].table[iB][iB2] > 0.0015) hole = algo->fRadThick[iSta].table[iB][iB2];
+            if(algo->fRadThick[iSta].table[iB][iB2] < 0.0015)
+              algo->fRadThick[iSta].table[iB][iB2]  = hole;
+//              algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];
+          }
+        }
+      }
+    rlFile->Close();
+    rlFile->Delete();
+    gFile = oldfile;
+  }
+  else {
+    cout << "No TRD material budget file is found. Homogenious budget will be used" << endl;
+    for( int iSta = (NStsStations+NMvdStations+NMuchStations); iSta < (NStsStations+NMvdStations+NMuchStations+NTrdStations); iSta++ ) {
+      algo->fRadThick[iSta].SetBins(1, 100);
+      algo->fRadThick[iSta].table.resize(1);
+      algo->fRadThick[iSta].table[0].resize(1);
+      algo->fRadThick[iSta].table[0][0] = algo->vStations[iSta].materialInfo.RadThick[0];
+    }
+  }
+  
+  if ( fUseTOF )
+        if (fTofMatBudgetFileName != "") {
+    TFile* oldfile = gFile;
+    TFile *rlFile = new TFile(fTofMatBudgetFileName);
+    cout << "TOF Material budget file is " << fTofMatBudgetFileName << ".\n";
+    for( int j = 1, iSta = (NStsStations+NMvdStations+NMuchStations+NTrdStations); iSta < (NStsStations+NMvdStations+NMuchStations+NTrdStations+1); iSta++, j++ ) {
+      TString stationNameSts = stationName;
+      stationNameSts += j;
+      TProfile2D* hStaRadLen = (TProfile2D*) rlFile->Get(stationNameSts);
+      if ( !hStaRadLen ) {
+        cout << "L1: incorrect " << fTofMatBudgetFileName << " file. No " << stationNameSts << "\n";
+        exit(1);
+      }
+      
+
+      const int NBins = hStaRadLen->GetNbinsX(); // should be same in Y
+        const float RMax = hStaRadLen->GetXaxis()->GetXmax(); // should be same as min
+        algo->fRadThick[iSta].SetBins(NBins,RMax);
+        algo->fRadThick[iSta].table.resize(NBins);
+
+        for( int iB = 0; iB < NBins; iB++ ) {
+          algo->fRadThick[iSta].table[iB].resize(NBins);
+          float hole = 0;
+          for( int iB2 = 0; iB2 < NBins; iB2++ ) {
+            algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
+            // Correction for holes in material map
+            //if(algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0])
+            
+              if(iB2 > 0 && iB2<NBins-1)
+              algo->fRadThick[iSta].table[iB][iB2] = TMath::Min(0.01 * hStaRadLen->GetBinContent(iB,iB2-1),
+                                                            0.01 * hStaRadLen->GetBinContent(iB,iB2+1));
+            // Correction for the incorrect harcoded value of RadThick of MVD stations
+              
+            if(algo->fRadThick[iSta].table[iB][iB2] > 0.0015) hole = algo->fRadThick[iSta].table[iB][iB2];
+            if(algo->fRadThick[iSta].table[iB][iB2] < 0.0015)
+              algo->fRadThick[iSta].table[iB][iB2]  = hole;
+//              algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];
+          }
+        }
+      }
+    rlFile->Close();
+    rlFile->Delete();
+    gFile = oldfile;
+  }
+  else {
+    cout << "No TOF material budget file is found. Homogenious budget will be used" << endl;
+    for( int iSta = (NStsStations+NMvdStations+NMuchStations+NTrdStations); iSta < (NStsStations+NMvdStations+NMuchStations+NTrdStations+1); iSta++ ) {
       algo->fRadThick[iSta].SetBins(1, 100);
       algo->fRadThick[iSta].table.resize(1);
       algo->fRadThick[iSta].table[0].resize(1);
@@ -855,8 +1457,8 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
   if( fVerbose>1 ) cout<<"L1 Track finder..."<<endl;
   algo->CATrackFinder();
 
-//      IdealTrackFinder();
-//      algo->NTracksIsecAll=algo->vTracks.size();
+// IdealTrackFinder();
+     
   if( fVerbose>1 ) cout<<"L1 Track finder ok"<<endl;
 //  algo->L1KFTrackFitter( fExtrapolateToTheEndOfSTS );
 
@@ -1010,6 +1612,7 @@ void CbmL1::IdealTrackFinder()
       const int hitI = MC.StsHits[iH];
       const CbmL1StsHit& hit = vStsHits[hitI];
       const int iStation = vMCPoints[hit.mcPointIds[0]].iStation;
+
       hitIndices[iStation] = hitI;
     }
 
@@ -1030,7 +1633,10 @@ void CbmL1::IdealTrackFinder()
     algoTr.TFirst[5] = MC.z;
           
     algo->vTracks.push_back(algoTr);
+    
+   
   }
+   algo->NTracksIsecAll=algo->vTracks.size();
 }; // void CbmL1::IdealTrackFinder()
 
 

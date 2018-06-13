@@ -19,12 +19,17 @@ class L1StsHit
 //    std::vector<L1Branch*> CandidatesF;
 // short int CandF;
 // short int CandB;
+    float dx, dy, dxy;
+    float du, dv;
     bool used;
     float t_reco;
     float t_er;
     float t_mc;
     int ista;
     float time1, time2;
+
+    
+    float x, y;
    
  // unsigned short int n; // number of event
   

@@ -85,6 +85,7 @@ class L1Algo{
     vTracksNew(),
     NStations(0),    // number of all detector stations
     NMvdStations(0), // number of mvd stations
+    NStsStations(0),
     fRadThick(),
     vStsStrips(0),  // strips positions created from hits. Front strips
     vStsStripsB(0), // back strips
@@ -178,7 +179,7 @@ class L1Algo{
       fz_pos3[i].reserve(MaxPortionTriplets/fvecLen);
       fTimeR[i].reserve(MaxPortionTriplets/fvecLen);
       
-      for (int j=0; j<12; j++) TripletsLocal1[j][i].resize(400000);
+      for (int j=0; j<MaxNStations; j++) TripletsLocal1[j][i].resize(400000);
     }
     
     for (int i=0; i<MaxNStations; i++) vGridTime[i].AllocateMemory(fNThreads);
@@ -195,7 +196,7 @@ class L1Algo{
 
         
     for(int i=0; i<nThreads; i++)
-      for(int k=0; k<12; k++)
+      for(int k=0; k<MaxNStations; k++)
         nTripletsThread[k][i]=0;
 
     NTracksIsecAll=20000;
@@ -216,11 +217,12 @@ class L1Algo{
   L1Algo operator=(const L1Algo&) = delete;
   
   static const int nTh = 1;
+  static const int nSta = 25;
 
-   L1Vector <L1Triplet> TripletsLocal1[12][nTh];
+   L1Vector <L1Triplet> TripletsLocal1[nSta][nTh];
    L1Vector <L1Branch> CandidatesTrack[nTh];
 
-  Tindex portionStopIndex[12];
+  Tindex portionStopIndex[nSta];
   L1Vector <Tindex> n_g1;
 
 
@@ -229,7 +231,7 @@ class L1Algo{
 
   int  numberCandidateThread [nTh];
   
-  int  nTripletsThread [12][nTh];
+  int  nTripletsThread [nSta][nTh];
   
     //for merger
   L1Vector<unsigned short> FirstHit;
@@ -288,10 +290,11 @@ class L1Algo{
 
   void SetNThreads(int n=1) {fNThreads = n;}
       
-  enum{ MaxNStations = 12 };
+  enum{ MaxNStations = 25 };
 
   int NStations,    // number of all detector stations
-      NMvdStations; // number of mvd stations
+      NMvdStations, // number of mvd stations
+      NStsStations;
   L1Station vStations[MaxNStations] _fvecalignment; // station info
   vector<L1Material> fRadThick; // material for each station
 

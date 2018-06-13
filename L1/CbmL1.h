@@ -17,6 +17,8 @@
 #ifndef _CbmL1_h_
 #define _CbmL1_h_
 
+//#define mCBM
+
 /// temporary TEST !!!!
 ///#define HAVE_SSE
 
@@ -91,7 +93,8 @@ class CbmL1HitStore{
  public:
   int ExtIndex;
   int iStation;
-  double x, y, time;
+  double x, y, time, dx, dy, dt, dxy;
+  int Det;
 };
 
 //class CbmL1FileEvent{
@@ -99,6 +102,10 @@ class CbmL1HitStore{
 //  int File;
 //  int Event;
 //}
+
+class CbmTrdDigiPar;
+class CbmTofDigiPar;
+class CbmGeoMuchPar;
 
 
 class CbmL1 : public FairTask 
@@ -134,6 +141,9 @@ class CbmL1 : public FairTask
 
   void SetStsMaterialBudgetFileName( TString fileName ){ fStsMatBudgetFileName = fileName; }
   void SetMvdMaterialBudgetFileName( TString fileName ){ fMvdMatBudgetFileName = fileName; }
+  void SetMuchMaterialBudgetFileName( TString fileName ){ fMuchMatBudgetFileName = fileName; }
+  void SetTrdMaterialBudgetFileName( TString fileName ){ fTrdMatBudgetFileName = fileName; }
+  void SetTofMaterialBudgetFileName( TString fileName ){ fTofMatBudgetFileName = fileName; }
   void SetExtrapolateToTheEndOfSTS( bool b ){ fExtrapolateToTheEndOfSTS = b; }
   void SetDataMode( int TimesliceMode) { fTimesliceMode = TimesliceMode; }
   void Finish();
@@ -162,11 +172,13 @@ class CbmL1 : public FairTask
    int nMvdPoints;
    vector<int> vMCPoints_in_Time_Slice;
    void IdealTrackFinder(); // just copy all reconstructable MCTracks into RecoTracks.
+   
+   void HandleGeometry(vector <float> &Rho, vector <float> &Rad);
 
     /// Read information about hits, mcPoints and mcTracks into L1 classes
    void ReadEvent(L1AlgoInputData *, CbmEvent* event = NULL);
-   bool ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD ); // help procedure
-   bool ReadMCPoint(CbmL1MCPoint *MC, int iPoint, int file, int event, bool MVD );
+   bool ReadMCPoint( CbmL1MCPoint *MC, int iPoint, int MVD ); // help procedure
+   bool ReadMCPoint(CbmL1MCPoint *MC, int iPoint, int file, int event, int MVD );
 //   static bool compareZ(const int &a, const int &b );
 //   bool compareZ(const int &a, const int &b );
    void Fill_vMCTracks();
@@ -199,7 +211,7 @@ class CbmL1 : public FairTask
    static std::istream& eatwhite(std::istream& is); // skip spaces
    static void writedir2current( TObject *obj ); // help procedure
 
-   int NStation, NMvdStations, NStsStations; // number of detector stations (all\sts\mvd)
+   int NStation, NMvdStations, NStsStations, NMuchStations, NTrdStations, NTOFStation;// number of detector stations (all\sts\mvd)
    Int_t fPerformance; // 0 - w\o perf. 1 - L1-Efficiency definition. 2 - QA-Eff.definition
    int fSTAPDataMode; // way to work with file for standalone package. 0 (off) , 1 (write), 2 (read data and work only with it), 3 (debug - write and read)
    TString fSTAPDataDir;
@@ -207,7 +219,7 @@ class CbmL1 : public FairTask
    Int_t fTrackingLevel;  // really doesn't used
    Double_t fMomentumCutOff;  // really doesn't used
    Bool_t fGhostSuppression;  // really doesn't used
-   Bool_t fUseMVD;  // really doesn't used
+   Bool_t fUseMVD, fUseMUCH, fUseTRD, fUseTOF;  // 
 //   Double_t fDetectorEfficiency;  // really doesn't used
 
    CbmL1Vtx PrimVtx;
@@ -221,6 +233,8 @@ class CbmL1 : public FairTask
    CbmMCDataArray* fStsPoints;
    CbmMCDataArray* fMCTracks;
    CbmMCDataArray* fMvdPoints;
+   
+
 
 
    //TClonesArray *listMCTracks ;
@@ -243,6 +257,35 @@ class CbmL1 : public FairTask
    TClonesArray *listMvdHits;
    TClonesArray *listMvdDigiMatches;
    TClonesArray *listMvdHitMatches;
+   
+    //MuCh 
+   int nMuchPoints;   
+   CbmMCDataArray* fMuchPoints;
+   TClonesArray *  listMuchHitMatches; // Output CbmMatch array
+   TClonesArray*   fDigiMatchesMuch;
+   TClonesArray*   fClustersMuch;
+   
+   TClonesArray*   fMuchPixelHits; // CbmMuchPixelHit array
+   TClonesArray*   fMuchStrawHits; // CbmMuchStrawHit array
+   TClonesArray*   fDigisMuch;
+   
+   //TRD
+   
+   CbmTrdDigiPar         * fTrdDigiPar;
+   
+   CbmMCDataArray* fTrdPoints;
+   TClonesArray *listTrdHits;
+   TClonesArray *fTrdHitMatches;
+   
+   //ToF
+   CbmMCDataArray* fTofPoints;
+   TClonesArray* fTofHitDigiMatches; // CbmMatches array
+   TClonesArray* fTofHits; // CbmMatches array
+   CbmTofDigiPar         * fDigiPar;
+   
+   FairRuntimeDb *RunDB;
+   CbmGeoMuchPar *MuchPar;
+   TObjArray *Nodes;
    
      struct TH1FParameters
   {
@@ -285,6 +328,9 @@ class CbmL1 : public FairTask
 
   TString fStsMatBudgetFileName;
   TString fMvdMatBudgetFileName;
+  TString fMuchMatBudgetFileName;
+  TString fTrdMatBudgetFileName;
+  TString fTofMatBudgetFileName;
   bool fExtrapolateToTheEndOfSTS;
   int fTimesliceMode;
   

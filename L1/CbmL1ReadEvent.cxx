@@ -23,6 +23,15 @@
 #include "CbmStsAddress.h"
 #include "setup/CbmStsSetup.h"
 
+#include "CbmMatch.h"
+#include "CbmMuchPixelHit.h"
+#include "CbmTrdHit.h"
+#include "CbmTofHit.h"
+#include "CbmMuchGeoScheme.h"
+#include "CbmMuchPoint.h"
+#include "CbmTrdPoint.h"
+#include "CbmTofPoint.h"
+
 //#include "CbmMvdHitMatch.h"
 
 
@@ -59,8 +68,13 @@ struct TmpHit{ // used for sort Hits before writing in the normal arrays
   bool isStrip;
   double u_front, u_back; // positions of strips
   double x, y;            // position of hit
+  double dx, dy, dxy;
+  double du, dv;
   int iMC;                // index of MCPoint in the vMCPoints array
-  double time, t_er;
+  double time, t_er, z;
+  int Det;
+  int id;
+  int track;
   static bool Compare( const TmpHit &a, const TmpHit &b ){
     return ( a.iStation <  b.iStation ) ||
          ( ( a.iStation == b.iStation ) && ( a.y < b.y ) );
@@ -109,9 +123,18 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
     nMvdPoints = 0;
     // get MVD hits
   Int_t nMvdHits = 0;
-
+  Int_t nMuchHits = 0;
+  Int_t nTrdHits = 0;
+  Int_t nTofHits = 0;
     // get STS hits
   int nStsHits = 0;
+  
+  int nStsPoints =0;
+  int nTrdPoints =0;
+  int nMuchPoints =0;
+  int nTofPoints =0;
+  
+  vector <CbmLink*> ToFPointsMatch;
 
   if (fPerformance)
   {
@@ -120,6 +143,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
     for( DFSET::iterator set_it = vFileEvent.begin(); set_it!=vFileEvent.end(); ++set_it){
       Int_t iFile = set_it->first;
       Int_t iEvent = set_it->second;
+
      
       if(fMvdPoints && listMvdPts)
       {
@@ -178,13 +202,148 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
             vMCPoints_in_Time_Slice.push_back(0);
             
             dFEI2vMCPoints.insert( DFEI2I::value_type(dFEI(iFile,iEvent,iMC+nMvdPoints), vMCPoints.size()-1) );
+            nStsPoints++;
 
           }
+        }       
+        
+        if(fMuchPoints){
+        
+        for(Int_t iMC = 0; iMC < fMuchPoints->Size(iFile, iEvent); iMC++){
+          CbmL1MCPoint MC;
+          
+          MC.event = iEvent;
+  
+          if( ! ReadMCPoint( &MC, iMC, iFile, iEvent, 2 ) ){
+            MC.iStation = -1;
+            L1Station *sta = algo->vStations + NMvdStations + NStsStations;
+            for(Int_t iSt=0; iSt < NMuchStations; iSt++)
+              MC.iStation = (MC.z > sta[iSt].z[0] - 2.5) ? (NMvdStations+ NStsStations + iSt) : MC.iStation;
+
+
+            Double_t dtrck =dFEI(iFile, iEvent, MC.ID);
+            DFEI2I::iterator trk_it = dFEI2vMCTracks.find(dtrck);
+            if (trk_it==dFEI2vMCTracks.end()) continue;
+            Int_t IND_Track = trk_it->second;
+
+            vMCTracks[IND_Track].Points.push_back(vMCPoints.size()); 
+
+            MC.ID = trk_it->second;
+            vMCPoints.push_back(MC);
+            vMCPoints_in_Time_Slice.push_back(0);
+            
+            dFEI2vMCPoints.insert( DFEI2I::value_type(dFEI(iFile,iEvent,iMC+nMvdPoints+nStsPoints), vMCPoints.size()-1) );
+            nMuchPoints++;
+            
+
+          }
+        } 
+        } 
+        
+        
+        if(fTrdPoints)
+        for(Int_t iMC = 0; iMC < fTrdPoints->Size(iFile, iEvent); iMC++){
+          CbmL1MCPoint MC;
+          
+          MC.event = iEvent;
+
+  
+          if( ! ReadMCPoint( &MC, iMC, iFile, iEvent, 3 ) ){
+            
+            MC.iStation = -1;
+            L1Station *sta = algo->vStations + NMvdStations + NStsStations+NMuchStations;
+            for(Int_t iSt=0; iSt < NTrdStations; iSt++)
+              MC.iStation = (MC.z > sta[iSt].z[0] - 4.0) ? (NMvdStations+ NStsStations+NMuchStations + iSt) : MC.iStation;
+
+
+            Double_t dtrck =dFEI(iFile, iEvent, MC.ID);
+            DFEI2I::iterator trk_it = dFEI2vMCTracks.find(dtrck);
+            if (trk_it==dFEI2vMCTracks.end()) continue;
+            Int_t IND_Track = trk_it->second;
+            
+            vMCTracks[IND_Track].Points.push_back(vMCPoints.size()); 
+
+            MC.ID = trk_it->second;
+            vMCPoints.push_back(MC);
+            vMCPoints_in_Time_Slice.push_back(0);
+            
+            dFEI2vMCPoints.insert( DFEI2I::value_type(dFEI(iFile,iEvent,iMC+nMvdPoints+nStsPoints+nMuchPoints), vMCPoints.size()-1) );
+            nTrdPoints++;
+            
+
+          }
+        } 
+
+        ToFPointsMatch.resize(0);
+  
+        if(fTofPoints) {
+          for (int j=0; j <fTofHits->GetEntries(); j++ ){
+
+          CbmTofHit *mh = L1_DYNAMIC_CAST<CbmTofHit*>( fTofHits->At(j) );
+        
+          CbmMatch *matchHitMatch = L1_DYNAMIC_CAST<CbmMatch*>( fTofHitDigiMatches->At(j) );
+        
+          if( matchHitMatch->GetNofLinks() > 0 ) {
+
+            CbmLink *link = (CbmLink*) &matchHitMatch->GetLink(0);
+            CbmTofPoint* pt = (CbmTofPoint*) fTofPoints->Get(link->GetFile(),link->GetEntry(),link->GetIndex());
+
+            for(int iLink=1; iLink<matchHitMatch -> GetNofLinks(); iLink++)
+            {
+          
+             CbmLink *link1 = (CbmLink*) &(matchHitMatch->GetLink(iLink));
+          
+             CbmTofPoint* pt_cur = (CbmTofPoint*) fTofPoints->Get(link1->GetFile(),link1->GetEntry(),link1->GetIndex());
+          
+              TVector3 pos_cur, pos_old, pos_hit;
+
+          
+              pt_cur->Position(pos_cur);
+              pt->Position(pos_old);
+              mh->Position(pos_hit);
+          
+              if ( fabs(pos_cur.Z() - pos_hit.Z()) < fabs(pos_old.Z() - pos_hit.Z()) ) {pt = pt_cur; link = link1; }         
+         }  
+
+         ToFPointsMatch.push_back(link);
+    } // for j
+  } // if listTrdHits
+  
+  
+
+        for(Int_t iMC = 0; iMC < ToFPointsMatch.size(); iMC++){
+          CbmL1MCPoint MC;
+          
+          MC.event = iEvent;
+  
+          if( ! ReadMCPoint( &MC, ToFPointsMatch[iMC]->GetIndex(), iFile, iEvent,  4 ) ){
+            
+            MC.iStation = NMvdStations + NStsStations + NMuchStations + NTrdStations;
+
+            Double_t dtrck =dFEI(iFile, iEvent, MC.ID);
+            DFEI2I::iterator trk_it = dFEI2vMCTracks.find(dtrck);
+            if (trk_it==dFEI2vMCTracks.end()) continue;
+            
+            Int_t IND_Track = trk_it->second;
+            
+            vMCTracks[IND_Track].Points.push_back(vMCPoints.size()); 
+
+            MC.ID = trk_it->second;
+            
+            vMCPoints.push_back(MC);
+            vMCPoints_in_Time_Slice.push_back(0);
+            
+            dFEI2vMCPoints.insert( DFEI2I::value_type(dFEI(iFile,iEvent,iMC+nMvdPoints+nStsPoints+nMuchPoints+nTrdPoints), vMCPoints.size()-1) );
+            nTofPoints++;
+          }
         }
+      }
+        
     } //time_slice
 
     for (unsigned int iTr = 0; iTr < vMCTracks.size(); iTr++) 
     {
+
       sort( vMCTracks[iTr].Points.begin(), vMCTracks[iTr].Points.end(), compareZ );
 
       if ( vMCTracks[iTr].mother_ID >= 0)
@@ -251,12 +410,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
       {
       if( listMvdHitMatches ){
         CbmMatch *mvdHitMatch = L1_DYNAMIC_CAST<CbmMatch*>( listMvdHitMatches->At(j) );
-        
-//         cout<<mvdHitMatch<<" mvdHitMatch"<<endl;
-//         
-//         cout<<mvdHitMatch->GetNofLinks()<<" mvdHitMatch->GetNofLinks()"<<endl;
-//         cout<<mvdHitMatch->GetLink(0).GetIndex()<<" mvdHitMatch->GetLink(0).GetIndex()"<<endl;
-//         cout<<nMvdPoints<<" nMvdPoints"<<endl;
+
         
         if( mvdHitMatch->GetNofLinks() > 0 )
           if( mvdHitMatch->GetLink(0).GetIndex() < nMvdPoints )
@@ -264,13 +418,6 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
             iMC = mvdHitMatch->GetLink(0).GetIndex();
             th.iMC = iMC;
           }
-          
-   //       cout<<iMC<<" iMC"<<endl;
-//         if( match){
-//           iMC = match->GetPointId();
-//           
-//           cout<<iMC<<" iMC"<<endl;
-//         }
       }
 //       if( listMvdPts && iMC>=0 ){ // TODO1: don't need this with FairLinks
 //         CbmL1MCPoint MC;
@@ -333,6 +480,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
       {
         CbmStsHit *mh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(hitIndex) );
         th.ExtIndex = hitIndex;
+        th.Det = 1;
         th.iStation = NMvdStations + CbmStsSetup::Instance()->GetStationNumber(mh->GetAddress());//mh->GetStationNr() - 1;
         th.isStrip  = 0;
         th.iStripF = 0;//mh->GetFrontDigiId();
@@ -410,11 +558,383 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
     
     } // for j
   } // if listStsHits
+  
+      if( fMuchPixelHits ){
+
+    Int_t nEnt  = fMuchPixelHits->GetEntries();
+
+
+    for (int j=0; j <nEnt; j++ ){
+      TmpHit th;
+      {
+        
+        CbmMuchPixelHit* mh = static_cast<CbmMuchPixelHit*>(fMuchPixelHits->At(j) );
+        
+        th.ExtIndex = -(1+j);
+        th.Det = 2;
+
+        
+        Int_t stationNumber = CbmMuchGeoScheme::GetStationIndex(mh->GetAddress());
+        Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(mh->GetAddress());
+        
+        int DetId = stationNumber*3 + layerNumber;
+        
+        
+        th.iStation = DetId + NMvdStations+NStsStations ;
+                //Get time
+        th.time =  mh->GetTime()-17;
+        th.t_er =  mh->GetTimeError();  
+
+
+     //   th.iSector  = 0;
+        th.isStrip  = 0;
+        th.iStripF = j;
+        th.iStripB = -1;
+        if( th.iStripF<0 ) continue;
+        if( th.iStripF>=0 && th.iStripB>=0 ) th.isStrip  = 1;
+        if( th.iStripB <0 ) th.iStripB = th.iStripF;
+        
+        th.iStripF += nMvdHits+nStsHits;
+        th.iStripB += nMvdHits+nStsHits;
+
+        th.x = mh->GetX();
+        th.y = mh->GetY();
+        th.z = mh->GetZ();
+        
+        th.dx = mh->GetDx();
+        th.dy = mh->GetDy();
+        th.dxy = 0;
+        
+        th.du = mh->GetDx();
+        th.dv = mh->GetDy();
+
+  
+        L1Station &st = algo->vStations[th.iStation];
+        th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
+        th.u_back  = th.x* st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];
+      }
+      th.iMC=-1;
+      int iMC = -1;
+
+
+       if (fPerformance)
+      {
+      if( listMuchHitMatches ){
+        CbmMatch *matchHitMatch = L1_DYNAMIC_CAST<CbmMatch*>( listMuchHitMatches->At(j) );
+        
+
+        
+        if( matchHitMatch->GetNofLinks() > 0 )
+          if( matchHitMatch->GetLink(0).GetIndex() < nMuchPoints )
+          {
+            iMC = matchHitMatch->GetLink(0).GetIndex();
+            th.iMC = iMC+nMvdPoints+nStsPoints;
+//             th.track = vMCPoints[th.iMC].ID;
+//              th.qp = vMCPoints[iMC].p;
+            
+
+      
+      
+      if(matchHitMatch -> GetNofLinks() == 0) continue;
+      Float_t bestWeight = 0.f;
+      Float_t totalWeight = 0.f;
+      int iMCPoint = -1;
+      CbmLink link;
+
+    CbmMuchPoint* pt = (CbmMuchPoint*) fMuchPoints->Get(matchHitMatch->GetLink(0).GetFile(),matchHitMatch->GetLink(0).GetEntry(),matchHitMatch->GetLink(0).GetIndex());
+   // double mom = sqrt(pt->GetPxOut()*pt->GetPxOut()+pt->GetPyOut()*pt->GetPyOut()+pt->GetPzOut()*pt->GetPzOut());
+//     th.p = mom;
+//     th.q = pt->GetTrackID();//(L1_DYNAMIC_CAST<CbmMCTrack*>(fMCTracks->Get(link.GetFile(),link.GetEntry(),  pt->GetTrackID()) ))->GetCharge();
+/*    
+    static float dx_= th.dx;
+     static float dy_= th.dy;
+      static float dt_= th.t_er;
+            
+        th.x = pt->GetX( th.z ) + gRandom->Gaus(0,th.dx);
+
+        th.y = pt->GetY(th.z)+ gRandom->Gaus(0,th.dy);
+        th.time =  pt->GetTime()+ gRandom->Gaus(0,th.t_er);
+        
+                L1Station &st = algo->vStations[th.iStation];
+        th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
+        th.u_back  = th.x* st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];*/
+             
+          }
+          
+
+      }
+
+      
+      
+      }
+      
+
+      {
+        tmpHits.push_back(th);
+        nMuchHits++;
+      }
+    } // for j
+  } // if listMvdHits
+  
+    if( listTrdHits )
+  {
+
+    for (int j=0; j <listTrdHits->GetEntries(); j++ ){
+      TmpHit th;
+      
+        CbmTrdHit *mh = L1_DYNAMIC_CAST<CbmTrdHit*>( listTrdHits->At(j) );
+        th.ExtIndex = j;
+        th.Det = 3;
+        int num =mh->GetPlaneId();
+        
+#ifdef mCBM        
+        
+        if ((mh->GetPlaneId())==0) num = 0;
+        if ((mh->GetPlaneId())==1) num = 1;
+        if ((mh->GetPlaneId())==2) num = 2;
+        if ((mh->GetPlaneId())==3) num = 3;
+        if ((mh->GetPlaneId())==4) num = 4;        
+#endif   
+//        if (num == 1) continue;
+//        if (num == 3) continue;
+        
+   //    for (int k=0; k <TrdHitsOnStation[num+1].size(); k++ ){
+         
+        th.iStation = NMvdStations + num + NStsStations+NMuchStations;
+        
+        
+        th.time =  mh->GetTime();
+        th.t_er =  mh->GetTimeError();  
+
+        //th.iStation = NMvdStations + mh->GetPlaneId() + NStsStations+NMuchStations;
+        
+     //   th.iSector  = 0;
+        th.isStrip  = 0;
+        th.iStripF = j;
+        th.iStripB = -1;//TrdHitsOnStationIndex[num+1][k];
+        
+        th.iStripF += nMvdHits+nStsHits+nMuchHits;
+        th.iStripB += nMvdHits+nStsHits+nMuchHits;
+  
+        TVector3 pos, err;
+        mh->Position(pos);
+        mh->PositionError(err);
+
+        th.x = pos.X();
+        th.y = pos.Y();
+        
+        
+        th.dx = fabs(mh->GetDx());
+        th.dy = fabs(mh->GetDy());
+        th.dxy = 0;
+        
+        th.du = fabs(mh->GetDx());
+        th.dv = fabs(mh->GetDy());
+        
+//         CbmTrdHit mh1 = TrdHitsOnStation[num+1][k];
+//         
+//         TVector3 pos1, err1;
+//         mh1.Position(pos1);
+//         mh1.PositionError(err1);
+//         
+//         if (th.dx>th.dy){
+//           
+//         th.x = pos1.X();
+//         
+//         
+//         th.dx = mh1.GetDx();
+// 
+//         
+//         th.du = mh1.GetDx();
+//           
+//         }
+//         
+//         if (th.dy>th.dx){
+// 
+//         th.y = pos1.Y();
+// 
+//         th.dy = mh1.GetDy();
+// 
+//         th.dv = mh1.GetDy();  
+//         }
+        
+        L1Station &st = algo->vStations[th.iStation];
+        th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
+        th.u_back  = th.x* st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];
+      
+      th.iMC=-1;
+      int iMC = -1;
+    
+            if (fPerformance)
+      {
+        
+      if( fTrdHitMatches ){
+        
+        CbmMatch *trdHitMatch = L1_DYNAMIC_CAST<CbmMatch*>( fTrdHitMatches->At(j) );
+        
+      //  CbmMatch *trdHitMatch1 = L1_DYNAMIC_CAST<CbmMatch*>( fTrdHitMatches->At(TrdHitsOnStationIndex[num+1][k]) );
+
+        
+        if( trdHitMatch->GetNofLinks() > 0 )
+          if( trdHitMatch->GetLink(0).GetIndex() < nTrdPoints )
+          {
+            iMC = trdHitMatch->GetLink(0).GetIndex();
+            th.iMC = iMC+nMvdPoints+nStsPoints+nMuchPoints;
+            th.track = vMCPoints[th.iMC].ID;
+            
+            CbmTrdPoint* pt = (CbmTrdPoint*) fTrdPoints->Get(trdHitMatch->GetLink(0).GetFile(),trdHitMatch->GetLink(0).GetEntry(),trdHitMatch->GetLink(0).GetIndex());
+  
+            float min = 0.1;
+            
+//             if (min>th.dx) min = th.dx;
+//             if (min>th.dy) min = th.dy;
+            
+           // if (num==3)
+            {
+            
+//         th.x = pt->GetXIn();//+ gRandom->Gaus(0,min);
+//         th.y = pt->GetYIn();//+ gRandom->Gaus(0,min);
+//         th.time = pt->GetTime();//+ gRandom->Gaus(0,th.t_er);
+//         
+//         th.dx = min;
+//         th.dy = min;
+//         
+//         th.du = min;
+//         th.dv = min;
+//         
+//         L1Station &st = algo->vStations[th.iStation];
+//         th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
+//         th.u_back  = th.x* st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];
+            }
+          }
+          
+          
+//          if( trdHitMatch1->GetNofLinks() > 0 )
+//           if( trdHitMatch1->GetLink(0).GetIndex() < nTrdPoints )
+//           {
+//             
+//             CbmTrdPoint* pt1 = (CbmTrdPoint*) fTrdPoints->Get(trdHitMatch1->GetLink(0).GetFile(),trdHitMatch1->GetLink(0).GetEntry(),trdHitMatch1->GetLink(0).GetIndex());
+//             
+//            if (mh->GetDx()>mh->GetDy()){
+//           
+//             th.dx = mh1.GetDx();
+//             th.du = mh1.GetDx();
+//             th.x = pt1->GetXOut()+ gRandom->Gaus(0,th.dx); 
+//             }
+//         
+//            if (mh->GetDy()>mh->GetDx()){
+// 
+//             th.dy = mh1.GetDy();
+//             th.dv = mh1.GetDy();
+//             th.y = pt1->GetYOut()+ gRandom->Gaus(0,th.dy);  
+//            }
+//             
+//             
+//          L1Station &st = algo->vStations[th.iStation];
+//         th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
+//         th.u_back  = th.x* st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];
+// 
+//           }
+      
+        }
+
+      }
+        tmpHits.push_back(th);
+        nTrdHits++;
+        
+      //}
+    } // for j
+  } // if listTrdHits
+  
+    if( fTofHits )
+  {
+
+    for (int j=0; j <fTofHits->GetEntries(); j++ ){
+      TmpHit th;
+      
+        CbmTofHit *mh = L1_DYNAMIC_CAST<CbmTofHit*>( fTofHits->At(j) );
+        th.ExtIndex = j;
+        th.Det = 4;
+        th.iStation = NMvdStations + mh->GetPlaneId() + NStsStations+NMuchStations+NTrdStations;
+        
+        th.time =  mh->GetTime();
+
+        th.t_er =  mh->GetTimeError();  
+        
+        th.dx = mh->GetDx();
+        th.dy = mh->GetDy();
+        th.dxy = 0;
+        
+        th.du = mh->GetDx();
+        th.dv = mh->GetDy();
+
+     //   th.iSector  = 0;
+        th.isStrip  = 0;
+        th.iStripF = j;
+        th.iStripB = -1;
+        if( th.iStripF<0 ) continue;
+        if( th.iStripF>=0 && th.iStripB>=0 ) th.isStrip  = 1;
+        if( th.iStripB <0 ) th.iStripB = th.iStripF;
+        
+        th.iStripF += nMvdHits+nStsHits+nMuchHits+nTrdHits;
+        th.iStripB += nMvdHits+nStsHits+nMuchHits+nTrdHits;
+  
+        TVector3 pos, err;
+        mh->Position(pos);
+        mh->PositionError(err);
+
+        th.x = pos.X();
+        th.y = pos.Y();
+  
+        L1Station &st = algo->vStations[th.iStation];
+        th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
+        th.u_back  = th.x* st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];
+        
+        
+      
+      th.iMC=-1;
+      int iMC = -1;
+      
+      
+      
+      if (fPerformance)
+      {
+        
+        if (ToFPointsMatch[j]!=0) 
+
+        th.iMC = j+nMvdPoints+nStsPoints+nTrdPoints+nMuchPoints;
+//         th.track = vMCPoints[th.iMC].ID;
+//         th.qp = vMCPoints[th.iMC].p;
+        
+        CbmTofPoint* pt = (CbmTofPoint*) fTofPoints->Get(ToFPointsMatch[j]->GetFile(),ToFPointsMatch[j]->GetEntry(),ToFPointsMatch[j]->GetIndex());
+   
+        
+//                 th.x = pt->GetX() + gRandom->Gaus(0,th.dx);
+// 
+//         th.y = pt->GetY()+ gRandom->Gaus(0,th.dy);
+//         th.time =  pt->GetTime()+ gRandom->Gaus(0,th.t_er);
+//         
+//                 L1Station &st = algo->vStations[th.iStation];
+//         th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
+//         th.u_back  = th.x* st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];
+
+
+      }
+      
+
+      
+        tmpHits.push_back(th);
+        nTofHits++;
+      
+    } // for j
+  } // if listTrdHits
+  
   if (fVerbose >= 10) cout << "ReadEvent: sts hits are gotten." << endl;
 
 
     // sort hits
-  int nHits = nMvdHits + nStsHits;
+  int nHits = nMvdHits + nStsHits + nMuchHits+nTrdHits+nTofHits;
+
   sort( tmpHits.begin(), tmpHits.end(), TmpHit::Compare );
 
     // -- create strips --
@@ -496,10 +1016,14 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
     TmpHit &th = tmpHits[i];
  
     CbmL1HitStore s;
+    s.Det = th.Det;
     s.ExtIndex = th.ExtIndex;
     s.iStation = th.iStation;
     s.x        = th.x;
     s.y        = th.y;
+    s.dx        = th.dx;
+    s.dy        = th.dy;
+    s.dxy        = th.dxy;
     s.time = th.time; 
 
     if( th.indStripF <0 || th.indStripF >= NStrips ) continue;
@@ -515,11 +1039,17 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
     h.t_reco = th.time; 
     h.t_er = th.t_er; 
     h.t_mc = th.time;
+    h.dx   = th.dx;
+    h.dy   = th.dy;
+    h.dxy   = th.dxy;
+//     h.p = th.p;
+//     h.q = th.q;
+    h.ista = th.iStation;
 
     // find and save z positions
     float z_tmp;
     int ist = th.iStation;
-    if (ist < NMvdStations){
+        if (ist < NMvdStations){
 #ifdef MVDIDEALHITS
       CbmMvdPoint* point = L1_DYNAMIC_CAST<CbmMvdPoint*>(listMvdPts->At(- s.ExtIndex - 1));
       z_tmp = 0.5 * ( point->GetZOut() + point->GetZ() );
@@ -528,7 +1058,9 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
       z_tmp = mh_m->GetZ();
 #endif
     }
-    else {
+    
+    if ((ist >= NMvdStations)&&(ist < (NStsStations+NMvdStations)))
+    {
 #ifdef STSIDEALHITS
       CbmStsPoint* point = L1_DYNAMIC_CAST<CbmStsPoint*>(listStsPts->At(s.ExtIndex));
       z_tmp = 0.5 * ( point->GetZOut() + point->GetZIn() );
@@ -536,6 +1068,36 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
       CbmStsHit *mh_m = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(s.ExtIndex));
       z_tmp = mh_m->GetZ();
 #endif
+    }
+    
+    if ((ist >= NStsStations+NMvdStations)&&(ist < (NStsStations+NMvdStations+NMuchStations))) {
+//#ifdef STSIDEALHITS
+    //  CbmStsPoint* point = L1_DYNAMIC_CAST<CbmStsPoint*>(listStsPts->At(s.ExtIndex));
+   //   z_tmp = 0.5 * ( point->GetZOut() + point->GetZIn() );
+//#else
+      CbmMuchPixelHit* mh = static_cast<CbmMuchPixelHit*>(fMuchPixelHits->At(- s.ExtIndex - 1) );
+      z_tmp = mh->GetZ();
+//#endif
+    }
+    
+        if ((ist >= NStsStations+NMvdStations+NMuchStations)&&(ist < (NStsStations+NMvdStations+NMuchStations+NTrdStations))) {
+//#ifdef STSIDEALHITS
+    //  CbmStsPoint* point = L1_DYNAMIC_CAST<CbmStsPoint*>(listStsPts->At(s.ExtIndex));
+   //   z_tmp = 0.5 * ( point->GetZOut() + point->GetZIn() );
+//#else
+      CbmTrdHit* mh = static_cast<CbmTrdHit*>(listTrdHits->At( s.ExtIndex) );
+      z_tmp = mh->GetZ();
+//#endif
+    }
+    
+        if ((ist >= NStsStations+NMvdStations+NMuchStations+NTrdStations)&&(ist < (NStsStations+NMvdStations+NMuchStations+NTrdStations))) {
+//#ifdef STSIDEALHITS
+    //  CbmStsPoint* point = L1_DYNAMIC_CAST<CbmStsPoint*>(listStsPts->At(s.ExtIndex));
+   //   z_tmp = 0.5 * ( point->GetZOut() + point->GetZIn() );
+//#else
+      CbmTofHit* mh = static_cast<CbmTofHit*>(fTofHits->At( s.ExtIndex ) );
+      z_tmp = mh->GetZ();
+//#endif
     }
 
     unsigned int k;
@@ -551,7 +1113,13 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
     }
     
     // save hit
-    vStsHits.push_back( CbmL1StsHit(fData_->vStsHits.size(), th.ExtIndex ) );
+    vStsHits.push_back( CbmL1StsHit(fData->vStsHits.size(), th.ExtIndex, th.Det ) );
+        
+    vStsHits[vStsHits.size()-1].x = th.x;
+    vStsHits[vStsHits.size()-1].y = th.y;
+    vStsHits[vStsHits.size()-1].t = th.time;
+        
+
 
     fData_->vStsHits.push_back(h);
     
@@ -688,12 +1256,11 @@ void CbmL1::Fill_vMCTracks()
         T.time = MCTrack->GetStartT();
         T.iFile = iFile;
         T.iEvent = iEvent;
-        //cout << " Privet  MCTrack" << endl;
+
         vMCTracks.push_back( T );
      //    Double_t dtrck =dFEI(iFile,iEvent,iMCTrack);
          dFEI2vMCTracks.insert( DFEI2I::value_type(dFEI(iFile,iEvent,iMCTrack), vMCTracks.size()-1) );
 
-        //cout << " IND_Track 1" <<  IND_Track << endl;
         if ( T.mother_ID <0 ){ // vertex track
           if (  PrimVtx.MC_ID == 999 || fabs(T.z-Vtxcurr.MC_z)>1.e-7 ){// new vertex
             if( nvtrackscurr > nvtracks ){
@@ -716,12 +1283,12 @@ void CbmL1::Fill_vMCTracks()
   if ( fVerbose && PrimVtx.MC_ID == 999 ) cout<<"No primary vertex !!!"<<endl;
 } //Fill_vMCTracks
  
-bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, int file, int event, bool MVD ) 
+bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, int file, int event, int MVD ) 
 {
   TVector3 xyzI,PI, xyzO,PO;
   Int_t mcID=-1;
   Double_t time = 0.f;
-  if( MVD){
+  if( MVD==1){
    CbmMvdPoint *pt = L1_DYNAMIC_CAST<CbmMvdPoint*> ( fMvdPoints->Get(file,event,iPoint) ); // file, event, object
     //CbmMvdPoint *pt = L1_DYNAMIC_CAST<CbmMvdPoint*> (Point);
     
@@ -733,7 +1300,7 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, int file, int event, bool
     mcID = pt->GetTrackID();
     time = pt->GetTime();
   }
-  else
+  if( MVD==0)
   {  
     CbmStsPoint *pt = L1_DYNAMIC_CAST<CbmStsPoint*>(fStsPoints->Get(file,event,iPoint) ); // file, event, object   
     if ( !pt ) return 1;
@@ -755,6 +1322,84 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, int file, int event, bool
     pt->MomentumOut(PO);
     mcID = pt->GetTrackID();
     time = pt->GetTime();
+  }
+  
+  
+  if( MVD==2)
+  {  
+    CbmMuchPoint *pt = L1_DYNAMIC_CAST<CbmMuchPoint*>(fMuchPoints->Get(file,event,iPoint) ); // file, event, object   
+    if ( !pt ) return 1;
+    if ( fTimesliceMode )
+    {
+      Double_t StartTime = fTimeSlice->GetStartTime();
+      Double_t EndTime = fTimeSlice->GetEndTime();
+      Double_t Time_MC_point =  pt->GetTime() + fEventList->GetEventTime(event, file);
+      if (Time_MC_point < StartTime ) 
+        return 1;
+
+      if (Time_MC_point > EndTime ) 
+        return 1; 
+    } //if ( fTimesliceMode )
+
+    pt->Position(xyzI);
+    pt->Momentum(PI);
+    pt->PositionOut(xyzO);
+    pt->Momentum(PO);
+    mcID = pt->GetTrackID();
+    time = pt->GetTime();
+  }
+  
+    
+      if( MVD==3)
+  {  
+    CbmTrdPoint *pt = L1_DYNAMIC_CAST<CbmTrdPoint*>(fTrdPoints->Get(file,event,iPoint) ); // file, event, object   
+
+    if ( !pt ) return 1;
+    if ( fTimesliceMode )
+    {
+      Double_t StartTime = fTimeSlice->GetStartTime();
+      Double_t EndTime = fTimeSlice->GetEndTime();
+      Double_t Time_MC_point =  pt->GetTime() + fEventList->GetEventTime(event, file);
+      if (Time_MC_point < StartTime ) 
+        return 1;
+
+      if (Time_MC_point > EndTime ) 
+        return 1; 
+    } //if ( fTimesliceMode )
+
+    pt->Position(xyzI);
+    pt->Momentum(PI);
+    pt->PositionOut(xyzO);
+    pt->MomentumOut(PO);
+    mcID = pt->GetTrackID();
+    
+    time = pt->GetTime();
+
+  }
+  
+   if( MVD==4)
+  {  
+    CbmTofPoint *pt = L1_DYNAMIC_CAST<CbmTofPoint*>(fTofPoints->Get(file,event,iPoint) ); // file, event, object   
+    if ( !pt ) return 1;
+    if ( fTimesliceMode )
+    {
+      Double_t StartTime = fTimeSlice->GetStartTime();
+      Double_t EndTime = fTimeSlice->GetEndTime();
+      Double_t Time_MC_point =  pt->GetTime() + fEventList->GetEventTime(event, file);
+      if (Time_MC_point < StartTime ) 
+        return 1;
+
+      if (Time_MC_point > EndTime ) 
+        return 1; 
+    } //if ( fTimesliceMode )
+
+    pt->Position(xyzI);
+    pt->Momentum(PI);
+    pt->Position(xyzO);
+    pt->Momentum(PO);
+    mcID = pt->GetTrackID();
+    time = pt->GetTime();
+
   }
 
   TVector3 xyz = .5*(xyzI + xyzO );
@@ -802,7 +1447,7 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, int file, int event, bool
   return 0;
 }
 
-bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD )
+bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, int MVD )
 {
   return 0;
 }
@@ -817,8 +1462,7 @@ void CbmL1::HitMatch()
   {
     CbmL1StsHit& hit = vStsHits[iH];
     
-   const bool isMvd = (hit.extIndex < 0);
-   if (  !isMvd){
+   if (  hit.Det == 1){
     CbmStsHit *sh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(vStsHits[iH].extIndex) );
 
     int iP = -1;  
@@ -922,7 +1566,29 @@ void CbmL1::HitMatch()
       }
     } // if no clusters 
   }
-  else{ // if no use Links or this is mvd hit
+
+  
+  if (  hit.Det == 0){ // if no use Links or this is mvd hit
+
+      int iP = vHitMCRef[iH];
+      if (iP >= 0){
+        hit.mcPointIds.push_back( iP );
+        vMCPoints[iP].hitIds.push_back(iH);
+      }
+  }
+  
+     if (  hit.Det == 2){ // if no use Links or this is mvd hit
+
+      int iP = vHitMCRef[iH];
+
+      if (iP >= 0){
+        hit.mcPointIds.push_back( iP );
+        vMCPoints[iP].hitIds.push_back(iH);
+      }
+    }
+    
+     if (  hit.Det == 3){ // if no use Links or this is mvd hit
+
 
       int iP = vHitMCRef[iH];
       if (iP >= 0){
@@ -930,6 +1596,19 @@ void CbmL1::HitMatch()
         vMCPoints[iP].hitIds.push_back(iH);
       }
     }
+    
+         if (  hit.Det == 4){ // if no use Links or this is mvd hit
+
+
+      int iP = vHitMCRef[iH];
+      if (iP >= 0){
+        hit.mcPointIds.push_back( iP );
+
+        vMCPoints[iP].hitIds.push_back(iH);
+      }
+    }
+  
+  
 
   } // for hits
 }

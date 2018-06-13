@@ -23,6 +23,15 @@
 #include "FairTrackParam.h" // for vertex pulls
 #include "CbmKFTrack.h" // for vertex pulls
 
+#include "CbmMuchPixelHit.h"
+#include "CbmMuchPoint.h"
+
+#include "CbmTrdHit.h"
+#include "CbmTrdPoint.h"
+
+#include "CbmTofHit.h"
+#include "CbmTofPoint.h"
+
 #include "CbmKF.h"
 #include "CbmKFMath.h"
 
@@ -1544,7 +1553,11 @@ void CbmL1::InputPerformance()
 
   static TH1F *resXsts, *resYsts, *resTsts, *resXmvd, *resYmvd/*, *pullZ*/;
   static TH1F *pullXsts, *pullYsts, *pullTsts, *pullXmvd, *pullYmvd/*, *pullZ*/;
-
+  static TH1F *pullXmuch, *pullYmuch, *pullTmuch, *resXmuch, *resYmuch, *resTmuch/*, *pullZ*/;
+  static TH1F *pullXtrd, *pullYtrd, *pullTtrd, *resXtrd, *resYtrd, *resTtrd/*, *pullZ*/;
+  static TH1F *pullXtof, *pullYtof, *pullTtof, *resXtof, *resYtof, *resTtof/*, *pullZ*/;
+   
+   
   static bool first_call = 1;
   if ( first_call ){
     first_call = 0;
@@ -1601,6 +1614,85 @@ void CbmL1::InputPerformance()
     histo->GetXaxis()->SetTitle("Pull x");
     histo = pullYmvd;
     histo->GetXaxis()->SetTitle("Pull y");
+    
+    
+    gDirectory->cd("..");
+    gDirectory->mkdir("MUCH");
+    gDirectory->cd("MUCH");
+    
+    pullXmuch = new TH1F("Px_much", "MUCH Pull x", 100, -10, 10);
+    pullYmuch = new TH1F("Py_much", "MUCH Pull y", 100, -10, 10);
+    pullTmuch = new TH1F("Pt_much", "MUCH Pull t", 100, -10, 10);
+
+    resXmuch = new TH1F("x_much", "MUCH Residual x", 100, -100000, 100000);
+    resYmuch = new TH1F("y_much", "MUCH Residual y", 100, -100000, 100000);
+    resTmuch = new TH1F("t_much", "MUCH Residual t", 100, -40, 40);
+
+    
+    histo = resXmuch;
+    histo->GetXaxis()->SetTitle("Residual x, um");
+    histo = resYmuch;
+    histo->GetXaxis()->SetTitle("Residual y, um");
+    histo = resTmuch;
+    histo->GetXaxis()->SetTitle("Residual t, ns");
+    histo = pullXmuch;
+    histo->GetXaxis()->SetTitle("Pull x");
+    histo = pullYmuch;
+    histo->GetXaxis()->SetTitle("Pull y"); 
+    histo = pullTmuch;
+    histo->GetXaxis()->SetTitle("Pull t");
+    
+    gDirectory->cd("..");
+    gDirectory->mkdir("TRD");
+    gDirectory->cd("TRD");
+    
+    pullXtrd = new TH1F("Px_trd", "TRD Pull x", 100, -5, 5);
+    pullYtrd = new TH1F("Py_trd", "TRD Pull y", 100, -5, 5);
+    pullTtrd = new TH1F("Pt_trd", "TRD Pull t", 100, -5, 5);
+
+    resXtrd = new TH1F("x_trd", "TRD Residual x", 100, -200000, 200000);
+    resYtrd = new TH1F("y_trd", "TRD Residual y", 100, -200000, 200000);
+    resTtrd = new TH1F("t_trd", "TRD Residual t", 100, -40, 40);
+
+    
+    histo = resXtrd;
+    histo->GetXaxis()->SetTitle("Residual x, um");
+    histo = resYtrd;
+    histo->GetXaxis()->SetTitle("Residual y, um");
+    histo = resTtrd;
+    histo->GetXaxis()->SetTitle("Residual t, ns");
+    histo = pullXtrd;
+    histo->GetXaxis()->SetTitle("Pull x");
+    histo = pullYtrd;
+    histo->GetXaxis()->SetTitle("Pull y"); 
+    histo = pullTtrd;
+    histo->GetXaxis()->SetTitle("Pull t");
+    
+    gDirectory->cd("..");
+    gDirectory->mkdir("TOF");
+    gDirectory->cd("TOF");
+    
+    pullXtof = new TH1F("Px_tof", "TOF Pull x", 100, -5, 5);
+    pullYtof = new TH1F("Py_tof", "TOF Pull y", 100, -5, 5);
+    pullTtof = new TH1F("Pt_tof", "TOF Pull t", 100, -5, 5);
+
+    resXtof = new TH1F("x_tof", "TOF Residual x", 100, -50000, 50000);
+    resYtof = new TH1F("y_tof", "TOF Residual y", 100, -50000, 50000);
+    resTtof = new TH1F("t_tof", "TOF Residual t", 100, -0.4, 0.4);
+
+    
+    histo = resXtof;
+    histo->GetXaxis()->SetTitle("Residual x, um");
+    histo = resYtof;
+    histo->GetXaxis()->SetTitle("Residual y, um");
+    histo = resTtof;
+    histo->GetXaxis()->SetTitle("Residual t, ns");
+    histo = pullXtof;
+    histo->GetXaxis()->SetTitle("Pull x");
+    histo = pullYtof;
+    histo->GetXaxis()->SetTitle("Pull y"); 
+    histo = pullTtof;
+    histo->GetXaxis()->SetTitle("Pull t");
 
     gDirectory = currentDir;
   } // first_call
@@ -1614,15 +1706,15 @@ void CbmL1::InputPerformance()
     nMC = listStsPts->GetEntries();
   }
 
+  
+
   if( listStsHits && listStsHitMatch ){
     for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
       const CbmL1StsHit &h = vStsHits[iH];
 
-      if (h.extIndex < 0) continue; // mvd hit
+      if (h.Det!= 1) continue; // mvd hit
       const CbmStsHit *sh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(h.extIndex) );
-      
-      
-      
+
     CbmMatch* stsHitMatch = (CbmMatch*) listStsHitMatch->At(h.extIndex);
     if(stsHitMatch -> GetNofLinks() == 0) continue;
     Float_t bestWeight = 0.f;
@@ -1677,6 +1769,270 @@ void CbmL1::InputPerformance()
 
     }
   } // sts
+  
+  
+    if( listMvdHits && listMvdHitMatches){
+    Int_t nEnt = listMvdHits->GetEntries();
+    for (int j=0; j < nEnt; j++ ){
+
+      CbmMvdHit *sh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
+      CbmMatch *hm = L1_DYNAMIC_CAST<CbmMatch*>( listMvdHitMatches->At(j) );
+
+      int iMC = -1;
+//       float mcWeight = -1.f;
+//       for(int iDigiLink=0; iDigiLink<hm->GetNofLinks(); iDigiLink++)
+//       {
+//         if( hm->GetLink(iDigiLink).GetWeight() > mcWeight)
+//         {
+//           mcWeight = hm->GetLink(iDigiLink).GetWeight();
+//           iMC = hm->GetLink(iDigiLink).GetIndex();
+//         }
+//       }
+      if( hm->GetNofLinks() > 0 )
+        iMC = hm->GetLink(0).GetIndex();
+
+
+      if( iMC < 0 ) continue;
+        // hit pulls and residuals
+
+
+      TVector3 hitPos, mcPos, hitErr;
+      sh->Position(hitPos);
+      sh->PositionError(hitErr);
+
+      CbmMvdPoint *pt = 0;
+      nMC = listMvdPts->GetEntriesFast();
+
+      if( iMC >= 0 && iMC < nMC) pt = L1_DYNAMIC_CAST<CbmMvdPoint*>( listMvdPts->At(iMC) );
+
+      if ( !pt ){
+//         cout << " No MC points! " << "iMC=" << iMC << endl;
+        continue;
+      }
+
+      mcPos.SetX( ( pt->GetX() + pt->GetXOut() )/2. );
+      mcPos.SetY( ( pt->GetY() + pt->GetYOut() )/2. );
+      mcPos.SetZ( hitPos.Z() );
+
+//       if (hitErr.X() != 0) pullX->Fill( (hitPos.X() - mcPos.X()) / hitErr.X() ); // standard errors
+//       if (hitErr.Y() != 0) pullY->Fill( (hitPos.Y() - mcPos.Y()) / hitErr.Y() );
+//       if (hitErr.X() != 0) pullX->Fill( (hitPos.X() - mcPos.X()) / sh->GetDx() ); // qa errors
+//       if (hitErr.Y() != 0) pullY->Fill( (hitPos.Y() - mcPos.Y()) / sh->GetDy() );
+      if (hitErr.X() != 0) pullXmvd->Fill( (hitPos.X() - mcPos.X()) / sqrt(algo->vStations[0].XYInfo.C00[0]) );  // errors used in TF
+      if (hitErr.Y() != 0) pullYmvd->Fill( (hitPos.Y() - mcPos.Y()) / sqrt(algo->vStations[0].XYInfo.C11[0]) );
+
+      resXmvd->Fill((hitPos.X() - mcPos.X())*10*1000);
+      resYmvd->Fill((hitPos.Y() - mcPos.Y())*10*1000);
+    }
+  } // mvd
+  
+  
+
+  
+      if( fMuchPixelHits && listMuchHitMatches){
+   for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
+      const CbmL1StsHit &h = vStsHits[iH];
+
+      if (h.Det!= 2) continue; // mvd hit
+      const CbmMuchPixelHit *sh = L1_DYNAMIC_CAST<CbmMuchPixelHit*>( fMuchPixelHits->At(-h.extIndex-1) );
+      CbmMatch *hm = L1_DYNAMIC_CAST<CbmMatch*>( listMuchHitMatches->At(-h.extIndex-1) );
+      
+      
+      if(hm -> GetNofLinks() == 0) continue;
+      Float_t bestWeight = 0.f;
+      Float_t totalWeight = 0.f;
+      int iMCPoint = -1;
+      CbmLink link;
+    
+      for(int iLink=0; iLink<hm -> GetNofLinks(); iLink++)
+      {
+        totalWeight += hm->GetLink(iLink).GetWeight();
+        if( hm->GetLink(iLink).GetWeight() > bestWeight)
+        {
+          bestWeight = hm->GetLink(iLink).GetWeight();
+          iMCPoint = hm->GetLink(iLink).GetIndex();
+          link = hm->GetLink(iLink);
+        }
+      }
+    if(bestWeight/totalWeight < 0.7|| iMCPoint < 0) continue;
+
+    CbmMuchPoint* pt = (CbmMuchPoint*) fMuchPoints->Get(hm->GetLink(0).GetFile(),hm->GetLink(0).GetEntry(),hm->GetLink(0).GetIndex());
+    double mcTime = pt->GetTime();
+    
+    if (fTimesliceMode) 
+      mcTime+= fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
+   // mcTime+=20;
+
+        // hit pulls and residuals
+
+
+      TVector3 hitPos, mcPos, hitErr;
+      sh->Position(hitPos);
+      sh->PositionError(hitErr);
+
+//       pt->Position(mcPos); // this is wrong!
+//       mcPos.SetX( pt->GetX( hitPos.Z() ) );
+//       mcPos.SetY( pt->GetY( hitPos.Z() ) );
+//       mcPos.SetZ( hitPos.Z() );
+      
+      mcPos.SetX( 0.5*(pt->GetXIn()+pt->GetXOut()) );
+      mcPos.SetY( 0.5*(pt->GetYIn()+pt->GetYOut()) );
+      mcPos.SetZ( hitPos.Z() );
+
+#if 0 // standard errors
+      if (hitErr.X() != 0) pullXmuch->Fill( (hitPos.X() - mcPos.X()) / hitErr.X() ); // standard errors
+      if (hitErr.Y() != 0) pullYmuch->Fill( (hitPos.Y() - mcPos.Y()) / hitErr.Y() );
+#elif 1 // qa errors
+      if (hitErr.X() != 0) pullXmuch->Fill( (h.x - mcPos.X()) / sh->GetDx() ); // qa errors
+      if (hitErr.Y() != 0) pullYmuch->Fill( (h.y - mcPos.Y()) / sh->GetDy() );
+      
+      pullTmuch->Fill( (h.t - mcTime) / sh->GetTimeError() );
+#else // errors used in TF
+      if (hitErr.X() != 0) pullXmuch->Fill( (hitPos.X() - mcPos.X()) / sqrt(algo->vStations[NMvdStations].XYInfo.C00[0]) );
+      if (hitErr.Y() != 0) pullYmuch->Fill( (hitPos.Y() - mcPos.Y()) / sqrt(algo->vStations[NMvdStations].XYInfo.C11[0]) );
+#endif
+
+      resXmuch->Fill((h.x - mcPos.X())*10*1000);
+      resYmuch->Fill((h.y - mcPos.Y())*10*1000);
+      resTmuch->Fill((h.t - mcTime));
+    }
+  } // much
+
+  
+  
+      if( listTrdHits && fTrdHitMatches){
+   for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
+      const CbmL1StsHit &h = vStsHits[iH];
+
+      if (h.Det!= 3) continue; // mvd hit
+      const CbmTrdHit *sh = L1_DYNAMIC_CAST<CbmTrdHit*>( listTrdHits->At(h.extIndex) );
+      CbmMatch *hm = L1_DYNAMIC_CAST<CbmMatch*>( fTrdHitMatches->At(h.extIndex) );
+      
+      
+      if(hm -> GetNofLinks() == 0) continue;
+      Float_t bestWeight = 0.f;
+      Float_t totalWeight = 0.f;
+      int iMCPoint = -1;
+      CbmLink link;
+    
+      for(int iLink=0; iLink<hm -> GetNofLinks(); iLink++)
+      {
+        totalWeight += hm->GetLink(iLink).GetWeight();
+        if( hm->GetLink(iLink).GetWeight() > bestWeight)
+        {
+          bestWeight = hm->GetLink(iLink).GetWeight();
+          iMCPoint = hm->GetLink(iLink).GetIndex();
+          link = hm->GetLink(iLink);
+        }
+      }
+    if(bestWeight/totalWeight < 0.7|| iMCPoint < 0) continue;
+
+    CbmTrdPoint* pt = (CbmTrdPoint*) fTrdPoints->Get(link.GetFile(),link.GetEntry(),link.GetIndex());
+    double mcTime = pt->GetTime();
+    
+    if (fTimesliceMode) 
+      mcTime+= fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
+
+        // hit pulls and residuals
+      if ((sh->GetPlaneId())==0) continue;
+      if ((sh->GetPlaneId())==2) continue;
+      if ((sh->GetPlaneId())==4) continue;
+
+
+
+      TVector3 hitPos, mcPos, hitErr;
+      sh->Position(hitPos);
+      sh->PositionError(hitErr);
+
+//       pt->Position(mcPos); // this is wrong!
+      mcPos.SetX( ( pt->GetXIn() + pt->GetXOut() )/2. );
+      mcPos.SetY( ( pt->GetYIn() + pt->GetYOut() )/2. );
+      mcPos.SetZ( hitPos.Z() );
+
+#if 0 // standard errors
+      if (hitErr.X() != 0) pullXtrd->Fill( (hitPos.X() - mcPos.X()) / hitErr.X() ); // standard errors
+      if (hitErr.Y() != 0) pullYtrd->Fill( (hitPos.Y() - mcPos.Y()) / hitErr.Y() );
+#elif 1 // qa errors
+      if (hitErr.X() != 0) pullXtrd->Fill( (h.x - mcPos.X()) / sh->GetDx() ); // qa errors
+      if (hitErr.Y() != 0) pullYtrd->Fill( (h.y - mcPos.Y()) / sh->GetDy() );
+      
+      pullTtrd->Fill( (h.t - mcTime) / sh->GetTimeError() );
+#else // errors used in TF
+      if (hitErr.X() != 0) pullXtrd->Fill( (hitPos.X() - mcPos.X()) / sqrt(algo->vStations[NMvdStations].XYInfo.C00[0]) );
+      if (hitErr.Y() != 0) pullYtrd->Fill( (hitPos.Y() - mcPos.Y()) / sqrt(algo->vStations[NMvdStations].XYInfo.C11[0]) );
+#endif
+
+      resXtrd->Fill((h.x - mcPos.X())*10*1000);
+      resYtrd->Fill((h.y - mcPos.Y())*10*1000);
+      resTtrd->Fill((h.t - mcTime));
+    }
+  } // much
+  
+  
+        if( fTofHits && fTofHitDigiMatches){
+   for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
+      const CbmL1StsHit &h = vStsHits[iH];
+
+      if (h.Det!= 4) continue; // mvd hit
+
+      CbmTofHit *sh = L1_DYNAMIC_CAST<CbmTofHit*>( fTofHits->At(h.extIndex) );
+      CbmMatch *hm = L1_DYNAMIC_CAST<CbmMatch*>( fTofHitDigiMatches->At(h.extIndex) );
+      
+      
+      if(hm -> GetNofLinks() == 0) continue;
+      Float_t bestWeight = 0.f;
+      Float_t totalWeight = 0.f;
+      int iMCPoint = -1;
+      CbmLink link;
+    
+      for(int iLink=0; iLink<hm -> GetNofLinks(); iLink++)
+      {
+        totalWeight += hm->GetLink(iLink).GetWeight();
+        if( hm->GetLink(iLink).GetWeight() > bestWeight)
+        {
+          bestWeight = hm->GetLink(iLink).GetWeight();
+          iMCPoint = hm->GetLink(iLink).GetIndex();
+          link = hm->GetLink(iLink);
+        }
+      }
+    if(bestWeight/totalWeight < 0.7|| iMCPoint < 0) continue;
+
+    CbmTofPoint* pt = (CbmTofPoint*) fTofPoints->Get(link.GetFile(),link.GetEntry(),link.GetIndex());
+    double mcTime = pt->GetTime();
+    
+    if (fTimesliceMode) 
+      mcTime+= fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
+
+        // hit pulls and residuals
+
+
+      TVector3 hitPos, mcPos, hitErr;
+      sh->Position(hitPos);
+      sh->PositionError(hitErr);
+
+//       pt->Position(mcPos); // this is wrong!
+      mcPos.SetX( ( pt->GetX() ));
+      mcPos.SetY( ( pt->GetY() ));
+      mcPos.SetZ( hitPos.Z() );
+
+#if 0 // standard errors
+      if (hitErr.X() != 0) pullXmuch->Fill( (hitPos.X() - mcPos.X()) / hitErr.X() ); // standard errors
+      if (hitErr.Y() != 0) pullYmuch->Fill( (hitPos.Y() - mcPos.Y()) / hitErr.Y() );
+#elif 1 // qa errors
+      if (hitErr.X() != 0) pullXtof->Fill( (h.x - mcPos.X()) / sh->GetDx() ); // qa errors
+      if (hitErr.Y() != 0) pullYtof->Fill( (h.y - mcPos.Y()) / sh->GetDy() );
+      
+      pullTtof->Fill( (sh->GetTime() - mcTime) / sh->GetTimeError() );
+#else // errors used in TF
+      if (hitErr.X() != 0) pullXtof->Fill( (hitPos.X() - mcPos.X()) / sqrt(algo->vStations[NMvdStations].XYInfo.C00[0]) );
+      if (hitErr.Y() != 0) pullYtof->Fill( (hitPos.Y() - mcPos.Y()) / sqrt(algo->vStations[NMvdStations].XYInfo.C11[0]) );
+#endif
+
+      resXtof->Fill((h.x - mcPos.X())*10*1000);
+      resYtof->Fill((h.y - mcPos.Y())*10*1000);
+      resTtof->Fill((sh->GetTime() - mcTime));
+    }
+  } // much
   
 
 
@@ -1775,4 +2131,5 @@ void CbmL1::InputPerformance()
 
 
 } // void CbmL1::InputPerformance()
+
 

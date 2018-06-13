@@ -44,6 +44,7 @@ void L1Algo::Init( const vector<fscal>& geo )
   //vStations.clear();
   NStations = static_cast<int>(geo[ind++]);
   NMvdStations = static_cast<int>(geo[ind++]);
+  NStsStations = static_cast<int>(geo[ind++]);
 
   // cout << "N MVD & STS stations: " << NMvdStations << " " << NStations-NMvdStations << endl;
 #ifndef TBB2
@@ -51,6 +52,7 @@ void L1Algo::Init( const vector<fscal>& geo )
 #endif // TBB2
   for( int i=0; i<NStations; i++ ){
     L1Station &st = vStations[i];
+    st.type = geo[ind++];
     st.z = geo[ind++];
     st.materialInfo.thick = geo[ind++];
     st.Rmin =  geo[ind++];
@@ -206,7 +208,6 @@ void L1Algo::SetData( const vector< L1StsHit >      & StsHits_,
 
 void L1Algo::GetHitCoor(const L1StsHit& _h, fscal &_x, fscal &_y, char iS)
 {
-  
   L1Station &sta = vStations[int(iS)];
   const L1Strip &u = (*vStsStrips)[_h.f];
   const L1Strip &v = (*vStsStripsB)[_h.b];

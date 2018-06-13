@@ -31,6 +31,10 @@ ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/sts
 ${CBMROOT_SOURCE_DIR}/mvd
 ${CBMROOT_SOURCE_DIR}/trd/param
+${CBMROOT_SOURCE_DIR}/much/geo
+${CBMROOT_SOURCE_DIR}/trd/data
+${CBMROOT_SOURCE_DIR}/tof/TofParam
+${CBMROOT_SOURCE_DIR}/tof/TofData
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

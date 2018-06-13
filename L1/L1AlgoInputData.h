@@ -97,7 +97,7 @@ vSFlagB.clear();
   static istream& eatwhite(istream& is); // skip spaces
 	 	/// read data from data_algo.txt	 
   // data
-  enum{ MaxNStations = 12 };
+  enum{ MaxNStations = 25 };
   vector< L1StsHit > vStsHits;     // hits as a combination of front-, backstrips and z-position
   vector< L1Strip > vStsStrips,  // strips positions created from hits. Front strips
                     vStsStripsB; // back strips
