@@ -10,8 +10,8 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
     ${ZeroMQ_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
     ${FAIRROOT_INCLUDE_DIR}
-    ${FAIRROOT_INCLUDE_DIR}/fairmq
-    ${FAIRROOT_INCLUDE_DIR}/fairmq/options
+    ${FAIRMQ_INCLUDE_DIR}
+    ${FAIRMQ_INCLUDE_DIR}/options
 
     ${IPC_INCLUDE_DIRECTORY}
     ${CBMROOT_SOURCE_DIR}/external/cppzmq
@@ -36,16 +36,27 @@ Set(BOOST_LIBS
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${Boost_LOG_LIBRARY}
 )
+
 If(UNIX AND NOT APPLE)
   List(APPEND BOOST_LIBS pthread)
 EndIf()
 
+set(FAIR_LIBS
+  FairMQ
+)
+
+If(FAIRLOGGER_FOUND)
+  set(FAIR_LIBS
+      ${FAIR_LIBS}
+      FairLogger
+     )
+EndIf()
 
 set(EXE_NAME TsaSampler)
 set(SRCS CbmMQTsaSampler.cxx runTsaSampler.cxx)
 set(DEPENDENCIES
   ${DEPENDENCIES}
-  FairMQ
+  ${FAIR_LIBS}
   ${BOOST_LIBS}
   fles_ipc
 )
@@ -55,7 +66,7 @@ set(EXE_NAME TsaInfo)
 set(SRCS CbmMQTsaInfo.cxx runTsaInfo.cxx)
 set(DEPENDENCIES
   ${DEPENDENCIES}
-  FairMQ
+  ${FAIR_LIBS}
   ${BOOST_LIBS}
   fles_ipc
 )

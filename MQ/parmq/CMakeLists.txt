@@ -5,8 +5,8 @@ Set(INCLUDE_DIRECTORIES
 Set(SYSTEM_INCLUDE_DIRECTORIES
   ${SYSTEM_INCLUDE_DIRECTORIES}
   ${FAIRROOT_INCLUDE_DIR}
-  ${FAIRROOT_INCLUDE_DIR}/fairmq
-  ${FAIRROOT_INCLUDE_DIR}/fairmq/options
+  ${FAIRMQ_INCLUDE_DIR}
+  ${FAIRMQ_INCLUDE_DIR}/options
   ${Boost_INCLUDE_DIR}
   ${ZeroMQ_INCLUDE_DIR}
 )
@@ -34,6 +34,19 @@ If(UNIX AND NOT APPLE)
   List(APPEND BOOST_LIBS pthread)
 EndIf()
 
+set(FAIR_LIBS
+  Base
+  ParBase
+  FairMQ
+)
+
+If(FAIRLOGGER_FOUND)
+  set(FAIR_LIBS
+      ${FAIR_LIBS}
+      FairLogger
+     )
+EndIf()
+
 Set(EXE_NAME parmq-server)
 Set(SRCS 
   ParameterMQServer.cxx 
@@ -44,9 +57,7 @@ Set(DEPENDENCIES
   CbmFlibCern2016
   Core
   Net
-  Base
-  ParBase
-  FairMQ
+  ${FAIR_LIBS}
   ${BOOST_LIBS}
 )
 GENERATE_EXECUTABLE()

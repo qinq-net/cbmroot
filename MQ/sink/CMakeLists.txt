@@ -9,8 +9,8 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
     ${ZeroMQ_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
     ${FAIRROOT_INCLUDE_DIR}
-    ${FAIRROOT_INCLUDE_DIR}/fairmq
-    ${FAIRROOT_INCLUDE_DIR}/fairmq/options
+    ${FAIRMQ_INCLUDE_DIR}
+    ${FAIRMQ_INCLUDE_DIR}/options
 
     ${IPC_INCLUDE_DIRECTORY}
     ${CBMROOT_SOURCE_DIR}/external/cppzmq
@@ -39,12 +39,22 @@ If(UNIX AND NOT APPLE)
   List(APPEND BOOST_LIBS pthread)
 EndIf()
 
+set(FAIR_LIBS
+  FairMQ
+)
+
+If(FAIRLOGGER_FOUND)
+  set(FAIR_LIBS
+      ${FAIR_LIBS}
+      FairLogger
+     )
+EndIf()
 
 set(EXE_NAME DevNullSink)
 set(SRCS CbmDevNullSink.cxx runDevNullSink.cxx)
 set(DEPENDENCIES
   ${DEPENDENCIES}
-  FairMQ
+  ${FAIR_LIBS}
   ${BOOST_LIBS}
   fles_ipc
 )
@@ -54,7 +64,7 @@ set(EXE_NAME TsaComponentSink)
 set(SRCS CbmTsaComponentSink.cxx runTsaComponentSink.cxx)
 set(DEPENDENCIES
   ${DEPENDENCIES}
-  FairMQ
+  ${FAIR_LIBS}
   ${BOOST_LIBS}
   fles_ipc
 )
