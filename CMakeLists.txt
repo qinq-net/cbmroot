@@ -300,7 +300,9 @@ add_subdirectory (macro)
 
 add_subdirectory(fles)
 
-add_subdirectory(MQ)
+If(FAIRMQ_FOUND)
+  add_subdirectory(MQ)
+EndIf()
 
 add_subdirectory(tutorials)
 
