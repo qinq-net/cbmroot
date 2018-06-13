@@ -122,8 +122,8 @@ class TTofGet4Unpacker : public TObject
       Bool_t AnalyzeAllGet4Channels24Bits( Get4v1Event &eventFull );                   // <- Done
       Bool_t AnalyzeAllGet4Channels32Bits( Get4v1Event &eventFull );                   // <- Done
 
-      Bool_t PrintRocEpochIndexes(UInt_t uRocId, Int_t uMessagePriority = 0);           // <- Done
-      Bool_t PrintRocEpochCycles(UInt_t uRocId, Int_t uMessagePriority = 0);            // <- Done
+//      Bool_t PrintRocEpochIndexes(UInt_t uRocId, Int_t uMessagePriority = 0);           // <- Done
+//      Bool_t PrintRocEpochCycles(UInt_t uRocId, Int_t uMessagePriority = 0);            // <- Done
 
       /* after event completion reset until next triggers are found*/
       void ResetTrigger();

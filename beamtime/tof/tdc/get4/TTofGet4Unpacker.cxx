@@ -4318,6 +4318,7 @@ Bool_t TTofGet4Unpacker::AnalyzeAllGet4Channels32Bits( Get4v1Event &eventFull )
 }
 /**********************************************************************/
 
+/*
 Bool_t TTofGet4Unpacker::PrintRocEpochIndexes(UInt_t uRocId, Int_t uMessagePriority )
 {
    TString sOutput = "";
@@ -4342,6 +4343,7 @@ Bool_t TTofGet4Unpacker::PrintRocEpochCycles(UInt_t uRocId, Int_t uMessagePriori
 
    return kTRUE;
 }
+*/
 /**********************************************************************/
 void TTofGet4Unpacker::UpdateLeadingDnlHistograms( Get4v1Event & /*eventFull*/, UInt_t uRocId )
 {
