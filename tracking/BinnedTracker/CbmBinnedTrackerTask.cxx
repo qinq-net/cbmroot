@@ -45,7 +45,6 @@ CbmBinnedTrackerTask::CbmBinnedTrackerTask(bool useAllDetectors, Double_t beamWi
 {
    fInstance = this;
    fill_n(fUseModules, int(kLastModule), fUseAllDetectors);
-   fUseModules[kMuch] = false;// Temporary hack
    fUseModules[kRich] = false;// Temporary hack
 }
 
