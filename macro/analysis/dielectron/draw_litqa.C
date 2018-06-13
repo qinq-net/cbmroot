@@ -1,6 +1,6 @@
 void draw_litqa()
 {
-   std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/test6/8gev/omegaepem/";
+   std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/may18_100k/8gev/omegaepem/";
    std::string fileName = dir + "litqa.auau.8gev.centr.all.root";
 
    std::string script = std::string(TString(gSystem->Getenv("SCRIPT")).Data());
@@ -17,8 +17,8 @@ void draw_litqa()
    CbmSimulationReport* trackingQaReport = new CbmLitTrackingQaReport();
    trackingQaReport->Create(fileName, outputDirTracking);
 
-   CbmSimulationReport* clusteringQaReport = new CbmLitClusteringQaReport();
-   clusteringQaReport->Create(fileName, outputDirClustering);
+ //  CbmSimulationReport* clusteringQaReport = new CbmLitClusteringQaReport();
+  // clusteringQaReport->Create(fileName, outputDirClustering);
 
 //   CbmSimulationReport* fitQaReport = new CbmLitFitQaReport();
 //   fitQaReport->Create(fileName, outputDir);

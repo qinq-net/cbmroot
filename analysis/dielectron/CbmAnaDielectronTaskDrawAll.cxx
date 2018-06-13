@@ -44,7 +44,7 @@ void CbmAnaDielectronTaskDrawAll::DrawHistosFromFile(
     fOutputDir = outputDir;
     fUseMvd = useMvd;
     
-    SetDefaultDrawStyle();
+    //SetDefaultDrawStyle();
     vector<string> fileNames = {fileNameInmed, fileNameQgp, fileNameOmega, fileNamePhi, fileNameOmegaDalitz};
     
     fHM.resize(fNofSignals);

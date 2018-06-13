@@ -4,7 +4,7 @@ void run_rich_reco_tb()
    TTree::SetMaxTreeSize(90000000000);
    TString script = TString(gSystem->Getenv("SCRIPT"));
 
-   TString myName = "run_reco_geotest";
+   TString myName = "run_rich_reco_tb";
    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100_tb.C";
@@ -42,17 +42,25 @@ void run_rich_reco_tb()
    FairFileSource* inputSource = new FairFileSource(digiFile);
    run->SetSource(inputSource);
    run->SetAsync();
+   run->AddFriend(mcFile);
    run->SetOutputFile(recoFile);
-   run->SetEventMeanTime(1.e9 / eventRate);
+   //run->SetEventMeanTime(1.e9 / eventRate);
    FairRootManager::Instance()->SetUseFairLinks(kTRUE);
 
    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
    FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
-   run->AddTask(new CbmBuildEventsIdeal());
+   CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", false);
+   mcManager->AddFile(mcFile);
+   run->AddTask(mcManager);
+
+   //   run->AddTask(new CbmBuildEventsIdeal());
 
    CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
    run->AddTask(richHitProd);
+
+   CbmRichRecoTbRecoQa* richRecoTbRecoQa = new CbmRichRecoTbRecoQa();
+   run->AddTask(richRecoTbRecoQa);
 
 
 //

@@ -8,7 +8,7 @@ void draw_analysis() {
 
     Bool_t useMvd = false;
     Bool_t drawSignificance = true;
-    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/test6/8gev/omegaepem/";
+    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/may18_100k/8gev/omegaepem/";
     std::string fileName = dir + "analysis.auau.8gev.centr.all.root";
 
     std::string script = std::string(TString(gSystem->Getenv("SCRIPT")).Data());

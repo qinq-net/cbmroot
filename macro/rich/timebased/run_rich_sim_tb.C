@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void run_rich_sim_tb(Int_t nEvents = 10)
+void run_rich_sim_tb(Int_t nEvents = 100)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -11,6 +11,7 @@ void run_rich_sim_tb(Int_t nEvents = 10)
 
    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100_tb.C";
 
+   TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root";
    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/tb/";
    TString parFile =  outDir + "param.00000.root";
    TString mcFile = outDir + "mc.00000.root";
@@ -110,8 +111,12 @@ void run_rich_sim_tb(Int_t nEvents = 10)
    primGen->SmearGausVertexXY(smearVertexXY);
    primGen->SmearVertexZ(smearVertexZ);
 
+   CbmUnigenGenerator*  urqmdGen = new CbmUnigenGenerator(urqmdFile);
+   urqmdGen->SetEventPlane(0. , 360.);
+   urqmdGen->SetEventPlane(0. , 360.);
+   primGen->AddGenerator(urqmdGen);
 
-   FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 1);
+   FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 5);
    boxGen1->SetPtRange(0.,3.);
    boxGen1->SetPhiRange(0.,360.);
    boxGen1->SetThetaRange(2.5,25.);
@@ -119,13 +124,15 @@ void run_rich_sim_tb(Int_t nEvents = 10)
    boxGen1->Init();
    primGen->AddGenerator(boxGen1);
 
-   FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, 1);
+   FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, 5);
    boxGen2->SetPtRange(0.,3.);//4
    boxGen2->SetPhiRange(0.,360.);
    boxGen2->SetThetaRange(2.5,25.);//35
    boxGen2->SetCosTheta();
    boxGen2->Init();
    primGen->AddGenerator(boxGen2);
+
+
    run->SetGenerator(primGen);
 
 

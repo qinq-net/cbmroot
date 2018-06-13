@@ -27,7 +27,7 @@
 
 
 void run_sim(Int_t nEvents = 2,
-		         const char* setupName = "sis100_electron",
+		         const char* setupName = "sis300_electron",
 		         const char* inputFile = "")
 {
 

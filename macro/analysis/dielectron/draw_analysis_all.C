@@ -7,7 +7,7 @@
 void draw_analysis_all() {
 
     Bool_t useMvd = false;
-    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/test6/8gev/";
+    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/may18_100k/8gev/";
     std::string fileName = "analysis.auau.8gev.centr.all.root";
 
     std::string script = std::string(TString(gSystem->Getenv("SCRIPT")).Data());

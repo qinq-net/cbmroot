@@ -46,10 +46,12 @@ CbmLitGlobalElectronId::~CbmLitGlobalElectronId()
 void CbmLitGlobalElectronId::Init()
 {
 	FairRootManager* ioman = FairRootManager::Instance();
-	fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
-	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-	fTrdTracks = (TClonesArray*) ioman->GetObject("TrdTrack");
-	fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
+	if (ioman != nullptr) {
+        fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
+        fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
+        fTrdTracks = (TClonesArray*) ioman->GetObject("TrdTrack");
+        fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
+	}
 }
 
 Bool_t CbmLitGlobalElectronId::IsRichElectron(

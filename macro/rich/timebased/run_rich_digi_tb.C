@@ -1,10 +1,10 @@
 
-void run_rich_digi_tb(Int_t nEvents = 10)
+void run_rich_digi_tb(Int_t nEvents = 100)
 {
    TTree::SetMaxTreeSize(90000000000);
    TString script = TString(gSystem->Getenv("SCRIPT"));
 
-   TString myName = "run_reco_geotest";
+   TString myName = "run_rich_digi_tb";
    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100_tb.C";
@@ -23,9 +23,9 @@ void run_rich_digi_tb(Int_t nEvents = 10)
    //   }
 
    // Specify interaction rate in 1/s
-   Double_t eventRate = 1.e4;
+   Double_t eventRate = 1.e7;//1.e4;
    // Specify duration of time slices in output [ns]
-   Double_t timeSliceSize = 1.e8;
+   Double_t timeSliceSize = 300;//1.e8;
 
    remove(digiFile.Data());
 
@@ -42,52 +42,31 @@ void run_rich_digi_tb(Int_t nEvents = 10)
    timer.Start();
    gDebug = 0;
 
-
-//   FairRunAna *run = new FairRunAna();
-//   FairFileSource* inputSource = new FairFileSource(mcFile);
-//   run->SetSource(inputSource);
-//   run->SetOutputFile(recoFile);
-//   run->SetGenerateRunInfo(kTRUE);
-
+   // -----   Reconstruction run   -------------------------------------------
    CbmRunAna *run = new CbmRunAna();
    FairFileSource* inputSource = new FairFileSource(mcFile);
+   inputSource->SetEventMeanTime(1.e9 / eventRate);
    run->SetSource(inputSource);
-   run->SetAsync();
+   run->SetAsync();                         // asynchroneous mode
    run->SetOutputFile(digiFile);
-   run->SetEventMeanTime(1.e9 / eventRate);
    FairRootManager::Instance()->SetUseFairLinks(kTRUE);
+   // ------------------------------------------------------------------------
+
 
    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
    FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
-
-//   CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-//   mcManager->AddFile(mcFile);
-//   run->AddTask(mcManager);
+//   CbmStsDigitize* stsDigi = new CbmStsDigitize();
+//   run->AddTask(stsDigi);
 
    CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
    run->AddTask(richDigitizer);
 
-//   CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
-//   run->AddTask(richHitProd);
-//
-//   CbmRichReconstruction* richReco = new CbmRichReconstruction();
-//   richReco->SetRunExtrapolation(false);
-//   richReco->SetRunProjection(false);
-//   richReco->SetRunTrackAssign(false);
-//   richReco->SetFinderName("ideal");
-//   run->AddTask(richReco);
-//
-//   CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
-//   run->AddTask(matchRecoToMc);
-
-//   CbmRichGeoTest* geoTest = new CbmRichGeoTest();
-//   geoTest->SetOutputDir(resultDir);
-//   run->AddTask(geoTest);
-
    FairTask* daq = new CbmDaq(timeSliceSize);
    run->AddTask(daq);
 
+   CbmRichRecoTbMcQa* richRecoTbMcQa = new CbmRichRecoTbMcQa();
+   run->AddTask(richRecoTbMcQa);
 
 
    std::cout << std::endl << std::endl << "-I- " << myName << ": Set runtime DB" << std::endl;

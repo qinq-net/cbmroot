@@ -22,11 +22,11 @@ void do_setup()
   	std::cout << "-W- setup_sis100_electron: overwriting existing setup" << setup->GetTitle() << std::endl;
   	setup->Clear();
   }
-  setup->SetTitle("RICH SIS100");
- // setup->SetModule(kMagnet, magnetGeoTag);
+  setup->SetTitle("RICH SIS100 TB");
+  setup->SetModule(kMagnet, magnetGeoTag);
   setup->SetModule(kPipe, pipeGeoTag);
  // setup->SetModule(kMvd, mvdGeoTag);
-  //setup->SetModule(kSts, stsGeoTag);
+  setup->SetModule(kSts, stsGeoTag);
   setup->SetModule(kRich, richGeoTag);
  // setup->SetModule(kTrd, trdGeoTag);
  // setup->SetModule(kTof, tofGeoTag);
