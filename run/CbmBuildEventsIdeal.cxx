@@ -26,7 +26,8 @@ using namespace std;
 CbmBuildEventsIdeal::CbmBuildEventsIdeal() :
 	FairTask("BuildEventsIdeal"),
 	fDigis(),
-	fEvents(NULL),
+	fMatches(),
+	fEvents(nullptr),
 	fNofEntries(0)
 {
 }
@@ -44,84 +45,111 @@ CbmBuildEventsIdeal::~CbmBuildEventsIdeal() {
 // =====   Task execution   ==================================================
 void CbmBuildEventsIdeal::Exec(Option_t*) {
 
-	TStopwatch timer;
-	timer.Start();
-	std::map<Int_t, CbmEvent*> eventMap;
-	Int_t nEvents = 0;
+  TStopwatch timer;
+  timer.Start();
+  std::map<Int_t, CbmEvent*> eventMap;
+  Int_t nEvents = 0;
+  UInt_t nDigisTot = 0;
+  UInt_t nDigisNoMatch = 0;
+  UInt_t nDigisNoise = 0;
 
-	// Clear output array
-	fEvents->Delete();
+  // Clear output array
+  fEvents->Delete();
 
-	for (Int_t detector = kMvd; detector < kNofSystems; detector++) {
+  for ( auto it1 = fDigis.begin(); it1 != fDigis.end(); it1++ ) {
 
-	  if ( fDigis[detector] == NULL ) continue;
-	  UInt_t nDigis = fDigis[detector]->GetEntriesFast();
-	  UInt_t nNoise = 0;
+    Int_t system = it1->first;
+    TClonesArray* digis = it1->second;
+    assert(digis);
+    TClonesArray* matches = nullptr;
+    auto it2 = fMatches.find(system);
+    if ( it2 != fMatches.end() ) {
+      assert(it2->first == system);
+      matches = it2->second;
+    }
 
-	  for (UInt_t iDigi= 0; iDigi < nDigis; iDigi++) {
-	    CbmDigi* digi = dynamic_cast<CbmDigi*>(fDigis[detector]->At(iDigi));
-	    assert(digi);
+    UInt_t nDigis = digis->GetEntriesFast();
+    if ( matches ) assert( matches->GetEntriesFast() == nDigis );
+    UInt_t nNoise = 0;
+    UInt_t nNoMatch = 0;
 
-	    // This implementation uses only MC event number from
-        // the matched link, i.e. that with the largest weight.
-        // Can be refined later on.
-	    Int_t mcEventNr = digi->GetMatch()->GetMatchedLink().GetEntry();
+    for (UInt_t iDigi= 0; iDigi < nDigis; iDigi++) {
+      CbmDigi* digi = dynamic_cast<CbmDigi*>(digis->At(iDigi));
+      assert(digi);
 
-        // Ignore digis with missing event number (noise)
-        if ( mcEventNr < 0 ) {
-          nNoise++;
-          continue;
-        }
+      CbmMatch* match = nullptr;
+      if ( matches ) match = dynamic_cast<CbmMatch*>(matches->At(iDigi));
+      else match = digi->GetMatch();
+      if ( ! match ) {
+        LOG(DEBUG) << fName << ": no match for digi object from system "
+            << system << "; ignoring digi" << FairLogger::endl;
+        nNoMatch++;
+        continue;
+      }
 
-        // Get event pointer. If event is not yet present, create it.
-        CbmEvent* event = NULL;
-        if ( eventMap.find(mcEventNr) == eventMap.end() ) {
-            event = new ( (*fEvents)[nEvents] ) CbmEvent(nEvents);
-            eventMap[mcEventNr] = event;
-            nEvents++;
-        }
-        else event = eventMap.at(mcEventNr);
+      // This implementation uses only MC event number from
+      // the matched link, i.e. that with the largest weight.
+      // Can be refined later on.
+      Int_t mcEventNr = digi->GetMatch()->GetMatchedLink().GetEntry();
 
-        // Fill digi index into event
-        switch (detector) {
-          case kMvd:  event->AddData(kMvdDigi,  iDigi); break;
-          case kSts:  event->AddData(kStsDigi,  iDigi); break;
-          case kRich: event->AddData(kRichDigi, iDigi); break;
-          case kMuch: event->AddData(kMuchDigi, iDigi); break;
-          case kTrd:  event->AddData(kTrdDigi,  iDigi); break;
-          case kTof:  event->AddData(kTofDigi,  iDigi); break;
-          case kPsd:  event->AddData(kPsdDigi,  iDigi); break;
-          break;
-        } //? detector
+      // Ignore digis with missing event number (noise)
+      if ( mcEventNr < 0 ) {
+        nNoise++;
+        continue;
+      }
 
-	  } //# digis
-	  LOG(DEBUG) << GetName() <<": ignored " << nNoise << " digis from "
-	      << CbmModuleList::GetModuleNameCaps(detector)
-	      << FairLogger::endl;
+      // Get event pointer. If event is not yet present, create it.
+      CbmEvent* event = NULL;
+      if ( eventMap.find(mcEventNr) == eventMap.end() ) {
+        event = new ( (*fEvents)[nEvents] ) CbmEvent(nEvents);
+        eventMap[mcEventNr] = event;
+        nEvents++;
+      }
+      else event = eventMap.at(mcEventNr);
 
-	} //# detector
+      // Fill digi index into event
+      switch (system) {
+        case kMvd:  event->AddData(kMvdDigi,  iDigi); break;
+        case kSts:  event->AddData(kStsDigi,  iDigi); break;
+        case kRich: event->AddData(kRichDigi, iDigi); break;
+        case kMuch: event->AddData(kMuchDigi, iDigi); break;
+        case kTrd:  event->AddData(kTrdDigi,  iDigi); break;
+        case kTof:  event->AddData(kTofDigi,  iDigi); break;
+        case kPsd:  event->AddData(kPsdDigi,  iDigi); break;
+        break;
+      } //? detector
+
+    } //# digis
+    LOG(DEBUG) << GetName() <<": Detector "
+        << CbmModuleList::GetModuleNameCaps(system) << ", digis " << nDigis
+        << ", no match " << nNoMatch << ", noise " << nNoise
+        << FairLogger::endl;
+    nDigisTot += nDigis;
+    nDigisNoMatch += nNoMatch;
+    nDigisNoise += nNoise;
+
+  } //# detectors
 
 
-	fNofEntries++;
-	timer.Stop();
-	assert( nEvents == fEvents->GetEntriesFast() );
+  fNofEntries++;
+  timer.Stop();
+  assert( nEvents == fEvents->GetEntriesFast() );
 
   // --- Execution log
   std::cout << std::endl;
-  LOG(INFO) << "+ " << setw(20) << GetName() << ": Entry " << setw(6)
-  		      << right << fNofEntries << ", real time " << fixed
-  		      << setprecision(6) << timer.RealTime() << " s, events: "
-  		      << fEvents->GetEntriesFast()
-  		      << FairLogger::endl;
+  LOG(INFO) << "+ " << setw(15) << GetName() << ": Time-slice " << setw(3)
+             << right << fNofEntries << ", digis: " << nDigisTot << ", no match: "
+             << nDigisNoMatch << ", noise: " << nDigisNoise << ". Exec time "
+             << fixed << setprecision(6) << timer.RealTime() << " s."
+             << FairLogger::endl;
 
   // --- For debug: event info
   if (gLogger->IsLogNeeded(DEBUG)) {
-  	for (Int_t iEvent = 0; iEvent < fEvents->GetEntriesFast(); iEvent++ ) {
-  		CbmEvent* event = (CbmEvent*) fEvents->At(iEvent);
-  		LOG(INFO) << event->ToString() << FairLogger::endl;
-  	}
+    for (Int_t iEvent = 0; iEvent < fEvents->GetEntriesFast(); iEvent++ ) {
+      CbmEvent* event = (CbmEvent*) fEvents->At(iEvent);
+      LOG(INFO) << event->ToString() << FairLogger::endl;
+    }
   }
-
 
 }
 // ===========================================================================
@@ -145,24 +173,39 @@ InitStatus CbmBuildEventsIdeal::Init() {
       case kRich: branchName = "RichDigi"; break;
       case kMuch: branchName = "MuchDigi"; break;
       case kTrd:  branchName = "TrdDigi";  break;
-      case kTof:  branchName = "TofDigiExp";  break;
+      case kTof:  branchName = "TofDigi";  break;
       case kPsd:  branchName = "PsdDigi";  break;
       default: break;
     } //? detector
 
     if ( ! branchName.IsNull() ) {
-      fDigis[detector] =
+      TClonesArray* testDigi =
           dynamic_cast<TClonesArray*>(ioman->GetObject(branchName.Data()));
-      if ( fDigis[detector] != NULL ) LOG(INFO) << GetName()
+      if ( testDigi ) {
+        fDigis[detector] = testDigi;
+        LOG(INFO) << GetName()
           << ": found input branch " << branchName << FairLogger::endl;
-    } //? branch name exists
+      } //? digi branch is present
+
+      TString matchBranch = branchName + "Match";
+      TClonesArray* testMatch =
+          dynamic_cast<TClonesArray*>(ioman->GetObject(matchBranch.Data()));
+      if ( testMatch ) {
+        fMatches[detector] = testMatch;
+        LOG(INFO) << GetName()
+          << ": found input branch " << branchName << FairLogger::endl;
+      } //? digi branch is present
+
+    } //? branch name is known
 
   } //# systems
+
 
   // Register output array (CbmEvent)
   fEvents = new TClonesArray("CbmEvent",100);
   ioman->Register("Event", "CbmEvent", fEvents,
   			 	        IsOutputBranchPersistent("Event"));
+  if ( ! fEvents ) LOG(FATAL) << "Output branch was not created" << FairLogger::endl;
 
   return kSUCCESS;
 }

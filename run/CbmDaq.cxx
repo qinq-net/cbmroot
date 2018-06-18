@@ -84,6 +84,7 @@ void CbmDaq::CloseTimeSlice() {
   // --- Fill current time slice into tree (if required)
   if ( fStoreEmptySlices || (! fTimeSlice->IsEmpty()) ) {
     Int_t nMCEvents = CopyEventList();
+    fEventsCurrent->Sort();
     LOG(DEBUG) << GetName() << ": " << nMCEvents
         << " MC " << (nMCEvents == 1 ? "event" : "events" )
         << " for this time slice" << FairLogger::endl;

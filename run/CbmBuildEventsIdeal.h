@@ -36,7 +36,8 @@ class CbmBuildEventsIdeal: public FairTask {
 
 	private:
 
-		std::map<Int_t, TClonesArray*> fDigis; ///< input arrays (digis)
+		std::map<Int_t, TClonesArray*> fDigis;   ///< digi arrays
+		std::map<Int_t, TClonesArray*> fMatches; ///< match arrays
 		TClonesArray* fEvents;     ///< Output array (class CbmEvent)
 		Int_t fNofEntries;         ///< Number of processed entries
 

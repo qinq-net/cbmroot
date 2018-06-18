@@ -25,6 +25,7 @@
 #pragma link C++ class CbmMCTrack+;
 #pragma link C++ class CbmMCEventData+;
 #pragma link C++ class CbmMCEventList;
+#pragma link C++ class CbmMCEventInfo;
 
 #pragma link C++ class CbmMvdCluster+;
 #pragma link C++ class CbmMvdDetectorId+;

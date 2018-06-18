@@ -49,6 +49,7 @@ CbmModuleList.cxx
 CbmMCEpoch.cxx
 CbmMCTrack.cxx
 CbmMCEventData.cxx
+CbmMCEventInfo.cxx
 CbmMCEventList.cxx
 
 CbmLink.cxx

@@ -330,7 +330,7 @@ void CbmTofHitFinderTBQA::Exec(Option_t* option)
             
             if (!mcPoints[evN][pointInd].isInit)
             {
-               double eventTime = fEventList->GetEventTime(evN + 1);
+               double eventTime = fEventList->GetEventTime(evN + 1, 0);
                mcPoints[evN][pointInd].t += eventTime;
                mcPoints[evN][pointInd].isInit = true;
             }

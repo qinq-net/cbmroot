@@ -399,7 +399,7 @@ void CbmLitClusteringQa::FillResidualAndPullHistograms(
       if (0 == fTimeSlice || 0 == fEventList)   
          residualT =  point->GetTime() - hit->GetTime();
       else
-         residualT = fEventList->GetEventTime(match->GetMatchedLink().GetEntry() + 1) + point->GetTime() - hit->GetTime();
+         residualT = fEventList->GetEventTime(match->GetMatchedLink().GetEntry() + 1, 0) + point->GetTime() - hit->GetTime();
       
       Int_t stationId = GetStationId(hit->GetAddress(), detId);
       fHM->H2(nameResidualX)->Fill(stationId, residualX);
