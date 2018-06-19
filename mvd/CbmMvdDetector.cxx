@@ -589,11 +589,7 @@ TClonesArray* CbmMvdDetector::GetOutputDigiMatchs(){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
     fDigiPlugin = sensor->GetDigiPlugin();
     Int_t length = sensor->GetOutputArrayLen(fDigiPlugin);
-    if(length >= 0)
-	{
-       
-        foutputDigiMatchs->AbsorbObjects(sensor->GetOutputMatch(),0,length);
-	}
+    foutputDigiMatchs->AbsorbObjects(sensor->GetOutputMatch());
   }
 return(foutputDigiMatchs);
 }

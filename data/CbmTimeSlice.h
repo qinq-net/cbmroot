@@ -109,9 +109,15 @@ class CbmTimeSlice : public TNamed
     Bool_t IsEmpty() const { return fNofData.empty(); }
 
 
+    /** Check whether time slice has flexible limits
+     ** @return kTRUE if time slice is flexible
+     **/
+    Bool_t IsFlexible() const { return fIsFlexible; }
+
+
     /** @brief Reset the time slice
      ** @param start    New start time [ns]
-     ** @param length   New lengt [ns]
+     ** @param length   New length [ns]
      **
      ** Reset start time, length and counters
      **/

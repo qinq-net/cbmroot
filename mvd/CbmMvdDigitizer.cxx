@@ -126,9 +126,12 @@ if(fInputPoints->GetEntriesFast() > 0)
 
    // --- Send produced digis to DAQ
    TClonesArray* digis = fDetector->GetOutputDigis();
+   TClonesArray* matches = fDetector->GetOutputDigiMatchs();
    for (Int_t index = 0; index < digis->GetEntriesFast(); index++) {
      CbmMvdDigi* digi = dynamic_cast<CbmMvdDigi*>(digis->At(index));
      assert(digi);
+     CbmMatch* match = dynamic_cast<CbmMatch*>(matches->At(index));
+     digi->SetMatch(match);
      SendDigi(digi);
      nDigis++;
    }
