@@ -140,7 +140,7 @@ class CbmMuchDigitizeGem : public CbmDigitize {
      **/
     Double_t MPV_n_e(Double_t Tkin, Double_t mass);
     
-    void ReadAndRegister(Double_t); //Read from CbmMuchReadoutBuffer and Register as per mode
+    void ReadAndRegister(Long_t); //Read from CbmMuchReadoutBuffer and Register as per mode
     /** Get number of signals **/
     Int_t GetNofSignals() const {return fNofSignals;}
 
@@ -149,10 +149,10 @@ class CbmMuchDigitizeGem : public CbmDigitize {
     CbmMuchDigi* ConvertSignalToDigi(CbmMuchSignal*); //Converting Analog Signal to Digital Digi
 
     void SetMcChain(TChain* mcChain) {fMcChain=mcChain;}
-    void SetDeadTime(Double_t deadTime) {fDeadTime = deadTime; } 
+    //void SetDeadTime(Double_t deadTime) {fDeadTime = deadTime; } 
     void SetDriftVelocity(Double_t velocity) {fDriftVelocity = velocity; }
-    void SetPeakingTime(Double_t peakingTime) {fPeakingTime = peakingTime; }
-    void SetRemainderTime(Double_t remainderTime) {fRemainderTime = remainderTime; }
+    //void SetPeakingTime(Double_t peakingTime) {fPeakingTime = peakingTime; }
+    //void SetRemainderTime(Double_t remainderTime) {fRemainderTime = remainderTime; }
     void SetTimeBinWidth(Double_t timeBinWidth) {fTimeBinWidth = timeBinWidth; }
     void SetAlgorithm(Int_t algorithm) {fAlgorithm = algorithm; }
     void SetTimeOverThreshold(Bool_t tot) {fTOT = tot; }
@@ -175,7 +175,7 @@ class CbmMuchDigitizeGem : public CbmDigitize {
     Int_t              fNOutside;      // Total number of points which was found outside a detector
     Int_t              fNMulti;        // Total number of channels that was hitby several points
     Int_t              fFlag;   // flag to distinguish geometry 
-    
+  
     UInt_t             fNADCChannels;  // Number of ADC channels
     UInt_t             fQMax;          // Maximum charge that a pad can collect [electrons]
     UInt_t             fQThreshold;    // Charge threshold [electrons]
@@ -186,10 +186,10 @@ class CbmMuchDigitizeGem : public CbmDigitize {
     Double_t           fDeadPadsFrac;  // Probability to find a dead pad
     TStopwatch         fTimer;         // Timer
     TChain*            fMcChain;       // Chain of McFiles with McTrack info    
-    Double_t           fDeadTime;      // Channel dead time [ns]
+    //Double_t           fDeadTime;      // Channel dead time [ns]
     Double_t           fDriftVelocity; // Drift Velocity [um/ns]
-    Double_t           fPeakingTime;   // Peaking time [ns]
-    Double_t           fRemainderTime; // Remainder time = t_r [ns]: remainder is simulated as exp(-t/t_r)
+    //Double_t           fPeakingTime;   // Peaking time [ns]
+    //Double_t           fRemainderTime; // Remainder time = t_r [ns]: remainder is simulated as exp(-t/t_r)
     Double_t           fTimeBinWidth;  // Width of the bin for signal shape simulation
     Int_t              fNTimeBins;     // Number of bins for signal shape simulation
     //    Int_t              fNdigis;        // Number of created digis

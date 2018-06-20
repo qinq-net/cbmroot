@@ -70,7 +70,7 @@ using std::endl;
 // -----   Default constructor   -------------------------------------------
 CbmMuchDigitizeGem::CbmMuchDigitizeGem()
   : CbmDigitize("MuchDigitizeGem"),
-    fgDeltaResponse(),
+    //fgDeltaResponse(),
     fAlgorithm(1),
     fGeoScheme(CbmMuchGeoScheme::Instance()),
     fDigiFile(),
@@ -92,10 +92,10 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem()
     fDeadPadsFrac(0),
     fTimer(),
     fMcChain(NULL),
-    fDeadTime(400),
+    //fDeadTime(400),
     fDriftVelocity(100),
-    fPeakingTime(20),
-    fRemainderTime(40),
+    //fPeakingTime(20),
+    //fRemainderTime(40),
     fTimeBinWidth(1),
     fNTimeBins(200),
     fTOT(0),
@@ -103,9 +103,9 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem()
     fSigma(),
     fMPV(),
     fIsLight(1), // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.
-    fTimePointLast(-1.),
-    fTimeDigiFirst(-1.),
-    fTimeDigiLast(-1.),
+    fTimePointLast(-1),
+    fTimeDigiFirst(-1),
+    fTimeDigiLast(-1),
     fNofPoints(0),
     fNofSignals(0),
     fNofDigis(0),
@@ -142,7 +142,7 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem()
 // -------------------------------------------------------------------------
 CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag) 
   : CbmDigitize("MuchDigitizeGem"),
-    fgDeltaResponse(),
+    //fgDeltaResponse(),
     fAlgorithm(1),
     fGeoScheme(CbmMuchGeoScheme::Instance()),
     fDigiFile(digiFileName),
@@ -164,10 +164,10 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag)
     fDeadPadsFrac(0),
     fTimer(),
     fMcChain(NULL),
-    fDeadTime(400),
+    //fDeadTime(400),
     fDriftVelocity(100),
-    fPeakingTime(20),
-    fRemainderTime(40),
+    //fPeakingTime(20),
+    //fRemainderTime(40),
     fTimeBinWidth(1),
     fNTimeBins(200),
     fTOT(0),
@@ -175,9 +175,9 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag)
     fSigma(),
     fMPV(),
     fIsLight(1), // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.  
-    fTimePointLast(-1.),
-    fTimeDigiFirst(-1.),
-    fTimeDigiLast(-1.),
+    fTimePointLast(-1),
+    fTimeDigiFirst(-1),
+    fTimeDigiLast(-1),
     fNofPoints(0),
     fNofSignals(0),
     fNofDigis(0),
@@ -236,7 +236,7 @@ CbmMuchDigitizeGem::~CbmMuchDigitizeGem() {
 
 // -----   Private method Reset   -------------------------------------------
 void CbmMuchDigitizeGem::Reset() {
-  fTimeDigiFirst = fTimeDigiLast = -1.;
+  fTimeDigiFirst = fTimeDigiLast = -1;
   fNofPoints = fNofSignals = fNofDigis = 0;
 }
 // -------------------------------------------------------------------------
@@ -343,13 +343,16 @@ InitStatus CbmMuchDigitizeGem::Init() {
   //For reducing the time therefore generated once in the CbmMuchDigitize Gem and
   //not generated in the CbmMuchSignal
   // Set response on delta function
-  Int_t nShapeTimeBins=Int_t(gkResponsePeriod/gkResponseBin);
-  fgDeltaResponse.Set(nShapeTimeBins);
-  for (Int_t i=0;i<fgDeltaResponse.GetSize();i++){
-    Double_t time = i*gkResponseBin;
-    if (time<=fPeakingTime) fgDeltaResponse[i]=time/fPeakingTime;
-    else fgDeltaResponse[i] = exp(-(time-fPeakingTime)/fRemainderTime); 
-  }
+  
+  // Not using fSignalShape as consuming memory. Commening all the field related.
+
+  //Int_t nShapeTimeBins=Int_t(gkResponsePeriod/gkResponseBin);
+  //fgDeltaResponse.Set(nShapeTimeBins);
+  //for (Int_t i=0;i<fgDeltaResponse.GetSize();i++){
+  //  Double_t time = i*gkResponseBin;
+  //  if (time<=fPeakingTime) fgDeltaResponse[i]=time/fPeakingTime;
+  //  else fgDeltaResponse[i] = exp(-(time-fPeakingTime)/fRemainderTime); 
+  //}
 
   // --- Screen output
   LOG(INFO) << GetName() << ": Initialisation successful"
@@ -387,7 +390,7 @@ void CbmMuchDigitizeGem::Exec(Option_t*) {
     fNofPoints++;
   }  // MuchPoint loop
 
-  if( fEventMode ) ReadAndRegister(-1.);
+  if( fEventMode ) ReadAndRegister(-1);
   else ReadAndRegister(fCurrentEventTime);
 	
   // --- Event log
@@ -409,7 +412,7 @@ void CbmMuchDigitizeGem::Exec(Option_t*) {
 
 // -------------------------------------------------------------------------
 //Read all the Signal from CbmMuchReadoutBuffer, convert the analog signal into the digital response  and register Output according to event by event mode and Time based mode.
-void CbmMuchDigitizeGem::ReadAndRegister(Double_t eventTime){
+void CbmMuchDigitizeGem::ReadAndRegister(Long_t eventTime){
   std::vector<CbmMuchSignal*> SignalList;
   //Event Time should be passed with the Call	
   /*Double_t eventTime = -1.;
@@ -455,9 +458,14 @@ void CbmMuchDigitizeGem::ReadAndRegister(Double_t eventTime){
 //Convert Signal into the Digi with appropriate methods.
 
 CbmMuchDigi* CbmMuchDigitizeGem::ConvertSignalToDigi(CbmMuchSignal* signal){
-  Int_t TimeStamp = signal->GetTimeStamp(fQThreshold);
+
+  //signal below threshold should be discarded.
+  if(signal->GetCharge() < fQThreshold) return (NULL);
+  Long64_t TimeStamp = signal->GetTimeStamp();
+
+  //  Int_t TimeStamp = signal->GetTimeStamp(fQThreshold);
   //
-  if (TimeStamp < 0) return (NULL);//entire signal is below threshold, no digi generation.
+  //  if (TimeStamp < 0) return (NULL);//entire signal is below threshold, no digi generation.
 
 		
   CbmMuchDigi *digi = new CbmMuchDigi();
@@ -870,13 +878,14 @@ Bool_t CbmMuchDigitizeGem::AddCharge(CbmMuchSectorRadial* s,UInt_t ne, Int_t /*i
 void CbmMuchDigitizeGem::AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint, Double_t time, Double_t driftTime){
   if (!pad) return;
 
-  UInt_t  AbsTime = fCurrentEventTime + time + driftTime;
+  Long_t  AbsTime = fCurrentEventTime + time + driftTime;
 
   //Creating a new Signal, it will be deleted by CbmReadoutBuffer()
-  CbmMuchSignal* signal = new CbmMuchSignal(pad->GetAddress());
-  signal->SetTimeStart(AbsTime);
-  signal->SetTimeStop(AbsTime+fDeadTime);
-  signal->MakeSignalShape(charge,fgDeltaResponse);
+  CbmMuchSignal* signal = new CbmMuchSignal(pad->GetAddress(),AbsTime);
+  //signal->SetTimeStart(AbsTime);
+  //signal->SetTimeStop(AbsTime+fDeadTime);
+  signal->SetCharge(charge);
+  //signal->MakeSignalShape(charge,fgDeltaResponse);
   signal->AddNoise(fMeanNoise);
   UInt_t address = pad->GetAddress();
   //match->AddCharge(iPoint,charge,time+driftTime,fgDeltaResponse,time,eventNr,inputNr);
@@ -912,12 +921,13 @@ Bool_t CbmMuchDigitizeGem::BufferSignals(Int_t iPoint,Double_t time, Double_t dr
   for(auto it=fAddressCharge.begin();it!=fAddressCharge.end();++it){
     UInt_t address = it->first;
     //Creating a new Signal, it will be deleted by CbmReadoutBuffer()
-    CbmMuchSignal* signal = new CbmMuchSignal(address);
-    signal->SetTimeStart(AbsTime);
-    signal->SetTimeStop(AbsTime+fDeadTime);
-    signal->MakeSignalShape(it->second,fgDeltaResponse);
+    CbmMuchSignal* signal = new CbmMuchSignal(address,AbsTime);
+    //signal->SetTimeStart(AbsTime);
+    //signal->SetTimeStop(AbsTime+fDeadTime);
+    //signal->MakeSignalShape(it->second,fgDeltaResponse);
+    signal->SetCharge(it->second);
     signal->AddNoise(fMeanNoise);
-    CbmLink link(signal->GetMaxCharge(), iPoint, fCurrentEvent, fCurrentInput);
+    CbmLink link(signal->GetCharge(), iPoint, fCurrentEvent, fCurrentInput);
     (signal->GetMatch())->AddLink(link);
     //Adding all these temporary signal into the CbmMuchReadoutBuffer
     CbmMuchReadoutBuffer::Instance()->Fill(address, signal);

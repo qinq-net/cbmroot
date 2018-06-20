@@ -1,6 +1,14 @@
 /**CbmMuchSignal.cxx
  * @class CbmMuchSignal
  **@author Vikas Singhal <vikas@vecc.gov.in>
+ **@since 25/04/18
+ **@version 3.0 // Removing fPileUpTime and fModifiedCharge
+ **@author Vikas Singhal <vikas@vecc.gov.in>
+ **@since 10/04/18
+ **@version 2.0
+ ** Removing fSignalShape, which is mainly useful for PileUp Cases,
+ ** but taking too much memory. Will implement similar behaviour 
+ ** via computing PileUp effect on the fly.
  **@since 17/05/16
  **@version 1.0
  **@brief Data class for an analog signal in the MUCH
@@ -39,7 +47,11 @@ CbmMuchSignal::CbmMuchSignal(const CbmMuchSignal& rhs)
 	fAddress(rhs.fAddress),
 	fTimeStart(rhs.fTimeStart),
 	fTimeStop(rhs.fTimeStop),
-	fSignalShape(rhs.fSignalShape),
+	//fPileUpTime(rhs.fPileUpTime),
+	fCharge(rhs.fCharge),
+	//fModifiedCharge(rhs.fModifiedCharge),
+	fPileUpCount(rhs.fPileUpCount),
+	//fSignalShape(rhs.fSignalShape),
 	fMatch(rhs.fMatch)
 {
 }
@@ -60,13 +72,13 @@ CbmMuchSignal& CbmMuchSignal::operator=(const CbmMuchSignal& rhs)
 */
 
 
-void CbmMuchSignal::MakeSignalShape(UInt_t charge, TArrayD shape) {
+/*void CbmMuchSignal::MakeSignalShape(UInt_t charge, TArrayD shape) {
 	Int_t bin0 = 0;
 			//Int_t((fT0)/gkResponseBin);
 	Int_t nbins = bin0+shape.GetSize();
 	if (fSignalShape.GetSize()<nbins) fSignalShape.Set(nbins);
 	for (Int_t j=0;j<shape.GetSize();j++)  fSignalShape[bin0 + j]+=charge*shape[j];
-}
+}*/
 // -------------------------------------------------------------------------
 //
 //
@@ -74,44 +86,61 @@ void CbmMuchSignal::MakeSignalShape(UInt_t charge, TArrayD shape) {
 //Below function will add the Signal shapes of 2 signal
 
 void CbmMuchSignal::MergeSignal(CbmMuchSignal* signal){
-	
-	Int_t StartDiff = signal->GetTimeStart()-fTimeStart;
-	Int_t StopDiff = signal->GetTimeStop()-fTimeStop;
-	//cout << " Stop Difference "<< StopDiff << endl; 
-	if(StopDiff<0) StopDiff = 0; //Shows Second signal Stop time is within first signal stop time, no need to increase the SignalShape size.
-	
+	fPileUpCount++;
+	fPileUpCount+=signal->GetPileUpCount();
+	Long_t StartDiff = signal->GetTimeStart()-fTimeStart;
+	Long_t StopDiff = signal->GetTimeStop()-fTimeStop;
+	Bool_t MeFirst = kTRUE;
+	Long_t PileUpTime = 0;
+	LOG(DEBUG4) << " Start Difference " << StartDiff <<" Stop Difference "<< StopDiff << FairLogger::endl;
+	if(StopDiff>0) fTimeStop = signal->GetTimeStop(); //Shows Second signal Stop time is larger than first signal stop time, therefore fStopTime modified.
 	if(StartDiff<0){
-	//	std::cout<<"First Signal start time " <<fTimeStart<<" Second Signal start time is " <<signal->GetTimeStart() << endl;
-		StartDiff = (-1)*StartDiff; 
-	}
-
-	TArrayD SecondSignalShape = signal->GetSignalShape();
+		//Shows that New Signal is earlier than This signal.
+		//	std::cout<<"First Signal start time " <<fTimeStart<<" Second Signal start time is " <<signal->GetTimeStart() << endl;
+		MeFirst = kFALSE;
+		//StartDiff = (-1)*StartDiff; 
+		PileUpTime = fTimeStart;
+		fTimeStart = signal->GetTimeStart();
+	}else{ 
+		PileUpTime = signal->GetTimeStart();}
+	Long_t PileUpDiff = PileUpTime - fTimeStart;
+	if (PileUpDiff<0) {
+		LOG(INFO) << GetName() << " Problem: Check this particular pile up case." << FairLogger::endl; }
+	if (PileUpDiff < SLOWSHAPERPEAK) {
+		fCharge +=signal->GetCharge();}
+	else if(!MeFirst) fCharge = signal->GetCharge();
+	
+	/*TArrayD SecondSignalShape = signal->GetSignalShape();
 	fSignalShape.Set(fSignalShape.GetSize()+StopDiff);
 	//std::cout<<"MergeSignal called and size of fSignalShape "<<fSignalShape.GetSize()<<endl;
 	for (Int_t j=0;j<fSignalShape.GetSize()&&j<SecondSignalShape.GetSize();j++)
 		  
 		fSignalShape[j+StartDiff]=fSignalShape[j+StartDiff]+SecondSignalShape[j];
 		//SignalShape will be added in the first signal at location from where second signal start.
+*/
+
+
 }
 
 void CbmMuchSignal::AddNoise(UInt_t meanNoise){
-	for (Int_t i=0;i<fSignalShape.GetSize();i++){
-		fSignalShape[i]+=TMath::Abs(meanNoise*gRandom->Gaus());
-  	}
+	fCharge+=TMath::Abs(meanNoise*gRandom->Gaus());
+//	for (Int_t i=0;i<fSignalShape.GetSize();i++){
+//		fSignalShape[i]+=TMath::Abs(meanNoise*gRandom->Gaus());
+//  	}
 }
 
 
-Int_t CbmMuchSignal::GetMaxCharge(){
+/*Int_t CbmMuchSignal::GetMaxCharge(){
 	Int_t max_charge = -1;
 	for (Int_t i=0;i<fSignalShape.GetSize();i++){
 		Int_t charge = fSignalShape[i];
 		if (charge>max_charge) max_charge = charge;
 	}
   return max_charge;
-}
+}*/
 
 
-Int_t CbmMuchSignal::GetTimeStamp(Int_t threshold){
+/*Int_t CbmMuchSignal::GetTimeStamp(Int_t threshold){
   //Int_t threshold = 10000;
   Int_t bin1 = -1;
   for (Int_t i=0;i<fSignalShape.GetSize();i++){
@@ -121,7 +150,7 @@ Int_t CbmMuchSignal::GetTimeStamp(Int_t threshold){
     }
   }
   return -1;
-}
+}*/
 // -------------------------------------------------------------------------
 
 

@@ -1,6 +1,7 @@
 /*
  * CbmMuchReadoutBuffer.cxx
  *
+ *  Modified on: 19.04.2018 // Removed fSignalShape from CbmMuchSignal
  *  Created on: 11.05.2016
  *      Author: vikas@vecc.gov.in
  */
@@ -43,7 +44,8 @@
                         CbmMuchSignal* newData = new CbmMuchSignal(firstData->GetAddress());
 			newData->SetTimeStart(firstData->GetTimeStart());
 			newData->SetTimeStop(firstData->GetTimeStop());
-			newData->SetSignalShape(firstData->GetSignalShape());
+			//newData->SetSignalShape(firstData->GetSignalShape()); // Only storing Charge 				value not the entire fSignalShape
+			newData->SetCharge(firstData->GetCharge());
 			// Set the parameters of the new signal,
 			// it contains Address=which will be same,
 			// fSignalShape will be modified according to Real Behavier
