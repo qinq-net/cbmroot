@@ -3,8 +3,8 @@ void eventDisplay(const char* setup = "sis18_mcbm_25deg_long")
 {
 
   TString dataDir   = "data/";
-  TString InputFile = dataDir + setup + "_test.mc.root";
-  TString ParFile   = dataDir + setup + "_params.root";
+  TString InputFile = dataDir + setup + "_test.tra.root";
+  TString ParFile   = dataDir + setup + "_test.par.root";
 
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *fRun= new FairRunAna();
