@@ -1,19 +1,19 @@
-void eventDisplay(const char* setup = "sis100_electron")
+void eventDisplay(TString dataset = "test")
 {
-  TString dataDir   = "data/";
-  TString InputFile = dataDir + setup + "_test.mc.root";
-  TString ParFile   = dataDir + setup + "_params.root";
+  TString inFile  = dataset + ".tra.root";
+  TString parFile = dataset + ".par.root";
+  TString outFile = dataset + ".display.root";
 
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *fRun= new FairRunAna();
 
-  FairFileSource* inputSource = new FairFileSource(InputFile.Data());
+  FairFileSource* inputSource = new FairFileSource(inFile.Data());
   fRun->SetSource(inputSource);
-  fRun->SetOutputFile(dataDir + setup + "_test.root");
+  fRun->SetOutputFile(outFile);
 
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
   FairParRootFileIo* parInput1 = new FairParRootFileIo();
-  parInput1->open(ParFile.Data());
+  parInput1->open(parFile.Data());
   rtdb->setFirstInput(parInput1);
 
   FairEventManager *fMan  = new FairEventManager();
