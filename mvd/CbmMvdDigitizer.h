@@ -13,11 +13,13 @@
 #include "TString.h"
 #include "TStopwatch.h"
 
+#include <utility>
+#include <vector>
+
 class CbmMvdDetector;
 class CbmMvdPileupManager;
-
-using std::pair;
-
+class CbmMvdDigi;
+class CbmMatch;
 
 class CbmMvdDigitizer : public CbmDigitize
 {
@@ -79,6 +81,12 @@ private:
  TClonesArray* fDigiMatch;
  TClonesArray* fMcPileUp;
 
+ TClonesArray* fTmpMatch; //! Temporary TClonesArray to absorb from MvdDetector
+ TClonesArray* fTmpDigi; //! Temporary TClonesArray to absorb from MvdDetector 
+
+ std::vector<CbmMvdDigi*> fDigiVect; //! Temporary storage for CbmDaq
+ std::vector<CbmMatch*> fMatchVect; //! Temporary storage for CbmDaq
+ 
  std::pair<Float_t, Int_t> fPerformanceDigi;
 
  UInt_t fDigiPluginNr;

@@ -4,13 +4,15 @@
 
 // Includes from MVD
 #include "CbmMvdDigitizer.h"
-#include "CbmMvdPoint.h"
 #include "plugins/tasks/CbmMvdSensorDigitizerTask.h"
 #include "SensorDataSheets/CbmMvdMimosa26AHR.h"
 #include "tools/CbmMvdGeoHandler.h"
 #include "CbmMvdPileupManager.h"
 #include "CbmMvdDetector.h"
 
+#include "CbmMvdPoint.h"
+#include "CbmMvdDigi.h"
+#include "CbmMatch.h"
 
 // Includes from FAIR
 #include "FairRootManager.h"
@@ -21,13 +23,11 @@
 #include "TClonesArray.h"
 #include "TStopwatch.h"
 
-
 // Includes from C++
 #include <iomanip>
 #include <iostream>
 #include <vector>
 #include <cassert>
-
 
 using std::cout;
 using std::endl;
@@ -39,11 +39,15 @@ CbmMvdDigitizer::CbmMvdDigitizer()
     fMode(0),
     fShowDebugHistos(kFALSE),
     fNoiseSensors(kFALSE),
-    fDetector(NULL),
-    fInputPoints(NULL),
-    fDigis(NULL),
-    fDigiMatch(NULL),
-    fMcPileUp(NULL),
+    fDetector(nullptr),
+    fInputPoints(nullptr),
+    fDigis(nullptr),
+    fDigiMatch(nullptr),
+    fMcPileUp(nullptr),
+    fTmpMatch(nullptr),
+    fTmpDigi(nullptr),
+    fDigiVect(),
+    fMatchVect(),
     fPerformanceDigi(),
     fDigiPluginNr(0),
     fFakeRate(-1.),
@@ -56,8 +60,8 @@ CbmMvdDigitizer::CbmMvdDigitizer()
     fBgFileName(""),
     fDeltaFileName(""),
     fTimer(),
-    fPileupManager(NULL),
-    fDeltaManager(NULL)
+    fPileupManager(nullptr),
+    fDeltaManager(nullptr)
 {
 
 }
@@ -69,11 +73,15 @@ CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose)
     fMode(iMode),
     fShowDebugHistos(kFALSE),
     fNoiseSensors(kFALSE),
-    fDetector(NULL),
-    fInputPoints(NULL),
-    fDigis(NULL),
-    fDigiMatch(NULL),
-    fMcPileUp(NULL),
+    fDetector(nullptr),
+    fInputPoints(nullptr),
+    fDigis(nullptr),
+    fDigiMatch(nullptr),
+    fMcPileUp(nullptr),
+    fTmpMatch(nullptr),
+    fTmpDigi(nullptr),
+    fDigiVect(),
+    fMatchVect(),
     fPerformanceDigi(),
     fDigiPluginNr(0),
     fFakeRate(-1.),
@@ -86,20 +94,28 @@ CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose)
     fBgFileName(""),
     fDeltaFileName(""),
     fTimer(),
-    fPileupManager(NULL),
-    fDeltaManager(NULL)
+    fPileupManager(nullptr),
+    fDeltaManager(nullptr)
 {
 }
 // -------------------------------------------------------------------------
 
 // -----   Destructor   ----------------------------------------------------
 CbmMvdDigitizer::~CbmMvdDigitizer() {
- 
-if ( fDigis) 
-    {
+  if ( fDigis) {
     fDigis->Delete();
     delete fDigis;
-    }
+  }
+  if ( fDigiMatch) {
+    fDigiMatch->Delete();
+    delete fDigiMatch;
+  }
+  if ( fMcPileUp) {
+    fMcPileUp->Delete();
+    delete fMcPileUp;
+  }
+  delete fPileupManager;
+  delete fDeltaManager;
 }
 // -----------------------------------------------------------------------------
 
@@ -125,16 +141,48 @@ if(fInputPoints->GetEntriesFast() > 0)
    LOG(DEBUG) << fName << ": End Chain" << FairLogger::endl;
 
    // --- Send produced digis to DAQ
-   TClonesArray* digis = fDetector->GetOutputDigis();
-   TClonesArray* matches = fDetector->GetOutputDigiMatchs();
-   for (Int_t index = 0; index < digis->GetEntriesFast(); index++) {
-     CbmMvdDigi* digi = dynamic_cast<CbmMvdDigi*>(digis->At(index));
-     assert(digi);
-     CbmMatch* match = dynamic_cast<CbmMatch*>(matches->At(index));
+   fTmpDigi = fDetector->GetOutputDigis();
+   fTmpMatch = fDetector->GetOutputDigiMatchs();
+
+   Int_t nEntries = fTmpDigi->GetEntriesFast();
+   for (Int_t index = 0; index < nEntries ; index++) {
+
+     CbmMvdDigi* digi = dynamic_cast<CbmMvdDigi*>(fTmpDigi->At(index));
+     CbmMvdDigi* digi1 = new CbmMvdDigi(*digi);
+     assert(digi1);
+     fDigiVect.push_back(digi1);
+     
+//     CbmMatch match{*(dynamic_cast<CbmMatch*>(fTmpMatch->At(index)))};
+//     CbmMatch* match1 = new CbmMatch(match);
+     CbmMatch* match= dynamic_cast<CbmMatch*>(fTmpMatch->At(index));
+     CbmMatch* match1 = new CbmMatch(*match);
+     fMatchVect.push_back(match1);
+
+     digi1->SetMatch(match1);
+     SendDigi(digi1);
+     nDigis++;
+   }
+
+   
+/*
+   for (Int_t index = 0; index < fTmpDigi->GetEntriesFast(); index++) {
+
+     LOG(INFO) << "Size: " << fTmpDigi->GetEntriesFast() << ", " 
+               << fTmpDigi->GetEntries() << FairLogger::endl;
+ 
+     CbmMvdDigi* digi = dynamic_cast<CbmMvdDigi*>(fTmpDigi->Remove(fTmpDigi->At(index)));
+     digi->Print();
+     fDigiVect.push_back(digi);
+        
+     CbmMatch* match = dynamic_cast<CbmMatch*>(fTmpMatch->Remove(fTmpMatch->At(index)));
+     match->Print();
+     fMatchVect.push_back(match);
+
      digi->SetMatch(match);
      SendDigi(digi);
      nDigis++;
    }
+*/
    // TODO: (VF) There seem to be no entries in the match array, nor matches
    // attached to the digi object
    LOG(DEBUG) << fName << ": Sent " << nDigis << " digis to DAQ" << FairLogger::endl;
@@ -282,6 +330,10 @@ void CbmMvdDigitizer::ResetArrays() {
   fDigis->Delete();
   fDigiMatch->Delete();
   fMcPileUp->Delete();
+  fTmpMatch->Delete();
+  fTmpDigi->Delete();
+  fDigiVect.clear();
+  fMatchVect.clear();
 }
 // -------------------------------------------------------------------------
 
@@ -313,7 +365,7 @@ using namespace std;
 void CbmMvdDigitizer::BuildEvent() {
 
   // Some frequently used variables
-  CbmMvdPoint*   point   = NULL;
+  CbmMvdPoint*   point   = nullptr;
   Int_t nOrig = 0;
   Int_t nPile = 0;
   Int_t nElec = 0;
