@@ -111,6 +111,7 @@ CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
     fhVTX_DT0_Norm(NULL),
     fOutHstFileName(""),
     fCalParFileName(""),
+    fCalOutFileName("./tofFindTracks.hst.root"),
     fCalParFile(NULL),
     fhPullT_Smt(NULL),
     fhPullT_Smt_Off(NULL),
@@ -220,6 +221,7 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     fhVTX_DT0_Norm(NULL),
     fOutHstFileName(""),
     fCalParFileName(""),
+    fCalOutFileName("./tofFindTracks.hst.root"),
     fCalParFile(NULL),
     fhPullT_Smt(NULL),
     fhPullT_Smt_Off(NULL),
@@ -596,13 +598,12 @@ Bool_t CbmTofFindTracks::WriteHistos()
 {
    if ( fiCorMode < 0 ) return kTRUE;
 
-   LOG(INFO)<<"CbmTofFindTracks::WriteHistos: ./tofFindTracks.hst.root, mode = "
-	    << fiCorMode
+   LOG(INFO)<<Form("CbmTofFindTracks::WriteHistos: %s, mode = %d", fCalOutFileName.Data(), fiCorMode)
 	    << FairLogger::endl;
  
    // Write histogramms to the file
    TDirectory * oldir = gDirectory;
-   TFile *fHist = new TFile("./tofFindTracks.hst.root","RECREATE");
+   TFile *fHist = new TFile(fCalOutFileName,"RECREATE");
    fHist->cd();
    const Double_t RMSmin=0.04;  // in ns
 
@@ -952,6 +953,7 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
     {
       TVector3 hitPos(0.,0.,0.);
       TVector3 hitPosErr(15.,15.,5.0);  // including positioning uncertainty 
+//      TVector3 hitPosErr(1.,1.,5.0);  // including positioning uncertainty 
       pHit->SetPosition(hitPos);
       pHit->SetPositionError(hitPosErr);
     } else {
@@ -993,11 +995,12 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
   }
   LOG(DEBUG) << Form("CbmTofFindTracks::Exec NStationsFired %d > %d Min ?",GetNStationsFired(),GetMinNofHits())
 	     << FairLogger::endl; 
-
+/*
   if (GetNStationsFired()<GetMinNofHits()) {
     fInspectEvent=kFALSE;          // mark event as non trackable
   } else fInspectEvent=kTRUE;
-
+*/
+  CheckMaxHMul();
   // resort Hit array with respect to time, FIXME danger: links to digis become  invalid (???, check!!!)
   // fTofHitArray->Sort(fTofHitArray->GetEntries());  // feature not available
 
@@ -1723,3 +1726,17 @@ Bool_t CbmTofFindTracks::CheckHit2Track(CbmTofHit *pHit){
   }  
   return kFALSE;
 }
+
+void CbmTofFindTracks::CheckMaxHMul()
+{
+  fInspectEvent = kTRUE;
+
+  for(Int_t iSt = 0; iSt < fNTofStations; iSt++)
+  {
+    if(fStationHMul[iSt] > fiStationMaxHMul)
+    {
+      fInspectEvent = kFALSE;
+    }
+  }
+}
+

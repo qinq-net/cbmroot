@@ -78,6 +78,7 @@ void ana_hits(Int_t iNEvents, Int_t iGenCor, const TString& tUnpackDir, const TS
   // ---------------------------------------------------------------------------
 
   FairRunAna* tRun= new FairRunAna();
+  tRun->SetContainerStatic(kTRUE);
   tRun->SetSource(tFileSource);
   tRun->SetOutputFile(tOutputFile);
 

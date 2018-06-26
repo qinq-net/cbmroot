@@ -76,6 +76,7 @@ void ana_digi_cal(Int_t iNEvents, Int_t iCalMode, Int_t iCalSel, Int_t iCalRPC, 
   // ---------------------------------------------------------------------------
 
   FairRunAna* tRun= new FairRunAna();
+  tRun->SetContainerStatic(kTRUE);
   tRun->SetSource(tFileSource);
   tRun->SetOutputFile(tOutputFile);
 

@@ -140,6 +140,7 @@ class CbmTofFindTracks : public FairTask
 
   inline void SetCorMode       (Int_t ival){ fiCorMode     = ival;}
   inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
+  inline void SetCalOutFileName(TString CalOutFileName) { fCalOutFileName = CalOutFileName; }
   inline void SetTtTarg(Double_t val){ fTtTarg=val; }
   inline void SetT0MAX(Double_t val){ fT0MAX=val; }
 
@@ -170,6 +171,8 @@ class CbmTofFindTracks : public FairTask
 
   CbmTofFindTracks(const CbmTofFindTracks&);
   CbmTofFindTracks& operator=(const CbmTofFindTracks&);
+
+  void CheckMaxHMul();
 
   // Control histograms 
   TH1* fhTrklMul;
@@ -223,6 +226,7 @@ class CbmTofFindTracks : public FairTask
   Bool_t   LoadCalParameter();
   Bool_t   WriteHistos();
   TString       fCalParFileName;      // name of the file name with Calibration Parameters
+  TString       fCalOutFileName;
   TFile*        fCalParFile;          // pointer to Calibration Parameter file 
   TH2*          fhPullT_Smt;           // Time calibration histo
   TH1*          fhPullT_Smt_Off;       // Time calibration histo

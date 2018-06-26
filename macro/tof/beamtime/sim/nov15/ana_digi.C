@@ -79,6 +79,7 @@ void ana_digi(Int_t iNEvents, Int_t iCalMode, Int_t iCalSel, Int_t iCalRPC, Int_
   // ---------------------------------------------------------------------------
 
   FairRunAna* tRun= new FairRunAna();
+  tRun->SetContainerStatic(kTRUE);
   tRun->SetSource(tFileSource);
   tRun->SetOutputFile(tOutputFile);
 
@@ -499,7 +500,7 @@ void ana_digi(Int_t iNEvents, Int_t iCalMode, Int_t iCalSel, Int_t iCalRPC, Int_
           break;
 
         case 5:
-          tTofAnaTestbeam->SetTShift(-5.);
+          tTofAnaTestbeam->SetTShift(-0.33);
           tTofAnaTestbeam->SetTOffD4(16.);
           tTofAnaTestbeam->SetSel2TOff(0.1);
           break;

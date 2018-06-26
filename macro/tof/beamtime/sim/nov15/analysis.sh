@@ -8,13 +8,15 @@ iMemoryPerCore=4096         # requested memory per physical core [MB]
 iNCores=2                   # requested number of cores per array job
                             # (here > 1 to reserve additional job memory)
 
-iUnpackTimeLimit=0-01:00:00 # expected unpacking   job completion time
+iUnpackTimeLimit=0-02:00:00 # expected unpacking   job completion time
 iCalibTimeLimit=1-12:00:00  # expected calibration job completion time
-iAnaTimeLimit=0-12:00:00    # expected analysis    job completion time
+iAnaTimeLimit=1-00:00:00    # expected analysis    job completion time
+iTrackTimeLimit=1-12:00:00  # expected tracking    job completion time
 
-bRunUnpack=1                # run unpacking   stage
-bRunCalib=1                 # run calibration stage
-bRunAna=1                   # run analysis    stage
+bRunUnpack=0                # run unpacking   stage
+bRunCalib=0                 # run calibration stage
+bRunAna=0                   # run analysis    stage
+bRunTrack=1                 # run tracking    stage
 
 ################################################################################
 # User-specific settings                                                       #
@@ -37,7 +39,10 @@ AnalysisDir=/lustre/nyx/cbm/users/csimon/analysis/sps_nov15_sim
 
 ListDir=${AnalysisDir}/runs/`date -u +"%Y-%m-%dT%H-%M-%SZ"`
 
-if [ ! -f "${MacroDir}/unpack_list.sh" ] || [ ! -f "${MacroDir}/calib_list.sh" ] || [ ! -f "${MacroDir}/ana_list.sh" ]; then
+if [ ! -f "${MacroDir}/unpack_list.sh" ] || \
+   [ ! -f "${MacroDir}/calib_list.sh" ] || \
+   [ ! -f "${MacroDir}/ana_list.sh" ] || \
+   [ ! -f "${MacroDir}/track_list.sh" ]; then
   echo 'missing at least one analysis list file'
   return 1
 fi
@@ -45,12 +50,14 @@ fi
 unset UnpackList
 unset CalibList
 unset AnaList
+unset TrackList
 
 source "${MacroDir}/unpack_list.sh"
 source "${MacroDir}/calib_list.sh"
 source "${MacroDir}/ana_list.sh"
+source "${MacroDir}/track_list.sh"
 
-if [ -z "${UnpackList}" ] || [ -z "${CalibList}" ] || [ -z "${AnaList}" ]; then
+if [ -z "${UnpackList}" ] || [ -z "${CalibList}" ] || [ -z "${AnaList}" ] || [ -z "${TrackList}" ]; then
   echo 'at least one analysis list is empty'
   return 1
 fi
@@ -60,6 +67,8 @@ iNCalibRuns=${#CalibList[@]}
 iNCalibRuns=$((iNUnpackRuns*iNCalibRuns))
 iNAnaRuns=${#AnaList[@]}
 iNAnaRuns=$((iNCalibRuns*iNAnaRuns))
+iNTrackRuns=${#TrackList[@]}
+iNTrackRuns=$((iNCalibRuns*iNTrackRuns))
 
 
 mkdir -p ${ListDir}
@@ -67,6 +76,7 @@ mkdir -p ${ListDir}
 cp ${MacroDir}/unpack_list.sh ${ListDir}/
 cp ${MacroDir}/calib_list.sh ${ListDir}/
 cp ${MacroDir}/ana_list.sh ${ListDir}/
+cp ${MacroDir}/track_list.sh ${ListDir}/
 
 
 if [ "${bRunUnpack}" == "1" ]; then
@@ -97,16 +107,33 @@ fi
 if [ "${bRunAna}" == "1" ]; then
   if [ "${bRunCalib}" == "1" ]; then
     cDepAna=$(sbatch --dependency=afterany:${cDepCalib} \
-                       --time=${iAnaTimeLimit} --cpus-per-task=${iNCores} --mem-per-cpu=${iMemoryPerCore} \
-                       --partition=${cPartition} --workdir=${AnalysisDir} --array=1-${iNAnaRuns} \
-                       ${MacroDir}/run_ana.sh ${ConfigFile} ${ListDir} ${MacroDir})
+                     --time=${iAnaTimeLimit} --cpus-per-task=${iNCores} --mem-per-cpu=${iMemoryPerCore} \
+                     --partition=${cPartition} --workdir=${AnalysisDir} --array=1-${iNAnaRuns} \
+                     ${MacroDir}/run_ana.sh ${ConfigFile} ${ListDir} ${MacroDir})
   else
     cDepAna=$(sbatch \
-                       --time=${iAnaTimeLimit} --cpus-per-task=${iNCores} --mem-per-cpu=${iMemoryPerCore} \
-                       --partition=${cPartition} --workdir=${AnalysisDir} --array=1-${iNAnaRuns} \
-                       ${MacroDir}/run_ana.sh ${ConfigFile} ${ListDir} ${MacroDir})
+                     --time=${iAnaTimeLimit} --cpus-per-task=${iNCores} --mem-per-cpu=${iMemoryPerCore} \
+                     --partition=${cPartition} --workdir=${AnalysisDir} --array=1-${iNAnaRuns} \
+                     ${MacroDir}/run_ana.sh ${ConfigFile} ${ListDir} ${MacroDir})
   fi
 
   cDepAna=${cDepAna##* }
+fi
+
+
+if [ "${bRunTrack}" == "1" ]; then
+  if [ "${bRunCalib}" == "1" ]; then
+    cDepTrack=$(sbatch --dependency=afterany:${cDepCalib} \
+                       --time=${iTrackTimeLimit} --cpus-per-task=${iNCores} --mem-per-cpu=${iMemoryPerCore} \
+                       --partition=${cPartition} --workdir=${AnalysisDir} --array=1-${iNTrackRuns} \
+                       ${MacroDir}/run_track.sh ${ConfigFile} ${ListDir} ${MacroDir})
+  else
+    cDepTrack=$(sbatch \
+                       --time=${iTrackTimeLimit} --cpus-per-task=${iNCores} --mem-per-cpu=${iMemoryPerCore} \
+                       --partition=${cPartition} --workdir=${AnalysisDir} --array=1-${iNTrackRuns} \
+                       ${MacroDir}/run_track.sh ${ConfigFile} ${ListDir} ${MacroDir})
+  fi
+
+  cDepTrack=${cDepTrack##* }
 fi
 

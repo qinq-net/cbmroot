@@ -78,6 +78,7 @@ void build_events(const TString& tInputFilePath, const TString& tInputFileName, 
 
   tEventBuilder->SetTriggerMultiplicity(iMultiplicity);
   tEventBuilder->SetPreserveMCBacklinks(kFALSE);
+  tEventBuilder->SetDigiTotOffset(10.);
 
   // ---------------------------------------------------------------------------
 

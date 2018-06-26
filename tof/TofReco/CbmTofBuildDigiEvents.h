@@ -44,6 +44,7 @@ class CbmTofBuildDigiEvents: public FairTask
     void SetTriggerCounter(Int_t iModuleType, Int_t iModuleIndex, Int_t iCounterIndex, Int_t iNCounterSides);
     void SetTriggerMultiplicity(Int_t iMultiplicity) {fiTriggerMultiplicity = iMultiplicity;}
     void SetPreserveMCBacklinks(Bool_t bPreserve) {fbPreserveMCBacklinks = bPreserve;}
+    void SetDigiTotOffset(Double_t dOffset) {fdDigiToTOffset = dOffset;}
 
 
   protected:
@@ -78,6 +79,8 @@ class CbmTofBuildDigiEvents: public FairTask
     std::set<std::pair<Int_t, Int_t>> fProcessedIdealEvents;
     std::map<std::pair<Int_t, Int_t>, Double_t> fIdealEventStartTimes;
     std::map<std::pair<Int_t, Int_t>, std::vector<CbmTofDigiExp*>> fIdealEventDigis;
+    Int_t fiNEvents;
+    Double_t fdDigiToTOffset;
 
 
 		ClassDef(CbmTofBuildDigiEvents, 0);
