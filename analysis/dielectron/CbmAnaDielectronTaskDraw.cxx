@@ -745,7 +745,7 @@ void CbmAnaDielectronTaskDraw::DrawMinvSandBg(
    sbg->Add(s);
    sbg->SetMinimum(1e-8);
 
-   DrawH1({sbg, bg, s}, {"", "", ""}, kLinear, kLog, false, 0,0,0,0);
+   DrawH1({sbg, bg, s}, {"", "", ""}, kLinear, kLog, false, 0,0,0,0, "Hist L");
    s->SetFillColor(kRed);
    s->SetLineColor(kBlack);
    s->SetLineWidth(1);

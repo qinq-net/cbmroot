@@ -372,7 +372,7 @@ void CbmAnaDielectronTask::InitHists()
     
     CreateSourceTypesH1(fh_richann, "fh_richann", "ANN output", "Yield", 100, -1.1, 1.1);
     CreateSourceTypesH1(fh_trdann, "fh_trdann", "ANN output", "Yield", 100, -1.1, 1.1);
-    CreateSourceTypesH2(fh_tofm2, "fh_tofm2", "P [GeV/c]", "m^{2} [GeV/c^{2}]^{2}", "Yield", 100, 0., 4., 600, -0.2, 1.2);
+    CreateSourceTypesH2(fh_tofm2, "fh_tofm2", "P [GeV/c]", "m^{2} [GeV/c^{2}]^{2}", "Yield", 100, 0., 4., 600, -0.00001, 0.0001);
     
     // Distributions of analysis cuts.
     // Transverse momentum of tracks.
@@ -431,7 +431,7 @@ void CbmAnaDielectronTask::InitHists()
         CreateAnalysisStepsH1(fh_source_bg_minv[i], ss.str(), "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
     }
     //Invariant mass vs. Mc Pt
-    CreateAnalysisStepsH2(fh_signal_minv_pt, "fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 4., 20, 0., 2.);
+    CreateAnalysisStepsH2(fh_signal_minv_pt, "fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 2., 20, 0., 2.);
     CreateAnalysisStepsH2(fh_pi0_minv_pt, "fh_pi0_minv_pt", "M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 4., 20, 0., 2.);
     CreateAnalysisStepsH2(fh_eta_minv_pt, "fh_eta_minv_pt", "M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 4., 20, 0., 2.);
     
@@ -1602,9 +1602,9 @@ void CbmAnaDielectronTask::CalculateNofTopologyPairs(
             if (mcTrack->GetMotherId() != fCandidates[iP].fMcMotherId) continue;
             if (iMCTrack == fCandidates[iP].fStsMcTrackId) continue;
             
-          //  if (!CbmLitMCTrackCreator::Instance()->TrackExists(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack)) continue;
-          //  const CbmLitMCTrack& litMCTrack = CbmLitMCTrackCreator::Instance()->GetTrack(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack);
-          //  nofPointsSts = litMCTrack.GetNofPointsInDifferentStations(kSts);
+            if (!CbmLitMCTrackCreator::Instance()->TrackExists(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack)) continue;
+            const CbmLitMCTrack& litMCTrack = CbmLitMCTrackCreator::Instance()->GetTrack(FairRun::Instance()->GetEventHeader()->GetMCEntryNumber(), iMCTrack);
+            nofPointsSts = litMCTrack.GetNofPointsInDifferentStations(kSts);
             break;
         }
         if (nofPointsSts == 0) h_nof_pairs->Fill(0.5);
@@ -1695,20 +1695,24 @@ void CbmAnaDielectronTask::DifferenceSignalAndBg()
             fh_richann[kSignal]->Fill(fCandidates[i].fRichAnn, fWeight);
             fh_trdann[kSignal]->Fill(fCandidates[i].fTrdAnn, fWeight);
             fh_tofm2[kSignal]->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2, fWeight);
+            cout << "Signal tofm2: " << fCandidates[i].fMass2 << ", fWeight: " << fWeight << endl;
         } else {
             fh_richann[kBg]->Fill(fCandidates[i].fRichAnn);
             fh_trdann[kBg]->Fill(fCandidates[i].fTrdAnn);
             fh_tofm2[kBg]->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
+            cout << "Bg tofm2: " << fCandidates[i].fMass2 << endl;
         }
         if (fCandidates[i].fIsMcGammaElectron){
             fh_richann[kGamma]->Fill(fCandidates[i].fRichAnn);
             fh_trdann[kGamma]->Fill(fCandidates[i].fTrdAnn);
             fh_tofm2[kGamma]->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
+            cout << "Gamma tofm2: " << fCandidates[i].fMass2 << endl;
         }
         if (fCandidates[i].fIsMcPi0Electron){
             fh_richann[kPi0]->Fill(fCandidates[i].fRichAnn);
             fh_trdann[kPi0]->Fill(fCandidates[i].fTrdAnn);
             fh_tofm2[kPi0]->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
+            cout << "Pi0Elec tofm2: " << fCandidates[i].fMass2 << endl;
         }
     } // loop over candidates
     
@@ -2026,8 +2030,17 @@ void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const
         if (particle == "omegadalitz") this->SetWeight(1.2 * 7.7e-5);
         // weight phi = Multiplicity * Branching Ratio = 0.1 * 2.97e-4 for 25 AGeV beam energy
         if (particle == "phi") this->SetWeight(0.1 * 2.97e-4);
-        
-        //Later section for 4gev!!
+    } else if (energy == "4.5gev"){
+        // weight omegadalitz = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
+        //if(particle = "omegadalitz") this->SetWeight();
+        // weight omegaepem = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
+        //if(particle = "omegaepem") this->SetWeight();
+        // weight pi0 = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
+        //if(particle = "pi0") this->SetWeight();
+        // weight inmed = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy 
+        //if(particle = "inmed") this->SetWeight();
+        // weight qgp = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
+        //if(particle = "qgp") this->SetWeight();
     } else {
         cout << "-ERROR- CbmAnaDielectronTask::SetEnergyAndParticle energy or particle is not correct, energy:"
                 << energy << " particle:" << particle << endl;
