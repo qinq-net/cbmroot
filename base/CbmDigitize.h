@@ -38,6 +38,17 @@ class CbmDigitize : public FairTask
     virtual ~CbmDigitize();
 
 
+    /** @brief Fill custom data into time slice
+     ** @param fillTime Time until data can be filled
+     ** @param limit If kTRUE, only data up to fillTime will be treated; otherwise, all.
+     **
+     ** This method allows the digitizer to implement additional functionality
+     ** than writing digis and match objects. It will be called from CbmDaq.
+     **/
+    virtual void FillCustomData(Double_t fillTime, Bool_t limit = kTRUE) {
+    }
+
+
     /** @brief Get event information **/
     void GetEventInfo();
 

@@ -291,6 +291,10 @@ Int_t CbmDaq::FillTimeSlice(Double_t fillTime, Bool_t limit) {
       << fTimeSlice->ToString() << FairLogger::endl;
   fNofDigis += nDigis;
 
+  // --- Call user-defined method FillCustomData
+  for(auto it = fDigitizers.begin(); it != fDigitizers.end(); it++)
+    if ( it->second ) it->second->FillCustomData(fillTime, limit);
+
   return nDigis;
 }
 // ===========================================================================
