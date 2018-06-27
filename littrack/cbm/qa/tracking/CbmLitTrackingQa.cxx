@@ -150,18 +150,19 @@ void CbmLitTrackingQa::Exec(
 
 void CbmLitTrackingQa::Finish()
 {
+    if (fOutputDir != "") {
+        TDirectory * oldir = gDirectory;
+        TFile* outFile = FairRootManager::Instance()->GetOutFile();
+        if (outFile != NULL) {
+            outFile->cd();
+            fHM->WriteToFile();
+        }
+        gDirectory->cd( oldir->GetPath() );
 
-   TDirectory * oldir = gDirectory;
-   TFile* outFile = FairRootManager::Instance()->GetOutFile();
-   if (outFile != NULL) {
-       outFile->cd();
-       fHM->WriteToFile();
-   }
-   gDirectory->cd( oldir->GetPath() );
-
-   CbmSimulationReport* report = new CbmLitTrackingQaReport();
-   report->Create(fHM, fOutputDir);
-   delete report;
+        CbmSimulationReport* report = new CbmLitTrackingQaReport();
+        report->Create(fHM, fOutputDir);
+        delete report;
+    }
 }
 
 void CbmLitTrackingQa::ReadDataBranches()
@@ -699,6 +700,8 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
 
    ProcessRichRings();
 
+   if (fGlobalTracks == nullptr) return;
+
    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
    for(Int_t iTrack = 0; iTrack < nofGlobalTracks; iTrack++) {
       const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTracks->At(iTrack));
@@ -1157,7 +1160,7 @@ void CbmLitTrackingQa::PionSuppression()
 
 void CbmLitTrackingQa::IncreaseCounters()
 {
-   fHM->H1("hno_NofObjects_GlobalTracks")->Fill(fGlobalTracks->GetEntriesFast());
+   if (fGlobalTracks != nullptr) fHM->H1("hno_NofObjects_GlobalTracks")->Fill(fGlobalTracks->GetEntriesFast());
    if (fDet.GetDet(kSts)) { fHM->H1("hno_NofObjects_StsTracks")->Fill(fStsTracks->GetEntriesFast()); }
    if (fDet.GetDet(kRich)) {
       fHM->H1("hno_NofObjects_RichRings")->Fill(fRichRings->GetEntriesFast());
