@@ -44,8 +44,8 @@ void mcbm_reco(Int_t nEvents = 2,
   // -----   In- and output file names   ------------------------------------
   TString outDir  = "data/";
 
-  TString inFile  = outDir + setupName + "_test.mc.root";       // Input file (MC events)
-  TString parFile = outDir + setupName + "_params.root";        // Parameter file
+  TString inFile  = outDir + setupName + "_test.tra.root";      // Input file (MC events)
+  TString parFile = outDir + setupName + "_test.par.root";      // Parameter file
   TString outFile = outDir + setupName + "_test.eds.root";      // Output file
 
 //  TString inFile  = outDir + setupName + "_" + cSys + "." + cEbeam + "." + cCentr + ".mc." + Form("%05d",iRun) + ".root"; // Input file (MC events)
