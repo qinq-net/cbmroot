@@ -41,7 +41,7 @@ void create_tof_digipar(TString fileName="tof_v16a_1e", Int_t nEvents = 0)
   // ========================================================================
 
 
- 
+
   // ----    Debug option   -------------------------------------------------
   gDebug = 0;
   // ------------------------------------------------------------------------
@@ -56,7 +56,7 @@ void create_tof_digipar(TString fileName="tof_v16a_1e", Int_t nEvents = 0)
 
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *run= new FairRunAna();
-  run->SetInputFile(inFile);
+//  run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
   run->SetGeomFile(geoFile);
   FairLogger::GetLogger()->SetLogScreenLevel("DEBUG2");
@@ -75,13 +75,13 @@ void create_tof_digipar(TString fileName="tof_v16a_1e", Int_t nEvents = 0)
   // -------------------------------------------------------------------------
 
   rtdb->saveOutput();
- 
+
   // -----   Intialise and run   --------------------------------------------
   //  run->LoadGeometry();
   run->Init();
-   
+
   rtdb->print();
-  
+
 
   CbmTofDigiPar* DigiPar = (CbmTofDigiPar*)
                            rtdb->getContainer("CbmTofDigiPar");
