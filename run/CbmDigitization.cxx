@@ -243,6 +243,44 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   LOG(INFO) << fName << ": " << nDigis << word << " instantiated."
       << FairLogger::endl << FairLogger::endl;
 
+  // --- Extract needed information from runtime database
+  FairRuntimeDb* rtdb = FairRuntimeDb::instance();
+  FairParRootFileIo* parIoRoot = new FairParRootFileIo();
+  parIoRoot->open(fParRootFile.Data(), "READ");
+  rtdb->setFirstInput(parIoRoot);
+
+  // --- Get geometry from runtime database
+  rtdb->getContainer("FairGeoParSet");
+  rtdb->initContainers(fRun);
+
+  // --- Add default parameter files for TRD and TOF
+  TString tofGeo = GetGeoTag(kTof, gGeoManager);
+  TString trdGeo = GetGeoTag(kTrd, gGeoManager);
+  TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+  TString parFile;
+  if (trdGeo.Length() > 0) {
+    parFile = srcDir + "/parameters/trd/trd_" + trdGeo + ".digi.par";
+    AddParameterAsciiFile(parFile);
+  }
+  if (tofGeo.Length() > 0) {
+    parFile = srcDir + "/parameters/tof/tof_" + tofGeo + ".digi.par";
+    AddParameterAsciiFile(parFile);
+    parFile = srcDir + "/parameters/tof/tof_" + tofGeo + ".digibdf.par";
+    AddParameterAsciiFile(parFile);
+  }
+  delete rtdb;
+  delete parIoRoot;
+
+  // --- Delete TGeoManager (will be initialised again from FairRunAna)
+  if (gROOT->GetVersionInt() >= 60602) {
+    gGeoManager->GetListOfVolumes()->Delete();
+    gGeoManager->GetListOfShapes()->Delete();
+    delete gGeoManager;
+  } //? ROOT version
+  LOG(INFO) << "==================================================="
+      << FairLogger::endl;
+
+
   // --- Create CbmRunAna
   CbmRunAna* run = new CbmRunAna();
   run->SetAsync();
@@ -294,48 +332,21 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   std::cout << std::endl;
   LOG(INFO) << fName << ": Setting runtime DB " << FairLogger::endl;
   LOG(INFO) << fName << ": ROOT I/O is " << fParRootFile << FairLogger::endl;
-  FairRuntimeDb* rtdb = run->GetRuntimeDb();
-  FairParRootFileIo* parIoRoot = new FairParRootFileIo();
+  rtdb = run->GetRuntimeDb();
+
+  parIoRoot = new FairParRootFileIo();
   parIoRoot->open(fParRootFile.Data(), "UPDATE");
-  rtdb->setSecondInput(parIoRoot);
-  rtdb->Print();
-
-  // --- Get geometry from runtime database
-  rtdb->getContainer("FairGeoParSet");
-  rtdb->initContainers(fRun);
-
-  // --- Add default parameter files for TRD and TOF
-  TString tofGeo = GetGeoTag(kTof, gGeoManager);
-  TString trdGeo = GetGeoTag(kTrd, gGeoManager);
-  TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
-  TString parFile;
-  parFile = srcDir + "/parameters/trd/trd_" + trdGeo + ".digi.par";
-  AddParameterAsciiFile(parFile);
-  parFile = srcDir + "/parameters/tof/tof_" + tofGeo + ".digi.par";
-  AddParameterAsciiFile(parFile);
-  parFile = srcDir + "/parameters/tof/tof_" + tofGeo + ".digibdf.par";
-  AddParameterAsciiFile(parFile);
-  FairParAsciiFileIo* parIoAscii = new FairParAsciiFileIo();
   if ( fParAsciiFiles.IsEmpty() ) {
     LOG(INFO) << fName << ": No ASCII input to parameter database"
         << FairLogger::endl;
-    //rtdb->closeSecondInput();
     rtdb->setFirstInput(parIoRoot);
-  }
-  else {
+  } else {
+    FairParAsciiFileIo* parIoAscii = new FairParAsciiFileIo();
     parIoAscii->open(&fParAsciiFiles, "in");
     rtdb->setFirstInput(parIoAscii);
+    rtdb->setSecondInput(parIoRoot);
   } //? Parameter list not empty
-
-  // --- Delete TGeoManager (will be initialised again from FairRunAna)
-  if (gROOT->GetVersionInt() >= 60602) {
-    gGeoManager->GetListOfVolumes()->Delete();
-    gGeoManager->GetListOfShapes()->Delete();
-    delete gGeoManager;
-  } //? ROOT version
-  LOG(INFO) << "==================================================="
-      << FairLogger::endl;
-
+//  rtdb->Print();
 
   // --- Initialise run
   std::cout << std::endl << std::endl;
