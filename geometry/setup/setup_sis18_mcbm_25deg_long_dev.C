@@ -6,6 +6,7 @@
  **
  **/
 
+// 2018-06-27 - DE - set flipped mTOF v18j geometry as new default
 // 2018-02-27 - DE - use mTRD v18o to fix redmine issue #1046 with tracking
 // 2017-12-11 - DE - enable mBUCH v18m
 // 2017-12-04 - DE - add mPSD to mCBM setup
@@ -40,7 +41,7 @@ void setup_sis18_mcbm_25deg_long_dev(Int_t nSetup = 901111111)
   TString buchGeoTag      = "v18o_mcbm";    // long, with mBUCH
 					    
   TString trdGeoTag       = "v18n_mcbm";    // long, without mBUCH
-  TString tofGeoTag       = "v18i_mcbm";    // long distance
+  TString tofGeoTag       = "v18j_mcbm";    // long distance
   TString richGeoTag      = "v18d_mcbm";    // long distance
   TString psdGeoTag       = "v18d_mcbm";    // below the beampipe
   // ------------------------------------------------------------------------
