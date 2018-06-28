@@ -14,8 +14,5 @@
 #pragma link C++ class CbmTofStarMonitorShift2018;
 #pragma link C++ class CbmTofStarEventBuilder2018;
 #pragma link C++ class CbmUnpackTofStar2018;
-#pragma link C++ class CbmUnpackTofStar2018New;
-#pragma link C++ class CbmUnpackTofStar2018New1;
-#pragma link C++ class CbmAlgoUnpackTofStar2018;
 
 #endif

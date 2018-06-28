@@ -100,7 +100,7 @@ InitStatus CbmMuchSegmentSector::Init(){
 
   // Get MUCH geometry parameter container
   fStations = fGeoPar->GetStations();
-  cout<<" Stations = "<<fStations->GetEntries()<<"     "<<fNStations<<endl;
+ // cout<<" Stations = "<<fStations->GetEntries()<<"     "<<fNStations<<endl;
   if(!fStations) Fatal("Init", "No input array of MUCH stations.");
   if(fStations->GetEntries() != fNStations) Fatal("Init", "Incorrect number of stations.");
 
