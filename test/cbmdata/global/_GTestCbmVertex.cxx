@@ -8,6 +8,8 @@
 #include "gtest/gtest.h"
 #include "gtest/gtest-spi.h"
 
+#include <regex>
+
 void compareVertexDataMembers(CbmVertex& test, Double_t x, Double_t y, Double_t z,
     Double_t chi2, Int_t ndf, Int_t ntracks, Double_t* cov)
 {
@@ -107,7 +109,14 @@ TEST(_GTestCbmVertex, CheckConstructorAllArguments)
   testing::internal::CaptureStdout();
   CbmVertex test1{"Vertex","Vertex", 1., 2., 3., 4., 5, 6, CovWrong};
   std::string output = testing::internal::GetCapturedStdout();
-  EXPECT_STREQ("[ERROR  ] Wrong dimension of passed covariance matrix. Clear the covariance matrix.\n", output.c_str());
+
+  std::regex f ("\\[ERROR(.*)\\](.*)(Wrong dimension of passed covariance matrix\\. Clear the covariance matrix)(.*)\\n");
+  bool retval = std::regex_match (output,f);
+  if (!retval) {
+    std::cout << "  Actual: " << output << std::endl;
+    std::cout << "Expected: " << "\\[ERROR\\](.*)(Wrong dimension of passed covariance matrix\\. Clear the covariance matrix)(.*)\\n" << std::endl;
+  }
+  EXPECT_TRUE(retval);
 
   {
     SCOPED_TRACE("CheckConstructorAllArgumentsWrongCovMatrix");
@@ -255,7 +264,14 @@ TEST(_GTestCbmVertex, CheckSetVertex)
   testing::internal::CaptureStdout();
   test.SetVertex(-1., -2., -3., -4., -5, -6, CovWrong);
   std::string output = testing::internal::GetCapturedStdout();
-  EXPECT_STREQ("[ERROR  ] Wrong dimension of passed covariance matrix. Clear the covariance matrix.\n", output.c_str());
+
+  std::regex f ("\\[ERROR(.*)\\](.*)(Wrong dimension of passed covariance matrix\\. Clear the covariance matrix)(.*)\\n");
+  bool retval = std::regex_match (output,f);
+  if (!retval) {
+    std::cout << "  Actual: " << output << std::endl;
+    std::cout << "Expected: " << "\\[ERROR\\](.*)(Wrong dimension of passed covariance matrix\\. Clear the covariance matrix)(.*)\\n" << std::endl;
+  }
+  EXPECT_TRUE(retval);
 
   {
     SCOPED_TRACE("CheckSetVertex: Check after SetVertex with wrong cov matrix");
