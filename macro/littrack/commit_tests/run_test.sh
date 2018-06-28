@@ -16,7 +16,7 @@ else
    export LIT_RESULT_DIR=results_${setup}/
 fi
 
-nevents=5
+nevents=2
 
 if [ "${setup}" = "electron" ] ; then
    #     NMU+ NMU- NE- NE+ NPI+ NPI- NJPSIMU NJPSIE AU URQMD UNIGEN PLUTO

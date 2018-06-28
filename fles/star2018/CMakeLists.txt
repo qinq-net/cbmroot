@@ -57,6 +57,9 @@ Set(SRCS
   unpacker/CbmTofStarMonitorShift2018.cxx
   unpacker/CbmTofStarEventBuilder2018.cxx
   unpacker/CbmUnpackTofStar2018.cxx
+  unpacker/CbmUnpackTofStar2018New.cxx
+  unpacker/CbmUnpackTofStar2018New1.cxx
+  unpacker/CbmAlgoUnpackTofStar2018.cxx
 )
 
 #Set(NO_DICT_SRCS

@@ -120,37 +120,12 @@ void global_reco(Int_t nEvents = 10, // number of events
     }
 
 
+/*
     if (stsHitProducerType == "real") {
-/*
-      // ----- STS REAL reconstruction -----------------------------------------------
-      CbmStsDigitize_old* stsDigitize = new CbmStsDigitize_old();
-      run->AddTask(stsDigitize);
-
-      FairTask* stsClusterFinder = new CbmStsClusterFinder_old();
-      run->AddTask(stsClusterFinder);
-
-      FairTask* stsFindHits = new CbmStsFindHits_old();
-      run->AddTask(stsFindHits);
-
-      // FairTask* stsMatchHits = new CbmStsMatchHits();
-      // run->AddTask(stsMatchHits);
-*/
+    
     } else if (stsHitProducerType == "ideal") {
-/*
-      // ----- STS IDEAL reconstruction   ---------------------------------------------
-      FairTask* stsDigitize =	new CbmStsIdealDigitize();
-      run->AddTask(stsDigitize);
-
-      FairTask* stsClusterFinder = new CbmStsClusterFinder_old();
-      run->AddTask(stsClusterFinder);
-
-      FairTask* stsFindHits =	new CbmStsIdealFindHits();
-      run->AddTask(stsFindHits);
-
-       //  FairTask* stsMatchHits = new CbmStsIdealMatchHits("STSMatchHits", iVerbose);
-       //  run->AddTask(stsMatchHits);
-*/
     } else if (stsHitProducerType == "new") {
+*/
       // --- The following calls the STS digitizer with default settings
       CbmStsDigitize* stsDigi = new CbmStsDigitize();
       stsDigi->SetEventMode();
@@ -168,7 +143,7 @@ void global_reco(Int_t nEvents = 10, // number of events
       FairTask* stsHit = new CbmStsFindHits();
       run->AddTask(stsHit);
       // -------------------------------------------------------------------------
-    }
+//    }
     
     FairTask* kalman = new CbmKF();
     run->AddTask(kalman);

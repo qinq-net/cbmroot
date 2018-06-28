@@ -13,6 +13,8 @@
 #include "TString.h"
 #include "TVector3.h"
 
+#include "Rtypes.h"
+
 class FairModule;
 class FairRunSim;
 class CbmFieldMap;
