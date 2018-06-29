@@ -19,7 +19,7 @@
 //#pragma link C++ class CbmRunOnline+;
 #pragma link C++ class CbmMCStreamerQa+;
 
-#pragma link C++ class CbmSetup;
+#pragma link C++ class CbmSetup+;
 
 #pragma link C++ class CbmDigitizeInfo;
 #pragma link C++ class CbmDigitization;
