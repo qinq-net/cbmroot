@@ -150,15 +150,16 @@ void CbmLitTrackingQa::Exec(
 
 void CbmLitTrackingQa::Finish()
 {
-    if (fOutputDir != "") {
-        TDirectory * oldir = gDirectory;
-        TFile* outFile = FairRootManager::Instance()->GetOutFile();
-        if (outFile != NULL) {
-            outFile->cd();
-            fHM->WriteToFile();
-        }
-        gDirectory->cd( oldir->GetPath() );
 
+    TDirectory * oldir = gDirectory;
+    TFile* outFile = FairRootManager::Instance()->GetOutFile();
+    if (outFile != NULL) {
+        outFile->cd();
+        fHM->WriteToFile();
+    }
+    gDirectory->cd( oldir->GetPath() );
+
+    if (fOutputDir != "") {
         CbmSimulationReport* report = new CbmLitTrackingQaReport();
         report->Create(fHM, fOutputDir);
         delete report;
