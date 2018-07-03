@@ -25,7 +25,7 @@ ${CBMROOT_SOURCE_DIR}/L1/vectors
 
 ${CBMROOT_SOURCE_DIR}/trd
 ${CBMROOT_SOURCE_DIR}/trd/digi
-${CBMROOT_SOURCE_DIR}/trd/param
+${CBMROOT_SOURCE_DIR}/trd/base
 ${CBMROOT_SOURCE_DIR}/trd/reco
 ${CBMROOT_SOURCE_DIR}/trd/tools
 ${CBMROOT_SOURCE_DIR}/trd/data

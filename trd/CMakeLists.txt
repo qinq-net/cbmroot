@@ -27,6 +27,7 @@ ${CBMROOT_SOURCE_DIR}/data/global
 ${CBMROOT_SOURCE_DIR}/L1/vectors
 
 ${CBMROOT_SOURCE_DIR}/trd
+${CBMROOT_SOURCE_DIR}/trd/base
 ${CBMROOT_SOURCE_DIR}/trd/digi
 ${CBMROOT_SOURCE_DIR}/trd/param
 ${CBMROOT_SOURCE_DIR}/trd/reco
@@ -50,35 +51,17 @@ ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
 ${Vc_LIB_DIR}
-#${ROCSYS}/lib
-#${GO4SYS}/include
-#${GO4SYS}/Go4Event
-#${GO4SYS}/Go4StatusBase
-#${ROCSYS}/include
-#${ROCSYS}/include/spadic
-#${ROCSYS}/include/sp605
-#${ROCSYS}/include/roc
-#${ROCSYS}/onlinemonitor/framework
-#${ROCSYS}/onlinemonitor/epicsmonitor
-#${ROCSYS}/onlinemonitor/rocmonitor
-#${ROCSYS}/onlinemonitor/spadicmonitor
-#${ROCSYS}/onlinemonitor/spadicV10monitor
-#${ROCSYS}/onlinemonitor/trbmonitor
-#${ROCSYS}/beamtime/cern-oct12/go4
-#${ROCSYS}/beamtime/cern-oct11/go4/RICH
-#${ROCSYS}/beamtime/cern-oct11/go4/MSFFM
-#${ROCSYS}/beamtime/cern-oct11/go4/BUCHAREST
-#${ROCSYS}/beamtime/cern-oct11/go4/
 ) 
 
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
-mc/CbmGeoTrd.cxx 
+base/CbmGeoTrd.cxx 
+
 mc/CbmTrd.cxx 		 
 
-param/CbmGeoTrdPar.cxx 
-param/CbmTrdContFact.cxx   
+base/CbmGeoTrdPar.cxx 
+base/CbmTrdContFact.cxx   
 param/CbmTrdDigiPar.cxx
 param/CbmTrdCreateDigiPar.cxx
 
@@ -88,7 +71,7 @@ digi/CbmTrdDigitizerPRF_TB.cxx
 digi/CbmTrdDigitizer.cxx
 #digi/CbmTrdDigiWriteoutBuffer.cxx
 
-reco/CbmTrdSPADIC.cxx
+base/CbmTrdSPADIC.cxx
 
 qa/CbmTrdHitProducerQa.cxx  
 qa/CbmTrdTracksPidQa.cxx
@@ -112,13 +95,13 @@ reco/CbmTrdClusterFinderDPB.cxx
 reco/CbmTrdHitProducerCluster.cxx
 #reco/CbmTrdSimpleHitProducerCluster.cxx
 
-tools/CbmTrdUtils.cxx
+base/CbmTrdUtils.cxx
 tools/CbmTrdElectronsTrainAnn.cxx
-tools/CbmTrdGeoHandler.cxx
+base/CbmTrdGeoHandler.cxx
 tools/CbmTrdTriangle.cxx
 
 data/CbmTrdRadiator.cxx  
-data/CbmTrdGas.cxx
+base/CbmTrdGas.cxx
 data/CbmTrdModule.cxx
 data/CbmTrdAsic.cxx
 #beamtime/CbmTrdRawToDigiSpadic03.cxx
