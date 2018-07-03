@@ -311,7 +311,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
   
   
 
-        for(Int_t iMC = 0; iMC < ToFPointsMatch.size(); iMC++){
+        for(UInt_t iMC = 0; iMC < ToFPointsMatch.size(); iMC++){
           CbmL1MCPoint MC;
           
           MC.event = iEvent;
@@ -636,12 +636,12 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
       
       
       if(matchHitMatch -> GetNofLinks() == 0) continue;
-      Float_t bestWeight = 0.f;
-      Float_t totalWeight = 0.f;
-      int iMCPoint = -1;
+//      Float_t bestWeight = 0.f;
+//      Float_t totalWeight = 0.f;
+ //     int iMCPoint = -1;
       CbmLink link;
 
-    CbmMuchPoint* pt = (CbmMuchPoint*) fMuchPoints->Get(matchHitMatch->GetLink(0).GetFile(),matchHitMatch->GetLink(0).GetEntry(),matchHitMatch->GetLink(0).GetIndex());
+//    CbmMuchPoint* pt = (CbmMuchPoint*) fMuchPoints->Get(matchHitMatch->GetLink(0).GetFile(),matchHitMatch->GetLink(0).GetEntry(),matchHitMatch->GetLink(0).GetIndex());
    // double mom = sqrt(pt->GetPxOut()*pt->GetPxOut()+pt->GetPyOut()*pt->GetPyOut()+pt->GetPzOut()*pt->GetPzOut());
 //     th.p = mom;
 //     th.q = pt->GetTrackID();//(L1_DYNAMIC_CAST<CbmMCTrack*>(fMCTracks->Get(link.GetFile(),link.GetEntry(),  pt->GetTrackID()) ))->GetCharge();
@@ -782,9 +782,9 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
             th.iMC = iMC+nMvdPoints+nStsPoints+nMuchPoints;
             th.track = vMCPoints[th.iMC].ID;
             
-            CbmTrdPoint* pt = (CbmTrdPoint*) fTrdPoints->Get(trdHitMatch->GetLink(0).GetFile(),trdHitMatch->GetLink(0).GetEntry(),trdHitMatch->GetLink(0).GetIndex());
+//            CbmTrdPoint* pt = (CbmTrdPoint*) fTrdPoints->Get(trdHitMatch->GetLink(0).GetFile(),trdHitMatch->GetLink(0).GetEntry(),trdHitMatch->GetLink(0).GetIndex());
   
-            float min = 0.1;
+//            float min = 0.1;
             
 //             if (min>th.dx) min = th.dx;
 //             if (min>th.dy) min = th.dy;
@@ -893,7 +893,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
         
       
       th.iMC=-1;
-      int iMC = -1;
+//      int iMC = -1;
       
       
       
@@ -906,7 +906,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
 //         th.track = vMCPoints[th.iMC].ID;
 //         th.qp = vMCPoints[th.iMC].p;
         
-        CbmTofPoint* pt = (CbmTofPoint*) fTofPoints->Get(ToFPointsMatch[j]->GetFile(),ToFPointsMatch[j]->GetEntry(),ToFPointsMatch[j]->GetIndex());
+//        CbmTofPoint* pt = (CbmTofPoint*) fTofPoints->Get(ToFPointsMatch[j]->GetFile(),ToFPointsMatch[j]->GetEntry(),ToFPointsMatch[j]->GetIndex());
    
         
 //                 th.x = pt->GetX() + gRandom->Gaus(0,th.dx);
@@ -1047,7 +1047,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
     h.ista = th.iStation;
 
     // find and save z positions
-    float z_tmp;
+    float z_tmp = -111.;
     int ist = th.iStation;
         if (ist < NMvdStations){
 #ifdef MVDIDEALHITS

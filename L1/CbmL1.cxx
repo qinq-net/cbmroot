@@ -137,8 +137,8 @@ fDigisMuch(nullptr),
 fTrdDigiPar(nullptr),
 fTrdPoints(nullptr),
 listTrdHits(nullptr),
-fTofPoints(nullptr),
 fTrdHitMatches(nullptr),
+fTofPoints(nullptr),
 fTofHitDigiMatches(nullptr),
 fTofHits(nullptr),
 fDigiPar(nullptr),
@@ -828,7 +828,7 @@ InitStatus CbmL1::Init()
       
       CbmMuchStation* station = (CbmMuchStation*) Nodes->At(iStation);
       
-      Int_t nLayers = station->GetNLayers();
+//      Int_t nLayers = station->GetNLayers();
 
       CbmMuchLayer* layer = station->GetLayer((ist - NMvdStations - NStsStations)%3);
          
