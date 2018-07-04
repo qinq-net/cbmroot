@@ -27,17 +27,12 @@ ${CBMROOT_SOURCE_DIR}/data/global
 ${CBMROOT_SOURCE_DIR}/L1/vectors
 
 ${CBMROOT_SOURCE_DIR}/trd
-${CBMROOT_SOURCE_DIR}/trd/sim
 ${CBMROOT_SOURCE_DIR}/trd/attic
 ${CBMROOT_SOURCE_DIR}/trd/attic/reco
 ${CBMROOT_SOURCE_DIR}/trd/base
-#${CBMROOT_SOURCE_DIR}/trd/digi
-${CBMROOT_SOURCE_DIR}/trd/param
-${CBMROOT_SOURCE_DIR}/trd/reco
-${CBMROOT_SOURCE_DIR}/trd/tools
-#${CBMROOT_SOURCE_DIR}/trd/data
-${CBMROOT_SOURCE_DIR}/trd/beamtime
-
+${CBMROOT_SOURCE_DIR}/trd/qa
+${CBMROOT_SOURCE_DIR}/trd/rec
+${CBMROOT_SOURCE_DIR}/trd/sim
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -50,32 +45,49 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
-${ROOT_LIBRARY_DIR}
-${FAIRROOT_LIBRARY_DIR}
-${Boost_LIBRARY_DIRS}
-${Vc_LIB_DIR}
+  ${ROOT_LIBRARY_DIR}
+  ${FAIRROOT_LIBRARY_DIR}
+  ${Boost_LIBRARY_DIRS}
+  ${Vc_LIB_DIR}
 ) 
 
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
 base/CbmGeoTrd.cxx 
-
-sim/CbmTrd.cxx 		 
-
 base/CbmGeoTrdPar.cxx 
 base/CbmTrdContFact.cxx   
+base/CbmTrdSPADIC.cxx
+base/CbmTrdUtils.cxx
+base/CbmTrdGeoHandler.cxx
+base/CbmTrdGas.cxx
+
+sim/CbmTrd.cxx 		 
+sim/CbmTrdDigitizer.cxx
+sim/CbmTrdRadiator.cxx  
+sim/CbmTrdTrackFinderIdeal.cxx  
+sim/CbmTrdTrackFitterIdeal.cxx  
 
 attic/CbmTrdDigiPar.cxx
 attic/CbmTrdCreateDigiPar.cxx
-
-#digi/CbmTrdDigitizerMathieson.cxx 
 attic/CbmTrdDigitizerPRF.cxx
 attic/CbmTrdDigitizerPRF_TB.cxx
-sim/CbmTrdDigitizer.cxx
-#attic/CbmTrdDigiWriteoutBuffer.cxx
+attic/reco/CbmTrdHitProducerIdeal.cxx    
+attic/reco/CbmTrdHitProducerSmearing.cxx
+attic/reco/CbmTrdHitProducerDigi.cxx
+attic/reco/CbmTrdClusterFinderFast.cxx
+attic/reco/CbmTrdClusterFinderDPB.cxx
+attic/reco/CbmTrdHitProducerCluster.cxx
+attic/CbmTrdTriangle.cxx
+attic/CbmTrdModule.cxx
+attic/CbmTrdAsic.cxx
+attic/CbmTrdFindTracks.cxx  
+attic/CbmTrdFitTracks.cxx  
 
-base/CbmTrdSPADIC.cxx
+#rec/beamtime/CbmTrdRawToDigiSpadic03.cxx
+#rec/CbmTrdClusterFinder.cxx
+#attic/reco/CbmTrdSimpleHitProducerCluster.cxx
+#rec/pid/CbmTrdElectronsTrainAnn.cxx
 
 qa/CbmTrdHitProducerQa.cxx  
 qa/CbmTrdTracksPidQa.cxx
@@ -89,45 +101,6 @@ qa/CbmTrdClusterizerFastQa.cxx
 qa/CbmTrdHitProducerClusterQa.cxx
 qa/CbmTrdRecoQa.cxx
 qa/CbmTrdMCQa.cxx
-
-attic/reco/CbmTrdHitProducerIdeal.cxx    
-attic/reco/CbmTrdHitProducerSmearing.cxx
-attic/reco/CbmTrdHitProducerDigi.cxx
-#reco/CbmTrdClusterFinder.cxx
-attic/reco/CbmTrdClusterFinderFast.cxx
-attic/reco/CbmTrdClusterFinderDPB.cxx
-attic/reco/CbmTrdHitProducerCluster.cxx
-#attic/reco/CbmTrdSimpleHitProducerCluster.cxx
-
-base/CbmTrdUtils.cxx
-#rec/pid/CbmTrdElectronsTrainAnn.cxx
-base/CbmTrdGeoHandler.cxx
-attic/CbmTrdTriangle.cxx
-
-sim/CbmTrdRadiator.cxx  
-base/CbmTrdGas.cxx
-attic/CbmTrdModule.cxx
-attic/CbmTrdAsic.cxx
-#beamtime/CbmTrdRawToDigiSpadic03.cxx
-
-#${ROCSYS}/include/spadic/Message.h
-#${ROCSYS}/include/roc/Message.h
-#${ROCSYS}/onlinemonitor/rocmonitor/TRocEvent.cxx
-#${ROCSYS}/onlinemonitor/spadicmonitor/TSpadicEvent.cxx
-#${ROCSYS}/onlinemonitor/framework/TTriglogEvent.cxx
-#${ROCSYS}/beamtime/cern-oct12/go4/TMbsCrateEvent.cxx
-#${ROCSYS}/beamtime/cern-oct12/go4/TCernOct12UnpackEvent.cxx
-#${ROCSYS}/beamtime/cern-oct12/go4/TCernOct12DetectorEvent.cxx
-#${ROCSYS}/beamtime/cern-oct12/go4/TBeamMonitorEvent.cxx
-
-attic/CbmTrdFindTracks.cxx  
-sim/CbmTrdTrackFinderIdeal.cxx  
-attic/CbmTrdFitTracks.cxx  
-sim/CbmTrdTrackFitterIdeal.cxx  
-#CbmTrdMatchTracks.cxx
-#CbmTrdDigiSorterTask.cxx
-#CbmTrdDigiRingSorter.cxx
-
 )
 
 IF (SSE_FOUND)

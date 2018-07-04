@@ -33,7 +33,6 @@ ${CBMROOT_SOURCE_DIR}/mvd
 ${CBMROOT_SOURCE_DIR}/trd/base
 ${CBMROOT_SOURCE_DIR}/trd/attic
 ${CBMROOT_SOURCE_DIR}/much/geo
-${CBMROOT_SOURCE_DIR}/trd/data
 ${CBMROOT_SOURCE_DIR}/tof/TofParam
 ${CBMROOT_SOURCE_DIR}/tof/TofData
 )
