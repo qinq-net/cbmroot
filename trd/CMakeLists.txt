@@ -27,6 +27,8 @@ ${CBMROOT_SOURCE_DIR}/data/global
 ${CBMROOT_SOURCE_DIR}/L1/vectors
 
 ${CBMROOT_SOURCE_DIR}/trd
+${CBMROOT_SOURCE_DIR}/trd/attic
+${CBMROOT_SOURCE_DIR}/trd/attic/reco
 ${CBMROOT_SOURCE_DIR}/trd/base
 ${CBMROOT_SOURCE_DIR}/trd/digi
 ${CBMROOT_SOURCE_DIR}/trd/param
@@ -62,14 +64,15 @@ mc/CbmTrd.cxx
 
 base/CbmGeoTrdPar.cxx 
 base/CbmTrdContFact.cxx   
-param/CbmTrdDigiPar.cxx
-param/CbmTrdCreateDigiPar.cxx
+
+attic/CbmTrdDigiPar.cxx
+attic/CbmTrdCreateDigiPar.cxx
 
 #digi/CbmTrdDigitizerMathieson.cxx 
-digi/CbmTrdDigitizerPRF.cxx
-digi/CbmTrdDigitizerPRF_TB.cxx
+attic/CbmTrdDigitizerPRF.cxx
+attic/CbmTrdDigitizerPRF_TB.cxx
 digi/CbmTrdDigitizer.cxx
-#digi/CbmTrdDigiWriteoutBuffer.cxx
+#attic/CbmTrdDigiWriteoutBuffer.cxx
 
 base/CbmTrdSPADIC.cxx
 
@@ -86,14 +89,14 @@ qa/CbmTrdHitProducerClusterQa.cxx
 qa/CbmTrdRecoQa.cxx
 qa/CbmTrdMCQa.cxx
 
-reco/CbmTrdHitProducerIdeal.cxx    
-reco/CbmTrdHitProducerSmearing.cxx
-reco/CbmTrdHitProducerDigi.cxx
+attic/reco/CbmTrdHitProducerIdeal.cxx    
+attic/reco/CbmTrdHitProducerSmearing.cxx
+attic/reco/CbmTrdHitProducerDigi.cxx
 #reco/CbmTrdClusterFinder.cxx
-reco/CbmTrdClusterFinderFast.cxx
-reco/CbmTrdClusterFinderDPB.cxx
-reco/CbmTrdHitProducerCluster.cxx
-#reco/CbmTrdSimpleHitProducerCluster.cxx
+attic/reco/CbmTrdClusterFinderFast.cxx
+attic/reco/CbmTrdClusterFinderDPB.cxx
+attic/reco/CbmTrdHitProducerCluster.cxx
+#attic/reco/CbmTrdSimpleHitProducerCluster.cxx
 
 base/CbmTrdUtils.cxx
 tools/CbmTrdElectronsTrainAnn.cxx
@@ -102,8 +105,8 @@ tools/CbmTrdTriangle.cxx
 
 data/CbmTrdRadiator.cxx  
 base/CbmTrdGas.cxx
-data/CbmTrdModule.cxx
-data/CbmTrdAsic.cxx
+attic/CbmTrdModule.cxx
+attic/CbmTrdAsic.cxx
 #beamtime/CbmTrdRawToDigiSpadic03.cxx
 
 #${ROCSYS}/include/spadic/Message.h
@@ -116,7 +119,7 @@ data/CbmTrdAsic.cxx
 #${ROCSYS}/beamtime/cern-oct12/go4/TCernOct12DetectorEvent.cxx
 #${ROCSYS}/beamtime/cern-oct12/go4/TBeamMonitorEvent.cxx
 
-CbmTrdFindTracks.cxx  
+attic/CbmTrdFindTracks.cxx  
 CbmTrdTrackFinderIdeal.cxx  
 CbmTrdFitTracks.cxx  
 CbmTrdTrackFitterIdeal.cxx  

@@ -24,7 +24,7 @@ ${CBMROOT_SOURCE_DIR}/rich/detector
 ${CBMROOT_SOURCE_DIR}/much/geo
 ${CBMROOT_SOURCE_DIR}/much/reco
 ${CBMROOT_SOURCE_DIR}/trd/mc
-${CBMROOT_SOURCE_DIR}/trd/digi
+${CBMROOT_SOURCE_DIR}/trd/attic
 ${CBMROOT_SOURCE_DIR}/tof/TofMC
 ${CBMROOT_SOURCE_DIR}/tof/TofDigi
 ${CBMROOT_SOURCE_DIR}/ecal

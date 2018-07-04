@@ -14,7 +14,7 @@ ${CBMROOT_SOURCE_DIR}/data/tof
 ${CBMROOT_SOURCE_DIR}/data/global
 
 ${CBMROOT_SOURCE_DIR}/trd/data
-${CBMROOT_SOURCE_DIR}/trd/param
+${CBMROOT_SOURCE_DIR}/trd/attic
 )
 
 include_directories( ${INCLUDE_DIRECTORIES})
