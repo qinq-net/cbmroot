@@ -9,10 +9,11 @@
 
 #include "FairTask.h"
 
+#include "TClonesArray.h"
+
 class CbmTrdDigiPar;
 class CbmTrdModule;
 class CbmTrdGeoHandler;
-class TClonesArray;
 class TH1D;
 class CbmTrdDigi;
 
