@@ -27,14 +27,15 @@ ${CBMROOT_SOURCE_DIR}/data/global
 ${CBMROOT_SOURCE_DIR}/L1/vectors
 
 ${CBMROOT_SOURCE_DIR}/trd
+${CBMROOT_SOURCE_DIR}/trd/sim
 ${CBMROOT_SOURCE_DIR}/trd/attic
 ${CBMROOT_SOURCE_DIR}/trd/attic/reco
 ${CBMROOT_SOURCE_DIR}/trd/base
-${CBMROOT_SOURCE_DIR}/trd/digi
+#${CBMROOT_SOURCE_DIR}/trd/digi
 ${CBMROOT_SOURCE_DIR}/trd/param
 ${CBMROOT_SOURCE_DIR}/trd/reco
 ${CBMROOT_SOURCE_DIR}/trd/tools
-${CBMROOT_SOURCE_DIR}/trd/data
+#${CBMROOT_SOURCE_DIR}/trd/data
 ${CBMROOT_SOURCE_DIR}/trd/beamtime
 
 )
@@ -60,7 +61,7 @@ link_directories( ${LINK_DIRECTORIES})
 set(SRCS
 base/CbmGeoTrd.cxx 
 
-mc/CbmTrd.cxx 		 
+sim/CbmTrd.cxx 		 
 
 base/CbmGeoTrdPar.cxx 
 base/CbmTrdContFact.cxx   
@@ -71,7 +72,7 @@ attic/CbmTrdCreateDigiPar.cxx
 #digi/CbmTrdDigitizerMathieson.cxx 
 attic/CbmTrdDigitizerPRF.cxx
 attic/CbmTrdDigitizerPRF_TB.cxx
-digi/CbmTrdDigitizer.cxx
+sim/CbmTrdDigitizer.cxx
 #attic/CbmTrdDigiWriteoutBuffer.cxx
 
 base/CbmTrdSPADIC.cxx
@@ -103,7 +104,7 @@ tools/CbmTrdElectronsTrainAnn.cxx
 base/CbmTrdGeoHandler.cxx
 tools/CbmTrdTriangle.cxx
 
-data/CbmTrdRadiator.cxx  
+sim/CbmTrdRadiator.cxx  
 base/CbmTrdGas.cxx
 attic/CbmTrdModule.cxx
 attic/CbmTrdAsic.cxx
@@ -120,9 +121,9 @@ attic/CbmTrdAsic.cxx
 #${ROCSYS}/beamtime/cern-oct12/go4/TBeamMonitorEvent.cxx
 
 attic/CbmTrdFindTracks.cxx  
-CbmTrdTrackFinderIdeal.cxx  
+sim/CbmTrdTrackFinderIdeal.cxx  
 CbmTrdFitTracks.cxx  
-CbmTrdTrackFitterIdeal.cxx  
+sim/CbmTrdTrackFitterIdeal.cxx  
 #CbmTrdMatchTracks.cxx
 #CbmTrdDigiSorterTask.cxx
 #CbmTrdDigiRingSorter.cxx
