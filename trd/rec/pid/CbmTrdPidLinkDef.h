@@ -6,6 +6,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class  CbmTrdElectronsTrainAnn+;
 #pragma link C++ class  CbmTrdSetTracksPidWkn+;
 #pragma link C++ class  CbmTrdSetTracksPidModWkn+;
 #pragma link C++ class  CbmTrdSetTracksPidLike+;

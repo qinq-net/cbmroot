@@ -49,16 +49,17 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
-${ROOT_LIBRARY_DIR}
-${FAIRROOT_LIBRARY_DIR}
-${Boost_LIBRARY_DIRS}
-${Vc_LIB_DIR}
-${KFParticle_LIB_DIR}
+  ${ROOT_LIBRARY_DIR}
+  ${FAIRROOT_LIBRARY_DIR}
+  ${Boost_LIBRARY_DIRS}
+  ${Vc_LIB_DIR}
+  ${KFParticle_LIB_DIR}
 ) 
 
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
+CbmTrdElectronsTrainAnn.cxx
 CbmTrdSetTracksPidWkn.cxx   
 CbmTrdSetTracksPidModWkn.cxx  
 CbmTrdSetTracksPidLike.cxx     

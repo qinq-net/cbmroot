@@ -2,7 +2,7 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
-add_subdirectory (pid)
+#add_subdirectory (rec/pid)
 
 Set(INCLUDE_DIRECTORIES
 # needed by run/FairMCBuffer.h
@@ -100,9 +100,9 @@ attic/reco/CbmTrdHitProducerCluster.cxx
 #attic/reco/CbmTrdSimpleHitProducerCluster.cxx
 
 base/CbmTrdUtils.cxx
-tools/CbmTrdElectronsTrainAnn.cxx
+#rec/pid/CbmTrdElectronsTrainAnn.cxx
 base/CbmTrdGeoHandler.cxx
-tools/CbmTrdTriangle.cxx
+attic/CbmTrdTriangle.cxx
 
 sim/CbmTrdRadiator.cxx  
 base/CbmTrdGas.cxx
@@ -122,7 +122,7 @@ attic/CbmTrdAsic.cxx
 
 attic/CbmTrdFindTracks.cxx  
 sim/CbmTrdTrackFinderIdeal.cxx  
-CbmTrdFitTracks.cxx  
+attic/CbmTrdFitTracks.cxx  
 sim/CbmTrdTrackFitterIdeal.cxx  
 #CbmTrdMatchTracks.cxx
 #CbmTrdDigiSorterTask.cxx
