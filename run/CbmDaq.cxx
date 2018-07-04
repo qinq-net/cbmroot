@@ -37,7 +37,7 @@ using std::stringstream;
 CbmDaq::CbmDaq(Double_t interval) : FairTask("Daq"),
                    fEventMode(kFALSE),
                    fTimeSliceLength(interval),
-                   fBufferTime(500.),
+                   fBufferTime(1000.),
                    fStoreEmptySlices(kFALSE),
                    fTimeEventPrevious(-1.),
                    fNofEvents(0),

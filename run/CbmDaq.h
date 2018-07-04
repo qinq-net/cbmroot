@@ -45,7 +45,7 @@ class CbmDaq : public FairTask
      ** By default, the DAQ will run in time-based mode. The event-based mode
      ** can be selected by the method SetEventMode.
      ** If the time-slice interval is negative (default), all data will be
-     ** written into one time-slice. Otherwise, time-slice of equal intervals
+     ** written into one time-slice. Otherwise, time-slices of equal lengths
      ** will be created.
      **/
     CbmDaq(Double_t interval = -1.);
@@ -73,6 +73,23 @@ class CbmDaq : public FairTask
      ** @value kTRUE if DAQ is in event-by-event mode
      **/
     Bool_t IsEventMode() { return fEventMode; }
+
+
+    /** @brief Set the DAQ buffer time
+     ** @param time  Buffer time [ns]
+     **
+     ** To guarantee time-ordering and correct sorting of digis into
+     ** time-slices, the DAQ writes digis into the output time-slice
+     ** only up to a maximum time, which is is time of the previous
+     ** event minus the buffer time. The buffer time takes into account
+     ** the disordered delivery of digis by the digitizers. It should
+     ** at least be the maximum dead time of all detectors plus
+     ** some safety margin accounting for the time resolution of the
+     ** detectors.
+     ** The current default of 1,000 ns corresponds to the STS with
+     ** dead time of 800 ns and time resolution of 5 ns.
+     **/
+    void SetBufferTime(Double_t time) { fBufferTime = time; }
 
 
     /** @brief Set event-by-event mode
