@@ -43,7 +43,6 @@
 #include "TGeoArb8.h"
 #include "TGeoBoolNode.h"
 #include "TGeoManager.h"
-#include "TStopwatch.h"
 
 #include "CbmGeoMuchPar.h"
 #include "CbmMuchGeoScheme.h"
@@ -1265,9 +1264,6 @@ void CbmL1::Reconstruct(CbmEvent* event)
   static int nevent=0;
   vFileEvent.clear();
 
-  TStopwatch timer;
-  timer.Start();
-
 
   if ( fTimesliceMode )
   {
@@ -1458,17 +1454,8 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
     }
   }
 
-  timer.Stop();
-  LOG(INFO) << "L1: read event; CPU  " << timer.CpuTime() << " s, real "
-      << timer.RealTime() << FairLogger::endl;
-  timer.Start();
-
   if( fVerbose>1 ) cout<<"L1 Track finder..."<<endl;
   algo->CATrackFinder();
-  timer.Stop();
-  LOG(INFO) << "L1: algo; CPU  " << timer.CpuTime() << " s, real "
-      << timer.RealTime() << FairLogger::endl;
-  timer.Start();
 
 // IdealTrackFinder();
      
@@ -1570,12 +1557,6 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
         exit(0);
     } while (symbol != '\n');
   }
-
-  timer.Stop();
-  LOG(INFO) << "L1: rest; CPU  " << timer.CpuTime() << " s, real "
-      << timer.RealTime() << FairLogger::endl;
-  timer.Start();
-
 }
 
 // -----   Finish CbmStsFitPerformanceTask task   -----------------------------
