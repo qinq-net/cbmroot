@@ -2,7 +2,8 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
-#add_subdirectory (rec/pid)
+add_subdirectory(rec/pid)
+add_subdirectory(qa) 
 
 Set(INCLUDE_DIRECTORIES
 # needed by run/FairMCBuffer.h
@@ -88,19 +89,6 @@ attic/CbmTrdFitTracks.cxx
 #rec/CbmTrdClusterFinder.cxx
 #attic/reco/CbmTrdSimpleHitProducerCluster.cxx
 #rec/pid/CbmTrdElectronsTrainAnn.cxx
-
-qa/CbmTrdHitProducerQa.cxx  
-qa/CbmTrdTracksPidQa.cxx
-qa/CbmTrdQa.cxx
-qa/CbmTrdHitDensityQa.cxx
-qa/CbmTrdHitRateQa.cxx
-qa/CbmTrdHitRateFastQa.cxx
-qa/CbmTrdOccupancyQa.cxx
-qa/CbmTrdDigitizerPRFQa.cxx
-qa/CbmTrdClusterizerFastQa.cxx
-qa/CbmTrdHitProducerClusterQa.cxx
-qa/CbmTrdRecoQa.cxx
-qa/CbmTrdMCQa.cxx
 )
 
 IF (SSE_FOUND)
