@@ -154,7 +154,8 @@ class CbmTofFindTracks : public FairTask
   static CbmTofFindTracks *fInstance;
   CbmTofTrackFinder* fFinder;    // Pointer to TrackFinder concrete class
   CbmTofTrackFitter* fFitter;    // Pointer to TrackFitter concrete class
-  TClonesArray* fTofHitArray;    // Input array of TOF hits
+  TClonesArray* fTofHitArrayIn;  // Input array of TOF hits
+  TClonesArray* fTofHitArray;    // Output array of recalibrated TOF hits
   TClonesArray* fTrackArray;     // Output array of CbmTofTracks 
   TClonesArray* fTofUHitArray;   // Output array of unused TOF hits
 

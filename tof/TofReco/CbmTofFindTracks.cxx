@@ -56,6 +56,7 @@ CbmTofFindTracks *CbmTofFindTracks::fInstance = 0;
 CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
     fFinder(NULL),
     fFitter(NULL),
+    fTofHitArrayIn(NULL),
     fTofHitArray(NULL),
     fTrackArray(NULL),
     fTofUHitArray(NULL),
@@ -166,6 +167,7 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
   : FairTask(name),
     fFinder(finder),
     fFitter(NULL),
+    fTofHitArrayIn(NULL),
     fTofHitArray(NULL),
     fTrackArray(NULL),
     fTofUHitArray(NULL),
@@ -305,9 +307,9 @@ InitStatus CbmTofFindTracks::Init()
   }
 
   // Get TOF hit Array
-  fTofHitArray
+  fTofHitArrayIn
     = (TClonesArray*) ioman->GetObject("TofHit");
-  if ( ! fTofHitArray) {
+  if ( ! fTofHitArrayIn) {
     cout << "-W- CbmTofFindTracks::Init: No TofHit array!"
 	 << endl;
     return kERROR;
@@ -479,7 +481,7 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
 	  if (fiBeamCounter !=0) 
 	     dVal = fChannelInfo->GetZ() * fTtTarg ; //  use calibration target value
 	  fhPullT_Smt_Off->SetBinContent(iDet+1,dVal);
-	  LOG(INFO)<<Form("Initialize det 0x%08x at %d with TOff %6.0f",
+	  LOG(INFO)<<Form("Initialize det 0x%08x at %d with TOff %6.2f",
 			   iUniqueId,iDet+1,dVal)
 		    <<FairLogger::endl;
 	}
@@ -753,6 +755,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 		    << FairLogger::endl;
 	   if (dFMeanError < 0.05) { // FIXME: hardwired constant 
 	     if(dRMS<RMSmin) dRMS=RMSmin;
+	     if(dRMS>fSIGT*3.0) dRMS=fSIGT*3.;
 	     fhPullT_Smt_Off->SetBinContent(ix+1,dVal);
 	     fhPullT_Smt_Width->SetBinContent(ix+1,dRMS);
 	   }
@@ -788,6 +791,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	 if(hpy->GetEntries()>100.){
 	   Double_t dRMS = TMath::Abs( hpy->GetRMS() );
 	   if(dRMS<fSIGX*0.5) dRMS=fSIGX*0.5;
+	   if(dRMS>fSIGX*3.0) dRMS=fSIGX*3.;
 	   fhPullX_Smt_Width->SetBinContent(ix+1,dRMS);
 
 	   LOG(INFO)<<"Update hPullX_Smt_Off "<<ix<<": "
@@ -822,6 +826,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	 if(hpy->GetEntries()>100.){
 	   Double_t dRMS = TMath::Abs( hpy->GetRMS() );
 	   if(dRMS<fSIGY*0.5) dRMS=0.5*fSIGY;
+	   if(dRMS>fSIGY*3.0) dRMS=fSIGY*3.;
 	   fhPullY_Smt_Width->SetBinContent(ix+1,dRMS);
 
 	   LOG(DEBUG1)<<"Update hPullY_Smt_Off "<<ix<<": "
@@ -905,6 +910,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 		  << FairLogger::endl;
 	 fhPullT_Smt_Off->SetBinContent(iRpcInd+1,dVal);
 	 if(dSig<fSIGT*0.5) dSig=0.5*fSIGT;
+	 if(dSig>fSIGT*3.0) dSig=fSIGT*3.;
 	 fhPullT_Smt_Width->SetBinContent(iRpcInd+1,dSig);
        } else
        {
@@ -942,7 +948,9 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
   ResetStationsFired();
   if(NULL != fTofUHitArray) fTofUHitArray->Clear("C");
   if(NULL != fTrackArray)   fTrackArray->Delete();  // reset
-
+  // copy fTofHitArrayIn to fTofHitArray
+  if(NULL != fTofHitArray)  fTofHitArray->Clear("C");
+  fTofHitArray = (TClonesArray*)fTofHitArrayIn->Clone();
   // recalibrate hits and count trackable hits
   for (Int_t iHit=0; iHit<fTofHitArray->GetEntries(); iHit++){
     CbmTofHit* pHit = (CbmTofHit*) fTofHitArray->At(iHit);
@@ -952,20 +960,19 @@ void CbmTofFindTracks::Exec(Option_t* /*opt*/)
     if ( (iDetId & 0x0000F00F) == 0x00005006 )     // modify diamond position 
     {
       TVector3 hitPos(0.,0.,0.);
-      TVector3 hitPosErr(15.,15.,5.0);  // including positioning uncertainty 
 //      TVector3 hitPosErr(1.,1.,5.0);  // including positioning uncertainty 
       pHit->SetPosition(hitPos);
-      pHit->SetPositionError(hitPosErr);
-    } else {
-      Double_t dSIGX=GetSigX(iDetId);
-      if(dSIGX == 0.) dSIGX = fSIGX;
-      Double_t dSIGY=GetSigY(iDetId);
-      if(dSIGY == 0.) dSIGY = fSIGY;
-      Double_t dSIGZ=GetSigZ(iDetId);
-      if(dSIGZ == 0.) dSIGZ = fSIGZ;
-      TVector3 hitPosErr(dSIGX,dSIGY,dSIGZ);  // include positioning uncertainty 
+      TVector3 hitPosErr(1.,1.,1.0);  // including positioning uncertainty 
       pHit->SetPositionError(hitPosErr);
     } 
+    Double_t dSIGX=GetSigX(iDetId);
+    if(dSIGX == 0.) dSIGX = fSIGX;
+    Double_t dSIGY=GetSigY(iDetId);
+    if(dSIGY == 0.) dSIGY = fSIGY;
+    Double_t dSIGZ=GetSigZ(iDetId);
+    if(dSIGZ == 0.) dSIGZ = fSIGZ;
+    TVector3 hitPosErr(dSIGX,dSIGY,dSIGZ);  // include positioning uncertainty 
+    pHit->SetPositionError(hitPosErr); 
 
     Int_t iRpcInd= fMapRpcIdParInd[iDetId];
     Double_t dTcor=0.;
@@ -1373,6 +1380,7 @@ void CbmTofFindTracks::FillHistograms(){
 	;
       }
 
+      if(dTt > 0.) 
       for (Int_t iSt=0; iSt<fNTofStations; iSt++){
 	Int_t iH  = pTrk->GetStationHitIndex(fMapStationRpcId[iSt]); // Station Hit index
 	if(iH<0) continue;                                           // Station not part of tracklet
