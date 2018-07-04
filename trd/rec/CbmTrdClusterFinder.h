@@ -77,7 +77,7 @@ class CbmTrdClusterFinder : public FairTask
   
   CbmTrdGeoHandler* fGeoHandler; //!
 
-  static const Float_t ChargeTH = 0;// 5e-03;
+  static constexpr Float_t ChargeTH = 0;// 5e-03;
 
   std::map<Int_t, std::set<Int_t> >::iterator mapIt;
   std::set<Int_t>::iterator it;

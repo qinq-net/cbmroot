@@ -94,7 +94,7 @@ InitStatus CbmTrdClusterFinder::ReInit(){
   fDigiPar = (CbmTrdDigiPar*)(rtdb->getContainer("CbmTrdDigiPar"));
   
   // new call needed when parameters are initialized from ROOT file
-  fDigiPar->Initialize();
+//  fDigiPar->Initialize();
 
   return kSUCCESS;
 }
@@ -119,7 +119,7 @@ InitStatus CbmTrdClusterFinder::Init()
   fGeoHandler->Init();
   
   // new call needed when parameters are initialized from ROOT file
-  fDigiPar->Initialize();
+//  fDigiPar->Initialize();
 
   return kSUCCESS;
   
@@ -153,8 +153,8 @@ void CbmTrdClusterFinder::SimpleClustering()
 
     CbmTrdCluster* cluster = new ((*fClusters)[size]) CbmTrdCluster();
     cluster->AddDigi(iDigi);
-    cluster->SetCharge(digi->GetCharge());
-    cluster->SetMaxCharge(digi->GetCharge());
+ //   cluster->SetCharge(digi->GetCharge());
+  //  cluster->SetMaxCharge(digi->GetCharge());
   }
 }
 // --------------------------------------------------------------------
@@ -343,12 +343,12 @@ void CbmTrdClusterFinder::SortDigis()
       {
 	//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	//Get the sectorId 
-	sectorId = digi->GetDetId();
-	moduleId = fGeoHandler->GetModuleId(sectorId);
+//	sectorId = digi->GetDetId();
+//	moduleId = fGeoHandler->GetModuleId(sectorId);
 
 	//cout << moduleId << endl;
-	iRow = digi->GetRow();
-	iCol = digi->GetCol();
+//	iRow = digi->GetRow();
+//	iCol = digi->GetCol();
 	fDigiCol[iDigi] = iCol;
 	fDigiRow[iDigi] = iRow;
 	fDigiCharge[iDigi] = digi->GetCharge();

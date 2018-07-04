@@ -2,9 +2,10 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
-add_subdirectory(rec/pid)
+#add_subdirectory(rec/pid)
 add_subdirectory(qa) 
 add_subdirectory(sim)
+add_subdirectory(rec)
 
 Set(INCLUDE_DIRECTORIES
 # needed by run/FairMCBuffer.h
