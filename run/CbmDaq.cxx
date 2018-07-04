@@ -243,6 +243,10 @@ void CbmDaq::Exec(Option_t*) {
 // =====   Fill current time slice with data from buffers   ==================
 Int_t CbmDaq::FillTimeSlice(Double_t fillTime, Bool_t limit) {
 
+  // --- Call user-defined method FillCustomData
+  for(auto it = fDigitizers.begin(); it != fDigitizers.end(); it++)
+    if ( it->second ) it->second->FillCustomData(fillTime, limit);
+
   Int_t nDigis = 0;
   if ( limit ) LOG(DEBUG) << fName << ": Fill data up to t = " << fillTime
       << " into current time slice" << FairLogger::endl;
@@ -290,10 +294,6 @@ Int_t CbmDaq::FillTimeSlice(Double_t fillTime, Bool_t limit) {
   LOG(DEBUG) << GetName() << ": Filled " << nDigis << " digis into "
       << fTimeSlice->ToString() << FairLogger::endl;
   fNofDigis += nDigis;
-
-  // --- Call user-defined method FillCustomData
-  for(auto it = fDigitizers.begin(); it != fDigitizers.end(); it++)
-    if ( it->second ) it->second->FillCustomData(fillTime, limit);
 
   return nDigis;
 }

@@ -123,8 +123,19 @@ Int_t CbmL1StsTrackFinder::DoFind() {
   CbmL1 *L1 = CbmL1::Instance();
   if( !L1 ) return 0;
 
+  TStopwatch timer;
+  timer.Start();
   L1->Reconstruct();
+  timer.Stop();
+  LOG(INFO) << "L1TrackFinder: reconstruct; CPU  " << timer.CpuTime() << " s, real "
+      << timer.RealTime() << FairLogger::endl;
+  timer.Start();
+
   int ntracks = CopyL1Tracks();
+  timer.Stop();
+  LOG(INFO) << "L1TrackFinder: copy tracks; CPU  " << timer.CpuTime() << " s, real "
+      << timer.RealTime() << FairLogger::endl;
+  timer.Start();
 
   return ntracks;
 }
@@ -138,8 +149,18 @@ Int_t CbmL1StsTrackFinder::FindTracks(CbmEvent* event) {
   CbmL1 *l1 = CbmL1::Instance();
   if( ! l1 ) return 0;
 
+  TStopwatch timer;
+  timer.Start();
   l1->Reconstruct(event);
+  timer.Stop();
+  LOG(INFO) << "L1TrackFinder: L1 reconstruct; CPU  " << timer.CpuTime() << " s, real "
+      << timer.RealTime() << FairLogger::endl;
+
+  timer.Start();
   int nTracks = CopyL1Tracks(event);
+  timer.Stop();
+  LOG(INFO) << "L1TrackFinder: copy tracks; CPU  " << timer.CpuTime() << " s, real "
+      << timer.RealTime() << FairLogger::endl;
 
   return nTracks;
 }
