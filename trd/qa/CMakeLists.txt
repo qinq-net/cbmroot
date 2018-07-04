@@ -66,7 +66,7 @@ ENDIF (SSE_FOUND)
 set(LINKDEF CbmTrdQaLinkDef.h)
 Set(LIBRARY_NAME CbmTrdQa)
 Set(DEPENDENCIES
-    CbmBase CbmData Base CbmTrd
+    CbmBase CbmData Base CbmTrd CbmTrdSim
 #    CbmBase CbmData Base CbmTrd CbmTrdSim CbmTrdRec
 )
 

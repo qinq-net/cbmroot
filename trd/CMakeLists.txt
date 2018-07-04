@@ -4,6 +4,7 @@
 
 add_subdirectory(rec/pid)
 add_subdirectory(qa) 
+add_subdirectory(sim)
 
 Set(INCLUDE_DIRECTORIES
 # needed by run/FairMCBuffer.h
@@ -63,11 +64,11 @@ base/CbmTrdUtils.cxx
 base/CbmTrdGeoHandler.cxx
 base/CbmTrdGas.cxx
 
-sim/CbmTrd.cxx 		 
-sim/CbmTrdDigitizer.cxx
+#sim/CbmTrd.cxx 		 
+#sim/CbmTrdDigitizer.cxx
 sim/CbmTrdRadiator.cxx  
-sim/CbmTrdTrackFinderIdeal.cxx  
-sim/CbmTrdTrackFitterIdeal.cxx  
+#sim/CbmTrdTrackFinderIdeal.cxx  
+#sim/CbmTrdTrackFitterIdeal.cxx  
 
 attic/CbmTrdDigiPar.cxx
 attic/CbmTrdCreateDigiPar.cxx
