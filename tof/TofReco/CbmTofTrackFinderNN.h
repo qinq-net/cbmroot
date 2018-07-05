@@ -49,6 +49,7 @@ public:
 */
 
    void UpdateTrackList( Int_t         iTrk );
+   void UpdateTrackList( CbmTofTracklet*  pTrk );
 
    inline void SetFitter    (CbmTofTrackFitter* Fitter )   { fFitter     = Fitter;}
    inline void SetMaxTofTimeDifference ( Double_t val ){ fMaxTofTimeDifference = val;}
