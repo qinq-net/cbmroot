@@ -204,6 +204,7 @@ fRandom3(new TRandom3(0)),
 fCuts(),
 fHistoList(),
 fNofHitsInRingMap(),
+fh_mc_signal_mom_angle(),
 fh_mc_mother_pdg(NULL),
 fh_acc_mother_pdg(NULL),
 fh_signal_pmtXY(NULL),
@@ -316,6 +317,10 @@ void CbmAnaDielectronTask::InitHists()
 {
     fHistoList.clear();
     
+    //MC Pairs
+    fh_mc_signal_mom_angle = new TH2D("fh_mc_signal_mom_angle", "fh_mc_signal_mom_angle; #sqrt{p_{e^{#pm}} p_{e^{#mp}}} [GeV/c]; #theta_{e^{+},e^{-}} [deg] ;Counter", 100, 0., 5., 1000, 0., 50.);
+    fHistoList.push_back(fh_mc_signal_mom_angle);
+    
     // Mother PDG
     fh_mc_mother_pdg = new TH1D("fh_mc_mother_pdg", "fh_mc_mother_pdg; Pdg code; Particles per event", 7000, -3500., 3500.);
     fHistoList.push_back(fh_mc_mother_pdg);
@@ -372,7 +377,7 @@ void CbmAnaDielectronTask::InitHists()
     
     CreateSourceTypesH1(fh_richann, "fh_richann", "ANN output", "Yield", 100, -1.1, 1.1);
     CreateSourceTypesH1(fh_trdann, "fh_trdann", "ANN output", "Yield", 100, -1.1, 1.1);
-    CreateSourceTypesH2(fh_tofm2, "fh_tofm2", "P [GeV/c]", "m^{2} [GeV/c^{2}]^{2}", "Yield", 100, 0., 4., 600, -0.00001, 0.0001);
+    CreateSourceTypesH2(fh_tofm2, "fh_tofm2", "P [GeV/c]", "m^{2} [GeV/c^{2}]^{2}", "Yield", 100, 0., 4., 600, -0.000001, 0.00001);
     
     // Distributions of analysis cuts.
     // Transverse momentum of tracks.
@@ -689,6 +694,19 @@ void CbmAnaDielectronTask::MCPairs()
         Bool_t isMcGammaElectron = CbmLmvmUtils::IsMcGammaElectron(mctrack, fMCTracks);
         if (isMcSignalElectron) {
             fh_source_mom[kSignal][kMc]->Fill(mom, fWeight);
+            for(Int_t iMc2 = 0; iMc2 < nMcTracks; iMc2++){
+                if(i == iMc2) continue;
+                CbmMCTrack* mctrack2 = (CbmMCTrack*) fMCTracks->At(iMc2);
+                Int_t motherIdMc2 = mctrack2->GetMotherId();
+                if (motherId == motherIdMc2 && CbmLmvmUtils::IsMcSignalElectron(mctrack2)) {
+                    CbmLmvmKinematicParams pKin = CbmLmvmKinematicParams::KinematicParamsWithMcTracks(mctrack,mctrack2);
+                    Double_t angle = pKin.fAngle;
+                    Double_t pMc = mctrack->GetP();
+                    Double_t pMc2 = mctrack2->GetP();
+                    Double_t sqrtPMc = TMath::Sqrt(pMc*pMc2);
+                    fh_mc_signal_mom_angle->Fill(sqrtPMc, angle);
+                }
+            }
         }
         if (isMcGammaElectron) {
             TVector3 v;
@@ -1475,6 +1493,7 @@ void CbmAnaDielectronTask::CheckTopologyCut(
     Int_t nCand = fCandidates.size();
     Int_t nCutCand = cutCandidates.size();
     for (Int_t iP = 0; iP < nCand; iP++){
+    
         if (fCandidates[iP].fChi2Prim < fCuts.fChiPrimCut && fCandidates[iP].fIsElectron){
             angles.clear();
             mom.clear();
@@ -1537,6 +1556,13 @@ void CbmAnaDielectronTask::CheckTopologyCut(
             }
         }//if electron
     } //iP
+/*    
+    cout << "Opening angles between cand and cutCand: " << endl;
+    for(int i = 0; i < angles.size(); i++){
+        cout << angles[i] << ", ";
+    }
+    cout << endl;
+*/
 }
 
 void CbmAnaDielectronTask::CalculateNofTopologyPairs(

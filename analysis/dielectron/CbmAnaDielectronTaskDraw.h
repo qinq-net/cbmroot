@@ -179,6 +179,11 @@ private:
      * Draw Mother PDG
      */
     void DrawMotherPdg();
+    
+    /**
+    * Draw PP Angle hist for MC signal
+    */
+    void DrawPPAngleMCSignal();
 
     // Draw distribution and significance of 1D analysis cut
     void Draw1DSourceTypes(

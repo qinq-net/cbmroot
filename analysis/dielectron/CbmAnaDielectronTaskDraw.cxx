@@ -81,6 +81,7 @@ void CbmAnaDielectronTaskDraw::DrawHistFromFile(
    DrawMomentumDistributionAll();
    DrawMomentumEfficiencyAll();
    DrawMotherPdg();
+//   DrawPPAngleMCSignal();
    DrawSourcesBgPairsAll();
    DrawGammaVertex();
    DrawCutDistributions();
@@ -125,11 +126,17 @@ TH1D* CbmAnaDielectronTaskDraw::H1(
 {
    return (TH1D*) fHM->H1(name);
 }
-
+/*
 TH2D* CbmAnaDielectronTaskDraw::H2(
       const string& name)
 {
    return (TH2D*) fHM->H1(name);
+}
+*/
+TH2D* CbmAnaDielectronTaskDraw::H2(
+      const string& name)
+{
+   return (TH2D*) fHM->H2(name);
 }
 
 void CbmAnaDielectronTaskDraw::DrawEfficiencyOnHist(
@@ -387,6 +394,12 @@ void CbmAnaDielectronTaskDraw::DrawMotherPdg()
 {
    TCanvas *c = fHM->CreateCanvas("lmvm_mother_pdg", "lmvm_mother_pdg", 500, 500);
    DrawH1({H1("fh_mc_mother_pdg"), H1("fh_acc_mother_pdg")}, {"MC", "acc"}, kLinear, kLog, true, 0.7, 0.7, 0.99, 0.99);
+}
+
+void CbmAnaDielectronTaskDraw::DrawPPAngleMCSignal()
+{
+   TCanvas *c = fHM->CreateCanvas("mc_signal_mom_angle","mc_signal_mom_angle", 500, 500);
+   DrawH2(H2("fh_mc_signal_mom_angle")); 
 }
 
 void CbmAnaDielectronTaskDraw::DrawPmtXY()

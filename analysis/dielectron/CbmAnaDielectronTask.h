@@ -322,6 +322,8 @@ private:
 
     // Number of hits in the MC RICH ring
     std::map<Int_t, Int_t> fNofHitsInRingMap;
+    
+   TH2D* fh_mc_signal_mom_angle; // angle vs. sqrt(mom1*mom2) with MCTracks
 
    TH1D* fh_mc_mother_pdg; //mother pdg code for e-/e+
    TH1D* fh_acc_mother_pdg; //mother pdg code for accepted e-/e+
