@@ -1079,7 +1079,7 @@ void CbmTofFindTracks::CreateHistograms(){
   
   fhTrackingTimeNhits  =  new TH2F(  Form("hTrackingTimeNhits"),
 			       Form("Tracking Time; NHits; #Deltat (s)"),
-			       100, 0, 200, 50, 0, 0.1);
+			       100, 0, 200, 50, 0, 0.05);
 
   fhTrklMulNhits =  new TH2F(  Form("hTrklMulNhits"),
 			       Form("Tracklet Multiplicity; NHits; NTracklet"),

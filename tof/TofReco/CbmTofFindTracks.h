@@ -118,6 +118,7 @@ class CbmTofFindTracks : public FairTask
   inline Int_t GetTypeStation(Int_t i) { return fTypeStation[i]; }
   inline Int_t GetCorMode   ()  const  { return fiCorMode;}
   inline Int_t GetBeamCounter() const  { return fiBeamCounter;}
+  inline Int_t GetEventNumber() const  { return fiEvent;}
   inline Double_t  GetTtTarg()  const  { return fTtTarg; }
 
   inline Double_t GetSigT() const  { return fSIGT;}
