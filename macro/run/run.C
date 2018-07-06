@@ -6,11 +6,6 @@ void run()
   timer.Start();
   gDebug=0;
 
-  gSystem->Load("libCbmTrd");
-  exit(0);
-
-
-
   // -----  Geometries  -----------------------------------------------------
   TString caveGeom   = "cave.geo";
   CbmTarget* target = new CbmTarget("Gold", 0.025);
@@ -61,7 +56,6 @@ void run()
   Magnet->SetGeometryFileName(magnetGeom);
   fRun->AddModule(Magnet);
   
-/*
   FairDetector *Sts= new CbmStsMC(kTRUE);
   Sts->SetGeometryFileName(stsGeom);
   fRun->AddModule(Sts);
@@ -73,7 +67,6 @@ void run()
   FairDetector *Rich= new CbmRich("RICH", kTRUE);
   Rich->SetGeometryFileName(richGeom);
   fRun->AddModule(Rich);
-*/  
 
   FairDetector *Tof= new CbmTof("TOF", kTRUE );
   Tof->SetGeometryFileName(tofGeom);

@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------
+#// --------------------------------------------------------------------------
 //                                                                           
 // Macro for testing the trd digitizer and hit producer                      
 //                                                                           
@@ -115,23 +115,20 @@ void trd_digi1(Int_t nEvents = 1,
   // =========================================================================
   // ===                     TRD local reconstruction                      ===
   // =========================================================================
+	
+  CbmTrdRadiator *radiator = new CbmTrdRadiator(kTRUE,"K++");
+  FairTask* trdDigi = new CbmTrdDigitizer(radiator);
+  run->AddTask(trdDigi);
 
-  // Update of the values for the radiator F.U. 17.08.07
-  Int_t   trdNFoils = 130;    // number of polyethylene foils
-  Float_t trdDFoils = 0.0013; // thickness of 1 foil [cm]
-  Float_t trdDGap   = 0.02;   // thickness of gap between foils [cm]
-  Bool_t  simpleTR  = kTRUE;  // use fast and simple version for TR production
+  Double_t triggerThreshold = 0.5e-6;   // SIS100
+  CbmTrdClusterFinder* trdCluster = new CbmTrdClusterFinder();
+  trdCluster->SetNeighbourEnable(true, false);
+  trdCluster->SetMinimumChargeTH(triggerThreshold);
+  trdCluster->SetRowMerger(true);
+  run->AddTask(trdCluster);
 
-  CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR, trdNFoils, trdDFoils, trdDGap);
-
-  CbmTrdDigitizer* trdDigitizer = new CbmTrdDigitizer(radiator);     
-  run->AddTask(trdDigitizer);                                                
-
-  CbmTrdHitProducerDigi* trdHitProd = new CbmTrdHitProducerDigi(); 
-  run->AddTask(trdHitProd);                                                  
-
-  CbmTrdHitProducerQa* trdHitProdQa = new CbmTrdHitProducerQa(); 
-  run->AddTask(trdHitProdQa);                                                  
+  CbmTrdHitProducer* trdHit = new CbmTrdHitProducer();
+  run->AddTask(trdHit);
 
   // -------------------------------------------------------------------------
   // ===                 End of TRD local reconstruction                   ===

@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------
+#// --------------------------------------------------------------------------
 //
 // Macro for reconstruction of simulated raw data
 //
@@ -76,10 +76,14 @@ void run_reco_event(
 
   // - TRD digitisation parameters
   if ( CbmSetup::Instance()->GetGeoTag(kTrd, geoTag) ) {
-  	TObjString* trdFile = new TObjString(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
-  	parFileList->Add(trdFile);
-    std::cout << "-I- " << myName << ": Using parameter file "
-    		      << trdFile->GetString() << std::endl;
+    const Char_t *npar[4]={"asic", "digi", "gas", "gain"};
+    TObjString* trdParFile(NULL);
+    for(Int_t i(0); i<4; i++){
+      trdParFile = new TObjString(srcDir + "/parameters/trd/trd_" + geoTag + "."+npar[i]+".par");
+      parFileList->Add(trdParFile);
+      std::cout << "-I- " << myName << ": Using parameter file "
+              << trdParFile->GetString() << std::endl;
+    }
   }
 
   // - TOF digitisation parameters
