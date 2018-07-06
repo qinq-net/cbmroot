@@ -147,9 +147,7 @@ InitStatus CbmTrdClusterFinder::Init()
   
   fDigis =(TClonesArray *)  ioman->GetObject("TrdDigi");
   if ( ! fDigis ) {
-    cout << "-W CbmTrdHitProducerDigi::Init: No TrdDigi array!" << endl;
-    cout << "                            Task will be inactive" << endl;
-    return kERROR;
+    LOG(FATAL) << "No TrdDigi array found." << FairLogger::endl;
   }
   
   fClusters = new TClonesArray("CbmTrdCluster", 100);
