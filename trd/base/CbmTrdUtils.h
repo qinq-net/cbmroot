@@ -1,20 +1,17 @@
 #ifndef CBMTRDUTILS_H
 #define CBMTRDUTILS_H 1
 
-#include "TH1.h"
-#include "TH2.h"
-#include "TH3.h"
-#include "TProfile.h"
-#include "TLegend.h"
-#include "TString.h"
-#include "TPaveText.h"
-#include "TColor.h"
-#include <iostream>
+#include <TString.h>
 #include <map>
-#include "CbmTrdModule.h"
-#include "CbmTrdDigiPar.h"
-#include "TPolyLine.h"
 
+class TH1;
+class TH2;
+class TH3;
+class TProfile;
+class TLegend;
+class TPolyLine;
+class CbmTrdParSetDigi;
+class CbmTrdParModDigi;
 class CbmTrdUtils
 {
  public:
@@ -24,13 +21,13 @@ class CbmTrdUtils
   void InitColorVector(Bool_t logScale, Double_t min, Double_t max);
   Int_t GetColorCode(Double_t value);
   void Statusbar(Int_t i, Int_t n);
-  Int_t GetModuleType(Int_t moduleAddress, CbmTrdModule *fModuleInfo, CbmTrdDigiPar *fDigiPar);
+  Int_t GetModuleType(Int_t moduleAddress, CbmTrdParModDigi *fModuleInfo, CbmTrdParSetDigi *fDigiPar);
   void NiceLegend(TLegend *l);
   void NiceTProfile(TProfile *h, Int_t color, Int_t mStyle, Int_t mSize, TString xTitle, TString yTitle) ;
   void NiceTH3(TH3 *h, Int_t color, Int_t mStyle, Int_t mSize, TString xTitle, TString yTitle, TString zTitle);
   void NiceTH2(TH2 *h, Int_t color, Int_t mStyle, Int_t mSize, TString xTitle, TString yTitle, TString zTitle);
   void NiceTH1(TH1 *h, Int_t color, Int_t mStyle, Int_t mSize, TString xTitle, TString yTitle);
-  void CreateLayerView(std::map<Int_t/*moduleAddress*/, TH1*>& Map, CbmTrdModule *fModuleInfo, CbmTrdDigiPar *fDigiPar, const TString folder, const TString pics, const TString zAxisTitle, const Double_t fmax, const Double_t fmin, const Bool_t logScale);
+  void CreateLayerView(std::map<Int_t/*moduleAddress*/, TH1*>& Map, CbmTrdParModDigi *fModuleInfo, CbmTrdParSetDigi *fDigiPar, const TString folder, const TString pics, const TString zAxisTitle, const Double_t fmax, const Double_t fmin, const Bool_t logScale);
   TPolyLine *CreateTriangularPad(Int_t column, Int_t row, Double_t value, Double_t min_range, Double_t max_range, Bool_t logScale);
   TPolyLine *CreateRectangularPad(Int_t column, Int_t row, Double_t value, Double_t min_range, Double_t max_range, Bool_t logScale);
   static TString GetGeantName(Int_t GeantId) {
@@ -135,106 +132,7 @@ class CbmTrdUtils
     else
       return (TString)"not known";
   };
-  static Int_t PdgToGeant(Int_t PdgCode){
-    if (PdgCode == 22)
-      return 1;
-    if (PdgCode == -11)
-      return 2;
-    if (PdgCode == 11)
-      return 3;
-    if (PdgCode == 12 || PdgCode == 14 || PdgCode == 16)
-      return 4;
-    if (PdgCode == -13)
-      return 5;
-    if (PdgCode == 13)
-      return 6;
-    if (PdgCode == 111)
-      return 7;
-    if (PdgCode == 211)
-      return 8;
-    if (PdgCode == -211)
-      return 9;
-    if (PdgCode == 130)
-      return 10;
-    if (PdgCode == 321)
-      return 11;
-    if (PdgCode == -321)
-      return 12;
-    if (PdgCode == 2112)
-      return 13;
-    if (PdgCode == 2212)
-      return 14;
-    if (PdgCode == -2212)
-      return 15;
-    if (PdgCode == 310)
-      return 16;
-    if (PdgCode == 221)
-      return 17;
-    if (PdgCode == 3122)
-      return 18;
-    if (PdgCode == 3222)
-      return 19;
-    if (PdgCode == 3212)
-      return 20;
-    if (PdgCode == 3112)
-      return 21;
-    if (PdgCode == 3322)
-      return 22;
-    if (PdgCode == 3312)
-      return 23;
-    if (PdgCode == 3332)
-      return 24;
-    if (PdgCode == -2112)
-      return 25;
-    if (PdgCode == -3122)
-      return 26;
-    if (PdgCode == -3112)
-      return 27;
-    if (PdgCode == -3212)
-      return 28;
-    if (PdgCode == -3322)
-      return 30;
-    if (PdgCode == -3312)
-      return 31;
-    if (PdgCode == -3332)
-      return 32;
-    if (PdgCode == -15)
-      return 33;
-    if (PdgCode == 15)
-      return 34;
-    if (PdgCode == 411)
-      return 35;
-    if (PdgCode == -411)
-      return 36;
-    if (PdgCode == 421)
-      return 37;
-    if (PdgCode == -412)
-      return 38;
-    if (PdgCode == 431)
-      return 39;
-    if (PdgCode == -431)
-      return 40;
-    if (PdgCode == 4122)
-      return 41;
-    if (PdgCode == 24)
-      return 42;
-    if (PdgCode == -24)
-      return 43;  
-    if (PdgCode == 23)
-      return 44;
-    if (PdgCode == 50000050)
-      return 45;
-    if (PdgCode == 1000010020)
-      return 46;
-    if (PdgCode == 1000010030)
-      return 47;
-    if (PdgCode == 1000020040)
-      return 48;
-    //if (PdgCode == -1)
-    //return 49;
-    std::cout << PdgCode << std::endl;
-    return 49;
-  };
+  static Int_t PdgToGeant(Int_t PdgCode);
  private:
   std::vector<Int_t> fColors;
   std::vector<Double_t> fZLevel;

@@ -1,11 +1,13 @@
 #include "CbmTrdQa.h"
-#include "CbmTrdDigiPar.h"
+#include "CbmTrdParSetDigi.h"
+#include "CbmTrdParModDigi.h"
+#include "CbmTrdParSetGeo.h"
+#include "CbmTrdParModGeo.h"
 #include "CbmMCTrack.h"
 #include "CbmTrdPoint.h"
 #include "CbmTrdDigi.h"
 #include "CbmTrdCluster.h"
 #include "CbmTrdHit.h"
-#include "CbmTrdModule.h"
 #include "CbmTrdGeoHandler.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
@@ -29,10 +31,10 @@
 #include <iostream>
 #include <cmath>
 
-#include "CbmTrdDigitizer.h"
-#include "CbmTrdDigitizerPRF.h"
-#include "CbmTrdClusterFinderFast.h"
-#include "CbmTrdHitProducerCluster.h"
+//#include "CbmTrdDigitizer.h"
+// #include "CbmTrdDigitizerPRF.h"
+// #include "CbmTrdClusterFinderFast.h"
+// #include "CbmTrdHitProducerCluster.h"
 #include "CbmTrdUtils.h"
 #include "CbmTrdRadiator.h"
 
@@ -55,7 +57,7 @@ CbmTrdQa::CbmTrdQa(const char* /*name*/, const char* /*title*/, const char *geo,
     fClusters(NULL),
     fHits(NULL),
     fDigiPar(NULL),
-    fModuleInfo(NULL),
+    fGeoPar(NULL),
     fGeoHandler(new CbmTrdGeoHandler()),
     fLayerMap(),
     fLayerMapIt(),
@@ -324,14 +326,15 @@ void CbmTrdQa::SetParContainers()
     // Get Base Container
     FairRunAna* ana = FairRunAna::Instance();
     FairRuntimeDb* rtdb=ana->GetRuntimeDb();
-    fDigiPar = (CbmTrdDigiPar*)
-               (rtdb->getContainer("CbmTrdDigiPar"));
+  fDigiPar = (CbmTrdParSetDigi*)(rtdb->getContainer("CbmTrdParSetDigi")); 
+  fGeoPar = (CbmTrdParSetGeo*)(rtdb->getContainer("CbmTrdParSetGeo")); 
 }
 InitStatus CbmTrdQa::ReInit()
 {
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();  
-  fDigiPar = (CbmTrdDigiPar*)(rtdb->getContainer("CbmTrdDigiPar")); 
+  fDigiPar = (CbmTrdParSetDigi*)(rtdb->getContainer("CbmTrdParSetDigi")); 
+  fGeoPar = (CbmTrdParSetGeo*)(rtdb->getContainer("CbmTrdParSetGeo")); 
 
   return kSUCCESS;
 }
@@ -764,49 +767,50 @@ void CbmTrdQa::Exec(Option_t*)
       //PDG = track->GetPdgCode();
       nStsPoints = track->GetNPoints(kSts);
       //fStsTrdPoints->Fill(track->GetNPoints(kTrd),track->GetNPoints(kSts));
-      fModuleInfo = fDigiPar->GetModule(moduleAddress);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(moduleAddress);
       if (fModuleGhostMap.find(moduleAddress) == fModuleGhostMap.end()){
-	title.Form("G%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
+	title.Form("G%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleGeo->GetX(),fModuleGeo->GetY(),fModuleGeo->GetZ());
 	fModuleGhostMap[moduleAddress] = new TH1I(title,title,200,0,200);
 	fModuleGhostMap[moduleAddress]->SetXTitle("left over points / all points [%]");
 	fModuleGhostMap[moduleAddress]->SetYTitle("#");
-	title.Form("L%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
+	title.Form("L%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleGeo->GetX(),fModuleGeo->GetY(),fModuleGeo->GetZ());
 	fModuleLostMap[moduleAddress]  = new TH1I(title,title,200,0,200);
 	fModuleLostMap[moduleAddress]->SetXTitle("left over hits / all points [%]");
 	fModuleLostMap[moduleAddress]->SetYTitle("#");
-	title.Form("E%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
+	title.Form("E%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleGeo->GetX(),fModuleGeo->GetY(),fModuleGeo->GetZ());
 	fModuleEfficiencyMap[moduleAddress]  = new TH1I(title,title,200,0,200);
 	fModuleEfficiencyMap[moduleAddress]->SetXTitle("found point hit pairs / all points [%]");
 	fModuleEfficiencyMap[moduleAddress]->SetYTitle("#");
-	title.Form("M%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
+	title.Form("M%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleGeo->GetX(),fModuleGeo->GetY(),fModuleGeo->GetZ());
 	fModuleMultiPointMap[moduleAddress]  = new TH1I(title,title,200,0,200);
 	fModuleMultiPointMap[moduleAddress]->SetXTitle("multi point per channel / all points [%]");
 	fModuleMultiPointMap[moduleAddress]->SetYTitle("#");
-	title.Form("D%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
+	title.Form("D%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleGeo->GetX(),fModuleGeo->GetY(),fModuleGeo->GetZ());
 	fModuleDeltaEMap[moduleAddress]  = new TH1I(title,title,200,0,200);
 	fModuleDeltaEMap[moduleAddress]->SetXTitle("#delta-electrons [%]");
 	fModuleDeltaEMap[moduleAddress]->SetYTitle("#");
-	title.Form("TL%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
+	title.Form("TL%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleGeo->GetX(),fModuleGeo->GetY(),fModuleGeo->GetZ());
 	fModuleTracklengthMap[moduleAddress]  = new TH1I(title,title,200,0,10);
 	fModuleTracklengthMap[moduleAddress]->SetXTitle("track length [cm]");
 	fModuleTracklengthMap[moduleAddress]->SetYTitle("#");
-	title.Form("dE%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
+	title.Form("dE%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleGeo->GetX(),fModuleGeo->GetY(),fModuleGeo->GetZ());
 	fModuledEdxMap[moduleAddress]  = new TH1I(title,title,200,0,50);
 	fModuledEdxMap[moduleAddress]->SetXTitle("#LTdEdx#GT [keV]");
 	fModuledEdxMap[moduleAddress]->SetYTitle("#");
-	title.Form("CS%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
+	title.Form("CS%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleGeo->GetX(),fModuleGeo->GetY(),fModuleGeo->GetZ());
 	fModuleClusterSizeMap[moduleAddress]  = new TH1I(title,title,200,0,200);
 	fModuleClusterSizeMap[moduleAddress]->SetXTitle("cluster size [channel]");
 	fModuleClusterSizeMap[moduleAddress]->SetYTitle("#");
-	title.Form("TA%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
+	title.Form("TA%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleGeo->GetX(),fModuleGeo->GetY(),fModuleGeo->GetZ());
 	fModuleTrackableMap[moduleAddress]  = new TH1I(title,title,200,0,200);
 	fModuleTrackableMap[moduleAddress]->SetXTitle("min. 5 STS points [%]");
 	fModuleTrackableMap[moduleAddress]->SetYTitle("#");
-	title.Form("TA2%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
+	title.Form("TA2%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleGeo->GetX(),fModuleGeo->GetY(),fModuleGeo->GetZ());
 	fModuleTrackableMap2[moduleAddress]  = new TH1I(title,title,200,0,200);
 	fModuleTrackableMap2[moduleAddress]->SetXTitle("min. 5 STS points [#]");
 	fModuleTrackableMap2[moduleAddress]->SetYTitle("#");
-	title.Form("AP%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleInfo->GetX(),fModuleInfo->GetY(),fModuleInfo->GetZ());
+	title.Form("AP%i_S%i_L%i_(%.2f, %.2f, %.2f)",moduleAddress,Station,Layer,fModuleGeo->GetX(),fModuleGeo->GetY(),fModuleGeo->GetZ());
 	fModuleAveragePointsMap[moduleAddress]  = new TH1I(title,title,500,0,500);
 	fModuleAveragePointsMap[moduleAddress]->SetXTitle("average points per event");
 	fModuleAveragePointsMap[moduleAddress]->SetYTitle("#");
@@ -947,7 +951,7 @@ void CbmTrdQa::Exec(Option_t*)
       Layer    = CbmTrdAddress::GetLayerId(moduleAddress) % 4 + 1;//fGeoHandler->GetLayer(moduleId);
       //printf ("D det: %i S%i L%i  \n",moduleAddress,Station,Layer);//GetDetId()); 
       combiId = 10 * Station + Layer;
-      fModuleInfo = fDigiPar->GetModule(moduleAddress);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);
       if (fModuleDigiMap.find(moduleAddress) == fModuleDigiMap.end()){
       }
       fModuleDigiMap[moduleAddress].push_back(iDigi);
@@ -988,7 +992,7 @@ void CbmTrdQa::Exec(Option_t*)
       //Layer    = fGeoHandler->GetLayer(moduleAddress);
       //printf ("det: %i S%i L%i  \n",moduleAddress,Station,Layer);//GetDetId()); 
       //combiId = 10 * Station + Layer;   
-      //fModuleInfo = fDigiPar->GetModule(moduleAddress);
+      //CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);
       //if (fModuleClusterMap.find(moduleAddress) == fModuleClusterMap.end()){
       //fModuleClusterMap[moduleAddress].push_back(iCluster);
       //}
@@ -1006,7 +1010,7 @@ void CbmTrdQa::Exec(Option_t*)
       Station  = CbmTrdAddress::GetLayerId(moduleAddress) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Layer    = CbmTrdAddress::GetLayerId(moduleAddress) % 4 + 1;//fGeoHandler->GetLayer(moduleId);
       combiId = 10 * Station + Layer;
-      fModuleInfo = fDigiPar->GetModule(moduleAddress);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);
       if (fModuleHitMap.find(moduleAddress) == fModuleHitMap.end()){
       }
       fModuleHitMap[moduleAddress].push_back(iHit);
@@ -1037,7 +1041,8 @@ void CbmTrdQa::Exec(Option_t*)
     } else {
       std::map<Int_t, Int_t> hasBeenUsed;
       moduleAddress = fModulePointMapIt->first;
-      fModuleInfo = fDigiPar->GetModule(moduleAddress);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(moduleAddress);
       allPoints = Int_t(fModulePointMapIt->second.size());
       fModuleAveragePointsMap[moduleAddress]->Fill(allPoints);
 //      allHits = Int_t(fModuleHitMap[moduleAddress].size());
@@ -1048,9 +1053,9 @@ void CbmTrdQa::Exec(Option_t*)
       //cout << "Module: " << moduleAddress << "   Points: "<< fModulePointMapIt->second.size() << endl;
      
       Double_t multiHitCounterModule = 0;
-      Double_t r = sqrt(fModuleInfo->GetX() * fModuleInfo->GetX() + fModuleInfo->GetY() * fModuleInfo->GetY()); // radial position of the module center
-      Double_t alpha = atan(r / fModuleInfo->GetZ()) * 1000.; //[mrad]
-      //printf("%.2f %.2f %.2f %.2f %.2f\n",fModuleInfo->GetX(), fModuleInfo->GetY(), fModuleInfo->GetZ(), r, alpha);
+      Double_t r = sqrt(fModuleGeo->GetX() * fModuleGeo->GetX() + fModuleGeo->GetY() * fModuleGeo->GetY()); // radial position of the module center
+      Double_t alpha = atan(r / fModuleGeo->GetZ()) * 1000.; //[mrad]
+      //printf("%.2f %.2f %.2f %.2f %.2f\n",fModuleGeo->GetX(), fModuleGeo->GetY(), fModuleGeo->GetZ(), r, alpha);
       //for (Int_t iPoint = 0; iPoint < Int_t(fModulePointMapIt->second.size()); iPoint++) {
       for (Int_t iPoint = Int_t(fModulePointMapIt->second.size())-1; iPoint >= 0; iPoint--) { // its better to go backwards since found point and hit pairs are erased -> vector sice is dynamic
 	//hasBeenUsed[fModulePointMapIt->second[iPoint]] = 0;
@@ -1609,9 +1614,9 @@ void CbmTrdQa::FinishEvent()
 }
   void CbmTrdQa::GetPadInfos(Int_t moduleAddress, Double_t x, Double_t y, Int_t &iCol, Int_t &iRow, Double_t &padSizeX, Double_t &padSizeY)
   {
+    CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);
     x += fModuleInfo->GetSizeX(); // move origin from module center to lower right corner
     y += fModuleInfo->GetSizeY(); // move origin from module center to lower right corner
-    fModuleInfo = fDigiPar->GetModule(moduleAddress);
     Int_t nSector = fModuleInfo->GetNofSectors();
     Int_t iSectorX(0), iSectorY(0);
     Double_t iSectorSizeX = fModuleInfo->GetSectorSizeX(iSectorX);
@@ -1677,7 +1682,8 @@ TString origpath = gDirectory->GetPath();
   for (MapIt = Map.begin(); MapIt != Map.end(); MapIt++) {
     Double_t value = MapIt->second->GetMean(1);
     Double_t valueE = MapIt->second->GetRMS(1);
-    fModuleInfo = fDigiPar->GetModule(MapIt->first);
+    CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(MapIt->first);
+    CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(MapIt->first);
     Int_t Station  = CbmTrdAddress::GetLayerId(MapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
     Int_t Layer    = CbmTrdAddress::GetLayerId(MapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);
     Int_t combiId = 10 * Station + Layer;
@@ -1687,10 +1693,10 @@ TString origpath = gDirectory->GetPath();
       fLayerDummy->GetZaxis()->SetRangeUser(fmin,fmax);
     }
     fLayerMap[combiId]->cd()->Update();
-    text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-				    fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-				    fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-				    fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+    text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+				    fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+				    fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+				    fModuleGeo->GetY()+fModuleInfo->GetSizeY());
     text->SetFillStyle(1001);
     text->SetLineColor(1);
 
@@ -1764,7 +1770,8 @@ void CbmTrdQa::CreateLayerView()
 	 fModuleGhostMapIt != fModuleGhostMap.end(); fModuleGhostMapIt++) {
       Double_t value = fModuleGhostMapIt->second->GetMean(1);
       Double_t valueE = fModuleGhostMapIt->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(fModuleGhostMapIt->first);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(fModuleGhostMapIt->first);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(fModuleGhostMapIt->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(fModuleGhostMapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(fModuleGhostMapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);
       Int_t combiId = 10 * Station + Layer;
@@ -1775,10 +1782,10 @@ void CbmTrdQa::CreateLayerView()
 	//fLayerDummy->DrawCopy("colz");
       }
       fLayerMap[combiId]->cd()->Update();
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+			   fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()+fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);
 
@@ -1830,7 +1837,8 @@ void CbmTrdQa::CreateLayerView()
 	 fModuleLostMapIt != fModuleLostMap.end(); fModuleLostMapIt++) {
       Double_t value = fModuleLostMapIt->second->GetMean(1);
       Double_t valueE = fModuleLostMapIt->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(fModuleLostMapIt->first);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(fModuleLostMapIt->first);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(fModuleLostMapIt->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(fModuleLostMapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(fModuleLostMapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);    
       Int_t combiId = 10 * Station + Layer;
@@ -1841,10 +1849,10 @@ void CbmTrdQa::CreateLayerView()
 	//fLayerDummy->DrawCopy("colz");
       }
       fLayerMap[combiId]->cd()->Update();
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+			   fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()+fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);
       Int_t j = 0;
@@ -1898,7 +1906,8 @@ void CbmTrdQa::CreateLayerView()
 	 fModuleEfficiencyMapIt != fModuleEfficiencyMap.end(); fModuleEfficiencyMapIt++) {
       Double_t value = fModuleEfficiencyMapIt->second->GetMean(1);
       Double_t valueE = fModuleEfficiencyMapIt->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(fModuleEfficiencyMapIt->first);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(fModuleEfficiencyMapIt->first);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(fModuleEfficiencyMapIt->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(fModuleEfficiencyMapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(fModuleEfficiencyMapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);  
       Int_t combiId = 10 * Station + Layer;
@@ -1909,10 +1918,10 @@ void CbmTrdQa::CreateLayerView()
 	//fLayerDummy->DrawCopy("colz");
       }
       fLayerMap[combiId]->cd()->Update();
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+			   fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()+fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);    
       Int_t j = 0;
@@ -1970,7 +1979,8 @@ void CbmTrdQa::CreateLayerView()
 	 fModuleMultiPointMapIt != fModuleMultiPointMap.end(); fModuleMultiPointMapIt++) {
       Double_t value = fModuleMultiPointMapIt->second->GetMean(1);
       Double_t valueE = fModuleMultiPointMapIt->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(fModuleMultiPointMapIt->first);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(fModuleMultiPointMapIt->first);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(fModuleMultiPointMapIt->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(fModuleMultiPointMapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(fModuleMultiPointMapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);  
       Int_t combiId = 10 * Station + Layer;
@@ -1981,10 +1991,10 @@ void CbmTrdQa::CreateLayerView()
 	//fLayerDummy->DrawCopy("colz");
       }
       fLayerMap[combiId]->cd()->Update();
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+			   fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()+fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);    
       Int_t j = 0;
@@ -2041,7 +2051,8 @@ void CbmTrdQa::CreateLayerView()
 	 fModuledEdxMapIt != fModuledEdxMap.end(); fModuledEdxMapIt++) {
       Double_t value = fModuledEdxMapIt->second->GetMean(1);
       Double_t valueE = fModuledEdxMapIt->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(fModuledEdxMapIt->first);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(fModuledEdxMapIt->first);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(fModuledEdxMapIt->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(fModuledEdxMapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(fModuledEdxMapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);  
       Int_t combiId = 10 * Station + Layer;
@@ -2052,10 +2063,10 @@ void CbmTrdQa::CreateLayerView()
 	//fLayerDummy->DrawCopy("colz");
       }
       fLayerMap[combiId]->cd()->Update();
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+			   fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()+fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);    
       Int_t j = 0;
@@ -2112,7 +2123,8 @@ void CbmTrdQa::CreateLayerView()
 	 fModuleTracklengthMapIt != fModuleTracklengthMap.end(); fModuleTracklengthMapIt++) {
       Double_t value = fModuleTracklengthMapIt->second->GetMean(1);
       Double_t valueE = fModuleTracklengthMapIt->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(fModuleTracklengthMapIt->first);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(fModuleTracklengthMapIt->first);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(fModuleTracklengthMapIt->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(fModuleTracklengthMapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(fModuleTracklengthMapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);  
       Int_t combiId = 10 * Station + Layer;
@@ -2123,10 +2135,10 @@ void CbmTrdQa::CreateLayerView()
 	//fLayerDummy->DrawCopy("colz");
       }
       fLayerMap[combiId]->cd()->Update();
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+			   fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()+fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);    
       Int_t j = 0;
@@ -2183,7 +2195,8 @@ void CbmTrdQa::CreateLayerView()
 	 fModuleDeltaEMapIt != fModuleDeltaEMap.end(); fModuleDeltaEMapIt++) {
       Double_t value = fModuleDeltaEMapIt->second->GetMean(1);
       Double_t valueE = fModuleDeltaEMapIt->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(fModuleDeltaEMapIt->first);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(fModuleDeltaEMapIt->first);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(fModuleDeltaEMapIt->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(fModuleDeltaEMapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(fModuleDeltaEMapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);  
       Int_t combiId = 10 * Station + Layer;
@@ -2194,10 +2207,10 @@ void CbmTrdQa::CreateLayerView()
 	//fLayerDummy->DrawCopy("colz");
       }
       fLayerMap[combiId]->cd()->Update();
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+			   fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()+fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);    
       Int_t j = 0;
@@ -2254,7 +2267,8 @@ void CbmTrdQa::CreateLayerView()
 	 fModuleClusterSizeMapIt != fModuleClusterSizeMap.end(); fModuleClusterSizeMapIt++) {
       Double_t value = fModuleClusterSizeMapIt->second->GetMean(1);
       Double_t valueE = fModuleClusterSizeMapIt->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(fModuleClusterSizeMapIt->first);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(fModuleClusterSizeMapIt->first);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(fModuleClusterSizeMapIt->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(fModuleClusterSizeMapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(fModuleClusterSizeMapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);  
       Int_t combiId = 10 * Station + Layer;
@@ -2265,10 +2279,10 @@ void CbmTrdQa::CreateLayerView()
 	//fLayerDummy->DrawCopy("colz");
       }
       fLayerMap[combiId]->cd()->Update();
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+			   fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()+fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);    
       Int_t j = 0;
@@ -2326,7 +2340,8 @@ void CbmTrdQa::CreateLayerView()
 	 fModuleTrackableMapIt != fModuleTrackableMap.end(); fModuleTrackableMapIt++) {
       Double_t value = fModuleTrackableMapIt->second->GetMean(1);
       Double_t valueE = fModuleTrackableMapIt->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(fModuleTrackableMapIt->first);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(fModuleTrackableMapIt->first);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(fModuleTrackableMapIt->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(fModuleTrackableMapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(fModuleTrackableMapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);  
       Int_t combiId = 10 * Station + Layer;
@@ -2337,10 +2352,10 @@ void CbmTrdQa::CreateLayerView()
 	//fLayerDummy->DrawCopy("colz");
       }
       fLayerMap[combiId]->cd()->Update();
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+			   fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()+fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);    
       Int_t j = 0;
@@ -2397,7 +2412,8 @@ void CbmTrdQa::CreateLayerView()
 	 fModuleTrackableMap2It != fModuleTrackableMap2.end(); fModuleTrackableMap2It++) {
       Double_t value = fModuleTrackableMap2It->second->GetMean(1);
       Double_t valueE = fModuleTrackableMap2It->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(fModuleTrackableMap2It->first);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(fModuleTrackableMap2It->first);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(fModuleTrackableMap2It->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(fModuleTrackableMap2It->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(fModuleTrackableMap2It->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);  
       Int_t combiId = 10 * Station + Layer;
@@ -2408,10 +2424,10 @@ void CbmTrdQa::CreateLayerView()
 	//fLayerDummy->DrawCopy("colz");
       }
       fLayerMap[combiId]->cd()->Update();
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+			   fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()+fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);    
       Int_t j = 0;
@@ -2467,7 +2483,8 @@ void CbmTrdQa::CreateLayerView()
 	 fModuleAveragePointsMapIt != fModuleAveragePointsMap.end(); fModuleAveragePointsMapIt++) {
       Double_t value = fModuleAveragePointsMapIt->second->GetMean(1);
       Double_t valueE = fModuleAveragePointsMapIt->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(fModuleAveragePointsMapIt->first);
+      CbmTrdParModDigi* fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(fModuleAveragePointsMapIt->first);
+      CbmTrdParModGeo* fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(fModuleAveragePointsMapIt->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(fModuleAveragePointsMapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(fModuleAveragePointsMapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);  
       Int_t combiId = 10 * Station + Layer;
@@ -2478,10 +2495,10 @@ void CbmTrdQa::CreateLayerView()
 	//fLayerDummy->DrawCopy("colz");
       }
       fLayerMap[combiId]->cd()->Update();
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      text = new TPaveText(fModuleGeo->GetX()-fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()-fModuleInfo->GetSizeY(),
+			   fModuleGeo->GetX()+fModuleInfo->GetSizeX(),
+			   fModuleGeo->GetY()+fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);    
       Int_t j = 0;

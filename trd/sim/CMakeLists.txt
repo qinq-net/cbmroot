@@ -8,7 +8,6 @@ ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/data/trd 
 ${CBMROOT_SOURCE_DIR}/trd/base
 ${CBMROOT_SOURCE_DIR}/trd/sim
-${CBMROOT_SOURCE_DIR}/trd/attic
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -34,11 +33,11 @@ CbmTrd.cxx
 CbmTrdTrackFinderIdeal.cxx 
 CbmTrdTrackFitterIdeal.cxx 
 CbmTrdDigitizer.cxx 
-#CbmTrdModuleSim.cxx 
-#CbmTrdModuleSimR.cxx 
-#CbmTrdModuleSimT.cxx 
-#CbmTrdRadiator.cxx 
-#CbmTrdTrianglePRF.cxx
+CbmTrdModuleSim.cxx 
+CbmTrdModuleSimR.cxx 
+CbmTrdModuleSimT.cxx 
+CbmTrdRadiator.cxx 
+CbmTrdTrianglePRF.cxx
 )
 
 IF (SSE_FOUND)

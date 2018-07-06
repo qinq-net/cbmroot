@@ -6,13 +6,11 @@ add_subdirectory (pid)
 # add_subdirectory (beamtime)
 
 Set(INCLUDE_DIRECTORIES
-#${CBMROOT_SOURCE_DIR}/run 
 ${CBMROOT_SOURCE_DIR}/base
 ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/data/trd 
 ${CBMROOT_SOURCE_DIR}/trd/base
 ${CBMROOT_SOURCE_DIR}/trd/rec
-${CBMROOT_SOURCE_DIR}/trd/attic
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -28,16 +26,17 @@ set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
+#${Vc_LIB_DIR}
 ) 
 
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
 CbmTrdClusterFinder.cxx 
-#CbmTrdHitProducer.cxx 
-#CbmTrdModuleRec.cxx 
-#CbmTrdModuleRecR.cxx 
-#CbmTrdModuleRecT.cxx 
+CbmTrdHitProducer.cxx 
+CbmTrdModuleRec.cxx 
+CbmTrdModuleRecR.cxx 
+CbmTrdModuleRecT.cxx 
 )
 
 IF (SSE_FOUND)

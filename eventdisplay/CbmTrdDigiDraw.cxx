@@ -8,8 +8,8 @@
 #include "CbmTrdAddress.h"           // for CbmTrdDetectorId
 //#include "CbmTrdDetectorId.h"           // for CbmTrdDetectorId
 #include "CbmTrdDigi.h"                 // for CbmTrdDigi
-#include "CbmTrdDigiPar.h"              // for CbmTrdDigiPar
-#include "CbmTrdModule.h"               // for CbmTrdModule
+#include "CbmTrdParSetDigi.h"              // for CbmTrdParSetDigi
+#include "CbmTrdParModDigi.h"               // for CbmTrdModule
 
 #include "FairEventManager.h"           // for FairEventManager
 #include "FairRootManager.h"            // for FairRootManager
@@ -78,7 +78,7 @@ void CbmTrdDigiDraw::SetParContainers()
     FairRunAna* ana = FairRunAna::Instance();
     FairRuntimeDb* rtdb=ana->GetRuntimeDb();
 
-    fDigiPar = (CbmTrdDigiPar*)(rtdb->getContainer("CbmTrdDigiPar"));
+    fDigiPar = (CbmTrdParSetDigi*)(rtdb->getContainer("CbmTrdParSetDigi"));
 
 }
 // --------------------------------------------------------------------
@@ -143,10 +143,10 @@ void CbmTrdDigiDraw::Exec(Option_t* /*option*/)
        Int_t moduleId = CbmTrdAddress::GetModuleAddress(address);
        Int_t layerId = CbmTrdAddress::GetLayerId(address);
 
-       fModuleInfo = fDigiPar->GetModule(moduleId);
+       fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleId);
 
        TVector3 posHit, padSize;
-       fModuleInfo->GetPosition(moduleId, Sector, Col, Row, posHit, padSize);
+       fModuleInfo->GetPosition(/*moduleId, */Sector, Col, Row, posHit, padSize);
 
        // The given point is used as the edge of the box but it is
        // the middle point of the pad. So we have to do a transformation

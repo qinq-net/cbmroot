@@ -1,8 +1,11 @@
 #include "CbmTrdHitRateQa.h"
 
-#include "CbmTrdDigiPar.h"
+#include "CbmTrdParSetAsic.h"
+#include "CbmTrdParSetDigi.h"
+#include "CbmTrdParSetGeo.h"
+#include "CbmTrdParModDigi.h"
+#include "CbmTrdParModGeo.h"
 #include "CbmTrdAddress.h"
-#include "CbmTrdModule.h"
 #include "CbmTrdRadiator.h"
 #include "CbmTrdGeoHandler.h"
 
@@ -106,9 +109,9 @@ CbmTrdHitRateQa::CbmTrdHitRateQa(const char *name, const char*)
     fDigiCollection(NULL),
     fDigiMatchCollection(NULL),
     fMCStacks(NULL),
+    fAsicPar(NULL),
     fDigiPar(NULL),
-    fModuleInfo(NULL),
-    //fRadiators(radiator),
+    fGeoPar(NULL),
     fGeoHandler(new CbmTrdGeoHandler()),
     fDigiMap(),
     fDigiMapIt()
@@ -139,8 +142,9 @@ void CbmTrdHitRateQa::SetParContainers()
     FairRunAna* ana = FairRunAna::Instance();
     FairRuntimeDb* rtdb=ana->GetRuntimeDb();
 
-    fDigiPar = (CbmTrdDigiPar*)
-               (rtdb->getContainer("CbmTrdDigiPar"));
+  fAsicPar = (CbmTrdParSetAsic*)(rtdb->getContainer("CbmTrdParSetAsic"));
+  fDigiPar = (CbmTrdParSetDigi*)(rtdb->getContainer("CbmTrdParSetDigi"));
+  fGeoPar = (CbmTrdParSetGeo*)(rtdb->getContainer("CbmTrdParSetGeo"));
 
 }
 // --------------------------------------------------------------------
@@ -154,8 +158,9 @@ InitStatus CbmTrdHitRateQa::ReInit(){
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
 
-  fDigiPar = (CbmTrdDigiPar*)
-      (rtdb->getContainer("CbmTrdDigiPar"));
+  fAsicPar = (CbmTrdParSetAsic*)(rtdb->getContainer("CbmTrdParSetAsic"));
+  fDigiPar = (CbmTrdParSetDigi*)(rtdb->getContainer("CbmTrdParSetDigi"));
+  fGeoPar = (CbmTrdParSetGeo*)(rtdb->getContainer("CbmTrdParSetGeo"));
   
   return kSUCCESS;
 }
@@ -295,7 +300,7 @@ void CbmTrdHitRateQa::Exec(Option_t*)
   for (Int_t i = 0; i < NofModules; i++) {  
 
     ModuleID = fDigiPar->GetModuleId(i);
-    fModuleInfo = fDigiPar->GetModule(ModuleID);
+    CbmTrdParModDigi *fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(ModuleID);
     //printf("%d:\n  %.1f %.1f %.1f\n",ModuleID,fModuleInfo->GetX(), fModuleInfo->GetY(),fModuleInfo->GetZ());
 
     fPlane   = CbmTrdAddress::GetLayerId(ModuleID);
@@ -566,7 +571,8 @@ void CbmTrdHitRateQa::GetModuleInformationFromDigiPar(HitRateGeoPara *GeoPara, B
   // x to the right (small side of the pads), y up
   //cout << "GetModuleInformationFromDigiPar" << endl;
 
-  fModuleInfo = fDigiPar->GetModule(VolumeID);
+  CbmTrdParModDigi *fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(VolumeID);
+  CbmTrdParModGeo *fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(VolumeID);
   if (fModuleInfo != NULL)
   {
 
@@ -579,9 +585,9 @@ void CbmTrdHitRateQa::GetModuleInformationFromDigiPar(HitRateGeoPara *GeoPara, B
     GeoPara->layerId   = fLayer;
     GeoPara->stationId = fStation;
 
-    GeoPara->mPos[0] = fModuleInfo->GetX() * 10;
-    GeoPara->mPos[1] = fModuleInfo->GetY() * 10;
-    GeoPara->mPos[2] = fModuleInfo->GetZ() * 10; // == z(station) ??
+    GeoPara->mPos[0] = fModuleGeo->GetX() * 10;
+    GeoPara->mPos[1] = fModuleGeo->GetY() * 10;
+    GeoPara->mPos[2] = fModuleGeo->GetZ() * 10; // == z(station) ??
     
     GeoPara->mSize[0] = fModuleInfo->GetSizeX() * 10;
     GeoPara->mSize[1] = fModuleInfo->GetSizeY() * 10;
@@ -595,7 +601,7 @@ void CbmTrdHitRateQa::GetModuleInformationFromDigiPar(HitRateGeoPara *GeoPara, B
       GeoPara->sCol[s] = 0;  // reset number of columns in sector
       GeoPara->sRow[s] = 0;  // reset number of rows    in sector
 
-      fModuleInfo->GetPosition(VolumeID, s, 0, 0, padPos, padSize);
+      fModuleInfo->GetPosition(/*VolumeID, */s, 0, 0, padPos, padSize);
       GeoPara->pSize[s][2] = 0;
 
       for (Int_t i = 0; i < 2; i++)  // for x and y
@@ -667,20 +673,20 @@ void CbmTrdHitRateQa::GetModuleInformationFromDigiPar(HitRateGeoPara *GeoPara, B
     }
 
     // get origin
-    fModuleInfo->GetPosition(VolumeID, 0, 0, 0, padPos, padSize);
+    fModuleInfo->GetPosition(/*VolumeID, */0, 0, 0, padPos, padSize);
     GeoPara->vOrigin[0] = padPos[0] * 10;
     GeoPara->vOrigin[1] = padPos[1] * 10; 
     GeoPara->vOrigin[2] = padPos[2] * 10;
     
     // get col offset
-    fModuleInfo->GetPosition(VolumeID, 0, 1, 0, padPos, padSize);
+    fModuleInfo->GetPosition(/*VolumeID, */0, 1, 0, padPos, padSize);
     GeoPara->vX[0]      = padPos[0] * 10 - GeoPara->vOrigin[0]; 
     GeoPara->vX[1]      = padPos[1] * 10 - GeoPara->vOrigin[1];			   
     GeoPara->vX[2]      = padPos[2] * 10 - GeoPara->vOrigin[2];
 
     // get row offset
     //    fModuleInfo->GetPosition(VolumeID, 0, 0, 1, padPos, padSize); // rather take next of 3 sectors
-    fModuleInfo->GetPosition(VolumeID, 1, 0, 0, padPos, padSize);
+    fModuleInfo->GetPosition(/*VolumeID, */1, 0, 0, padPos, padSize);
     GeoPara->vY[0]      = padPos[0] * 10 - GeoPara->vOrigin[0]; 
     GeoPara->vY[1]      = padPos[1] * 10 - GeoPara->vOrigin[1]; 
     GeoPara->vY[2]      = padPos[2] * 10 - GeoPara->vOrigin[2];
@@ -880,7 +886,7 @@ void CbmTrdHitRateQa::GetModuleInformationFromDigiPar(HitRateGeoPara *GeoPara, B
     if (Lines)
       for (Int_t s = 0; s < GeoPara->nSec; s++)  // for all (3) sectors
       {
-        fModuleInfo->GetPosition(VolumeID, s, 0, 0, padPos, padSize);
+        fModuleInfo->GetPosition(/*VolumeID, */s, 0, 0, padPos, padSize);
   
         TPolyMarker* start = new TPolyMarker(1);
         start->SetPoint(0, padPos(0)*10, padPos(1)*10);
@@ -893,7 +899,7 @@ void CbmTrdHitRateQa::GetModuleInformationFromDigiPar(HitRateGeoPara *GeoPara, B
       	  start->Draw("same");
         }
   
-        fModuleInfo->GetPosition(VolumeID, s, GeoPara->sCol[0]-1, GeoPara->sRow[s]-1, padPos, padSize);
+        fModuleInfo->GetPosition(/*VolumeID, */s, GeoPara->sCol[0]-1, GeoPara->sRow[s]-1, padPos, padSize);
   
         TPolyMarker* end = new TPolyMarker(1);
         end->SetPoint(0, padPos(0)*10, padPos(1)*10);

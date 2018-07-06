@@ -103,7 +103,8 @@ class CbmL1HitStore{
 //  int Event;
 //}
 
-class CbmTrdDigiPar;
+class CbmTrdParSetDigi;
+class CbmTrdParModDigi;
 class CbmTofDigiPar;
 class CbmGeoMuchPar;
 
@@ -271,7 +272,9 @@ class CbmL1 : public FairTask
    
    //TRD
    
-   CbmTrdDigiPar         * fTrdDigiPar;
+   CbmTrdParSetDigi *fTrdDigiPar; //!
+   CbmTrdParModDigi *fTrdModuleInfo; //!
+//   CbmTrdDigiPar         * fTrdDigiPar;
    
    CbmMCDataArray* fTrdPoints;
    TClonesArray *listTrdHits;

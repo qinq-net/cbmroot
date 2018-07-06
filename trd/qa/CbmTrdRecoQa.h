@@ -26,8 +26,8 @@
 
 #include <vector>
 
-class CbmTrdDigiPar;
-class CbmTrdModule;
+class CbmTrdParSetDigi;
+class CbmTrdParModDigi;
 class CbmTrdGeoHandler;
 class TClonesArray;
 class TH1D;
@@ -75,8 +75,8 @@ class CbmTrdRecoQa : public FairTask
   TClonesArray* fMCPoints;
   TClonesArray* fDigis;
 
-  CbmTrdDigiPar  *fDigiPar;    //!
-  CbmTrdModule   *fModuleInfo; //!
+  CbmTrdParSetDigi  *fDigiPar;    //!
+  CbmTrdParModDigi   *fModuleInfo; //!
   CbmTrdGeoHandler* fGeoHandler; //!
 
   //Int_t SecRowToGlobalRow(Int_t secRow);

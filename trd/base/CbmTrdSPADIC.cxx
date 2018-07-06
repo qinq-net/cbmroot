@@ -1,21 +1,20 @@
 #include "CbmTrdSPADIC.h"
-#include "CbmTrdClusterFinderFast.h"
 
-#include "CbmTrdDigiPar.h"
 #include "CbmTrdDigi.h"
-
-#include "CbmTrdModule.h"
+#include "CbmTrdAddress.h"
+#include "CbmTrdParSetDigi.h"
+#include "CbmTrdParModDigi.h"
 #include "CbmTrdGeoHandler.h"
 
-#include "FairRootManager.h"
-#include "FairRunAna.h"
-#include "FairRuntimeDb.h"
-#include "FairLogger.h"
+#include <FairRootManager.h>
+#include <FairRunAna.h>
+#include <FairRuntimeDb.h>
+#include <FairLogger.h>
 
-#include "TClonesArray.h"
-#include "TArray.h"
-#include "TH1D.h"
-#include "TCanvas.h"
+#include <TClonesArray.h>
+#include <TArray.h>
+#include <TH1D.h>
+#include <TCanvas.h>
 
 #include <iostream>
 #include <iomanip>
@@ -48,7 +47,7 @@ CbmTrdSPADIC::~CbmTrdSPADIC()
 }
 void CbmTrdSPADIC::SetParContainers()
 {
-  fDigiPar = (CbmTrdDigiPar*)(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdDigiPar"));
+  fDigiPar = (CbmTrdParSetDigi*)(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetDigi"));
 }
 
 InitStatus CbmTrdSPADIC::Init()
@@ -199,7 +198,7 @@ void CbmTrdSPADIC::Exec(Option_t*)
     Int_t layerId    = CbmTrdAddress::GetLayerId(digiAddress);
     Int_t moduleId = CbmTrdAddress::GetModuleId(digiAddress);
     Int_t moduleAddress = CbmTrdAddress::GetModuleAddress(digiAddress);
-    fModuleInfo = fDigiPar->GetModule(CbmTrdAddress::GetModuleAddress(digiAddress));
+    fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(CbmTrdAddress::GetModuleAddress(digiAddress));
     if (!fModuleInfo){
       printf("digi %3i digiAddress %i layer %i and modId %i  Sec%i Row:%i Col%i not found\n",
 	     iDigi,digiAddress,layerId,moduleId,CbmTrdAddress::GetSectorId(digi->GetAddress()),

@@ -86,10 +86,8 @@ CbmTrdRadiator::CbmTrdRadiator(Bool_t SimpleTR, Int_t Nfoils, Float_t FoilThick,
       fFinal[i] = NULL;
   }
   //Init();
-  //CreateHistograms(); (VF) Will be called in Init method. Double call means
-  // memory leak.
+  CreateHistograms();
   fRndm.SetSeed(0); //TUUID -> unique seed
-  // TODO: (VF) Not good for reproducability
 }
 //-----------------------------------------------------------------------------
 
@@ -140,8 +138,7 @@ CbmTrdRadiator::CbmTrdRadiator(Bool_t SimpleTR, TString prototype)
 
   //Init(SimpleTR, prototype);
   //SetRadPrototype(prototype);
-  //CreateHistograms(); (VF) Will be called in Init method. Double call means
-  // memory leak.
+  CreateHistograms();
   fRndm.SetSeed(0); //TUUID -> unique seed
 
 }
@@ -169,7 +166,6 @@ CbmTrdRadiator::~CbmTrdRadiator()
 void CbmTrdRadiator::CreateHistograms(){
   
   // Create the needed histograms
-  LOG(INFO) << "TrdRadiator: Create histograms" << FairLogger::endl;
 
   fSpBinWidth = (Float_t)fSpRange / (Float_t)fSpNBins;
 
@@ -391,6 +387,7 @@ cout << "================CbmTrdRadiator===============" << endl;
 
 // ----- Init function ----------------------------------------------------
 void CbmTrdRadiator::Init(){
+cout << "================CbmTrdRadiator===============" << endl;
   TString material;
   CreateHistograms();
   if (fRadType == "") {

@@ -96,6 +96,7 @@ Bool_t reconstruct()
   // -----   Local reconstruction in TRD   ----------------------------------
   if ( setup->IsActive(kTrd) ) {
 
+/*
     Double_t triggerThreshold = 0.5e-6;   // SIS100
     Bool_t   triangularPads = false;      // Bucharest triangular pad-plane layout
     CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
@@ -111,7 +112,7 @@ Bool_t reconstruct()
     trdHit->SetTriangularPads(triangularPads);
     run->AddTask(trdHit);
     std::cout << "-I- : Added task " << trdHit->GetName() << std::endl;
-
+*/
   }
   // ------------------------------------------------------------------------
 

@@ -1,3 +1,21 @@
+#ifndef CBMTRDCLUSTERFINDER_H
+#define CBMTRDCLUSTERFINDER_H 
+
+#include "FairTask.h"
+
+#include <map>
+#include <vector>
+#include <set>
+
+class CbmTrdDigi;
+class CbmTrdParSetAsic;
+class CbmTrdParSetGas;
+class CbmTrdParSetDigi;
+class CbmTrdParSetGain;
+class CbmTrdModuleRec;
+class CbmTrdGeoHandler;
+class TClonesArray;
+
 /** CbmTrdClusterFinder.h
  *@author Florian Uhlig <f.uhlig@gsi.de>
  **
@@ -14,75 +32,74 @@
  ** If there is an overlap than merge the two clusters.
  **
  **/
-
-#ifndef CBMTRDCLUSTERFINDER_H
-#define CBMTRDCLUSTERFINDER_H 
-
-#include "FairTask.h"
-
-#include <map>
-#include <vector>
-#include <set>
-
-class CbmTrdDigiPar;
-class CbmTrdModule;
-class CbmTrdGeoHandler;
-class TClonesArray;
-
 class CbmTrdClusterFinder : public FairTask
 {
-  
- public:
+public:
+  enum CbmTrdRecDef{
+    kTime           = 0,    ///< select Time based/Event by event reconstruction
+    kMultiHit,              ///< multi hit detection
+    kRowMerger,             ///< merge clusters over neighbour rows
+    kNeighbourCol,          ///< use neighbour trigger; column wise 
+    kNeighbourRow,          ///< use neighbour trigger; row wise 
+    kDumpClusters,          ///< write clustered digis to output
+    kFASP                   ///< use FASP ASIC for triangular pad plane geometry
+  };
   
   /**
-   * Default constructor.
+   * \brief Default constructor.
    */
   CbmTrdClusterFinder();
   
   /**
-   * Default destructor.
+   * \brief Default destructor.
    */
   ~CbmTrdClusterFinder();
  
-  /** Initialisation **/
-  virtual InitStatus ReInit();
-  virtual InitStatus Init();
-  virtual void SetParContainers();
+  static Float_t    GetMinimumChargeTH()    { return fgMinimumChargeTH;}
+  static Bool_t     HasDumpClusters()       { return TESTBIT(fgConfig, kDumpClusters); }
+  static Bool_t     HasMultiHit()           { return TESTBIT(fgConfig, kMultiHit); }
+  static Bool_t     HasNeighbourCol()       { return TESTBIT(fgConfig, kNeighbourCol); }
+  static Bool_t     HasNeighbourRow()       { return TESTBIT(fgConfig, kNeighbourRow); }
+  static Bool_t     HasRowMerger()          { return TESTBIT(fgConfig, kRowMerger); }
+  static Bool_t     IsTimeBased()           { return TESTBIT(fgConfig, kTime); }
   
-  /** Executed task **/
-  virtual void Exec(Option_t * option);
+ /** Initialisation **/
+  //virtual InitStatus ReInit();
+  virtual InitStatus Init();
+  virtual void      SetParContainers();
+  
+  /** \brief Executed task **/
+  virtual void      Exec(Option_t * option);
   
   /** Finish task **/
-  virtual void Finish();
+  virtual void      Finish();
 
-  /** Set simple clustering on/off **/
-  void SetSimpleClustering(Bool_t use) {fUseSimpleClustering=use;}
+  
+  static void       SetDumpClusters(Bool_t set=kTRUE) { set?SETBIT(fgConfig, kDumpClusters):CLRBIT(fgConfig, kDumpClusters);}
+  static void       SetRowMerger(Bool_t set=kTRUE) { set?SETBIT(fgConfig, kRowMerger):CLRBIT(fgConfig, kRowMerger);}
+  static void       SetMultiHit(Bool_t set=kTRUE) { set?SETBIT(fgConfig, kMultiHit):CLRBIT(fgConfig, kMultiHit);}
+  static void       SetNeighbourEnable(Bool_t col=kTRUE, Bool_t row=kFALSE) 
+                      { col?SETBIT(fgConfig, kNeighbourCol):CLRBIT(fgConfig, kNeighbourCol);
+                        row?SETBIT(fgConfig, kNeighbourRow):CLRBIT(fgConfig, kNeighbourRow);}
+  static void       SetMinimumChargeTH(Float_t th)    { fgMinimumChargeTH = th;}
 
- private:
+private:
+  CbmTrdClusterFinder(const CbmTrdClusterFinder&);
+  CbmTrdClusterFinder& operator=(const CbmTrdClusterFinder&);
 
-  void DrawCluster(Int_t moduleId, Char_t* name, Char_t* title);
-  void DrawDigi(Int_t moduleId, Char_t* name, Char_t* title);
-  Bool_t SearchNeighbourDigis(Int_t Row, Int_t Col, std::set<Int_t>& ClusterDigiID);
-  void SortDigis();
-  void RealClustering();
-  void SimpleClustering();
-
-  Bool_t fUseSimpleClustering; //! Use simple or real clustering
+  Int_t             AddClusters(TClonesArray* clusters, Bool_t moveOwner=kTRUE);
+  CbmTrdModuleRec*  AddModule(CbmTrdDigi *d);
+  
+  static Int_t      fgConfig;         ///< Configuration map for the clusterizer. See CbmTrdRecDef for details
+  static Float_t    fgMinimumChargeTH;  ///<
+  
 
   TClonesArray*     fDigis;       /** Input array of CbmTrdDigi **/
   TClonesArray*     fClusters;    /** Output array of CbmTrdCluster **/
 
-  CbmTrdDigiPar *fDigiPar;   //!
-  CbmTrdModule  *fModuleInfo; //!
   
   CbmTrdGeoHandler* fGeoHandler; //!
 
-  static constexpr Float_t ChargeTH = 0;// 5e-03;
-
-  std::map<Int_t, std::set<Int_t> >::iterator mapIt;
-  std::set<Int_t>::iterator it;
-  std::set<Int_t>::iterator search; // search iterator
-  std::set<Int_t>::iterator neighbour;
   
   std::map<Int_t, std::set<Int_t> > fDigiMap;//! /** sector digis **/
   std::map<Int_t, std::set<Int_t> > fModuleMap;//! /** sector id per module **/
@@ -97,10 +114,14 @@ class CbmTrdClusterFinder : public FairTask
   std::vector< std::set<Int_t> > fClusterBuffer;
   std::map< Int_t, std::vector< std::set<Int_t> > > fModClusterDigiMap;
 
-  CbmTrdClusterFinder(const CbmTrdClusterFinder&);
-  CbmTrdClusterFinder& operator=(const CbmTrdClusterFinder&);
+  //==================================================================
+  std::map<Int_t, CbmTrdModuleRec*> fModules; ///< list of modules being processed
+  CbmTrdParSetAsic* fAsicPar;   ///< parameter list for ASIC characterization
+  CbmTrdParSetGas*  fGasPar;    ///< parameter list for HV status
+  CbmTrdParSetDigi* fDigiPar;   ///< parameter list for read-out geometry
+  CbmTrdParSetGain* fGainPar;   ///< parameter list for keV->ADC gain conversion
 
-  ClassDef(CbmTrdClusterFinder,2);
+  ClassDef(CbmTrdClusterFinder,1);
   
 };
 #endif

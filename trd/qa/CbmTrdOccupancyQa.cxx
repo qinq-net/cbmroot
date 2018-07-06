@@ -1,33 +1,35 @@
 #include "CbmTrdOccupancyQa.h"
-#include "CbmTrdDigiPar.h"
+
+#include "CbmTrdAddress.h"
+#include "CbmTrdParSetDigi.h"
+#include "CbmTrdParModDigi.h"
+#include "CbmTrdParSetGeo.h"
+#include "CbmTrdParModGeo.h"
 #include "CbmTrdDigi.h"
 #include "CbmTrdCluster.h"
-#include "CbmTrdModule.h"
 #include "CbmTrdGeoHandler.h"
-#include "FairRootManager.h"
-#include "FairRunAna.h"
-#include "FairRuntimeDb.h"
-#include "TMath.h"
-#include "TF1.h"
-#include "TH2.h"
-#include "TH1.h"
-#include "TProfile.h"
-#include "TProfile2D.h"
-#include "TCanvas.h"
-#include "TClonesArray.h"
-#include "TGeoManager.h"
-#include "TStopwatch.h"
-#include "TBox.h"
-#include "TPaveText.h"
-#include "TColor.h"
-#include "TFile.h"
+
+#include <FairRootManager.h>
+#include <FairRunAna.h>
+#include <FairRuntimeDb.h>
+
+#include <TMath.h>
+#include <TF1.h>
+#include <TH2.h>
+#include <TH1.h>
+#include <TProfile.h>
+#include <TProfile2D.h>
+#include <TCanvas.h>
+#include <TClonesArray.h>
+#include <TGeoManager.h>
+#include <TStopwatch.h>
+#include <TBox.h>
+#include <TPaveText.h>
+#include <TColor.h>
+#include <TFile.h>
+
 #include <iostream>
 #include <cmath>
-
-#include "CbmTrdDigitizer.h"
-#include "CbmTrdDigitizerPRF.h"
-#include "CbmTrdClusterFinderFast.h"
-#include "CbmTrdHitProducerCluster.h"
 
 using std::cout;
 using std::cin;
@@ -45,7 +47,7 @@ CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char*, const char *
     fDigis(NULL),
     fClusters(NULL),
     fDigiPar(NULL),
-    fModuleInfo(NULL),
+    fGeoPar(NULL),
     fGeoHandler(new CbmTrdGeoHandler()),
     fDigiChargeSpectrum(new TH1I("DigiChargeSpectrum","DigiChargeSpectrum",1e6,0,1.0e-3)),
     fLayerDummy(new TH2I("LayerDummy","",1200,-400,400,1000,-300,300)),
@@ -99,8 +101,8 @@ CbmTrdOccupancyQa::~CbmTrdOccupancyQa()
  
   if(fDigiPar)
     delete fDigiPar;
-  if(fModuleInfo)
-    delete fModuleInfo;
+//   if(fModuleInfo)
+//     delete fModuleInfo;
   for (fModuleMapIt = fModuleMap.begin();
        fModuleMapIt != fModuleMap.end(); ++fModuleMapIt) {
     delete fModuleMapIt->second;
@@ -130,8 +132,10 @@ void CbmTrdOccupancyQa::SetParContainers()
     // Get Base Container
     FairRunAna* ana = FairRunAna::Instance();
     FairRuntimeDb* rtdb=ana->GetRuntimeDb();
-    fDigiPar = (CbmTrdDigiPar*)
-               (rtdb->getContainer("CbmTrdDigiPar"));
+    fDigiPar = (CbmTrdParSetDigi*)
+               (rtdb->getContainer("CbmTrdParSetDigi"));
+    fGeoPar = (CbmTrdParSetGeo*)
+               (rtdb->getContainer("CbmTrdParSetGeo"));
 }
 // ---- ReInit  -------------------------------------------------------
 InitStatus CbmTrdOccupancyQa::ReInit()
@@ -139,8 +143,8 @@ InitStatus CbmTrdOccupancyQa::ReInit()
   cout<<" * CbmTrdClusterizer * :: ReInit() "<<endl;
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();  
-  fDigiPar = (CbmTrdDigiPar*)(rtdb->getContainer("CbmTrdDigiPar")); 
- 
+  fDigiPar = (CbmTrdParSetDigi*)(rtdb->getContainer("CbmTrdParSetDigi")); 
+  fGeoPar = (CbmTrdParSetGeo*)(rtdb->getContainer("CbmTrdParSetGeo"));
   return kSUCCESS;
 }
 // --------------------------------------------------------------------
@@ -214,7 +218,8 @@ void CbmTrdOccupancyQa::Exec(Option_t*)
 	Int_t Station  = CbmTrdAddress::GetLayerId(moduleAddress) / 4 + 1;//fGeoHandler->GetStation(moduleId);
 	Int_t Layer    = CbmTrdAddress::GetLayerId(moduleAddress) % 4 + 1;//fGeoHandler->GetLayer(moduleId);
 	Int_t combiId = 10 * Station + Layer;
-	fModuleInfo = fDigiPar->GetModule(moduleAddress);
+  CbmTrdParModDigi *fModuleInfo = (CbmTrdParModDigi *)fDigiPar->GetModulePar(moduleAddress);
+  CbmTrdParModGeo *fModuleGeo = (CbmTrdParModGeo *)fGeoPar->GetModulePar(moduleAddress);
 	Int_t nRows = fModuleInfo->GetNofRows();
 	Int_t nCols = fModuleInfo->GetNofColumns();
 	if (fModuleOccupancyMap.find(moduleAddress) == fModuleOccupancyMap.end()){
@@ -230,8 +235,8 @@ void CbmTrdOccupancyQa::Exec(Option_t*)
 	  fModuleMap[moduleAddress]->Layer = Layer;
 	  fModuleMap[moduleAddress]->ModuleSizeX = fModuleInfo->GetSizeX();
 	  fModuleMap[moduleAddress]->ModuleSizeY = fModuleInfo->GetSizeY();
-	  fModuleMap[moduleAddress]->ModulePositionX = fModuleInfo->GetX();
-	  fModuleMap[moduleAddress]->ModulePositionY = fModuleInfo->GetY();
+	  fModuleMap[moduleAddress]->ModulePositionX = fModuleGeo->GetX();
+	  fModuleMap[moduleAddress]->ModulePositionY = fModuleGeo->GetY();
 	  fModuleMap[moduleAddress]->moduleAddress = moduleAddress;
 	}
 
@@ -266,7 +271,8 @@ void CbmTrdOccupancyQa::Exec(Option_t*)
       Int_t Layer    = CbmTrdAddress::GetLayerId(moduleAddress) % 4 + 1;//fGeoHandler->GetLayer(moduleId);
       Int_t combiId = 10 * Station + Layer;
       //printf("Station %i Layer %i combiId %i\n", Station, Layer, combiId);
-      fModuleInfo = fDigiPar->GetModule(moduleAddress);
+      CbmTrdParModDigi *fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);
+      CbmTrdParModGeo *fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(moduleAddress);
       Int_t nRows = fModuleInfo->GetNofRows();
       Int_t nCols = fModuleInfo->GetNofColumns();
       fDigiChargeSpectrum->Fill(digi->GetCharge());
@@ -286,8 +292,8 @@ void CbmTrdOccupancyQa::Exec(Option_t*)
 	  fModuleMap[moduleAddress]->Layer = Layer;
 	  fModuleMap[moduleAddress]->ModuleSizeX = fModuleInfo->GetSizeX();
 	  fModuleMap[moduleAddress]->ModuleSizeY = fModuleInfo->GetSizeY();
-	  fModuleMap[moduleAddress]->ModulePositionX = fModuleInfo->GetX();
-	  fModuleMap[moduleAddress]->ModulePositionY = fModuleInfo->GetY();
+	  fModuleMap[moduleAddress]->ModulePositionX = fModuleGeo->GetX();
+	  fModuleMap[moduleAddress]->ModulePositionY = fModuleGeo->GetY();
 	  fModuleMap[moduleAddress]->moduleAddress = moduleAddress;
 	}
 	if (fLayerOccupancyMap.find(combiId) == fLayerOccupancyMap.end()){

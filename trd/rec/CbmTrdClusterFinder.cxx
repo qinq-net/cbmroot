@@ -1,20 +1,32 @@
 #include "CbmTrdClusterFinder.h"
 
-#include "CbmTrdDigiPar.h"
+#include "CbmTrdParSetDigi.h"
+#include "CbmTrdParModDigi.h"
+#include "CbmTrdParSetAsic.h"
+#include "CbmTrdParSetGas.h"
+#include "CbmTrdParSetGain.h"
+#include "CbmTrdParAsic.h"
+#include "CbmTrdParModGas.h"
+#include "CbmTrdParModGain.h"
+
 #include "CbmTrdDigi.h"
 #include "CbmTrdCluster.h"
-#include "CbmTrdModule.h"
+#include "CbmTrdModuleRecR.h"
+#include "CbmTrdModuleRecT.h"
 #include "CbmTrdGeoHandler.h"
 
-#include "FairRootManager.h"
-#include "FairRunAna.h"
-#include "FairRuntimeDb.h"
+#include <FairLogger.h>
+#include <FairRootManager.h>
+#include <FairRunAna.h>
+#include <FairRuntimeDb.h>
 
-#include "TClonesArray.h"
-#include "TArray.h"
-#include "TH2F.h"
-#include "TCanvas.h"
-#include "TImage.h"
+#include <TStopwatch.h>
+#include <TClonesArray.h>
+#include <TArray.h>
+#include <TBits.h>
+// #include "TH2F.h"
+// #include "TCanvas.h"
+// #include "TImage.h"
 
 #include <iostream>
 #include <iomanip>
@@ -24,19 +36,14 @@ using std::cout;
 using std::endl;
 using std::setprecision;
 
-// ---- Default constructor -------------------------------------------
+Int_t CbmTrdClusterFinder::fgConfig = 0;
+Float_t CbmTrdClusterFinder::fgMinimumChargeTH = .5e-06;
+//_____________________________________________________________________
 CbmTrdClusterFinder::CbmTrdClusterFinder()
   :FairTask("TrdClusterFinder",1),
-   fUseSimpleClustering(kTRUE),
    fDigis(NULL),
    fClusters(NULL),
-   fDigiPar(NULL),
-   fModuleInfo(NULL),
    fGeoHandler(new CbmTrdGeoHandler()),
-   mapIt(),
-   it(),
-   search(),
-   neighbour(),
    fDigiMap(),
    fModuleMap(),
    fNeighbours(),
@@ -45,7 +52,14 @@ CbmTrdClusterFinder::CbmTrdClusterFinder()
    fDigiCol(),
    fDigiCharge(),
    fClusterBuffer(),
-   fModClusterDigiMap()
+   fModClusterDigiMap(),
+//=======================
+  fModules()
+  ,fAsicPar(NULL)
+  ,fGasPar(NULL)
+  ,fDigiPar(NULL)
+  ,fGainPar(NULL)
+
 {
 }
 // --------------------------------------------------------------------
@@ -66,41 +80,66 @@ CbmTrdClusterFinder::~CbmTrdClusterFinder()
   if(fDigiPar){
     delete fDigiPar;
   }
-  if(fModuleInfo){
-    delete fModuleInfo;
-  }
+//   if(fModuleInfo){
+//     delete fModuleInfo;
+//   }
 
 }
 
-// ----  Initialisation  ----------------------------------------------
+
+//_____________________________________________________________________
+CbmTrdModuleRec* CbmTrdClusterFinder::AddModule(CbmTrdDigi *digi)
+{
+  // locate digi
+  Int_t digiAddress   = digi->GetAddress();
+  Int_t detId         = digi->GetAddressModule();
+
+  CbmTrdModuleRec *module(NULL);
+  if(digi->IsFlagged(CbmTrdDigi::kType)==CbmTrdDigi::kFASP){
+    module = fModules[detId] = new CbmTrdModuleRecT(detId);//, orientation, x, y, z, sizeX, sizeY, sizeZ, UseFASP());
+  }
+  else {
+    module = fModules[detId] = new CbmTrdModuleRecR(detId);//, orientation, x, y, z, sizeX, sizeY, sizeZ);  
+  }
+  
+  //  try to load read-out parameters for module
+  const CbmTrdParModDigi *pDigi(NULL);
+  if(!fDigiPar || !(pDigi = (const CbmTrdParModDigi *)fDigiPar->GetModulePar(detId))){
+    LOG(WARNING) << GetName() << "::AddModule : No Read-Out params for modAddress "<< detId <<". Using default."<< FairLogger::endl;
+  } else module->SetDigiPar(pDigi);
+
+  // try to load ASIC parameters for module
+  CbmTrdParSetAsic *pAsic(NULL);
+  if(!fAsicPar || !(pAsic = (CbmTrdParSetAsic *)fAsicPar->GetModuleSet(detId))){
+    LOG(WARNING) << GetName() << "::AddModule : No ASIC params for modAddress "<< detId <<". Using default."<< FairLogger::endl;
+//    module->SetAsicPar(); // map ASIC channels to read-out channels - need ParModDigi already loaded
+  } else module->SetAsicPar(pAsic);
+
+  // try to load Chamber parameters for module
+  const CbmTrdParModGas *pChmb(NULL);
+  if(!fGasPar || !(pChmb = (const CbmTrdParModGas *)fGasPar->GetModulePar(detId))){
+    LOG(WARNING) << GetName() << "::AddModule : No Gas params for modAddress "<< detId <<". Using default."<< FairLogger::endl;
+  } else module->SetChmbPar(pChmb);
+
+  // try to load Gain parameters for module
+  const CbmTrdParModGain *pGain(NULL);
+  if(!fGainPar || !(pGain = (const CbmTrdParModGain *)fGainPar->GetModulePar(detId))){
+    LOG(WARNING) << GetName() << "::AddModule : No Gain params for modAddress "<< detId <<". Using default."<< FairLogger::endl;
+  } else module->SetGainPar(pGain);
+
+  return module;
+}
+
+//_____________________________________________________________________
 void CbmTrdClusterFinder::SetParContainers()
 {
-
-  // Get Base Container
-  FairRunAna* ana = FairRunAna::Instance();
-  FairRuntimeDb* rtdb=ana->GetRuntimeDb();
-  
-  fDigiPar = (CbmTrdDigiPar*)(rtdb->getContainer("CbmTrdDigiPar"));
-  
+  fAsicPar = static_cast<CbmTrdParSetAsic*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetAsic"));
+  fGasPar = static_cast<CbmTrdParSetGas*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGas"));
+  fDigiPar = static_cast<CbmTrdParSetDigi*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetDigi"));
+  fGainPar = static_cast<CbmTrdParSetGain*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGain"));
 }
-// --------------------------------------------------------------------
 
-// ---- ReInit  -------------------------------------------------------
-InitStatus CbmTrdClusterFinder::ReInit(){
-  
-  FairRunAna* ana = FairRunAna::Instance();
-  FairRuntimeDb* rtdb=ana->GetRuntimeDb();
-  
-  fDigiPar = (CbmTrdDigiPar*)(rtdb->getContainer("CbmTrdDigiPar"));
-  
-  // new call needed when parameters are initialized from ROOT file
-//  fDigiPar->Initialize();
-
-  return kSUCCESS;
-}
-// --------------------------------------------------------------------
-
-// ---- Init ----------------------------------------------------------
+//_____________________________________________________________________
 InitStatus CbmTrdClusterFinder::Init()
 {
 
@@ -118,284 +157,129 @@ InitStatus CbmTrdClusterFinder::Init()
 
   fGeoHandler->Init();
   
-  // new call needed when parameters are initialized from ROOT file
-//  fDigiPar->Initialize();
+//   // new call needed when parameters are initialized from ROOT file
+//   fDigiPar->Initialize();
+
+  LOG(INFO) << "================ TRD Cluster Finder ===============" << FairLogger::endl;
+  LOG(INFO) << " Free streaming    : " << (IsTimeBased()?"yes":"no")<< FairLogger::endl;
+  LOG(INFO) << " Multi hit detect  : " << (HasMultiHit()?"yes":"no")<< FairLogger::endl;
+  LOG(INFO) << " Row merger        : " << (HasRowMerger()?"yes":"no")<< FairLogger::endl;
+  LOG(INFO) << " c-Neighbour enable: " << (HasNeighbourCol()?"yes":"no")<< FairLogger::endl;
+  LOG(INFO) << " r-Neighbour enable: " << (HasNeighbourRow()?"yes":"no")<< FairLogger::endl;
+  LOG(INFO) << " Write clusters    : " << (HasDumpClusters()?"yes":"no")<< FairLogger::endl;
 
   return kSUCCESS;
   
 } 
-// --------------------------------------------------------------------
 
-// ---- Exec ----------------------------------------------------------
+//_____________________________________________________________________
 void CbmTrdClusterFinder::Exec(Option_t* /*option*/)
 {
-  //ChargeTH = 0.1;
-  fClusters->Clear();
+/**
+* Digis are sorted according to the moduleAddress. A combiId is calculted based 
+* on the rowId and the colId to have a neighbouring criterion for digis within 
+* the same pad row. The digis of each module are sorted according to this combiId.
+* All sorted digis of one pad row are 'clustered' into rowCluster. For a new row
+* the rowClusters are compared to the rowClusters of the last row. If an overlap 
+* is found they are marked to be parents(last row) and childrens(activ row) 
+* (mergeRowCluster()). After this, the finale clusters are created. Therefor 
+* walkCluster() walks along the list of marked parents and markes every visited 
+* rowCluster to avoid multiple usage of one rowCluster. drawCluster() can be used to
+* get a visual output.
+*/
 
-  if(fUseSimpleClustering == /*kTRUE*/kFALSE){
-    SimpleClustering();
-  } else {
-    RealClustering();
-  }
-
-}
-// --------------------------------------------------------------------
-void CbmTrdClusterFinder::SimpleClustering()
-{
-  // Loop over all digis and create for each digi a cluster
-
-  Int_t nofDigis = fDigis->GetEntries();
-  for (Int_t iDigi=0; iDigi < nofDigis; iDigi++ ) {
-    const CbmTrdDigi* digi = static_cast<const CbmTrdDigi*>(fDigis->At(iDigi));
-
-    TClonesArray& clref = *fClusters;
-    Int_t size = clref.GetEntriesFast();
-
-    CbmTrdCluster* cluster = new ((*fClusters)[size]) CbmTrdCluster();
-    cluster->AddDigi(iDigi);
- //   cluster->SetCharge(digi->GetCharge());
-  //  cluster->SetMaxCharge(digi->GetCharge());
-  }
-}
-// --------------------------------------------------------------------
-void CbmTrdClusterFinder::RealClustering()
-{
-  Char_t name[50];
-  Char_t title[50];
-  Int_t moduleId;
-  Int_t DigiId;
-  SortDigis();
-
-  //Loop over all modules with a fired pad in at least on of their
-  //sectors. Loop for each of these modules over all sectors, check 
-  //if they contain a fired pad and if any pad is fired loop over all 
-  //fired pads of these sector and create clusters of neighbouring pads.
-  //In the end check if the clusters end at a boundary between sectors. 
-  //If the cluster ends at such a boundary and there is a corresponding
-  //cluster in the neighbouring sector merge the two clusters.
-
-  Int_t searchRow = -1;
-  Int_t searchCol = -1; 
-
-  for ( mapIt=fModDigiMap.begin(); mapIt!=fModDigiMap.end(); mapIt++) //module map iterator
-    {
-      it = ((*mapIt).second).begin();                                 // Digi set iterator
-     
-      moduleId = (*mapIt).first;
-      //cout << " ModuleId: " << moduleId << "   Numer of Digis: " << ((*mapIt).second).size();
-      sprintf(name,"M%d",(*mapIt).first);
-      sprintf(title,"M%d",(*mapIt).first);
-      //DrawDigi(moduleId, name, title);
-
-      while ( ((*mapIt).second).size() > 0 )
-	{
-	  it = ((*mapIt).second).begin();
-	  DigiId = *it;
-	  //cout << " search Digi:" << *it << "        Col: " << fDigiCol[*it] << "     Row: " << fDigiRow[*it] << endl;
-	  std::set<Int_t> ClusterDigiID;  //Final container to store the digiIDs belonging to the same cluster 
-	  //cout << fDigiCharge[*it] << endl;
-	  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	  /*
-	    if ( fDigiCharge[*it] > ChargeTH )
-	    {
-	  */
-	  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	  ClusterDigiID.insert(*it);      //First element of the module map digi set is used as cluster seed
-	  fNeighbours.insert(*it);        //First element is copied to the set of neighbour digis
-	  ((*mapIt).second).erase(*it);   //First element belongs now to a cluster and is deleted from the module map digi set to avoid double proceeding
-
-	  while (fNeighbours.size() > 0)
-	    {
-	      neighbour = fNeighbours.begin();  //neighbour iterator is put to the first element of the set
-	      searchRow = fDigiRow[*neighbour]; //coordinate value to be compared to every digi of this module
-	      searchCol = fDigiCol[*neighbour]; // "
-	      SearchNeighbourDigis(searchRow, searchCol, ClusterDigiID);
-	      fNeighbours.erase(*neighbour);   //After searching for new neighbour digis, the activ digi is deleted to avoid double proceeding
-	      neighbour = fNeighbours.begin(); // neighbour iterator is put to the new first element of the set
-	    }
-	  fNeighbours.clear();     //If all neighbour digis which was found for the activ cluster are processed the set is cleared to be used for the next cluster
-	  fClusterBuffer.push_back(ClusterDigiID); // Each cluster digiSet is stored to one vector element
-	  ClusterDigiID.clear();  //if one cluster is finished the digiIDSet is cleared to be used for the next cluster
-	  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	  /*
-	    }
-	    else
-	    {
-	    ((*mapIt).second).erase(*it);   //First element is deleted since it is below Charge(T)resh(H)old 
-	    }
-	  */
-	  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	}
-      //cout << "  Number of found clusters: " <<  fClusterBuffer.size() << endl;
-      fModClusterDigiMap[(*mapIt).first] = fClusterBuffer;
-      fClusterBuffer.clear();
-      //cout << "                   set size: " << ((*mapIt).second).size() << endl;
-      //DrawCluster(moduleId,name,title);
-    }  
-}
-  // --------------------------------------------------------------------
-Bool_t CbmTrdClusterFinder::SearchNeighbourDigis(Int_t searchRow, Int_t searchCol, std::set<Int_t>& ClusterDigiID)
-{
-  for ( search = ((*mapIt).second).begin(); search != ((*mapIt).second).end(); search++) // The search iterator is put to the first element (after erasing the activ one) to the next (new first) one and the interated until reaching the last digi within the module map digi set
-    {
-      if (fabs(fDigiRow[*search] - searchRow) < 2 && fabs(fDigiCol[*search] - searchCol) < 2) // test if digi is a neighbour of the activ one
-	{
-	  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	  /*	 
-	  if (fDigiCharge[*search] > ChargeTH)
-	    {	
-	  */
-	      //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	      ClusterDigiID.insert(*search); // new found neighbour of the activ one is inserted in the finale cluster digi set
-	      fNeighbours.insert(*search);   // new found neighbour digi is inserted in the neighbour set to search for neighbour neighbour digis
-	      //cout << "        Digi:" << *search << "        Col: " << fDigiCol[*search] << "     Row: " << fDigiRow[*search] << endl;
-	      //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	      // }
-	  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	  ((*mapIt).second).erase(search); //found neighbour element is erased from module map digi set
-	}    
-    }
-  return true;    
-}
-  // --------------------------------------------------------------------
-void CbmTrdClusterFinder::DrawCluster(Int_t moduleId, Char_t* name, Char_t* title)
-{
-  Char_t Canfile[100];
-  sprintf(Canfile,"Pics/ModuleID%sClusterNo%d.png",name,int(fModClusterDigiMap[moduleId].size()));
-  TH2F* Test = new TH2F(title,name,200,0,200,30,0,30);
-  Test->SetContour(99);
-  std::set<Int_t>::iterator iPad;
-  Int_t Row;
-  Int_t Col;
-  for (Int_t iCluster = 0; iCluster < fModClusterDigiMap[moduleId].size(); iCluster++)
-    {
-      for (iPad = fModClusterDigiMap[moduleId][iCluster].begin(); iPad != fModClusterDigiMap[moduleId][iCluster].end(); iPad++)
-	{
-	  Row = fDigiRow[*iPad]+1;
-	  Col = fDigiCol[*iPad]+1;
-	  Test->SetBinContent( Col, Row, iCluster+1);
-	}
-    }
-  TCanvas* c = new TCanvas(title,name,900,900);
-  c->Divide(1,1);
-  c->cd(1);
-  Test->Draw("colz");
-  TImage *Outimage = TImage::Create();
-  Outimage->FromPad(c);
-  Outimage->WriteImage(Canfile);
-  delete Test;
-  delete c;
-}
-  // --------------------------------------------------------------------
-  void CbmTrdClusterFinder::DrawDigi(Int_t moduleId, Char_t* name, Char_t* title)
-  {
-    Char_t Canfile[100];
-    sprintf(Canfile,"Pics/ModuleID%sDigi.png",name);
-    TH2F* Test = new TH2F(title,name,200,0,200,30,0,30);
-    Test->SetContour(99);
-    std::set<Int_t>::iterator iPad;
-    Int_t Row;
-    Int_t Col;
-
-    for (iPad = fModDigiMap[moduleId].begin(); iPad != fModDigiMap[moduleId].end(); iPad++)
-      {
-	Row = fDigiRow[*iPad]+1;
-	Col = fDigiCol[*iPad]+1;
-	Test->SetBinContent( Col, Row, fDigiCharge[*iPad]);
-      }
-
-    TCanvas* c = new TCanvas(title,name,900,900);
-    c->Divide(1,1);
-    c->cd(1);
-    Test->Draw("colz");
-    TImage *Outimage = TImage::Create();
-    Outimage->FromPad(c);
-    Outimage->WriteImage(Canfile);
-    delete Test;
-    delete c;
-  }
-  // --------------------------------------------------------------------
-void CbmTrdClusterFinder::SortDigis()
-{
-  //Put all digis which belong to one sector (unique sector 
-  //in a unique module) into a set. Put all of theses sets
-  //into a map.
-
-  // Clear sector digi sets
-
-  for (mapIt=fDigiMap.begin(); mapIt!=fDigiMap.end(); mapIt++)
-    ((*mapIt).second).clear();
-
-  for (mapIt=fModuleMap.begin(); mapIt!=fModuleMap.end(); mapIt++)
-    ((*mapIt).second).clear();
-
-  for (mapIt=fModDigiMap.begin(); mapIt!=fModDigiMap.end(); mapIt++)
-    ((*mapIt).second).clear();
- 
-  Int_t sectorId, moduleId, iRow, iCol;
-  CbmTrdDigi *digi=NULL;
-  Int_t nentries = fDigis->GetEntries();
-
-  for (int iDigi=0; iDigi < nentries; iDigi++ ) {
-    digi =  (CbmTrdDigi*) fDigis->At(iDigi);
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    if (digi->GetCharge() > ChargeTH) // to improve speed
-      {
-	//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	//Get the sectorId 
-//	sectorId = digi->GetDetId();
-//	moduleId = fGeoHandler->GetModuleId(sectorId);
-
-	//cout << moduleId << endl;
-//	iRow = digi->GetRow();
-//	iCol = digi->GetCol();
-	fDigiCol[iDigi] = iCol;
-	fDigiRow[iDigi] = iRow;
-	fDigiCharge[iDigi] = digi->GetCharge();
+  fClusters->Delete();
     
-	// TODO: Maybe do this in the initilization
-
-	// Add all sectors of a module which have at least one
-	// fired pad to the map of modules
-	if ( fModuleMap.find(moduleId) == fModuleMap.end() ) {
-	  std::set<Int_t> a;
-	  a.insert(sectorId);
-	  fModuleMap[moduleId] = a;
-      
-	  std::set<Int_t> DigiSet;
-	  DigiSet.insert(iDigi);
-	  fModDigiMap[moduleId] = DigiSet;
- 
-	} else {
-	  fModuleMap[moduleId].insert(sectorId);      
-	  fModDigiMap[moduleId].insert(iDigi);
-	}
+  TStopwatch timer;
+  timer.Start();
   
-
-	// if the sector is not in the map add it, otherwise
-	// add the new digi to the map.
-	if ( fDigiMap.find(sectorId) == fDigiMap.end() ) {
-	  std::set<Int_t> a;
-	  a.insert(iDigi);
-	  fDigiMap[sectorId] = a;
-
-	} else {
-	  fDigiMap[sectorId].insert(iDigi);
-	}
-	//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-      }
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  Int_t nentries = fDigis->GetEntries();  
+  CbmTrdModuleRec *mod(NULL);
+  for (Int_t iDigi=0; iDigi < nentries; iDigi++ ) {
+    CbmTrdDigi *digi = (CbmTrdDigi*) fDigis->At(iDigi);
+    Int_t moduleAddress = digi->GetAddressModule();
+    
+    std::map<Int_t, CbmTrdModuleRec*>::iterator imod = fModules.find(moduleAddress);
+    if(imod==fModules.end()) mod = AddModule(digi);
+    else mod = imod->second;
+    //cout<<iDigi<<" : "<<digi->ToString()<<endl;
+    mod->AddDigi(digi, iDigi);    
   }
+  
+  Int_t digiCounter(0), clsCounter(0);
+  for(std::map<Int_t, CbmTrdModuleRec*>::iterator imod = fModules.begin(); imod!=fModules.end(); imod++){
+    mod = imod->second;
+    digiCounter += mod->GetOverThreshold();
+    
+    clsCounter += mod->FindClusters();
+    AddClusters(mod->GetClusters(), kTRUE);
+  }
+
+  // remove local data from all modules
+  for(std::map<Int_t, CbmTrdModuleRec*>::iterator imod = fModules.begin(); imod!=fModules.end(); imod++) imod->second->Clear("cls");
+  
+  timer.Stop();
+
+  LOG(INFO) << GetName() << "::Exec : Digis    : " << nentries << " / " << digiCounter << " above threshold (" << 1e6*fgMinimumChargeTH << " keV)"<< FairLogger::endl;
+  LOG(INFO) << GetName() << "::Exec : Clusters : " << clsCounter << FairLogger::endl;
+  LOG(INFO) << GetName() << "::Exec : real time=" << timer.RealTime() << " CPU time=" << timer.CpuTime() << FairLogger::endl;
+
+            //   //cout << "  " << counterI << " (" << counterI*100.0/Float_t(counterJ) << "%)" <<  " are reconstructed with fRowClusterMerger" << endl;
+//   //printf("   %4d modules (%6.3f%%) are reconstructed with fRowClusterMerger\n",counterI,counterI*100/Float_t(counterJ));
+//   LOG(INFO) << "CbmTrdClusterFinder::Exec : RowClusterMerger are used " << fRowMergerCounter << " times" << FairLogger::endl;
 }
-  /*
-    TODO: Add protocluster to CbmTrdCluster collection
 
+//_____________________________________________________________________
+Int_t CbmTrdClusterFinder::AddClusters(TClonesArray *clusters, Bool_t move) 
+{
+  CbmTrdCluster *cls(NULL);
+  CbmTrdDigi *digi(NULL);
+  CbmTrdParModDigi *digiPar(NULL);
+  TBits cols, rows;
+  Int_t ncl(fClusters->GetEntriesFast()), mcl(0), ncols(0);
+  for(Int_t ic(0); ic<clusters->GetEntriesFast(); ic++){
+    if(!(cls=(CbmTrdCluster*)(*clusters)[ic])) continue;
 
-  */
-  // ---- Finish --------------------------------------------------------
-  void CbmTrdClusterFinder::Finish()
-  {
+    if(!ncols){
+      digiPar = (CbmTrdParModDigi*)fDigiPar->GetModulePar(cls->GetAddress());
+      if(!digiPar){
+        LOG(ERROR) << "CbmTrdClusterFinder::AddClusters : Can't find ParModDigi for address"<<cls->GetAddress()<<FairLogger::endl;
+        continue;
+      }
+      ncols=digiPar->GetNofColumns();
+    }
+    
+    cols.Clear(); rows.Clear();
+    for(Int_t id=0; id<cls->GetNofDigis(); id++) {
+      digi = (CbmTrdDigi*) fDigis->At( cls->GetDigi(id) );
+      Int_t digiChannel = digi->GetAddressChannel();
+      Int_t colId     = digiChannel % ncols;
+      Int_t globalRow = digiChannel / ncols;
+
+      Int_t combiId   = globalRow * ncols + colId;
+      cols.SetBitNumber(combiId);
+      rows.SetBitNumber(globalRow);
+    }
+    // store information in cluster
+    cls->SetNCols( cols.CountBits() );
+    cls->SetNRows( rows.CountBits() );
+    if(move) (*fClusters)[ncl++] = cls;
+    else{ 
+      (*fClusters)[ncl++] = new CbmTrdCluster(/**cls*/); // TODO implement copy constructor
+      delete cls;
+    }
+    mcl++;
   }
+  clusters->Clear();
+  return mcl;
+}
 
-  ClassImp(CbmTrdClusterFinder)
+//_____________________________________________________________________
+void CbmTrdClusterFinder::Finish()
+{
+
+  
+}
+
+ClassImp(CbmTrdClusterFinder)
 

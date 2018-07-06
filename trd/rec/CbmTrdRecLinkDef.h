@@ -7,8 +7,8 @@
 #pragma link off all functions;
 
 #pragma link C++ class  CbmTrdClusterFinder+;
-//#pragma link C++ class  CbmTrdHitProducer+;
-//#pragma link C++ class  CbmTrdModuleRec+;
-//#pragma link C++ class  CbmTrdModuleRecR+;
-//#pragma link C++ class  CbmTrdModuleRecT+;
+#pragma link C++ class  CbmTrdHitProducer+;
+#pragma link C++ class  CbmTrdModuleRec+;
+#pragma link C++ class  CbmTrdModuleRecR+;
+#pragma link C++ class  CbmTrdModuleRecT+;
 #endif

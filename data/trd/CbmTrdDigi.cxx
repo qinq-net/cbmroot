@@ -1,151 +1,213 @@
 #include "CbmTrdDigi.h"
 
+#include <FairLogger.h>
+
 #include <sstream>
 #include <iomanip>
 using std::endl;
 using std::stringstream;
 using std::string;
 
-CbmTrdDigi::CbmTrdDigi() 
-  : CbmDigi(),
-    fn_FNR_Triggers(0),
-    fAddress(-1),
-    fCharge(-1.),
-    fChargeTR(-1.),
-    fChargeT(0.),
-    fChargeTTR(0.),
-    fTime(-1.),
-    fTriggerType(-1),
-    fInfoType(-1),
-    fStopType(-1),
-    fBufferOverflowCount(-1), 
-    fSamples()
-{
+/**
+ * fAddress defition TTnn.nnnn ffff.MMMM MMMM.pppp pppp.pppp
+ * T - trigger type
+ * n - error class
+ * f - flags according to CbmTrdDigiDef
+ * M - module address in the experiment
+ * p - pad address within the module
+*/
+Float_t CbmTrdDigi::fgClk[] = {62.5, 12.5};
+Float_t CbmTrdDigi::fgPrecission[] = {1.e3, 1.e1};
+//__________________________________________________________________________________________
+CbmTrdDigi::CbmTrdDigi()
+  : CbmDigi()
+  ,fAddress(0)
+  ,fCharge(0)
+  ,fTime(0)
+{  
 }
 
-CbmTrdDigi::CbmTrdDigi(
-      Int_t address,
-      Double_t charge,
-      Double_t time,
-      Bool_t padType)
-  : CbmDigi(),
-    fn_FNR_Triggers(0),
-    fAddress(address),
-    fCharge(charge),
-    fChargeTR(-1.),
-    fChargeT(0.),
-    fChargeTTR(0.),
-    fTime(time),
-    fTriggerType(-1),
-    fInfoType(-1),
-    fStopType(-1),
-    fBufferOverflowCount(-1), 
-    fSamples()
-{
-  if(padType) SetTriangular();
+//__________________________________________________________________________________________
+CbmTrdDigi::CbmTrdDigi(Int_t address, Float_t chargeT, Float_t chargeR, ULong64_t time)
+  : CbmDigi()
+  ,fAddress(0)
+  ,fCharge(0.)
+  ,fTime(time)
+{  
+/** Fill data structure according to FASP representation  
+ * fAddress defition ffff.ffff ffff.MMMM MMMM.pppp pppp.pppp
+ * f - flags according to CbmTrdDigiDef
+ * M - module address in the experiment
+ * p - pad address within the module
+ * 
+ * fCharge definition tttt.tttt tttt.tttt rrrr.rrrr rrrr.rrrr
+ * t - tilt paired charge
+ * r - rectangle paired charge
+ */
+  SetAsic(kFASP);
+  SetAddressChannel(address);
+  SetCharge(chargeT, chargeR);
 }
 
-CbmTrdDigi::CbmTrdDigi(
-		       Int_t address,
-		       Double_t charge,
-		       Double_t time, 
-		       Int_t triggerType, 
-		       Int_t infoType, 
-		       Int_t stopType
-		       )
-  : CbmDigi(),
-    fn_FNR_Triggers(0),
-    fAddress(address),
-    fCharge(charge),
-    fChargeTR(-1.),
-    fChargeT(0.),
-    fChargeTTR(0.),
-    fTime(time),
-    fTriggerType(triggerType),
-    fInfoType(infoType),
-    fStopType(stopType),
-    fBufferOverflowCount(-1), 
-    fSamples()
+//__________________________________________________________________________________________
+CbmTrdDigi::CbmTrdDigi(Int_t address, Float_t charge, ULong64_t time, Int_t triggerType, Int_t errClass)
+  : CbmDigi()
+  ,fAddress(0)
+  ,fCharge(0.)
+  ,fTime(time)
 {
-}
-// CbmTrdDigi used for Testbeam fles data format CbmSpadicRawMessage
-CbmTrdDigi::CbmTrdDigi(Int_t address, Double_t fullTime, Int_t triggerType, Int_t infoType, Int_t stopType, Int_t nrSamples, Float_t* samples)
-  : CbmDigi(),
-    fn_FNR_Triggers(0),
-    fAddress(address),
-    fCharge(0.0),
-    fChargeTR(0.),
-    fChargeT(0.),
-    fChargeTTR(0.),
-    fTime(Double_t(fullTime)),
-    fTriggerType(triggerType),
-    fInfoType(infoType),
-    fStopType(stopType),
-    fBufferOverflowCount(-1), 
-    fSamples()
-{
-  for (Int_t i = 0; i < nrSamples; ++i) {
-    fSamples.push_back(samples[i]);
-  }
+/**
+ * Fill data structure according to SPADIC representation  
+ * fAddress defition TTnn.nnnn ffff.MMMM MMMM.pppp pppp.pppp
+ * T - trigger type
+ * n - error class
+ * f - flags according to CbmTrdDigiDef
+ * M - module address in the experiment
+ * p - pad address within the module
+ * 
+ * fCharge definition UInt_t(charge*fgPrecission)
+*/
+  SetAsic(kSPADIC);
+  SetAddressChannel(address);
+  SetCharge(charge);
+  SetTriggerType(triggerType);
+  SetErrorClass(errClass);
 }
 
-CbmTrdDigi::~CbmTrdDigi()
+//__________________________________________________________________________________________
+void CbmTrdDigi::AddCharge(CbmTrdDigi *sd, Double_t f)
 {
+  if(GetType()!=kFASP){
+    LOG(WARNING)<<"CbmTrdDigi::AddCharge(CbmTrdDigi*, Double_t) : Only available for FASP. Use AddCharge(Double_t, Double_t) instead."<<FairLogger::endl;
+    return;
+  } 
+  UInt_t  t = ((fCharge&0xffff0000)>>16),
+          r = (fCharge&0xffff),
+          ts= ((sd->fCharge&0xffff0000)>>16),
+          rs= (sd->fCharge&0xffff);
+  // apply correction factor to charge        
+  Float_t tsf = f*ts/fgPrecission[kFASP], rsf = f*rs/fgPrecission[kFASP];
+  ts = tsf*fgPrecission[kFASP]; rs = rsf*fgPrecission[kFASP]; 
+  
+  if(t+ts<0xffff) t+=ts;
+  else t = 0xffff;
+  if(r+rs<0xffff) r+=rs;
+  else r = 0xffff;
+  fCharge = r|(t<<16);
 }
 
-string CbmTrdDigi::ToString() const {
-   stringstream ss;
-   ss << "CbmTrdDigi: address=" << fAddress ;
-   if(IsTriangular()) ss<<" charge="<<std::setprecision(5)<<fCharge<<"/"<<std::setprecision(5)<<fChargeT;
-   else ss << " charge=" << fCharge;
-   ss << " time=" << fTime 
-      << " NR_Triggers=" << fn_FNR_Triggers 
-      << " TriggerType" << fTriggerType
-      << " InfoType=" << fInfoType 
-      << " StopType=" << fStopType
-      << " BufferOverflowCount=" << fBufferOverflowCount 
-      << " NrSamples in vector=" << fSamples.size()  << endl;
-   return ss.str();
+//__________________________________________________________________________________________
+void CbmTrdDigi::AddCharge(Double_t c, Double_t f)
+{
+  if(GetType()!=kSPADIC){
+    LOG(WARNING)<<"CbmTrdDigi::AddCharge(Double_t, Double_t) : Only available for SPADIC. Use AddCharge(CbmTrdDigi*, Double_t) instead."<<FairLogger::endl;
+    return;
+  } 
+  SetCharge(GetCharge()+f*c);
 }
 
-Int_t CbmTrdDigi::Compare(const TObject *obj) const{
-  /** Override TObject::Compare to enable sorting a TClonesArray of CbmTrdDigis.
-   *  Sorts CbmTrdDigis with their Timestamp, in spadic granularity,
-   *  as the major key. CbmTrdDigis will then be sorted according to their 
-   *  LayerID, ModuleID, SectorID, RowID and ColumnID, in that order.
-   *  Digis on adjacent columns will be sorted next to each other.
-   *  The division by 62.5 in myTime and otherTime results from the sampling frequency of 
-   *  SPADICv2.0 it should be sufficient for time sampling of all other SPADIC prototype
-   *  frequencies.
-   **/
-  const CbmTrdDigi*ptr=static_cast<const CbmTrdDigi*>(obj);
-  if (!ptr) return -1;
-  Long64_t myTime=static_cast<Long64_t>((this->GetTime()+1.0)/62.5);
-  Long64_t otherTime=static_cast<Long64_t>((ptr->GetTime()+1.0)/62.5);
-  if(myTime<otherTime) return -1;
-  if(myTime>otherTime) return  1;
-  Int_t otherAddress=ptr->GetAddress();
-  std::vector<Int_t> rawAdresses={{fAddress,otherAddress}},sortAdresses(2);
-  for (UInt_t i=0;i<2;i++){
-    sortAdresses.at(i)+=CbmTrdAddress::GetColumnId(rawAdresses.at(i));
-    sortAdresses.at(i)+=CbmTrdAddress::GetRowId(rawAdresses.at(i))*256;
-    sortAdresses.at(i)+=CbmTrdAddress::GetSectorId(rawAdresses.at(i))*128*256;
-    sortAdresses.at(i)+=CbmTrdAddress::GetModuleId(rawAdresses.at(i))*4*128*256;
-    sortAdresses.at(i)+=CbmTrdAddress::GetLayerId(rawAdresses.at(i))*128*4*128*256;
-  }
-  //sortAdresses.at(0) is the local Address, sortAdresses.at(1) is the foreign Address
-  //if(sortAdresses.at(0)<sortAdresses.at(1))
-  //  return -1;
-  if(sortAdresses.at(0)==sortAdresses.at(1))
+//__________________________________________________________________________________________
+Double_t CbmTrdDigi::GetCharge()  const
+{
+  if(GetType()!=kSPADIC){
+    LOG(WARNING)<<"CbmTrdDigi::GetCharge() : Use Double_t GetCharge(Double_t &tilt) instead."<<FairLogger::endl;
     return 0;
-  if(sortAdresses.at(0)>sortAdresses.at(1))
-    return 1;
-  return -1;
+  } 
+  return fCharge/fgPrecission[kSPADIC];
 }
 
-void CbmTrdDigi::SetPulseShape(Float_t pulse[45]) {
-  for (Int_t sample = 0; sample < 45; sample++)
-    fSamples.push_back(pulse[sample]);
+//__________________________________________________________________________________________
+Double_t CbmTrdDigi::GetCharge(Double_t &tilt)  const
+{
+  if(GetType()!=kFASP){
+    LOG(WARNING)<<"CbmTrdDigi::GetCharge(Double_t &) : Use Double_t GetCharge() instead."<<FairLogger::endl;
+    return 0;
+  } 
+  
+  tilt = ((fCharge&0xffff0000)>>16)/fgPrecission[kFASP];
+  return (fCharge&0xffff)/fgPrecission[kFASP];
+}
+
+//__________________________________________________________________________________________
+Double_t CbmTrdDigi::GetChargeError()  const
+{
+  
+}
+
+//__________________________________________________________________________________________
+CbmTrdDigi::CbmTrdAsicType CbmTrdDigi::GetType() const
+{
+  if(IsFlagged(kType)) return kFASP;
+  else return kSPADIC;
+}
+
+//__________________________________________________________________________________________
+Bool_t CbmTrdDigi::IsFlagged(const Int_t iflag)  const
+{
+  if(iflag<0||iflag>=kNflags) return kFALSE;
+  UChar_t config = (fAddress>>20)&0xf;
+  return (config>>iflag)&0x1;  
+}
+
+//__________________________________________________________________________________________
+void CbmTrdDigi::SetAsic(CbmTrdAsicType ty)
+{ 
+  if(ty==kSPADIC) SetFlag(kType, kFALSE);
+  else SetFlag(kType);
+}
+
+//__________________________________________________________________________________________
+void CbmTrdDigi::SetCharge(Float_t cT, Float_t cR)   
+{ 
+  UInt_t r=UInt_t(cR*fgPrecission[kFASP]), t=UInt_t(cT*fgPrecission[kFASP]);
+  if(r>0xffff) r=0xffff;
+  if(t>0xffff) t=0xffff;
+  fCharge = r|(t<<16); 
+}
+
+//__________________________________________________________________________________________
+void CbmTrdDigi::SetCharge(Float_t c)   
+{ 
+
+  //  printf("SetCharge :: prec[%f] c[%f] uint[%d] \n", fgPrecission[kSPADIC],c,UInt_t(c*fgPrecission[kSPADIC]));
+  //  std::cout<<" setcharge: "<< UInt_t(c*fgPrecission[kSPADIC])<<std::endl;
+  fCharge = UInt_t(c*fgPrecission[kSPADIC]);
+  //  fCharge = UInt_t(c*1e9);
+}
+
+//__________________________________________________________________________________________
+void CbmTrdDigi::SetFlag(const Int_t iflag, Bool_t set)
+{
+  if(iflag<0||iflag>=kNflags) return;
+  if(set) SETBIT(fAddress, 20+iflag);
+  else CLRBIT(fAddress, 20+iflag);
+}
+
+//__________________________________________________________________________________________
+void CbmTrdDigi::SetTriggerType(const Int_t ttype)
+{
+  if(GetType()==kFASP) return;
+  if(ttype<0||ttype>kNeighbor) return;
+  fAddress|=(ttype<<30);
+}
+
+//__________________________________________________________________________________________
+string CbmTrdDigi::ToString() const 
+{
+  stringstream ss;
+  ss << "CbmTrdDigi("<<(GetType()==kFASP?"T)":"R)")<<" | module=" << GetAddressModule() <<" | pad=" << GetAddressChannel() << " | time[ns]=" << GetTime();
+  if(GetType()==kFASP) {
+    Double_t t, r = GetCharge(t);
+    ss<<" | pu="<<(IsPileUp()?"y":"n")
+      <<" | mask="<<(IsMasked()?"y":"n")
+      <<" |charge="<<std::setprecision(5)<<r<<"/"<<std::setprecision(5)<<t;
+  } else {
+    ss<< " | charge=" << GetCharge()
+      << " TriggerType=" << GetTriggerType()
+      << " ErrorClass=" << GetErrorClass();
+  }
+  ss<< endl;
+  return ss.str();
 }
 
 ClassImp(CbmTrdDigi)

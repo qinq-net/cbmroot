@@ -5,8 +5,8 @@
 
 #include <map>
 class CbmTrdRadiator;
-class CbmTrdDigiPar;
-class CbmTrdModule;
+class CbmTrdParSetDigi;
+class CbmTrdParSetGeo;
 class CbmTrdGeoHandler;
 class TClonesArray;
 class CbmTrdPoint;
@@ -54,8 +54,8 @@ class CbmTrdQa : public FairTask {
   TClonesArray *fDigis; //!
   TClonesArray *fClusters;//!
   TClonesArray *fHits; //!
-  CbmTrdDigiPar  *fDigiPar;    //!
-  CbmTrdModule   *fModuleInfo; //!
+  CbmTrdParSetDigi  *fDigiPar;    //!
+  CbmTrdParSetGeo  *fGeoPar;    //!
   CbmTrdGeoHandler *fGeoHandler; //!
   std::map<Int_t, TCanvas*> fLayerMap; //!
   std::map<Int_t, TCanvas*>::iterator fLayerMapIt; //! 

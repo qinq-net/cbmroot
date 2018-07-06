@@ -1,8 +1,12 @@
 #include "CbmTrdHitRateFastQa.h"
 
-#include "CbmTrdDigiPar.h"
+#include "CbmTrdParSetAsic.h"
+#include "CbmTrdParAsic.h"
+#include "CbmTrdParSetGeo.h"
+#include "CbmTrdParSetDigi.h"
+#include "CbmTrdParModDigi.h"
+#include "CbmTrdParModGeo.h"
 #include "CbmTrdAddress.h"
-#include "CbmTrdModule.h"
 #include "CbmTrdRadiator.h"
 #include "CbmTrdGeoHandler.h"
 
@@ -119,9 +123,9 @@ CbmTrdHitRateFastQa::CbmTrdHitRateFastQa(const char *name, const char *)
     fDigiCollection(NULL),
     fDigiMatchCollection(NULL),
     fMCStacks(NULL),
+    fAsicPar(NULL),
     fDigiPar(NULL),
-    fModuleInfo(NULL),
-    //fRadiators(NULL),
+    fGeoPar(NULL),
     fGeoHandler(new CbmTrdGeoHandler()),
     fColors(),
     fZLevel(),
@@ -155,8 +159,9 @@ void CbmTrdHitRateFastQa::SetParContainers()
     FairRunAna* ana = FairRunAna::Instance();
     FairRuntimeDb* rtdb=ana->GetRuntimeDb();
 
-    fDigiPar = (CbmTrdDigiPar*)
-               (rtdb->getContainer("CbmTrdDigiPar"));
+    fAsicPar = (CbmTrdParSetAsic*)(rtdb->getContainer("CbmTrdParSetAsic"));
+    fDigiPar = (CbmTrdParSetDigi*)(rtdb->getContainer("CbmTrdParSetDigi"));
+    fGeoPar = (CbmTrdParSetGeo*)(rtdb->getContainer("CbmTrdParSetGeo"));
 
 }
 // --------------------------------------------------------------------
@@ -170,8 +175,9 @@ InitStatus CbmTrdHitRateFastQa::ReInit(){
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
 
-  fDigiPar = (CbmTrdDigiPar*)
-      (rtdb->getContainer("CbmTrdDigiPar"));
+  fAsicPar = (CbmTrdParSetAsic*)(rtdb->getContainer("CbmTrdParSetAsic"));
+  fDigiPar = (CbmTrdParSetDigi*)(rtdb->getContainer("CbmTrdParSetDigi"));
+  fGeoPar = (CbmTrdParSetGeo*)(rtdb->getContainer("CbmTrdParSetGeo"));
 
   return kSUCCESS;
 }
@@ -402,7 +408,9 @@ void CbmTrdHitRateFastQa::Exec(Option_t*)
   for (Int_t i = 0; i < NofModules; i++) {  
 
     ModuleID = fDigiPar->GetModuleId(i);
-    fModuleInfo = fDigiPar->GetModule(ModuleID);
+    CbmTrdParSetAsic *fModuleAsic = (CbmTrdParSetAsic*)fAsicPar->GetModuleSet(ModuleID);
+    CbmTrdParModDigi *fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(ModuleID);
+    CbmTrdParModGeo *fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(ModuleID);
     //printf("%d:\n  %.1f %.1f %.1f\n",ModuleID,fModuleInfo->GetX(), fModuleInfo->GetY(),fModuleInfo->GetZ());
 
     fPlane   = CbmTrdAddress::GetLayerId(ModuleID);
@@ -613,15 +621,17 @@ void CbmTrdHitRateFastQa::ScanModulePlane(const Int_t moduleAddress, TCanvas*& c
   Double_t ratePerModule = 0;  // sum of data from this module
   TVector3 padPos;
   TVector3 padSize;
-  fModuleInfo = fDigiPar->GetModule(moduleAddress);
-  gGeoManager->FindNode(fModuleInfo->GetX(), fModuleInfo->GetY(), fModuleInfo->GetZ());
+  CbmTrdParSetAsic *fModuleAsic = (CbmTrdParSetAsic*)fAsicPar->GetModuleSet(moduleAddress);
+  CbmTrdParModDigi *fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);
+  CbmTrdParModGeo *fModuleGeo = (CbmTrdParModGeo*)fGeoPar->GetModulePar(moduleAddress);
+  gGeoManager->FindNode(fModuleGeo->GetX(), fModuleGeo->GetY(), fModuleGeo->GetZ());
   /*gGeoManager->FindNode(fModuleInfo->GetX(),
     fModuleInfo->GetY(),
     fModuleInfo->GetZ());
     printf("%s\n",TString(gGeoManager->GetPath()).Data());
   */
-  std::vector<Int_t> AsicAddresses = fModuleInfo->GetAsicAddresses();
-  Int_t nofAsics = fModuleInfo->GetNofAsics();
+  std::vector<Int_t> AsicAddresses; fModuleAsic->GetAsicAddresses(&AsicAddresses);
+  Int_t nofAsics = fModuleAsic->GetNofAsics();
   printf("     NofAsics:     %3i\n",nofAsics);
   myfile << "# NofAsics     : " << nofAsics << endl;
   myfile << "# moduleAddress / Asic ID / hits per 32ch Asic per second" << endl;
@@ -636,7 +646,7 @@ void CbmTrdHitRateFastQa::ScanModulePlane(const Int_t moduleAddress, TCanvas*& c
     const Int_t nCol = fModuleInfo->GetNofColumnsInSector(s);
     for (Int_t r = 0; r < nRow; r++){
       for (Int_t c = 0; c < nCol; c++){
-	fModuleInfo->GetPosition(moduleAddress, s, c, r, padPos, padSize);// padPos local or global???
+	fModuleInfo->GetPosition(/*moduleAddress, */s, c, r, padPos, padSize);// padPos local or global???
 	Int_t channelAddress = CbmTrdAddress::GetAddress(CbmTrdAddress::GetLayerId(moduleAddress),
 							 CbmTrdAddress::GetModuleId(moduleAddress), 
 							 s, r, c);
@@ -687,7 +697,7 @@ void CbmTrdHitRateFastQa::ScanModulePlane(const Int_t moduleAddress, TCanvas*& c
 	pad->Draw("same");
 
 	//delete pad;
-	Int_t AsicAddress = fModuleInfo->GetAsicAddress(channelAddress);
+	Int_t AsicAddress = fModuleAsic->GetAsicAddress(channelAddress);
 	if (AsicAddress < 0) 
 	  LOG(ERROR) << "CbmTrdHitRateFastQa::ScanModulePlane: Channel address:" << channelAddress << " is not initialized in module " << moduleAddress << "(s:" << s << ", r:" << r << ", c:" << c << ")" << FairLogger::endl;
 	ratePerAsicMap[AsicAddress] += rate;
@@ -697,22 +707,22 @@ void CbmTrdHitRateFastQa::ScanModulePlane(const Int_t moduleAddress, TCanvas*& c
     //sec->SetLineStyle(2);
     //sec->Draw("same");
   }
-  TBox *module = new TBox(fModuleInfo->GetX()*10-fModuleInfo->GetSizeX()*10,
-			  fModuleInfo->GetY()*10-fModuleInfo->GetSizeY()*10,
-			  fModuleInfo->GetX()*10+fModuleInfo->GetSizeX()*10,
-			  fModuleInfo->GetY()*10+fModuleInfo->GetSizeY()*10);
+  TBox *module = new TBox(fModuleGeo->GetX()*10-fModuleInfo->GetSizeX()*10,
+			  fModuleGeo->GetY()*10-fModuleInfo->GetSizeY()*10,
+			  fModuleGeo->GetX()*10+fModuleInfo->GetSizeX()*10,
+			  fModuleGeo->GetY()*10+fModuleInfo->GetSizeY()*10);
   module->SetFillStyle(0);
   module->Draw("same");
   c1->Update();
   c2->cd(1);
   module->Draw("same");
   c2->Update();
-  CbmTrdAsic *Asic = NULL; 
+  CbmTrdParAsic *Asic = NULL; 
   TBox *asic = NULL;
   CbmTrdUtils *utils = new CbmTrdUtils();
   utils->InitColorVector(true, 0., 4e6);
   for (Int_t iAsic = 0; iAsic < nofAsics; iAsic++){
-    Asic = fModuleInfo->GetAsic(AsicAddresses[iAsic]);
+    Asic = fModuleAsic->GetAsicPar(AsicAddresses[iAsic]);
 
     Double_t local_min[3]; 
     Double_t local_max[3];
@@ -720,10 +730,10 @@ void CbmTrdHitRateFastQa::ScanModulePlane(const Int_t moduleAddress, TCanvas*& c
     Double_t master_max[3];
     local_min[0] = Asic->GetX() - 0.5 * Asic->GetSizeX();
     local_min[1] = Asic->GetY() - 0.5 * Asic->GetSizeY();
-    local_min[2] = fModuleInfo->GetZ();
+    local_min[2] = fModuleGeo->GetZ();
     local_max[0] = Asic->GetX() + 0.5 * Asic->GetSizeX();
     local_max[1] = Asic->GetY() + 0.5 * Asic->GetSizeY();
-    local_max[2] = fModuleInfo->GetZ();
+    local_max[2] = fModuleGeo->GetZ();
     gGeoManager->LocalToMaster(local_min, master_min);
     gGeoManager->LocalToMaster(local_max, master_max);
     //printf("moduleAddress:%10i O:%i Asic:%3i  rate:%E\n",moduleAddress,fModuleInfo->GetOrientation(),AsicAddresses[iAsic],ratePerAsicMap[AsicAddresses[iAsic]]);
@@ -925,7 +935,8 @@ void CbmTrdHitRateFastQa::HistoInit(TCanvas*& c1, TCanvas*& c2, TCanvas*& c3, TH
     // x to the right (small side of the pads), y up
     //cout << "GetModuleInformationFromDigiPar" << endl;
 
-    fModuleInfo = fDigiPar->GetModule(VolumeID);
+    CbmTrdParModDigi *fModuleInfo = (CbmTrdParModDigi *)fDigiPar->GetModulePar(VolumeID);
+    CbmTrdParModGeo *fModuleGeo = (CbmTrdParModGeo *)fGeoPar->GetModulePar(VolumeID);
     if (fModuleInfo != NULL)
       {
 
@@ -938,9 +949,9 @@ void CbmTrdHitRateFastQa::HistoInit(TCanvas*& c1, TCanvas*& c2, TCanvas*& c3, TH
 	GeoPara->layerId   = fLayer;
 	GeoPara->stationId = fStation;
 
-	GeoPara->mPos[0] = fModuleInfo->GetX() * 10;
-	GeoPara->mPos[1] = fModuleInfo->GetY() * 10;
-	GeoPara->mPos[2] = fModuleInfo->GetZ() * 10; // == z(station) ??
+	GeoPara->mPos[0] = fModuleGeo->GetX() * 10;
+	GeoPara->mPos[1] = fModuleGeo->GetY() * 10;
+	GeoPara->mPos[2] = fModuleGeo->GetZ() * 10; // == z(station) ??
     
 	GeoPara->mSize[0] = fModuleInfo->GetSizeX() * 10;
 	GeoPara->mSize[1] = fModuleInfo->GetSizeY() * 10;
@@ -954,7 +965,7 @@ void CbmTrdHitRateFastQa::HistoInit(TCanvas*& c1, TCanvas*& c2, TCanvas*& c3, TH
 	    GeoPara->sCol[s] = 0;  // reset number of columns in sector
 	    GeoPara->sRow[s] = 0;  // reset number of rows    in sector
 
-	    fModuleInfo->GetPosition(VolumeID, s, 0, 0, padPos, padSize);
+	    fModuleInfo->GetPosition(/*VolumeID, */s, 0, 0, padPos, padSize);
 	    GeoPara->pSize[s][2] = 0;
 
 	    for (Int_t i = 0; i < 2; i++)  // for x and y
@@ -1026,20 +1037,20 @@ void CbmTrdHitRateFastQa::HistoInit(TCanvas*& c1, TCanvas*& c2, TCanvas*& c3, TH
 	  }
 
 	// get origin
-	fModuleInfo->GetPosition(VolumeID, 0, 0, 0, padPos, padSize);
+	fModuleInfo->GetPosition(/*VolumeID, */0, 0, 0, padPos, padSize);
 	GeoPara->vOrigin[0] = padPos[0] * 10;
 	GeoPara->vOrigin[1] = padPos[1] * 10; 
 	GeoPara->vOrigin[2] = padPos[2] * 10;
     
 	// get col offset
-	fModuleInfo->GetPosition(VolumeID, 0, 1, 0, padPos, padSize);
+	fModuleInfo->GetPosition(/*VolumeID, */0, 1, 0, padPos, padSize);
 	GeoPara->vX[0]      = padPos[0] * 10 - GeoPara->vOrigin[0]; 
 	GeoPara->vX[1]      = padPos[1] * 10 - GeoPara->vOrigin[1];			   
 	GeoPara->vX[2]      = padPos[2] * 10 - GeoPara->vOrigin[2];
 
 	// get row offset
 	//    fModuleInfo->GetPosition(VolumeID, 0, 0, 1, padPos, padSize); // rather take next of 3 sectors
-	fModuleInfo->GetPosition(VolumeID, 1, 0, 0, padPos, padSize);
+	fModuleInfo->GetPosition(/*VolumeID, */1, 0, 0, padPos, padSize);
 	GeoPara->vY[0]      = padPos[0] * 10 - GeoPara->vOrigin[0]; 
 	GeoPara->vY[1]      = padPos[1] * 10 - GeoPara->vOrigin[1]; 
 	GeoPara->vY[2]      = padPos[2] * 10 - GeoPara->vOrigin[2];
@@ -1239,7 +1250,7 @@ void CbmTrdHitRateFastQa::HistoInit(TCanvas*& c1, TCanvas*& c2, TCanvas*& c3, TH
 	if (Lines)
 	  for (Int_t s = 0; s < GeoPara->nSec; s++)  // for all (3) sectors
 	    {
-	      fModuleInfo->GetPosition(VolumeID, s, 0, 0, padPos, padSize);
+	      fModuleInfo->GetPosition(/*VolumeID,*/ s, 0, 0, padPos, padSize);
   
 	      TPolyMarker* start = new TPolyMarker(1);
 	      start->SetPoint(0, padPos(0)*10, padPos(1)*10);
@@ -1252,7 +1263,7 @@ void CbmTrdHitRateFastQa::HistoInit(TCanvas*& c1, TCanvas*& c2, TCanvas*& c3, TH
 		  start->Draw("same");
 		}
   
-	      fModuleInfo->GetPosition(VolumeID, s, GeoPara->sCol[0]-1, GeoPara->sRow[s]-1, padPos, padSize);
+	      fModuleInfo->GetPosition(/*VolumeID,*/ s, GeoPara->sCol[0]-1, GeoPara->sRow[s]-1, padPos, padSize);
   
 	      TPolyMarker* end = new TPolyMarker(1);
 	      end->SetPoint(0, padPos(0)*10, padPos(1)*10);

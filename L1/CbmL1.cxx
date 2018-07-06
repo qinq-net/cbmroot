@@ -33,8 +33,11 @@
 #include "setup/CbmStsSetup.h"
 #include "setup/CbmStsStation.h"
 
-#include "CbmTrdDigiPar.h"
-#include "CbmTrdModule.h"
+#include "CbmTrdParSetDigi.h"              // for CbmTrdParSetDigi
+#include "CbmTrdParModDigi.h"               // for CbmTrdModule
+
+//#include "CbmTrdDigiPar.h"
+//#include "CbmTrdModule.h"
 
 #include "CbmTofDigiPar.h"    // in tof/TofParam
 #include "CbmTofCell.h"
@@ -135,6 +138,7 @@ fMuchPixelHits(nullptr),
 fMuchStrawHits(nullptr),
 fDigisMuch(nullptr),
 fTrdDigiPar(nullptr),
+fTrdModuleInfo(nullptr),
 fTrdPoints(nullptr),
 listTrdHits(nullptr),
 fTrdHitMatches(nullptr),
@@ -218,6 +222,7 @@ fMuchPixelHits(nullptr),
 fMuchStrawHits(nullptr),
 fDigisMuch(nullptr),
 fTrdDigiPar(nullptr),
+fTrdModuleInfo(nullptr),
 fTrdPoints(nullptr),
 listTrdHits(nullptr),
 fTrdHitMatches(nullptr),
@@ -263,7 +268,8 @@ void CbmL1::SetParContainers()
   rtdb->getContainer("CbmGeoStsPar");
   fDigiPar = (CbmTofDigiPar*) (rtdb->getContainer("CbmTofDigiPar"));
   rtdb->getContainer("CbmGeoTofPar");
-  fTrdDigiPar = (CbmTrdDigiPar*)(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdDigiPar"));
+//  fTrdDigiPar = (CbmTrdDigiPar*)(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdDigiPar"));
+  fTrdDigiPar = (CbmTrdParSetDigi*)(rtdb->getContainer("CbmTrdParSetDigi"));
 
 }
 
@@ -870,6 +876,7 @@ InitStatus CbmL1::Init()
      // if (num==4) continue;
       
 
+/*
       int ModuleId = fTrdDigiPar->GetModuleId(num);
          
       CbmTrdModule* module = ( CbmTrdModule*) fTrdDigiPar->GetModule(ModuleId);
@@ -890,7 +897,7 @@ InitStatus CbmL1::Init()
       geo.push_back(b_phi);
       geo.push_back(b_sigma);
       Xmax = Ymax = 20;
-
+*/
     }
     
     if( (ist < (NMvdStations + NStsStations+NTrdStations+NMuchStations+NTOFStation))&& (ist >= (NMvdStations + NStsStations+NMuchStations+NTrdStations)) ){

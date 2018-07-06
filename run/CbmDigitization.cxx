@@ -24,7 +24,7 @@
 #include "CbmStsDigitize.h"
 #include "CbmSetup.h"
 #include "CbmTofDigitize.h"
-#include "CbmTrdDigitizerPRF.h"
+#include "CbmTrdDigitizer.h"
 
 
 
@@ -171,8 +171,8 @@ Int_t CbmDigitization::CreateDefaultDigitizers() {
         fDigitizers[system]->SetDigitizer(new CbmMuchDigitizeGem());
         LOG(INFO) << "MUCH "; nDigis++; break;
       case kTrd:
-        fDigitizers[system]->SetDigitizer(new CbmTrdDigitizerPRF());
-        LOG(INFO) << "TRD "; nDigis++; break;
+//        fDigitizers[system]->SetDigitizer(new CbmTrdDigitizer());
+//        LOG(INFO) << "TRD "; nDigis++; break;
       case kTof:
         fDigitizers[system]->SetDigitizer(new CbmTofDigitize());
         LOG(INFO) << "TOF "; nDigis++; break;

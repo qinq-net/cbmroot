@@ -1,19 +1,24 @@
 #include "CbmTrdTimeCorrel.h"
+
 #include "CbmSpadicRawMessage.h"
 #include "CbmHistManager.h"
 #include "CbmBeamDefaults.h"
 #include "CbmTrdCluster.h"
 #include "CbmTrdDigi.h"
-#include "TStyle.h"
-#include "FairLogger.h"
-#include "TCanvas.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TH3.h"
-#include "TMultiGraph.h"
-#include "TNtuple.h"
-#include "TString.h"
-#include "TMath.h"
+#include "CbmTrdAddress.h"
+
+#include <FairLogger.h>
+
+#include <TStyle.h>
+#include <TCanvas.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <TMultiGraph.h>
+#include <TNtuple.h>
+#include <TString.h>
+#include <TMath.h>
+
 #include <cmath>
 #include <map>
 #include <vector>

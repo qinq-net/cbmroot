@@ -8,9 +8,9 @@
 #include <list>
 #include <vector>
 
-class CbmTrdDigiPar;
-class CbmTrdModule;
-class CbmTrdRadiator;
+class CbmTrdParSetAsic;
+class CbmTrdParSetDigi;
+class CbmTrdParSetGeo;
 class CbmTrdGeoHandler;
 
 class TClonesArray;
@@ -177,9 +177,9 @@ class CbmTrdHitRateQa : public FairTask {
   TClonesArray *fDigiMatchCollection; //! Corresponding MCPoints to TRD digis
   TClonesArray *fMCStacks;  //! MC Track information
 
-  CbmTrdDigiPar  *fDigiPar;
-  CbmTrdModule   *fModuleInfo;
-  //CbmTrdRadiator *fRadiators; 
+  CbmTrdParSetAsic  *fAsicPar;
+  CbmTrdParSetDigi  *fDigiPar;
+  CbmTrdParSetGeo  *fGeoPar;
 
   CbmTrdGeoHandler* fGeoHandler; //!
     

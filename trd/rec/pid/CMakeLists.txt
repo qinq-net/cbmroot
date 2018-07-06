@@ -1,4 +1,4 @@
-# Create a library called "libTrd" which includes the source files given in
+# Create a library called "libCbmTrdPid" which includes the source files given in
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
@@ -36,21 +36,21 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
-  ${ROOT_LIBRARY_DIR}
-  ${FAIRROOT_LIBRARY_DIR}
-  ${Boost_LIBRARY_DIRS}
-  ${Vc_LIB_DIR}
-  ${KFParticle_LIB_DIR}
+${ROOT_LIBRARY_DIR}
+${FAIRROOT_LIBRARY_DIR}
+${Boost_LIBRARY_DIRS}
+${Vc_LIB_DIR}
+${KFParticle_LIB_DIR}
 ) 
 
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
-  CbmTrdElectronsTrainAnn.cxx
-  CbmTrdSetTracksPidWkn.cxx   
-  CbmTrdSetTracksPidModWkn.cxx  
-  CbmTrdSetTracksPidLike.cxx     
-  CbmTrdSetTracksPidANN.cxx
+CbmTrdElectronsTrainAnn.cxx
+CbmTrdSetTracksPidWkn.cxx   
+CbmTrdSetTracksPidModWkn.cxx  
+CbmTrdSetTracksPidLike.cxx     
+CbmTrdSetTracksPidANN.cxx       
 )
 
 IF (SSE_FOUND)
@@ -69,7 +69,6 @@ ENDIF (SSE_FOUND)
 set(LINKDEF CbmTrdPidLinkDef.h)
 Set(LIBRARY_NAME CbmTrdPid)
 Set(DEPENDENCIES
-    CbmBase CbmData CbmTrd CbmPapa Base TMVA
+    CbmBase CbmData CbmPapa Base TMVA CbmTrd CbmTrdRec
 )
-
 GENERATE_LIBRARY()

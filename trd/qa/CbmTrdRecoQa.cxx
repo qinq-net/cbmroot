@@ -11,8 +11,8 @@
 #include "CbmTrdPoint.h"
 #include "CbmMCTrack.h"
 
-#include "CbmTrdDigiPar.h"
-#include "CbmTrdModule.h"
+#include "CbmTrdParSetDigi.h"
+#include "CbmTrdParModDigi.h"
 #include "CbmMCTrack.h"
 
 #include "FairLogger.h"
@@ -148,8 +148,8 @@ void CbmTrdRecoQa::SetParContainers()
     FairRunAna* ana = FairRunAna::Instance();
     FairRuntimeDb* rtdb=ana->GetRuntimeDb();
 
-    fDigiPar = (CbmTrdDigiPar*)
-               (rtdb->getContainer("CbmTrdDigiPar"));
+    fDigiPar = (CbmTrdParSetDigi*)
+               (rtdb->getContainer("CbmTrdParSetDigi"));
 
 }
 // --------------------------------------------------------------------
@@ -163,8 +163,8 @@ InitStatus CbmTrdRecoQa::ReInit(){
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
 
-  fDigiPar = (CbmTrdDigiPar*)
-      (rtdb->getContainer("CbmTrdDigiPar"));
+    fDigiPar = (CbmTrdParSetDigi*)
+               (rtdb->getContainer("CbmTrdParSetDigi"));
   
   return kSUCCESS;
 }
@@ -235,7 +235,7 @@ void CbmTrdRecoQa::Exec(Option_t*)
     moduleAddress = CbmTrdAddress::GetModuleAddress(point->GetDetectorID());//
     moduleId = CbmTrdAddress::GetModuleId(point->GetDetectorID());
     //printf("Address:%i ID:%i\n",moduleAddress,moduleId);
-    fModuleInfo = fDigiPar->GetModule(moduleAddress);////point->GetDetectorID());
+    fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);////point->GetDetectorID());
     //printf("Address:%i ID:%i\n",moduleAddress,moduleId);
     if (fModuleInfo) {
       std::map<Int_t, TGraphErrors* >::iterator it = fModuleMapPoint.find(moduleAddress);
@@ -352,7 +352,7 @@ void CbmTrdRecoQa::Exec(Option_t*)
     digiSpectrum->Fill(digi->GetCharge());
     Int_t digiAddress = digi->GetAddress();
     moduleAddress = CbmTrdAddress::GetModuleAddress(digiAddress);
-    fModuleInfo = fDigiPar->GetModule(moduleAddress);
+    fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);////point->GetDetectorID());
     Int_t sec(CbmTrdAddress::GetSectorId(digiAddress)), row(CbmTrdAddress::GetRowId(digiAddress));
     row = fModuleInfo->GetModuleRow(sec, row);
     fModuleMapDigi[moduleAddress]->Fill(CbmTrdAddress::GetColumnId(digiAddress),row , digi->GetCharge());
@@ -373,7 +373,7 @@ void CbmTrdRecoQa::Exec(Option_t*)
 	lastModule = moduleAddress;
       }
       //cout << moduleAddress << endl;
-      fModuleInfo = fDigiPar->GetModule(moduleAddress);
+      fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);////point->GetDetectorID());
       Int_t sec(CbmTrdAddress::GetSectorId(digiAddress)), row(CbmTrdAddress::GetRowId(digiAddress));
       row = fModuleInfo->GetModuleRow(sec, row);
       fModuleMapCluster[moduleAddress]->Fill(CbmTrdAddress::GetColumnId(digiAddress), row, iCounter+1);
@@ -391,7 +391,7 @@ void CbmTrdRecoQa::Exec(Option_t*)
     hit = (CbmTrdHit*) fHits->At(iHit);
     
     moduleAddress = hit->GetAddress();//GetDetectorID();//?????
-    fModuleInfo = fDigiPar->GetModule(moduleAddress);
+    fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);////point->GetDetectorID());
     if (fModuleInfo == NULL) {
       //printf("MA:%6i not found!\n",moduleAddress);
       continue;

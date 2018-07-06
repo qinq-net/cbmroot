@@ -1,4 +1,4 @@
-# Create a library called "libRun" which includes the source files given in
+## Create a library called "libRun" which includes the source files given in
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
@@ -23,8 +23,7 @@ ${CBMROOT_SOURCE_DIR}/rich
 ${CBMROOT_SOURCE_DIR}/rich/detector
 ${CBMROOT_SOURCE_DIR}/much/geo
 ${CBMROOT_SOURCE_DIR}/much/reco
-${CBMROOT_SOURCE_DIR}/trd/mc
-${CBMROOT_SOURCE_DIR}/trd/attic
+${CBMROOT_SOURCE_DIR}/trd/sim
 ${CBMROOT_SOURCE_DIR}/tof/TofMC
 ${CBMROOT_SOURCE_DIR}/tof/TofDigi
 ${CBMROOT_SOURCE_DIR}/ecal
@@ -77,7 +76,7 @@ CbmDigitization.cxx
 set(LINKDEF CbmRunLinkDef.h)
 Set(LIBRARY_NAME CbmRun)
 Set(DEPENDENCIES
-    CbmData CbmBase CbmField CbmMvd CbmSts CbmRich CbmMuch CbmTrd CbmTof CbmPsd
+    CbmData CbmBase CbmField CbmMvd CbmSts CbmRich CbmMuch CbmTrd CbmTrdSim CbmTof CbmPsd
 )
 
 GENERATE_LIBRARY()

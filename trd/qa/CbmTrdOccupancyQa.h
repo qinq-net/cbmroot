@@ -11,8 +11,8 @@
 #include "TH1.h"
 #include "TH2.h"
 
-class CbmTrdDigiPar;
-class CbmTrdModule;
+class CbmTrdParSetDigi;
+class CbmTrdParSetGeo;
 class CbmTrdGeoHandler;
 
 class TClonesArray;
@@ -92,8 +92,8 @@ class CbmTrdOccupancyQa : public FairTask {
   CbmTrdOccupancyQa(const CbmTrdOccupancyQa&);
   TClonesArray *fDigis; //! TRD digis
   TClonesArray*     fClusters; 
-  CbmTrdDigiPar  *fDigiPar;    //!
-  CbmTrdModule   *fModuleInfo; //!
+  CbmTrdParSetDigi  *fDigiPar;    //!
+  CbmTrdParSetGeo  *fGeoPar;    //!
   CbmTrdGeoHandler* fGeoHandler; //!
   TH1I *fDigiChargeSpectrum;
   TH2I *fLayerDummy;

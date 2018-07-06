@@ -133,9 +133,9 @@ void run_transport(Int_t nEvents = 3,
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunct);
   // You can modify the pre-defined setup by using
-  // CbmSetup::Instance()->RemoveModule(ESystemId) or
+  CbmSetup::Instance()->RemoveModule(kTrd); 
   // CbmSetup::Instance()->SetModule(ESystemId, const char*, Bool_t) or
-  // CbmSetup::Instance()->SetActive(ESystemId, Bool_t)
+  //CbmSetup::Instance()->SetActive(kTrd, kFALSE);
   // See the class documentation of CbmSetup.
   // ------------------------------------------------------------------------
 

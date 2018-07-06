@@ -3,8 +3,11 @@
 
 #include "CbmTrdCluster.h"
 #include "CbmTrdDigi.h"
-#include "TClonesArray.h"
+#include "CbmTrdAddress.h"
 #include "CbmSpadicRawMessage.h"
+
+#include <TClonesArray.h>
+
 #include <vector>
 #include "TString.h"
 #include "TObject.h"

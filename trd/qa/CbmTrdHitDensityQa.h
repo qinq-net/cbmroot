@@ -3,27 +3,29 @@
 
 #include "FairTask.h"
 
-#include "CbmTrdDigitizerMathieson.h"
-#include "CbmTrdHitProducerCluster.h"
-#include "TLegend.h"
-#include "TClonesArray.h"
-#include "TSystem.h"
-#include "TVector3.h"
-#include <vector>
+// #include "CbmTrdDigitizerMathieson.h"
+// #include "CbmTrdHitProducerCluster.h"
+// #include "TLegend.h"
+// #include "TClonesArray.h"
+// #include "TSystem.h"
+// #include "TVector3.h"
+// #include <vector>
 #include <list>
-#include <map>
+// #include <map>
 #include <fstream>
 
-class CbmTrdDigiPar;
-class CbmTrdModule;
+class CbmTrdParSetAsic;
+class CbmTrdParSetDigi;
+class CbmTrdParSetGeo;
 class CbmTrdGeoHandler;
 class TH2I;
 class TH1I;
 class TH1D;
+class TH1F;
 class TClonesArray;
 
-typedef std::list<MyPoint*> MyPointList;
-typedef std::map<Int_t, MyPointList*> MyPointListMap;
+// typedef std::list<MyPoint*> MyPointList;
+// typedef std::map<Int_t, MyPointList*> MyPointListMap;
 
 class CbmTrdHitDensityQa : public FairTask
 {
@@ -81,8 +83,9 @@ class CbmTrdHitDensityQa : public FairTask
   TClonesArray*     fDigis;       /** Input array of CbmTrdDigi **/
   TClonesArray*     fClusters; 
 
-  CbmTrdDigiPar *fDigiPar;   //!
-  CbmTrdModule  *fModuleInfo; //!  
+  CbmTrdParSetAsic *fAsicPar;   //!
+  CbmTrdParSetDigi *fDigiPar;   //!
+  CbmTrdParSetGeo  *fGeoPar;   //!
   CbmTrdGeoHandler* fGeoHandler; //!
 
   Int_t fStation;

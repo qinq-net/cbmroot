@@ -3,12 +3,23 @@
  * \author Cyrano Bergmann
  * \date 18/11/13
  **/
-
 #include "CbmTrdUtils.h"
 #include "CbmTrdAddress.h"
+#include "CbmTrdParModDigi.h"
+#include "CbmTrdParSetDigi.h"
 
-#include "TMath.h"
-#include "TCanvas.h"
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <TProfile.h>
+#include <TLegend.h>
+#include <TPaveText.h>
+#include <TColor.h>
+#include <TPolyLine.h>
+#include <TMath.h>
+#include <TCanvas.h>
+
+#include <iostream>
 
 using std::cout;
 using std::endl;
@@ -176,14 +187,116 @@ void CbmTrdUtils::NiceTProfile(TProfile *h, Int_t color, Int_t mStyle, Int_t mSi
   h->SetYTitle(yTitle);
 }
 
-   void CbmTrdUtils::NiceLegend(TLegend *l)
-  {
-    l->SetLineColor(0);
-    l->SetLineStyle(0);
-    l->SetFillStyle(0);
-    l->SetTextSize(0.03);
-  }
+void CbmTrdUtils::NiceLegend(TLegend *l)
+{
+  l->SetLineColor(0);
+  l->SetLineStyle(0);
+  l->SetFillStyle(0);
+  l->SetTextSize(0.03);
+}
 
+Int_t CbmTrdUtils::PdgToGeant(Int_t PdgCode){
+  if (PdgCode == 22)
+    return 1;
+  if (PdgCode == -11)
+    return 2;
+  if (PdgCode == 11)
+    return 3;
+  if (PdgCode == 12 || PdgCode == 14 || PdgCode == 16)
+    return 4;
+  if (PdgCode == -13)
+    return 5;
+  if (PdgCode == 13)
+    return 6;
+  if (PdgCode == 111)
+    return 7;
+  if (PdgCode == 211)
+    return 8;
+  if (PdgCode == -211)
+    return 9;
+  if (PdgCode == 130)
+    return 10;
+  if (PdgCode == 321)
+    return 11;
+  if (PdgCode == -321)
+    return 12;
+  if (PdgCode == 2112)
+    return 13;
+  if (PdgCode == 2212)
+    return 14;
+  if (PdgCode == -2212)
+    return 15;
+  if (PdgCode == 310)
+    return 16;
+  if (PdgCode == 221)
+    return 17;
+  if (PdgCode == 3122)
+    return 18;
+  if (PdgCode == 3222)
+    return 19;
+  if (PdgCode == 3212)
+    return 20;
+  if (PdgCode == 3112)
+    return 21;
+  if (PdgCode == 3322)
+    return 22;
+  if (PdgCode == 3312)
+    return 23;
+  if (PdgCode == 3332)
+    return 24;
+  if (PdgCode == -2112)
+    return 25;
+  if (PdgCode == -3122)
+    return 26;
+  if (PdgCode == -3112)
+    return 27;
+  if (PdgCode == -3212)
+    return 28;
+  if (PdgCode == -3322)
+    return 30;
+  if (PdgCode == -3312)
+    return 31;
+  if (PdgCode == -3332)
+    return 32;
+  if (PdgCode == -15)
+    return 33;
+  if (PdgCode == 15)
+    return 34;
+  if (PdgCode == 411)
+    return 35;
+  if (PdgCode == -411)
+    return 36;
+  if (PdgCode == 421)
+    return 37;
+  if (PdgCode == -412)
+    return 38;
+  if (PdgCode == 431)
+    return 39;
+  if (PdgCode == -431)
+    return 40;
+  if (PdgCode == 4122)
+    return 41;
+  if (PdgCode == 24)
+    return 42;
+  if (PdgCode == -24)
+    return 43;  
+  if (PdgCode == 23)
+    return 44;
+  if (PdgCode == 50000050)
+    return 45;
+  if (PdgCode == 1000010020)
+    return 46;
+  if (PdgCode == 1000010030)
+    return 47;
+  if (PdgCode == 1000020040)
+    return 48;
+  //if (PdgCode == -1)
+  //return 49;
+  std::cout << PdgCode << std::endl;
+  return 49;
+};
+  
+  
 void CbmTrdUtils::Statusbar(Int_t i, Int_t n) {
   if (int(i * 100 / float(n)) - int((i-1) * 100 / float(n)) >= 1) {
     if (int(i * 100 / float(n)) == 1 || i == 1 || i == 0) 
@@ -196,9 +309,9 @@ void CbmTrdUtils::Statusbar(Int_t i, Int_t n) {
   }
 }
 
-Int_t CbmTrdUtils::GetModuleType(Int_t moduleAddress, CbmTrdModule *fModuleInfo, CbmTrdDigiPar *fDigiPar){
+Int_t CbmTrdUtils::GetModuleType(Int_t moduleAddress, CbmTrdParModDigi *fModuleInfo, CbmTrdParSetDigi *fDigiPar){
   Int_t type = -1;
-  fModuleInfo = fDigiPar->GetModule(moduleAddress);
+  fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(moduleAddress);
   Int_t nRows = fModuleInfo->GetNofRows();
   Int_t nCols = fModuleInfo->GetNofColumns();
 
@@ -248,7 +361,8 @@ Int_t CbmTrdUtils::GetModuleType(Int_t moduleAddress, CbmTrdModule *fModuleInfo,
 }
 
    
-  void CbmTrdUtils::CreateLayerView(std::map<Int_t/*moduleAddress*/, TH1*>& Map, CbmTrdModule *fModuleInfo, CbmTrdDigiPar *fDigiPar, const TString /*folder*/, const TString pics, const TString zAxisTitle, const Double_t fmax, const Double_t fmin, const Bool_t logScale){
+void CbmTrdUtils::CreateLayerView(std::map<Int_t/*moduleAddress*/, TH1*>& Map, CbmTrdParModDigi *fModuleInfo, CbmTrdParSetDigi *fDigiPar, const TString /*folder*/, const TString pics, const TString zAxisTitle, const Double_t fmax, const Double_t fmin, const Bool_t logScale)
+{
     TString title(""), name("");
     //name.Form("_TH_%.2EGeV_",fTriggerThreshold);
     TPaveText *text=NULL;
@@ -280,7 +394,7 @@ Int_t CbmTrdUtils::GetModuleType(Int_t moduleAddress, CbmTrdModule *fModuleInfo,
     for (MapIt = Map.begin(); MapIt != Map.end(); MapIt++) {
       Double_t value = MapIt->second->GetMean(1);
       Double_t valueE = MapIt->second->GetRMS(1);
-      fModuleInfo = fDigiPar->GetModule(MapIt->first);
+      fModuleInfo = (CbmTrdParModDigi*)fDigiPar->GetModulePar(MapIt->first);
       Int_t Station  = CbmTrdAddress::GetLayerId(MapIt->first) / 4 + 1;//fGeoHandler->GetStation(moduleId);
       Int_t Layer    = CbmTrdAddress::GetLayerId(MapIt->first) % 4 + 1;//fGeoHandler->GetLayer(moduleId);
       Int_t combiId = 10 * Station + Layer;
@@ -293,10 +407,12 @@ Int_t CbmTrdUtils::GetModuleType(Int_t moduleAddress, CbmTrdModule *fModuleInfo,
       }
       fLayerMap[combiId]->cd();
  
-      text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
-			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
-			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+//       text = new TPaveText(fModuleInfo->GetX()-fModuleInfo->GetSizeX(),
+// 			   fModuleInfo->GetY()-fModuleInfo->GetSizeY(),
+// 			   fModuleInfo->GetX()+fModuleInfo->GetSizeX(),
+// 			   fModuleInfo->GetY()+fModuleInfo->GetSizeY());
+      // TODO should find a better way to get the position information for module
+      text = new TPaveText(0,0,fModuleInfo->GetSizeX(),fModuleInfo->GetSizeY());
       text->SetFillStyle(1001);
       text->SetLineColor(1);
 

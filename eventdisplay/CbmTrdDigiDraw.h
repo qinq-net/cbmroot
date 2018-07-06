@@ -14,11 +14,11 @@
 #ifndef CBMTRDDIGIDRAW_H
 #define CBMTRDDIGIDRAW_H
 
-#include "FairTask.h"                   // for FairTask, InitStatus
-#include "Rtypes.h"                     // for Bool_t, Int_t, etc
+#include <FairTask.h>                   // for FairTask, InitStatus
+//#include "Rtypes.h"                     // for Bool_t, Int_t, etc
 
-class CbmTrdDigiPar;
-class CbmTrdModule;
+class CbmTrdParSetDigi;
+class CbmTrdParModDigi;
 class FairEventManager;
 
 class TClonesArray;
@@ -64,8 +64,8 @@ protected:
   /** Action after each event**/
   virtual void Finish() ;
   TClonesArray *fPointList; //!
-  CbmTrdDigiPar *fDigiPar; //!
-  CbmTrdModule *fModuleInfo; //!
+  CbmTrdParSetDigi *fDigiPar; //!
+  CbmTrdParModDigi *fModuleInfo; //!
   FairEventManager *fEventManager;   //!
   TEveBoxSet* fq;    //!
   Color_t fColor; //!

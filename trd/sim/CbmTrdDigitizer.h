@@ -2,8 +2,9 @@
  * \file CbmTrdDigitizer.h
  * \author Florian Uhlig <f.uhlig@gsi.de>
  * \date 2008
- * \brief Simple TRD digitizer.
+ * \brief TRD digitizer.
  * Updated 24/04/2013 by Andrey Lebedev <andrey.lebedev@gsi.de>
+ * Updated 4/06/2018 by Alex Bercuci <abercuci@niham.nipne.ro>
  **/
 
 #ifndef CBMTRDDIGITIZER_H_
@@ -15,74 +16,120 @@
 
 class TClonesArray;
 
-class CbmTrdDigiPar;
-class CbmTrdDigi;
-class CbmTrdModule;
+class CbmTrdParSetAsic;
+class CbmTrdParSetGas;
+class CbmTrdParSetDigi;
+class CbmTrdParSetGain;
+class CbmTrdParSetGeo;
 class CbmTrdRadiator;
+
+class CbmTrdDigi;
 class CbmMatch;
+
+class CbmTrdGeoHandler;
+class CbmTrdModuleSim;
 
 class CbmTrdDigitizer : public FairTask
 {
 public:
+  enum CbmTrdSimDef{
+    kTime           = 0,    ///< select Time based/Event by event simulations
+    kNoise,                 ///< switch noise digits generation
+    kWeightDistance,        ///< use weighting distance for link generation
+    kFASP                   ///< use FASP ASIC for triangular pad plane geometry
+  };
 
-   /**
-    * \brief Constructor.
-    * \param[in] raiator TRD radiator to be used in digitization.
-    */
-   CbmTrdDigitizer(
-       CbmTrdRadiator* radiator = NULL);
+  /**
+  * \brief Constructor.
+  * \param[in] radiator TRD radiator to be used in digitization.
+  */
+  CbmTrdDigitizer(CbmTrdRadiator* radiator = NULL);
 
-   /**
-    * \brief Destructor.
-    **/
-   virtual ~CbmTrdDigitizer();
+  /**
+  * \brief Destructor.
+  **/
+  virtual ~CbmTrdDigitizer();
+  static Bool_t   AddNoise()           { return TESTBIT(fConfig, kNoise); }
+  static Bool_t   IsTimeBased()        { return TESTBIT(fConfig, kTime); }
+  static Bool_t   UseWeightedDist()    { return TESTBIT(fConfig, kWeightDistance); }
+  static Bool_t   UseFASP()            { return TESTBIT(fConfig, kFASP); }
 
-   /**
-    * \brief Inherited from FairTask.
-    */
-   virtual InitStatus Init();
+  /**
+  * \brief Inherited from FairTask.
+  */
+  virtual InitStatus Init();
 
-   /**
-    * \brief Inherited from FairTask.
-    */
-   virtual void SetParContainers();
+  /**
+  * \brief Inherited from FairTask.
+  */
+  virtual void    SetParContainers();
 
-   /**
-    * \brief Inherited from FairTask.
-    */
-   virtual void Exec(Option_t * option);
+  /**
+  * \brief Inherited from FairTask.
+  */
+  virtual void    Exec(Option_t * option);
 
-   /**
-    * \brief Inherited from FairTask.
-    */
-   virtual void Finish();
+  /**
+  * \brief Inherited from FairTask.
+  */
+  virtual void    Finish();
+
+  static void     SetAddNoise(Bool_t set=kTRUE)     { set?SETBIT(fConfig, kNoise):CLRBIT(fConfig, kNoise); }
+  static void     SetUseFASP(Bool_t set=kTRUE)      { set?SETBIT(fConfig, kFASP):CLRBIT(fConfig, kFASP); }
+  static void     SetTimeBased(Bool_t set=kTRUE)    { set?SETBIT(fConfig, kTime):CLRBIT(fConfig, kTime); }
+  static void     SetWeightedDist(Bool_t set=kTRUE) { set?SETBIT(fConfig, kWeightDistance):CLRBIT(fConfig, kWeightDistance); }
+protected:
+  void            GetEventInfo(UInt_t& inputNr, UInt_t& eventNr, Double_t& eventTime);
+  Int_t           FlushLocalBuffer(Double_t eventTime=0);
 
 private:
+  CbmTrdDigitizer(const CbmTrdDigitizer&);
+  CbmTrdDigitizer& operator=(const CbmTrdDigitizer&);
 
-    /**
-     * \brief Create digi and digi match and add to temporary map.
-     * \param[in] pointId MC point index.
-     */
-    void AddDigi(
-          Int_t pointId);
+  /**
+    * \brief Create module for current MC point.
+    * \param[in] detId unique identifier of module.
+    * \return pointer to newly created module
+    */
+  CbmTrdModuleSim* AddModule(Int_t detId);
+  /**
+    * \brief Recursive reset all private monitoring counters
+    */
+  void              ResetCounters();
 
-    CbmTrdDigitizer(const CbmTrdDigitizer&);
-    CbmTrdDigitizer& operator=(const CbmTrdDigitizer&);
 
-    Float_t fEfficiency; // Digi production efficiency [0..1]
+  static Int_t fConfig;         ///< Configuration map for the digitizer. See CbmTrdSimDef for details
 
-    TClonesArray* fTrdPoints; //! Trd MC points
-    TClonesArray* fMCTracks;  //! MC Track information
-    TClonesArray* fTrdDigis; //! Output CbmTrdDigi array
-    TClonesArray* fTrdDigiMatches; //! Output CbmMatch array
+  // event info
+  UInt_t      fInputNr;         ///< input file ID
+  UInt_t      fEventNr;         ///< event ID or mc entry number
+  Double_t    fEventTime;       ///< event time [ns]
+  Double_t    fLastEventTime;   ///< time of last event [ns]
+  
+  // counters
+  Int_t fpoints;
+  Int_t nofBackwardTracks;
+  
+  Float_t fEfficiency;          ///< Digi production efficiency [0..1]
 
-    CbmTrdDigiPar* fDigiPar;
-    CbmTrdModule* fModuleInfo;
-    CbmTrdRadiator* fRadiator;
-    
-    // Temporary storage for digis.
-    std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*> > fDigiMap;
+  TClonesArray* fPoints;        ///< Trd MC points
+  TClonesArray* fTracks;        ///< MC Track information
+  TClonesArray* fDigis;         ///< Output CbmTrdDigi array
+  TClonesArray* fDigiMatches;   ///< Output CbmMatch array
 
-    ClassDef(CbmTrdDigitizer, 4);
+  CbmTrdParSetAsic* fAsicPar;   ///< parameter list for ASIC characterization
+  CbmTrdParSetGas*  fGasPar;    ///< parameter list for HV status
+  CbmTrdParSetDigi* fDigiPar;   ///< parameter list for read-out geometry
+  CbmTrdParSetGain* fGainPar;   ///< parameter list for keV->ADC gain conversion
+  CbmTrdParSetGeo*  fGeoPar;    ///< parameter list for geometry definitions
+  CbmTrdRadiator*   fRadiator;  ///< parametrization of radiator TR yield
+  
+  CbmTrdGeoHandler *fGeoHandler;///< helper to decript geoManager path into proper module type
+  std::map<Int_t, CbmTrdModuleSim*> fModuleMap; ///< list of modules being processed
+  
+  // Temporary storage for digis.
+  std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*> > fDigiMap;
+
+  ClassDef(CbmTrdDigitizer, 1);
 };
 #endif // CBMTRDDIGITIZER_H_

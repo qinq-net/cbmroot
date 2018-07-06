@@ -4,8 +4,7 @@
 */
 
 #include "CbmTrdTestBeamTools.h"
-#include "FairLogger.h"
-#include "CbmTrdAddress.h"
+#include <FairLogger.h>
 #include <algorithm>
 #include <iostream>
 
@@ -68,7 +67,7 @@ Int_t CbmTrdTestBeamTools::GetSpadicID(CbmSpadicRawMessage* raw)
   Int_t sourceA = raw->GetSourceAddress();
   Int_t SpaId = sourceA-GetSpadicBaseAddress();
   if (SpaId<0||SpaId>5){
-    LOG(ERROR) << "CbmTrdTestBeamTools: Source Address " << sourceA << " not known." << FairLogger::endl;
+    LOG(ERROR) << "Source Address " << sourceA << " not known." << FairLogger::endl;
     SpaId = -1;
   }
   return SpaId;
@@ -83,7 +82,7 @@ Int_t CbmTrdTestBeamTools::GetRobID(CbmSpadicRawMessage* raw)
   Int_t eqID=raw->GetEquipmentID();
   Int_t SyscoreID=eqID-GetBaseEquipmentID();
   if((SyscoreID<0||SyscoreID>GetNrRobs())){
-    LOG(ERROR) << "CbmTrdTestBeamTools: EqID " << eqID << " not known." << FairLogger::endl;
+    LOG(ERROR) << "EqID " << eqID << " not known." << FairLogger::endl;
     SyscoreID=-1;
   }
   return SyscoreID;

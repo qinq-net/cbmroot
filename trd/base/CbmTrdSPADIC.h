@@ -9,11 +9,10 @@
 
 #include "FairTask.h"
 
-#include "TClonesArray.h"
-
-class CbmTrdDigiPar;
-class CbmTrdModule;
+class CbmTrdParSetDigi;
+class CbmTrdParModDigi;
 class CbmTrdGeoHandler;
+class TClonesArray;
 class TH1D;
 class CbmTrdDigi;
 
@@ -74,8 +73,8 @@ class CbmTrdSPADIC : public FairTask
 
   TClonesArray*     fDigis;       /** Input array of CbmTrdDigi **/
 
-  CbmTrdDigiPar *fDigiPar;   //!
-  CbmTrdModule  *fModuleInfo; //!
+  CbmTrdParSetDigi *fDigiPar;   //!
+  CbmTrdParModDigi *fModuleInfo; //!
   
   CbmTrdGeoHandler* fGeoHandler; //!
 
