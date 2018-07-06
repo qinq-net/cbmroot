@@ -1123,6 +1123,7 @@ void CbmLitTrackingQa::PionSuppression()
        Int_t tofIndex = globalTrack->GetTofHitIndex();
        if (fDet.GetDet(kTof) && tofIndex < 0) continue;
        
+       if (trackMatch->GetNofLinks() <= 0) continue;
       Int_t mcIdSts = trackMatch->GetMatchedLink().GetIndex();
       Int_t mcIdStsEvent = trackMatch->GetMatchedLink().GetEntry();
       if (mcIdSts < 0) continue;
