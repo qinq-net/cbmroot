@@ -20,6 +20,7 @@ Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
+${Boost_LIBRARY_DIRS}
 )
  
 link_directories( ${LINK_DIRECTORIES})
@@ -47,7 +48,7 @@ CbmPsdNA61.cxx
 set(LINKDEF CbmPsdLinkDef.h)
 Set(LIBRARY_NAME CbmPsd)
 Set(DEPENDENCIES
-    CbmData Base 
+    CbmData CbmBase Base 
 )
 
 GENERATE_LIBRARY()

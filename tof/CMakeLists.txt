@@ -100,7 +100,7 @@ TofQA/CbmTofHitFinderTBQA.cxx
 set(LINKDEF CbmTofLinkDef.h)
 Set(LIBRARY_NAME CbmTof)
 Set(DEPENDENCIES
-    CbmBase CbmData CbmDisplay Base 
+    CbmBase CbmData CbmDisplay Base Minuit
     ${TOF_BEAM_DEPEND}
 )
 
