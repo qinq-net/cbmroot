@@ -1,25 +1,16 @@
 // --------------------------------------------------------------------------
 //
-// Macro for standard transport simulation using UrQMD input and GEANT3
+// Macro for STS-only transport simulation using UrQMD input and GEANT3
 //
 // V. Friese   22/02/2007
 //
-// Version 2018-06-09
+// Version 2018-07-05
 //
-// For the setup (geometry and field), predefined setups can be chosen
-// by the second argument. Available setups are in geometry/setup.
-// The input file by the last argument. If none is specified, a default
-// input file distributed with the source code is selected.
-//
-// The output file will be named [output].tra.root.
-// A parameter file [output].par.root will be created.
-// The geometry (TGeoManager) will be written into [output].geo.root.
+// The macro follows the file naming conventions of macro/run/run_transport.C
 // --------------------------------------------------------------------------
 
-
-void run_transport(Int_t nEvents = 2,
-                   const char* setupName = "sis100_electron",
-                   const char* output = "test",
+void sts_transport(Int_t nEvents = 3,
+                   const char* output = "sts",
                    const char* inputFile = "")
 {
 
@@ -27,8 +18,9 @@ void run_transport(Int_t nEvents = 2,
   //          Adjust this part according to your requirements
 
   // -----   Environment   --------------------------------------------------
-  TString myName = "run_transport";  // this macro's name for screen output
+  TString myName = "sts_transport";  // this macro's name for screen output
   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+  TString setupName = "sis100_hadron";
   // ------------------------------------------------------------------------
 
 
@@ -104,8 +96,7 @@ void run_transport(Int_t nEvents = 2,
   
   // -----   Remove old CTest runtime dependency file   ---------------------
   TString workdir(gSystem->DirName(output));
-  TString depFile = Remove_CTest_Dependency_File(workdir, "run_transport",
-                                                 setupName);
+  TString depFile = Remove_CTest_Dependency_File(workdir, "sts_transport");
   // ------------------------------------------------------------------------
 
 
@@ -126,17 +117,19 @@ void run_transport(Int_t nEvents = 2,
 
   // -----   Load the geometry setup   -------------------------------------
   std::cout << std::endl;
+  CbmSetup* setup = CbmSetup::Instance();
   TString setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
   TString setupFunct = "setup_";
   setupFunct = setupFunct + setupName + "()";
   std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunct);
-  // You can modify the pre-defined setup by using
-  CbmSetup::Instance()->RemoveModule(kTrd); 
-  // CbmSetup::Instance()->SetModule(ESystemId, const char*, Bool_t) or
-  //CbmSetup::Instance()->SetActive(kTrd, kFALSE);
-  // See the class documentation of CbmSetup.
+  // Remove all geometries except STS
+  TString dummy;
+  for (Int_t module = 0; module < kLastModule; module++) {
+    if ( module != kSts && setup->GetGeoTag(module, dummy) )
+      CbmSetup::Instance()->RemoveModule(module);
+  }
   // ------------------------------------------------------------------------
 
 
@@ -214,7 +207,7 @@ void run_transport(Int_t nEvents = 2,
   run->SetGenerator(primGen);
   // ------------------------------------------------------------------------
 
- 
+
   // -----   Run initialisation   -------------------------------------------
   std::cout << std::endl;
   std::cout << "-I- " << myName << ": Initialise run" << std::endl;
@@ -238,7 +231,7 @@ void run_transport(Int_t nEvents = 2,
   rtdb->print();
   // ------------------------------------------------------------------------
 
- 
+
   // -----   Start run   ----------------------------------------------------
   std::cout << std::endl << std::endl;
   std::cout << "-I- " << myName << ": Starting run" << std::endl;
@@ -286,4 +279,5 @@ void run_transport(Int_t nEvents = 2,
   // ------------------------------------------------------------------------
 
 }
+
 

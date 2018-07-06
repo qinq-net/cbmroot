@@ -1,15 +1,19 @@
-/** Macro module for registration of digitiser tasks to a run
+/** Macro module for registration of reconstruction tasks to a run
  **
- ** The run instance can either be FairRunSim or FairRunAna.
- ** The macro assumes a CbmSetup instance. The digitisers for the
- ** active detectors within the setup are instantiated.
+ ** The run instance must be FairRunAna.
+ ** The macro assumes a CbmSetup instance.
+ ** Reconstruction tasks are instantiated depending on the presence
+ ** of the detector in the setup.
+ **
+ ** If the option useMC is chosen, L1 will be run with performance
+ ** evaluation.
  **
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 10 February 2016
  **/
 
 
-Bool_t reconstruct()
+Bool_t reconstruct(Bool_t useMC = kFALSE)
 {
 
 
@@ -132,7 +136,9 @@ Bool_t reconstruct()
   // -----   Track finding in (MVD+) STS    -----------------------------------------
   CbmKF* kalman = new CbmKF();
   run->AddTask(kalman);
-  CbmL1* l1 = new CbmL1("L1", 0);
+  CbmL1* l1 = nullptr;
+  if ( useMC ) l1 = new CbmL1("L1", 0, 1);
+  else l1 = new CbmL1("L1", 0);
   // --- Material budget file names
   TString mvdGeoTag;
   if ( setup->GetGeoTag(kMvd, mvdGeoTag) ) {
