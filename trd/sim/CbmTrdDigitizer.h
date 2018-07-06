@@ -10,7 +10,7 @@
 #ifndef CBMTRDDIGITIZER_H_
 #define CBMTRDDIGITIZER_H_
 
-#include "FairTask.h"
+#include "CbmDigitize.h"
 
 #include <map>
 
@@ -29,7 +29,7 @@ class CbmMatch;
 class CbmTrdGeoHandler;
 class CbmTrdModuleSim;
 
-class CbmTrdDigitizer : public FairTask
+class CbmTrdDigitizer : public CbmDigitize
 {
 public:
   enum CbmTrdSimDef{
@@ -96,6 +96,14 @@ private:
     * \brief Recursive reset all private monitoring counters
     */
   void              ResetCounters();
+
+  /** @brief Clear data arrays **/
+  virtual void ResetArrays();
+
+  /** @brief Write a digi to the output tree
+   ** @param digi  Pointer to digi object
+   **/
+  virtual void WriteDigi(CbmDigi* digi);
 
 
   static Int_t fConfig;         ///< Configuration map for the digitizer. See CbmTrdSimDef for details

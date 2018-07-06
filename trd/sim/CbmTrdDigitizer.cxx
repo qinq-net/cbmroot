@@ -50,7 +50,7 @@ Int_t CbmTrdDigitizer::fConfig = 0;
 
 //________________________________________________________________________________________
 CbmTrdDigitizer::CbmTrdDigitizer(CbmTrdRadiator* radiator)
-  : FairTask("CbmTrdDigitizer")
+  : CbmDigitize("CbmTrdDigitizer")
   ,fInputNr(0)
   ,fEventNr(0)
   ,fEventTime(0)
@@ -132,8 +132,8 @@ InitStatus CbmTrdDigitizer::Init()
 //________________________________________________________________________________________
 void CbmTrdDigitizer::Exec(Option_t*)
 {
-  fDigis->Delete();
-  fDigiMatches->Delete();
+//  fDigis->Delete();
+//  fDigiMatches->Delete();
 
   // start timer
   TStopwatch timer; timer.Start();
@@ -184,20 +184,24 @@ void CbmTrdDigitizer::Exec(Option_t*)
   }
 
   // Fill data from internally used stl map into output TClonesArray
-  if(!IsTimeBased()){
+//  if(!IsTimeBased()){
     Int_t iDigi = 0;
     for(map<Int_t, CbmTrdModuleSim*>::iterator imod = fModuleMap.begin(); imod != fModuleMap.end(); imod++) {
       std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>> *digis = imod->second->GetDigiMap();
       for (std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it = digis->begin() ; it != digis->end(); it++) {
-        new ((*fDigis)[iDigi]) CbmTrdDigi(*(it->second.first));
-        new ((*fDigiMatches)[iDigi]) CbmMatch(*(it->second.second));
-        delete it->second.first;
-        delete it->second.second;
-        iDigi++;
+  
+        (it->second.first)->SetMatch(it->second.second);
+        SendDigi(it->second.first); 
+        
+//        new ((*fDigis)[iDigi]) CbmTrdDigi(*(it->second.first));
+//        new ((*fDigiMatches)[iDigi]) CbmMatch(*(it->second.second));
+//        delete it->second.first;
+//        delete it->second.second;
+//        iDigi++;
       }
-      digis->clear();   
+ //     digis->clear();   
     }
-  } else CbmDaqBuffer::Instance()->PrintStatus();          
+//  } else CbmDaqBuffer::Instance()->PrintStatus();          
 
   fLastEventTime=fEventTime;
     
@@ -362,5 +366,33 @@ void CbmTrdDigitizer::ResetCounters()
   nofBackwardTracks = 0;
   for(std::map<Int_t, CbmTrdModuleSim*>::iterator imod=fModuleMap.begin(); imod!=fModuleMap.end(); imod++) imod->second->ResetCounters();
 }
+
+// -----   Reset output arrays   -------------------------------------------
+
+void CbmTrdDigitizer::ResetArrays() {
+
+  fDigis->Delete();
+
+  fDigiMatches->Delete();
+
+}
+
+// -----   Write a digi to the output   ----------------------------------------
+
+void CbmTrdDigitizer::WriteDigi(CbmDigi* digi) {
+
+  CbmTrdDigi* trdDigi = dynamic_cast<CbmTrdDigi*>(digi);
+
+  assert(trdDigi);
+
+  Int_t index = fDigis->GetEntriesFast();
+
+  if ( digi->GetMatch() ) new ((*fDigiMatches)[index]) CbmMatch(*(digi->GetMatch()));
+  new ((*fDigis)[index]) CbmTrdDigi(*trdDigi);
+
+}
+
+// -----------------------------------------------------------------------------
+
 
 ClassImp(CbmTrdDigitizer)
