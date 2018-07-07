@@ -48,6 +48,17 @@ public:
    */
   CbmTrdDigi(Int_t address, Float_t charge, ULong64_t time, Int_t triggerType, Int_t errClass/*nrSamples*/);
   
+  /**
+   * \brief Constructor for backward compatibillity.
+   * Does not do anything.
+   */
+  CbmTrdDigi(Int_t /*address*/, Double_t /*fullTime*/, Int_t /*triggerType*/, Int_t /*infoType*/, Int_t /*stopType*/, Int_t /*nrSamples*/, Float_t* /*samples*/) 
+  : CbmDigi()
+  ,fAddress(0)
+  ,fCharge(0)
+  ,fTime(0)
+  {;}
+
   /** \brief Charge addition in case of pile-up (FASP simulation only)
    * \param[in] sd previous digi absorbed by current
    * \param[in] f scaling factor
@@ -135,7 +146,6 @@ public:
   Double_t GetChargeTR()  {return 0.;}
   void SetInfoType(Int_t /*infoType*/)  {;}
   void SetAddress(const Int_t a) { SetAddressModule(a);}
-  CbmTrdDigi(Int_t /*address*/, Double_t /*fullTime*/, Int_t /*triggerType*/, Int_t /*infoType*/, Int_t /*stopType*/, Int_t /*nrSamples*/, Float_t* /*samples*/) {;}
   Int_t GetNrSamples() { return 0;}
   Float_t* GetSamples() {return NULL;}
   
