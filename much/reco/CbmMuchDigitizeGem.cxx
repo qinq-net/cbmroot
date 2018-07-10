@@ -193,8 +193,8 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag)
   fNofDigisTot(0.),
   fTimeTot(),
   fAddressCharge(),
-  fGenerateElectronicsNoise(kTRUE),
-  fPerPadNoiseRate(10e-5)
+  fGenerateElectronicsNoise(kFALSE),
+  fPerPadNoiseRate(10e-9)
 {
   fSigma[0] = new TF1("sigma_e","pol6",-5,10);
   fSigma[0]->SetParameters(sigma_e);

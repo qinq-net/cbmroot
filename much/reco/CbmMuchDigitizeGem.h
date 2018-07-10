@@ -25,7 +25,7 @@
 #include "TClonesArray.h"
 #include "TString.h"
 #include "TArrayD.h"
-#include "TH1D.h"
+//#include "TH1D.h"
 
 #include "CbmMuchDigi.h"
 #include "CbmMuchDigiMatch.h"
@@ -157,7 +157,7 @@ class CbmMuchDigitizeGem : public CbmDigitize {
     void SetTimeBinWidth(Double_t timeBinWidth) {fTimeBinWidth = timeBinWidth; }
     void SetAlgorithm(Int_t algorithm) {fAlgorithm = algorithm; }
     void SetTimeOverThreshold(Bool_t tot) {fTOT = tot; }
-    TArrayD fgDeltaResponse; // Signal shape on delta function response
+    //TArrayD fgDeltaResponse; // Signal shape on delta function response
     void SetLight(Bool_t islight){fIsLight = islight;}
 
     virtual void ResetArrays();
@@ -170,15 +170,6 @@ class CbmMuchDigitizeGem : public CbmDigitize {
      Int_t GenerateNoise(Double_t,Double_t);
      Int_t GenerateNoisePerModule(CbmMuchModuleGem*, Double_t, Double_t);
      void AddNoiseSignal(CbmMuchPad*, Double_t, Double_t);
-     Double_t       fPerPadNoiseRate;    //Noise rate per pad
-     Double_t       fPreviousEventTime = -1;  //! Previous Event Time
-    // Double_t       fCurrentEventTime = 0;  //!Current Event Time
-     Bool_t      fGenerateElectronicsNoise; //! Set this boolean variable to True if want to generated Elecronics Noise
-     Int_t       fNofNoiseTot = 0;
-     Int_t       fNofNoiseSignals = 0;
-     TF1*           fNoiseCharge;    //!Function to sample the noise charge
-     //TH1D*	    noise;
-
 
  //-------------------------------------------------------------//
 
@@ -237,6 +228,16 @@ class CbmMuchDigitizeGem : public CbmDigitize {
     Double_t       fNofSignalsTot;  ///< Total Number of signals
     Double_t       fNofDigisTot;    ///< Total number of digis created
     Double_t       fTimeTot;        ///< Total execution time
+
+    //Data members for Electronics Noise Generation
+    Double_t       fPerPadNoiseRate;    //Noise rate per pad
+    Double_t       fPreviousEventTime = -1;  //! Previous Event Time
+    // Double_t       fCurrentEventTime = 0;  //!Current Event Time
+    Bool_t      fGenerateElectronicsNoise; //! Set this boolean variable to True if want to generated Elecronics Noise
+    Int_t       fNofNoiseTot = 0;
+    Int_t       fNofNoiseSignals = 0;
+    TF1*           fNoiseCharge;    //!Function to sample the noise charge
+    //TH1D*	    noise;
 
     //Storing all the charges which is generated from the same MCPoint in a map<address, charge>
     std::map<UInt_t, UInt_t> fAddressCharge;
