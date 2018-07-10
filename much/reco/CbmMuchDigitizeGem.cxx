@@ -48,6 +48,7 @@
 #include "TFile.h"
 #include "TRandom.h"
 #include "TChain.h"
+#include "TH1D.h"
 
 #include <cassert>
 #include <vector>
@@ -96,25 +97,27 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem()
     fDriftVelocity(100),
     //fPeakingTime(20),
     //fRemainderTime(40),
-    fTimeBinWidth(1),
-    fNTimeBins(200),
-    fTOT(0),
-    fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
-    fSigma(),
-    fMPV(),
-    fIsLight(1), // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.
-    fTimePointLast(-1),
-    fTimeDigiFirst(-1),
-    fTimeDigiLast(-1),
-    fNofPoints(0),
-    fNofSignals(0),
-    fNofDigis(0),
-    fNofEvents(0),
-    fNofPointsTot(0.),
-    fNofSignalsTot(0.),
-    fNofDigisTot(0.),
-    fTimeTot(),
-    fAddressCharge()
+  fTimeBinWidth(1),
+  fNTimeBins(200),
+  fTOT(0),
+  fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
+  fSigma(),
+  fMPV(),
+  fIsLight(1), // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.
+  fTimePointLast(-1),
+  fTimeDigiFirst(-1),
+  fTimeDigiLast(-1),
+  fNofPoints(0),
+  fNofSignals(0),
+  fNofDigis(0),
+  fNofEvents(0),
+  fNofPointsTot(0.),
+  fNofSignalsTot(0.),
+  fNofDigisTot(0.),
+  fTimeTot(),
+  fAddressCharge(),
+  fGenerateElectronicsNoise(kFALSE),
+  fPerPadNoiseRate(10e-9)
 {
   fSigma[0] = new TF1("sigma_e","pol6",-5,10);
   fSigma[0]->SetParameters(sigma_e);
@@ -134,6 +137,9 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem()
   fMPV[2]   = new TF1("mpv_p","pol6",-5,10);
   fMPV[2]->SetParameters(mpv_p);
   Reset();
+  fNoiseCharge = new TF1("Noise Charge", "TMath::Gaus(x, [0], [1])",
+			 fQThreshold, fQMax/10);  //noise function to calculate charge for noise hit. mean=fQThreashold(10000),fQMax=500000
+
 }
 // -------------------------------------------------------------------------
 
@@ -164,29 +170,31 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag)
     fDeadPadsFrac(0),
     fTimer(),
     fMcChain(NULL),
-    //fDeadTime(400),
-    fDriftVelocity(100),
-    //fPeakingTime(20),
-    //fRemainderTime(40),
-    fTimeBinWidth(1),
-    fNTimeBins(200),
-    fTOT(0),
-    fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
-    fSigma(),
-    fMPV(),
-    fIsLight(1), // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.  
-    fTimePointLast(-1),
-    fTimeDigiFirst(-1),
-    fTimeDigiLast(-1),
-    fNofPoints(0),
-    fNofSignals(0),
-    fNofDigis(0),
-    fNofEvents(0),
-    fNofPointsTot(0.),
-    fNofSignalsTot(0.),
-    fNofDigisTot(0.),
-    fTimeTot(),
-    fAddressCharge()
+//fDeadTime(400),
+  fDriftVelocity(100),
+//fPeakingTime(20),
+//fRemainderTime(40),
+  fTimeBinWidth(1),
+  fNTimeBins(200),
+  fTOT(0),
+  fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
+  fSigma(),
+  fMPV(),
+  fIsLight(1), // fIsLight = 1 (default) Store Light CbmMuchDigiMatch in output branch, fIsLight = 0 Create Heavy CbmMuchDigiMatch with fSignalShape info.  
+  fTimePointLast(-1),
+  fTimeDigiFirst(-1),
+  fTimeDigiLast(-1),
+  fNofPoints(0),
+  fNofSignals(0),
+  fNofDigis(0),
+  fNofEvents(0),
+  fNofPointsTot(0.),
+  fNofSignalsTot(0.),
+  fNofDigisTot(0.),
+  fTimeTot(),
+  fAddressCharge(),
+  fGenerateElectronicsNoise(kTRUE),
+  fPerPadNoiseRate(10e-5)
 {
   fSigma[0] = new TF1("sigma_e","pol6",-5,10);
   fSigma[0]->SetParameters(sigma_e);
@@ -206,6 +214,10 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag)
   fMPV[2]   = new TF1("mpv_p","pol6",-5,10);
   fMPV[2]->SetParameters(mpv_p);
   Reset();
+  fNoiseCharge = new TF1("Noise Charge", "TMath::Gaus(x, [0], [1])",
+			 fQThreshold, fQMax/10);  //noise function to calculate charge for noise hit. mean=fQThreashold(10000),fQMax=500000
+
+
 }
 // -------------------------------------------------------------------------
 
@@ -252,9 +264,9 @@ InitStatus CbmMuchDigitizeGem::Init() {
   // Screen output
   std::cout << std::endl;
   LOG(INFO) << "=========================================================="
-      << FairLogger::endl;
+	    << FairLogger::endl;
   LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl
-      << FairLogger::endl;
+	    << FairLogger::endl;
 
   FairRootManager* ioman = FairRootManager::Instance();
   if (!ioman)
@@ -262,7 +274,7 @@ InitStatus CbmMuchDigitizeGem::Init() {
 
   if ( fEventMode ) {
     LOG(INFO) << fName << ": Using event-by-event mode"
-        << FairLogger::endl;
+	      << FairLogger::endl;
   }
 
 
@@ -272,31 +284,31 @@ InitStatus CbmMuchDigitizeGem::Init() {
   TString geoTag;
   for (Int_t iNode = 0; iNode < cave->GetNdaughters(); iNode++) {
     TString name = cave->GetDaughter(iNode)->GetVolume()->GetName();
-     if ( name.Contains("much", TString::kIgnoreCase) ) {
-       geoTag = TString(name(5, name.Length() - 5));
-       LOG(INFO) << fName << ": MUCH geometry tag is " << geoTag
-           << FairLogger::endl;
+    if ( name.Contains("much", TString::kIgnoreCase) ) {
+      geoTag = TString(name(5, name.Length() - 5));
+      LOG(INFO) << fName << ": MUCH geometry tag is " << geoTag
+		<< FairLogger::endl;
       break;
-     } //? node is MUCH
+    } //? node is MUCH
   } //# top level nodes
 
 
   // Set the parameter file and the flag, if not done in constructor
   if ( fDigiFile.IsNull() ) {
     if ( geoTag.IsNull() ) LOG(FATAL) << fName
-        << ": no parameter file specified and no MUCH node found in geometry!"
-        << FairLogger::endl;
+				      << ": no parameter file specified and no MUCH node found in geometry!"
+				      << FairLogger::endl;
     fDigiFile = gSystem->Getenv("VMCWORKDIR");
     // TODO: (VF) A better naming convention for the geometry tag and the
     // corresponding parameter file is surely desirable.
     fDigiFile += "/parameters/much/much_" + geoTag(0,4)
-                + "_digi_sector.root";
+      + "_digi_sector.root";
     LOG(INFO) << fName << ": Using parameter file "
-        << fDigiFile << FairLogger::endl;
+	      << fDigiFile << FairLogger::endl;
 
     fFlag = (geoTag.Contains("mcbm", TString::kIgnoreCase) ? 1 : 0);
     LOG(INFO) << fName << ": Using flag " << fFlag
-        << (fFlag ? " (mcbm) " : "(standard)") << FairLogger::endl;
+	      << (fFlag ? " (mcbm) " : "(standard)") << FairLogger::endl;
   }
 
 
@@ -304,7 +316,7 @@ InitStatus CbmMuchDigitizeGem::Init() {
   TFile* oldfile=gFile;
   TFile* file=new TFile(fDigiFile);
   if ( ! file->IsOpen() ) LOG(FATAL) << fName << ": parameter file " << fDigiFile
-      << " does not exist!" << FairLogger::endl;
+				     << " does not exist!" << FairLogger::endl;
   TObjArray* stations = (TObjArray*) file->Get("stations");
   file->Close();
   file->Delete();
@@ -354,11 +366,12 @@ InitStatus CbmMuchDigitizeGem::Init() {
   //  else fgDeltaResponse[i] = exp(-(time-fPeakingTime)/fRemainderTime); 
   //}
 
-  // --- Screen output
+  // --- Enable histogram if want to enalyze Noise spectrum.
+  //noise = new TH1D("noise", "Noise Generated per Event NoiseRate 10e-8", 100 , 0 , 200);
   LOG(INFO) << GetName() << ": Initialisation successful"
-      << FairLogger::endl;
+	    << FairLogger::endl;
   LOG(INFO) << "=========================================================="
-      << FairLogger::endl;
+	    << FairLogger::endl;
   std::cout << std::endl;
 
   return kSUCCESS;
@@ -376,9 +389,9 @@ void CbmMuchDigitizeGem::Exec(Option_t*) {
   // --- Event number and time
   GetEventInfo();
   LOG(DEBUG) << GetName() << ": Processing event " << fCurrentEvent
-      << " from input " << fCurrentInput << " at t = " << fCurrentEventTime
-      << " ns with " << fPoints->GetEntriesFast() << " MuchPoints "
-      << FairLogger::endl;
+	     << " from input " << fCurrentInput << " at t = " << fCurrentEventTime
+	     << " ns with " << fPoints->GetEntriesFast() << " MuchPoints "
+	     << FairLogger::endl;
 
   //ReadAndRegister(fCurrentEventTime);
      
@@ -395,20 +408,116 @@ void CbmMuchDigitizeGem::Exec(Option_t*) {
 	
   // --- Event log
   LOG(INFO) << "+ " << setw(15) << GetName() << ": Event " << setw(6)
-         << right << fCurrentEvent << " at " << fixed << setprecision(3)
-         << fCurrentEventTime << " ns, points: " << fNofPoints
-         << ", signals: " << fNofSignals
-         << ", digis: " << fNofDigis << ". Exec time " << setprecision(6)
-         << fTimer.RealTime() << " s." << FairLogger::endl;
+	    << right << fCurrentEvent << " at " << fixed << setprecision(3)
+	    << fCurrentEventTime << " ns, points: " << fNofPoints
+	    << ", signals: " << fNofSignals
+	    << ", digis: " << fNofDigis << ". Exec time " << setprecision(6)
+	    << fTimer.RealTime() << " s." << FairLogger::endl;
 
+  // --------------------NOISE---------------------- //
+  if (fGenerateElectronicsNoise) {
+
+    fPreviousEventTime = fNofEvents ? fPreviousEventTime : 0.;
+    Int_t nNoise = GenerateNoise(fPreviousEventTime,fCurrentEventTime);
+    fNofNoiseTot += nNoise;
+     //noise->Fill(nNoise);
+    LOG(INFO) << "+ " << setw(20) << GetName() << ": Generated  " << nNoise
+	      << " noise signals from t = " << fPreviousEventTime << " ns to "
+	      << fCurrentEventTime << " ns" << FairLogger::endl;
+    LOG(DEBUG3) << "+ " << setw(20) << GetName() << ": Generated  " << fNofNoiseSignals
+		<< " noise signals for this time slice from t = " << fPreviousEventTime << " ns to "  << fCurrentEventTime << "ns" << FairLogger::endl;
+  }
+  LOG(INFO) << "+ " << setw(20) << GetName() << " : " << fNofNoiseTot << " total noise generated till now." << FairLogger::endl;
+  fPreviousEventTime = fCurrentEventTime ;
+ 
   fTimer.Stop();
   fNofEvents++;
   fNofPointsTot   += fNofPoints;
   fNofSignalsTot  += fNofSignals;
   fNofDigisTot    += fNofDigis;
   fTimeTot        += fTimer.RealTime();
+
+}
+Int_t CbmMuchDigitizeGem::GenerateNoise(Double_t t1, Double_t t2){
+  LOG(DEBUG) << "+ " << setw(20) << GetName()<< ": Previous Time " << fPreviousEventTime << " Current Time " << fCurrentEventTime << "ns" << FairLogger::endl;
+  assert( t2 > t1 );
+  Int_t numberofstations=fGeoScheme->GetNStations();
+  auto StationNoise = 0;
+  for (Int_t i=0;i<numberofstations;i++){
+    CbmMuchStation* station = fGeoScheme->GetStation(i);
+    auto numberoflayers=station->GetNLayers();
+    if (numberoflayers<=0) continue;
+
+    auto LayerNoise = 0;
+    for (Int_t j=0;j<numberoflayers;j++){
+      CbmMuchLayerSide* side = station->GetLayer(j)->GetSide(0);
+      auto numberofmodules=side->GetNModules();
+      if (numberofmodules<=0) continue;
+
+      auto FrontModuleNoise = 0;
+      for (auto k=0;k<numberofmodules;k++){
+	CbmMuchModuleGem* module = (CbmMuchModuleGem*)(side->GetModule(k));
+	if (module->GetDetectorType()!=1 && module->GetDetectorType()!=3) continue;
+	FrontModuleNoise += GenerateNoisePerModule(module,t1,t2);
+      }
+      side = station->GetLayer(j)->GetSide(1);
+      numberofmodules=side->GetNModules();
+      if (numberofmodules<=0) continue;
+      auto BackModuleNoise = 0;
+      for (auto k=0;k<numberofmodules;k++){
+	CbmMuchModuleGem* module = (CbmMuchModuleGem*)side->GetModule(k);
+	if (module->GetDetectorType()!=1 && module->GetDetectorType()!=3) continue;
+	BackModuleNoise += GenerateNoisePerModule(module,t1,t2);
+      }
+      LayerNoise+=FrontModuleNoise+BackModuleNoise;
+    }
+    LOG(DEBUG1) << "+ " << setw(20) << GetName() << ": Generated  " << LayerNoise
+	      << " noise signals in station " << i <<" from t = " << fPreviousEventTime << " ns to "
+	      << fCurrentEventTime << " ns" << FairLogger::endl;
+    StationNoise+=LayerNoise;
+  }
+  return StationNoise;
 }
 
+//================================Generte Noise==============================================//
+
+Int_t CbmMuchDigitizeGem::GenerateNoisePerModule(CbmMuchModuleGem* module, Double_t t1,Double_t t2) {
+  auto NumberOfPad = module->GetNPads();
+  Double_t nNoiseMean = fPerPadNoiseRate * NumberOfPad * ( t2 - t1 );
+  Int_t nNoise = gRandom->Poisson(nNoiseMean);
+  LOG(DEBUG) << "+ " << setw(20) << GetName() << ": Number of noise signals : "  << nNoise << " in one module. "<< FairLogger::endl;
+  for (Int_t iNoise = 0; iNoise <= nNoise; iNoise++) {
+    Int_t padnumber = Int_t(gRandom->Uniform(Double_t(NumberOfPad)));
+    CbmMuchPad *pad = module->GetPad(padnumber);
+    Double_t NoiseTime = gRandom->Uniform(t1, t2);
+    Double_t charge = fNoiseCharge->GetRandom();
+    while(charge<0) charge = fNoiseCharge->GetRandom();
+    AddNoiseSignal(pad, NoiseTime, charge);
+  }
+  //noise->Fill(nNoise);
+  return nNoise;
+}
+
+//=================Add a signal to the buffer=====================//
+ 
+void CbmMuchDigitizeGem::AddNoiseSignal(CbmMuchPad* pad, Double_t time,Double_t charge) {
+  assert(pad);
+  LOG(DEBUG3) << GetName() << ": Receiving signal " << charge
+	      << " in channel " << pad->GetAddress() << " at time "
+	      << time << "ns" << FairLogger::endl;
+  //  LOG(DEBUG) << GetName() << ": discarding signal in dead channel "
+  //  << channel << FairLogger::endl;
+  //  return;
+  CbmMuchSignal* signal = new CbmMuchSignal(pad->GetAddress(),time);
+  //signal->SetTimeStart(time);
+  //signal->SetTimeStop(time+fDeadTime);
+  signal->SetCharge((UInt_t)charge);
+  UInt_t address = pad->GetAddress();
+  CbmMuchReadoutBuffer::Instance()->Fill(address, signal);
+  fNofNoiseSignals++;
+  LOG(DEBUG3)<< "+ " << setw(20) << GetName() <<": Registered a Noise CbmMuchSignal into the CbmMuchReadoutBuffer. Number of Noise Signal generated "<< fNofNoiseSignals <<FairLogger::endl;
+}
+//====================End of Noise part=================//
 
 // -------------------------------------------------------------------------
 //Read all the Signal from CbmMuchReadoutBuffer, convert the analog signal into the digital response  and register Output according to event by event mode and Time based mode.
@@ -449,11 +558,10 @@ void CbmMuchDigitizeGem::ReadAndRegister(Long_t eventTime){
   // After digis are created from signals the signals have to be removed 
   // Otherwise there is a huge memeory leak
   for (auto signal : SignalList) {
-     delete (signal);
+    delete (signal);
   }
 
-}
-//----ReadAndRegister -------
+}//----ReadAndRegister -------
 
 //Convert Signal into the Digi with appropriate methods.
 
@@ -497,10 +605,10 @@ void CbmMuchDigitizeGem::Finish(){
   if ( fEventMode ) {
     if ( CbmMuchReadoutBuffer::Instance()->GetNData() ) {
       LOG(INFO) << fName << ": "
-        << CbmMuchReadoutBuffer::Instance()->GetNData()
-        << " signals in readout buffer" << FairLogger::endl;
+		<< CbmMuchReadoutBuffer::Instance()->GetNData()
+		<< " signals in readout buffer" << FairLogger::endl;
       LOG(FATAL) << fName << ": Readout buffer is not empty at end of run "
-        << "in event-by-event mode!" << FairLogger::endl;
+		 << "in event-by-event mode!" << FairLogger::endl;
     } //? non-empty buffer
   } //? event-by-event mode
 
@@ -510,23 +618,23 @@ void CbmMuchDigitizeGem::Finish(){
     LOG(INFO) << GetName() << ": Finish run" << FairLogger::endl;
     Reset();
     LOG(INFO) << fName << ": "
-      << CbmMuchReadoutBuffer::Instance()->GetNData()
-      << " signals in readout buffer" << FairLogger::endl;
+	      << CbmMuchReadoutBuffer::Instance()->GetNData()
+	      << " signals in readout buffer" << FairLogger::endl;
     ReadAndRegister(-1.); // -1 means process all data
     LOG(INFO) << setw(15) << GetName() << ": Finish, points "
-           << fNofPoints<< ", signals: " << fNofSignals
-           << ", digis: " << fNofDigis << ". Exec time " << setprecision(6)
-           << fTimer.RealTime() << " s." << FairLogger::endl;
+	      << fNofPoints<< ", signals: " << fNofSignals
+	      << ", digis: " << fNofDigis << ". Exec time " << setprecision(6)
+	      << fTimer.RealTime() << " s." << FairLogger::endl;
     LOG(INFO) << fName << ": "
-      << CbmMuchReadoutBuffer::Instance()->GetNData()
-      << " signals in readout buffer" << FairLogger::endl;
+	      << CbmMuchReadoutBuffer::Instance()->GetNData()
+	      << " signals in readout buffer" << FairLogger::endl;
     fTimer.Stop();
     fNofPointsTot  += fNofPoints;
     fNofSignalsTot += fNofSignals;
     fNofDigisTot   += fNofDigis;
     fTimeTot       += fTimer.RealTime();
   } //? time-based mode
-
+	//noise->Draw();
   std::cout << std::endl;
   LOG(INFO) << "=====================================" << FairLogger::endl;
   LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
@@ -545,6 +653,11 @@ void CbmMuchDigitizeGem::Finish(){
   LOG(INFO) << "Digis per signal    : "
 	    << fNofDigisTot / fNofSignalsTot
 	    << FairLogger::endl;
+  LOG(INFO) << "Noise digis / event : " << fNofNoiseTot / Double_t(fNofEvents)
+                              << FairLogger::endl;
+  LOG(INFO) << "Noise fraction      : " << fNofNoiseTot / fNofDigisTot
+      << FairLogger::endl;
+
   LOG(INFO) << "Real time per event : " << fTimeTot / Double_t(fNofEvents)
 	    << " s" << FairLogger::endl;
   LOG(INFO) << "=====================================" << FairLogger::endl;
@@ -724,7 +837,7 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
 
       if (s1==s2) {Status = AddCharge(s1,ne,iPoint,time,driftTime,phi1,phi2); 
 	if (!Status) LOG(DEBUG3) << GetName() << ": Processing MCPoint " << iPoint
-	    <<" in which Primary Electron : "<<i<< " not contributed charge. "<< FairLogger::endl;
+				 <<" in which Primary Electron : "<<i<< " not contributed charge. "<< FairLogger::endl;
       }
       else {//Adding praportionate charge to both the pad 
 	Status = AddCharge(s1,UInt_t(ne*(s1->GetR2()-r1)/(r2-r1)),iPoint,time,driftTime,phi1,phi2);
@@ -830,7 +943,6 @@ Double_t CbmMuchDigitizeGem::GetNPrimaryElectronsPerCm(const CbmMuchPoint* point
   return m<0.1 ? n/l_e : n/l_not_e;
 }
 // -------------------------------------------------------------------------
-
 // -------------------------------------------------------------------------
 Bool_t CbmMuchDigitizeGem::AddCharge(CbmMuchSectorRadial* s,UInt_t ne, Int_t /*iPoint*/, Double_t /*time*/, Double_t /*driftTime*/, 
 				     Double_t phi1, Double_t phi2){
@@ -907,15 +1019,15 @@ void CbmMuchDigitizeGem::AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint,
 Bool_t CbmMuchDigitizeGem::BufferSignals(Int_t iPoint,Double_t time, Double_t driftTime){
 
   if(!fAddressCharge.size()) { LOG(DEBUG2) << "Buffering MC Point " << iPoint
-					  << " but fAddressCharge size is " << fAddressCharge.size() << "so nothing to Buffer for this MCPoint." << FairLogger::endl;
+					   << " but fAddressCharge size is " << fAddressCharge.size() << "so nothing to Buffer for this MCPoint." << FairLogger::endl;
     return kFALSE;
   }
   UInt_t  AbsTime = fCurrentEventTime + time + driftTime;
   LOG(DEBUG2) << GetName() << ": Processing event " << fCurrentEvent
-	     << " from input " << fCurrentInput << " at t = " << fCurrentEventTime
-	     << " ns with " << fPoints->GetEntriesFast() << " MuchPoints "
-	     << " and Number of pad hit is "<< fAddressCharge.size()<<"." 
-	     << FairLogger::endl;
+	      << " from input " << fCurrentInput << " at t = " << fCurrentEventTime
+	      << " ns with " << fPoints->GetEntriesFast() << " MuchPoints "
+	      << " and Number of pad hit is "<< fAddressCharge.size()<<"." 
+	      << FairLogger::endl;
   //Loop on the fAddressCharge to store all the Signals into the CbmReadoutBuffer()
   //Generate one by one CbmMuchSignal from the fAddressCharge and store them into the CbmMuchReadoutBuffer.
   for(auto it=fAddressCharge.begin();it!=fAddressCharge.end();++it){
@@ -937,7 +1049,7 @@ Bool_t CbmMuchDigitizeGem::BufferSignals(Int_t iPoint,Double_t time, Double_t dr
   }
 	
   LOG(DEBUG2) << GetName() << ": For MC Point " << iPoint
-	     << " buffered " << fAddressCharge.size() << " CbmMuchSignal into the CbmReadoutBuffer." << FairLogger::endl;
+	      << " buffered " << fAddressCharge.size() << " CbmMuchSignal into the CbmReadoutBuffer." << FairLogger::endl;
   return kTRUE;
 }//end of BufferSignals
 // -------------------------------------------------------------------------
@@ -962,7 +1074,7 @@ void CbmMuchDigitizeGem::WriteDigi(CbmDigi* digi) {
 
   new ((*fDigis)[fDigis->GetEntriesFast()]) CbmMuchDigi(muchDigi);
   new ((*fDigiMatches)[fDigiMatches->GetEntriesFast()])
-      CbmMuchDigiMatch((CbmMuchDigiMatch*)digi->GetMatch());
+    CbmMuchDigiMatch((CbmMuchDigiMatch*)digi->GetMatch());
 
 }
 // -------------------------------------------------------------------------

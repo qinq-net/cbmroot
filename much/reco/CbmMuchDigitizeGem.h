@@ -25,6 +25,7 @@
 #include "TClonesArray.h"
 #include "TString.h"
 #include "TArrayD.h"
+#include "TH1D.h"
 
 #include "CbmMuchDigi.h"
 #include "CbmMuchDigiMatch.h"
@@ -161,6 +162,25 @@ class CbmMuchDigitizeGem : public CbmDigitize {
 
     virtual void ResetArrays();
     virtual void WriteDigi(CbmDigi*);
+  
+//------------------------Noise Generation-----------------------//
+   
+     void SetGenerateNoise(Bool_t Noise) {fGenerateElectronicsNoise = Noise;} // Setting Generate Noise for Time Based Mode
+     void SetPerPadNoiseRate(Double_t noiserate) {fPerPadNoiseRate = noiserate;} // Setting Generate Noise for Time Based Mode
+     Int_t GenerateNoise(Double_t,Double_t);
+     Int_t GenerateNoisePerModule(CbmMuchModuleGem*, Double_t, Double_t);
+     void AddNoiseSignal(CbmMuchPad*, Double_t, Double_t);
+     Double_t       fPerPadNoiseRate;    //Noise rate per pad
+     Double_t       fPreviousEventTime = -1;  //! Previous Event Time
+    // Double_t       fCurrentEventTime = 0;  //!Current Event Time
+     Bool_t      fGenerateElectronicsNoise; //! Set this boolean variable to True if want to generated Elecronics Noise
+     Int_t       fNofNoiseTot = 0;
+     Int_t       fNofNoiseSignals = 0;
+     TF1*           fNoiseCharge;    //!Function to sample the noise charge
+     //TH1D*	    noise;
+
+
+ //-------------------------------------------------------------//
 
 
   private:
@@ -179,7 +199,7 @@ class CbmMuchDigitizeGem : public CbmDigitize {
     UInt_t             fNADCChannels;  // Number of ADC channels
     UInt_t             fQMax;          // Maximum charge that a pad can collect [electrons]
     UInt_t             fQThreshold;    // Charge threshold [electrons]
-    UInt_t             fMeanNoise;     // Mean electronics noise value [electrons]
+    UInt_t             fMeanNoise;     // Mean electronics noise value [electrons] different than fGenerateElectronicsNoise
     Double_t           fSpotRadius;    // Spot radius from secondary electrons [cm]
     Double_t           fMeanGasGain;   // Mean gas gain value (1e4 by default)
     Double_t           fDTime;         // Time resolution [ns]
