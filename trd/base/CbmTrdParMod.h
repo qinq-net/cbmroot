@@ -11,7 +11,7 @@ public:
     const char* title   = "TRD generic module definition");
   virtual ~CbmTrdParMod();
   
-  virtual Int_t GetModuleId(Int_t m)  const { return fModuleId; }
+  virtual Int_t GetModuleId()  const { return fModuleId; }
 
   virtual void  SetModuleId(Int_t m)  { fModuleId = m; }
 protected:

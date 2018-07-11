@@ -23,7 +23,7 @@ public:
   /** \brief Reset all parameters **/
   virtual void  clear() {;}
 
-  void          putParams(FairParamList*) {;}
+  void          putParams(FairParamList*);
   Bool_t        getParams(FairParamList*);
 private:
 

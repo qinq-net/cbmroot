@@ -54,7 +54,14 @@ Bool_t CbmTrdParSet::getParams(FairParamList* l)
 //_______________________________________________________________________________
 void CbmTrdParSet::putParams(FairParamList* l) 
 {
-  printf("%s(%s)::putParams \n", GetName(), GetTitle());  
+  printf("%s(%s)::putParams not implemented \n", GetName(), GetTitle());  
+}
+
+//_______________________________________________________________________________
+void CbmTrdParSet::addParam(CbmTrdParMod *mod)
+{
+  fModuleMap[mod->GetModuleId()] = mod;
+  fNrOfModules++;
 }
 
 ClassImp(CbmTrdParSet)

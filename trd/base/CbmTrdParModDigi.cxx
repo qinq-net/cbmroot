@@ -11,6 +11,33 @@
 #include <iomanip>
 
 //___________________________________________________________________
+CbmTrdParModDigi::CbmTrdParModDigi()
+  : CbmTrdParMod("CbmTrdParModDigi", "TRD read-out definition")
+  ,fNofSectors(1)
+  ,fOrientation(0)
+  ,fAnodeWireOffset(0.375)
+  ,fAnodeWireSpacing(0.25)
+  ,fAnodeWireToPadPlaneDistance(0.35)
+  ,fX(0.)
+  ,fY(0.)
+  ,fZ(0.)
+  ,fSizeX(0)
+  ,fSizeY(0)
+  ,fSizeZ(0)
+  ,fSectorX()
+  ,fSectorY()
+  ,fSectorZ()
+  ,fSectorBeginX()
+  ,fSectorBeginY()
+  ,fSectorEndX()
+  ,fSectorEndY()
+  ,fSectorSizeX()
+  ,fSectorSizeY()
+  ,fPadSizeX()
+  ,fPadSizeY()
+{
+}
+//___________________________________________________________________
 CbmTrdParModDigi::CbmTrdParModDigi(
         Double_t x, Double_t y, Double_t z,
         Double_t sizex, Double_t sizey, Double_t sizez, Int_t nofSectors, Int_t orientation,
@@ -104,7 +131,7 @@ CbmTrdParModDigi::CbmTrdParModDigi(
 }
 
 //___________________________________________________________________________
-void  CbmTrdParModDigi::Print(Option_t *opt) const
+void  CbmTrdParModDigi::Print(Option_t */*opt*/) const
 {
 /** 
   Dump formated parameters for this module

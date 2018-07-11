@@ -73,12 +73,8 @@ public:
 
 private:
 
-   void CreateModule(
+   void CreateModuleParameters(
          const TString& path, Bool_t tripad=kFALSE);
-
-   void FillModuleMap();
-
-   void FillDigiPar();
 
    Int_t fMaxSectors; // Maximum number of sectors for all modules
    Bool_t fFASP;      ///< Switch to FASP ASIC

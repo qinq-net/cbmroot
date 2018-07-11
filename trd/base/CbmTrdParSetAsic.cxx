@@ -13,6 +13,7 @@ CbmTrdParSetAsic::CbmTrdParSetAsic(const char* name,
            const char* title,
            const char* context)
   : CbmTrdParSet(name, title, context)
+  ,fType(8)
   ,fModPar()
 {
 }
@@ -56,6 +57,67 @@ Bool_t CbmTrdParSetAsic::getParams(FairParamList* l)
     }
   }
   return kTRUE;
+}  
+
+//_______________________________________________________________________________
+void CbmTrdParSetAsic::putParams(FairParamList *l)
+{
+  if (!l) return;
+  LOG(INFO)<<GetName()<<"::putParams(FairParamList*)"<<FairLogger::endl;
+
+  Int_t idx(0);
+  TArrayI moduleId(fNrOfModules),
+          nAsic(fNrOfModules),
+          typeAsic(fNrOfModules);
+  for(std::map<Int_t, CbmTrdParSetAsic*>::iterator imod=fModPar.begin(); imod!=fModPar.end(); imod++){
+    moduleId[idx]   = imod->first;
+    nAsic[idx]      = imod->second->GetNofAsics(); 
+    typeAsic[idx++] = imod->second->GetAsicType();
+  }
+  l->add("NrOfModules",   fNrOfModules);
+  l->add("ModuleId", moduleId);
+  l->add("nAsic",    nAsic);
+  l->add("typAsic",  typeAsic);
+
+  CbmTrdParSetAsic *mod(NULL);
+  for (Int_t i=0; i < fNrOfModules; i++){
+    mod = (CbmTrdParSetAsic*)fModPar[moduleId[i]];
+    TArrayI asicAddress(nAsic[i]); Int_t k(0);
+    for(std::map<Int_t, CbmTrdParMod*>::iterator imod=mod->fModuleMap.begin(); imod!=mod->fModuleMap.end(); imod++, k++) asicAddress[k] = imod->first; 
+    l->add(Form("%d", moduleId[i]),  asicAddress);
+    
+    k=0;
+    for(std::map<Int_t, CbmTrdParMod*>::iterator imod=mod->fModuleMap.begin(); imod!=mod->fModuleMap.end(); imod++, k++){ 
+      Int_t nchannels(((CbmTrdParAsic*)imod->second)->GetNchannels());
+      TArrayI chAddress(nchannels);
+      if(typeAsic[i] == 9){
+        CbmTrdParFasp *fasp = (CbmTrdParFasp*)imod->second;
+        TArrayI PUT(nchannels), THR(nchannels), MDS(nchannels);
+        for(Int_t ich(0); ich<nchannels; ich+=2){
+          for(Int_t ipair(0); ipair<2; ipair++){
+            chAddress[ich+ipair] = fasp->GetChannelAddress(ich);
+            const CbmTrdParFaspChannel *ch = fasp->GetChannel(chAddress[ich+ipair], ipair);
+            PUT[ich+ipair] = ch->GetPileUpTime();
+            THR[ich+ipair] = ch->GetThreshold();
+            MDS[ich+ipair] = ch->GetMinDelaySignal();
+          }
+        }
+        l->add(Form("CHS%d", asicAddress[k]),  chAddress);
+        l->add(Form("PUT%d", asicAddress[k]),  PUT);
+        l->add(Form("THR%d", asicAddress[k]),  THR);
+        l->add(Form("MDS%d", asicAddress[k]),  MDS);
+      }
+    }
+  }
+}
+
+//_______________________________________________________________________________
+void CbmTrdParSetAsic::addParam(CbmTrdParSetAsic *mod)
+{
+  //printf("CbmTrdParSetAsic::addParam() :\n");
+
+  fModPar[mod->fModuleMap.begin()->first/1000] = mod;
+  fNrOfModules++;
 }
 
 //_______________________________________________________________________________
@@ -103,16 +165,23 @@ const CbmTrdParSet* CbmTrdParSetAsic::GetModuleSet(Int_t detId) const
 //_______________________________________________________________________________
 void CbmTrdParSetAsic::Print(Option_t *opt) const
 {
-  map<Int_t, CbmTrdParSetAsic*>::const_iterator imod = fModPar.begin(); 
-  while(imod!=fModPar.end()){
-    printf("%s(%s)\n", imod->second->GetName(), imod->second->GetTitle());
-    imod->second->Print(opt);
-    imod++;
-  }
-  map<Int_t, CbmTrdParMod*>::const_iterator iasic = fModuleMap.begin(); 
-  while(iasic!=fModuleMap.end()){
-    iasic->second->Print(opt);
-    iasic++;
+  if(fModPar.size()){
+    printf(" %s Modules[%d]\n", GetName(), fNrOfModules);
+    map<Int_t, CbmTrdParSetAsic*>::const_iterator imod = fModPar.begin(); 
+    while(imod!=fModPar.end()){
+      printf("  %d %s(%s)\n", imod->first, imod->second->GetName(), imod->second->GetTitle());
+      imod->second->Print(opt);
+      imod++;
+    }
+  } else if(fModuleMap.size()){
+    printf(" %s Asics[%d]\n", GetName(), GetNofAsics());
+    if(strcmp(opt, "all")==0){
+      map<Int_t, CbmTrdParMod*>::const_iterator iasic = fModuleMap.begin(); 
+      while(iasic!=fModuleMap.end()){
+        iasic->second->Print(opt);
+        iasic++;
+      }
+    }
   }
 }
 
@@ -125,6 +194,7 @@ void CbmTrdParSetAsic::SetAsicPar(Int_t address, CbmTrdParAsic *p)
     return;
   }
   fModuleMap[address] = p;
+  fNrOfModules++;
 }
 
 ClassImp(CbmTrdParSetAsic)

@@ -65,7 +65,11 @@ public:
   Double_t        GetSizeZ() const { return fgSizeZ; }
   virtual void    LoadParams(FairParamList* l);
   virtual void    Print(Option_t *opt="") const;
-
+    /** \brief Load FASP calibration parameters for a specific channel
+   *\param ch Address of the channel inside FASP
+   *\param par pointer to the list of parameters 
+   */ 
+  virtual Bool_t  SetCalibParameters(Int_t ch, Double_t const * par);
 private:
   static Double_t  fgSizeX;    ///< FASP half size in x [cm]
   static Double_t  fgSizeY;    ///< FASP half size in y [cm]

@@ -10,6 +10,7 @@ class CbmTrdPoint;
 class CbmTrdParModDigi : public CbmTrdParMod
 {
 public:
+  CbmTrdParModDigi();
   CbmTrdParModDigi(Double_t x, Double_t y, Double_t z,
                 Double_t sizex, Double_t sizey, Double_t sizez, Int_t nofSectors,Int_t orientation,
         const TArrayD& sectorSizeX, const TArrayD& sectorSizeY,
@@ -72,7 +73,10 @@ public:
   Double_t  GetSizeX() const                            { return fSizeX;}
   Double_t  GetSizeY() const                            { return fSizeY;}
   Double_t  GetSizeZ() const                            { return fSizeZ;}
-  void      Print(Option_t *opt) const;
+  Double_t  GetX() const                                { return fX;}
+  Double_t  GetY() const                                { return fY;}
+  Double_t  GetZ() const                                { return fZ;}
+  void      Print(Option_t *opt="") const;
 
   void      ProjectPositionToNextAnodeWire(Double_t* local_point) const;
   void      SetAnodeWireToPadPlaneDistance(Double_t d)  { fAnodeWireToPadPlaneDistance=d; }

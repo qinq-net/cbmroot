@@ -39,6 +39,28 @@ void CbmTrdParFasp::LoadParams(FairParamList* l)
     for(Int_t ich(0); ich<NFASPCH; ich++) fCalib[ich].fThreshold=value[ich];
   if (l->fill(Form("%dMDS", fAddress), &value))
     for(Int_t ich(0); ich<NFASPCH; ich++) fCalib[ich].fMinDelaySignal=value[ich];
+}  
+
+//___________________________________________________________________
+Bool_t CbmTrdParFasp::SetCalibParameters(Int_t ch, Double_t const * par)
+{
+/**  The list of channel parameter should be arranged as follows:
+ * 0 : Signal formation time in [ns]
+ * 1 : Length of Flat-Top in [clocks]
+ * 2 : Threshold in [ADC units]
+ * 3 : Signal @ minimum delay i.e. fPileUpTime [ADC units] 
+ * 4 : Factor of parabolic dependence dt=fdt*(s-s0)^2 to calculate trigger [a.u.]
+ * 5 : paring type ; 0 = tilt, 1 = rect
+ */ 
+  if(ch<0||ch>=NFASPCH) return kFALSE;
+  fCalib[ch].fPileUpTime    = UShort_t(par[0]);
+  fCalib[ch].fFlatTop       = UChar_t(par[1]);
+  fCalib[ch].fThreshold     = UShort_t(par[2]);
+  fCalib[ch].fMinDelaySignal= UShort_t(par[3]);
+  fCalib[ch].fMinDelayParam = par[4];
+  if(par[5]>0) fCalib[ch].SetPairing(kTRUE); 
+  else fCalib[ch].SetPairing(kFALSE); 
+  return kTRUE;
 }
 
 //___________________________________________________________________

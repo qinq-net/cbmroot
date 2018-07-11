@@ -36,7 +36,7 @@ Bool_t CbmTrdParSetDigi::getParams(FairParamList* l)
   }
   // Instead of a fixed number of values the number of values to
   // store now depends on the maximum number of sectors per module
-  Int_t nrValues = 11 + ( maxSectors * 4 );
+  Int_t nrValues = 10 + ( maxSectors * 4 );
   TArrayD values(nrValues);
   TArrayD sectorSizeX(maxSectors);
   TArrayD sectorSizeY(maxSectors);
@@ -52,7 +52,7 @@ Bool_t CbmTrdParSetDigi::getParams(FairParamList* l)
   Double_t awPitch(-1.);
   Double_t awPP(-1.);
   Double_t awOff(-1.);
-  Int_t roType(0);
+//  Int_t roType(0);
 
   TString text;
   for (Int_t i=0; i < fNrOfModules; i++){
@@ -62,7 +62,7 @@ Bool_t CbmTrdParSetDigi::getParams(FairParamList* l)
     }
     Int_t k(0);
     orientation=values[k++];
-    roType=values[k++];
+//    roType=values[k++];
     awPitch=values[k++];
     awPP=values[k++];
     awOff=values[k++];
@@ -86,9 +86,80 @@ Bool_t CbmTrdParSetDigi::getParams(FairParamList* l)
     ((CbmTrdParModDigi*)fModuleMap[moduleId[i]])->SetAnodeWireToPadPlaneDistance(awPP>0?awPP:0.35);
     ((CbmTrdParModDigi*)fModuleMap[moduleId[i]])->SetAnodeWireOffset(awOff>0?awOff:0.375);
     ((CbmTrdParModDigi*)fModuleMap[moduleId[i]])->SetAnodeWireSpacing(awPitch>0?awPitch:0.25);
-    //fModuleMap[moduleId[i]]->Print();
+    fModuleMap[moduleId[i]]->Print();
   }
   return kTRUE;
+}
+
+//_____________________________________________________________________
+void CbmTrdParSetDigi::putParams(FairParamList* l) 
+{
+/**  
+   Instead of a fixed number of values the number of values to
+   store now depends on the maximum number of sectors per module
+   The first eleven parameters are for the complete module.  
+   The parametrs are:
+   orientation         : module rotation in 90deg
+   fAnodeWireSpacing   : width of amplification cell in cm
+   fAnodeWireToPadPlaneDistance : anode 2 pad plane distance in cm   
+   fAnodeWireOffset    : offset of first anode wire wrt pad plane   
+   X, Y, Z             : position of the middle of the gaslayer.
+   SizeX, SizeY, SizeZ : size of the gaslayer. The values are only
+                         the half size which are the values returned
+                         by geant.
+   
+   The rest of the parameters depend on the number of sectors.
+   SectorSizeX(Y)      : size of a sector
+   PadSizeX(Y)         : size of the pads in this sector
+*/
+
+  if (!l) return;
+  LOG(INFO)<<GetName()<<"::putParams(FairParamList*)"<<FairLogger::endl;
+
+  Int_t maxSectors(0), idx(0);
+  TArrayI moduleIdArray(fNrOfModules);
+  for(std::map<Int_t, CbmTrdParMod*>::iterator imod=fModuleMap.begin(); imod!=fModuleMap.end(); imod++){
+    moduleIdArray[idx++]=imod->first;
+    Int_t sectors = ((CbmTrdParModDigi*)imod->second)->GetNofSectors();
+    if(sectors>maxSectors) maxSectors = sectors;
+  }
+
+  l->add("NrOfModules",   fNrOfModules);
+  l->add("MaxSectors",    maxSectors);
+  l->add("ModuleIdArray", moduleIdArray);
+
+
+  Int_t nrValues = 10 + ( maxSectors * 4 );
+  TArrayD values(nrValues);
+  CbmTrdParModDigi *mod(NULL);
+   for (Int_t i=0; i < fNrOfModules; i++){
+     Int_t k(0);
+     mod = (CbmTrdParModDigi*)fModuleMap[moduleIdArray[i]];
+     values.AddAt(mod->GetOrientation(), k++);         
+//      Int_t roType(0);
+//      if(mod->GetPadGeoTriangular()) roType |= 1;
+//      if(mod->GetAsicFASP()) roType |= 2;
+//      values.AddAt(roType, k++);         
+     values.AddAt(mod->GetAnodeWireSpacing(),k++); 
+     values.AddAt(mod->GetAnodeWireToPadPlaneDistance(),k++); 
+     values.AddAt(mod->GetAnodeWireOffset(),k++); 
+     values.AddAt(mod->GetX(),k++);         
+     values.AddAt(mod->GetY(),k++);          
+     values.AddAt(mod->GetZ(),k++);          
+     values.AddAt(mod->GetSizeX(),k++);      
+     values.AddAt(mod->GetSizeY(),k++); 
+     values.AddAt(mod->GetSizeZ(),k++); 
+     for (Int_t j=0; j < maxSectors; j++){       
+       values.AddAt(mod->GetSectorSizeX(j),k++);   
+       values.AddAt(mod->GetSectorSizeY(j),k++);   
+       values.AddAt(mod->GetPadSizeX(j),k++);   
+       values.AddAt(mod->GetPadSizeY(j),k++);   
+     }
+
+     TString text;
+     text += moduleIdArray[i];
+     l->add(text.Data(), values);
+   }
 }
 
 ClassImp(CbmTrdParSetDigi)
