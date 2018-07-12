@@ -234,6 +234,19 @@ void CbmTrdParManager::CreateModuleParameters(
   }
   asics->Print();
   fAsicPar->addParam(asics);
+
+  // Create new gas par for this module
+  CbmTrdParModGas *gas(NULL); 
+  if(moduleType==9) gas = new CbmTrdParModGas(Form("Module/%d/Ua/%d/Ud/%d/Gas/Ar", moduleAddress, 2000, 800));
+  else gas = new CbmTrdParModGas(Form("Module/%d/Ua/%d/Ud/%d/Gas/Ar", moduleAddress, 1650, 600));
+  fGasPar->addParam(gas);
+
+  // Create new gain par for this module
+  CbmTrdParModGain *gain(NULL); 
+  if(moduleType==9) gain = new CbmTrdParModGain();
+  else gain = new CbmTrdParModGain();
+  gain->SetModuleId(moduleAddress);
+  fGainPar->addParam(gain);
 }
 
 // void CbmTrdParManager::FillDigiPar()

@@ -47,6 +47,30 @@ Bool_t CbmTrdParSetGas::getParams(FairParamList* l)
   return kTRUE;
 }
 
+//_____________________________________________________________________
+void CbmTrdParSetGas::putParams(FairParamList* l) 
+{
+  if (!l) return;
+  LOG(INFO)<<GetName()<<"::putParams(FairParamList*)"<<FairLogger::endl;
+  
+  TArrayI moduleId(fNrOfModules); Int_t idx(0);
+  for(std::map<Int_t, CbmTrdParMod*>::iterator imod=fModuleMap.begin(); imod!=fModuleMap.end(); imod++){
+    moduleId[idx++]=imod->first;
+  }
+  l->add("Repository",   "trd/data/gasMapAr.root");
+  l->add("NrOfModules",   fNrOfModules);
+  l->add("ModuleIdArray", moduleId);
+
+  TArrayI values(2);
+  CbmTrdParModGas *mod(NULL);
+  for (Int_t i=0; i < fNrOfModules; i++){
+    mod = (CbmTrdParModGas*)fModuleMap[moduleId[i]];
+    values[0] = mod->GetUanode();
+    values[1] = mod->GetUdrift();
+    l->add(Form("%d", moduleId[i]), values);
+  }
+}
+  
 //_______________________________________________________________________________
 TH2F* CbmTrdParSetGas::ScanDriftMap() 
 {

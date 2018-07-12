@@ -26,7 +26,8 @@ public:
   Int_t     GetNobleGasType() const {return TESTBIT(fConfig, kNobleGasType)?2:1;}
   Int_t     GetPidType()      const {return TESTBIT(fConfig, kPID);}
   void      GetElectricPotential(Int_t &ua, Int_t &ud) const { ua=fUa; ud = fUd;}
-  
+  UShort_t  GetUanode()       const {return fUa;}
+  UShort_t  GetUdrift()       const {return fUd;}
   /**
    * \brief Get prompt signal for track segment in the y-z plane
    * \param y0 entry point on y in amplification cell coordinates (+- anode pitch/2)
