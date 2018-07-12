@@ -15,7 +15,7 @@ void create_digipar_root(TString geoName = "trd_v13q", Bool_t asicFASP=kTRUE)
    TString inFile   = "data/test.mc." + geoName + ".root";
    TString geoFile  = "geofile_" + geoName + ".root";
    TString outFile  = "data/test.esd." + geoName + ".root";
-   TString digiFile = geoName + ".digi.par.long";  // Digi Parameter Output File
+   TString digiFile = geoName + ".par";  // Digi Parameter Output File
 
    FairRunAna* run = new FairRunAna();
    run->SetInputFile(inFile);
@@ -28,15 +28,18 @@ void create_digipar_root(TString geoName = "trd_v13q", Bool_t asicFASP=kTRUE)
    parIo2->open(digiFile, "out");
    rtdb->setOutput(parIo2);
 
-   CbmTrdCreateDigiPar* trdDigitizer = new CbmTrdCreateDigiPar(asicFASP);
-   run->AddTask(trdDigitizer);
+   CbmTrdParManager* trdParManager = new CbmTrdParManager(asicFASP);
+   run->AddTask(trdParManager);
 
    rtdb->saveOutput();
    run->Init();
    rtdb->print();
-   CbmTrdDigiPar* digiPar = (CbmTrdDigiPar*) rtdb->getContainer("CbmTrdDigiPar");
+   CbmTrdParSetDigi* digiPar = (CbmTrdParSetDigi*) rtdb->getContainer("CbmTrdParSetDigi");
    digiPar->setChanged();
    digiPar->setInputVersion(run->GetRunId(), 1);
+   CbmTrdParSetAsic* asicPar = (CbmTrdParSetAsic*) rtdb->getContainer("CbmTrdParSetAsic");
+   asicPar->setChanged();
+   asicPar->setInputVersion(run->GetRunId(), 1);
    rtdb->print();
    rtdb->saveOutput();
 }
