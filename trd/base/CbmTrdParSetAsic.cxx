@@ -22,8 +22,11 @@ CbmTrdParSetAsic::CbmTrdParSetAsic(const char* name,
 CbmTrdParSetAsic::~CbmTrdParSetAsic()
 {
   if(fNrOfModules){
-    std::map<Int_t, CbmTrdParSetAsic*>::iterator it=fModPar.begin();
-    while(it!=fModPar.end()){ delete it->second; it++;}
+//     std::map<Int_t, CbmTrdParSetAsic*>::iterator it=fModPar.begin();
+//     while(it!=fModPar.end()){ 
+//       if(it->second) delete it->second; 
+//       it++;
+//     }
     fModPar.clear();
   }
 }
@@ -102,10 +105,10 @@ void CbmTrdParSetAsic::putParams(FairParamList *l)
             MDS[ich+ipair] = ch->GetMinDelaySignal();
           }
         }
-        l->add(Form("CHS%d", asicAddress[k]),  chAddress);
-        l->add(Form("PUT%d", asicAddress[k]),  PUT);
-        l->add(Form("THR%d", asicAddress[k]),  THR);
-        l->add(Form("MDS%d", asicAddress[k]),  MDS);
+        l->add(Form("%dCHS", asicAddress[k]),  chAddress);
+        l->add(Form("%dPUT", asicAddress[k]),  PUT);
+        l->add(Form("%dTHR", asicAddress[k]),  THR);
+        l->add(Form("%dMDS", asicAddress[k]),  MDS);
       }
     }
   }
