@@ -36,7 +36,7 @@ CbmTrdParModGas::CbmTrdParModGas(const char* title)
 //___________________________________________________________________
 CbmTrdParModGas::~CbmTrdParModGas()
 {
-  if(fDriftMap) delete fDriftMap;
+//  if(fDriftMap) delete fDriftMap;
 }
 
 //_______________________________________________________________________________________________
