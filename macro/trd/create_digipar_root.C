@@ -40,6 +40,12 @@ void create_digipar_root(TString geoName = "trd_v13q", Bool_t asicFASP=kTRUE)
    CbmTrdParSetAsic* asicPar = (CbmTrdParSetAsic*) rtdb->getContainer("CbmTrdParSetAsic");
    asicPar->setChanged();
    asicPar->setInputVersion(run->GetRunId(), 1);
+   CbmTrdParSetGas* gasPar = (CbmTrdParSetGas*) rtdb->getContainer("CbmTrdParSetGas");
+   gasPar->setChanged();
+   gasPar->setInputVersion(run->GetRunId(), 1);
+   CbmTrdParSetGain* gainPar = (CbmTrdParSetGain*) rtdb->getContainer("CbmTrdParSetGain");
+   gainPar->setChanged();
+   gainPar->setInputVersion(run->GetRunId(), 1);
    rtdb->print();
    rtdb->saveOutput();
 }

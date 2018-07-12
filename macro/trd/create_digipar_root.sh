@@ -10,9 +10,14 @@ directory=geometry/trd
 #directory=../mcbm/geometry/trd
 geoTag=${1-"v18o_mcbm"}
 
+if [ $# -eq 0 ]; then
+  echo "Usage : $(basename $0) [geoTag]"
+  echo -e "        Creating trd parameters for geometry tag $geoTag\n"
+fi
+
 for file in $VMCWORKDIR/$directory/trd_$geoTag.geo.root; do
 
-  echo "Creating trd parameters for $file"
+  echo "  Processing \"$file\" ..."
   fileName=$(basename $file)
 #echo "fileName : $fileName"
   fileNameNoExt=${fileName%.*.*}
@@ -23,8 +28,16 @@ for file in $VMCWORKDIR/$directory/trd_$geoTag.geo.root; do
 # extract digi parameters
   root -l -b -q create_digipar_root.C\(\"$fileNameNoExt\"\)
 
-  cat ${fileNameNoExt}.par | awk -vtag=$geoTag 'BEGIN{last=""; out="trd_"tag".asic.par"} {if(last==$0){ out="trd_"tag".digi.par"; print $0> out;} else print $0 > out; last=$0}'
-  
+#split file
+# extract asic.par
+  cat ${fileNameNoExt}.par | awk -vtag=$geoTag 'BEGIN{last=""; done=0; out="trd_"tag".asic.par"} {if(last==$0 && match(last, "###") && ! done){ out="trd_"tag".1.par"; done=1;} else if(last!=""){ print last > out;} last=$0} END{print last>out}'
+# extract digi.par
+  cat trd_${geoTag}.1.par | awk -vtag=$geoTag 'BEGIN{last=""; done=0; out="trd_"tag".digi.par"} {if(last==$0  && match(last, "###") && ! done){ out="trd_"tag".2.par"; done=1;} else if(last!=""){ print last > out;} last=$0} END{print last>out}'   
+  rm trd_${geoTag}.1.par
+# extract gas.par and gain.par
+  cat trd_${geoTag}.2.par | awk -vtag=$geoTag 'BEGIN{last=""; done=0; out="trd_"tag".gas.par"} {if(last==$0 && match(last, "###") && ! done){ out="trd_"tag".gain.par"; done=1;} else if(last!=""){ print last > out;} last=$0} END{print last>out}'   
+  rm trd_${geoTag}.2.par
+
 # # compile, if needed
 #  if [ ! -x ./cut_digipar_lf ] ; then 
 #   echo "compiling cut_digipar_lf.c"
