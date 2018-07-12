@@ -1,5 +1,5 @@
 #include "CbmTrdParMod.h"
-
+#include <FairLogger.h>
 
 //___________________________________________________________________
 CbmTrdParMod::CbmTrdParMod(const char* name, const char* title)
@@ -12,7 +12,7 @@ CbmTrdParMod::CbmTrdParMod(const char* name, const char* title)
 //___________________________________________________________________
 CbmTrdParMod::~CbmTrdParMod()
 {
-  printf("AB :: clear %s[%s]\n", GetName(), GetTitle());
+  LOG(DEBUG) << GetName() << "::delete[%s]"<< GetTitle() << FairLogger::endl;
 }
 
 ClassImp(CbmTrdParMod)

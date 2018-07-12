@@ -94,7 +94,7 @@ void CbmTrdDigitizer::SetParContainers()
   fGasPar = static_cast<CbmTrdParSetGas*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGas"));
   fDigiPar = static_cast<CbmTrdParSetDigi*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetDigi"));
   fGainPar = static_cast<CbmTrdParSetGain*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGain"));
-  fGeoPar = static_cast<CbmTrdParSetGeo*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGeo"));
+//  fGeoPar = static_cast<CbmTrdParSetGeo*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGeo"));
 }
 
 //________________________________________________________________________________________
@@ -179,7 +179,7 @@ void CbmTrdDigitizer::Exec(Option_t*)
       }
       mod = AddModule(point->GetDetectorID());
     } else mod = imod->second;
-    mod->SetLinkId(fInputNr, fEventNr, iPoint);    
+    mod->SetLinkId(fInputNr, fEventNr, iPoint); 
     mod->MakeDigi(point, fEventTime, TMath::Abs(track->GetPdgCode()) == 11);    
   }
 
@@ -341,12 +341,12 @@ CbmTrdModuleSim* CbmTrdDigitizer::AddModule(Int_t detId)
     LOG(DEBUG) << GetName() << "::AddModule : No Gas params for module @ "<< path <<". Using default."<< FairLogger::endl;
   } else module->SetChmbPar(pChmb);
 
-  // try to load Geometry parameters for module
-  const CbmTrdParModGeo *pGeo(NULL);
-  if(!fGeoPar || !(pGeo = (const CbmTrdParModGeo *)fGeoPar->GetModulePar(detId))){
-    LOG(DEBUG) << GetName() << "::AddModule : No Geo params for module @ "<< path <<". Using default."<< FairLogger::endl;
-    module->SetGeoPar(new CbmTrdParModGeo(Form("TRDmodule%03d"), path));
-  } else module->SetGeoPar(pGeo);
+//   // try to load Geometry parameters for module
+//   const CbmTrdParModGeo *pGeo(NULL);
+//   if(!fGeoPar || !(pGeo = (const CbmTrdParModGeo *)fGeoPar->GetModulePar(detId))){
+//     LOG(DEBUG) << GetName() << "::AddModule : No Geo params for module @ "<< path <<". Using default."<< FairLogger::endl;
+//     module->SetGeoPar(new CbmTrdParModGeo(Form("TRDmodule%03d"), path));
+//   } else module->SetGeoPar(pGeo);
 
   // try to load Gain parameters for module
   const CbmTrdParModGain *pGain(NULL);

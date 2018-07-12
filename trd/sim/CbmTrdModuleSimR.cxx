@@ -249,13 +249,12 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
       Int_t noiserate=fNoise->Uniform(0,3); //still in development
       Double_t simtime=fCurrentTime;
       for(Int_t ndigi=0; ndigi<noiserate; ndigi++){
-    NoiseTime(time);
-    ScanPadPlane(cluster_pos, fNoise->Gaus(0, fSigma_noise_keV * 1.E-6), 0,epoints,ipoints);
+        NoiseTime(time);
+        ScanPadPlane(cluster_pos, fNoise->Gaus(0, fSigma_noise_keV * 1.E-6), 0,epoints,ipoints);
       }
       fCurrentTime=simtime;
     }
 
-    
     fDigiPar->ProjectPositionToNextAnodeWire(cluster_pos);
     ScanPadPlane(cluster_pos, clusterELoss, clusterELossTR,epoints,ipoints);
   }
@@ -295,8 +294,8 @@ void CbmTrdModuleSimR::ScanPadPlane(const Double_t* local_point, Double_t cluste
     for (Int_t iRow = startRow; iRow <= rowId+maxRow/2; iRow++) {
       Int_t iCol=columnId;
       if (((iCol >= 0) && (iCol <= fnCol-1)) && ((iRow >= 0) && (iRow <= fnRow-1))){// real adress
-  targSec = fDigiPar->GetSector(iRow, secRow);
-  address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, iCol);
+        targSec = fDigiPar->GetSector(iRow, secRow);
+        address = CbmTrdAddress::GetAddress(fLayerId, CbmTrdAddress::GetModuleId(fModuleId), targSec, secRow, iCol);
       }
       else {
   targRow = iRow;
@@ -315,7 +314,7 @@ void CbmTrdModuleSimR::ScanPadPlane(const Double_t* local_point, Double_t cluste
   }
     
   targSec = fDigiPar->GetSector(targRow, secRow);
-  address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, targCol);
+  address = CbmTrdAddress::GetAddress(fLayerId, CbmTrdAddress::GetModuleId(fModuleId), targSec, secRow, targCol);
       }
 
 
@@ -343,7 +342,7 @@ void CbmTrdModuleSimR::ScanPadPlane(const Double_t* local_point, Double_t cluste
   while(!lowerend){
     if ((((iCol-collow) >= 0) && ((iCol-collow) <= fnCol-1)) && ((iRow >= 0) && (iRow <= fnRow-1))){// real adress
       targSec = fDigiPar->GetSector(iRow, secRow);
-      address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, iCol-collow);
+      address = CbmTrdAddress::GetAddress(fLayerId, CbmTrdAddress::GetModuleId(fModuleId), targSec, secRow, iCol-collow);
 
     }
     else {break;}
@@ -364,7 +363,7 @@ void CbmTrdModuleSimR::ScanPadPlane(const Double_t* local_point, Double_t cluste
 
     if ((((iCol+colhigh) >= 0) && ((iCol+colhigh) <= fnCol-1)) && ((iRow >= 0) && (iRow <= fnRow-1))){// real adress
       targSec = fDigiPar->GetSector(iRow, secRow);
-      address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, iCol+colhigh);
+      address = CbmTrdAddress::GetAddress(fLayerId, CbmTrdAddress::GetModuleId(fModuleId), targSec, secRow, iCol+colhigh);
     }
     else {break;}
 
@@ -469,7 +468,7 @@ void CbmTrdModuleSimR::SetAsicPar(CbmTrdParSetAsic *p)
       rowId++;
     }
   }
-  
+
   // Self Test 
   for (Int_t s = 0; s < fDigiPar->GetNofSectors(); s++){
     const Int_t nRow = fDigiPar->GetNofRowsInSector(s);

@@ -77,7 +77,7 @@ void CbmTrdParSetAsic::putParams(FairParamList *l)
   l->add("NrOfModules",   fNrOfModules);
   l->add("ModuleId", moduleId);
   l->add("nAsic",    nAsic);
-  l->add("typAsic",  typeAsic);
+  l->add("typeAsic",  typeAsic);
 
   CbmTrdParSetAsic *mod(NULL);
   for (Int_t i=0; i < fNrOfModules; i++){

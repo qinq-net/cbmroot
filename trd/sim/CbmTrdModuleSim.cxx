@@ -4,7 +4,7 @@
 #include "CbmTrdParModGas.h"
 #include "CbmTrdParModDigi.h"
 #include "CbmTrdParModGain.h"
-
+#include <FairLogger.h>
 #include <vector>
 
 //_______________________________________________________________________________
@@ -38,7 +38,7 @@ CbmTrdModuleSim::CbmTrdModuleSim(Int_t mod, Int_t ly, Int_t rot,
 //_______________________________________________________________________________
 CbmTrdModuleSim::~CbmTrdModuleSim()
 {
-  printf("AB :: clear %s[%s]\n", GetName(), GetTitle());
+  LOG(DEBUG) << GetName() << "::delete[%s]"<< GetTitle() << FairLogger::endl;
   //if(fAsicPar) delete fAsicPar;
 }
 
