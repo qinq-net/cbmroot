@@ -18,6 +18,8 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/cern2017/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/cern2017/param
 
+  ${CBMROOT_SOURCE_DIR}/fles/star2018/param
+  
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/dataformat
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/unpacker
@@ -50,7 +52,7 @@ Link_Directories(
 Set(SRCS
    CbmMcbmUnpack.cxx
    CbmMcbm2018Source.cxx
-#   dataformat/gDpbMessv100.cxx
+   dataformat/gDpbMessv100.cxx
 #   unpacker/CbmMcbm2018UnpackerT0.cxx
 #   unpacker/CbmMcbm2018UnpackerSts.cxx
 #   unpacker/CbmMcbm2018UnpackerMuch.cxx
@@ -61,7 +63,7 @@ Set(SRCS
 #   monitor/CbmMcbm2018MonitorSts.cxx
 #   monitor/CbmMcbm2018MonitorMuch.cxx
 #   monitor/CbmMcbm2018MonitorTrd.cxx
-#   monitor/CbmMcbm2018MonitorTof.cxx
+   monitor/CbmMcbm2018MonitorTof.cxx
 )
 
 #Set(NO_DICT_SRCS
@@ -91,7 +93,7 @@ EndIf()
 Set(LINKDEF CbmFlibMcbm2018LinkDef.h )
 Set(LIBRARY_NAME CbmFlibMcbm2018)
 Set(DEPENDENCIES
-    CbmFlibCern2017 CbmBase CbmBeamtimeBase fles_ipc Eve Base
+    CbmFlibStar2018 CbmFlibCern2017 CbmBase CbmBeamtimeBase fles_ipc Eve Base
 )
 
 GENERATE_LIBRARY()

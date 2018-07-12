@@ -6,7 +6,7 @@
 
 #pragma link C++ class CbmMcbmUnpack;
 #pragma link C++ class CbmMcbm2018Source;
-//#pragma link C++ class gdpb::Message;
+#pragma link C++ class gdpb::Message;
 //#pragma link C++ class CbmMcbm2018UnpackerT0;
 //#pragma link C++ class CbmMcbm2018UnpackerSts;
 //#pragma link C++ class CbmMcbm2018UnpackerMuch;
@@ -17,6 +17,6 @@
 //#pragma link C++ class CbmMcbm2018MonitorSts;
 //#pragma link C++ class CbmMcbm2018MonitorMuch;
 //#pragma link C++ class CbmMcbm2018MonitorTrd;
-//#pragma link C++ class CbmMcbm2018MonitorTof;
+#pragma link C++ class CbmMcbm2018MonitorTof;
 
 #endif
