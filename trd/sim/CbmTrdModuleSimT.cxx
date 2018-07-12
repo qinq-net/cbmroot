@@ -184,11 +184,11 @@ Bool_t CbmTrdModuleSimT::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
     pos[0]+=0.5*ldx*sgnx; 
     pos[1]+=dw*sgny;
   }
-  if(TMath::Abs(lout[0]-pos[0])>1.e-9){
+  if(TMath::Abs(lout[0]-pos[0])>1.e-3){
     LOG(WARNING) << GetName() <<"::MakeDigi: Along wire coordinate error : x_sim="
       <<std::setprecision(5)<<lout[0]<<" x_calc="<<std::setprecision(5)<<pos[0] << FairLogger::endl;
   }
-  if(TMath::Abs(ELoss-e)>1.e-9){
+  if(TMath::Abs(ELoss-e)>1.e-3){
     LOG(WARNING) << GetName() <<"::MakeDigi: dEdx partition to anode wires error : E[keV] = "
       <<std::setprecision(5)<<ELoss*1e6<<" Sum(Ei)[keV]="<<std::setprecision(5)<<e*1e6 << FairLogger::endl;
   }

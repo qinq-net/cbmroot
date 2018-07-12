@@ -163,8 +163,8 @@ void CbmTrdParModDigi::ProjectPositionToNextAnodeWire(Double_t* local_point) con
   if (fAnodeWireOffset > 0.0 && fAnodeWireSpacing > 0.0) {  // wires must be defined defined
 
     // check, if the input is within the allowed range
-    if ( fabs(local_point[1]) > fSizeY )
-      LOG(ERROR) << "CbmTrdParModDigi::ProjectPositionToNextAnodeWire - local point must be within gas volume, y=" << std::setprecision(5) << local_point[1] << FairLogger::endl;
+    if ( fabs(local_point[1]) - fSizeY > 1.e-3 )
+      LOG(ERROR) << "CbmTrdParModDigi::ProjectPositionToNextAnodeWire - local point must be within gas volume, y=" << std::setprecision(5) << local_point[1] << " module size "<<fSizeY<< FairLogger::endl;
 
     Double_t ypos = local_point[1];
 

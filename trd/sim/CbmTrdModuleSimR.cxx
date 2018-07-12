@@ -167,6 +167,7 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
   };
   Double_t local_point_out[3];// exit point coordinates in local module cs
   Double_t local_point_in[3]; // entrace point coordinates in local module cs
+  gGeoManager->cd(GetPath());
   gGeoManager->MasterToLocal(point_in,  local_point_in);
   gGeoManager->MasterToLocal(point_out, local_point_out);
   SetPositionMC(local_point_out);  
@@ -225,15 +226,16 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
   
   for (Int_t ipoints = 0; ipoints < epoints; ipoints++){
     for (Int_t i = 0; i < 3; i++){
-      if(epoints==1)                          cluster_pos[i] = local_point_in[i] +  (0.01) * cluster_delta[i];
-      //  if(epoints==1)                    cluster_pos[i] = local_point_in[i] + (0.5 + iCluster) * cluster_delta[i];
-      if(epoints==2 && ipoints==0)            cluster_pos[i] = local_point_in[i] +  (0.01) * cluster_delta[i];
-      if(epoints==2 && ipoints==1)            cluster_pos[i] = local_point_out[i] - (0.01) * cluster_delta[i];
-      if(epoints==3 && ipoints==0)            cluster_pos[i] = local_point_in[i] +  (0.1) * cluster_delta[i];
-      if(epoints==3 && ipoints==1)            cluster_pos[i] = local_point_out[i] - (0.1) * cluster_delta[i];
-      if(epoints==3 && ipoints==2)            cluster_pos[i] = local_point_in[i] +  (0.5) * cluster_delta[i];
-      if(epoints>3)                           cluster_pos[i] = local_point_in[i] + (fNoise->Uniform(0.01,0.99)) * cluster_delta[i];
-
+//       if(epoints==1)                          cluster_pos[i] = local_point_in[i] +  (0.01) * cluster_delta[i];
+//       //  if(epoints==1)                    cluster_pos[i] = local_point_in[i] + (0.5 + iCluster) * cluster_delta[i];
+//       if(epoints==2 && ipoints==0)            cluster_pos[i] = local_point_in[i] +  (0.01) * cluster_delta[i];
+//       if(epoints==2 && ipoints==1)            cluster_pos[i] = local_point_out[i] - (0.01) * cluster_delta[i];
+//       if(epoints==3 && ipoints==0)            cluster_pos[i] = local_point_in[i] +  (0.1) * cluster_delta[i];
+//       if(epoints==3 && ipoints==1)            cluster_pos[i] = local_point_out[i] - (0.1) * cluster_delta[i];
+//       if(epoints==3 && ipoints==2)            cluster_pos[i] = local_point_in[i] +  (0.5) * cluster_delta[i];
+//       if(epoints>3)                           cluster_pos[i] = local_point_in[i] + (fNoise->Uniform(0.01,0.99)) * cluster_delta[i];
+      
+      cluster_pos[i] = local_point_in[i];
     }
 
     if ( fDigiPar->GetSizeX() < fabs(cluster_pos[0]) || fDigiPar->GetSizeY() < fabs(cluster_pos[1])){
@@ -439,7 +441,10 @@ void CbmTrdModuleSimR::SetAsicPar(CbmTrdParSetAsic *p)
 
             asic = new CbmTrdParSpadic(iAsic, iFebGroup, local_point[0] - fDx, local_point[1] - fDy);
             fAsicPar->SetAsicPar(iAsic, asic);
-            if (local_point[0] > 2*fDx)     LOG(ERROR) << "CbmTrdModuleSimR::SetAsicPar: asic position x=" << local_point[0] << " is out of bounds [0," << 2*fDx<< "]!" << FairLogger::endl;
+            if (local_point[0] > 2*fDx){
+              LOG(ERROR) << "CbmTrdModuleSimR::SetAsicPar: asic position x=" << local_point[0] << " is out of bounds [0," << 2*fDx<< "]!" << FairLogger::endl;
+              fDigiPar->Print();
+            }
             if (local_point[1] > 2*fDy)     LOG(ERROR) << "CbmTrdModuleSimR::SetAsicPar: asic position y=" << local_point[1] << " is out of bounds [0," << 2*fDy<< "]!" << FairLogger::endl;
 
             for (Int_t ir = rowId; ir < rowId + gRow[iFebGroup]; ir++) {
