@@ -226,16 +226,14 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
   
   for (Int_t ipoints = 0; ipoints < epoints; ipoints++){
     for (Int_t i = 0; i < 3; i++){
-//       if(epoints==1)                          cluster_pos[i] = local_point_in[i] +  (0.01) * cluster_delta[i];
-//       //  if(epoints==1)                    cluster_pos[i] = local_point_in[i] + (0.5 + iCluster) * cluster_delta[i];
-//       if(epoints==2 && ipoints==0)            cluster_pos[i] = local_point_in[i] +  (0.01) * cluster_delta[i];
-//       if(epoints==2 && ipoints==1)            cluster_pos[i] = local_point_out[i] - (0.01) * cluster_delta[i];
-//       if(epoints==3 && ipoints==0)            cluster_pos[i] = local_point_in[i] +  (0.1) * cluster_delta[i];
-//       if(epoints==3 && ipoints==1)            cluster_pos[i] = local_point_out[i] - (0.1) * cluster_delta[i];
-//       if(epoints==3 && ipoints==2)            cluster_pos[i] = local_point_in[i] +  (0.5) * cluster_delta[i];
-//       if(epoints>3)                           cluster_pos[i] = local_point_in[i] + (fNoise->Uniform(0.01,0.99)) * cluster_delta[i];
-      
-      cluster_pos[i] = local_point_in[i];
+      if(epoints==1)                          cluster_pos[i] = local_point_in[i] +  (0.01) * cluster_delta[i];
+      //  if(epoints==1)                    cluster_pos[i] = local_point_in[i] + (0.5 + iCluster) * cluster_delta[i];
+      if(epoints==2 && ipoints==0)            cluster_pos[i] = local_point_in[i] +  (0.01) * cluster_delta[i];
+      if(epoints==2 && ipoints==1)            cluster_pos[i] = local_point_out[i] - (0.01) * cluster_delta[i];
+      if(epoints==3 && ipoints==0)            cluster_pos[i] = local_point_in[i] +  (0.1) * cluster_delta[i];
+      if(epoints==3 && ipoints==1)            cluster_pos[i] = local_point_out[i] - (0.1) * cluster_delta[i];
+      if(epoints==3 && ipoints==2)            cluster_pos[i] = local_point_in[i] +  (0.5) * cluster_delta[i];
+      if(epoints>3)                           cluster_pos[i] = local_point_in[i] + (fNoise->Uniform(0.01,0.99)) * cluster_delta[i];
     }
 
     if ( fDigiPar->GetSizeX() < fabs(cluster_pos[0]) || fDigiPar->GetSizeY() < fabs(cluster_pos[1])){
