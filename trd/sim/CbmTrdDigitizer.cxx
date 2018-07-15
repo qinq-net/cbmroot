@@ -46,14 +46,12 @@ using std::make_pair;
 using std::map;
 using std::vector;
 using std::max;
+using namespace std;
 Int_t CbmTrdDigitizer::fConfig = 0;
 
 //________________________________________________________________________________________
 CbmTrdDigitizer::CbmTrdDigitizer(CbmTrdRadiator* radiator)
   : CbmDigitize("CbmTrdDigitizer")
-  ,fInputNr(0)
-  ,fEventNr(0)
-  ,fEventTime(0)
   ,fLastEventTime(0)
   ,fpoints(0)
   ,nofBackwardTracks(0)
@@ -111,12 +109,11 @@ InitStatus CbmTrdDigitizer::Init()
 
   //if (fRadiator) fRadiator->Init();
 
-  // If the task CbmDaq is found, run in stream mode; else in event mode.
-  FairTask* daq = FairRun::Instance()->GetTask("Daq");
-  SetTimeBased(daq?kTRUE:kFALSE);
+  // Set time-based mode if appropriate
+  SetTimeBased(fEventMode ? kFALSE : kTRUE);
 
   fDigis = new TClonesArray("CbmTrdDigi", 100);
-  ioman->Register("TrdnDigi", "TRD Digis", fDigis, !IsTimeBased());
+  ioman->Register("TrdDigi", "TRD Digis", fDigis, !IsTimeBased());
 
   fDigiMatches = new TClonesArray("CbmMatch", 100);
   ioman->Register("TrdDigiMatch", "TRD Digis", fDigiMatches, !IsTimeBased());
@@ -135,14 +132,15 @@ void CbmTrdDigitizer::Exec(Option_t*)
 //  fDigis->Delete();
 //  fDigiMatches->Delete();
 
+
   // start timer
   TStopwatch timer; timer.Start();
 
   // get event info (once per event, used for matching)
-  GetEventInfo(fInputNr, fEventNr, fEventTime);
+  GetEventInfo();
   
   // flush buffers in streaming mode
-  if(IsTimeBased()) FlushLocalBuffer(fEventTime); 
+  if(IsTimeBased()) FlushLocalBuffer(fCurrentEventTime);
   // reset private monitoring counters
   ResetCounters();
   
@@ -179,31 +177,25 @@ void CbmTrdDigitizer::Exec(Option_t*)
       }
       mod = AddModule(point->GetDetectorID());
     } else mod = imod->second;
-    mod->SetLinkId(fInputNr, fEventNr, iPoint); 
-    mod->MakeDigi(point, fEventTime, TMath::Abs(track->GetPdgCode()) == 11);    
+    mod->SetLinkId(fCurrentInput, fCurrentEvent, iPoint);
+    mod->MakeDigi(point, fCurrentEventTime, TMath::Abs(track->GetPdgCode()) == 11);
   }
 
   // Fill data from internally used stl map into output TClonesArray
-//  if(!IsTimeBased()){
-    Int_t iDigi = 0;
+  Int_t nDigis = 0;
+  if(!IsTimeBased()) {
     for(map<Int_t, CbmTrdModuleSim*>::iterator imod = fModuleMap.begin(); imod != fModuleMap.end(); imod++) {
       std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>> *digis = imod->second->GetDigiMap();
       for (std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it = digis->begin() ; it != digis->end(); it++) {
-  
         (it->second.first)->SetMatch(it->second.second);
         SendDigi(it->second.first); 
-        
-//        new ((*fDigis)[iDigi]) CbmTrdDigi(*(it->second.first));
-//        new ((*fDigiMatches)[iDigi]) CbmMatch(*(it->second.second));
-//        delete it->second.first;
-//        delete it->second.second;
-//        iDigi++;
-      }
- //     digis->clear();   
-    }
-//  } else CbmDaqBuffer::Instance()->PrintStatus();          
+        nDigis++;
+      } //# modules
+      digis->clear();
+    } //# digis
+  } //? event-by-event
 
-  fLastEventTime=fEventTime;
+  fLastEventTime=fCurrentEventTime;
     
   // Calculate final event statistics
   Int_t nofElectrons(0), nofLatticeHits(0), nofPointsAboveThreshold(0), n0, n1, n2;
@@ -213,19 +205,27 @@ void CbmTrdDigitizer::Exec(Option_t*)
     nofElectrons+=n0; nofLatticeHits+=n1; nofPointsAboveThreshold+=n2;
   }
   
-  Double_t digisOverPoints = (nofPoints > 0) ? fDigis->GetEntriesFast() / nofPoints : 0;
+  Double_t digisOverPoints = (nofPoints > 0) ? Double_t(nDigis) / Double_t(nofPoints) : 0;
   Double_t latticeHitsOverElectrons = (nofElectrons > 0) ? (Double_t) nofLatticeHits / (Double_t) nofElectrons : 0;
-  LOG(INFO) << "CbmTrdDigitizer::Exec Points:               " << nofPoints << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizer::Exec PointsAboveThreshold: " << nofPointsAboveThreshold << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizer::Exec Digis:                " << fDigis->GetEntriesFast() << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizer::Exec digis/points:         " << digisOverPoints << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizer::Exec BackwardTracks:       " << nofBackwardTracks << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizer::Exec LatticeHits:          " << nofLatticeHits  << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizer::Exec Electrons:            " << nofElectrons << FairLogger::endl;
-  LOG(INFO) << "CbmTrdDigitizer::Exec latticeHits/electrons:" << latticeHitsOverElectrons << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizer::Exec Points:               " << nofPoints << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizer::Exec PointsAboveThreshold: " << nofPointsAboveThreshold << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizer::Exec Digis:                " << nDigis << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizer::Exec digis/points:         " << digisOverPoints << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizer::Exec BackwardTracks:       " << nofBackwardTracks << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizer::Exec LatticeHits:          " << nofLatticeHits  << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizer::Exec Electrons:            " << nofElectrons << FairLogger::endl;
+  LOG(DEBUG) << "CbmTrdDigitizer::Exec latticeHits/electrons:" << latticeHitsOverElectrons << FairLogger::endl;
   timer.Stop();
-  LOG(INFO) << "CbmTrdDigitizer::Exec real time=" << timer.RealTime()
-            << " CPU time=" << timer.CpuTime() << FairLogger::endl;            
+  LOG(DEBUG) << "CbmTrdDigitizer::Exec real time=" << timer.RealTime()
+            << " CPU time=" << timer.CpuTime() << FairLogger::endl;
+
+  // --- Event log
+  LOG(INFO) << "+ " << setw(15) << GetName() << ": Event " << setw(6)
+         << right << fCurrentEvent << " at " << fixed << setprecision(3)
+         << fCurrentEventTime << " ns, points: " << nofPoints
+         << ", digis: " << nDigis << ". Exec time " << setprecision(6)
+         << timer.RealTime() << " s." << FairLogger::endl;
+
 }
 
 //________________________________________________________________________________________
@@ -235,30 +235,6 @@ void CbmTrdDigitizer::Finish()
   if(IsTimeBased()) FlushLocalBuffer(); 
 }
 
-//________________________________________________________________________________________
-void CbmTrdDigitizer::GetEventInfo(UInt_t& inputNr, UInt_t& eventNr, Double_t& eventTime)
-{
-  // --- The event number is taken from the FairRootManager
-  eventNr = FairRootManager::Instance()->GetEntryNr();
-
-    // --- In a FairRunAna, take the information from FairEventHeader
-  if ( FairRunAna::Instance() ) {
-    FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
-    inputNr   = event->GetInputFileId();
-    eventTime = event->GetEventTime();
-  }
-
-  // --- In a FairRunSim, the input number and event time are always zero;
-  // --- only the event number is retrieved.
-  else {
-    if ( ! FairRunSim::Instance() )
-      LOG(FATAL) << GetName() << ": neither SIM nor ANA run." 
-      << FairLogger::endl;
-    inputNr   = 0;
-    eventTime = 0;
-  }
-
-}
 
 //________________________________________________________________________________________
 Int_t CbmTrdDigitizer::FlushLocalBuffer(Double_t eventTime)

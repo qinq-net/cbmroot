@@ -79,7 +79,6 @@ public:
   static void     SetTimeBased(Bool_t set=kTRUE)    { set?SETBIT(fConfig, kTime):CLRBIT(fConfig, kTime); }
   static void     SetWeightedDist(Bool_t set=kTRUE) { set?SETBIT(fConfig, kWeightDistance):CLRBIT(fConfig, kWeightDistance); }
 protected:
-  void            GetEventInfo(UInt_t& inputNr, UInt_t& eventNr, Double_t& eventTime);
   Int_t           FlushLocalBuffer(Double_t eventTime=0);
 
 private:
@@ -109,9 +108,6 @@ private:
   static Int_t fConfig;         ///< Configuration map for the digitizer. See CbmTrdSimDef for details
 
   // event info
-  UInt_t      fInputNr;         ///< input file ID
-  UInt_t      fEventNr;         ///< event ID or mc entry number
-  Double_t    fEventTime;       ///< event time [ns]
   Double_t    fLastEventTime;   ///< time of last event [ns]
   
   // counters

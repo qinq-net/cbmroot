@@ -78,7 +78,7 @@ Int_t CbmDigitization::AddInput(TString fileName, Double_t eventRate) {
 // -----   Add an ASCII parameter file   ------------------------------------
 Bool_t CbmDigitization::AddParameterAsciiFile(TString fileName) {
   if ( gSystem->AccessPathName(fileName.Data()) ) {
-    LOG(WARNING) << fName << ": Parameter file " << fileName
+    LOG(ERROR) << fName << ": Parameter file " << fileName
     << " does not exist!" << FairLogger::endl;
     return kFALSE;
   }

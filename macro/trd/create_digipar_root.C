@@ -17,6 +17,11 @@ void create_digipar_root(TString geoName = "trd_v13q", Bool_t asicFASP=kTRUE)
    TString outFile  = "data/test.esd." + geoName + ".root";
    TString digiFile = geoName + ".par";  // Digi Parameter Output File
 
+   inFile = "test.tra.root";
+   geoFile = "test.geo.root";
+   outFile = "test.eds.root";
+   digiFile = "trd_v17n_1e.par";
+
    FairRunAna* run = new FairRunAna();
    run->SetInputFile(inFile);
    run->SetOutputFile(outFile);

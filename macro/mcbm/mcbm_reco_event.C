@@ -58,6 +58,7 @@ void mcbm_reco_event(
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunct);
   CbmSetup* setup = CbmSetup::Instance();
+  setup->RemoveModule(kTrd);
   // ------------------------------------------------------------------------
 
 
@@ -192,18 +193,16 @@ void mcbm_reco_event(
 
     Double_t triggerThreshold = 0.5e-6;   // SIS100
     Bool_t   triangularPads = false;      // Bucharest triangular pad-plane layout
-    CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
-    trdCluster->SetNeighbourTrigger(true);
-    trdCluster->SetTriggerThreshold(triggerThreshold);
-    trdCluster->SetNeighbourRowTrigger(false);
-    trdCluster->SetPrimaryClusterRowMerger(true);
-    trdCluster->SetTriangularPads(triangularPads);
+    CbmTrdClusterFinder* trdCluster = new CbmTrdClusterFinder();
+    trdCluster->SetNeighbourEnable(true);
+    trdCluster->SetMinimumChargeTH(triggerThreshold);
+    trdCluster->SetNeighbourEnable(false);
+    trdCluster->SetRowMerger(true);
     run->AddTask(trdCluster);
     std::cout << "-I- " << myName << ": Added task "
         << trdCluster->GetName() << std::endl;
 
-    CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
-    trdHit->SetTriangularPads(triangularPads);
+    CbmTrdHitProducer* trdHit = new CbmTrdHitProducer();
     run->AddTask(trdHit);
     std::cout << "-I- " << myName << ": Added task "
         << trdHit->GetName() << std::endl;
@@ -231,6 +230,7 @@ void mcbm_reco_event(
   CbmBinnedTrackerTask* trackerTask = new CbmBinnedTrackerTask(kTRUE,
                                                                beamWidthX,
                                                                beamWidthY);
+  trackerTask->SetUse(kTrd, kFALSE);
   run->AddTask(trackerTask);
    // ------------------------------------------------------------------------
 
