@@ -1,4 +1,4 @@
-void mcbm_check_overlaps(const char* setup = "sis18_mcbm_25deg_long")
+void mcbm_check_overlaps(const char* dataset = "test")
 //void mcbm_check_overlaps(const char* setup = "sis18_mcbm_20deg_long")
 {
   // 2017-11-06 - DE - adapt to mCBM
@@ -19,8 +19,7 @@ void mcbm_check_overlaps(const char* setup = "sis18_mcbm_25deg_long")
 
   Int_t benchmarkNumber = 0;
 
-  TString outDir  = "data/";
-  TString geoFile = outDir + setup + ".geo.root";
+  TString geoFile = TString(dataset) + ".geo.root";
   TFile* f = new TFile(geoFile);
 
   gGeoManager = (TGeoManager*) f->Get("FAIRGeom"); 
