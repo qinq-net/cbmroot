@@ -63,11 +63,6 @@ void CbmTofBuildDigiEvents::Exec(Option_t*)
   {
     ProcessIdealEvents(fTimeSliceHeader->GetStartTime());
 
-    // Event numbers in the MC backlinks are found to be reset when crossing
-    // an input file transition in 'FairFileSource::fInChain'. For this reason,
-    // MC events need to be identified by both their event number AND their file number.
-    Int_t iCurrentFileNumber = fFileSource->GetInChain()->GetTreeNumber();
-
     for(Int_t iDigi = 0; iDigi < fTofTimeSliceDigis->GetEntriesFast(); iDigi++)
     {
       CbmTofDigiExp* tDigi = dynamic_cast<CbmTofDigiExp*>(fTofTimeSliceDigis->At(iDigi));
@@ -90,7 +85,7 @@ void CbmTofBuildDigiEvents::Exec(Option_t*)
         //       'tof/TofTools/CbmTofDef.h' into trunk!
         if(0 == tLink.GetUniqueID())
         {
-          std::pair<Int_t, Int_t> EventID(iCurrentFileNumber, tLink.GetEntry());
+          std::pair<Int_t, Int_t> EventID(tLink.GetFile(), tLink.GetEntry());
 
           // The MC event is already known.
 		      if(fIdealEventStartTimes.find(EventID) != fIdealEventStartTimes.end())
