@@ -1,4 +1,4 @@
-void pl_all_cluWalkSel(Int_t iNch=1, Int_t i1=0, Int_t iSel=0, Int_t SmT=0, Int_t iSm=0, Int_t iRpc)
+void pl_all_cluWalkSel(Int_t iNch=1, Int_t i1=0, Int_t iSel=0, Int_t SmT=0, Int_t iSm=0, Int_t iRpc=0)
 {
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
@@ -24,6 +24,7 @@ void pl_all_cluWalkSel(Int_t iNch=1, Int_t i1=0, Int_t iSel=0, Int_t SmT=0, Int_
   case 72:
     break;
   default:
+    ;
   }
   //  can->Divide(2,2,0,0); 
 
@@ -37,13 +38,16 @@ void pl_all_cluWalkSel(Int_t iNch=1, Int_t i1=0, Int_t iSel=0, Int_t SmT=0, Int_
  //gROOT->SetDirLevel(2);
 
  TH1 *h;
+ TH1 *h1;
  TH2 *h2;
+ TString hname;
+
  // if (h!=NULL) h->Delete();
  Int_t ic=0;
  for(Int_t iCh=i1; iCh<i1+iNch/2; iCh++){
    can->cd(++ic);
    gROOT->cd();
-   TString hname=Form("cl_SmT%d_sm%03d_rpc%03d_Ch%03d_S0_Sel%02d_Walk",SmT,iSm,iRpc,iCh,iSel);
+   hname=Form("cl_SmT%d_sm%03d_rpc%03d_Ch%03d_S0_Sel%02d_Walk",SmT,iSm,iRpc,iCh,iSel);
    h2=(TH2 *)gROOT->FindObjectAny(hname);
    if (h2!=NULL) {
      h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);
@@ -52,7 +56,7 @@ void pl_all_cluWalkSel(Int_t iNch=1, Int_t i1=0, Int_t iSel=0, Int_t SmT=0, Int_
      TProfile *h2_pfx=h2->ProfileX();
      h2_pfx->Draw("same");
    }else{cout<<"Histogram "<<hname<<" not existing. "<<endl;}
-   TString hname=Form("Cor_SmT%d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px",SmT,iSm,iRpc,iCh);
+   hname=Form("Cor_SmT%d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px",SmT,iSm,iRpc,iCh);
    h1=(TH1 *)gROOT->FindObjectAny(hname);
    if (h1!=NULL) {
      h1->Draw("same");
@@ -62,7 +66,7 @@ void pl_all_cluWalkSel(Int_t iNch=1, Int_t i1=0, Int_t iSel=0, Int_t SmT=0, Int_
 
    can->cd(++ic);
    gROOT->cd();
-   TString hname=Form("cl_SmT%d_sm%03d_rpc%03d_Ch%03d_S1_Sel%02d_Walk",SmT,iSm,iRpc,iCh,iSel);
+   hname=Form("cl_SmT%d_sm%03d_rpc%03d_Ch%03d_S1_Sel%02d_Walk",SmT,iSm,iRpc,iCh,iSel);
    h2=(TH2 *)gROOT->FindObjectAny(hname);
    if (h2!=NULL) {
      h2->UseCurrentStyle(); h2->GetYaxis()->SetLabelSize(lsize);
@@ -71,7 +75,7 @@ void pl_all_cluWalkSel(Int_t iNch=1, Int_t i1=0, Int_t iSel=0, Int_t SmT=0, Int_
      TProfile *h2_pfx=h2->ProfileX();
      h2_pfx->Draw("same");
    }
-   TString hname=Form("Cor_SmT%d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px",SmT,iSm,iRpc,iCh);
+   hname=Form("Cor_SmT%d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px",SmT,iSm,iRpc,iCh);
    h1=(TH1 *)gROOT->FindObjectAny(hname);
    if (h1!=NULL) {
      h1->Draw("same");

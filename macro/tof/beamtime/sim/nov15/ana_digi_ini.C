@@ -10,7 +10,7 @@ void ana_digi_ini(Int_t iNEvents, Int_t iCalMode, Int_t iCalSel, Int_t iCalRPC, 
 {
   // ---------------------------------------------------------------------------
 
-  TString tLogLevel = "WARNING";
+  TString tLogLevel = "ERROR";
   TString tLogVerbosity = "LOW";
   gErrorIgnoreLevel = kWarning;
   gDebug = 0;
@@ -100,10 +100,11 @@ void ana_digi_ini(Int_t iNEvents, Int_t iCalMode, Int_t iCalSel, Int_t iCalRPC, 
 
   CbmTofTestBeamClusterizer* tTofTestBeamClust = new CbmTofTestBeamClusterizer("TOF TestBeam Clusterizer", 1, kFALSE);
   tTofTestBeamClust->SetPs2Ns(kFALSE);
+  tTofTestBeamClust->SwapChannelSides(kTRUE);
   tTofTestBeamClust->SetCalMode(iCalMode);
   tTofTestBeamClust->SetCalSel(iCalSel);
   tTofTestBeamClust->SetCaldXdYMax(5.);
-  tTofTestBeamClust->SetCalCluMulMax(20.);  
+  tTofTestBeamClust->SetCalCluMulMax(20.);
   tTofTestBeamClust->SetCalRpc(iCalRPC); 
   tTofTestBeamClust->SetTRefId(iRefSel);
   tTofTestBeamClust->SetTotMax(10.);

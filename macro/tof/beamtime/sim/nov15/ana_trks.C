@@ -75,8 +75,7 @@ void ana_trks(Int_t iNEvents, Int_t iCorMode, const TString& tUnpackDir, const T
 
   // ---------------------------------------------------------------------------
 
-  FairFileSource* tFileSource = new FairFileSource(tUnpackInputFile);
-  tFileSource->AddFriend(tCalibInputFile);
+  FairFileSource* tFileSource = new FairFileSource(tCalibInputFile);
 
   // ---------------------------------------------------------------------------
 

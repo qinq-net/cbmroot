@@ -107,6 +107,7 @@ void ana_digi(Int_t iNEvents, Int_t iCalMode, Int_t iCalSel, Int_t iCalRPC, Int_
 
   CbmTofTestBeamClusterizer* tTofTestBeamClust = new CbmTofTestBeamClusterizer("TOF TestBeam Clusterizer", 1, bWriteHits);
   tTofTestBeamClust->SetPs2Ns(kFALSE);
+  tTofTestBeamClust->SwapChannelSides(kTRUE);
   tTofTestBeamClust->SetCalMode(iCalMode);
   tTofTestBeamClust->SetCalSel(iCalSel);
   tTofTestBeamClust->SetCaldXdYMax(2.);

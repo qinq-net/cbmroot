@@ -152,6 +152,9 @@ class CbmTofTestBeamClusterizer : public FairTask
       virtual Bool_t AddNextChan(Int_t iSmType, Int_t iSm, Int_t iRpc, Int_t iLastChan, Double_t dLastPosX,  Double_t dLastPosY, Double_t dLastTime, Double_t dLastTot); // needed for time based data  
       virtual void LH_store(Int_t iSmType, Int_t iSm,  Int_t iRpc, Int_t iChm, CbmTofHit *pHit);
 
+      void SwapChannelSides(Bool_t bSwap) {fbSwapChannelSides = bSwap;}
+      void SetFileIndex(Int_t iIndex) {fiFileIndex = iIndex;}
+
    protected:
 
    private:
@@ -399,6 +402,10 @@ class CbmTofTestBeamClusterizer : public FairTask
       Double_t fdMaxSpaceDist; // Isn't this just a local variable? Why make it global and preset?!?
 
       Double_t fdEvent;
+
+      Bool_t fbSwapChannelSides;
+      Int_t fiOutputTreeEntry;
+      Int_t fiFileIndex;
 
    ClassDef(CbmTofTestBeamClusterizer, 1);
 };

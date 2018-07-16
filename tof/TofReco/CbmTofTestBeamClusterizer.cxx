@@ -227,7 +227,10 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fdTTotMean(2.), 
    fdMaxTimeDist(0.),
    fdMaxSpaceDist(0.),
-   fdEvent(0)
+   fdEvent(0),
+   fbSwapChannelSides(kFALSE),
+   fiOutputTreeEntry(0),
+   fiFileIndex(0)
 {
     if ( !fInstance ) fInstance = this;
 }
@@ -294,13 +297,35 @@ void CbmTofTestBeamClusterizer::SetParContainers()
 
 void CbmTofTestBeamClusterizer::Exec(Option_t* /*option*/)
 {
+   // N.B. FIXME
+   // Neither the 'CbmDigi' nor the 'CbmHit' inheritance chains reimplement
+   // 'TObject::Clear' which would allow the pointer member variables
+   // 'CbmDigi::fMatch' and 'CbmHit::fMatch', respectively, to be properly
+   // deleted by calling 'TClonesArray::Clear("C")'.
+   // As in the case of 'CbmTofHit' a separate matching branch exists,
+   // its member variable 'fMatch' never points to a valid 'CbmMatch' object.
+   // For this reason, NOT calling the 'CbmHit' destructor (wherein a valid
+   // 'fMatch' would be deleted) through 'TClonesArray::Delete' does NOT cause
+   // a memory leak upon constructing new 'CbmTofHit' objects in the output
+   // array performing a placement new operation on the 'TClonesArray'.
+   // On the contrary, digi-to-point links are (currently) not stored in a
+   // separate matching branch but streamed with the 'CbmDigi' object.
+   // If the digis which are read from the input 'TTree' do contain valid
+   // 'fMatch' pointers, copy-constructing them in the "TofCalDigi" output
+   // array will be accompanied with memory allocation. Without calling the
+   // destructors of objects in "TofCalDigi" through 'TClonesArray::Delete'
+   // (see below) the allocated memory is not freed and accumulates the more
+   // digis are being processed. In consequence, a memory leak appears.
+
    // Clear output arrays 
-   fTofCalDigisColl->Clear("C");
+   fTofCalDigisColl->Delete();
    fTofHitsColl->Clear("C");
    //fTofHitsColl->Delete();  // Computationally costly!, but hopefully safe
    //for (Int_t i=0; i<fTofDigiMatchColl->GetEntries(); i++) ((CbmMatch *)(fTofDigiMatchColl->At(i)))->ClearLinks();  // FIXME, try to tamper memory leak (did not help)
    //fTofDigiMatchColl->Clear("C+L");  // leads to memory leak
    fTofDigiMatchColl->Delete();
+
+   fiOutputTreeEntry = FairRootManager::Instance()->GetOutTree()->GetEntries();
 
    fiNbHits = 0;
 
@@ -395,16 +420,16 @@ Bool_t   CbmTofTestBeamClusterizer::RegisterOutputs()
    fTofCalDigisColl = new TClonesArray("CbmTofDigiExp");
 
    // Flag check to control whether digis are written in output root file
-   rootMgr->Register( "TofCalDigi","Tof", fTofCalDigisColl, fbWriteDigisInOut);
+   rootMgr->Register( "TofCalDigi","Tof", fTofCalDigisColl, fbWriteDigisInOut && IsOutputBranchPersistent("TofCalDigi"));
 
 
    fTofHitsColl = new TClonesArray("CbmTofHit");
 
    // Flag check to control whether digis are written in output root file
-   rootMgr->Register( "TofHit","Tof", fTofHitsColl, fbWriteHitsInOut);
+   rootMgr->Register( "TofHit","Tof", fTofHitsColl, fbWriteHitsInOut && IsOutputBranchPersistent("TofHit"));
 
    fTofDigiMatchColl = new TClonesArray("CbmMatch",100);
-   rootMgr->Register( "TofDigiMatch","Tof", fTofDigiMatchColl, fbWriteHitsInOut);
+   rootMgr->Register( "TofDigiMatch","Tof", fTofDigiMatchColl, fbWriteHitsInOut && IsOutputBranchPersistent("TofDigiMatch"));
 
    return kTRUE;
 
@@ -960,7 +985,8 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        // module type that is found in the geometry file.
        if(NULL != fChannelInfo)
        {
-         continue;
+         LOG(INFO)<<Form("Channel info for module type %d obtained from counter: %d-%d-%d", iS, iS, iSM, 0)<<FairLogger::endl;
+         break;
        }
      }
 
@@ -3662,6 +3688,12 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
       for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ )
       {
          pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
+
+         if(fbSwapChannelSides && 5 != pDigi->GetType() && 8 != pDigi->GetType())
+         {
+           pDigi->SetAddress(pDigi->GetSm(), pDigi->GetRpc(), pDigi->GetChannel(), (0 == pDigi->GetSide()) ? 1 : 0, pDigi->GetType());
+         }
+
 	 Int_t iAddr=pDigi->GetAddress();
 
          LOG(DEBUG1)<<"BC "  // Before Calibration
@@ -4343,7 +4375,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 				    CbmMatch* digiMatch = new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
 				    for (Int_t i=0; i<vDigiIndRef.size();i++){
 				      Double_t dTot = ((CbmTofDigiExp*) (fTofCalDigisColl->At(vDigiIndRef.at(i))))->GetTot();
-				      digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
+				      digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i),fiOutputTreeEntry,fiFileIndex));
 				    }
 				  				    
                                     fiNbHits++;
@@ -4577,7 +4609,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 
                      for (Int_t i=0; i<vDigiIndRef.size();i++){
 		       Double_t dTot = ((CbmTofDigiExp*) (fTofCalDigisColl->At(vDigiIndRef.at(i))))->GetTot();
-		       digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
+		       digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i),fiOutputTreeEntry,fiFileIndex));
 		     }
 
                      fiNbHits++;
@@ -4691,8 +4723,8 @@ Bool_t   CbmTofTestBeamClusterizer::MergeClusters()
                       CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofCalDigisColl->At(iDigInd1));
                       dTot2 += pDig0->GetTot(); 
                       dTot2 += pDig1->GetTot();
-                      digiMatch->AddLink(CbmLink(pDig0->GetTot(),iDigInd0));
-                      digiMatch->AddLink(CbmLink(pDig1->GetTot(),iDigInd1));
+                      digiMatch->AddLink(CbmLink(pDig0->GetTot(),iDigInd0,fiOutputTreeEntry,fiFileIndex));
+                      digiMatch->AddLink(CbmLink(pDig1->GetTot(),iDigInd1,fiOutputTreeEntry,fiFileIndex));
                     } 
                   }
                   LOG(DEBUG)<<"MergeClusters: Found merger in neighbour "
@@ -5013,7 +5045,7 @@ Bool_t CbmTofTestBeamClusterizer::AddNextChan(Int_t iSmType, Int_t iSm, Int_t iR
   CbmMatch* digiMatch = new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
   for (Int_t i=0; i<vDigiIndRef.size();i++){
     Double_t dTot = ((CbmTofDigiExp*) (fTofCalDigisColl->At(vDigiIndRef.at(i))))->GetTot();
-    digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
+    digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i),fiOutputTreeEntry,fiFileIndex));
   }
   fiNbHits++;
   vDigiIndRef.clear();

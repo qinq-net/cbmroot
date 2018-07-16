@@ -93,6 +93,17 @@ iRestart=0
 iStep=0
 iStepLast=0
 
+
+InitIndices=( $(find ${CalibDir} -maxdepth 1 -type d -name 'Init*' -printf '%f\n' | cut -c5- | sort -n) )
+
+for iInitIndex in ${InitIndices[@]}
+do
+  if [ "$iInitIndex" -gt "$iRestart" ]; then
+    rm -rf ${CalibDir}/Init${iInitIndex}
+  fi
+done
+
+
 #if false; then
 if true; then
 
@@ -152,136 +163,129 @@ if true; then
 fi
 
 
-iRestart=0
-iStep=15
-iStepLast=14
+OptList=(
+  ''${iNEvents}',03,0,0,50'
+  ''${iNEvents}',03,1,'${iMRef}',0'
+  ''${iNEvents}',03,0,'${iDut}',0'
+  ''${iNEvents}',03,1,'${iMRef}',0'
+  ''${iNEvents}',03,0,'${iDut}',0'
+  ''${iNEvents}',13,0,0,50'
+  ''${iNEvents}',13,0,0,50'
+  ''${iNEvents}',13,1,'${iMRef}',0'
+  ''${iNEvents}',13,0,'${iDut}',0'
+  ''${iNEvents}',13,1,'${iMRef}',0'
+  ''${iNEvents}',13,0,'${iDut}',0'
+  ''${iNEvents}',23,0,0,50'
+  ''${iNEvents}',23,0,0,50'
+  ''${iNEvents}',23,1,'${iMRef}',0'
+  ''${iNEvents}',23,0,'${iDut}',0'
+  ''${iNEvents}',23,1,'${iMRef}',0'
+  ''${iNEvents}',23,0,'${iDut}',0'
+  ''${iNEvents}',33,0,0,50'
+  ''${iNEvents}',33,0,0,50'
+  ''${iNEvents}',33,1,'${iMRef}',0'
+  ''${iNEvents}',33,0,'${iDut}',0'
+  ''${iNEvents}',33,1,'${iMRef}',0'
+  ''${iNEvents}',43,0,0,50'
+  ''${iNEvents}',43,0,0,50'
+  ''${iNEvents}',43,1,'${iMRef}',0'
+  ''${iNEvents}',43,0,'${iDut}',0'
+  ''${iNEvents}',43,1,'${iMRef}',0'
+  ''${iNEvents}',43,0,'${iDut}',0'
+  ''${iNEvents}',43,1,'${iMRef}',0'
+  ''${iNEvents}',43,0,0,50'
+  ''${iNEvents}',43,0,0,50'
+  ''${iNEvents}',43,1,'${iMRef}',0'
+  ''${iNEvents}',43,0,'${iDut}',0'
+  ''${iNEvents}',43,1,'${iMRef}',0'
+  ''${iNEvents}',43,0,'${iDut}',0'
+  ''${iNEvents}',53,0,0,50'
+  ''${iNEvents}',53,0,0,50'
+  ''${iNEvents}',53,1,'${iMRef}',0'
+  ''${iNEvents}',53,0,'${iDut}',0'
+  ''${iNEvents}',53,1,'${iMRef}',0'
+  ''${iNEvents}',53,0,'${iDut}',0'
+  '500000,14,0,-'${iDut}',0'
+  '500000,14,1,-'${iMRef}',0'
+  ''${iNEvents}',53,0,'${iDut}',0'
+  ''${iNEvents}',53,1,'${iMRef}',0'
+  ''${iNEvents}',53,0,'${iDut}',0'
+  ''${iNEvents}',53,1,'${iMRef}',0'
+  ''${iNEvents}',63,0,'${iDut}',0'
+  ''${iNEvents}',63,1,'${iMRef}',0'
+  ''${iNEvents}',63,0,0,50'
+  ''${iNEvents}',63,0,0,50'
+  ''${iNEvents}',63,0,'${iDut}',0'
+  ''${iNEvents}',63,1,'${iMRef}',0'
+  ''${iNEvents}',63,0,'${iDut}',0'
+  ''${iNEvents}',63,1,'${iMRef}',0'
+  ''${iNEvents}',73,0,'${iDut}',0'
+  ''${iNEvents}',73,1,'${iMRef}',0'
+  ''${iNEvents}',73,0,0,50'
+  ''${iNEvents}',73,0,0,50'
+  ''${iNEvents}',73,0,'${iDut}',0'
+  ''${iNEvents}',73,1,'${iMRef}',0'
+  ''${iNEvents}',73,0,'${iDut}',0'
+  ''${iNEvents}',73,1,'${iMRef}',0'
+  ''${iNEvents}',73,0,'${iDut}',0'
+  '500000,24,0,-'${iDut}',0'
+  ''${iNEvents}',73,1,'${iMRef}',0'
+  '500000,24,1,-'${iMRef}',0'
+  ''${iNEvents}',73,0,0,50'
+  ''${iNEvents}',73,0,0,50'
+  ''${iNEvents}',73,0,'${iDut}',0'
+  ''${iNEvents}',73,1,'${iMRef}',0'
+  ''${iNEvents}',73,0,0,50'
+  ''${iNEvents}',73,0,0,50'
+  ''${iNEvents}',73,0,'${iDut}',0'
+  ''${iNEvents}',73,1,'${iMRef}',0'
+  ''${iNEvents}',83,0,'${iDut}',0'
+  ''${iNEvents}',83,1,'${iMRef}',0'
+  ''${iNEvents}',83,0,'${iDut}',0'
+  ''${iNEvents}',83,1,'${iMRef}',0'
+  '500000,34,0,-'${iDut}',0'
+  ''${iNEvents}',83,1,'${iMRef}',0'
+  '500000,34,1,-'${iMRef}',0'
+  ''${iNEvents}',93,0,'${iDut}',0'
+  ''${iNEvents}',93,1,'${iMRef}',0'
+  ''${iNEvents}',93,0,'${iDut}',0'
+  ''${iNEvents}',93,1,'${iMRef}',0'
+)
 
-#if false; then
-if true; then
+for inOpt in ${OptList[@]}
 
-  OptList=(
-    ''${iNEvents}',03,0,0,50'
-    ''${iNEvents}',03,1,'${iMRef}',0'
-    ''${iNEvents}',03,0,'${iDut}',0'
-    ''${iNEvents}',03,1,'${iMRef}',0'
-    ''${iNEvents}',03,0,'${iDut}',0'
-    ''${iNEvents}',13,0,0,50'
-    ''${iNEvents}',13,0,0,50'
-    ''${iNEvents}',13,1,'${iMRef}',0'
-    ''${iNEvents}',13,0,'${iDut}',0'
-    ''${iNEvents}',13,1,'${iMRef}',0'
-    ''${iNEvents}',13,0,'${iDut}',0'
-    ''${iNEvents}',23,0,0,50'
-    ''${iNEvents}',23,0,0,50'
-    ''${iNEvents}',23,1,'${iMRef}',0'
-    ''${iNEvents}',23,0,'${iDut}',0'
-    ''${iNEvents}',23,1,'${iMRef}',0'
-    ''${iNEvents}',23,0,'${iDut}',0'
-    ''${iNEvents}',33,0,0,50'
-    ''${iNEvents}',33,0,0,50'
-    ''${iNEvents}',33,1,'${iMRef}',0'
-    ''${iNEvents}',33,0,'${iDut}',0'
-    ''${iNEvents}',33,1,'${iMRef}',0'
-    ''${iNEvents}',43,0,0,50'
-    ''${iNEvents}',43,0,0,50'
-    ''${iNEvents}',43,1,'${iMRef}',0'
-    ''${iNEvents}',43,0,'${iDut}',0'
-    ''${iNEvents}',43,1,'${iMRef}',0'
-    ''${iNEvents}',43,0,'${iDut}',0'
-    ''${iNEvents}',43,1,'${iMRef}',0'
-    ''${iNEvents}',43,0,0,50'
-    ''${iNEvents}',43,0,0,50'
-    ''${iNEvents}',43,1,'${iMRef}',0'
-    ''${iNEvents}',43,0,'${iDut}',0'
-    ''${iNEvents}',43,1,'${iMRef}',0'
-    ''${iNEvents}',43,0,'${iDut}',0'
-    ''${iNEvents}',53,0,0,50'
-    ''${iNEvents}',53,0,0,50'
-    ''${iNEvents}',53,1,'${iMRef}',0'
-    ''${iNEvents}',53,0,'${iDut}',0'
-    ''${iNEvents}',53,1,'${iMRef}',0'
-    ''${iNEvents}',53,0,'${iDut}',0'
-    '500000,14,0,-'${iDut}',0'
-    '500000,14,1,-'${iMRef}',0'
-    ''${iNEvents}',53,0,'${iDut}',0'
-    ''${iNEvents}',53,1,'${iMRef}',0'
-    ''${iNEvents}',53,0,'${iDut}',0'
-    ''${iNEvents}',53,1,'${iMRef}',0'
-    ''${iNEvents}',63,0,'${iDut}',0'
-    ''${iNEvents}',63,1,'${iMRef}',0'
-    ''${iNEvents}',63,0,0,50'
-    ''${iNEvents}',63,0,0,50'
-    ''${iNEvents}',63,0,'${iDut}',0'
-    ''${iNEvents}',63,1,'${iMRef}',0'
-    ''${iNEvents}',63,0,'${iDut}',0'
-    ''${iNEvents}',63,1,'${iMRef}',0'
-    ''${iNEvents}',73,0,'${iDut}',0'
-    ''${iNEvents}',73,1,'${iMRef}',0'
-    ''${iNEvents}',73,0,0,50'
-    ''${iNEvents}',73,0,0,50'
-    ''${iNEvents}',73,0,'${iDut}',0'
-    ''${iNEvents}',73,1,'${iMRef}',0'
-    ''${iNEvents}',73,0,'${iDut}',0'
-    ''${iNEvents}',73,1,'${iMRef}',0'
-    ''${iNEvents}',73,0,'${iDut}',0'
-    '500000,24,0,-'${iDut}',0'
-    ''${iNEvents}',73,1,'${iMRef}',0'
-    '500000,24,1,-'${iMRef}',0'
-    ''${iNEvents}',73,0,0,50'
-    ''${iNEvents}',73,0,0,50'
-    ''${iNEvents}',73,0,'${iDut}',0'
-    ''${iNEvents}',73,1,'${iMRef}',0'
-    ''${iNEvents}',73,0,0,50'
-    ''${iNEvents}',73,0,0,50'
-    ''${iNEvents}',73,0,'${iDut}',0'
-    ''${iNEvents}',73,1,'${iMRef}',0'
-    ''${iNEvents}',83,0,'${iDut}',0'
-    ''${iNEvents}',83,1,'${iMRef}',0'
-    ''${iNEvents}',83,0,'${iDut}',0'
-    ''${iNEvents}',83,1,'${iMRef}',0'
-    '500000,34,0,-'${iDut}',0'
-    ''${iNEvents}',83,1,'${iMRef}',0'
-    '500000,34,1,-'${iMRef}',0'
-    ''${iNEvents}',93,0,'${iDut}',0'
-    ''${iNEvents}',93,1,'${iMRef}',0'
-    ''${iNEvents}',93,0,'${iDut}',0'
-    ''${iNEvents}',93,1,'${iMRef}',0'
-  )
+do   
+  ((iStepLast = ${iStep}))
+  ((iStep += 1))
 
-  for inOpt in ${OptList[@]}
+  mkdir ${CalibDir}/Init${iStep}
 
-  do   
-    ((iStepLast = ${iStep}))
-    ((iStep += 1))
+  cp -v ${MacroDir}/.rootrc ${CalibDir}/Init${iStep}/
+  cp -v ${MacroDir}/rootlogon.C ${CalibDir}/Init${iStep}/
 
-    mkdir ${CalibDir}/Init${iStep}
-
-    cp -v ${MacroDir}/.rootrc ${CalibDir}/Init${iStep}/
-    cp -v ${MacroDir}/rootlogon.C ${CalibDir}/Init${iStep}/
-
-    cd ${CalibDir}/Init${iStep}
+  cd ${CalibDir}/Init${iStep}
 
 
-    if [ "$iStep" -gt "$iRestart" ]; then
-      # copy previous calibration file
-      if [ "$iStep" -gt "1" ]; then
-        cp -v ${CalibDir}/Init${iStepLast}/calib_cluster.cor_out.root ${CalibDir}/Init${iStep}/calib_cluster.cor_in.root
-      fi
-
-      # generate new calibration file
-      root -b -q ''${MacroDir}'/ana_digi_cal.C('$inOpt',"'${UnpackDir}'",'${iDut}','${iMRef}','${iBRef}','${iDeadTime}')'
-
-      rm ${CalibDir}/Init${iStep}/all_*
-      rm ${CalibDir}/Init${iStep}/digi_cal.out.root
-
-      echo "Init step $iStep with option $inOpt finished"
-    else
-      echo "Init step $iStep with option $inOpt skipped"
+  if [ "$iStep" -gt "$iRestart" ]; then
+    # copy previous calibration file
+    if [ "$iStep" -gt "1" ]; then
+      cp -v ${CalibDir}/Init${iStepLast}/calib_cluster.cor_out.root ${CalibDir}/Init${iStep}/calib_cluster.cor_in.root
     fi
 
-  done
+    # generate new calibration file
+    root -b -q ''${MacroDir}'/ana_digi_cal.C('$inOpt',"'${UnpackDir}'",'${iDut}','${iMRef}','${iBRef}','${iDeadTime}')'
 
-  cp -v ${CalibDir}/Init${iStep}/calib_cluster_cal.hst.root ${CalibDir}/hst/final_calib_cluster_init_cal.hst.root
-  cp -v ${CalibDir}/Init${iStep}/calib_cluster.cor_out.root ${CalibDir}/hst/final_calib_cluster_init.cor_out.root
+    rm ${CalibDir}/Init${iStep}/all_*
+    rm ${CalibDir}/Init${iStep}/digi_cal.out.root
 
-fi
+    echo "Init step $iStep with option $inOpt finished"
+  else
+    echo "Init step $iStep with option $inOpt skipped"
+  fi
+
+done
+
+cp -v ${CalibDir}/Init${iStep}/calib_cluster_cal.hst.root ${CalibDir}/hst/final_calib_cluster_init_cal.hst.root
+cp -v ${CalibDir}/Init${iStep}/calib_cluster.cor_out.root ${CalibDir}/hst/final_calib_cluster_init.cor_out.root
+
+

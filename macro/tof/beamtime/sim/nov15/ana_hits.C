@@ -72,8 +72,7 @@ void ana_hits(Int_t iNEvents, Int_t iGenCor, const TString& tUnpackDir, const TS
 
   // ---------------------------------------------------------------------------
 
-  FairFileSource* tFileSource = new FairFileSource(tUnpackInputFile);
-  tFileSource->AddFriend(tCalibInputFile);
+  FairFileSource* tFileSource = new FairFileSource(tCalibInputFile);
 
   // ---------------------------------------------------------------------------
 
