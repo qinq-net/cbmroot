@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 2)
+void run_reco(Int_t nEvents = 100)
 {
     TTree::SetMaxTreeSize(90000000000);
     TString script = TString(gSystem->Getenv("SCRIPT"));
@@ -8,10 +8,10 @@ void run_reco(Int_t nEvents = 2)
 
     TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
 
-    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
-//    TString outDir = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/results/results_dielectron/";
-    TString mcFile = outDir + "mc.00000.root";
-    TString parFile = outDir + "param.00000.root";
+    //TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
+    TString outDir = "/lustre/nyx/cbm/users/slebedev/cbm/data/lmvm/agagtest/";
+    TString mcFile = "/lustre/nyx/cbm/prod/mc/r13109/sis100_electron.00001.tra.root";//outDir + "mc.00000.root";
+    TString parFile = outDir + "sis100_electron.00001.par.root";//outDir + "param.00000.root";
     TString recoFile = outDir + "reco.00000.root";
 
 

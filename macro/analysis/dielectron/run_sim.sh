@@ -3,15 +3,15 @@
 #inmed, qgp, rho0, omegaepem, omegadalitz, phi
 
 nofJobs=100
-dataDir=/lustre/nyx/cbm/users/slebedev/cbm/data/lmvm/may18_100k/
+#dataDir=/lustre/nyx/cbm/users/slebedev/cbm/data/lmvm/may18_100k/
 #dataDir=/lustre/nyx/cbm/users/gpitsch/CbmRoot/data/lmvm
-
+dataDir=/lustre/nyx/cbm/users/slebedev/cbm/data/lmvm/agagtest/
 #set full path to geo setup macro
 geoSetupMacroPath=/lustre/nyx/cbm/users/slebedev/cbm/trunk/cbmroot/macro/analysis/dielectron/geosetup/diel_setup_sis100.C
-collEnergy=8gev
+collEnergy=3.5gev
 
-#for plutoParticle in omegaepem; do
-for plutoParticle in inmed qgp omegaepem omegadalitz phi; do
+for plutoParticle in omegaepem; do
+#for plutoParticle in inmed qgp omegaepem omegadalitz phi; do
 
 outdir=${dataDir}/${collEnergy}/${plutoParticle}
 logFile=${outdir}/log/log_slurm-%A_%a.out

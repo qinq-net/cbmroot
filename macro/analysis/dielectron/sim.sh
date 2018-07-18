@@ -28,8 +28,10 @@ source ${cbmrootConfigPath}
 export DISPLAY=localhost:0.0
 
 export URQMD_FILE=/lustre/nyx/cbm/prod/gen/urqmd/auau/${collEnergy}/centr/urqmd.auau.${collEnergy}.centr.${XXXXX}.root
-export MC_FILE=${outdir}/mc.auau.${collEnergy}.centr.${XXXXX}.root
-export PAR_FILE=${outdir}/params.auau.${collEnergy}.centr.${XXXXX}.root
+export MC_FILE=/lustre/nyx/cbm/prod/mc/r13109/sis100_electron.${XXXXX}.tra.root
+#export MC_FILE=${outdir}/mc.auau.${collEnergy}.centr.${XXXXX}.root
+#export PAR_FILE=${outdir}/params.auau.${collEnergy}.centr.${XXXXX}.root
+export PAR_FILE=${outdir}/sis100_electron.${XXXXX}.par.root
 export RECO_FILE=${outdir}/reco.auau.${collEnergy}.centr.${XXXXX}.root
 export LITQA_FILE=${outdir}/litqa.auau.${collEnergy}.centr.${XXXXX}.root
 export ANALYSIS_FILE=${outdir}/analysis.auau.${collEnergy}.centr.${XXXXX}.root
@@ -74,7 +76,7 @@ elif [ ${plutoParticle} = "urqmd" ] ; then
 fi 
 
 # run the root simulation
-root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
+#root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
 root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
 root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
 root -b -l -q "${macro_dir}/run_analysis.C(${nevents})"
