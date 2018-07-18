@@ -40,9 +40,12 @@ vector<string> CbmHaddBase::GetGoodFiles(
         Int_t nofEvents)
 {
     vector<string> files = GetFilesByPattern(pattern);
+    cout << "pattern:" << pattern << endl;
+    cout << "# of files by pattern:" << files.size() << endl;
     vector<string> goodFiles;
     for (int i = 0; i < files.size(); i++) {
-        TFile* file = TFile::Open( (files[i] ).c_str(), "READ");
+	TFile* file = TFile::Open( (files[i] ).c_str(), "READ");
+        if (file!= NULL) cout << i << " open file" << endl;
         // TODO: Do we need to check also reco file?
         Bool_t isGoodFile = CheckFile(file, fileSizeLimit, nofEvents);
         if (file != NULL) file->Close();
