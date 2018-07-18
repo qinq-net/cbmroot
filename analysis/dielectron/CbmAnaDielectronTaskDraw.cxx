@@ -81,7 +81,7 @@ void CbmAnaDielectronTaskDraw::DrawHistFromFile(
    DrawMomentumDistributionAll();
    DrawMomentumEfficiencyAll();
    DrawMotherPdg();
-//   DrawPPAngleMCSignal();
+   DrawPPAngleMCSignal();
    DrawSourcesBgPairsAll();
    DrawGammaVertex();
    DrawCutDistributions();
