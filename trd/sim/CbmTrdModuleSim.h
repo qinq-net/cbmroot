@@ -34,7 +34,8 @@ public:
   virtual ~CbmTrdModuleSim();
   
   virtual void     GetCounters(Int_t &nEl, Int_t &nLattice, Int_t &nOverThr) const {nEl=0; nLattice=0; nOverThr=0;} 
-  virtual std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>>* GetDigiMap()    { return &fDigiMap;}
+  virtual std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>>* 
+                   GetDigiMap()         { return &fDigiMap;}
   virtual Int_t    GetEventId() const   { return fEventId; }
   virtual Int_t    GetInputId() const   { return fInputId; }
   virtual Int_t    GetPointId() const   { return fPointId; }
@@ -74,8 +75,8 @@ protected:
   // calibration objects
   CbmTrdRadiator* fRadiator;    ///< TR description for radiator
 
-  std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>>              fDigiMap; ///< Temporary storage for digis.
-  std::map<Int_t, std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>> fBuffer;  ///< local digits buffer as function of TRD channel
+  std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>>              fDigiMap; ///< Temporary storage for complete digis for each CBM address.
+  std::map<Int_t, std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>> fBuffer;  ///< Local digits buffer as function of time for each TRD channel in the module
 
 private:
   CbmTrdModuleSim(const CbmTrdModuleSim &ref);

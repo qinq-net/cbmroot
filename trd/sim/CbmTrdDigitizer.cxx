@@ -51,7 +51,7 @@ Int_t CbmTrdDigitizer::fConfig = 0;
 
 //________________________________________________________________________________________
 CbmTrdDigitizer::CbmTrdDigitizer(CbmTrdRadiator* radiator)
-  : CbmDigitize("CbmTrdDigitizer")
+  : CbmDigitize("TrdDigitize")
   ,fLastEventTime(0)
   ,fpoints(0)
   ,nofBackwardTracks(0)
@@ -111,12 +111,12 @@ InitStatus CbmTrdDigitizer::Init()
 
   // Set time-based mode if appropriate
   SetTimeBased(fEventMode ? kFALSE : kTRUE);
-
+  
   fDigis = new TClonesArray("CbmTrdDigi", 100);
-  ioman->Register("TrdDigi", "TRD Digis", fDigis, !IsTimeBased());
+  ioman->Register("TrdDigi", "TRD", fDigis, IsOutputBranchPersistent("TrdDigi"));
 
   fDigiMatches = new TClonesArray("CbmMatch", 100);
-  ioman->Register("TrdDigiMatch", "TRD Digis", fDigiMatches, !IsTimeBased());
+  ioman->Register("TrdDigiMatch", "TRD", fDigiMatches, IsOutputBranchPersistent("TrdDigiMatch"));
 
   LOG(INFO) << "================ TRD Digitizer ===============" << FairLogger::endl;
   LOG(INFO) << " Free streaming    : " << (IsTimeBased()?"yes":"no")<< FairLogger::endl;
@@ -139,8 +139,6 @@ void CbmTrdDigitizer::Exec(Option_t*)
   // get event info (once per event, used for matching)
   GetEventInfo();
   
-  // flush buffers in streaming mode
-  if(IsTimeBased()) FlushLocalBuffer(fCurrentEventTime);
   // reset private monitoring counters
   ResetCounters();
   
@@ -181,29 +179,28 @@ void CbmTrdDigitizer::Exec(Option_t*)
     mod->MakeDigi(point, fCurrentEventTime, TMath::Abs(track->GetPdgCode()) == 11);
   }
 
-  // Fill data from internally used stl map into output TClonesArray
-  Int_t nDigis = 0;
-  if(!IsTimeBased()) {
-    for(map<Int_t, CbmTrdModuleSim*>::iterator imod = fModuleMap.begin(); imod != fModuleMap.end(); imod++) {
-      std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>> *digis = imod->second->GetDigiMap();
-      for (std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it = digis->begin() ; it != digis->end(); it++) {
-        (it->second.first)->SetMatch(it->second.second);
-        SendDigi(it->second.first); 
-        nDigis++;
-      } //# modules
-      digis->clear();
-    } //# digis
-  } //? event-by-event
-
-  fLastEventTime=fCurrentEventTime;
-    
+  // Fill data from internally used stl map into CbmDaqBuffer.
   // Calculate final event statistics
-  Int_t nofElectrons(0), nofLatticeHits(0), nofPointsAboveThreshold(0), n0, n1, n2;
+  Int_t nDigis(0), nofElectrons(0), nofLatticeHits(0), nofPointsAboveThreshold(0), n0, n1, n2;
   for(map<Int_t, CbmTrdModuleSim*>::iterator imod = fModuleMap.begin(); imod != fModuleMap.end(); imod++) {
-    std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>> *digis = imod->second->GetDigiMap();
+    // in streaming mode flush buffers only up to a certain point in time wrt to current event time (allow for event pile-ups)
+    //printf("Processing data for module %d\n", imod->first);
+    if(IsTimeBased()) imod->second->FlushBuffer(fCurrentEventTime);  
+    // in event-by-event mode flush all buffers     
+    else imod->second->FlushBuffer();                               
     imod->second->GetCounters(n0, n1, n2);
     nofElectrons+=n0; nofLatticeHits+=n1; nofPointsAboveThreshold+=n2;
-  }
+    std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>> *digis = imod->second->GetDigiMap();
+    //printf("  Digits %d\n", digis->size());    
+    for (std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it = digis->begin() ; it != digis->end(); it++) {
+      (it->second.first)->SetMatch(it->second.second);
+      SendDigi(it->second.first); 
+      nDigis++;
+    } //# modules
+    digis->clear();
+  } //# digis
+  fLastEventTime=fCurrentEventTime;
+    
   
   Double_t digisOverPoints = (nofPoints > 0) ? Double_t(nDigis) / Double_t(nofPoints) : 0;
   Double_t latticeHitsOverElectrons = (nofElectrons > 0) ? (Double_t) nofLatticeHits / (Double_t) nofElectrons : 0;
@@ -229,17 +226,26 @@ void CbmTrdDigitizer::Exec(Option_t*)
 }
 
 //________________________________________________________________________________________
+void CbmTrdDigitizer::FlushBuffers()
+{
+  for(map<Int_t, CbmTrdModuleSim*>::iterator imod = fModuleMap.begin(); imod != fModuleMap.end(); imod++) {
+    imod->second->FlushBuffer();                               
+    std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>> *digis = imod->second->GetDigiMap();
+    for (std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it = digis->begin() ; it != digis->end(); it++) {
+      (it->second.first)->SetMatch(it->second.second);
+      SendDigi(it->second.first); 
+      //nDigis++;
+    } //# modules
+    digis->clear();
+  } //# digis
+  
+}
+
+//________________________________________________________________________________________
 void CbmTrdDigitizer::Finish()
 {
   // flush buffers in streaming mode
-  if(IsTimeBased()) FlushLocalBuffer(); 
-}
-
-
-//________________________________________________________________________________________
-Int_t CbmTrdDigitizer::FlushLocalBuffer(Double_t eventTime)
-{
-  return 0;
+  if(IsTimeBased()) FlushBuffers(); 
 }
 
 //________________________________________________________________________________________

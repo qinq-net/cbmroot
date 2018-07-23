@@ -86,7 +86,7 @@ Bool_t CbmTrdParSetDigi::getParams(FairParamList* l)
     ((CbmTrdParModDigi*)fModuleMap[moduleId[i]])->SetAnodeWireToPadPlaneDistance(awPP>0?awPP:0.35);
     ((CbmTrdParModDigi*)fModuleMap[moduleId[i]])->SetAnodeWireOffset(awOff>0?awOff:0.375);
     ((CbmTrdParModDigi*)fModuleMap[moduleId[i]])->SetAnodeWireSpacing(awPitch>0?awPitch:0.25);
-    //fModuleMap[moduleId[i]]->Print();
+    fModuleMap[moduleId[i]]->Print();
   }
   return kTRUE;
 }

@@ -10,7 +10,7 @@
 #include "CbmTrdRadiator.h"
 
 // Includes from CbmRoot
-#include "CbmDaqBuffer.h"
+//#include "CbmDaqBuffer.h"
 #include "CbmMatch.h"
 
 // Includes from FairRoot
@@ -86,6 +86,7 @@ void CbmTrdModuleSimR::AddDigi(Int_t address, Double_t charge, Double_t chargeTR
   Int_t module= CbmTrdAddress::GetModuleId(address);
   Int_t ncols= fDigiPar->GetNofColumns();
   Int_t channel = ncols * row + col;
+  //printf("CbmTrdModuleSimR::AddDigi(%d)=%d [%d] col[%d] row[%d]\n", address, module, fModuleId, col, row);
 
   fDigiMap[address] = make_pair(new CbmTrdDigi(channel, charge*1e6, ULong64_t(time/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)), 0, 0), digiMatch);
   it = fDigiMap.find(address);
@@ -123,6 +124,7 @@ void CbmTrdModuleSimR::AddDigitoBuffer(Int_t address, Double_t charge, Double_t 
   Int_t module= CbmTrdAddress::GetModuleId(address);
   Int_t ncols= fDigiPar->GetNofColumns();
   Int_t channel = ncols * row + col;
+  //printf("CbmTrdModuleSimR::AddDigitoBuffer(%d)=%d\n", address, module);
 
   CbmTrdDigi* digi= new CbmTrdDigi(channel, charge*1e6, ULong64_t(time/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)), 0, 0);
   digi->SetAddressModule(module);
@@ -295,7 +297,7 @@ void CbmTrdModuleSimR::ScanPadPlane(const Double_t* local_point, Double_t cluste
       Int_t iCol=columnId;
       if (((iCol >= 0) && (iCol <= fnCol-1)) && ((iRow >= 0) && (iRow <= fnRow-1))){// real adress
         targSec = fDigiPar->GetSector(iRow, secRow);
-        address = CbmTrdAddress::GetAddress(fLayerId, CbmTrdAddress::GetModuleId(fModuleId), targSec, secRow, iCol);
+        address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, iCol);
       }
       else {
   targRow = iRow;
@@ -314,7 +316,7 @@ void CbmTrdModuleSimR::ScanPadPlane(const Double_t* local_point, Double_t cluste
   }
     
   targSec = fDigiPar->GetSector(targRow, secRow);
-  address = CbmTrdAddress::GetAddress(fLayerId, CbmTrdAddress::GetModuleId(fModuleId), targSec, secRow, targCol);
+  address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, targCol);
       }
 
 
@@ -342,7 +344,7 @@ void CbmTrdModuleSimR::ScanPadPlane(const Double_t* local_point, Double_t cluste
   while(!lowerend){
     if ((((iCol-collow) >= 0) && ((iCol-collow) <= fnCol-1)) && ((iRow >= 0) && (iRow <= fnRow-1))){// real adress
       targSec = fDigiPar->GetSector(iRow, secRow);
-      address = CbmTrdAddress::GetAddress(fLayerId, CbmTrdAddress::GetModuleId(fModuleId), targSec, secRow, iCol-collow);
+      address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, iCol-collow);
 
     }
     else {break;}
@@ -363,7 +365,7 @@ void CbmTrdModuleSimR::ScanPadPlane(const Double_t* local_point, Double_t cluste
 
     if ((((iCol+colhigh) >= 0) && ((iCol+colhigh) <= fnCol-1)) && ((iRow >= 0) && (iRow <= fnRow-1))){// real adress
       targSec = fDigiPar->GetSector(iRow, secRow);
-      address = CbmTrdAddress::GetAddress(fLayerId, CbmTrdAddress::GetModuleId(fModuleId), targSec, secRow, iCol+colhigh);
+      address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, targSec, secRow, iCol+colhigh);
     }
     else {break;}
 
@@ -451,17 +453,13 @@ void CbmTrdModuleSimR::SetAsicPar(CbmTrdParSetAsic *p)
                 if (ic >= fDigiPar->GetNofColumns() )  LOG(ERROR) << "CbmTrdModuleSimR::SetAsicPar: ic " << ic << " is out of bounds!" << FairLogger::endl;
                 isecId = fDigiPar->GetSector((Int_t)ir, irowId);
                 asic->SetChannelAddress(
-                  CbmTrdAddress::GetAddress(CbmTrdAddress::GetLayerId(fModuleId),
-                                  CbmTrdAddress::GetModuleId(fModuleId),
-                                  isecId, irowId, ic));
+                  CbmTrdAddress::GetAddress(fLayerId, fModuleId, isecId, irowId, ic));
           //s, ir, ic));//new
                 if (false)
                   printf("               M:%10i(%4i) s: %i  irowId: %4i  ic: %4i r: %4i c: %4i   address:%10i\n",fModuleId,
                     CbmTrdAddress::GetModuleId(fModuleId),
                     isecId, irowId, ic, r, c,
-                    CbmTrdAddress::GetAddress(CbmTrdAddress::GetLayerId(fModuleId),
-                            CbmTrdAddress::GetModuleId(fModuleId),
-                            isecId, irowId, ic));
+                    CbmTrdAddress::GetAddress(fLayerId, fModuleId, isecId, irowId, ic));
               } 
             } 
             iAsic++;  // next Asic
@@ -478,9 +476,7 @@ void CbmTrdModuleSimR::SetAsicPar(CbmTrdParSetAsic *p)
     const Int_t nCol = fDigiPar->GetNofColumnsInSector(s);
     for (Int_t r = 0; r < nRow; r++){
       for (Int_t c = 0; c < nCol; c++){
-        Int_t channelAddress = CbmTrdAddress::GetAddress(CbmTrdAddress::GetLayerId(fModuleId),
-                CbmTrdAddress::GetModuleId(fModuleId), 
-                s, r, c);
+        Int_t channelAddress = CbmTrdAddress::GetAddress(fLayerId, fModuleId,s, r, c);
         if (fAsicPar->GetAsicAddress(channelAddress) == -1)
           LOG(ERROR) << "CbmTrdModuleSimR::SetAsicPar: Channel address:" << channelAddress << " is not or multible initialized in module " << fModuleId << "(ID:" << CbmTrdAddress::GetModuleId(fModuleId) << ")" << "(s:" << s << ", r:" << r << ", c:" << c << ")" << FairLogger::endl;
       }
@@ -525,7 +521,7 @@ void CbmTrdModuleSimR::ProcessBuffer(Int_t address){
   Int_t module= CbmTrdAddress::GetModuleId(address);
   Int_t ncols= fDigiPar->GetNofColumns();
   Int_t channel = ncols * row + col;
-
+  printf("CbmTrdModuleSimR::ProcessBuffer(%d)=%d\n", address, module);
   
   Int_t trigger = fAnalogBuffer[address][0].first->GetTriggerType();
   CbmMatch* digiMatch = new CbmMatch(*fAnalogBuffer[address][0].second);
@@ -533,7 +529,8 @@ void CbmTrdModuleSimR::ProcessBuffer(Int_t address){
   digi->SetAddressModule(module);
   digi->SetTime(digi->GetTime());
   digi->SetMatch(digiMatch);
-   CbmDaqBuffer::Instance()->InsertData(digi);
+  fDigiMap[address] = make_pair(digi, digiMatch);
+  // CbmDaqBuffer::Instance()->InsertData(digi);
   //  fnoDigis++;
 
   fAnalogBuffer.erase(address);

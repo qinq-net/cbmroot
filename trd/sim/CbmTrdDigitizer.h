@@ -78,13 +78,14 @@ public:
   static void     SetUseFASP(Bool_t set=kTRUE)      { set?SETBIT(fConfig, kFASP):CLRBIT(fConfig, kFASP); }
   static void     SetTimeBased(Bool_t set=kTRUE)    { set?SETBIT(fConfig, kTime):CLRBIT(fConfig, kTime); }
   static void     SetWeightedDist(Bool_t set=kTRUE) { set?SETBIT(fConfig, kWeightDistance):CLRBIT(fConfig, kWeightDistance); }
-protected:
-  Int_t           FlushLocalBuffer(Double_t eventTime=0);
-
 private:
   CbmTrdDigitizer(const CbmTrdDigitizer&);
   CbmTrdDigitizer& operator=(const CbmTrdDigitizer&);
 
+  /**
+    * \brief Flush local digi buffers to CbmDaqBuffer.
+    */ 
+  void            FlushBuffers();
   /**
     * \brief Create module for current MC point.
     * \param[in] detId unique identifier of module.

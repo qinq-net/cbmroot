@@ -76,7 +76,9 @@ CbmTrdParModDigi::CbmTrdParModDigi(
   if (nofSectors > 1) {
     Double_t beginx, beginy, endx, endy;
     Double_t summed_sectsize;
+    //printf("secSize[%f] sizex[%f]\n", sectorSizeX.GetAt(0), 2 * sizex);
     if (sectorSizeX.GetAt(0) == 2 * sizex) { //substructure only in y-direction
+      //printf("... equal\n");
       beginx = 0;
       endx = 2 * sizex;
       summed_sectsize = 0;
@@ -98,6 +100,7 @@ CbmTrdParModDigi::CbmTrdParModDigi(
         fSectorZ.AddAt(fZ, i);
       }
     } else {
+      //printf("... different\n");
       beginy = 0;
       endy = 2 * sizey;
       summed_sectsize = 0;
@@ -131,18 +134,19 @@ CbmTrdParModDigi::CbmTrdParModDigi(
 }
 
 //___________________________________________________________________________
-void  CbmTrdParModDigi::Print(Option_t */*opt*/) const
+void  CbmTrdParModDigi::Print(Option_t *opt) const
 {
 /** 
   Dump formated parameters for this module
 */
-  printf(" CbmTrdParModDigi @ %5d rotation[%2ddeg] rows[%2d] cols[%2d]\n"
-         "        center   [%7.2f %7.2f %7.2f]\n"
+  printf(" CbmTrdParModDigi @ %5d ly[%d] idLy[%d] rotation[%2ddeg] rows[%2d] cols[%2d]\n",
+         fModuleId, CbmTrdAddress::GetLayerId(fModuleId), CbmTrdAddress::GetModuleId(fModuleId), fOrientation*90,
+         GetNofRows(), GetNofColumns());
+  if(strcmp(opt, "all")!=0) return;
+  printf("        center   [%7.2f %7.2f %7.2f]\n"
          "        size     [%7.2f %7.2f %7.2f]\n"
          "        anode    pitch[%4.2f] d2PP[%4.2f] off[%4.2f]\n"
          "        pads    ",
-         fModuleId, fOrientation*90,
-         GetNofRows(), GetNofColumns(),
          fX, fY, fZ, fSizeX, fSizeY, fSizeZ,
          fAnodeWireSpacing, fAnodeWireToPadPlaneDistance, fAnodeWireOffset);
   for(Int_t isec(0); isec<fNofSectors; isec++) 

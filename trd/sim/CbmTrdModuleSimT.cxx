@@ -31,6 +31,7 @@ using std::make_pair;
 using std::max;
 using std::fabs;
 using std::pair;
+using namespace std;
 
 //_________________________________________________________________________________
 CbmTrdModuleSimT::CbmTrdModuleSimT(Int_t mod, Int_t ly, Int_t rot, 
@@ -470,9 +471,10 @@ void CbmTrdModuleSimT::AddDigi(Int_t address, Double_t *charge, Double_t time, D
   // compute time delay based on CADENCE simulation
   Float_t tDelay=(0.5*(charge[0]+charge[1])-fChargeRef);
   tDelay*=tDelay; tDelay*=fdt;
-  if(VERBOSE) printf("       DigiTime[ns] = %10.2f Form[%3d] delay[%6.2f]\n", time, fFASPpileUpTime, tDelay);
+  //printf("       DigiTime[ns] = %10.2f Form[%3d] delay[%6.2f]\n", time, fFASPpileUpTime, tDelay);
   digi= new CbmTrdDigi(address, charge[0], charge[1], ULong64_t((time+fFASPpileUpTime+tDelay)/CbmTrdDigi::Clk(CbmTrdDigi::kFASP)));
   digi->SetAddressModule(fModuleId); // may not be needed in the future
+  //printf("CbmTrdModuleSimT::AddDigi(%d)=%d\n", address, fModuleId);
   digiMatch = new CbmMatch();
   digiMatch->AddLink(CbmLink(weighting, fPointId, fEventId, fInputId));
   digi->SetMatch(digiMatch);
@@ -504,37 +506,44 @@ void CbmTrdModuleSimT::AddDigi(Int_t address, Double_t *charge, Double_t time, D
 //_______________________________________________________________________________________________
 Int_t CbmTrdModuleSimT::FlushBuffer(ULong64_t time)
 { 
-/**
- *  
+/** Flush time sorted digi buffer until requested moment in time. If time limit not specified flush all digits.
+ *  Calculate timely interaction between digits which are produced either on different anode wires for the same particle or 
+ * are produced by 2 particle close by. Also take into account FASP dead time and mark such digits correspondingly
  */  
+
+  //printf("CbmTrdModuleSimT::FlushBuffer(%lu)\n", time);
   Double_t dt(0.);
 
-  if(!CbmTrdDigitizer::IsTimeBased()) return -1;
-  CbmDaqBuffer *daqBuffer(CbmDaqBuffer::Instance());
   Int_t n(0), n1(0); 
   CbmTrdDigi *digi(NULL), *sdigi(NULL);
   CbmMatch *digiMatch(NULL), *sdigiMatch(NULL);
   CbmTrdParFasp *fasp(NULL); const CbmTrdParFaspChannel *chFasp[2]={NULL};
 
   // write from saved buffer
-  Int_t address(0), ndigi(0), n2(0);
+  Int_t address(0), localAddress(0), ndigi(0), n2(0);
   for(std::map<Int_t, std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>>::iterator it = fBuffer.begin(); it!=fBuffer.end(); it++){
-    address = it->first;
-    ndigi   = fBuffer[address].size();
+    localAddress = it->first;
+    ndigi   = fBuffer[localAddress].size();
     if(!ndigi){
-      //printf("FOUND saved vector empty @ %d\n", address);
+      //printf("FOUND saved vector empty @ %d\n", localAddress);
       continue;
     }
+    // compute CBM address
+    Int_t col, row = GetPadRowCol(localAddress, col),
+          srow, sec = fDigiPar->GetSector(row, srow);
+    address = CbmTrdAddress::GetAddress(fLayerId, fModuleId, sec, srow, col);
+    if(VERBOSE) printf("FOUND %d digi @ col[%d] row[%d] srow[%d] sec[%d]\n", ndigi, col, row, srow, sec);
+
     // get ASIC channel calibration
-    Int_t asicAddress=fAsicPar->GetAsicAddress(address<<1);
+    Int_t asicAddress=fAsicPar->GetAsicAddress(localAddress<<1);
     if(asicAddress<0){
-      LOG(WARNING) << GetName() << "::FlushBuffer: FASP Calibration for ro_ch " << address << " in module " << fModuleId <<" missing." << FairLogger::endl;
+      LOG(WARNING) << GetName() << "::FlushBuffer: FASP Calibration for ro_ch " << localAddress << " in module " << fModuleId <<" missing." << FairLogger::endl;
     } else {
-      LOG(DEBUG) << GetName() << "::FlushBuffer: Found FASP "<< asicAddress <<" for ro_ch " << address << " in module " << fModuleId<< FairLogger::endl;
+      LOG(DEBUG) << GetName() << "::FlushBuffer: Found FASP "<< asicAddress <<" for ro_ch " << localAddress << " in module " << fModuleId<< FairLogger::endl;
       fasp  = (CbmTrdParFasp*)fAsicPar->GetAsicPar(asicAddress);
       //fasp->Print();
-      chFasp[0] = fasp->GetChannel(address, 0);
-      chFasp[1] = fasp->GetChannel(address, 1);
+      chFasp[0] = fasp->GetChannel(localAddress, 0);
+      chFasp[1] = fasp->GetChannel(localAddress, 1);
     }
 
     Int_t fFASPpileUpTime = (chFasp[0]?chFasp[0]->GetPileUpTime():300); // pile-up time 300ns @ max amplitude
@@ -542,15 +551,15 @@ Int_t CbmTrdModuleSimT::FlushBuffer(ULong64_t time)
                             CbmTrdDigi::Clk(CbmTrdDigi::kFASP)*(chFasp[0]?chFasp[0]->GetFlatTop():14);  // deadtime 14 clocks @ 80MHz
     
     n2+=ndigi; Int_t idx(0);
-    std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>::iterator iv = fBuffer[address].begin();
-    while(iv != fBuffer[address].end()){
+    std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>::iterator iv = fBuffer[localAddress].begin();
+    while(iv != fBuffer[localAddress].end()){
       digi = iv->first; digiMatch = iv->second;
       //printf("check %d of %d [%p]\n", idx++, ndigi, (void*)digi);
       // skip digits which might further interact
       if(time>0 && digi->GetTime()>time-fFASPdeadTime) break;
       // look to later events
       std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>::iterator jv = iv+1;
-      while(jv != fBuffer[address].end()){
+      while(jv != fBuffer[localAddress].end()){
         sdigi = jv->first;
         // skip digits which might further interact
         if(time>0 && sdigi->GetTime()>time) break;
@@ -571,23 +580,25 @@ Int_t CbmTrdModuleSimT::FlushBuffer(ULong64_t time)
           for(Int_t il(0); il<sdigiMatch->GetNofLinks(); il++) digiMatch->AddLink(sdigiMatch->GetLink(il));
           
           // clean vector element
-          jv = fBuffer[address].erase(jv);
-          cout<<"\tPile-up dt["<<dt<<"] with "<<sdigi->ToString()<<endl;
+          jv = fBuffer[localAddress].erase(jv);
+          if(VERBOSE) cout<<"\tPile-up dt["<< fixed << setprecision(5) <<dt<<"] with "<<sdigi->ToString();
           // clean digits allocation
           delete sdigi; 
         } else if(dt<fFASPdeadTime) {
           // clean vector element
-          jv = fBuffer[address].erase(jv);
+          jv = fBuffer[localAddress].erase(jv);
 
           sdigi->SetMasked();
-          cout<<"\tDeadtime dt["<<dt<<"]. "<<endl<<"WBM: "<<sdigi->ToString()<<endl;        
+          if(VERBOSE) cout<<"\tDeadtime dt["<< setw(5)<<dt<<"]. "<<endl<<"WBM: "<<sdigi->ToString();        
           // digits allocation clearing is taken care by the CbmDaqBuffer
-          CbmDaqBuffer::Instance()->InsertData(sdigi);
+          //CbmDaqBuffer::Instance()->InsertData(sdigi);
+          fDigiMap[address] = make_pair(sdigi, sdigiMatch);
         } else break;
       } 
-      cout<<"WB: "<<digi->ToString()<<endl;
-      daqBuffer->InsertData(digi);// n++;n2--;
-      iv=fBuffer[address].erase(iv); // remove from saved buffer
+      if(VERBOSE) cout<<"  WB: "<<digi->ToString();
+      //daqBuffer->InsertData(digi);
+      fDigiMap[address] = make_pair(digi, digiMatch);
+      iv=fBuffer[localAddress].erase(iv); // remove from saved buffer
     }
     // clear address if there are no more digits available
     //if(!fBuffer[address].size()) it = fBuffer.erase(it);
@@ -685,9 +696,7 @@ void CbmTrdModuleSimT::SetAsicPar(CbmTrdParSetAsic *p)
                   printf("               M:%10i(%4i) s: %i  irowId: %4i  ic: %4i r: %4i c: %4i   address:%10i\n",fModuleId,
                     CbmTrdAddress::GetModuleId(fModuleId),
                     isecId, irowId, ic, r, c,
-                    CbmTrdAddress::GetAddress(CbmTrdAddress::GetLayerId(fModuleId),
-                            CbmTrdAddress::GetModuleId(fModuleId),
-                            isecId, irowId, ic));
+                    CbmTrdAddress::GetAddress(fLayerId, fModuleId, isecId, irowId, ic));
               } 
             } 
             iAsic++;  // next Asic

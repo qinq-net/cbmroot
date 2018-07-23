@@ -79,8 +79,6 @@ InitStatus CbmTrdParManager::Init()
     TGeoNode* node = static_cast<TGeoNode*>(nodes->At(iNode));
     if (!TString(node->GetName()).Contains("trd")) continue; // trd_vXXy top node, e.g. trd_v13a, trd_v14b
     TGeoNode* station = node;
-    Bool_t tripad(kFALSE);
-
     TObjArray* layers = station->GetNodes();
     for (Int_t iLayer = 0; iLayer < layers->GetEntriesFast(); iLayer++) {
         TGeoNode* layer = static_cast<TGeoNode*>(layers->At(iLayer));
@@ -89,11 +87,6 @@ InitStatus CbmTrdParManager::Init()
         TObjArray* modules = layer->GetNodes();
         for (Int_t iModule = 0; iModule < modules->GetEntriesFast(); iModule++) {
           TGeoNode* module = static_cast<TGeoNode*>(modules->At(iModule));
-          // AB : add triangular pad support 21.11.2017
-          tripad=kFALSE;
-          if(TString(module->GetName()).BeginsWith("moduleBu")) tripad=kTRUE;
-          //printf("ly[%d] module[%s/%s]\n", iLayer, module->GetName(), module->GetTitle());
-          
           TObjArray* parts = module->GetNodes();
           for (Int_t iPart = 0; iPart < parts->GetEntriesFast(); iPart++) {
               TGeoNode* part = static_cast<TGeoNode*>(parts->At(iPart));
@@ -106,7 +99,7 @@ InitStatus CbmTrdParManager::Init()
               TString path = TString("/") + topNode->GetName() + "/" + station->GetName() + "/"
                 + layer->GetName() + "/" + module->GetName() + "/" + part->GetName();
 
-              CreateModuleParameters(path, tripad);
+              CreateModuleParameters(path);
           }
         }
     }
@@ -131,7 +124,7 @@ void CbmTrdParManager::Exec(
 
 
 void CbmTrdParManager::CreateModuleParameters(
-      const TString& path, Bool_t tripad)
+      const TString& path)
 {
 /**   
  * Create TRD module parameters. Add triangular support (Alex Bercuci/21.11.2017)
@@ -155,12 +148,15 @@ void CbmTrdParManager::CreateModuleParameters(
   // special care for Bucharest module type with triangular pads
   if(moduleType<=0) moduleType=9;
 
-  printf("CbmTrdParManager::CreateModuleParameters(%s %c) type[%d]\n", path.Data(), (tripad?'y':'n'), moduleType);
+  printf("CbmTrdParManager::CreateModuleParameters(%s) type[%d]\n", path.Data(), moduleType);
    for (Int_t i = 0; i < fst1_sect_count; i++) {
       sectorSizeX.AddAt(fst1_pad_type[moduleType - 1][i][0], i);
       sectorSizeY.AddAt(fst1_pad_type[moduleType - 1][i][1], i);
       padSizeX.AddAt(fst1_pad_type[moduleType - 1][i][2], i);
       padSizeY.AddAt(fst1_pad_type[moduleType - 1][i][3], i);
+      printf("  sec[%d] dx[%5.2f] dy[%5.2f] px[%5.2f] py[%5.2f]\n", i, 
+        sectorSizeX[i], sectorSizeY[i], padSizeX[i],padSizeY[i] 
+      );
    }
 
   // Orientation of the detector layers
@@ -185,7 +181,7 @@ void CbmTrdParManager::CreateModuleParameters(
   CbmTrdParModDigi *digi = 
     new CbmTrdParModDigi(x, y, z, sizeX, sizeY, sizeZ, fMaxSectors, orientation, sectorSizeX, sectorSizeY, padSizeX, padSizeY);
   digi->SetModuleId(moduleAddress);  
-  if(tripad){ // anode wire geometry for the Bucharest detector
+  if(moduleType==9){ // anode wire geometry for the Bucharest detector
     digi->SetAnodeWireToPadPlaneDistance(0.4);
     digi->SetAnodeWireOffset(0.15);
     digi->SetAnodeWireSpacing(0.3);

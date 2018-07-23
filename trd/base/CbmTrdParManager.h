@@ -74,7 +74,7 @@ public:
 private:
 
    void CreateModuleParameters(
-         const TString& path, Bool_t tripad=kFALSE);
+         const TString& path);
 
    Int_t fMaxSectors; // Maximum number of sectors for all modules
    Bool_t fFASP;      ///< Switch to FASP ASIC
