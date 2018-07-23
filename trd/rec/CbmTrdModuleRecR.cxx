@@ -63,7 +63,7 @@ Bool_t CbmTrdModuleRecR::AddDigi(CbmTrdDigi *digi, Int_t id)
 
   //fill the digimap
   fDigiMap.push_back(make_tuple(id, false, digi));
-
+  fDigiCounter++;
   return kTRUE;
 }
 

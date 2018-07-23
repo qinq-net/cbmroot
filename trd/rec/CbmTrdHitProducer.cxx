@@ -52,22 +52,26 @@ Int_t CbmTrdHitProducer::AddHits(TClonesArray* hits, Bool_t moveOwner)
    * Should also apply mis-alignment (TODO)
    *  Take away ownership of hits from module to the CbmTrdHitProducer
    */   
+  
+  if(!hits) return 0;
   TVector3 lpos, gpos;
   Double_t lhit[3], ghit[3];
-  Int_t nhits(0);
-  Int_t jhits=0;
-  CbmTrdHit *hit(NULL);
+  Int_t nhits(0), jhits=fHits->GetEntriesFast();
+  CbmTrdHit *hit(NULL), *hitSave(NULL);
   for(Int_t ihit=0; ihit<hits->GetEntriesFast(); ihit++){
     if(!(hit=(CbmTrdHit*)hits->At(ihit))) continue;
     hit->Position(lpos); lpos.GetXYZ(lhit);
     gGeoManager->LocalToMaster(lhit, ghit);
     gpos.SetXYZ(ghit[0], ghit[1], ghit[2]);
     hit->SetPosition(gpos);
-    jhits++;
 
-    (*fHits)[jhits] = hit;
+    hitSave = new((*fHits)[jhits++]) CbmTrdHit();
+    hitSave->SetPosition(gpos);
+    
+    delete hit;
     nhits++;
   }
+  hits->Clear();
   return nhits;
 }
 

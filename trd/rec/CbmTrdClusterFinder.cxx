@@ -192,11 +192,11 @@ void CbmTrdClusterFinder::Exec(Option_t* /*option*/)
   timer.Start();
   
   Int_t nentries = fDigis->GetEntries();  
+  //printf("processing %d entries\n", nentries);
   CbmTrdModuleRec *mod(NULL);
   for (Int_t iDigi=0; iDigi < nentries; iDigi++ ) {
     CbmTrdDigi *digi = (CbmTrdDigi*) fDigis->At(iDigi);
     Int_t moduleAddress = digi->GetAddressModule();
-    
     std::map<Int_t, CbmTrdModuleRec*>::iterator imod = fModules.find(moduleAddress);
     if(imod==fModules.end()) mod = AddModule(digi);
     else mod = imod->second;
@@ -208,8 +208,9 @@ void CbmTrdClusterFinder::Exec(Option_t* /*option*/)
   for(std::map<Int_t, CbmTrdModuleRec*>::iterator imod = fModules.begin(); imod!=fModules.end(); imod++){
     mod = imod->second;
     digiCounter += mod->GetOverThreshold();
-    
+    //printf("Processing module %d digi[%d]\n", imod->first, digiCounter);
     clsCounter += mod->FindClusters();
+    //printf("  clusters %d\n", clsCounter);
     AddClusters(mod->GetClusters(), kTRUE);
   }
 
@@ -228,9 +229,10 @@ void CbmTrdClusterFinder::Exec(Option_t* /*option*/)
 }
 
 //_____________________________________________________________________
-Int_t CbmTrdClusterFinder::AddClusters(TClonesArray *clusters, Bool_t move) 
+Int_t CbmTrdClusterFinder::AddClusters(TClonesArray *clusters, Bool_t/* move*/) 
 {
-  CbmTrdCluster *cls(NULL);
+  if(!clusters) return 0;
+  CbmTrdCluster *cls(NULL), *clsSave(NULL);
   CbmTrdDigi *digi(NULL);
   CbmTrdParModDigi *digiPar(NULL);
   TBits cols, rows;
@@ -261,14 +263,18 @@ Int_t CbmTrdClusterFinder::AddClusters(TClonesArray *clusters, Bool_t move)
     // store information in cluster
     cls->SetNCols( cols.CountBits() );
     cls->SetNRows( rows.CountBits() );
-    if(move) (*fClusters)[ncl++] = cls;
-    else{ 
-      (*fClusters)[ncl++] = new CbmTrdCluster(/**cls*/); // TODO implement copy constructor
+//     if(move) (*fClusters)[ncl++] = cls;
+//     else{ 
+      clsSave = new((*fClusters)[ncl++]) CbmTrdCluster(/**cls*/); // TODO implement copy constructor
+      clsSave->SetAddress(cls->GetAddress());
+      clsSave->SetDigis(cls->GetDigis());
+      clsSave->SetNCols(cls->GetNCols());
+      clsSave->SetNRows(cls->GetNRows());
       delete cls;
-    }
+//     }
     mcl++;
   }
-  clusters->Clear();
+  //clusters->Clear();
   return mcl;
 }
 
