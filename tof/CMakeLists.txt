@@ -76,6 +76,8 @@ TofParam/CbmTofCreateDigiPar.cxx
 TofTools/CbmTofGeoHandler.cxx
 
 TofData/CbmTofCell.cxx
+TofData/CbmTofTracklet.cxx
+TofData/CbmTofTrackletParam.cxx
 
 TofDigi/CbmTofDigitize.cxx
 TofDigi/CbmTofDigitizerBDF.cxx

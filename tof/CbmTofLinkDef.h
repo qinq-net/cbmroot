@@ -17,6 +17,9 @@
 #pragma link C++ class CbmTofGeoHandler+;
 #pragma link C++ class CbmTofDigiPar+;
 #pragma link C++ class CbmTofCell+;
+#pragma link C++ class CbmTofTracklet+;
+#pragma link C++ class CbmTofTrackletParam+;
+
 #pragma link C++ class CbmTofCreateDigiPar+;
 
 #pragma link C++ class CbmTofDigiBdfPar+;

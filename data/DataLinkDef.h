@@ -72,8 +72,6 @@
 #pragma link C++ class CbmTofDigiExp+;
 #pragma link C++ class CbmTofDigi+;
 #pragma link C++ class CbmTofAddress+;
-#pragma link C++ class CbmTofTracklet+;
-#pragma link C++ class CbmTofTrackletParam+;
 
 #pragma link C++ class CbmEcalPoint+;
 #pragma link C++ class CbmEcalHit+;

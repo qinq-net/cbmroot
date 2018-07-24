@@ -11,6 +11,7 @@ ${CBMROOT_SOURCE_DIR}/data/much
 ${CBMROOT_SOURCE_DIR}/data/trd
 ${CBMROOT_SOURCE_DIR}/data/rich
 ${CBMROOT_SOURCE_DIR}/data/tof
+${CBMROOT_SOURCE_DIR}/tof/TofData
 ${CBMROOT_SOURCE_DIR}/data/ecal
 ${CBMROOT_SOURCE_DIR}/data/global
 
