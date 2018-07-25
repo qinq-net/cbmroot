@@ -588,6 +588,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
     if(fTracks[iTr]->GetNofHits() < 3) continue;            // request minimum number of hits (3) 
     if(fTracks[iTr]->GetChiSq() > fChiMaxAccept) continue;  // request minimum ChiSq (3) 
     CbmTofTracklet* pTrk = new((*fTofTracks)[fiNtrks++]) CbmTofTracklet (*fTracks[iTr]);
+
     if(gLogger->IsLogNeeded( DEBUG )) {
       LOG(INFO)<<"Found Trkl "<<iTr<<", ";
       pTrk->PrintInfo();
@@ -838,8 +839,8 @@ void  CbmTofTrackFinderNN::UpdateTrackList( CbmTofTracklet* pTrk)
 			       << FairLogger::endl;  
 
 		    // PrintStatus((char*)"UpdateTrackList::Remove1");
-		  }	// loop on associated hits end 	   
-		  //delete *it;
+		  }	// loop on associated hits end
+		  pKill->Delete();     //delete *it;
 		  PrintStatus((char*)"UpdateTrackList::Erase1");
 		  fTracks.erase(fTracks.begin()+iTr);
 		  fiNtrks--;
@@ -894,7 +895,8 @@ void CbmTofTrackFinderNN::PrintStatus(char* cComment)
     for(Int_t ih=0; ih<pTrk->GetNofHits();ih++){
 	LOG(DEBUG)<<Form(" %3d ",pTrk->GetHitIndex(ih));
     }
-    LOG(DEBUG)<<Form(", ChiSq %7.1f ",pTrk->GetChiSq());
+    LOG(DEBUG)<<Form(", ChiSq %7.1f",pTrk->GetChiSq());
+    LOG(DEBUG)<<Form(", Tt %6.4f",pTrk->GetTt());
     LOG(DEBUG)<< FairLogger::endl;
   }
 

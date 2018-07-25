@@ -70,6 +70,7 @@ class CbmTofFindTracks : public FairTask
 
   /** Task execution **/
   virtual void Exec(Option_t* opt);
+  virtual void ExecFind(Option_t* opt);
 
   /** Finish at the end of each event **/
   virtual void Finish();
@@ -155,9 +156,11 @@ class CbmTofFindTracks : public FairTask
   static CbmTofFindTracks *fInstance;
   CbmTofTrackFinder* fFinder;    // Pointer to TrackFinder concrete class
   CbmTofTrackFitter* fFitter;    // Pointer to TrackFitter concrete class
+  TClonesArray* fEventsColl;     // CBMEvents (time based)
   TClonesArray* fTofHitArrayIn;  // Input array of TOF hits
   TClonesArray* fTofHitArray;    // Output array of recalibrated TOF hits
   TClonesArray* fTrackArray;     // Output array of CbmTofTracks 
+  TClonesArray* fTrackArrayOut;  // Output array of CbmTofTracks in CbmEvent mode 
   TClonesArray* fTofUHitArray;   // Output array of unused TOF hits
 
   Int_t fMinNofHits;             // minimal number of Tof Hits for filling histos 
