@@ -32,28 +32,6 @@ class CbmTofTracklet : public TObject {
 	 ** @param trackPar     Parameters of track at TOF
 	 ** @param pidHypo      PID hypothesis for track extrapolation
 	 **/
-	CbmTofTracklet(Int_t trackIndex, Int_t hitIndex, Double_t trackLength,
-			  CbmTofTrackletParam& trackPar, Int_t pidHypo) 
-	  : TObject(),
-	fGlbTrack(trackIndex),
-	fTrackLength(trackLength),
-	fPidHypo(pidHypo),
-	fDistance(0.),
-	fTime(0.),
-	fTt(0.),
-	fT0(0.),
-        fChiSq(0.),
-	fNDF(0),
-	fTrackPar(trackPar),
-	fParamFirst(),
-	fParamLast(),
-	fTofHit(0,hitIndex),
-	fTofDet(),
-	fMatChi(),
-	fpHit()
-	{
-	}
-
 
 	/**   Destructor   **/
 	virtual ~CbmTofTracklet();
@@ -81,7 +59,7 @@ class CbmTofTracklet : public TObject {
 	  return -1;}
 
 	Int_t        GetTofHitIndex(Int_t ind)   const { return fTofHit[ind]; }
-	CbmTofHit*   GetTofHitPointer(Int_t ind) { return &fpHit[ind]; }
+	CbmTofHit*   GetTofHitPointer(Int_t ind) { return &fhit[ind]; }
 	Int_t        GetTofDetIndex(Int_t ind)   const { return fTofDet[ind]; }
 
 	const std::vector<Int_t>&  GetTofHitInd() const { return fTofHit; }
@@ -96,9 +74,6 @@ class CbmTofTracklet : public TObject {
 	/**  Error of track x coordinate at TOF  **/
 	Double_t GetTrackDy() const
     	{ return TMath::Sqrt( fTrackPar.GetCovariance(5) ); }
-
-	/**  Index of global track **/
-	Int_t    GetTrackIndex()  const { return fGlbTrack; }
 
 	/**  Track length from primary vertex to TOF **/
 	Double_t GetTrackLength() const { return fTrackLength; }
@@ -136,17 +111,14 @@ class CbmTofTracklet : public TObject {
 
 	virtual Double_t GetMatChi2(Int_t iSm);
 
-	/** Set track index **/
-	inline void SetTrackIndex(Int_t trackIndex) { fGlbTrack = trackIndex; }
-
 	/** Set TOF hit index **/
 	inline void SetTofHitIndex(Int_t tofHitIndex, Int_t iDet, CbmTofHit* pHit) { 
 	  fTofHit.resize(1);
           fTofHit[0] = tofHitIndex; 
 	  fTofDet.resize(1);
 	  fTofDet[0]=iDet;
-	  fpHit.resize(1);
-	  fpHit[0]=*pHit;
+	  fhit.resize(1);
+	  fhit[0]=CbmTofHit(*pHit);
 	  fMatChi.resize(1);
 	}
 
@@ -155,8 +127,8 @@ class CbmTofTracklet : public TObject {
           fTofHit[0] = tofHitIndex; 
 	  fTofDet.resize(1);
 	  fTofDet[0]=iDet;
-	  fpHit.resize(1);
-	  fpHit[0]=*pHit;
+	  fhit.resize(1);
+	  fhit[0]=CbmTofHit(*pHit);
 	  fMatChi.resize(1);
 	  fMatChi[0]=chi2;
 	}
@@ -169,8 +141,8 @@ class CbmTofTracklet : public TObject {
           fTofHit[fTofHit.size()-1] = tofHitIndex; 
 	  fTofDet.resize(fTofHit.size());
           fTofDet[fTofHit.size()-1] = iDet; 	  
-	  fpHit.resize(fTofHit.size());
-	  fpHit[fTofHit.size()-1]=*pHit;
+	  fhit.resize(fTofHit.size());
+	  fhit[fTofHit.size()-1]=CbmTofHit(*pHit);
 	  fMatChi.resize(fTofHit.size());
 	}
 
@@ -179,8 +151,8 @@ class CbmTofTracklet : public TObject {
           fTofHit[fTofHit.size()-1] = tofHitIndex; 
 	  fTofDet.resize(fTofHit.size());
           fTofDet[fTofHit.size()-1] = iDet; 
-	  fpHit.resize(fTofHit.size());
-	  fpHit[fTofHit.size()-1]=*pHit;
+	  fhit.resize(fTofHit.size());
+	  fhit[fTofHit.size()-1]=CbmTofHit(*pHit);
 	  fMatChi.resize(fTofHit.size());
           fMatChi[fTofHit.size()-1] = chi2; 
 	}
@@ -189,7 +161,7 @@ class CbmTofTracklet : public TObject {
 	  for (Int_t iHit=0; iHit<(Int_t)fTofHit.size(); iHit++){
 	    if (iDet == fTofDet[iHit]) {
 	      fTofHit[iHit]=tofHitIndex;
-	      fpHit[iHit]=*pHit;
+	      fhit[iHit]=CbmTofHit(*pHit);
 	      fMatChi[iHit]=chi2;
 	      break;
 	    }
@@ -200,7 +172,7 @@ class CbmTofTracklet : public TObject {
 	  for (Int_t iHit=0; iHit<(Int_t)fTofHit.size(); iHit++){
 	    if (iDet == fTofDet[iHit]) {
 	      fTofHit.erase(fTofHit.begin()+iHit);
-	      fpHit.erase(fpHit.begin()+iHit);
+	      fhit.erase(fhit.begin()+iHit);
 	      fMatChi.erase(fMatChi.begin()+iHit);
 	      break;
 	    }
@@ -240,8 +212,6 @@ class CbmTofTracklet : public TObject {
 	CbmTofTracklet(const CbmTofTracklet &);           /**   Copy Constructor   **/
 
  private:
-
-        Int_t             fGlbTrack;     //!  Index of global track
 	Double_t          fTrackLength;  //! Track length from primary vertex to TOF [cm]
 	Int_t             fPidHypo;      //! PID hypothesis used for track extrapolation
 	Double_t          fDistance;     //! Normalized distance from hit to track
@@ -256,12 +226,12 @@ class CbmTofTracklet : public TObject {
 	std::vector<Int_t>     fTofHit;       //! Index of TofHit
 	std::vector<Int_t>     fTofDet;       //! DetLayer of TofHit
 	std::vector<Double_t>  fMatChi;       //! Matching Chi2 of TofHit
-	std::vector<CbmTofHit> fpHit;         //! vector of TofHit objects 
+	std::vector<CbmTofHit> fhit;         //! vector of TofHit objects 
 	Double_t fP[4];                  //! transient (transfer) space point to Eve
 
 	CbmTofTracklet& operator=(const CbmTofTracklet &);/**   Assignment operator   **/
 
-	ClassDef(CbmTofTracklet, 2);
+	ClassDef(CbmTofTracklet, 3);
 };
 
 #endif /* CBMTOFTRACKLET_H */
