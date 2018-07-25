@@ -19,6 +19,10 @@ class CbmTofDigiPar;
 class CbmTofDigiBdfPar;
 class TMbsMappingTofPar;
 
+class CbmTofDigiExp;
+class CbmTofHit;
+class CbmTofTracklet;
+
 #include "FairTask.h"
 #include "CbmTofAddress.h"    // in cbmdata/tof
 
@@ -40,6 +44,7 @@ class CbmTofAnaTestbeam : public FairTask {
 
        virtual InitStatus Init();
        virtual void Exec(Option_t* option);
+       virtual void ExecEvent(Option_t* option);
        virtual void Finish();
 
        /**
@@ -222,6 +227,12 @@ class CbmTofAnaTestbeam : public FairTask {
       TClonesArray          * fTofDigiMatchColl;  // TOF DigiMatches
       TClonesArray          * fTofTrackColl;      // TOF Tracks
 
+      TClonesArray          * fEventsColl;          // CBMEvents (time based)
+      TClonesArray          * fTofDigisCollIn;      // TOF Digis
+      TClonesArray          * fTofHitsCollIn;       // TOF hits
+      TClonesArray          * fTofDigiMatchCollIn;  // TOF DigiMatches
+      TClonesArray          * fTofTrackCollIn;      // TOF Tracks
+
       TTrbHeader* fTrbHeader;
 
       Double_t fdDXMean;
@@ -240,6 +251,8 @@ class CbmTofAnaTestbeam : public FairTask {
       TH1 *fhTIS_sel;
       TH1 *fhTIS_sel1;
       TH1 *fhTIS_sel2;
+      TH2 *fhTIS_Nhit;
+      TH2 *fhTIS_Ntrk;
       TH1 *fhDTLH_all;
       TH1 *fhDTLH_sel;
       TH1 *fhDTLH_sel1;
@@ -390,6 +403,7 @@ class CbmTofAnaTestbeam : public FairTask {
       TH2 *fhYY02[2];
 
       std::vector< TH2* > fhXYPos;     //[nbDet]
+      TH2 *fhEtaPhi;
 
       TH2 *fhDT04DX0_1, *fhDT04DY0_1, *fhDT04DT0_1;
       TH2 *fhDT04DX4_1, *fhDT04DY4_1, *fhDT04DT4_1;
