@@ -25,6 +25,7 @@ ${CBMROOT_SOURCE_DIR}/data/mvd
 ${CBMROOT_SOURCE_DIR}/data/much
 ${CBMROOT_SOURCE_DIR}/data/sts
 ${CBMROOT_SOURCE_DIR}/data/tof
+${CBMROOT_SOURCE_DIR}/data/global
 
 ${CBMROOT_SOURCE_DIR}/run
 )
@@ -50,6 +51,8 @@ link_directories( ${LINK_DIRECTORIES})
 #If(FairRoot_VERSION VERSION_EQUAL 15.11.2)
   Set(TOF_BEAM_SOURCES 
     TofReco/CbmTofTestBeamClusterizer.cxx 
+    TofReco/CbmTofCosmicClusterizer.cxx 
+    TofReco/CbmTofEventClusterizer.cxx 
     TofTests/CbmTofAnaTestbeam.cxx 
   )
   Set(TOF_BEAM_DEPEND
@@ -88,6 +91,7 @@ TofReco/CbmTofTrackFinderNN.cxx
 TofReco/LKFMinuit.cxx 
 TofReco/CbmTofTBClusterizer.cxx
 TofReco/CbmTofCosmicClusterizer.cxx
+TofReco/CbmTofEventClusterizer.cxx
 TofReco/CbmTofBuildDigiEvents.cxx
 
 TofTests/CbmTofTests.cxx 
