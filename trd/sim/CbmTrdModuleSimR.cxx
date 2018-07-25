@@ -521,11 +521,11 @@ void CbmTrdModuleSimR::ProcessBuffer(Int_t address){
   Int_t module= CbmTrdAddress::GetModuleId(address);
   Int_t ncols= fDigiPar->GetNofColumns();
   Int_t channel = ncols * row + col;
-  printf("CbmTrdModuleSimR::ProcessBuffer(%d)=%d\n", address, module);
+  //  printf("CbmTrdModuleSimR::ProcessBuffer(%d)=%d\n", address, module);
   
   Int_t trigger = fAnalogBuffer[address][0].first->GetTriggerType();
   CbmMatch* digiMatch = new CbmMatch(*fAnalogBuffer[address][0].second);
-  CbmTrdDigi* digi= new CbmTrdDigi(channel, digicharge, ULong64_t(fAnalogBuffer[address].back().first->GetTime()),trigger,0);
+  CbmTrdDigi* digi= new CbmTrdDigi(channel, digicharge, ULong64_t(fAnalogBuffer[address].back().first->GetTime()/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)),trigger,0);
   digi->SetAddressModule(module);
   digi->SetTime(digi->GetTime());
   digi->SetMatch(digiMatch);
