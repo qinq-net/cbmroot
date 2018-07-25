@@ -27,6 +27,7 @@
 #pragma link C++ class CbmTofDigitizerBDF+;
 
 #pragma link C++ class CbmTofCosmicClusterizer+;
+#pragma link C++ class CbmTofEventClusterizer+;
 #pragma link C++ class CbmTofSimpClusterizer+;
 #pragma link C++ class CbmTofTBClusterizer;
 #pragma link C++ class CbmTofFindTracks+;
@@ -42,6 +43,8 @@
 
 #ifdef BUILD_TOF_BEAMTIME
  #pragma link C++ class CbmTofTestBeamClusterizer+;
+ #pragma link C++ class CbmTofCosmicClusterizer+;
+ #pragma link C++ class CbmTofEventClusterizer+;
  #pragma link C++ class CbmTofAnaTestbeam+;
 #endif // NOT BUILD_BEAMTIME
 
