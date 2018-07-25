@@ -81,7 +81,7 @@ void CbmTrdModuleRecR::Clear(Option_t *opt)
 //_______________________________________________________________________________
 Int_t CbmTrdModuleRecR::FindClusters()
 {
-
+  
   deque<tuple<Int_t, Bool_t, CbmTrdDigi*>>::                   iterator mainit; //subiterator for the deques in each module; searches for main-trigger to then add the neighbors
   deque<tuple<Int_t, Bool_t, CbmTrdDigi*>>::                   iterator FNit; //last iterator to find the FN digis which correspond to the main trigger or the adjacent main triggers
   deque<tuple<Int_t, Bool_t, CbmTrdDigi*>>::                   iterator start; //marker to erase already processed entries from the map to reduce the complexity of the algorithm
@@ -93,6 +93,8 @@ Int_t CbmTrdModuleRecR::FindClusters()
   Double_t timediff=-1000;
 
   Int_t Clustercount=0;
+  Double_t interval=80;
+  Bool_t print=false;
   
   // iterator for the main trigger; searches for an unprocessed main triggered digi and then starts a subloop to directly construct the cluster
   for (mainit=fDigiMap.begin() ; mainit != fDigiMap.end(); mainit++) {
@@ -102,9 +104,9 @@ Int_t CbmTrdModuleRecR::FindClusters()
     time =                   digi->GetTime();
     if(lasttime >0 )         timediff=time-lasttime;
     lasttime=                time;
-    if(timediff < -200)      start=mainit;
-    if(timediff > 200)       {fDigiMap.erase(fDigiMap.begin(),stop+1);start=mainit;stop=mainit;}
-    if(timediff < 200)       stop=mainit;
+    if(timediff < -interval)      start=mainit;
+    if(timediff > interval)       {fDigiMap.erase(fDigiMap.begin(),stop+1);start=mainit;stop=mainit;}
+    if(timediff < interval)       stop=mainit;
 
 
 
@@ -155,8 +157,10 @@ Int_t CbmTrdModuleRecR::FindClusters()
     // //deque which contains the actual cluster
     deque<std::pair<Int_t,  CbmTrdDigi*>>   cluster;
     cluster.push_back(make_pair(digiId, digi));
+    if(print)    std::cout<<" module: " << fModuleId<<"   time: " << time<<"   charge: " << Charge<<"   col: " << channel % ncols<<"   trigger: " << triggerId<<"  ncols: " << ncols<<std::endl;
     get<1>(*mainit)= true;
-
+    
+    Bool_t mergerow=true;
     //loop to find the other pads corresponding to the main trigger
     while(!finished){
       dmain=0;
@@ -164,15 +168,16 @@ Int_t CbmTrdModuleRecR::FindClusters()
       for (FNit=fDigiMap.begin() ; FNit != fDigiMap.end();FNit++) {
 
       	//some information to serparate the time space and to skip processed digis
-      	CbmTrdDigi *d =          (CbmTrdDigi*) get<2>(*FNit);
+    	//	continue;
+
+    	CbmTrdDigi *d =          (CbmTrdDigi*) get<2>(*FNit);
       	Double_t newtime=        d->GetTime();
       	Double_t dt =            newtime-time;
       	Bool_t filled =          get<1>(*FNit);
       	if(filled)    continue;
-      	if(dt<-200)   continue;
-      	if(dt>200)    break;
-
-
+      	if(dt<-interval)   continue;
+      	if(dt>interval)    break;
+	
       	//position information of the possible neighbor digis
       	Double_t charge =        d->GetCharge();
       	digiAddress  =           d->GetAddress();
@@ -181,125 +186,145 @@ Int_t CbmTrdModuleRecR::FindClusters()
       	Int_t col =              ch % ncols;
       	Int_t trigger =          d->GetTriggerType();
 
-      	//multiple row processing
-      	//first buffering
-      	if(ch == channel-ncols && !rowchange && trigger==CbmTrdDigi::kSelf && !get<1>(*FNit))     {
-      	  rowchange=true;
-      	  bufferbot[0]=charge;
-      	  counterbot++;
-      	  get<0>(botdigi)=d;
-      	}
-      	if(ch == (channel-ncols)-1 && rowchange && !get<1>(*FNit))                {
-      	  bufferbot[1]=charge;
-      	  counterbot++;
-      	  get<1>(botdigi)=d;
-      	}
-      	if(ch == (channel-ncols)+1 && rowchange && !get<1>(*FNit))                {
-      	  bufferbot[2]=charge;
-      	  counterbot++;
-      	  get<2>(botdigi)=d;
-      	}     
-      	if(ch == channel+ncols && !rowchange && trigger==CbmTrdDigi::kSelf && !get<1>(*FNit))     {
-      	  rowchange=true;
-      	  buffertop[0]=charge;
-      	  countertop++;
-      	  get<0>(topdigi)=d;
-      	}
-      	if(ch == (channel+ncols)-1 && rowchange && !get<1>(*FNit))                {
-      	  buffertop[1]=charge;
-      	  countertop++;
-      	  get<1>(topdigi)=d;
-      	}
-      	if(ch == (channel+ncols)+1 && rowchange && !get<1>(*FNit))                {
-      	  buffertop[2]=charge;
-      	  countertop++;
-      	  get<2>(topdigi)=d;
-      	}
+    	if(mergerow){
+    	  //multiple row processing
+    	  //first buffering
 
-      	//then the calculation of the center of gravity with the identification of common CoGs
-      	if(countertop==3)                                                               {CoGtop=(buffertop[2]/buffertop[0])-(buffertop[1]/buffertop[0]);}
-      	if(counterbot==3)                                                               {CoGbot=(bufferbot[2]/bufferbot[0])-(bufferbot[1]/bufferbot[0]);}
-      	if(counterrow==3)                                                               {CoGrow=(bufferrow[2]/bufferrow[0])-(bufferrow[1]/bufferrow[0]);}
-      	if(countertop==3 && counterrow==3 && !addtop && TMath::Abs((CoGtop-CoGrow))< 0.1*CoGrow)    addtop=true;
-      	if(counterbot==3 && counterrow==3 && !addbot && TMath::Abs((CoGbot-CoGrow))< 0.1*CoGrow)    addbot=true;
+    	  if(ch == channel-ncols && !rowchange && trigger==CbmTrdDigi::kSelf && !get<1>(*FNit))     {
+    	    rowchange=true;
+    	    bufferbot[0]=charge;
+    	    counterbot++;
+    	    get<0>(botdigi)=d;
+    	  }
+    	  if(ch == (channel-ncols)-1 && rowchange && !get<1>(*FNit))                {
+    	    bufferbot[1]=charge;
+    	    counterbot++;
+    	    get<1>(botdigi)=d;
+    	  }
+    	  if(ch == (channel-ncols)+1 && rowchange && !get<1>(*FNit))                {
+    	    bufferbot[2]=charge;
+    	    counterbot++;
+    	    get<2>(botdigi)=d;
+    	  }     
+    	  if(ch == channel+ncols && !rowchange && trigger==CbmTrdDigi::kSelf && !get<1>(*FNit))     {
+    	    rowchange=true;
+    	    buffertop[0]=charge;
+    	    countertop++;
+    	    get<0>(topdigi)=d;
+    	  }
+    	  if(ch == (channel+ncols)-1 && rowchange && !get<1>(*FNit))                {
+    	    buffertop[1]=charge;
+    	    countertop++;
+    	    get<1>(topdigi)=d;
+    	  }
+    	  if(ch == (channel+ncols)+1 && rowchange && !get<1>(*FNit))                {
+    	    buffertop[2]=charge;
+    	    countertop++;
+    	    get<2>(topdigi)=d;
+    	  }
 
+    	  if(ch == channel-1)                {
+    	    bufferrow[1]=charge;
+    	    counterrow++;
+    	    get<1>(topdigi)=d;
+    	  }
+    	  if(ch == channel+1)                {
+    	    bufferrow[2]=charge;
+    	    counterrow++;
+    	    get<2>(topdigi)=d;
+    	  }
+
+    	  //then the calculation of the center of gravity with the identification of common CoGs
+    	  if(countertop==3)                                                               {CoGtop=(buffertop[2]/buffertop[0])-(buffertop[1]/buffertop[0]);}
+    	  if(counterbot==3)                                                               {CoGbot=(bufferbot[2]/bufferbot[0])-(bufferbot[1]/bufferbot[0]);}
+    	  if(counterrow==3)                                                               {CoGrow=(bufferrow[2]/bufferrow[0])-(bufferrow[1]/bufferrow[0]);}
+	  if(countertop==3 && counterrow==3 && !addtop && TMath::Abs((CoGtop-CoGrow))< 0.1*CoGrow)    {addtop=true;}
+    	  if(counterbot==3 && counterrow==3 && !addbot && TMath::Abs((CoGbot-CoGrow))< 0.1*CoGrow)    {addbot=true;}
+    	}
+	
       	//logical implementation of the trigger logic in the same row as the main trigger
       	if(ch == lowcol-1 && trigger==CbmTrdDigi::kSelf && !get<1>(*FNit))                      {
       	  cluster.push_back(make_pair(digiid, d));
       	  lowcol=ch;
       	  dmain++;get<1>(*FNit)= true;
+    	  if(print)	  std::cout<<" time: " << newtime<<" charge: " << charge<<"   col: " << col<<"   trigger: " << trigger<<std::endl;
       	}
       	if(ch == highcol+1 && trigger==CbmTrdDigi::kSelf && !get<1>(*FNit))                     {
       	  cluster.push_back(make_pair(digiid, d));
       	  highcol=ch;
       	  dmain++;
       	  get<1>(*FNit)= true;
+    	  if(print)	  std::cout<<" time: " << newtime<<" charge: " << charge<<"   col: " << col<<"   trigger: " << trigger<<std::endl;
       	}
       	if(ch == highcol+1 && trigger==CbmTrdDigi::kNeighbor && !get<1>(*FNit) && !sealtopcol ) {
       	  cluster.push_back(make_pair(digiid, d));
       	  sealtopcol=true;
       	  dmain++;
       	  get<1>(*FNit)= true;
+    	  if(print)       std::cout<<" time: " << newtime<<" charge: " << charge<<"   col: " << col<<"   trigger: " << trigger<<std::endl;
       	}
       	if(ch == lowcol-1  && trigger==CbmTrdDigi::kNeighbor && !get<1>(*FNit) && !sealbotcol ) {
       	  cluster.push_back(make_pair(digiid, d));
       	  sealbotcol=true;
       	  dmain++;
       	  get<1>(*FNit)= true;
+    	  if(print)       std::cout<<" time: " << newtime<<" charge: " << charge<<"   col: " << col<<"   trigger: " << trigger<<std::endl;
       	}
       	if(col == ncols)          {sealtopcol=true;}
       	if(col == 0)              {sealbotcol=true;}
 
-	   
-      	//adding of the neighboring row
-      	if(ch == channel-ncols && addbot && !get<1>(*FNit))                                  {
-      	  cluster.push_back(make_pair(digiid, d));
-      	  lowrow=ch;
-      	  highrow=ch;
-      	  dmain++;
-      	  get<1>(*FNit)= true;
-      	}
-      	if(ch == channel+ncols && addtop && !get<1>(*FNit))                                  {
-      	  cluster.push_back(make_pair(digiid, d));
-      	  lowrow=ch;
-      	  highrow=ch;
-      	  dmain++;
-      	  get<1>(*FNit)= true;
-      	}
-      	if(rowchange && ch == lowrow-1 && lowrow!=channel && trigger==CbmTrdDigi::kSelf && !get<1>(*FNit))      {
-      	  cluster.push_back(make_pair(digiid, d));
-      	  lowrow=ch;
-      	  dmain++;
-      	  get<1>(*FNit)= true;
-      	}
-      	if(rowchange && ch == highrow+1 && highrow!=channel && trigger==CbmTrdDigi::kSelf && !get<1>(*FNit))    {
-      	  cluster.push_back(make_pair(digiid, d));
-      	  highrow=ch;
-      	  dmain++;
-      	  get<1>(*FNit)= true;
-      	}
-      	if(rowchange && ch == highrow+1 && highrow!=channel &&trigger==CbmTrdDigi::kNeighbor && !get<1>(*FNit) && !sealtoprow)   {
-      	  cluster.push_back(make_pair(digiid, d));
-      	  sealtoprow=true;
-      	  dmain++;
-      	  get<1>(*FNit)= true;
-      	}
-      	if(rowchange && ch == lowrow-1  && lowrow!=channel &&trigger==CbmTrdDigi::kNeighbor && !get<1>(*FNit) && !sealbotrow)    {
-      	  cluster.push_back(make_pair(digiid, d));
-      	  sealbotrow=true;
-      	  dmain++;
-      	  get<1>(*FNit)= true;
-      	}
-	    
-      }
+    	if(mergerow){	   
+    	  //adding of the neighboring row
+    	  if(ch == channel-ncols && addbot && !get<1>(*FNit))                                  {
+    	    cluster.push_back(make_pair(digiid, d));
+    	    lowrow=ch;
+    	    highrow=ch;
+    	    dmain++;
+    	    get<1>(*FNit)= true;
+    	  }
+    	  if(ch == channel+ncols && addtop && !get<1>(*FNit))                                  {
+    	    cluster.push_back(make_pair(digiid, d));
+    	    lowrow=ch;
+    	    highrow=ch;
+    	    dmain++;
+    	    get<1>(*FNit)= true;
+    	  }
+    	  if(rowchange && ch == lowrow-1 && lowrow!=channel && trigger==CbmTrdDigi::kSelf && !get<1>(*FNit))      {
+    	    cluster.push_back(make_pair(digiid, d));
+    	    lowrow=ch;
+    	    dmain++;
+    	    get<1>(*FNit)= true;
+    	  }
+    	  if(rowchange && ch == highrow+1 && highrow!=channel && trigger==CbmTrdDigi::kSelf && !get<1>(*FNit))    {
+    	    cluster.push_back(make_pair(digiid, d));
+    	    highrow=ch;
+    	    dmain++;
+    	    get<1>(*FNit)= true;
+    	  }
+    	  if(rowchange && ch == highrow+1 && highrow!=channel &&trigger==CbmTrdDigi::kNeighbor && !get<1>(*FNit) && !sealtoprow)   {
+    	    cluster.push_back(make_pair(digiid, d));
+    	    sealtoprow=true;
+    	    dmain++;
+    	    get<1>(*FNit)= true;
+    	  }
+    	  if(rowchange && ch == lowrow-1  && lowrow!=channel &&trigger==CbmTrdDigi::kNeighbor && !get<1>(*FNit) && !sealbotrow)    {
+    	    cluster.push_back(make_pair(digiid, d));
+    	    sealbotrow=true;
+    	    dmain++;
+    	    get<1>(*FNit)= true;
+    	  }
+    	}
 	
+      }
+      
       //some finish criteria
       if(((sealbotcol && sealtopcol) && !rowchange) || dmain==0 )                  finished=true;
       if((sealbotcol && sealtopcol && sealtoprow && sealbotrow) || dmain==0)       finished=true;
       //      finished=true;
+
     }// end of cluster completion
 
-	
+    if(print)    cout<<endl;
     //    fClusterMap.push_back(cluster);
     Clustercount++;
     addClusters(cluster);
@@ -327,7 +352,7 @@ void CbmTrdModuleRecR::addClusters(deque<std::pair<Int_t,  CbmTrdDigi*>> cluster
     idigi++;
     add = iDigi->second->GetAddressModule();
   }
-
+  
   //add the clusters to the Array
   //    const CbmDigi* digi = static_cast<const CbmDigi*>(fDigis->At(digiIndices.front()));
   Int_t size = fClusters->GetEntriesFast();
@@ -335,8 +360,8 @@ void CbmTrdModuleRecR::addClusters(deque<std::pair<Int_t,  CbmTrdDigi*>> cluster
 
   newcluster->SetAddress(fModuleId);
   newcluster->SetDigis(digiIndices);
+
   //  BuildChannelMap(cluster);
-  
 }
 
 //_______________________________________________________________________________
