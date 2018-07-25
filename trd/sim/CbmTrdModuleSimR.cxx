@@ -246,7 +246,7 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
     }
     
 
-    //add noise digis between the actual and the last event
+    //    add noise digis between the actual and the last event
     if(CbmTrdDigitizer::AddNoise()){
       Int_t noiserate=fNoise->Uniform(0,3); //still in development
       Double_t simtime=fCurrentTime;
@@ -375,7 +375,7 @@ void CbmTrdModuleSimR::ScanPadPlane(const Double_t* local_point, Double_t cluste
     ch=chargeFraction * clusterELoss;
     tr=chargeFraction * clusterELossTR;
 
-          if(ch>=fMinimumChargeTH && !CbmTrdDigitizer::IsTimeBased())  {AddDigi( address, ch, tr, fCurrentTime, Int_t (1));colhigh++;}
+    if(ch>=fMinimumChargeTH && !CbmTrdDigitizer::IsTimeBased())  {AddDigi( address, ch, tr, fCurrentTime, Int_t (1));colhigh++;}
     if(ch<fMinimumChargeTH && !CbmTrdDigitizer::IsTimeBased())   {AddDigi( address, ch, tr, fCurrentTime, Int_t (2));upperend=true;}
     if(ch>=fMinimumChargeTH && CbmTrdDigitizer::IsTimeBased())   {AddDigitoBuffer( address, ch, tr, fCurrentTime, Int_t (1));colhigh++;}
     if(ch<fMinimumChargeTH && CbmTrdDigitizer::IsTimeBased())    {AddDigitoBuffer( address, ch, tr, fCurrentTime, Int_t (2));upperend=true;}
@@ -527,7 +527,6 @@ void CbmTrdModuleSimR::ProcessBuffer(Int_t address){
   CbmMatch* digiMatch = new CbmMatch(*fAnalogBuffer[address][0].second);
   CbmTrdDigi* digi= new CbmTrdDigi(channel, digicharge, ULong64_t(fAnalogBuffer[address].back().first->GetTime()/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)),trigger,0);
   digi->SetAddressModule(module);
-  digi->SetTime(digi->GetTime());
   digi->SetMatch(digiMatch);
   fDigiMap[address] = make_pair(digi, digiMatch);
   // CbmDaqBuffer::Instance()->InsertData(digi);
@@ -557,8 +556,7 @@ Double_t CbmTrdModuleSimR::CheckTime(Int_t address){
   Double_t dt=fCurrentTime-fTimeBuffer[address];
   Bool_t go=false;
   if(fCurrentTime>fTimeBuffer[address] && dt>0.0000000){
-    if(dt>fCollectTime && dt!=fCurrentTime)        {ProcessBuffer(address);fTimeBuffer.erase(address);}
-    if(dt>3*fCollectTime && dt!=fCurrentTime)      go=true;
+    if(dt>fCollectTime && dt!=fCurrentTime)        {ProcessBuffer(address);fTimeBuffer.erase(address);go=true;}
   }
 
   //also check other channels if collection time is far over in the actual channel
