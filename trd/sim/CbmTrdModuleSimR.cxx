@@ -109,8 +109,8 @@ void CbmTrdModuleSimR::AddDigitoBuffer(Int_t address, Double_t charge, Double_t 
 
   //compare times of the buffer content with the actual time and process the buffer if collecttime is over
   Bool_t eventtime=false;
-  if(time>0.000) eventtime=true;
-  if(eventtime)        CheckTime(address);
+   if(time>0.000) eventtime=true;
+   if(eventtime)        CheckTime(address);
   
   
   AddNoise(charge);
@@ -155,7 +155,7 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
 {
   // calculate current physical time
   fCurrentTime =time + point->GetTime()+ AddDrifttime(gRandom->Integer(240))*1000;  //convert to ns;
-
+  
   const Double_t nClusterPerCm = 1.0;
   Double_t point_in[3] = {
     point->GetXIn(),
@@ -246,16 +246,16 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
     }
     
 
-    //    add noise digis between the actual and the last event
-    if(CbmTrdDigitizer::AddNoise()){
-      Int_t noiserate=fNoise->Uniform(0,3); //still in development
-      Double_t simtime=fCurrentTime;
-      for(Int_t ndigi=0; ndigi<noiserate; ndigi++){
-        NoiseTime(time);
-        ScanPadPlane(cluster_pos, fNoise->Gaus(0, fSigma_noise_keV * 1.E-6), 0,epoints,ipoints);
-      }
-      fCurrentTime=simtime;
-    }
+    // //    add noise digis between the actual and the last event
+    // if(CbmTrdDigitizer::AddNoise()){
+    //   Int_t noiserate=fNoise->Uniform(0,3); //still in development
+    //   Double_t simtime=fCurrentTime;
+    //   for(Int_t ndigi=0; ndigi<noiserate; ndigi++){
+    //     NoiseTime(time);
+    //     ScanPadPlane(cluster_pos, fNoise->Gaus(0, fSigma_noise_keV * 1.E-6), 0,epoints,ipoints);
+    //   }
+    //   fCurrentTime=simtime;
+    // }
 
     fDigiPar->ProjectPositionToNextAnodeWire(cluster_pos);
     ScanPadPlane(cluster_pos, clusterELoss, clusterELossTR,epoints,ipoints);
@@ -395,7 +395,7 @@ void CbmTrdModuleSimR::SetAsicPar(CbmTrdParSetAsic *p)
 
   if(!fDigiPar){
     LOG(WARNING) << GetName() << "::SetAsicPar : No Digi params for module "<< fModuleId <<". Try calling first CbmTrdModSim::SetDigiPar."<< FairLogger::endl;
-    return;
+   return;
   }
 
   if(fAsicPar){
@@ -508,7 +508,7 @@ void CbmTrdModuleSimR::ProcessBuffer(Int_t address){
 
   std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>           analog=fAnalogBuffer[address];
   std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>::         iterator it;
-
+  
   for (it=analog.begin() ; it != analog.end(); it++) {
     digicharge+=it->first->GetCharge();
   }
@@ -520,10 +520,12 @@ void CbmTrdModuleSimR::ProcessBuffer(Int_t address){
   Int_t row= CbmTrdAddress::GetRowId(address);
   Int_t module= CbmTrdAddress::GetModuleId(address);
   Int_t ncols= fDigiPar->GetNofColumns();
-  Int_t channel = ncols * row + col;
-  //  printf("CbmTrdModuleSimR::ProcessBuffer(%d)=%d\n", address, module);
+  Int_t nrows= fDigiPar->GetNofRows();
+  Int_t sector = ncols*nrows*CbmTrdAddress::GetSectorId(address);
+  Int_t channel = sector+ncols * row + col;
   
-  Int_t trigger = fAnalogBuffer[address][0].first->GetTriggerType();
+  Int_t trigger = fAnalogBuffer[address].back().first->GetTriggerType();
+  //  std::cout<<" add: " << address<<" module: " << module<<" layer: " << CbmTrdAddress::GetLayerId(address)<<" sector: " << CbmTrdAddress::GetSectorId(address)<<"   time: " << time<<"   charge: " << digicharge<<"   col: " << channel<<"   trigger: " << trigger<<"  size: " << fAnalogBuffer[address].size()<<std::endl;
   CbmMatch* digiMatch = new CbmMatch(*fAnalogBuffer[address][0].second);
   CbmTrdDigi* digi= new CbmTrdDigi(channel, digicharge, ULong64_t(fAnalogBuffer[address].back().first->GetTime()/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)),trigger,0);
   digi->SetAddressModule(module);
