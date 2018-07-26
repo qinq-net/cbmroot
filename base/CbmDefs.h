@@ -46,7 +46,7 @@ enum ECbmDataType {
   kRichPoint, kRichDigi, kRichHit, kRichRing,            // RICH
   kMuchDigi, kMuchPixelHit, kMuchStrawHit, kMuchTrack,   // MUCH
   kTrdDigi, kTrdHit, kTrdTrack,                          // TRD
-  kTofDigi, kTofHit, kTofTrack,                          // TOF
+  kTofPoint, kTofDigi, kTofCalDigi, kTofHit, kTofTrack,  // TOF
   kPsdPoint, kPsdDigi,                                   // PSD
   kGlobalTrack                                           // Global
 };
