@@ -391,24 +391,31 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
   Int_t moduleAddress = 0;
   for(std::vector<const CbmTrdDigi*>::iterator id = digis->begin(); id!=digis->end(); id++){
     const CbmTrdDigi* digi = (*id);
-    if(!digi) continue;
+    if(!digi) {continue;std::cout<<" no digi " << std::endl;}
 
     Double_t digiCharge = digi->GetCharge();
+    
+    if (digiCharge <= 0)     {std::cout<<" charge 0 " << std::endl;continue;}
 
-    if (digiCharge <= 0)     continue;
+    Int_t ncols= fDigiPar->GetNofColumns();
+    Int_t nrows= fDigiPar->GetNofRows();
+    Int_t sector= digi->GetAddress() / (ncols * nrows);
+    Int_t row= (digi->GetAddress() - sector * (ncols * nrows)) / ncols;
+    Int_t col= digi->GetAddress() - sector * (ncols * nrows) - row * ncols;
 
-
+    
     totalCharge += digi->GetCharge();
-    fDigiPar->GetPadPosition(digi->GetAddress(), local_pad_posV, local_pad_dposV);
+    //    fDigiPar->GetPadPosition(digi->GetAddress(), local_pad_posV, local_pad_dposV);
+    fDigiPar->GetPadPosition(sector, col,row, local_pad_posV, local_pad_dposV);
     
     Double_t xMin = local_pad_posV[0] - local_pad_dposV[0];
     Double_t xMax = local_pad_posV[0] + local_pad_dposV[0];
     xVar += (xMax * xMax + xMax * xMin + xMin * xMin) * digiCharge;
-    
+
     Double_t yMin = local_pad_posV[1] - local_pad_dposV[1];
     Double_t yMax = local_pad_posV[1] + local_pad_dposV[1];
     yVar += (yMax * yMax + yMax * yMin + yMin * yMin) * digiCharge;
-    
+
     for (Int_t iDim = 0; iDim < 3; iDim++) {
       hit_posV[iDim] += local_pad_posV[iDim] * digiCharge;
     }
@@ -440,6 +447,7 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
   // return new ((*fHits)[nofHits]) CbmTrdHit(fModuleId, hit_pos, cluster_pad_dposV, 0, clusterId,
   // 					   totalChargeTR, totalCharge-totalChargeTR, totalCharge);
 
+  //std::cout<< " module: " << fModuleId<< "   pos X : "<< hit_pos[0]<<"   pos Y : "<< hit_pos[1]<<"   pos Z : "<< hit_pos[2]<< "  d pos X : "<< cluster_pad_dposV[0]<<"  d pos Y : "<< cluster_pad_dposV[1]<<"  d pos Z : "<< cluster_pad_dposV[2]<<"   charge: " << totalCharge<<std::endl;
   return new ((*fHits)[nofHits]) CbmTrdHit(fModuleId, hit_pos, cluster_pad_dposV, 0, clusterId,
 					   0, 0, totalCharge);
 }
