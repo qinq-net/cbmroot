@@ -56,8 +56,17 @@ public:
       Int_t& columnId,
       Int_t& rowId) const;
 
+  //function for the pad position with the new address format for rectangular modules
+  void GetPadPosition(
+          const Int_t sector,
+	  const Int_t col,
+	  const Int_t row,
+          TVector3& padPos,
+          TVector3& padPosErr) const;
+
+  //standard implementation of the pad position
   void      GetPadPosition(
-          const Int_t digiAddress,
+          const Int_t padAddress,
           TVector3& padPos,
           TVector3& padPosErr) const;
 
