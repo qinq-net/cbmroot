@@ -38,7 +38,6 @@ public:
     void SetOnlyPrimary(bool v) { fIsOnlyPrimary = v; }
     Double_t GetBeamDx() const { return fBeamDx; }
     Double_t GetBeamDy() const { return fBeamDy; }
-    bool Use(ECbmModuleId m) const { return fUseModules[m]; }
     void SetUse(ECbmModuleId m, bool v) { fUseModules[m] = v; }
     void SetChiSqCut(Double_t v) { fChiSqCut = v; }
     void SetCanSkipHits(Int_t v) { fCanSkipHits = v; }

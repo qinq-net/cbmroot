@@ -32,7 +32,6 @@ public:
     void Exec(Option_t* opt);// Overridden from FairTask
     void Finish();// Overridden from FairTask
     void SetParContainers();
-    bool Use(ECbmModuleId m) const { return fUseModules[m]; }
     void SetUse(ECbmModuleId m, bool v) { fUseModules[m] = v; }
     
     void SetPrimaryParticle(EPrimaryParticleId v)

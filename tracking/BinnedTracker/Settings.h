@@ -15,6 +15,7 @@
 #define CBM_BINNED_SETTINGS_H
 
 #include "CbmDefs.h"
+#include "CbmSetup.h"
 #include "FairParGenericSet.h"
 #include "FairParamList.h"
 #include "TArrayD.h"
@@ -172,7 +173,7 @@ public:
     void SetConfiguring(bool v) { fIsConfiguring = v; }
     bool IsOnlyPrimary() const { return fIsOnlyPrimary; }
     void SetOnlyPrimary(bool v) { fIsOnlyPrimary = v; }
-    bool Use(ECbmModuleId m) const { return fUseModules[m]; }
+    bool Use(ECbmModuleId m) const { return fUseModules[m] && CbmSetup::Instance()->IsActive(m); }
     void SetUse(ECbmModuleId m, bool v) { fUseModules[m] = v; }
     void SetUse(bool v) { std::fill_n(fUseModules, int(kLastModule), v); }
     void SetUse(bool useModules[kLastModule]) { std::copy(useModules, useModules + kLastModule, fUseModules); }
