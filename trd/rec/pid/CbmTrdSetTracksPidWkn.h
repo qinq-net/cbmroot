@@ -30,6 +30,7 @@
 
 #include "FairTask.h"
 
+
 class TClonesArray;
 
 class CbmTrdSetTracksPidWkn : public FairTask
@@ -65,30 +66,39 @@ class CbmTrdSetTracksPidWkn : public FairTask
   virtual void Finish();
 
 
+  
+  void SetType(const std::string& SISType) { fSISType = SISType;}
+  void SetSIS100() { fSISType="sis100"; }
+  void SetSIS300() { fSISType="sis300"; }
+  
+  void SetParameters();
   /** SetParContainers **/
   virtual void SetParContainers();
 
-
-  /** Accessors **/
-  Int_t GetNofTracks()         { return fNofTracks; };
-  Double_t GetWknPar1()        { return WknPar1; };
-  Double_t GetWknPar2()        { return WknPar2; };
-
-  /** Setters **/
-  void SetWknPar1(Double_t param) { WknPar1=param; };
-  void SetWknPar2(Double_t param) { WknPar2=param; };
-
-
  private:
+ 
+ // Parametrs
+  int fnSet, //  number of the layers with TR
+      fdegWkn, //  statistics degree
+	  fNofTracks;
+  float  
+         fk1,
+         fwkn0,
+         fEmp, // energy loss transformation parameter
+         fXi,  // energy loss transformation parameter
+		 fWmin,
+		 fWmax,
+		 fDiff;
 
+
+   // Settings
+   // Set-up
+   // "sis100" - TRD with 10 layers
+   // "sis300" - TRD with 4 layers
+  std::string fSISType;
+ 
   TClonesArray* fTrackArray;   // Input array of TRD tracks
   TClonesArray* fTrdHitArray;  // Input array of TRD Hits
-  Int_t fNofTracks;            // Number of tracks successfully fitted
-  Double_t WknPar1;            // Parameter1 for Wkn method
-  Double_t WknPar2;            // Parameter2 for Wkn method
-
-
-  Double_t CbmWknStat(Double_t* Y, Int_t k, Int_t n);
 
   CbmTrdSetTracksPidWkn(const CbmTrdSetTracksPidWkn&);
   CbmTrdSetTracksPidWkn& operator=(const CbmTrdSetTracksPidWkn&);
