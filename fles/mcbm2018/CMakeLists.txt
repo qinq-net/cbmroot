@@ -19,7 +19,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/cern2017/param
 
   ${CBMROOT_SOURCE_DIR}/fles/star2018/param
-  
+
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/dataformat
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/unpacker
@@ -58,6 +58,7 @@ Set(SRCS
 #   unpacker/CbmMcbm2018UnpackerMuch.cxx
 #   unpacker/CbmMcbm2018UnpackerTrd.cxx
 #   unpacker/CbmMcbm2018UnpackerTof.cxx
+   monitor/CbmMcbm2018MonitorMcbmSync.cxx
    monitor/CbmMcbm2018MonitorStsSync.cxx
 #   monitor/CbmMcbm2018MonitorStsPulser.cxx
 #   monitor/CbmMcbm2018MonitorSts.cxx
