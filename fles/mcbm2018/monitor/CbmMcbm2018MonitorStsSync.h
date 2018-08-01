@@ -53,7 +53,7 @@ public:
 
    Bool_t ReInitContainers();
 
-   virtual void AddMsComponentToList( size_t component );
+   virtual void AddMsComponentToList( size_t component, UShort_t usDetectorId );
    virtual void SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb );
    void SetMsOverlap(size_t uOverlapMsNb = 1) { fuNbOverMsPerTs = uOverlapMsNb; }
    size_t GetMsOverlap()                      { return fuNbOverMsPerTs; }
@@ -114,6 +114,8 @@ private:
       // Data format control
    std::vector< ULong64_t > fvulCurrentTsMsb;                   //! Current TS MSB for each DPB
    std::vector< UInt_t    > fvuCurrentTsMsbCycle;               //! Current TS MSB cycle for DPB
+   std::vector< UInt_t    > fvuInitialHeaderDone;               //! Flag set after seeing MS header in 1st MS for DPB
+   std::vector< UInt_t    > fvuInitialTsMsbCycleHeader;         //! TS MSB cycle from MS header in 1st MS for DPB
    std::vector< UInt_t    > fvuElinkLastTsHit;                  //! TS from last hit for DPB
       // Hits comparison
    std::vector< std::vector< ULong64_t > > fvulChanLastHitTime;   //! Last hit time in bins for each Channel
@@ -181,6 +183,7 @@ private:
    std::vector< stsxyter::FinalHit > fvmLastHitAsic; //! Last hits in each ASIC
    std::vector<TH2 *>                fhPulserTimeDiffPerAsic;
    std::vector< std::vector<TH1 *> > fhPulserTimeDiffPerAsicPair;
+   std::vector< std::vector<TH1 *> > fhPulserTimeDiffClkPerAsicPair;
    std::vector< std::vector<TH2 *> > fhPulserTimeDiffEvoPerAsicPair;
    std::vector< std::vector<TProfile *> > fhPulserTimeDiffEvoPerAsicPairProf;
    std::vector< std::vector<TProfile *> > fhPulserRawTimeDiffEvoPerAsicPairProf;
@@ -191,7 +194,7 @@ private:
 
    static const UInt_t kuNbValuesForTimeDiffMean = 100;
    constexpr static const double kdPulserPeriod = 154000; /// ns
-   constexpr static const double kdTimeDiffToMeanMargin = 200;
+   constexpr static const double kdTimeDiffToMeanMargin = 50;
    std::vector< std::vector< std::vector< Double_t > > > fvdLastTimeDiffValuesAsicPair;
    std::vector< std::vector< UInt_t > >  fvuLastTimeDiffSlotAsicPair;
    std::vector< std::vector< Double_t > > fvdMeanTimeDiffAsicPair;

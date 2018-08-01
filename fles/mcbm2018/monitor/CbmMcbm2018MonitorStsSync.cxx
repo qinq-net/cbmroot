@@ -30,14 +30,15 @@
 #include "TMath.h"
 
 // C++11
+#include <bitset>
 
 // C/C++
 #include <iostream>
 #include <stdint.h>
 #include <iomanip>
 
-Bool_t bMcbm2018ResetSync = kFALSE;
-Bool_t bMcbm2018WriteSync = kFALSE;
+Bool_t bMcbm2018ResetStsSync = kFALSE;
+Bool_t bMcbm2018WriteStsSync = kFALSE;
 
 CbmMcbm2018MonitorStsSync::CbmMcbm2018MonitorStsSync() :
    CbmMcbmUnpack(),
@@ -65,6 +66,8 @@ CbmMcbm2018MonitorStsSync::CbmMcbm2018MonitorStsSync() :
    fiBinSizeDatePlots(-1),
    fvulCurrentTsMsb(),
    fvuCurrentTsMsbCycle(),
+   fvuInitialHeaderDone(),
+   fvuInitialTsMsbCycleHeader(),
    fvuElinkLastTsHit(),
    fvulChanLastHitTime(),
    fvdChanLastHitTime(),
@@ -111,6 +114,7 @@ CbmMcbm2018MonitorStsSync::CbmMcbm2018MonitorStsSync() :
    fvmLastHitAsic(),
    fhPulserTimeDiffPerAsic(),
    fhPulserTimeDiffPerAsicPair(),
+   fhPulserTimeDiffClkPerAsicPair(),
    fhPulserTimeDiffEvoPerAsicPair(),
    fhPulserTimeDiffEvoPerAsicPairProf(),
    fhPulserRawTimeDiffEvoPerAsicPairProf(),
@@ -214,11 +218,15 @@ Bool_t CbmMcbm2018MonitorStsSync::ReInitContainers()
    // Internal status initialization
    fvulCurrentTsMsb.resize( fuNrOfDpbs );
    fvuCurrentTsMsbCycle.resize( fuNrOfDpbs );
+   fvuInitialHeaderDone.resize( fuNrOfDpbs );
+   fvuInitialTsMsbCycleHeader.resize( fuNrOfDpbs );
    fvuElinkLastTsHit.resize( fuNrOfDpbs );
    for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
    {
       fvulCurrentTsMsb[uDpb]     = 0;
       fvuCurrentTsMsbCycle[uDpb] = 0;
+      fvuInitialHeaderDone[ uDpb ] = kFALSE;
+      fvuInitialTsMsbCycleHeader[uDpb] = 0;
 /*
       fvuElinkLastTsHit[uDpb].resize( fuNbElinksPerDpb );
       for( UInt_t uElink = 0; uElink < fuNbElinksPerDpb; ++uElink )
@@ -237,6 +245,7 @@ Bool_t CbmMcbm2018MonitorStsSync::ReInitContainers()
    fvmAsicHitsInMs.resize( fuNbStsXyters );
    fvmLastHitAsic.resize( fuNbStsXyters );
    fhPulserTimeDiffPerAsicPair.resize( fuNbStsXyters );
+   fhPulserTimeDiffClkPerAsicPair.resize( fuNbStsXyters );
    fhPulserTimeDiffEvoPerAsicPair.resize( fuNbStsXyters );
    fhPulserTimeDiffEvoPerAsicPairProf.resize( fuNbStsXyters );
    fhPulserRawTimeDiffEvoPerAsicPairProf.resize( fuNbStsXyters );
@@ -251,6 +260,7 @@ Bool_t CbmMcbm2018MonitorStsSync::ReInitContainers()
       fvusChanLastHitAdcInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
       fvmAsicHitsInMs[ uXyterIdx ].clear();
       fhPulserTimeDiffPerAsicPair[ uXyterIdx ].clear();
+      fhPulserTimeDiffClkPerAsicPair[ uXyterIdx ].clear();
       fhPulserTimeDiffEvoPerAsicPair[ uXyterIdx ].clear();
       fhPulserTimeDiffEvoPerAsicPairProf[ uXyterIdx ].clear();
       fhPulserRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ].clear();
@@ -285,7 +295,7 @@ Bool_t CbmMcbm2018MonitorStsSync::ReInitContainers()
    return kTRUE;
 }
 
-void CbmMcbm2018MonitorStsSync::AddMsComponentToList( size_t component )
+void CbmMcbm2018MonitorStsSync::AddMsComponentToList( size_t component, UShort_t usDetectorId )
 {
    /// Check for duplicates and ignore if it is the case
    for( UInt_t uCompIdx = 0; uCompIdx < fvMsComponentsList.size(); ++uCompIdx )
@@ -609,6 +619,18 @@ void CbmMcbm2018MonitorStsSync::CreateHistograms()
 
          if( uXyterIdxB == uXyterIdx )
          {
+            sHistName = Form( "fhPulserTimeDiffClkSameAsic_%03u", uXyterIdx );
+            title =  Form( "Time diff for consecutive hits in ASIC %03u; tn - t [Clk]; Counts", uXyterIdx );
+         } // if( uXyterIdxB == uXyterIdx )
+            else
+            {
+               sHistName = Form( "fhPulserTimeDiffClkPerAsicPair_%03u_%03u", uXyterIdx, uXyterIdxB );
+               title =  Form( "Time diff for pulser hits in ASIC %03u and %03u; tn - t [Clk]; Counts", uXyterIdx, uXyterIdxB );
+            } // else of if( uXyterIdxB == uXyterIdx )
+         fhPulserTimeDiffClkPerAsicPair[ uXyterIdx ].push_back( new TH1I(sHistName, title, 601, -300.5, 300.5 ) );
+
+         if( uXyterIdxB == uXyterIdx )
+         {
             sHistName = Form( "fhPulserTimeDiffEvoSameAsic_%03u", uXyterIdx );
             title =  Form( "Time diff for consecutive hits in ASIC %03u; Time in run [s]; tn - t [ns]; Counts", uXyterIdx );
          } // if( uXyterIdxB == uXyterIdx )
@@ -631,7 +653,7 @@ void CbmMcbm2018MonitorStsSync::CreateHistograms()
                sHistName = Form( "fhPulserTimeDiffEvoPerAsicPairProf_%03u_%03u", uXyterIdx, uXyterIdxB );
                title =  Form( "Time diff for pulser hits in ASIC %03u and %03u; Time in run [s]; tn - t [ns]", uXyterIdx, uXyterIdxB );
             } // else of if( uXyterIdxB == uXyterIdx )
-         fhPulserTimeDiffEvoPerAsicPairProf[ uXyterIdx ].push_back( new TProfile(sHistName, title, 7200, 0, 36000 ) );
+         fhPulserTimeDiffEvoPerAsicPairProf[ uXyterIdx ].push_back( new TProfile(sHistName, title, 52000, 0, 52000 ) );
 
          if( uXyterIdxB == uXyterIdx )
          {
@@ -643,7 +665,7 @@ void CbmMcbm2018MonitorStsSync::CreateHistograms()
                sHistName = Form( "fhPulserRawTimeDiffEvoPerAsicPairProf_%03u_%03u", uXyterIdx, uXyterIdxB );
                title =  Form( "Time diff for pulser hits in ASIC %03u and %03u; Time in run [s]; tn - t [ns]", uXyterIdx, uXyterIdxB );
             } // else of if( uXyterIdxB == uXyterIdx )
-         fhPulserRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ].push_back( new TProfile(sHistName, title, 7200, 0, 36000 ) );
+         fhPulserRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ].push_back( new TProfile(sHistName, title, 10400, 0, 52000 ) );
 
          sHistName = Form( "fhPulserTsLsbMatchPerAsicPair_%03u_%03u", uXyterIdx, uXyterIdxB );
          title =  Form( "TS LSB for pulser hits in ASIC %03u and %03u; TS LSB %03u [bin]; TS LSB %03u [bin]",
@@ -728,6 +750,7 @@ void CbmMcbm2018MonitorStsSync::CreateHistograms()
             if( uXyterIdxB == uXyterIdx )
             {
                server->Register("/DtChan", fhPulserTimeDiffPerAsicPair[ uXyterIdx ][uXyterIdxB] );
+               server->Register("/DtChan", fhPulserTimeDiffClkPerAsicPair[ uXyterIdx ][uXyterIdxB] );
                server->Register("/DtChan", fhPulserTimeDiffEvoPerAsicPair[ uXyterIdx ][uXyterIdxB] );
                server->Register("/DtChan", fhPulserTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB] );
                server->Register("/DtChan", fhPulserRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB] );
@@ -735,6 +758,7 @@ void CbmMcbm2018MonitorStsSync::CreateHistograms()
                else
                {
                   server->Register("/DtAsicPair", fhPulserTimeDiffPerAsicPair[ uXyterIdx ][uXyterIdxB] );
+                  server->Register("/DtAsicPair", fhPulserTimeDiffClkPerAsicPair[ uXyterIdx ][uXyterIdxB] );
                   server->Register("/DtAsicPair", fhPulserTimeDiffEvoPerAsicPair[ uXyterIdx ][uXyterIdxB] );
                   server->Register("/DtAsicPair", fhPulserTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB] );
                   server->Register("/DtAsicPair", fhPulserRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB] );
@@ -747,8 +771,8 @@ void CbmMcbm2018MonitorStsSync::CreateHistograms()
 
       } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 
-      server->RegisterCommand("/Reset_All_Pulser", "bMcbm2018ResetSync=kTRUE");
-      server->RegisterCommand("/Write_All_Pulser", "bMcbm2018WriteSync=kTRUE");
+      server->RegisterCommand("/Reset_All_Pulser", "bMcbm2018ResetStsSync=kTRUE");
+      server->RegisterCommand("/Write_All_Pulser", "bMcbm2018WriteStsSync=kTRUE");
 
       server->Restrict("/Reset_All_Pulser", "allow=admin");
       server->Restrict("/Write_All_Pulser", "allow=admin");
@@ -813,6 +837,7 @@ void CbmMcbm2018MonitorStsSync::CreateHistograms()
       cDtInAsic->cd(1 + uXyterIdx);
       gPad->SetGridx();
       gPad->SetLogy();
+//      gStyle->SetOptStat("emrou");
       fhPulserTimeDiffPerAsicPair[ uXyterIdx ][ uXyterIdx ]->Draw( "hist" );
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 //====================================================================//
@@ -830,11 +855,27 @@ void CbmMcbm2018MonitorStsSync::CreateHistograms()
          cDtAsicPairs->cd( 1 + uHistoIdx );
          gPad->SetGridx();
          gPad->SetLogy();
+//         gStyle->SetOptStat("emrou");
          fhPulserTimeDiffPerAsicPair[ uXyterIdx ][uXyterIdxB]->Draw( "hist" );
 
          uHistoIdx++;
       } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+//====================================================================//
+
+//====================================================================//
+   TCanvas* cDtClkAsicPairs = new TCanvas( "cDtClkAsicPairs",
+                                      "Time Differences in ASIC",
+                                    w, h);
+   cDtClkAsicPairs->Divide( fuNbStsXyters - 1 );
+   for( UInt_t uXyterIdxB = 1; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
+   {
+      cDtClkAsicPairs->cd( uXyterIdxB );
+      gPad->SetGridx();
+      gPad->SetLogy();
+//         gStyle->SetOptStat("emrou");
+      fhPulserTimeDiffClkPerAsicPair[ 0 ][uXyterIdxB]->Draw( "hist" );
+   } // for( UInt_t uXyterIdxB = 1; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
 //====================================================================//
 
 //====================================================================//
@@ -962,16 +1003,16 @@ void CbmMcbm2018MonitorStsSync::CreateHistograms()
 
 Bool_t CbmMcbm2018MonitorStsSync::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
-   if( bMcbm2018ResetSync )
+   if( bMcbm2018ResetStsSync )
    {
       ResetAllHistos();
-      bMcbm2018ResetSync = kFALSE;
-   } // if( bMcbm2018ResetSync )
-   if( bMcbm2018WriteSync )
+      bMcbm2018ResetStsSync = kFALSE;
+   } // if( bMcbm2018ResetStsSync )
+   if( bMcbm2018WriteStsSync )
    {
       SaveAllHistos( fsHistoFileFullname );
-      bMcbm2018WriteSync = kFALSE;
-   } // if( bMcbm2018WriteSync )
+      bMcbm2018WriteStsSync = kFALSE;
+   } // if( bMcbm2018WriteStsSync )
 
    LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
               << "microslices." << FairLogger::endl;
@@ -1013,6 +1054,28 @@ Bool_t CbmMcbm2018MonitorStsSync::DoUnpack(const fles::Timeslice& ts, size_t com
 
          // Store MS time for coincidence plots
          fvdMsTime[ uMsCompIdx ] = dMsTime;
+
+         /** Check the current TS_MSb cycle and correct it if wrong **/
+         UInt_t uTsMsbCycleHeader = std::floor( fulCurrentMsIdx /
+                                                ( stsxyter::kuTsCycleNbBins * stsxyter::kdClockCycleNs ) )
+                                    - fvuInitialTsMsbCycleHeader[ fuCurrDpbIdx ];
+         if( kFALSE == fvuInitialHeaderDone[ fuCurrDpbIdx ] )
+         {
+            fvuInitialTsMsbCycleHeader[ fuCurrDpbIdx ] = uTsMsbCycleHeader;
+            fvuInitialHeaderDone[ fuCurrDpbIdx ] = kTRUE;
+         } // if( kFALSE == fvuInitialHeaderDone[ fuCurrDpbIdx ] )
+         else if( uTsMsbCycleHeader != fvuCurrentTsMsbCycle[ fuCurrDpbIdx ] &&
+                  4194303 != fvulCurrentTsMsb[fuCurrDpbIdx] )
+         {
+            LOG(WARNING) << "TS MSB cycle from MS header does not match current cycle from data "
+                          << "for TS " << std::setw( 12 ) << fulCurrentTsIdx
+                          << " MS " << std::setw( 12 ) << fulCurrentMsIdx
+                          << " MsInTs " << std::setw( 3 ) << uMsIdx
+                          << " ====> " << fvuCurrentTsMsbCycle[ fuCurrDpbIdx ]
+                          << " VS " << uTsMsbCycleHeader
+                          << FairLogger::endl;
+            fvuCurrentTsMsbCycle[ fuCurrDpbIdx ] = uTsMsbCycleHeader;
+         }
 
          // If not integer number of message in input buffer, print warning/error
          if( 0 != ( uSize % kuBytesPerMessage ) )
@@ -1107,6 +1170,10 @@ Bool_t CbmMcbm2018MonitorStsSync::DoUnpack(const fles::Timeslice& ts, size_t com
       // Time differences plotting using the fully time sorted hits
       if( 0 < fvmHitsInMs.size() )
       {
+         // Make sure we analyse only MS where all ASICs were detected (remove noise and MS borders)
+         if( fuNbStsXyters != fvmHitsInMs.size() )
+            fvmHitsInMs.erase( fvmHitsInMs.begin(), fvmHitsInMs.end() );
+
          ULong64_t ulLastHitTime = ( *( fvmHitsInMs.rbegin() ) ).GetTs();
          std::vector< stsxyter::FinalHit >::iterator it;
          std::vector< stsxyter::FinalHit >::iterator itB;
@@ -1146,14 +1213,15 @@ Bool_t CbmMcbm2018MonitorStsSync::DoUnpack(const fles::Timeslice& ts, size_t com
                   for( itB  = fvmAsicHitsInMs[ uAsicB ].begin(); itB != fvmAsicHitsInMs[ uAsicB ].end(); ++itB )
                   {
                      UShort_t usChanIdxB = (*itB).GetChan();
-                     Double_t dDt = ( static_cast< Double_t >( (*itB).GetTs() ) - static_cast< Double_t >( (*it).GetTs() )
-                                    ) * stsxyter::kdClockCycleNs;
+                     Double_t dDtClk = static_cast< Double_t >( (*itB).GetTs() ) - static_cast< Double_t >( (*it).GetTs() );
+                     Double_t dDt = dDtClk * stsxyter::kdClockCycleNs;
                      Double_t dDtRaw = ( static_cast< Double_t >( (*itB).GetTs() % stsxyter::kuTsCycleNbBins )
                                        - static_cast< Double_t >( (*it).GetTs()  % stsxyter::kuTsCycleNbBins )
                                     ) * stsxyter::kdClockCycleNs;
 
                      fhPulserTimeDiffPerAsic[ uAsic ]->Fill( dDt, uAsicB );
                      fhPulserTimeDiffPerAsicPair[ uAsic ][ uAsicB ]->Fill( dDt );
+                     fhPulserTimeDiffClkPerAsicPair[ uAsic ][ uAsicB ]->Fill( dDtClk );
                      fhPulserTimeDiffEvoPerAsicPair[ uAsic ][ uAsicB ]->Fill( dTimeSinceStartSec, dDt );
                      fhPulserTimeDiffEvoPerAsicPairProf[ uAsic ][ uAsicB ]->Fill( dTimeSinceStartSec, dDt );
                      fhPulserRawTimeDiffEvoPerAsicPairProf[ uAsic ][ uAsicB ]->Fill( dTimeSinceStartSec, dDtRaw );
@@ -1163,10 +1231,16 @@ Bool_t CbmMcbm2018MonitorStsSync::DoUnpack(const fles::Timeslice& ts, size_t com
                      fhPulserTsMsbMatchPerAsicPair[ uAsic ][ uAsicB ]->Fill( ( (*it ).GetTs() & 0x03F00 ) >> 8,
                                                                              ( (*itB).GetTs() & 0x03F00 ) >> 8 );
 
-                     if( kdPulserPeriod * -0.5 < dDt && dDt < kdPulserPeriod * 0.5 )
+                     if( ( kdPulserPeriod * -0.5 < dDt && dDt < kdPulserPeriod * 0.5 &&
+                           10 < (*it).GetAdc() && 10 < (*itB).GetAdc() )// &&
+//                         !( 2 == uAsic && 3 == uAsicB && 240 < dDt )
+                       )
                      {
-                        if( dDt < fvdMeanTimeDiffAsicPair[ uAsic ][ uAsicB ] - kdTimeDiffToMeanMargin ||
-                            dDt > fvdMeanTimeDiffAsicPair[ uAsic ][ uAsicB ] + kdTimeDiffToMeanMargin
+/*
+                        if( ( dDt < fvdMeanTimeDiffAsicPair[ uAsic ][ uAsicB ] - kdTimeDiffToMeanMargin ||
+                              dDt > fvdMeanTimeDiffAsicPair[ uAsic ][ uAsicB ] + kdTimeDiffToMeanMargin )
+                              &&  !( 3 == uAsicB )
+
                           )
                         {
                            LOG(INFO) << "CbmCosy2018MonitorPulser::DoUnpack => "
@@ -1184,7 +1258,7 @@ Bool_t CbmMcbm2018MonitorStsSync::DoUnpack(const fles::Timeslice& ts, size_t com
                                      << FairLogger::endl;
 
                         } // if dDt outside of MeanTimeDiffPair +/- margin
-
+*/
                         UpdatePairMeanValue( uAsic, uAsicB, dDt );
                      } // if( kdPulserPeriod * -0.5 < dDt && dDt < kdPulserPeriod * 0.5 )
                   } // for( it  = fvmAsicHitsInMs[ uAsicB ].begin(); it != fvmAsicHitsInMs[ uAsicB ].end(); ++it )
@@ -1297,6 +1371,15 @@ void CbmMcbm2018MonitorStsSync::FillHitInfo( stsxyter::Message mess, const UShor
    fvmHitsInMs.push_back( stsxyter::FinalHit( fvulChanLastHitTime[ uAsicIdx ][ usChan ], usRawAdc, uAsicIdx, usChan ) );
 
 /*
+   if( ( 214514 < fulCurrentTsIdx && fulCurrentTsIdx < 214517 ) ||
+       ( 260113 < fulCurrentTsIdx && fulCurrentTsIdx < 260116 ) ||
+       ( 388109 < fulCurrentTsIdx && fulCurrentTsIdx < 388114 ) ||
+       ( 573361 < fulCurrentTsIdx && fulCurrentTsIdx < 573364 ) ||
+       ( 661731 < fulCurrentTsIdx && fulCurrentTsIdx < 661734 ) ||
+       ( 712982 < fulCurrentTsIdx && fulCurrentTsIdx < 712985 ) ||
+       ( 713857 < fulCurrentTsIdx && fulCurrentTsIdx < 713860 ) ||
+       ( 739365 < fulCurrentTsIdx && fulCurrentTsIdx < 739368 ))
+   {
       LOG(INFO) << " TS " << std::setw( 12 ) << fulCurrentTsIdx
                 << " MS " << std::setw( 12 ) << fulCurrentMsIdx
                 << " MsInTs " << std::setw( 3 ) << uMsIdx
@@ -1307,9 +1390,12 @@ void CbmMcbm2018MonitorStsSync::FillHitInfo( stsxyter::Message mess, const UShor
                 << " SX TsMsb " << std::setw( 2 ) << ( fvulCurrentTsMsb[fuCurrDpbIdx] & 0x1F ) // Total StsXyter TS = 14 bits => 9b Hit TS + lower 5b TS_MSB after DPB
                 << " DPB TsMsb " << std::setw( 6 ) << ( fvulCurrentTsMsb[fuCurrDpbIdx] >> 5 ) // Total StsXyter TS = 14 bits => 9b Hit TS + lower 5b of TS_MSB after DPB
                 << " TsMsb " << std::setw( 7 ) << fvulCurrentTsMsb[fuCurrDpbIdx]
+                << " TS(b) " << std::bitset<9>(usRawTs)
+                << " TSM(b) " << std::bitset<24>(fvulCurrentTsMsb[fuCurrDpbIdx])
                 << " MsbCy " << std::setw( 4 ) << fvuCurrentTsMsbCycle[fuCurrDpbIdx]
                 << " Time " << std::setw ( 12 ) << fvulChanLastHitTime[ uAsicIdx ][ usChan ]
                 << FairLogger::endl;
+   }
 */
    // Check Starting point of histos with time as X axis
    if( -1 == fdStartTime )
@@ -1343,7 +1429,7 @@ void CbmMcbm2018MonitorStsSync::FillTsMsbInfo( stsxyter::Message mess, UInt_t uM
 {
    UInt_t uVal    = mess.GetTsMsbVal();
 /*
-   if( 0 == fuCurrDpbIdx )
+   if( ( 419369 < fulCurrentTsIdx && fulCurrentTsIdx < 419371 ) )
       LOG(INFO) << " TS " << std::setw( 12 ) << fulCurrentTsIdx
                 << " MS " << std::setw( 12 ) << fulCurrentMsIdx
                 << " MsInTs " << std::setw( 3 ) << uMsIdx
@@ -1375,6 +1461,8 @@ void CbmMcbm2018MonitorStsSync::FillTsMsbInfo( stsxyter::Message mess, UInt_t uM
 
       LOG(INFO) << " TS " << std::setw( 12 ) << fulCurrentTsIdx
                 << " MS " << std::setw( 12 ) << fulCurrentMsIdx
+                << " MS Idx " << std::setw( 4 ) << uMsIdx
+                << " Msg Idx " << std::setw( 5 ) << uMessIdx
                 << " DPB " << std::setw( 2 ) << fuCurrDpbIdx
                 << " Old TsMsb " << std::setw( 5 ) << fvulCurrentTsMsb[fuCurrDpbIdx]
                 << " Old MsbCy " << std::setw( 5 ) << fvuCurrentTsMsbCycle[fuCurrDpbIdx]
@@ -1416,7 +1504,9 @@ void CbmMcbm2018MonitorStsSync::FillTsMsbInfo( stsxyter::Message mess, UInt_t uM
 
 void CbmMcbm2018MonitorStsSync::FillEpochInfo( stsxyter::Message mess )
 {
-   UInt_t uVal    = mess.GetTsMsbVal();
+   UInt_t uVal    = mess.GetEpochVal();
+   UInt_t uCurrentCycle = uVal % stsxyter::kuTsCycleNbBins;
+
 /*
    // Update Status counters
    if( usVal < fvulCurrentTsMsb[fuCurrDpbIdx] )
@@ -1498,6 +1588,30 @@ void CbmMcbm2018MonitorStsSync::SaveAllHistos( TString sFileName )
          fhFebChRateEvoLong[ uXyterIdx ]->Write();
       } // if( kTRUE == fbLongHistoEnable )
 */
+   } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+
+   gDirectory->cd("..");
+   /***************************/
+
+   /***************************/
+   gDirectory->mkdir("Sts_Pulser");
+   gDirectory->cd("Sts_Pulser");
+
+   for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+   {
+      fhPulserTimeDiffPerAsic[ uXyterIdx ]->Write();
+      for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
+      {
+         fhPulserTimeDiffPerAsicPair[ uXyterIdx ][uXyterIdxB]->Write();
+         fhPulserTimeDiffClkPerAsicPair[ uXyterIdx ][uXyterIdxB]->Write();
+         fhPulserTimeDiffEvoPerAsicPair[ uXyterIdx ][uXyterIdxB]->Write();
+         fhPulserTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB]->Write();
+         fhPulserRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB]->Write();
+         fhPulserTsLsbMatchPerAsicPair[ uXyterIdx ][uXyterIdxB]->Write();
+         fhPulserTsMsbMatchPerAsicPair[ uXyterIdx ][uXyterIdxB]->Write();
+      } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
+      fhPulserIntervalAsic[ uXyterIdx ]->Write();
+      fhPulserIntervalLongAsic[ uXyterIdx ]->Write();
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 
    gDirectory->cd("..");
@@ -1611,6 +1725,7 @@ void CbmMcbm2018MonitorStsSync::ResetAllHistos()
       for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
       {
          fhPulserTimeDiffPerAsicPair[ uXyterIdx ][uXyterIdxB]->Reset();
+         fhPulserTimeDiffClkPerAsicPair[ uXyterIdx ][uXyterIdxB]->Reset();
          fhPulserTimeDiffEvoPerAsicPair[ uXyterIdx ][uXyterIdxB]->Reset();
          fhPulserTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB]->Reset();
          fhPulserRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB]->Reset();

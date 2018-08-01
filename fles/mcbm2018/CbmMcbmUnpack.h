@@ -37,7 +37,7 @@ class CbmMcbmUnpack : public CbmTSUnpack
 
   virtual void FillOutput(CbmDigi*) = 0;
 
-  virtual void AddMsComponentToList( size_t component ) = 0;
+  virtual void AddMsComponentToList( size_t component, UShort_t usDetectorId ) = 0;
   virtual void SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb ) = 0;
 
   ClassDef(CbmMcbmUnpack, 0)

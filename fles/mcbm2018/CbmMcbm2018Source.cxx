@@ -271,7 +271,7 @@ Int_t CbmMcbm2018Source::FillBuffer()
             } // if( it == fUnpackers.end() )
                else
                {
-                  it->second->AddMsComponentToList( c );
+                  it->second->AddMsComponentToList( c, systemID );
                   it->second->SetNbMsInTs( ts.num_core_microslices(),
                                            ts.num_microslices( c ) - ts.num_core_microslices() );
                } // else of if( it == fUnpackers.end() )
