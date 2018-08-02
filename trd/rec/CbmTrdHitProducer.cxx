@@ -66,7 +66,7 @@ Int_t CbmTrdHitProducer::AddHits(TClonesArray* hits, Bool_t moveOwner)
     hit->SetPosition(gpos);
     poserr[0]=hit->GetDx();
     poserr[1]=hit->GetDy();
-    poserr[0]=0;
+    poserr[2]=0;
     Eloss=hit->GetELoss();
     
     hitSave = new((*fHits)[jhits++]) CbmTrdHit();
