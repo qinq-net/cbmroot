@@ -163,7 +163,6 @@ void CbmTrdHitProducer::Exec(Option_t*)
   CbmTrdModuleRec *mod(NULL);
   std::vector<const CbmTrdDigi*> digis;
   Int_t nofCluster = fClusters->GetEntries();  
-  std::cout<<" clusters: "<< nofCluster<<std::endl;
   for (Int_t iCluster = 0; iCluster < nofCluster; iCluster++) {
 
     const CbmTrdCluster* cluster = static_cast<const CbmTrdCluster*>(fClusters->At(iCluster));
