@@ -20,10 +20,14 @@
 
 #include "Rtypes.h"                     // for Char_t, etc
 
+#include <vector>
+#include <string>
+
 class FairPrimaryGenerator;
+
 class TClonesArray;
-class TFile;
-class TTree;
+class TChain;
+
 class PStaticData;
 class PDataBase;
 
@@ -41,6 +45,13 @@ class CbmPlutoGenerator : public FairGenerator
      **/
     CbmPlutoGenerator(const Char_t* fileName);
 
+    /** Constructor with list of input files
+     ** @param fileNames A list of (PLUTO) input file names
+     **/
+    CbmPlutoGenerator(std::vector<std::string> fileNames);
+
+    CbmPlutoGenerator(const CbmPlutoGenerator&) = delete;
+    CbmPlutoGenerator& operator=(const CbmPlutoGenerator&) = delete;
 
     /** Destructor **/
     virtual ~CbmPlutoGenerator();
@@ -55,24 +66,23 @@ class CbmPlutoGenerator : public FairGenerator
 
 
   private:
-    PStaticData *fdata;  //! pluto static data
-    PDataBase *fbase;  //! pluto data base
+    PStaticData *fdata;       //! pluto static data
+    PDataBase *fbase;         //! pluto data base
 
-    Int_t iEvent;      //! Event number
-    const Char_t* fFileName;   //! Input file name
-    TFile* fInputFile;        //! Pointer to input file
-    TTree* fInputTree;        //! Pointer to input tree
-    TClonesArray* fParticles;  //! Particle array from PLUTO
-    Int_t fPDGmanual;        //! forced pdg value for undefined pluto codes
+    Int_t iEvent;             //! Event number
+    const Char_t* fFileName;  //! Input file name
+    TChain* fInputChain;      //! Pointer to input file
+    TClonesArray* fParticles; //! Particle array from PLUTO
+    Int_t fPDGmanual;         //! forced pdg value for undefined pluto codes
 
     /** Private method CloseInput. Just for convenience. Closes the
      ** input file properly. Called from destructor and from ReadEvent. **/
     void CloseInput();
+ 
+    /** Check if file exists. Break fatal when it doesn't exist **/
+    void CheckFileExist(std::string filename);
 
-    CbmPlutoGenerator(const CbmPlutoGenerator&);
-    CbmPlutoGenerator& operator=(const CbmPlutoGenerator&);
-
-    ClassDef(CbmPlutoGenerator,3);
+    ClassDef(CbmPlutoGenerator,4);
 
 };
 

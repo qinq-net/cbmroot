@@ -14,13 +14,15 @@
 #include <iosfwd>                       // for ostream
 #include "TClonesArray.h"               // for TClonesArray
 #include "TDatabasePDG.h"               // for TDatabasePDG
-#include "TFile.h"                      // for TFile, gFile
+#include "TFile.h"                      // for TFile
+#include "TChain.h"                     // for TChain
 #include "TLorentzVector.h"             // for TLorentzVector
 #include "TTree.h"                      // for TTree
 #include "TVector3.h"                   // for TVector3
 
 #include <stddef.h>                     // for NULL
 #include <iostream>                     // for operator<<, basic_ostream, etc
+#include <sys/stat.h>
 
 // -----   Default constructor   ------------------------------------------
 CbmPlutoGenerator::CbmPlutoGenerator()
@@ -29,15 +31,12 @@ CbmPlutoGenerator::CbmPlutoGenerator()
    fbase(makeDataBase()),
    iEvent(0),
    fFileName(NULL),
-   fInputFile(NULL),
-   fInputTree(NULL),
+   fInputChain(NULL),
    fParticles(NULL),
    fPDGmanual(0)
 {
 }
 // ------------------------------------------------------------------------
-
-
 
 // -----   Standard constructor   -----------------------------------------
 CbmPlutoGenerator::CbmPlutoGenerator(const Char_t* fileName)
@@ -46,16 +45,36 @@ CbmPlutoGenerator::CbmPlutoGenerator(const Char_t* fileName)
    fbase(makeDataBase()),
    iEvent(0),
    fFileName(fileName),
-   fInputFile(new TFile(fileName)),
-   fInputTree(NULL),
+   fInputChain(NULL),
    fParticles(new TClonesArray("PParticle",100)),
    fPDGmanual(0)
 {
-  fInputTree = (TTree*) fInputFile->Get("data");
-  fInputTree->SetBranchAddress("Particles", &fParticles);
+  fInputChain = new TChain("data");
+  CheckFileExist(fileName);
+
+  fInputChain->Add(fileName); 
+  fInputChain->SetBranchAddress("Particles", &fParticles); 
 }
 // ------------------------------------------------------------------------
 
+// -----  Constructor with file list   -----------------------------------------
+CbmPlutoGenerator::CbmPlutoGenerator(std::vector<std::string> fileNames)
+  :FairGenerator(),
+   fdata(makeStaticData()),
+   fbase(makeDataBase()),
+   iEvent(0),
+   fFileName(),
+   fInputChain(NULL),
+   fParticles(new TClonesArray("PParticle",100)),
+   fPDGmanual(0)
+{
+  fInputChain = new TChain("data");
+  for(auto & name: fileNames) {
+    CheckFileExist(name);
+    fInputChain->Add(name.c_str()); 
+  }
+  fInputChain->SetBranchAddress("Particles", &fParticles); 
+}
 
 
 // -----   Destructor   ---------------------------------------------------
@@ -75,21 +94,18 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
 {
 
   // Check for input file
-  if ( ! fInputFile ) {
-    LOG(ERROR) << "CbmPlutoGenerator: Input file nor open!" << FairLogger::endl;
+  if ( ! fInputChain ) {
+    LOG(ERROR) << "CbmPlutoGenerator: Input file not open!" << FairLogger::endl;
     return kFALSE;
   }
 
   // Check for number of events in input file
-  if ( iEvent > fInputTree->GetEntries() ) {
+  if ( iEvent > fInputChain->GetEntries() ) {
     LOG(ERROR) << "CbmPlutoGenerator: No more events in input file!" << FairLogger::endl;
     CloseInput();
     return kFALSE;
   }
-  TFile*  g=gFile;
-  fInputFile->cd();
-  fInputTree->GetEntry(iEvent++);
-  g->cd();
+  fInputChain->GetEntry(iEvent++);
 
   // Get PDG database
   TDatabasePDG* dataBase = TDatabasePDG::Instance();
@@ -111,20 +127,17 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
                    << ", skipping particle." << FairLogger::endl;
       continue;
     }
-    LOG(INFO) << iPart << " Particle (geant" << part->ID() << " PDG " 
+    LOG(INFO) << iPart << " Particle (geant " << part->ID() << " PDG " 
               << *pdgType << " -> " << dataBase->GetParticle(*pdgType)->GetName()  
               << FairLogger::endl;
-    //Info("ReadEvent"," %d Particle (geant%d) PDG %d -> %s", iPart,part->ID(),*pdgType, dataBase->GetParticle(*pdgType)->GetName());
 
     // set PDG by hand for pluto dilepton pairs and other not defined codes in pluto
     Int_t dielectron=99009911;
     Int_t dimuon    =99009913;
     if(fPDGmanual && *pdgType==0) {
       pdgType=&fPDGmanual;
-      LOG(WARNING) << "\t PDG code changed by user defintion to " << *pdgType
+      LOG(WARNING) << "PDG code changed by user defintion to " << *pdgType
                    << FairLogger::endl; 
-      //Warning("ReadEvent","\t PDG code changed by user defintion to %d",*pdgType);
-      //      Printf(" \t PDG changed to %d -> %s",*pdgType,dataBase->GetParticle(*pdgType)->GetName());
     }
     else if(part->ID()==51) pdgType=&dielectron;
     else if(part->ID()==50) pdgType=&dimuon;
@@ -148,10 +161,8 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
     Bool_t wanttracking = kTRUE;
     if(idx>-1) wanttracking=kFALSE; // only tracking for decay products
     Int_t parent = parIdx;
-    LOG(INFO) << "\t Add particle with parent at index " << parIdx 
+    LOG(INFO) << "Add particle with parent at index " << parIdx 
               << " and do tracking " << wanttracking << FairLogger::endl;
-    //Info("ReadEvent","\t Add particle with parent at index %d and do tracking %d",parIdx,wanttracking);
-    //    part->Print();
 
     // Give track to PrimaryGenerator
     primGen->AddTrack(*pdgType, px, py, pz, vx, vy, vz, parent, wanttracking, ee);
@@ -169,16 +180,23 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
 // -----   Private method CloseInput   ------------------------------------
 void CbmPlutoGenerator::CloseInput()
 {
-  if ( fInputFile ) {
+  if ( fInputChain ) {
     LOG(INFO) << "CbmPlutoGenerator: Closing input file " << fFileName
               << FairLogger::endl;
-    fInputFile->Close();
-    delete fInputFile;
+    delete fInputChain;
   }
-  fInputFile = NULL;
+  fInputChain = NULL;
 }
 // ------------------------------------------------------------------------
 
-
+void CbmPlutoGenerator::CheckFileExist(std::string filename)
+{
+  struct stat buffer;   
+  if(stat (filename.c_str(), &buffer) == 0) { 
+    LOG(INFO) << "CbmPlutoGenerator: Add file " << filename << " to input chain" << FairLogger::endl;
+  } else {
+    LOG(FATAL) << "Input File " << filename << " not found" << FairLogger::endl;
+  }
+}
 
 ClassImp(CbmPlutoGenerator)
