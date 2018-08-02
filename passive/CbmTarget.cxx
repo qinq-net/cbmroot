@@ -246,6 +246,7 @@ Double_t CbmTarget::GetStandardDensity(Int_t charge) {
   switch (charge) {
     case  4: return  1.848; break;  // Beryllium
     case  6: return  2.260; break;  // Carbon
+    case 47: return 10.490; break;  // Silver
     case 49: return  7.310; break;  // Indium
     case 79: return 19.320; break;  // Gold
     case 82: return 11.342; break;  // Lead
