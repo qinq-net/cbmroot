@@ -54,8 +54,8 @@ Int_t CbmTrdHitProducer::AddHits(TClonesArray* hits, Bool_t moveOwner)
    */   
   
   if(!hits) return 0;
-  TVector3 lpos, gpos;
-  Double_t lhit[3], ghit[3];
+  TVector3 lpos, gpos, poserr;
+  Double_t lhit[3], ghit[3], Eloss;
   Int_t nhits(0), jhits=fHits->GetEntriesFast();
   CbmTrdHit *hit(NULL), *hitSave(NULL);
   for(Int_t ihit=0; ihit<hits->GetEntriesFast(); ihit++){
@@ -64,9 +64,15 @@ Int_t CbmTrdHitProducer::AddHits(TClonesArray* hits, Bool_t moveOwner)
     gGeoManager->LocalToMaster(lhit, ghit);
     gpos.SetXYZ(ghit[0], ghit[1], ghit[2]);
     hit->SetPosition(gpos);
-
+    poserr[0]=hit->GetDx();
+    poserr[1]=hit->GetDy();
+    poserr[0]=0;
+    Eloss=hit->GetELoss();
+    
     hitSave = new((*fHits)[jhits++]) CbmTrdHit();
     hitSave->SetPosition(gpos);
+    hitSave->SetPositionError(poserr);
+    hitSave->SetELoss(Eloss);
     
     delete hit;
     nhits++;
@@ -157,7 +163,9 @@ void CbmTrdHitProducer::Exec(Option_t*)
   CbmTrdModuleRec *mod(NULL);
   std::vector<const CbmTrdDigi*> digis;
   Int_t nofCluster = fClusters->GetEntries();  
+  std::cout<<" clusters: "<< nofCluster<<std::endl;
   for (Int_t iCluster = 0; iCluster < nofCluster; iCluster++) {
+
     const CbmTrdCluster* cluster = static_cast<const CbmTrdCluster*>(fClusters->At(iCluster));
     //    if(!cluster) continue;
     
@@ -174,6 +182,7 @@ void CbmTrdHitProducer::Exec(Option_t*)
     }
     
     // run hit reconstruction
+    //    std::cout<<" make hit"<<std::endl;
     mod->MakeHit(iCluster, cluster, &digis);
     digis.clear();
   }
