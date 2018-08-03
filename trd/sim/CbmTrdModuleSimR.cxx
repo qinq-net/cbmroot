@@ -85,7 +85,11 @@ void CbmTrdModuleSimR::AddDigi(Int_t address, Double_t charge, Double_t chargeTR
   Int_t row= CbmTrdAddress::GetRowId(address);
   Int_t module= CbmTrdAddress::GetModuleId(address);
   Int_t ncols= fDigiPar->GetNofColumns();
-  Int_t channel = ncols * row + col;
+  Int_t nrows= fDigiPar->GetNofRows();
+  Int_t sector = ncols*nrows*CbmTrdAddress::GetSectorId(address);
+  Int_t channel = sector+ncols * row + col;
+
+  
   //printf("CbmTrdModuleSimR::AddDigi(%d)=%d [%d] col[%d] row[%d]\n", address, module, fModuleId, col, row);
 
   fDigiMap[address] = make_pair(new CbmTrdDigi(channel, charge*1e6, ULong64_t(time/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)), 0, 0), digiMatch);
@@ -123,7 +127,10 @@ void CbmTrdModuleSimR::AddDigitoBuffer(Int_t address, Double_t charge, Double_t 
   Int_t row= CbmTrdAddress::GetRowId(address);
   Int_t module= CbmTrdAddress::GetModuleId(address);
   Int_t ncols= fDigiPar->GetNofColumns();
-  Int_t channel = ncols * row + col;
+  Int_t nrows= fDigiPar->GetNofRows();
+  Int_t sector = ncols*nrows*CbmTrdAddress::GetSectorId(address);
+  Int_t channel = sector+ncols * row + col;
+
   //printf("CbmTrdModuleSimR::AddDigitoBuffer(%d)=%d\n", address, module);
 
   CbmTrdDigi* digi= new CbmTrdDigi(channel, charge*1e6, ULong64_t(time/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)), 0, 0);
@@ -246,16 +253,16 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
     }
     
 
-    // //    add noise digis between the actual and the last event
-    // if(CbmTrdDigitizer::AddNoise()){
-    //   Int_t noiserate=fNoise->Uniform(0,3); //still in development
-    //   Double_t simtime=fCurrentTime;
-    //   for(Int_t ndigi=0; ndigi<noiserate; ndigi++){
-    //     NoiseTime(time);
-    //     ScanPadPlane(cluster_pos, fNoise->Gaus(0, fSigma_noise_keV * 1.E-6), 0,epoints,ipoints);
-    //   }
-    //   fCurrentTime=simtime;
-    // }
+    //    add noise digis between the actual and the last event
+    if(CbmTrdDigitizer::AddNoise()){
+      Int_t noiserate=fNoise->Uniform(0,3); //still in development
+      Double_t simtime=fCurrentTime;
+      for(Int_t ndigi=0; ndigi<noiserate; ndigi++){
+        NoiseTime(time);
+        ScanPadPlane(cluster_pos, fNoise->Gaus(0, fSigma_noise_keV * 1.E-6), 0,epoints,ipoints);
+      }
+      fCurrentTime=simtime;
+    }
 
     fDigiPar->ProjectPositionToNextAnodeWire(cluster_pos);
     ScanPadPlane(cluster_pos, clusterELoss, clusterELossTR,epoints,ipoints);
