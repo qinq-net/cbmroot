@@ -95,7 +95,7 @@ CbmTrdModuleRec* CbmTrdClusterFinder::AddModule(CbmTrdDigi *digi)
   Int_t detId         = digi->GetAddressModule();
 
   CbmTrdModuleRec *module(NULL);
-  if(digi->IsFlagged(CbmTrdDigi::kType)==CbmTrdDigi::kFASP){
+  if(digi->GetType()==CbmTrdDigi::kFASP){
     module = fModules[detId] = new CbmTrdModuleRecT(detId);//, orientation, x, y, z, sizeX, sizeY, sizeZ, UseFASP());
   }
   else {

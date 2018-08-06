@@ -18,7 +18,8 @@ CbmTrdModuleRecT::CbmTrdModuleRecT(Int_t mod, Int_t ly, Int_t rot,
                   Double_t dx, Double_t dy, Double_t dz)
   : CbmTrdModuleRec(mod, ly, rot, x, y, z, dx, dy, dz)
 {
-    
+      printf("AddModule %s\n", GetName());
+
 }
 
 //_______________________________________________________________________________

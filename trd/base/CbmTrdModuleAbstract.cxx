@@ -7,7 +7,7 @@
 //_______________________________________________________________________________
 CbmTrdModuleAbstract::CbmTrdModuleAbstract()
   : TNamed()
-  ,fModuleId(0)
+  ,fModAddress(0)
   ,fLayerId(-1)
   ,fRotation(0)
   ,fX(0.)
@@ -29,7 +29,7 @@ CbmTrdModuleAbstract::CbmTrdModuleAbstract(Int_t mod, Int_t ly, Int_t rot,
                   Double_t x, Double_t y, Double_t z, 
                   Double_t dx, Double_t dy, Double_t dz)
   : TNamed("CbmTrdModule", "Abstract TRD module implementation")
-  ,fModuleId(mod)
+  ,fModAddress(mod)
   ,fLayerId(ly)
   ,fRotation(rot)
   ,fX(x)

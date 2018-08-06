@@ -148,15 +148,13 @@ void CbmTrdParManager::CreateModuleParameters(
   // special care for Bucharest module type with triangular pads
   if(moduleType<=0) moduleType=9;
 
-  printf("CbmTrdParManager::CreateModuleParameters(%s) type[%d]\n", path.Data(), moduleType);
+  printf("\nCbmTrdParManager::CreateModuleParameters(%s) type[%d]\n", path.Data(), moduleType);
    for (Int_t i = 0; i < fst1_sect_count; i++) {
       sectorSizeX.AddAt(fst1_pad_type[moduleType - 1][i][0], i);
       sectorSizeY.AddAt(fst1_pad_type[moduleType - 1][i][1], i);
       padSizeX.AddAt(fst1_pad_type[moduleType - 1][i][2], i);
       padSizeY.AddAt(fst1_pad_type[moduleType - 1][i][3], i);
-      printf("  sec[%d] dx[%5.2f] dy[%5.2f] px[%5.2f] py[%5.2f]\n", i, 
-        sectorSizeX[i], sectorSizeY[i], padSizeX[i],padSizeY[i] 
-      );
+      //printf("  sec[%d] dx[%5.2f] dy[%5.2f] px[%5.2f] py[%5.2f]\n", i, sectorSizeX[i], sectorSizeY[i], padSizeX[i],padSizeY[i] );
    }
 
   // Orientation of the detector layers

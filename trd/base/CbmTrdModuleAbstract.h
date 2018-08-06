@@ -35,7 +35,7 @@ public:
    * \param[in] id module wise ASIC identifier
    * \return ASIC address within experiment
    */
-  virtual Int_t   GetAsicAddress(Int_t id) const        { return fModuleId*1000+id; }
+  virtual Int_t   GetAsicAddress(Int_t id) const        { return fModAddress*1000+id; }
   /** \brief Addressing read-out pads on module based on (row,col)
    * \param[in] r global row id (not sector wise)
    * \param[in] c global column id
@@ -56,7 +56,7 @@ public:
   virtual void    SetGeoPar(const CbmTrdParModGeo *p)   { fGeoPar = p; }
 protected:
   // geometrical definitions
-  UShort_t        fModuleId;    ///< unique identifier for current module
+  UShort_t        fModAddress;    ///< unique identifier for current module
   Char_t          fLayerId;     ///< layer identifier
   UChar_t         fRotation;    ///< rotation angle for current module
 

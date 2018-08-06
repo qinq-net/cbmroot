@@ -88,10 +88,10 @@ CbmTrdModuleRec* CbmTrdHitProducer::AddModule(const CbmTrdCluster *c)
   Int_t address   = c->GetAddress();
   CbmTrdDigi *digi = (CbmTrdDigi*) fDigis->At( c->GetDigi(0) );
   
-  printf("CbmTrdHitProducer::AddModule(%d) ... \n", address);
+  //printf("CbmTrdHitProducer::AddModule(%d) ... \n", address);
   
   CbmTrdModuleRec *module(NULL);
-  if(digi->IsFlagged(CbmTrdDigi::kType)==CbmTrdDigi::kFASP){
+  if(digi->GetType()==CbmTrdDigi::kFASP){
     module = fModules[address] = new CbmTrdModuleRecT(address);//, layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ, UseFASP());
   } else {
     module = fModules[address] = new CbmTrdModuleRecR(address);// layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ);  

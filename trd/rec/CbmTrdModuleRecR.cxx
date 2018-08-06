@@ -157,7 +157,7 @@ Int_t CbmTrdModuleRecR::FindClusters()
     // //deque which contains the actual cluster
     deque<std::pair<Int_t,  CbmTrdDigi*>>   cluster;
     cluster.push_back(make_pair(digiId, digi));
-    if(print)    std::cout<<" module: " << fModuleId<<"   time: " << time<<"   charge: " << Charge<<"   col: " << channel % ncols<<"   trigger: " << triggerId<<"  ncols: " << ncols<<std::endl;
+    if(print)    std::cout<<" module: " << fModAddress<<"   time: " << time<<"   charge: " << Charge<<"   col: " << channel % ncols<<"   trigger: " << triggerId<<"  ncols: " << ncols<<std::endl;
     get<1>(*mainit)= true;
     
     Bool_t mergerow=true;
@@ -358,7 +358,7 @@ void CbmTrdModuleRecR::addClusters(deque<std::pair<Int_t,  CbmTrdDigi*>> cluster
   Int_t size = fClusters->GetEntriesFast();
   CbmTrdCluster* newcluster = new ((*fClusters)[size]) CbmTrdCluster();
 
-  newcluster->SetAddress(fModuleId);
+  newcluster->SetAddress(fModAddress);
   newcluster->SetDigis(digiIndices);
 
   //  BuildChannelMap(cluster);
@@ -444,11 +444,11 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
 
   if(!fHits) fHits = new TClonesArray("CbmTrdHit");
   Int_t nofHits = fHits->GetEntriesFast();
-  // return new ((*fHits)[nofHits]) CbmTrdHit(fModuleId, hit_pos, cluster_pad_dposV, 0, clusterId,
+  // return new ((*fHits)[nofHits]) CbmTrdHit(fModAddress, hit_pos, cluster_pad_dposV, 0, clusterId,
   // 					   totalChargeTR, totalCharge-totalChargeTR, totalCharge);
 
-  //std::cout<< " module: " << fModuleId<< "   pos X : "<< hit_pos[0]<<"   pos Y : "<< hit_pos[1]<<"   pos Z : "<< hit_pos[2]<< "  d pos X : "<< cluster_pad_dposV[0]<<"  d pos Y : "<< cluster_pad_dposV[1]<<"  d pos Z : "<< cluster_pad_dposV[2]<<"   charge: " << totalCharge<<std::endl;
-  return new ((*fHits)[nofHits]) CbmTrdHit(fModuleId, hit_pos, cluster_pad_dposV, 0, clusterId,
+  //std::cout<< " module: " << fModAddress<< "   pos X : "<< hit_pos[0]<<"   pos Y : "<< hit_pos[1]<<"   pos Z : "<< hit_pos[2]<< "  d pos X : "<< cluster_pad_dposV[0]<<"  d pos Y : "<< cluster_pad_dposV[1]<<"  d pos Z : "<< cluster_pad_dposV[2]<<"   charge: " << totalCharge<<std::endl;
+  return new ((*fHits)[nofHits]) CbmTrdHit(fModAddress, hit_pos, cluster_pad_dposV, 0, clusterId,
 					   0, 0, totalCharge);
 }
 
