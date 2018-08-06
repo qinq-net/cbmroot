@@ -74,7 +74,7 @@ Int_t CbmTrdHitProducer::AddHits(TClonesArray* hits, Bool_t moveOwner)
     hitSave->SetPositionError(poserr);
     hitSave->SetELoss(Eloss);
     
-    delete hit;
+    if(hit->GetMatch()!=NULL)  delete hit; //only the matches have pointers to allocated memory, so otherwise the clear does the trick
     nhits++;
   }
   hits->Clear();

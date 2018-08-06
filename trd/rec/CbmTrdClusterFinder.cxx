@@ -270,7 +270,7 @@ Int_t CbmTrdClusterFinder::AddClusters(TClonesArray *clusters, Bool_t/* move*/)
       clsSave->SetDigis(cls->GetDigis());
       clsSave->SetNCols(cls->GetNCols());
       clsSave->SetNRows(cls->GetNRows());
-      delete cls;
+      if(cls->GetMatch()!=NULL) delete cls; //only the matches have pointers to allocated memory, so otherwise the clear does the trick
 //     }
     mcl++;
   }
