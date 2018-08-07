@@ -65,7 +65,6 @@ void run_reco_event(
   // CbmSetup::Instance()->SetModule(ESystemId, const char*, Bool_t) or
   // CbmSetup::Instance()->SetActive(ESystemId, Bool_t)
   // See the class documentation of CbmSetup.
-  CbmSetup::Instance()->RemoveModule(kTrd);
   // ------------------------------------------------------------------------
 
 

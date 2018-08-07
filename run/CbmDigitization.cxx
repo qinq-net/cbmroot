@@ -259,7 +259,13 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
   TString parFile;
   if (trdGeo.Length() > 0) {
+    parFile = srcDir + "/parameters/trd/trd_" + trdGeo + ".asic.par";
+    AddParameterAsciiFile(parFile);
     parFile = srcDir + "/parameters/trd/trd_" + trdGeo + ".digi.par";
+    AddParameterAsciiFile(parFile);
+    parFile = srcDir + "/parameters/trd/trd_" + trdGeo + ".gain.par";
+    AddParameterAsciiFile(parFile);
+    parFile = srcDir + "/parameters/trd/trd_" + trdGeo + ".gas.par";
     AddParameterAsciiFile(parFile);
   }
   if (tofGeo.Length() > 0) {

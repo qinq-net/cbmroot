@@ -125,7 +125,6 @@ void mcbm_transport(Int_t nEvents = 3,
   std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunct);
-  CbmSetup::Instance()->RemoveModule(kTrd);
   // ------------------------------------------------------------------------
 
   
