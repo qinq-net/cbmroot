@@ -55,11 +55,11 @@ void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
   if ( cbmsetup->GetGeoTag(kTrd, geoTag) ) {
     TObjString* trdFile = new TObjString(inDir + "/parameters/trd/trd_" + geoTag + ".asic.par");
     parFileList->Add(trdFile);
-    TObjString* trdFile = new TObjString(inDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
+    trdFile = new TObjString(inDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
     parFileList->Add(trdFile);
-    TObjString* trdFile = new TObjString(inDir + "/parameters/trd/trd_" + geoTag + ".gain.par");
+    trdFile = new TObjString(inDir + "/parameters/trd/trd_" + geoTag + ".gain.par");
     parFileList->Add(trdFile);
-    TObjString* trdFile = new TObjString(inDir + "/parameters/trd/trd_" + geoTag + ".gas.par");
+    trdFile = new TObjString(inDir + "/parameters/trd/trd_" + geoTag + ".gas.par");
     parFileList->Add(trdFile);
     std::cout << "-I- Using parameter file "
               << trdFile->GetString() << std::endl;
