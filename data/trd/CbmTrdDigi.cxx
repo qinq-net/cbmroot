@@ -1,4 +1,5 @@
 #include "CbmTrdDigi.h"
+#include "CbmTrdAddress.h"
 
 #include <FairLogger.h>
 
@@ -9,13 +10,15 @@ using std::stringstream;
 using std::string;
 
 /**
- * fAddress defition TTnn.nnnn ffff.MMMM MMMM.pppp pppp.pppp
- * T - trigger type
- * n - error class
+ * fAddress defition ATTf.ffnn nnnL.LLMM MMMM.pppp pppp.pppp
+ * A - Asic type according to CbmTrdAsicType
+ * T - trigger type according to CbmTrdTriggerType
  * f - flags according to CbmTrdDigiDef
- * M - module address in the experiment
+ * n - error class
+ * L - layer id in the TRD setup
+ * M - module id in the layer
  * p - pad address within the module
-*/
+ */
 Float_t CbmTrdDigi::fgClk[] = {62.5, 12.5};
 Float_t CbmTrdDigi::fgPrecission[] = {1.e3, 1.e1};
 //__________________________________________________________________________________________
@@ -26,7 +29,6 @@ CbmTrdDigi::CbmTrdDigi()
   ,fTime(0)
 {  
 }
-
 //__________________________________________________________________________________________
 CbmTrdDigi::CbmTrdDigi(Int_t address, Float_t chargeT, Float_t chargeR, ULong64_t time)
   : CbmDigi()
@@ -35,9 +37,9 @@ CbmTrdDigi::CbmTrdDigi(Int_t address, Float_t chargeT, Float_t chargeR, ULong64_
   ,fTime(time)
 {  
 /** Fill data structure according to FASP representation  
- * fAddress defition ffff.ffff ffff.MMMM MMMM.pppp pppp.pppp
- * f - flags according to CbmTrdDigiDef
- * M - module address in the experiment
+ * A - Asic type according to CbmTrdAsicType
+ * M - module id in the layer
+ * L - layer id in the TRD setup
  * p - pad address within the module
  * 
  * fCharge definition tttt.tttt tttt.tttt rrrr.rrrr rrrr.rrrr
@@ -45,7 +47,7 @@ CbmTrdDigi::CbmTrdDigi(Int_t address, Float_t chargeT, Float_t chargeR, ULong64_
  * r - rectangle paired charge
  */
   SetAsic(kFASP);
-  SetAddressChannel(address);
+  SetChannel(address); 
   SetCharge(chargeT, chargeR);
 }
 
@@ -58,17 +60,16 @@ CbmTrdDigi::CbmTrdDigi(Int_t address, Float_t charge, ULong64_t time, Int_t trig
 {
 /**
  * Fill data structure according to SPADIC representation  
- * fAddress defition TTnn.nnnn ffff.MMMM MMMM.pppp pppp.pppp
- * T - trigger type
+ * A - Asic type according to CbmTrdAsicType
+ * T - trigger type according to CbmTrdTriggerType
  * n - error class
- * f - flags according to CbmTrdDigiDef
- * M - module address in the experiment
+ * M - module id in the layer
+ * L - layer id in the TRD setup
  * p - pad address within the module
- * 
  * fCharge definition UInt_t(charge*fgPrecission)
 */
   SetAsic(kSPADIC);
-  SetAddressChannel(address);
+  SetChannel(address); 
   SetCharge(charge);
   SetTriggerType(triggerType);
   SetErrorClass(errClass);
@@ -107,6 +108,22 @@ void CbmTrdDigi::AddCharge(Double_t c, Double_t f)
 }
 
 //__________________________________________________________________________________________
+Int_t CbmTrdDigi::GetAddressChannel() const
+{
+/**  Returns index of the read-out unit in the module in the format row x ncol + col
+ */
+  return (fAddress>>fgkRoOffset)&0xfff;
+}
+
+//__________________________________________________________________________________________
+Int_t CbmTrdDigi::GetAddressModule() const
+{
+/**  Convert internal representation of module address to CBM address as defined in CbmTrdAddress
+ */
+  return CbmTrdAddress::GetAddress(Layer(), Module(), 0, 0, 0);
+}
+
+//__________________________________________________________________________________________
 Double_t CbmTrdDigi::GetCharge()  const
 {
   if(GetType()!=kSPADIC){
@@ -131,29 +148,28 @@ Double_t CbmTrdDigi::GetCharge(Double_t &tilt)  const
 //__________________________________________________________________________________________
 Double_t CbmTrdDigi::GetChargeError()  const
 {
-  
-}
-
-//__________________________________________________________________________________________
-CbmTrdDigi::CbmTrdAsicType CbmTrdDigi::GetType() const
-{
-  if(IsFlagged(kType)) return kFASP;
-  else return kSPADIC;
+  return 0;
 }
 
 //__________________________________________________________________________________________
 Bool_t CbmTrdDigi::IsFlagged(const Int_t iflag)  const
 {
   if(iflag<0||iflag>=kNflags) return kFALSE;
-  UChar_t config = (fAddress>>20)&0xf;
-  return (config>>iflag)&0x1;  
+  return (fAddress>>(fgkFlgOffset+iflag))&0x1;
+}
+
+//__________________________________________________________________________________________
+void CbmTrdDigi::SetAddress(Int_t address)
+{
+  SetLayer(CbmTrdAddress::GetLayerId(address)); 
+  SetModule(CbmTrdAddress::GetModuleId(address));
 }
 
 //__________________________________________________________________________________________
 void CbmTrdDigi::SetAsic(CbmTrdAsicType ty)
 { 
-  if(ty==kSPADIC) SetFlag(kType, kFALSE);
-  else SetFlag(kType);
+  if(ty==kSPADIC) CLRBIT(fAddress, fgkTypOffset);
+  else  SETBIT(fAddress, fgkTypOffset);
 }
 
 //__________________________________________________________________________________________
@@ -179,28 +195,28 @@ void CbmTrdDigi::SetCharge(Float_t c)
 void CbmTrdDigi::SetFlag(const Int_t iflag, Bool_t set)
 {
   if(iflag<0||iflag>=kNflags) return;
-  if(set) SETBIT(fAddress, 20+iflag);
-  else CLRBIT(fAddress, 20+iflag);
+  if(set) SETBIT(fAddress, fgkFlgOffset+iflag);
+  else CLRBIT(fAddress, fgkFlgOffset+iflag);
 }
 
 //__________________________________________________________________________________________
 void CbmTrdDigi::SetTriggerType(const Int_t ttype)
 {
   if(GetType()==kFASP) return;
-  if(ttype<0||ttype>kNeighbor) return;
-  fAddress|=(ttype<<30);
+  if(ttype<0||ttype>=kNTrg) return;
+  fAddress|=(ttype<<fgkTrgOffset);
 }
 
 //__________________________________________________________________________________________
 string CbmTrdDigi::ToString() const 
 {
   stringstream ss;
-  ss << "CbmTrdDigi("<<(GetType()==kFASP?"T)":"R)")<<" | module=" << GetAddressModule() <<" | pad=" << GetAddressChannel() << " | time[ns]=" << GetTime();
+  ss << "CbmTrdDigi("<<(GetType()==kFASP?"T)":"R)")<<" | moduleAddress=" << GetAddressModule() <<" | layer=" << Layer() <<" | moduleId=" << Module() <<" | pad=" << GetAddressChannel() << " | time[ns]=" <<std::fixed<< std::setprecision(1)<< GetTime();
   if(GetType()==kFASP) {
     Double_t t, r = GetCharge(t);
     ss<<" | pu="<<(IsPileUp()?"y":"n")
       <<" | mask="<<(IsMasked()?"y":"n")
-      <<" |charge="<<std::setprecision(5)<<r<<"/"<<std::setprecision(5)<<t;
+      <<" |charge="<<std::fixed<<std::setw(6)<<std::setprecision(1)<<r<<"/"<<t;
   } else {
     ss<< " | charge=" << GetCharge()
       << " TriggerType=" << GetTriggerType()
