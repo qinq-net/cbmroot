@@ -399,14 +399,14 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
 
     Int_t ncols= fDigiPar->GetNofColumns();
     Int_t nrows= fDigiPar->GetNofRows();
-    Int_t sector= digi->GetAddress() / (ncols * nrows);
-    Int_t row= (digi->GetAddress() - sector * (ncols * nrows)) / ncols;
-    Int_t col= digi->GetAddress() - sector * (ncols * nrows) - row * ncols;
+    Int_t row= digi->GetAddressChannel()/ncols;
+    Int_t col= digi->GetAddressChannel()%ncols;
+    Int_t srow, sector= fDigiPar->GetSectorRow(row, srow);
 
     
     totalCharge += digi->GetCharge();
     //    fDigiPar->GetPadPosition(digi->GetAddress(), local_pad_posV, local_pad_dposV);
-    fDigiPar->GetPadPosition(sector, col,row, local_pad_posV, local_pad_dposV);
+    fDigiPar->GetPadPosition(sector, col, srow, local_pad_posV, local_pad_dposV);
     
     Double_t xMin = local_pad_posV[0] - local_pad_dposV[0];
     Double_t xMax = local_pad_posV[0] + local_pad_dposV[0];

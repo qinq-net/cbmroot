@@ -117,11 +117,12 @@ CbmTrdModuleRec* CbmTrdHitProducer::AddModule(const CbmTrdCluster *c)
   } else module->SetChmbPar(pChmb);
 
   // try to load Gain parameters for module
-  const CbmTrdParModGain *pGain(NULL);
-  if(!fGainPar || !(pGain = (const CbmTrdParModGain *)fGainPar->GetModulePar(address))){
-    LOG(WARNING) << GetName() << "::AddModule : No Gain params for modAddress "<< address <<". Using default."<< FairLogger::endl;
-  } else module->SetGainPar(pGain);
-
+  if(digi->GetType()==CbmTrdDigi::kFASP){
+    const CbmTrdParModGain *pGain(NULL);
+    if(!fGainPar || !(pGain = (const CbmTrdParModGain *)fGainPar->GetModulePar(address))){
+      LOG(WARNING) << GetName() << "::AddModule : No Gain params for modAddress "<< address <<". Using default."<< FairLogger::endl;
+    } else module->SetGainPar(pGain);
+  }
   return module;
 }
 
