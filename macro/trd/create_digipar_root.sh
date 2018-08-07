@@ -30,12 +30,12 @@ for file in $VMCWORKDIR/$directory/trd_$geoTag.geo.root; do
 
 #split file
 # extract asic.par
-  cat ${fileNameNoExt}.par | awk -vtag=$geoTag 'BEGIN{last=""; done=0; out="trd_"tag".asic.par"} {if(last==$0 && match(last, "###") && ! done){ out="trd_"tag".1.par"; done=1;} else if(last!=""){ print last > out;} last=$0} END{print last>out}'
+  cat ${fileNameNoExt}.par | awk -v tag=$geoTag 'BEGIN{last=""; done=0; out="trd_"tag".asic.par"} {if(last==$0 && match(last, "###") && ! done){ out="trd_"tag".1.par"; done=1;} else if(last!=""){ print last > out;} last=$0} END{print last>out}'
 # extract digi.par
-  cat trd_${geoTag}.1.par | awk -vtag=$geoTag 'BEGIN{last=""; done=0; out="trd_"tag".digi.par"} {if(last==$0  && match(last, "###") && ! done){ out="trd_"tag".2.par"; done=1;} else if(last!=""){ print last > out;} last=$0} END{print last>out}'   
+  cat trd_${geoTag}.1.par | awk -v tag=$geoTag 'BEGIN{last=""; done=0; out="trd_"tag".digi.par"} {if(last==$0  && match(last, "###") && ! done){ out="trd_"tag".2.par"; done=1;} else if(last!=""){ print last > out;} last=$0} END{print last>out}'   
   rm trd_${geoTag}.1.par
 # extract gas.par and gain.par
-  cat trd_${geoTag}.2.par | awk -vtag=$geoTag 'BEGIN{last=""; done=0; out="trd_"tag".gas.par"} {if(last==$0 && match(last, "###") && ! done){ out="trd_"tag".gain.par"; done=1;} else if(last!=""){ print last > out;} last=$0} END{print last>out}'   
+  cat trd_${geoTag}.2.par | awk -v tag=$geoTag 'BEGIN{last=""; done=0; out="trd_"tag".gas.par"} {if(last==$0 && match(last, "###") && ! done){ out="trd_"tag".gain.par"; done=1;} else if(last!=""){ print last > out;} last=$0} END{print last>out}'   
   rm trd_${geoTag}.2.par
 
 # # compile, if needed
