@@ -127,12 +127,12 @@ void CbmFlibTestSource::AddPath(const TString& tFileDirectory,
   FileStat_t tFileStat;
   if(1 == gSystem->GetPathInfo(tFileDirectory.Data(), tFileStat))
   {
-    gLogger->Fatal(MESSAGE_ORIGIN,
+    LOG(FATAL) <<
                    TString::Format("\nInput data file directory %s does not "
                                    "exist.",
                                    tFileDirectory.Data()
                                   ).Data()
-                  );
+                  ;
   }
 
   TRegexp* tRegexp = new TRegexp(tFileNameWildCard.Data(), kTRUE);

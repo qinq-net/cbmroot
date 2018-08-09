@@ -36,8 +36,7 @@ CbmMCTimeSim::CbmMCTimeSim()
    fEvent(NULL),
    fPointArrays()
 { 
-  gLogger->Fatal(MESSAGE_ORIGIN, 
-		 "Default constructor should not be used; specify interaction rate!");
+  LOG(FATAL) << "Default constructor should not be used; specify interaction rate!";
 }
 // ---------------------------------------------------------------------------
 
@@ -83,8 +82,7 @@ Double_t CbmMCTimeSim::CreateEventTime() {
     deltaT = gRandom->Exp(tau);
     break;
   default :
-    gLogger->Error(MESSAGE_ORIGIN, 
-		   "Beam profile type %d not defined!", fBeamProfile);
+    LOG(ERROR) << "Beam profile type " << fBeamProfile << " is not defined!";
   }
 
   return ( fEventTime + deltaT );
@@ -106,9 +104,8 @@ void CbmMCTimeSim::Exec(Option_t*) {
 
   // Check for overflow
   if ( buffer->GetSize() > fMaxBufferSize ) 
-    gLogger->Fatal(MESSAGE_ORIGIN, 
-		   "Buffer size %.2f MB exceeds maximum (%.2f)",
-		   buffer->GetSize(), fMaxBufferSize);
+    LOG(FATAL) << "Buffer size " <<  buffer->GetSize() 
+               << " MB exceeds maximum " << fMaxBufferSize;
 
   // Get event ID
   fEventId = fEvent->GetEventID();

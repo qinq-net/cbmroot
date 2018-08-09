@@ -133,7 +133,7 @@ void CbmMuchGeoScheme::Init(TObjArray* stations, Int_t flag) {
     fGeoID=flag;
     fInitialized = kTRUE;
   }
-  gLogger->Debug(MESSAGE_ORIGIN,"CbmMuchGeoScheme init successful");
+  LOG(DEBUG) << "CbmMuchGeoScheme init successful";
   InitModules();
 }
 // -------------------------------------------------------------------------

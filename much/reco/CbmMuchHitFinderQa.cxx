@@ -405,7 +405,7 @@ void CbmMuchHitFinderQa::SetParContainers() {
 // -------------------------------------------------------------------------x
 void CbmMuchHitFinderQa::Exec(Option_t*){
   fEvent++;
-  gLogger->Debug(MESSAGE_ORIGIN,"Event:%i",fEvent);
+  LOG(INFO) << "Event: " << fEvent;
   fprintf(pointsFile,"Event %i\n",fEvent);
   fprintf(padsFile,"Event %i\n",fEvent);
   

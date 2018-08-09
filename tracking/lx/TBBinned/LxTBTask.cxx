@@ -365,7 +365,7 @@ InitStatus LxTBFinder::Init()
     FairRootManager* ioman = FairRootManager::Instance();
     
     if (0 == ioman)
-        fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+        LOG(FATAL) <<  "No FairRootManager";
     
     Int_t nofEventsInFile = ioman->CheckMaxEventNo();
     
@@ -1219,7 +1219,7 @@ void LxTBFinder::Exec(Option_t* opt)
    FairRootManager* ioman = FairRootManager::Instance();
     
     if (0 == ioman)
-        fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+        LOG(FATAL) <<  "No FairRootManager";
    
    Int_t evNumb = ioman->GetEntryNr();
    cout << "evNumb = " << evNumb << endl;

@@ -84,7 +84,7 @@ CbmTofOnlineDisplay::CbmTofOnlineDisplay()
    fBoardOffsetBinEdge(NULL)
 
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"Default Constructor of CbmTofOnlineDisplay");
+  LOG(DEBUG) << "Default Constructor of CbmTofOnlineDisplay";
   for( Int_t iCh = 0; iCh < 16; iCh++)
    fsFreeTrloNames[iCh] = Form("Ch %02d", iCh);
 }
@@ -92,13 +92,13 @@ CbmTofOnlineDisplay::CbmTofOnlineDisplay()
 // ---- Destructor ----------------------------------------------------
 CbmTofOnlineDisplay::~CbmTofOnlineDisplay()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"Destructor of CbmTofOnlineDisplay");
+  LOG(DEBUG) << "Destructor of CbmTofOnlineDisplay";
 }
 
 // ----  Initialisation  ----------------------------------------------
 void CbmTofOnlineDisplay::SetParContainers()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"SetParContainers of CbmTofOnlineDisplay");
+  LOG(DEBUG) << "SetParContainers of CbmTofOnlineDisplay";
 
    InitParameters();
 }
@@ -130,7 +130,7 @@ void CbmTofOnlineDisplay::SetFreeTrloNames(
 // ---- Init ----------------------------------------------------------
 InitStatus CbmTofOnlineDisplay::Init()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"Initilization of CbmTofOnlineDisplay");
+  LOG(DEBUG) << "Initilization of CbmTofOnlineDisplay";
 
   fNumberOfTDC = fMbsUnpackPar->GetNbActiveBoards( tofMbs::trbtdc );
   fNumberOfSEB = fMbsUnpackPar->GetActiveTrbSebNb();
@@ -820,7 +820,7 @@ InitStatus CbmTofOnlineDisplay::Init()
 // ---- ReInit  -------------------------------------------------------
 InitStatus CbmTofOnlineDisplay::ReInit()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"Initilization of CbmTofOnlineDisplay");
+  LOG(DEBUG) << "Initilization of CbmTofOnlineDisplay";
   return kSUCCESS;
 }
 
@@ -831,7 +831,7 @@ void CbmTofOnlineDisplay::Exec(Option_t* /*option*/)
   fEventCounter++;
 
   if ( 0 == fEventCounter%fUpdateInterval ) {
-     LOG(DEBUG)<<"Update Canvas for Event "<< fEventCounter << FairLogger::endl;
+     LOG(DEBUG)<<"Update Canvas for Event "<< fEventCounter;
 
      if( fbMonitorTdcOcc )
      {

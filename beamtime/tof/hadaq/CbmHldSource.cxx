@@ -50,13 +50,13 @@ Bool_t CbmHldSource::Init()
 
   if(!fNFiles)
   {
-    gLogger->Error(MESSAGE_ORIGIN,
+    LOG(ERROR) << 
                    TString::Format("\nNo input data file given to the data "
                                    "source. Please add at least one input data "
                                    "file by calling CbmHldSource::AddFile "
                                    "prior to calling FairRunOnline::Init."
                                   ).Data()
-                  );
+                  ;
 
     return kFALSE;
   }
@@ -67,12 +67,12 @@ Bool_t CbmHldSource::Init()
 
     if(!tFileName.EndsWith(".hld"))
     {
-      gLogger->Error(MESSAGE_ORIGIN,
+      LOG(ERROR) <<
                      TString::Format("\nFile extension of input data file %s "
                                      "is not compatible with CbmHldSource.",
                                      tFileName.Data()
                                     ).Data()
-                    );
+                    ;
 
       return kFALSE;
     }
@@ -98,13 +98,13 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
 
   if(fNoMoreEvents)
   {
-    gLogger->Info(MESSAGE_ORIGIN,
+    LOG(INFO) << 
                   TString::Format("\nNo more events to be offered by this "
                                   "FairSource instance.\nIn total, %10d events "
                                   "were successfully unpacked for analysis.",
                                   fNEvents
                                  ).Data()
-                 );
+                 ;
 
     return 1;
 
@@ -125,23 +125,23 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
         )
       {
 
-        gLogger->Warning(MESSAGE_ORIGIN,
+        LOG(WARNING) <<
                          TString::Format("\nInput data file %s does not "
                                          "contain a valid stop event. Possible "
                                          "data corruption. ",
                                          fCurrentFileName.Data()
                                         ).Data()
-                        );
+                        ;
       }
 
-      gLogger->Info(MESSAGE_ORIGIN,
+      LOG(INFO) << 
                     TString::Format("\nFound a valid stop event in input data "
                                     "file %s.\nIn total, %10d events were "
                                     "extracted.\nThe file will be closed.",
                                     fCurrentFileName.Data(),
                                     fCurrentEvent
                                    ).Data()
-                   );
+                   ;
 
       // reading the last (unknown) character and a hypothetical additional one
       // from file to force the EOF bit of ifstream to be set
@@ -149,14 +149,14 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
 
       if(!fFileStream->eof())
       {
-        gLogger->Warning(MESSAGE_ORIGIN,
+        LOG(WARNING) <<
                          TString::Format("\nEnd of input data file %s has not "
                                          "been reached although a valid stop "
                                          "event was found. The additional file "
                                          "content will be discarded.",
                                          fCurrentFileName.Data()
                                         ).Data()
-                        );
+                        ;
       }
 
       CloseFile();
@@ -169,23 +169,23 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
         }
         else
         {
-          gLogger->Error(MESSAGE_ORIGIN,
+          LOG(ERROR) <<
                          TString::Format("\nAborting event loop as the next "
                                          "input file could not be opened."
                                         ).Data()
-                        );         
+                        ;         
         }
       }
       else
       {
-        gLogger->Info(MESSAGE_ORIGIN,
+        LOG(INFO) << 
                       TString::Format("\nAll events in all input data files "
                                       "added to the source have been read.\n"
                                       "In total, %10d events were "
                                       "extracted.",
                                       fNEvents
                                      ).Data()
-                   );
+                   ;
       }
 
       fNoMoreEvents = kTRUE;
@@ -211,7 +211,7 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
 
       if(fFileStream->eof())
       {
-        gLogger->Error(MESSAGE_ORIGIN,
+        LOG(ERROR) << 
                        TString::Format("\nEnd of input data file %s reached "
                                        "after reading regular event %u. We "
                                        "close this file and try to open the "
@@ -219,7 +219,7 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
                                        fCurrentFileName.Data(),
                                        fCurrentEvent
                                       ).Data()
-                      );
+                      ;
         CloseFile();
 
         if(fCurrentFile != fNFiles)
@@ -230,30 +230,30 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
           }
           else
           {
-            gLogger->Error(MESSAGE_ORIGIN,
+            LOG(ERROR) <<
                            TString::Format("\nAborting event loop as the next "
                                            "input file could not be opened."
                                           ).Data()
-                          );         
+                          ;         
           }
         }
         else
         {
-          gLogger->Info(MESSAGE_ORIGIN,
+          LOG(INFO) <<
                         TString::Format("\nAll events in all input data files "
                                         "added to the source have been read.\n"
                                         "In total, %10d events were "
                                         "extracted.",
                                         fNEvents
                                        ).Data()
-                       );
+                       ;
         }
 
         fNoMoreEvents = kTRUE;
         return 1;
       }
 
-      gLogger->Debug1(MESSAGE_ORIGIN,
+      LOG(DEBUG1) <<
                       TString::Format("\nSuccessfully read event %u from input "
                                       "data file %s. The raw data is forwarded "
                                       "to the FairUnpack instances registered "
@@ -261,7 +261,7 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
                                       fCurrentEvent,
                                       fCurrentFileName.Data()
                                      ).Data()
-                     );
+                     ;
 
       for (Int_t i = 0; i < fUnpackers->GetEntriesFast(); i++) 
       {
@@ -271,7 +271,7 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
         // with FairRoot MBS sources
         if(!tUnpacker->DoUnpack(iEvtStart, iEvtSize/4))
         {
-          gLogger->Info(MESSAGE_ORIGIN,
+          LOG(INFO) <<
                         TString::Format("\nFairUnpack instance indexed %u "
                                         "of type %s did not unpack HADAQ raw "
                                         "event %u (see log message above). "
@@ -280,7 +280,7 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
                                         tUnpacker->ClassName(),
                                         tRawEventHeader->GetSeqNr()
                                        ).Data()
-                       );
+                       ;
           return 2;
         }
       }
@@ -301,7 +301,7 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
     case hadaq::EvtId_DABC_TrbNet_Type_E:
     case hadaq::EvtId_DABC_TrbNet_Type_F:
     {
-      gLogger->Warning(MESSAGE_ORIGIN,
+      LOG(WARNING) <<
                        TString::Format("\nThe HadTuId 0x%.8x indicates event "
                                        "%u in input data file %s being "
                                        "triggered by a calibration trigger of "
@@ -314,7 +314,7 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
                                        fCurrentFileName.Data(),
                                        tRawEventHeader->GetTrigType()
                                       ).Data()
-                      );
+                      ;
 
       headerPos += static_cast<Int_t>(tRawEventHeader->GetPaddedSize());
       fFileStream->seekg(headerPos);
@@ -329,7 +329,7 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
     }
 
     default:
-      gLogger->Error(MESSAGE_ORIGIN,
+      LOG(ERROR) <<
                      TString::Format("\nUnknown HadTuId 0x%.8x found in event "
                                      "%u in input data file %s. We stop "
                                      "reading events from this file and try to "
@@ -339,7 +339,7 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
                                      fCurrentEvent,
                                      fCurrentFileName.Data()
                                     ).Data()
-                    );
+                    ;
 
       CloseFile();
 
@@ -351,23 +351,23 @@ Int_t CbmHldSource::ReadEvent(UInt_t)
         }
         else
         {
-          gLogger->Error(MESSAGE_ORIGIN,
+          LOG(ERROR) <<
                          TString::Format("\nAborting event loop as the next "
                                          "input file could not be opened."
                                         ).Data()
-                        );         
+                        ;         
         }
       }
       else
       {
-        gLogger->Info(MESSAGE_ORIGIN,
+        LOG(INFO) <<
                       TString::Format("\nAll events in all input data files "
                                       "added to the source have been read.\n"
                                       "In total, %10d events were "
                                       "extracted.",
                                       fNEvents
                                      ).Data()
-                   );
+                   ;
       }
 
       fNoMoreEvents = kTRUE;
@@ -396,11 +396,11 @@ Bool_t CbmHldSource::OpenNextFile()
 
   if(!fFileStream->is_open())
   {
-    gLogger->Error(MESSAGE_ORIGIN,
+    LOG(ERROR) <<
                    TString::Format("\nCould not open input data file %s.",
                                    fCurrentFileName.Data()
                                   ).Data()
-                  );
+                  ;
 
     return kFALSE;
   }
@@ -408,23 +408,23 @@ Bool_t CbmHldSource::OpenNextFile()
   Int_t tFileSize = fFileStream->tellg();
   fFileStream->seekg(0, std::ios::beg);
 
-  gLogger->Info(MESSAGE_ORIGIN,
+  LOG(INFO) <<
                 TString::Format("\nSuccessfully opened input data file %s.\n"
                                 "Size: %4d MiB.",
                                 fCurrentFileName.Data(),
                                 tFileSize/1048576
                                ).Data()
-               );
+              ;
 
   //TODO: HADES file name decoding (optional)
 
   if(fFileStream->eof())
   {
-    gLogger->Error(MESSAGE_ORIGIN,
+    LOG(ERROR) <<
                    TString::Format("\nInput data file %s seems to be empty.",
                                    fCurrentFileName.Data()
                                   ).Data()
-                  );
+                  ;
 
     CloseFile();
 
@@ -441,13 +441,13 @@ Bool_t CbmHldSource::OpenNextFile()
      || (hadaq::EvtId_runStart != tRawEventHeader->GetId())
     )
   {
-    gLogger->Error(MESSAGE_ORIGIN,
+    LOG(ERROR) <<
                    TString::Format("\nInput data file %s does not contain a "
                                    "valid start event. Possible data "
                                    "corruption. ",
                                    fCurrentFileName.Data()
                                   ).Data()
-                  );
+                  ;
 
     CloseFile();
 
@@ -476,11 +476,11 @@ void CbmHldSource::AddFile(const TString& tFileName)
 
   if(gSystem->GetPathInfo(tFileName.Data(), tFileStat))
   {
-    gLogger->Fatal(MESSAGE_ORIGIN,
+    LOG(FATAL) <<
                    TString::Format("\nInput data file %s does not exist.",
                                    tFileName.Data()
                                   ).Data()
-                  );
+                  ;
   }
 
   TObjString* tObjString = new TObjString(tFileName);
@@ -496,12 +496,12 @@ void CbmHldSource::AddPath(const TString& tFileDirectory,
   FileStat_t tFileStat;
   if(1 == gSystem->GetPathInfo(tFileDirectory.Data(), tFileStat))
   {
-    gLogger->Fatal(MESSAGE_ORIGIN,
+    LOG(FATAL) <<     
                    TString::Format("\nInput data file directory %s does not "
                                    "exist.",
                                    tFileDirectory.Data()
                                   ).Data()
-                  );
+                  ;
   }
 
   TRegexp* tRegexp = new TRegexp(tFileNameWildCard.Data(), kTRUE);

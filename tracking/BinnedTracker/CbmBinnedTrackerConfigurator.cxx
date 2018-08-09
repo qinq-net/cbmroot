@@ -44,26 +44,26 @@ InitStatus CbmBinnedTrackerConfigurator::Init()
    CbmBinnedGeoReader* geoReader = CbmBinnedGeoReader::Instance();
    
    if (0 == geoReader)
-      fLogger->Fatal(MESSAGE_ORIGIN, "Couldn't instantiate CbmBinnedGeoReader");
+      LOG(FATAL) <<  "Couldn't instantiate CbmBinnedGeoReader";
    
    geoReader->Read();
    
    FairRootManager* ioman = FairRootManager::Instance();
     
    if (0 == ioman)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+      LOG(FATAL) <<  "No FairRootManager";
    
    fMCTracks = static_cast<TClonesArray*> (ioman->GetObject("MCTrack"));
    
    if (0 == fMCTracks)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No MC tracks in the input file");
+      LOG(FATAL) <<  "No MC tracks in the input file";
    
    if (fSettings->Use(kSts))
    {      
       fStsPoints = static_cast<TClonesArray*> (ioman->GetObject("StsPoint"));
    
       if (0 == fStsPoints)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No sts MC points in the input file");
+         LOG(FATAL) <<  "No sts MC points in the input file";
    }
    
    if (fSettings->Use(kMuch))
@@ -71,7 +71,7 @@ InitStatus CbmBinnedTrackerConfigurator::Init()
       fMuchPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
    
       if (0 == fMuchPoints)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No much MC points in the input file");
+         LOG(FATAL) <<  "No much MC points in the input file";
    }
    
    if (fSettings->Use(kTrd))
@@ -79,7 +79,7 @@ InitStatus CbmBinnedTrackerConfigurator::Init()
       fTrdPoints = static_cast<TClonesArray*> (ioman->GetObject("TrdPoint"));
       
       if (0 == fTrdPoints)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No trd MC points in the input file");
+         LOG(FATAL) <<  "No trd MC points in the input file";
    }
    
    if (fSettings->Use(kTof))
@@ -87,7 +87,7 @@ InitStatus CbmBinnedTrackerConfigurator::Init()
       fTofPoints = static_cast<TClonesArray*> (ioman->GetObject("TofPoint"));
       
       if (0 == fTofPoints)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No tof MC points in the input file");
+         LOG(FATAL) <<  "No tof MC points in the input file";
    }
    
    return kSUCCESS;

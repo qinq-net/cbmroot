@@ -37,7 +37,7 @@ CbmStsHodoCorrelations::~CbmStsHodoCorrelations()
 // ----  Initialisation  ----------------------------------------------
 void CbmStsHodoCorrelations::SetParContainers()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"SetParContainers of CbmStsHodoCorrelations");
+  LOG(DEBUG) << "SetParContainers of CbmStsHodoCorrelations";
   // Load all necessary parameter containers from the runtime data base
   /*
   FairRunAna* ana = FairRunAna::Instance();
@@ -51,7 +51,7 @@ void CbmStsHodoCorrelations::SetParContainers()
 // ---- Init ----------------------------------------------------------
 InitStatus CbmStsHodoCorrelations::Init()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"Initilization of CbmStsHodoCorrelations");
+  LOG(DEBUG) << "Initilization of CbmStsHodoCorrelations";
 
   // Get a handle from the IO manager
   FairRootManager* ioman = FairRootManager::Instance();

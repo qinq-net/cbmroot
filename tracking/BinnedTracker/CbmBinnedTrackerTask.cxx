@@ -70,7 +70,7 @@ InitStatus CbmBinnedTrackerTask::Init()
    CbmBinnedGeoReader* geoReader = CbmBinnedGeoReader::Instance();
    
    if (0 == geoReader)
-      fLogger->Fatal(MESSAGE_ORIGIN, "Couldn't instantiate CbmBinnedGeoReader");
+      LOG(FATAL) <<  "Couldn't instantiate CbmBinnedGeoReader";
    
    geoReader->Read();
    fTracker = CbmBinnedTracker::Instance();
@@ -85,7 +85,7 @@ InitStatus CbmBinnedTrackerTask::Init()
    FairRootManager* ioman = FairRootManager::Instance();
     
    if (0 == ioman)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+      LOG(FATAL) <<  "No FairRootManager";
    
    fGlobalTracks = new TClonesArray("CbmGlobalTrack", 100);
    ioman->Register("GlobalTrack", "Global", fGlobalTracks, IsOutputBranchPersistent("GlobalTrack"));
@@ -213,6 +213,8 @@ void CbmBinnedTrackerTask::Exec(Option_t* opt)
               globalTrack->SetTofHitIndex(hitHolder->index);
               ++tofStationNumber;
               break;
+          default:
+              LOG(FATAL) << "This hit type is not accepted. Only sts, much, trd and tof hits are accepted.";
           }
       }
       

@@ -51,7 +51,7 @@ StsCosyBL::StsCosyBL()
 { 
      //fChain = new TChain("cbmsim");
      //outFile=NULL;
-     fLogger->Debug(MESSAGE_ORIGIN,"Defaul Constructor of StsCosyBL");
+     LOG(DEBUG) << "Default Constructor of StsCosyBL";
      //cDigis = new TClonesArray("CbmStsDigi");
 }
    
@@ -75,13 +75,13 @@ StsCosyBL::~StsCosyBL()
     delete auxDigis;
 */
   }
-  fLogger->Debug(MESSAGE_ORIGIN,"Destructor of StsCosyBL");
+  LOG(DEBUG) << "Destructor of StsCosyBL";
 }
 
 // ----  Initialisation  ----------------------------------------------
 void StsCosyBL::SetParContainers()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"SetParContainers of StsCosyBL");
+  LOG(DEBUG) << "SetParContainers of StsCosyBL";
   // Load all necessary parameter containers from the runtime data base
   
 //  FairRunAna* ana = FairRunAna::Instance();
@@ -95,7 +95,7 @@ void StsCosyBL::SetParContainers()
 // ---- Init ----------------------------------------------------------
 InitStatus StsCosyBL::Init()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"Initilization of StsCosyBL");
+  LOG(DEBUG) << "Initilization of StsCosyBL";
   
   // Get a handle from the IO manager
   FairRootManager* ioman = FairRootManager::Instance();
@@ -110,7 +110,7 @@ InitStatus StsCosyBL::Init()
 
   if ( ! fDigis ) 
     {
-      fLogger->Error(MESSAGE_ORIGIN,"No InputDataLevelName array!\n StsCosyBL will be inactive");
+      LOG(ERROR) << "No InputDataLevelName array!\n StsCosyBL will be inactive";
       return kERROR;
     }
   
@@ -202,7 +202,7 @@ InitStatus StsCosyBL::Init()
 // ---- ReInit  -------------------------------------------------------
 InitStatus StsCosyBL::ReInit()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"Initilization of StsCosyBL");
+  LOG(DEBUG) << "Reinitilization of StsCosyBL";
   return kSUCCESS;
 }
 
@@ -309,7 +309,7 @@ void StsCosyBL::Exec(Option_t*)
     }
 
     
-  fLogger->Debug(MESSAGE_ORIGIN,"Exec of StsCosyBL");
+  LOG(DEBUG) << "Exec of StsCosyBL";
 //  Reset();
 }
 
@@ -325,7 +325,7 @@ void StsCosyBL::Exec(Option_t*)
 // ---- Finish --------------------------------------------------------
 void StsCosyBL::Finish()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"Finish of StsCosyBL");
+  LOG(DEBUG) << "Finish of StsCosyBL";
 
   // Write standard file
   FairRun* ana = FairRunAna::Instance();

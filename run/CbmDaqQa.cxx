@@ -39,7 +39,7 @@ CbmDaqQa::CbmDaqQa(TChain* mcChain)
 InitStatus CbmDaqQa::Init() {
   // Get FairRootManager
   FairRootManager* ioman = FairRootManager::Instance();
-  if ( ! ioman ) fLogger->Fatal(MESSAGE_ORIGIN,"No FairRootManager");
+  if ( ! ioman ) LOG(FATAL) << "No FairRootManager";
 
   // Get event header
   fTimeSlice = (CbmTimeSlice*) ioman->GetObject("TimeSlice.");

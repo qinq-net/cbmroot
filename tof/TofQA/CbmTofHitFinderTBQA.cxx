@@ -111,7 +111,7 @@ InitStatus CbmTofHitFinderTBQA::Init()
    FairRootManager* ioman = FairRootManager::Instance();
     
    if (0 == ioman)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+      LOG(FATAL) << "No FairRootManager";
    
    fTofHits = static_cast<TClonesArray*> (ioman->GetObject("TofHit"));
    fTofDigiMatchs = static_cast<TClonesArray*> (ioman->GetObject("TofDigiMatch"));
@@ -149,12 +149,12 @@ InitStatus CbmTofHitFinderTBQA::Init()
    fTimeSlice = static_cast<CbmTimeSlice*> (ioman->GetObject("TimeSlice."));
    
    if (0 == fTimeSlice)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No time slice");
+      LOG(FATAL) << "No time slice";
    
    fEventList = static_cast<CbmMCEventList*> (ioman->GetObject("MCEventList."));
    
    if (0 == fEventList)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No event list");
+      LOG(FATAL) << "No event list";
    
    for (int i = 0; i < 1000; ++i)
    {

@@ -268,17 +268,17 @@ static TH1F* digiTimeHisto = 0;
 InitStatus CbmTofTBClusterizer::Init()
 {   
    if (0 == fDigiBdfPar)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No CbmTofDigiBdfPar found");
+      LOG(FATAL) << "No CbmTofDigiBdfPar found";
    
    FairRootManager* ioman = FairRootManager::Instance();
     
    if (0 == ioman)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+      LOG(FATAL) << "No FairRootManager";
    
    fTofDigis = static_cast<TClonesArray*> (ioman->GetObject("TofDigiExp"));
    
    if (0 == fTofDigis)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No TofDigi array found");
+      LOG(FATAL) << "No TofDigi array found";
 
    fGeoHandler = new CbmTofGeoHandler;
    Bool_t isSimulation=kFALSE;
@@ -295,7 +295,7 @@ InitStatus CbmTofTBClusterizer::Init()
        break;
        
      default:
-        fLogger->Fatal(MESSAGE_ORIGIN, "CbmTofSimpClusterizer::InitParameters => Invalid geometry!!");
+        LOG(FATAL) << "Invalid geometry!!";
    }
    
    Int_t iNrOfCells = fDigiPar->GetNrOfModules();
@@ -319,7 +319,7 @@ InitStatus CbmTofTBClusterizer::Init()
    }
    
    if (!InitCalibParameter())
-      fLogger->Fatal(MESSAGE_ORIGIN, "Failed to read calib parameters");
+      LOG(FATAL) << "Failed to read calib parameters";
    
    Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
    fStorDigiExp.resize(iNbSmTypes);

@@ -76,7 +76,7 @@ InitStatus CbmStsBLCalibrator::Init()
 
 InitStatus CbmStsBLCalibrator::ReInit()
 {
-	fLogger->Debug(MESSAGE_ORIGIN,"Initilization of CbmStsBLCalibrator");
+	LOG(DEBUG) << "Initilization of CbmStsBLCalibrator";
 	return kSUCCESS;
 }
 

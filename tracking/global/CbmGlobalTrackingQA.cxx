@@ -35,57 +35,57 @@ InitStatus CbmGlobalTrackingQA::Init()
    FairRootManager* ioman = FairRootManager::Instance();
     
    if (0 == ioman)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+      LOG(FATAL) <<  "No FairRootManager";
    
    fTofHits = static_cast<TClonesArray*> (ioman->GetObject("TofHit"));
    
    if (0 == fTofHits)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No ToF hits");
+      LOG(FATAL) <<  "No ToF hits";
    
    fStsTracks = static_cast<TClonesArray*> (ioman->GetObject("StsTrack"));
    
    if (0 == fStsTracks)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No STS tracks");
+      LOG(FATAL) <<  "No STS tracks";
    
    fGlobalTracks = static_cast<TClonesArray*> (ioman->GetObject("GlobalTrack"));
    
    if (0 == fGlobalTracks)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No global tracks");
+      LOG(FATAL) <<  "No global tracks";
    
    fTofHitDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("TofDigiMatch"));
    
    if (0 == fTofHitDigiMatches)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No ToF hit digi matches");
+      LOG(FATAL) <<  "No ToF hit digi matches";
    
    fTofDigis = static_cast<TClonesArray*> (ioman->GetObject("TofDigiExp"));
    
    if (0 == fTofDigis)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No ToF digis");
+      LOG(FATAL) <<  "No ToF digis";
    
    fStsHits = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
    
    if (0 == fStsHits)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No STS hits");
+      LOG(FATAL) <<  "No STS hits";
    
    fStsClusters = static_cast<TClonesArray*> (ioman->GetObject("StsCluster"));
    
    if (0 == fStsClusters)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No STS clusters");
+      LOG(FATAL) <<  "No STS clusters";
    
    fStsDigis = static_cast<TClonesArray*> (ioman->GetObject("StsDigi"));
    
    if (0 == fStsDigis)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No STS digis");
+      LOG(FATAL) <<  "No STS digis";
    
    CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
    
    if (0 == mcManager)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No MC data manager");
+      LOG(FATAL) <<  "No MC data manager";
    
    fMCTracks = mcManager->InitBranch("MCTrack");
    
    if (0 == fMCTracks)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No MC tracks");
+      LOG(FATAL) <<  "No MC tracks";
    
    fTracks.resize(fNofEvents);
    
@@ -123,7 +123,7 @@ InitStatus CbmGlobalTrackingQA::Init()
    fStsMCPoints = mcManager->InitBranch("StsPoint");
    
    if (0 == fStsMCPoints)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No STS MC points");
+      LOG(FATAL) <<  "No STS MC points";
    
    fStsPoints.resize(fNofEvents);
    
@@ -156,7 +156,7 @@ InitStatus CbmGlobalTrackingQA::Init()
    fTofMCPoints = mcManager->InitBranch("TofPoint");
    
    if (0 == fTofMCPoints)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No ToF MC points");
+      LOG(FATAL) <<  "No ToF MC points";
    
    fTofPoints.resize(fNofEvents);
    

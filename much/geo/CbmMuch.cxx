@@ -438,7 +438,7 @@ TGeoMedium* CbmMuch::CreateMedium(const char* matName){
   FairGeoInterface* geoFace   = geoLoad->getGeoInterface();
   FairGeoMedia*     media     = geoFace->getMedia();
   FairGeoMedium*    medium = media->getMedium(matName);
-  if (!medium) gLogger->Fatal(MESSAGE_ORIGIN,"%s not defined in media file",matName);
+  if (!medium) LOG(FATAL) << "Material " << matName << " not defined in media file";
   Int_t kMat = geobuild->createMedium(medium);
   return gGeoManager->GetMedium(kMat);
 }

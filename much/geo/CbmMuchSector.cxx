@@ -24,13 +24,14 @@ CbmMuchSector::CbmMuchSector(UInt_t modAddress, UInt_t index, Int_t nChannels):
 // -------------------------------------------------------------------------
 
 CbmMuchPad* CbmMuchSector::GetPadByChannelIndex(Int_t iChannel) const { 
-//  gLogger->Debug(MESSAGE_ORIGIN,"iChannel=%i fPads.size()=%i fNChannels=%i",iChannel,fPads.size(),fNChannels);
+//  LOG(DEBUG) << "iChannel=" << iChannel << " fPads.size()=" << fPads.size()
+//             << " fNChannels=" << fNChannels;
   if (iChannel>=static_cast<Int_t>(fPads.size()) || iChannel<0) {
-    gLogger->Error(MESSAGE_ORIGIN,"iChannel=%i fPads.size()=%i",iChannel,fPads.size());
-    gLogger->Error(MESSAGE_ORIGIN,"  station index=%i",CbmMuchAddress::GetStationIndex(fAddress));
-    gLogger->Error(MESSAGE_ORIGIN,"  layer index=%i",CbmMuchAddress::GetLayerIndex(fAddress));
-    gLogger->Error(MESSAGE_ORIGIN,"  module index=%i",CbmMuchAddress::GetModuleIndex(fAddress));
-    gLogger->Error(MESSAGE_ORIGIN,"  sector index=%i",CbmMuchAddress::GetSectorIndex(fAddress));
+    LOG(ERROR) << "iChannel=" << iChannel << " fPads.size()=" << fPads.size();
+    LOG(ERROR) << "  station index=" << CbmMuchAddress::GetStationIndex(fAddress);
+    LOG(ERROR) << "    layer index=" << CbmMuchAddress::GetLayerIndex(fAddress);
+    LOG(ERROR) << "   module index=" << CbmMuchAddress::GetModuleIndex(fAddress);
+    LOG(ERROR) << "   sector index=" << CbmMuchAddress::GetSectorIndex(fAddress);
     return NULL;
   }
   return fPads[iChannel]; 

@@ -60,34 +60,34 @@ InitStatus CbmGlobalTrackingTask::Init()
    fKFTrack.SetPID(211);
    
    if (!fTofGeometry.Read())
-      fLogger->Fatal(MESSAGE_ORIGIN, "Could not read the ToF geometry information");
+      LOG(FATAL) <<  "Could not read the ToF geometry information";
    
    FairRootManager* ioman = FairRootManager::Instance();
     
    if (0 == ioman)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+      LOG(FATAL) <<  "No FairRootManager";
    
    fTimeSlice = static_cast<CbmTimeSlice*> (ioman->GetObject("TimeSlice."));
 
    if (0 == fTimeSlice)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No time slice");
+      LOG(FATAL) <<  "No time slice";
 
    fTofHits = static_cast<TClonesArray*> (ioman->GetObject("TofHit"));
    
    if (0 == fTofHits)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No ToF hits");
+      LOG(FATAL) <<  "No ToF hits";
    
    fTofGeometry.SetTofHits(fTofHits);
    
    fStsTracks = static_cast<TClonesArray*> (ioman->GetObject("StsTrack"));
    
    if (0 == fStsTracks)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No STS tracks");
+      LOG(FATAL) <<  "No STS tracks";
    
    fStsHits = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
    
    if (0 == fStsHits)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No STS hits");
+      LOG(FATAL) <<  "No STS hits";
    
    fMvdHits = static_cast<TClonesArray*> (ioman->GetObject("MvdHit"));
    //fPrimVertex = static_cast<CbmVertex*> (ioman->GetObject("PrimaryVertex"));

@@ -28,14 +28,14 @@ InitStatus LxCalcStats::Init()
    FairRootManager* ioman = FairRootManager::Instance();
     
    if (0 == ioman)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+      LOG(FATAL) <<  "No FairRootManager";
    
    fMCTracks = static_cast<TClonesArray*> (ioman->GetObject("MCTrack"));
    fMuchPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
    fTrdPoints = static_cast<TClonesArray*> (ioman->GetObject("TrdPoint"));
    
    if (0 == fMCTracks || (0 == fMuchPoints && 0 == fTrdPoints))
-      fLogger->Fatal(MESSAGE_ORIGIN, "No MC tracks or points");
+      LOG(FATAL) <<  "No MC tracks or points";
    
    char buf[128];
    

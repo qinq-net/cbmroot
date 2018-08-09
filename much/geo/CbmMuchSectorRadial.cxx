@@ -78,7 +78,8 @@ void CbmMuchSectorRadial::AddPads(){
      phi2 = phi1+fPadDphi;
      CbmMuchPad* pad = new CbmMuchPadRadial(address,r1,r2,phi1,phi2);
      fPads.push_back(pad);
-     gLogger->Debug4(MESSAGE_ORIGIN,"iChannel=%i fPads.size()=%i fNChannels=%i",iChannel,fPads.size(),fNChannels);
+     LOG(DEBUG) << "iChannel=" << iChannel << " fPads.size()=" << fPads.size()
+                << " fNChannels=" << fNChannels;
   }
 }
 // -------------------------------------------------------------------------

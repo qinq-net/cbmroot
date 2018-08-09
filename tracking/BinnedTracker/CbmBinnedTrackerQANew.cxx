@@ -57,17 +57,17 @@ InitStatus CbmBinnedTrackerQANew::Init()
    FairRootManager* ioman = FairRootManager::Instance();
     
    if (0 == ioman)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+      LOG(FATAL) <<  "No FairRootManager";
    
    CbmMCDataManager* mcManager = static_cast<CbmMCDataManager*> (ioman->GetObject("MCDataManager"));
    
    if (0 == mcManager)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No MC data manager");
+      LOG(FATAL) <<  "No MC data manager";
    
    fMCTracks = mcManager->InitBranch("MCTrack");
    
    if (0 == fMCTracks)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No MC tracks in the input file");
+      LOG(FATAL) <<  "No MC tracks in the input file";
    
    for (int i = 0; fMCTracks->Size(0, i) >= 0; ++i)
    {
@@ -89,34 +89,34 @@ InitStatus CbmBinnedTrackerQANew::Init()
    fGlobalTracks = static_cast<TClonesArray*> (ioman->GetObject("GlobalTrack"));
    
    if (0 == fGlobalTracks)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No global tracks in the input file");
+      LOG(FATAL) <<  "No global tracks in the input file";
    
    if (fSettings->Use(kSts))
    {
       fStsTracks = static_cast<TClonesArray*> (ioman->GetObject("StsTrack"));
    
       if (0 == fStsTracks)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No sts tracks in the input file");
+         LOG(FATAL) <<  "No sts tracks in the input file";
       
       fStsHits = static_cast<TClonesArray*> (ioman->GetObject("StsHit"));
    
       if (0 == fStsHits)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No sts hits in the input file");
+         LOG(FATAL) <<  "No sts hits in the input file";
       
       fStsClusters = static_cast<TClonesArray*> (ioman->GetObject("StsCluster"));
    
       if (0 == fStsClusters)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No sts clusters in the input file");
+         LOG(FATAL) <<  "No sts clusters in the input file";
       
       fStsDigis = static_cast<TClonesArray*> (ioman->GetObject("StsDigi"));
    
       if (0 == fStsDigis)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No sts digis in the input file");
+         LOG(FATAL) <<  "No sts digis in the input file";
       
       fStsPoints = mcManager->InitBranch("StsPoint");
    
       if (0 == fStsPoints)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No sts MC points in the input file");
+         LOG(FATAL) <<  "No sts MC points in the input file";
       
       for (Int_t i = 0; fStsPoints->Size(0, i) >= 0; ++i)
       {
@@ -139,27 +139,27 @@ InitStatus CbmBinnedTrackerQANew::Init()
       fMuchTracks = static_cast<TClonesArray*> (ioman->GetObject("MuchTrack"));
    
       if (0 == fMuchTracks)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No much tracks in the input file");
+         LOG(FATAL) <<  "No much tracks in the input file";
       
       fMuchHits = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
    
       if (0 == fMuchHits)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No much hits in the input file");
+         LOG(FATAL) <<  "No much hits in the input file";
       
       fMuchClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
    
       if (0 == fMuchClusters)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No much clusters in the input file");
+         LOG(FATAL) <<  "No much clusters in the input file";
       
       fMuchDigis = static_cast<TClonesArray*> (ioman->GetObject("MuchDigi"));
    
       if (0 == fMuchDigis)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No much digis in the input file");
+         LOG(FATAL) <<  "No much digis in the input file";
       
       fMuchPoints = mcManager->InitBranch("MuchPoint");
    
       if (0 == fMuchPoints)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No much MC points in the input file");
+         LOG(FATAL) <<  "No much MC points in the input file";
       
       for (Int_t i = 0; fMuchPoints->Size(0, i) >= 0; ++i)
       {
@@ -184,27 +184,27 @@ InitStatus CbmBinnedTrackerQANew::Init()
       fTrdTracks = static_cast<TClonesArray*> (ioman->GetObject("TrdTrack"));
    
       if (0 == fTrdTracks)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No trd tracks in the input file");
+         LOG(FATAL) <<  "No trd tracks in the input file";
       
       fTrdHits = static_cast<TClonesArray*> (ioman->GetObject("TrdHit"));
    
       if (0 == fTrdHits)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No trd hits in the input file");
+         LOG(FATAL) <<  "No trd hits in the input file";
 
       fTrdClusters = static_cast<TClonesArray*> (ioman->GetObject("TrdCluster"));
    
       if (0 == fTrdClusters)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No global tracks in the input file");
+         LOG(FATAL) <<  "No global tracks in the input file";
    
       fTrdDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("TrdDigiMatch"));
    
       if (0 == fTrdDigiMatches)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No trd hit to digi matches in the input file");
+         LOG(FATAL) <<  "No trd hit to digi matches in the input file";
       
       fTrdPoints = mcManager->InitBranch("TrdPoint");
    
       if (0 == fTrdPoints)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No trd MC points in the input file");
+         LOG(FATAL) <<  "No trd MC points in the input file";
       
       for (Int_t i = 0; fTrdPoints->Size(0, i) >= 0; ++i)
       {
@@ -227,27 +227,27 @@ InitStatus CbmBinnedTrackerQANew::Init()
       fTofHits = static_cast<TClonesArray*> (ioman->GetObject("TofHit"));
    
       if (0 == fTofHits)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No tof hits in the input file");
+         LOG(FATAL) <<  "No tof hits in the input file";
    
       fTofHitDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("TofDigiMatch"));
    
       if (0 == fTofHitDigiMatches)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No tof hit to digi matches in the input file");
+         LOG(FATAL) <<  "No tof hit to digi matches in the input file";
    
       fTofDigiPointMatches = static_cast<TClonesArray*> (ioman->GetObject("TofDigiMatchPoints"));
    
       if (0 == fTofDigiPointMatches)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No tof digi to point matches in the input file");
+         LOG(FATAL) <<  "No tof digi to point matches in the input file";
       
       fTofDigis = static_cast<TClonesArray*> (ioman->GetObject("TofDigi"));
    
       if (0 == fTofDigis)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No tof digis in the input file");
+         LOG(FATAL) <<  "No tof digis in the input file";
       
       fTofPoints = mcManager->InitBranch("TofPoint");
    
       if (0 == fTofPoints)
-         fLogger->Fatal(MESSAGE_ORIGIN, "No tof MC points in the input file");
+         LOG(FATAL) <<  "No tof MC points in the input file";
       
       for (Int_t i = 0; fTofPoints->Size(0, i) >= 0; ++i)
       {

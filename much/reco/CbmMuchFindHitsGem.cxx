@@ -127,8 +127,8 @@ void CbmMuchFindHitsGem::Exec(Option_t*) {
   fFiredPads.clear();
 
   timer.Stop();
-  gLogger->Info(MESSAGE_ORIGIN,"MuchFindHitsGem: time %f s, digis %lu,  clusters %i, hits %i",
-      timer.RealTime(),fDigiData.size(),fClusters->GetEntriesFast(),fHits->GetEntriesFast());
+  LOG(INFO) << "MuchFindHitsGem: time " << timer.RealTime() << "s digis " << fDigiData.size()
+            << " clusters " << fClusters->GetEntriesFast() << " hits " << fHits->GetEntriesFast();
 }
 // -------------------------------------------------------------------------
 

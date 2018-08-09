@@ -131,7 +131,7 @@ void CbmMuchClusterAnalysis::SetParContainers() {
 void CbmMuchClusterAnalysis::Exec(Option_t* /*option*/){
   ++fEvent;
   if(fEvent%50==0)
-    gLogger->Info(MESSAGE_ORIGIN,"Event: %i",fEvent);
+    LOG(INFO) << "Event: " << fEvent;
 
   Int_t nStations = fGeoScheme->GetNStations();
   vector<Int_t> nSingleMuClusters(nStations, 0);

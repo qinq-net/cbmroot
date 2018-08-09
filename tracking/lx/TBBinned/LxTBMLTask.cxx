@@ -822,7 +822,7 @@ InitStatus LxTBMLFinder::Init()
    FairRootManager* ioman = FairRootManager::Instance();
     
    if (0 == ioman)
-      fLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+      LOG(FATAL) <<  "No FairRootManager";
    
    int nofEventsInFile = ioman->CheckMaxEventNo();
     
