@@ -13,6 +13,7 @@
 #include <TH2F.h>
 #include <TCanvas.h>
 #include <TImage.h>
+#include "TGeoMatrix.h"
 
 #include <FairLogger.h>
 
@@ -40,10 +41,10 @@ CbmTrdModuleRecR::CbmTrdModuleRecR()
 }
   
 //_______________________________________________________________________________
-CbmTrdModuleRecR::CbmTrdModuleRecR(Int_t mod, Int_t ly, Int_t rot, 
+CbmTrdModuleRecR::CbmTrdModuleRecR(Int_t mod, TGeoPhysicalNode* node, Int_t ly, Int_t rot, 
 				   Double_t x, Double_t y, Double_t z, 
 				   Double_t dx, Double_t dy, Double_t dz)
-  : CbmTrdModuleRec(mod, ly, rot, x, y, z, dx, dy, dz)
+  : CbmTrdModuleRec(mod, node, ly, rot, x, y, z, dx, dy, dz)
   ,fDigiCounter(0)
   ,fDigiMap()
   ,fClusterMap()
@@ -158,6 +159,7 @@ Int_t CbmTrdModuleRecR::FindClusters()
     deque<std::pair<Int_t,  CbmTrdDigi*>>   cluster;
     cluster.push_back(make_pair(digiId, digi));
     if(print)    std::cout<<" module: " << fModAddress<<"   time: " << time<<"   charge: " << Charge<<"   col: " << channel % ncols<<"   trigger: " << triggerId<<"  ncols: " << ncols<<std::endl;
+//    std::cout<<" module: " << fModAddress<<"   time: " << time<<"   charge: " << Charge<<"   col: " << channel % ncols<<"   trigger: " << triggerId<<"  ncols: " << ncols<<std::endl;
     get<1>(*mainit)= true;
     
     Bool_t mergerow=true;
@@ -339,8 +341,6 @@ Int_t CbmTrdModuleRecR::FindClusters()
 //_____________________________________________________________________
 void CbmTrdModuleRecR::addClusters(deque<std::pair<Int_t,  CbmTrdDigi*>> cluster)
 {
-  if(!fClusters) fClusters = new TClonesArray("CbmTrdCluster");
-  
   //create vector for indice matching
   vector<Int_t> digiIndices(cluster.size());
   Int_t idigi = 0;
@@ -373,6 +373,7 @@ Bool_t CbmTrdModuleRecR::MakeHits()
 //_______________________________________________________________________________
 CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *cluster, std::vector<const CbmTrdDigi*> *digis)
 {
+
   TVector3 hit_posV;
   TVector3 local_pad_posV;
   TVector3 local_pad_dposV;
@@ -439,17 +440,20 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
   yVar -= hit_pos[1] * hit_pos[1];
     
   TVector3 cluster_pad_dposV(sqrt(xVar), sqrt(yVar), 0);
-  //  CbmTrdModule* moduleInfo = fDigiPar->GetModule(moduleAddress);
+	
+  // --- If a TGeoNode is attached, transform into global coordinate system
+  Double_t global[3];
+  if ( !fNode ) LOG(FATAL) << "No TgeoPhysicalNode available";
+  fNode->GetMatrix()->LocalToMaster(hit_pos, global);
+
   fDigiPar->TransformHitError(cluster_pad_dposV);
 
-  if(!fHits) fHits = new TClonesArray("CbmTrdHit");
   Int_t nofHits = fHits->GetEntriesFast();
-  // return new ((*fHits)[nofHits]) CbmTrdHit(fModAddress, hit_pos, cluster_pad_dposV, 0, clusterId,
-  // 					   totalChargeTR, totalCharge-totalChargeTR, totalCharge);
-
-  //std::cout<< " module: " << fModAddress<< "   pos X : "<< hit_pos[0]<<"   pos Y : "<< hit_pos[1]<<"   pos Z : "<< hit_pos[2]<< "  d pos X : "<< cluster_pad_dposV[0]<<"  d pos Y : "<< cluster_pad_dposV[1]<<"  d pos Z : "<< cluster_pad_dposV[2]<<"   charge: " << totalCharge<<std::endl;
-  return new ((*fHits)[nofHits]) CbmTrdHit(fModAddress, hit_pos, cluster_pad_dposV, 0, clusterId,
-					   0, 0, totalCharge);
+  return new ((*fHits)[nofHits]) CbmTrdHit(fModAddress, global, cluster_pad_dposV, 0, clusterId, 0, 0, totalCharge);
+//  return bla;
+//  return new ((*fHits)[nofHits]) CbmTrdHit(fModAddress, hit_pos, cluster_pad_dposV, 0, clusterId,
+//					   0, 0, totalCharge);
+  
 }
 
 ClassImp(CbmTrdModuleRecR)

@@ -13,17 +13,20 @@
 #include "CbmTrdParAsic.h"
 #include "CbmTrdParModGas.h"
 #include "CbmTrdParModGain.h"
+#include "CbmTrdGeoHandler.h"
 
 #include <TStopwatch.h>
 #include <TClonesArray.h>
 #include <TGeoManager.h>
 #include <TVector3.h>
+#include "TGeoPhysicalNode.h"
 
 #include <FairRootManager.h>
 #include <FairLogger.h>
 #include <FairRunAna.h>
 #include <FairRuntimeDb.h>
 
+#include <map>
 //____________________________________________________________________________________
 CbmTrdHitProducer::CbmTrdHitProducer()
   :FairTask("TrdHitProducer")
@@ -48,32 +51,30 @@ CbmTrdHitProducer::~CbmTrdHitProducer()
 //____________________________________________________________________________________
 Int_t CbmTrdHitProducer::AddHits(TClonesArray* hits, Bool_t moveOwner)
 {  
-  /** Absorb hits from module hit array
-   * Should also apply mis-alignment (TODO)
-   *  Take away ownership of hits from module to the CbmTrdHitProducer
-   */   
+
+  /** Absorb the TClonesArrays of the individual modules into the global
+      TClonesArray.
+   */
   
   if(!hits) return 0;
-  Int_t nhits=hits->GetEntriesFast();
+
+  Int_t nhits{hits->GetEntriesFast()};
   fHits->AbsorbObjects(hits);
 
   return nhits;
 }
 
 //____________________________________________________________________________________
-CbmTrdModuleRec* CbmTrdHitProducer::AddModule(const CbmTrdCluster *c)
+CbmTrdModuleRec* CbmTrdHitProducer::AddModule(Int_t address, TGeoPhysicalNode* node)
 {
-  // locate module
-  Int_t address   = c->GetAddress();
-  CbmTrdDigi *digi = (CbmTrdDigi*) fDigis->At( c->GetDigi(0) );
-  
-  //printf("CbmTrdHitProducer::AddModule(%d) ... \n", address);
-  
+  Bool_t tripad=kFALSE;
+  if( TString(node->GetName()).Contains("moduleBu", TString::kIgnoreCase) ) tripad=kTRUE;
+
   CbmTrdModuleRec *module(NULL);
-  if(digi->GetType()==CbmTrdDigi::kFASP){
-    module = fModules[address] = new CbmTrdModuleRecT(address);//, layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ, UseFASP());
+  if(tripad){
+    module = fModules[address] = new CbmTrdModuleRecT(address, node);//, layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ, UseFASP());
   } else {
-    module = fModules[address] = new CbmTrdModuleRecR(address);// layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ);  
+    module = fModules[address] = new CbmTrdModuleRecR(address, node);// layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ);  
   }
 
   // try to load read-out parameters for module
@@ -96,7 +97,7 @@ CbmTrdModuleRec* CbmTrdHitProducer::AddModule(const CbmTrdCluster *c)
   } else module->SetChmbPar(pChmb);
 
   // try to load Gain parameters for module
-  if(digi->GetType()==CbmTrdDigi::kFASP){
+  if(tripad){
     const CbmTrdParModGain *pGain(NULL);
     if(!fGainPar || !(pGain = (const CbmTrdParModGain *)fGainPar->GetModulePar(address))){
       LOG(WARNING) << GetName() << "::AddModule : No Gain params for modAddress "<< address <<". Using default."<< FairLogger::endl;
@@ -129,6 +130,23 @@ InitStatus CbmTrdHitProducer::Init()
    fHits = new TClonesArray("CbmTrdHit", 100);
    rootMgr->Register("TrdHit", "TRD", fHits, IsOutputBranchPersistent("TrdHit"));
   
+   // Get the full geometry information of the detector gas layers and store
+   // them with the CbmTrdModuleRec. This information can then be used for
+   // transformation calculations 
+   CbmTrdGeoHandler geoHandler;
+   std::map<Int_t, TGeoPhysicalNode*> moduleMap = geoHandler.FillModuleMap();
+
+   Int_t nrModules = fDigiPar->GetNrOfModules();
+   Int_t nrNodes = moduleMap.size();
+   if (nrModules != nrNodes) LOG(FATAL) << "Geometry and parameter files have different number of modules.";
+   for (Int_t loop=0; loop< nrModules; ++loop) {
+      Int_t address = fDigiPar->GetModuleId(loop);
+      std::map<Int_t, TGeoPhysicalNode*>::iterator it = moduleMap.find(address);
+      if ( it  == moduleMap.end() ) {
+        LOG(FATAL) << "Expected module with address " << address << " wasn't found in the map with TGeoNode information.";
+      }
+      AddModule(address, it->second);
+   }
    return kSUCCESS;
 }
 
@@ -150,8 +168,7 @@ void CbmTrdHitProducer::Exec(Option_t*)
     
     // get/build module for current cluster
     std::map<Int_t, CbmTrdModuleRec*>::iterator imod = fModules.find(cluster->GetAddress()); 
-    if(imod==fModules.end()) mod = AddModule(cluster);
-    else mod=imod->second;
+    mod=imod->second;
 
     // get digi for current cluster
     for (Int_t iDigi = 0; iDigi < cluster->GetNofDigis(); iDigi++) {
@@ -177,7 +194,8 @@ void CbmTrdHitProducer::Exec(Option_t*)
     
   }
   // remove local data from all modules
-  for(std::map<Int_t, CbmTrdModuleRec*>::iterator imod = fModules.begin(); imod!=fModules.end(); imod++) imod->second->Clear("hit");
+  // Not needed any longer since AbsorbObjects take care
+//  for(std::map<Int_t, CbmTrdModuleRec*>::iterator imod = fModules.begin(); imod!=fModules.end(); imod++) imod->second->Clear("hit");
 
   timer.Stop();
   LOG(INFO) << GetName() << "::Exec: " << " Clusters : " << fClusters->GetEntriesFast() << FairLogger::endl;

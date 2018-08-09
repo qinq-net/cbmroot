@@ -3,6 +3,8 @@
 #include "CbmTrdCluster.h"
 #include "CbmTrdHit.h"
 
+#include "TGeoPhysicalNode.h"
+
 #include <vector>
 
 //_______________________________________________________________________________
@@ -13,10 +15,10 @@ CbmTrdModuleRecT::CbmTrdModuleRecT()
 }
 
 //_______________________________________________________________________________
-CbmTrdModuleRecT::CbmTrdModuleRecT(Int_t mod, Int_t ly, Int_t rot, 
+CbmTrdModuleRecT::CbmTrdModuleRecT(Int_t mod, TGeoPhysicalNode* node, Int_t ly, Int_t rot, 
                   Double_t x, Double_t y, Double_t z, 
                   Double_t dx, Double_t dy, Double_t dz)
-  : CbmTrdModuleRec(mod, ly, rot, x, y, z, dx, dy, dz)
+  : CbmTrdModuleRec(mod, node, ly, rot, x, y, z, dx, dy, dz)
 {
       printf("AddModule %s\n", GetName());
 

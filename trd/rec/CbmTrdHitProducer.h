@@ -4,6 +4,7 @@
 #include "FairTask.h"
 
 class TClonesArray;
+class TGeoPhysicalNode;
 class CbmTrdParSetAsic;
 class CbmTrdParSetGas;
 class CbmTrdParSetDigi;
@@ -44,7 +45,7 @@ private:
   CbmTrdHitProducer& operator=(const CbmTrdHitProducer&);
   
   Int_t             AddHits(TClonesArray* hits, Bool_t moveOwner=kTRUE);
-  CbmTrdModuleRec*  AddModule(const CbmTrdCluster *c);
+  CbmTrdModuleRec*  AddModule(Int_t address, TGeoPhysicalNode* node);
 
 
   TClonesArray*     fDigis;       /** Input array of CbmTrdDigi **/

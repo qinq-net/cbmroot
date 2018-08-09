@@ -2,6 +2,9 @@
 #define CBMTRDMODULEREC_H
 
 #include "CbmTrdModuleAbstract.h"
+
+#include "TGeoPhysicalNode.h"
+
 #include <map>
 #include <vector>
 
@@ -22,7 +25,7 @@ public:
   /**
   * \brief Constructor with placement
   **/
-  CbmTrdModuleRec(Int_t mod, Int_t ly=-1, Int_t rot=0, 
+  CbmTrdModuleRec(Int_t mod, TGeoPhysicalNode* node, Int_t ly=-1, Int_t rot=0, 
                   Double_t x=0, Double_t y=0, Double_t z=0, 
                   Double_t dx=0, Double_t dy=0, Double_t dz=0);
 
@@ -63,6 +66,7 @@ protected:
   UInt_t              fCalled;      ///< counter for the number of calls
   TClonesArray        *fClusters;   ///< module wise storage of reconstructed cluster
   TClonesArray        *fHits;       ///< module wise storage of reconstructed hits
+  TGeoPhysicalNode    *fNode;       ///< Contain all information about the gas layer
   
 private:
   CbmTrdModuleRec(const CbmTrdModuleRec &ref);

@@ -23,7 +23,8 @@ public:
   /**
   * \brief Constructor with placement
   **/
-  CbmTrdModuleRecR(Int_t mod, Int_t ly=-1, Int_t rot=0, 
+  CbmTrdModuleRecR(Int_t mod, TGeoPhysicalNode* node=nullptr, 
+                  Int_t ly=-1, Int_t rot=0, 
                   Double_t x=0, Double_t y=0, Double_t z=0, 
                   Double_t dx=0, Double_t dy=0, Double_t dz=0);
   virtual ~CbmTrdModuleRecR();
