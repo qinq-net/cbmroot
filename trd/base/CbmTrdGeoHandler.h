@@ -16,9 +16,12 @@
 
 #include "TObject.h"
 
+#include <map>
+
 class TGeoBBox;
 class TGeoVolume;
 class TGeoHMatrix;
+class TGeoPhysicalNode;
 
 class CbmTrdGeoHandler : public TObject
 {
@@ -55,13 +58,18 @@ public:
    * \brief Navigate to node and return pad orientation.
    */
    Int_t GetModuleOrientation(const TString& path);
-
    // Path has to contain information down to module part, 
    // otherwise retrieved information can be wrong.
    // Path examples:
    // /cave_1/trd_v13x_0/layer01_1101/module1_10100101/gas_1
    // /cave_1/trd_v13x_0/layer10_3210/module8_35411098/gas_1
 
+
+   /**
+   * \brief Fill map with information of the gas volumes for each detector
+   */
+   std::map<Int_t, TGeoPhysicalNode*> FillModuleMap();
+   
    Double_t GetSizeX(const TString& path);
    Double_t GetSizeY(const TString& path);
    Double_t GetSizeZ(const TString& path);

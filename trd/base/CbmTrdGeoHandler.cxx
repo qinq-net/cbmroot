@@ -14,6 +14,7 @@
 #include "TGeoManager.h"
 #include "TGeoMatrix.h"
 #include "TVirtualMC.h"
+#include "TGeoPhysicalNode.h"
 
 #include <string>
 #include <cstdlib>
@@ -263,5 +264,60 @@ void CbmTrdGeoHandler::NavigateTo(
       //      fModuleId  = ((modulecopyNr /      1) % 100) - 1;
    }
 }
+
+std::map<Int_t, TGeoPhysicalNode*> CbmTrdGeoHandler::FillModuleMap()
+{
+   // The geometry structure is treelike with cave as
+   // the top node. For the TRD there are keeping volumes with names 
+   // like trd_vXXy_1 which are only a container for the different layers.
+   // The trd layer is again only a container for all volumes of this layer.
+   // Loop over all nodes below the top node (cave). If one of
+   // the nodes contains a string trd it must be TRD detector.
+   // Now loop over the layers and then over all modules of the layer 
+   // to extract the node information for each detector module
+   // all active regions (gas) of the complete TRD. 
+
+   std::map<Int_t, TGeoPhysicalNode*> moduleMap;
+
+   TGeoNode* topNode = gGeoManager->GetTopNode();
+   TObjArray* nodes = topNode->GetNodes();
+   for (Int_t iNode = 0; iNode < nodes->GetEntriesFast(); iNode++) {
+      TGeoNode* node = static_cast<TGeoNode*>(nodes->At(iNode));
+      if (!TString(node->GetName()).Contains("trd", TString::kIgnoreCase)) continue; // trd_vXXy top node, e.g. trd_v13a, trd_v14b
+      TGeoNode* station = node;
+
+      TObjArray* layers = station->GetNodes();
+      for (Int_t iLayer = 0; iLayer < layers->GetEntriesFast(); iLayer++) {
+         TGeoNode* layer = static_cast<TGeoNode*>(layers->At(iLayer));
+         if (!TString(layer->GetName()).Contains("layer", TString::kIgnoreCase)) continue; // only layers
+
+         TObjArray* modules = layer->GetNodes();
+         for (Int_t iModule = 0; iModule < modules->GetEntriesFast(); iModule++) {
+            TGeoNode* module = static_cast<TGeoNode*>(modules->At(iModule));
+            TObjArray* parts = module->GetNodes();
+            for (Int_t iPart = 0; iPart < parts->GetEntriesFast(); iPart++) {
+               TGeoNode* part = static_cast<TGeoNode*>(parts->At(iPart));
+               if (!TString(part->GetName()).Contains("gas", TString::kIgnoreCase)) continue; // only active gas volume
+
+               // Put together the full path to the interesting volume, which
+               // is needed to navigate with the geomanager to this volume.
+               // Extract the geometry information (size, global position)
+               // from this volume.
+               TString path = TString("/") + topNode->GetName() + "/" + station->GetName() + "/"
+                  + layer->GetName() + "/" + module->GetName() + "/" + part->GetName();
+
+               LOG(DEBUG) << "Adding detector with path " << path;
+               // Generate a physical node which has all needed information
+               TGeoPhysicalNode* pNode = new TGeoPhysicalNode(path.Data());
+               Int_t address = GetModuleAddress();
+               moduleMap[address] = pNode;
+            }
+         }
+      }
+   }
+   return moduleMap;
+}
+
+
  
 ClassImp(CbmTrdGeoHandler)
