@@ -48,36 +48,15 @@ CbmTrdHitProducer::~CbmTrdHitProducer()
 //____________________________________________________________________________________
 Int_t CbmTrdHitProducer::AddHits(TClonesArray* hits, Bool_t moveOwner)
 {  
-  /** Read hits from module array and set position in the global coordinates.
+  /** Absorb hits from module hit array
    * Should also apply mis-alignment (TODO)
    *  Take away ownership of hits from module to the CbmTrdHitProducer
    */   
   
   if(!hits) return 0;
-  TVector3 lpos, gpos, poserr;
-  Double_t lhit[3], ghit[3], Eloss;
-  Int_t nhits(0), jhits=fHits->GetEntriesFast();
-  CbmTrdHit *hit(NULL), *hitSave(NULL);
-  for(Int_t ihit=0; ihit<hits->GetEntriesFast(); ihit++){
-    if(!(hit=(CbmTrdHit*)hits->At(ihit))) continue;
-    hit->Position(lpos); lpos.GetXYZ(lhit);
-    gGeoManager->LocalToMaster(lhit, ghit);
-    gpos.SetXYZ(ghit[0], ghit[1], ghit[2]);
-    hit->SetPosition(gpos);
-    poserr[0]=hit->GetDx();
-    poserr[1]=hit->GetDy();
-    poserr[2]=0;
-    Eloss=hit->GetELoss();
-    
-    hitSave = new((*fHits)[jhits++]) CbmTrdHit();
-    hitSave->SetPosition(gpos);
-    hitSave->SetPositionError(poserr);
-    hitSave->SetELoss(Eloss);
-    
-    if(hit->GetMatch()!=NULL)  delete hit; //only the matches have pointers to allocated memory, so otherwise the clear does the trick
-    nhits++;
-  }
-  hits->Clear();
+  Int_t nhits=hits->GetEntriesFast();
+  fHits->AbsorbObjects(hits);
+
   return nhits;
 }
 
@@ -193,6 +172,7 @@ void CbmTrdHitProducer::Exec(Option_t*)
     //hitCounter += mod->GetNhits();
 
     mod->Finalize();
+    //    std::cout<<" add hit"<<std::endl;
     hitCounter+=AddHits(mod->GetHits(), kTRUE);
     
   }
