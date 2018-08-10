@@ -2314,7 +2314,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        if(fhTot4DT04D4Off != NULL) dTcor+=(Double_t)fhTot4DT04D4Off->GetBinContent(fhTot4DT04D4Off->FindBin(TMath::Log(dTot4)));
 
        //    dTcor *= dDist/fdHitDistAv;
-       Double_t dToD = (tof1-tof2-dTcor); //*fdHitDistAv/dDist;
+       Double_t dToD = (tof1-tof2-dTcor-fdDTMean); //*fdHitDistAv/dDist;
        //     LOG(INFO) << "dTcor for "<<-dDTD4<<" from "<<fhDTD4DT04D4Off<<": "<<dTcor<<FairLogger::endl;
 
        fhTofD4best->Fill(dTofD4);
@@ -2477,23 +2477,25 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     if(fhDTX4D4Off     != NULL) dTcor4+=(Double_t)fhDTX4D4Off->GetBinContent(fhDTX4D4Off->FindBin(hitpos4_local[0]));
 	     if(fhDTY4D4Off     != NULL) dTcor4+=(Double_t)fhDTY4D4Off->GetBinContent(fhDTY4D4Off->FindBin(hitpos4_local[1]));
 	     if(fhDTTexpD4Off   != NULL) dTcor4+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp4));
-	     
+
+       Double_t dToD34 = (tof3-tof4-dTcor4-fdDTMean);
+
 	     fhTofD4sbest->Fill(dTofD44);
 	     if(dInvVel4>0.) fhVelD4sbest->Fill(1000./dInvVel4);
 	     
-	     fhChiDT04D4sbest->Fill(Chi2List[iM],tof3-tof4-dTcor4);
+	     fhChiDT04D4sbest->Fill(Chi2List[iM],dToD34);
 	     
-	     fhDTD4DT04D4sbest->Fill(dTDia-pHit4->GetTime(),tof3-tof4-dTcor4);
-	     fhDTMul4D4sbest->Fill(dMul4,tof3-tof4-dTcor4);
+	     fhDTD4DT04D4sbest->Fill(dTDia-pHit4->GetTime(),dToD34);
+	     fhDTMul4D4sbest->Fill(dMul4,dToD34);
 	     
-	     fhDTX4D4sbest->Fill(hitpos4_local[0],tof3-tof4-dTcor4);
-	     fhDTY4D4sbest->Fill(hitpos4_local[1],tof3-tof4-dTcor4);
+	     fhDTX4D4sbest->Fill(hitpos4_local[0],dToD34);
+	     fhDTY4D4sbest->Fill(hitpos4_local[1],dToD34);
 	     fhDXX4D4sbest->Fill(hitpos4_local[0],xPos3-xPos4);
 	     fhDXY4D4sbest->Fill(hitpos4_local[1],xPos3-xPos4);
 	     fhDYX4D4sbest->Fill(hitpos4_local[0],yPos3-yPos4);
 	     fhDYY4D4sbest->Fill(hitpos4_local[1],yPos3-yPos4);
 	     
-	     fhCluSize4DT04D4sbest->Fill(digiMatch4->GetNofLinks()/2.,tof3-tof4-dTcor4);
+	     fhCluSize4DT04D4sbest->Fill(digiMatch4->GetNofLinks()/2.,dToD34);
 	     
 	     dTot4 = 0.;
 	     if(NULL != fTofDigisColl)
@@ -2508,9 +2510,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		 }
 	       } 
 	     dTot4 /= digiMatch4->GetNofLinks();  // average time over threshold
-	     fhTot4DT04D4sbest->Fill(TMath::Log(dTot4),tof3-tof4-dTcor4);
+	     fhTot4DT04D4sbest->Fill(TMath::Log(dTot4),dToD34);
 	     
-	     fhCluSize0DT04D4sbest->Fill(digiMatch3->GetNofLinks()/2.,tof3-tof4-dTcor4);
+	     fhCluSize0DT04D4sbest->Fill(digiMatch3->GetNofLinks()/2.,dToD34);
 	     
 	     Double_t dTot3 = 0.;
 	     if(NULL != fTofDigisColl)
@@ -2525,9 +2527,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		 }
 	       } 
 	     dTot3 /= digiMatch3->GetNofLinks();  // average time over threshold
-	     fhTot0DT04D4sbest->Fill(TMath::Log(dTot3),tof3-tof4-dTcor4);
+	     fhTot0DT04D4sbest->Fill(TMath::Log(dTot3),dToD34);
 	     
-	     fhDTMul0D4sbest->Fill(dMul0,tof3-tof4-dTcor4);
+	     fhDTMul0D4sbest->Fill(dMul0,dToD34);
 	     
 	     // check for dependence in counter reference frame
 	     /*TGeoNode *fNode3=*/        // prepare global->local trafo
@@ -2540,7 +2542,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     /*TGeoNode* cNode3=*/ gGeoManager->GetCurrentNode();
 	     gGeoManager->MasterToLocal(hitpos3, hitpos3_local);
 	     
-	     fhDTX0D4sbest->Fill(hitpos3_local[0],tof3-tof4-dTcor4);
+	     fhDTX0D4sbest->Fill(hitpos3_local[0],dToD34);
 	     fhDTY0D4sbest->Fill(hitpos3_local[1],tof4-tof4-dTcor4);
 	     fhDXX0D4sbest->Fill(hitpos3_local[0],xPos3-xPos4);
 	     fhDXY0D4sbest->Fill(hitpos3_local[1],xPos3-xPos4);
@@ -2548,20 +2550,20 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     fhDYY0D4sbest->Fill(hitpos3_local[1],yPos3-yPos4);
 	     
 	     fhDXDY04D4sbest->Fill(xPos3-xPos4,yPos3-yPos4);
-	     fhDXDT04D4sbest->Fill(xPos3-xPos4,tof3-tof4-dTcor4);
-	     fhDYDT04D4sbest->Fill(yPos3-yPos4,tof3-tof4-dTcor4);
-	     fhDistDT04D4sbest->Fill(dDist34,tof3-tof4-dTcor4);
-	     fhTexpDT04D4sbest->Fill(dDTexp4,tof3-tof4-dTcor4);
-	     fhX0DT04D4sbest->Fill(hitpos3_local[0],tof3-tof4-dTcor4);
-	     fhY0DT04D4sbest->Fill(hitpos3_local[1],tof3-tof4-dTcor4);
+	     fhDXDT04D4sbest->Fill(xPos3-xPos4,dToD34);
+	     fhDYDT04D4sbest->Fill(yPos3-yPos4,dToD34);
+	     fhDistDT04D4sbest->Fill(dDist34,dToD34);
+	     fhTexpDT04D4sbest->Fill(dDTexp4,dToD34);
+	     fhX0DT04D4sbest->Fill(hitpos3_local[0],dToD34);
+	     fhY0DT04D4sbest->Fill(hitpos3_local[1],dToD34);
 	     
-	     fhDT04DX0_2->Fill(hitpos1_local[0]-hitpos3_local[0],tof3-tof4-dTcor4);
-	     fhDT04DY0_2->Fill(hitpos1_local[1]-hitpos3_local[1],tof3-tof4-dTcor4);
-	     fhDT04DT0_2->Fill(tof1-tof3,tof3-tof4-dTcor4);
+	     fhDT04DX0_2->Fill(hitpos1_local[0]-hitpos3_local[0],dToD34);
+	     fhDT04DY0_2->Fill(hitpos1_local[1]-hitpos3_local[1],dToD34);
+	     fhDT04DT0_2->Fill(tof1-tof3,dToD34);
 	     
-	     fhDT04DX4_2->Fill(hitpos2_local[0]-hitpos4_local[0],tof3-tof4-dTcor4);
-	     fhDT04DY4_2->Fill(hitpos2_local[1]-hitpos4_local[1],tof3-tof4-dTcor4);
-	     fhDT04DT4_2->Fill(tof2-tof4,tof3-tof4-dTcor4);
+	     fhDT04DX4_2->Fill(hitpos2_local[0]-hitpos4_local[0],dToD34);
+	     fhDT04DY4_2->Fill(hitpos2_local[1]-hitpos4_local[1],dToD34);
+	     fhDT04DT4_2->Fill(tof2-tof4,dToD34);
 	     
 	     fhDT04DX0_1->Fill(hitpos1_local[0]-hitpos3_local[0],dToD);
 	     fhDT04DY0_1->Fill(hitpos1_local[1]-hitpos3_local[1],dToD);

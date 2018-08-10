@@ -110,6 +110,7 @@ class CbmTofAnaTestbeam : public FairTask {
       inline void SetDTDia     (Double_t val)           { fdDTDia = val;}
       inline void SetDTD4MAX   (Double_t val)           { fdDTD4MAX = val;}
       inline void SetHitDistMin(Double_t val)           { fdHitDistMin = val;}
+      inline void SetHitDistAv (Double_t val)           { fdHitDistAv = val;}
       inline void SetTOffD4    (Double_t val)           { fdTOffD4 = val;}
       inline void SetTShift    (Double_t val)           { fdTShift = val;}
       inline void SetChi2Lim   (Double_t val)           { fdChi2Lim  = val;}

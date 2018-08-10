@@ -230,7 +230,8 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fdEvent(0),
    fbSwapChannelSides(kFALSE),
    fiOutputTreeEntry(0),
-   fiFileIndex(0)
+   fiFileIndex(0),
+   fbAlternativeBranchNames(kFALSE)
 {
     if ( !fInstance ) fInstance = this;
 }
@@ -425,11 +426,25 @@ Bool_t   CbmTofTestBeamClusterizer::RegisterOutputs()
 
    fTofHitsColl = new TClonesArray("CbmTofHit");
 
+   TString tHitBranchName;
+   TString tHitDigiMatchBranchName;
+
+   if(fbAlternativeBranchNames)
+   {
+     tHitBranchName          = "ATofHit";
+     tHitDigiMatchBranchName = "ATofDigiMatch";
+   }
+   else
+   {
+     tHitBranchName          = "TofHit";
+     tHitDigiMatchBranchName = "TofDigiMatch";
+   }
+
    // Flag check to control whether digis are written in output root file
-   rootMgr->Register( "TofHit","Tof", fTofHitsColl, fbWriteHitsInOut && IsOutputBranchPersistent("TofHit"));
+   rootMgr->Register( tHitBranchName,"Tof", fTofHitsColl, fbWriteHitsInOut && IsOutputBranchPersistent(tHitBranchName));
 
    fTofDigiMatchColl = new TClonesArray("CbmMatch",100);
-   rootMgr->Register( "TofDigiMatch","Tof", fTofDigiMatchColl, fbWriteHitsInOut && IsOutputBranchPersistent("TofDigiMatch"));
+   rootMgr->Register( tHitDigiMatchBranchName,"Tof", fTofDigiMatchColl, fbWriteHitsInOut && IsOutputBranchPersistent(tHitDigiMatchBranchName));
 
    return kTRUE;
 
