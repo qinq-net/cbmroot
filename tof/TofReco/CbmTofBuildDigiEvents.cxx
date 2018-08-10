@@ -41,7 +41,8 @@ CbmTofBuildDigiEvents::CbmTofBuildDigiEvents() :
   fIdealEventStartTimes(),
   fIdealEventDigis(),
   fiNEvents(0),
-  fdDigiToTOffset(0.)
+  fdDigiToTOffset(0.),
+  fInactiveCounterSides()
 {
 }
 // ---------------------------------------------------------------------------
@@ -176,20 +177,25 @@ void CbmTofBuildDigiEvents::Exec(Option_t*)
 
       fCounterMultiplicity[std::make_tuple(iDigiModuleType, iDigiModuleIndex, iDigiCounterIndex)] |= 1 << iDigiCounterSide;
 
-      CbmTofDigiExp* tEventDigi(NULL);
+      auto CounterSideTuple = std::make_tuple(iDigiModuleType, iDigiModuleIndex, iDigiCounterIndex, iDigiCounterSide);
 
-      if(fbPreserveMCBacklinks)
+      if(fInactiveCounterSides.find(CounterSideTuple) == fInactiveCounterSides.end())
       {
-        // deep copy construction including 'CbmDigi::fMatch'
-        tEventDigi = new((*fTofEventDigis)[fTofEventDigis->GetEntriesFast()]) CbmTofDigiExp(*tDigi);
-      }
-      else
-      {
-        // shallow construction excluding 'CbmDigi::fMatch'
-        tEventDigi = new((*fTofEventDigis)[fTofEventDigis->GetEntriesFast()]) CbmTofDigiExp(iDigiAddress, dDigiTime, dDigiToT);
-      }
+        CbmTofDigiExp* tEventDigi(NULL);
 
-      tEventDigi->SetTot(tEventDigi->GetTot() + fdDigiToTOffset);
+        if(fbPreserveMCBacklinks)
+        {
+          // deep copy construction including 'CbmDigi::fMatch'
+          tEventDigi = new((*fTofEventDigis)[fTofEventDigis->GetEntriesFast()]) CbmTofDigiExp(*tDigi);
+        }
+        else
+        {
+          // shallow construction excluding 'CbmDigi::fMatch'
+          tEventDigi = new((*fTofEventDigis)[fTofEventDigis->GetEntriesFast()]) CbmTofDigiExp(iDigiAddress, dDigiTime, dDigiToT);
+        }
+
+        tEventDigi->SetTot(tEventDigi->GetTot() + fdDigiToTOffset);
+      }
     }
   }
 
@@ -240,7 +246,7 @@ InitStatus CbmTofBuildDigiEvents::Init()
 
   fiTriggerMultiplicity = TMath::Abs(fiTriggerMultiplicity);
 
-  if(fNominalTriggerCounterMultiplicity.size() > fiTriggerMultiplicity)
+  if(fNominalTriggerCounterMultiplicity.size() < fiTriggerMultiplicity)
   {
     fiTriggerMultiplicity = fNominalTriggerCounterMultiplicity.size();
   }
@@ -302,9 +308,14 @@ void CbmTofBuildDigiEvents::ProcessIdealEvents(Double_t dProcessingTime)
 
         fCounterMultiplicity[std::make_tuple(iDigiModuleType, iDigiModuleIndex, iDigiCounterIndex)] |= 1 << iDigiCounterSide;
 
-        // deep copy construction including 'CbmDigi::fMatch' (only if already deep-copied in 'Exec')
-        CbmTofDigiExp* tEventDigi = new((*fTofEventDigis)[fTofEventDigis->GetEntriesFast()]) CbmTofDigiExp(*tDigi);
-        tEventDigi->SetTot(tEventDigi->GetTot() + fdDigiToTOffset);
+        auto CounterSideTuple = std::make_tuple(iDigiModuleType, iDigiModuleIndex, iDigiCounterIndex, iDigiCounterSide);
+
+        if(fInactiveCounterSides.find(CounterSideTuple) == fInactiveCounterSides.end())
+        {
+          // deep copy construction including 'CbmDigi::fMatch' (only if already deep-copied in 'Exec')
+          CbmTofDigiExp* tEventDigi = new((*fTofEventDigis)[fTofEventDigis->GetEntriesFast()]) CbmTofDigiExp(*tDigi);
+          tEventDigi->SetTot(tEventDigi->GetTot() + fdDigiToTOffset);
+        }
 
         delete tDigi;
       }
@@ -337,6 +348,14 @@ void CbmTofBuildDigiEvents::ProcessIdealEvents(Double_t dProcessingTime)
       ++itEvent;
     }
   }
+}
+// ---------------------------------------------------------------------------
+
+
+// ---------------------------------------------------------------------------
+void CbmTofBuildDigiEvents::SetIgnoreCounterSide(Int_t iModuleType, Int_t iModuleIndex, Int_t iCounterIndex, Int_t iCounterSide)
+{
+  fInactiveCounterSides.emplace(std::make_tuple(iModuleType, iModuleIndex, iCounterIndex, iCounterSide));
 }
 // ---------------------------------------------------------------------------
 
