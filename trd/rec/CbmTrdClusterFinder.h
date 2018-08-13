@@ -15,6 +15,7 @@ class CbmTrdParSetGain;
 class CbmTrdModuleRec;
 class CbmTrdGeoHandler;
 class TClonesArray;
+class TGeoPhysicalNode;
 
 /** CbmTrdClusterFinder.h
  *@author Florian Uhlig <f.uhlig@gsi.de>
@@ -88,7 +89,7 @@ private:
   CbmTrdClusterFinder& operator=(const CbmTrdClusterFinder&);
 
   Int_t             AddClusters(TClonesArray* clusters, Bool_t moveOwner=kTRUE);
-  CbmTrdModuleRec*  AddModule(CbmTrdDigi *d);
+  CbmTrdModuleRec*  AddModule(Int_t address, TGeoPhysicalNode* node);
   
   static Int_t      fgConfig;         ///< Configuration map for the clusterizer. See CbmTrdRecDef for details
   static Float_t    fgMinimumChargeTH;  ///<

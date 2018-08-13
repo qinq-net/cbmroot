@@ -24,7 +24,7 @@
 #include <TClonesArray.h>
 #include <TArray.h>
 #include <TBits.h>
-// #include "TH2F.h"
+#include "TGeoPhysicalNode.h"
 // #include "TCanvas.h"
 // #include "TImage.h"
 
@@ -86,46 +86,43 @@ CbmTrdClusterFinder::~CbmTrdClusterFinder()
 
 }
 
-
-//_____________________________________________________________________
-CbmTrdModuleRec* CbmTrdClusterFinder::AddModule(CbmTrdDigi *digi)
+//____________________________________________________________________________________
+CbmTrdModuleRec* CbmTrdClusterFinder::AddModule(Int_t address, TGeoPhysicalNode* node)
 {
-  // locate digi
-  Int_t digiAddress   = digi->GetAddress();
-  Int_t detId         = digi->GetAddressModule();
+  Bool_t tripad=kFALSE;
+  if( TString(node->GetName()).Contains("moduleBu", TString::kIgnoreCase) ) tripad=kTRUE;
 
   CbmTrdModuleRec *module(NULL);
-  if(digi->GetType()==CbmTrdDigi::kFASP){
-    module = fModules[detId] = new CbmTrdModuleRecT(detId);//, orientation, x, y, z, sizeX, sizeY, sizeZ, UseFASP());
+  if(tripad){
+    module = fModules[address] = new CbmTrdModuleRecT(address, node);//, layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ, UseFASP());
+  } else {
+    module = fModules[address] = new CbmTrdModuleRecR(address, node);// layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ);  
   }
-  else {
-    module = fModules[detId] = new CbmTrdModuleRecR(detId);//, orientation, x, y, z, sizeX, sizeY, sizeZ);  
-  }
-  
-  //  try to load read-out parameters for module
+
+  // try to load read-out parameters for module
   const CbmTrdParModDigi *pDigi(NULL);
-  if(!fDigiPar || !(pDigi = (const CbmTrdParModDigi *)fDigiPar->GetModulePar(detId))){
-    LOG(WARNING) << GetName() << "::AddModule : No Read-Out params for modAddress "<< detId <<". Using default."<< FairLogger::endl;
+  if(!fDigiPar || !(pDigi = (const CbmTrdParModDigi *)fDigiPar->GetModulePar(address))){
+    LOG(WARNING) << GetName() << "::AddModule : No Read-Out params for modAddress "<< address <<". Using default."<< FairLogger::endl;
   } else module->SetDigiPar(pDigi);
 
   // try to load ASIC parameters for module
   CbmTrdParSetAsic *pAsic(NULL);
-  if(!fAsicPar || !(pAsic = (CbmTrdParSetAsic *)fAsicPar->GetModuleSet(detId))){
-    LOG(WARNING) << GetName() << "::AddModule : No ASIC params for modAddress "<< detId <<". Using default."<< FairLogger::endl;
+  if(!fAsicPar || !(pAsic = (CbmTrdParSetAsic *)fAsicPar->GetModuleSet(address))){
+    LOG(WARNING) << GetName() << "::AddModule : No ASIC params for modAddress "<< address <<". Using default."<< FairLogger::endl;
 //    module->SetAsicPar(); // map ASIC channels to read-out channels - need ParModDigi already loaded
   } else module->SetAsicPar(pAsic);
 
   // try to load Chamber parameters for module
   const CbmTrdParModGas *pChmb(NULL);
-  if(!fGasPar || !(pChmb = (const CbmTrdParModGas *)fGasPar->GetModulePar(detId))){
-    LOG(WARNING) << GetName() << "::AddModule : No Gas params for modAddress "<< detId <<". Using default."<< FairLogger::endl;
+  if(!fGasPar || !(pChmb = (const CbmTrdParModGas *)fGasPar->GetModulePar(address))){
+    LOG(WARNING) << GetName() << "::AddModule : No Gas params for modAddress "<< address <<". Using default."<< FairLogger::endl;
   } else module->SetChmbPar(pChmb);
 
   // try to load Gain parameters for module
-  const CbmTrdParModGain *pGain(NULL);
-  if(digi->GetType()==CbmTrdDigi::kFASP){
-    if(!fGainPar || !(pGain = (const CbmTrdParModGain *)fGainPar->GetModulePar(detId))){
-      LOG(WARNING) << GetName() << "::AddModule : No Gain params for modAddress "<< detId <<". Using default."<< FairLogger::endl;
+  if(tripad){
+    const CbmTrdParModGain *pGain(NULL);
+    if(!fGainPar || !(pGain = (const CbmTrdParModGain *)fGainPar->GetModulePar(address))){
+      LOG(WARNING) << GetName() << "::AddModule : No Gain params for modAddress "<< address <<". Using default."<< FairLogger::endl;
     } else module->SetGainPar(pGain);
   }
   return module;
@@ -155,7 +152,24 @@ InitStatus CbmTrdClusterFinder::Init()
   ioman->Register("TrdCluster","TRD",fClusters,IsOutputBranchPersistent("TrdCluster"));
 
   fGeoHandler->Init();
-  
+ 
+  // Get the full geometry information of the detector gas layers and store
+  // them with the CbmTrdModuleRec. This information can then be used for
+  // transformation calculations 
+  std::map<Int_t, TGeoPhysicalNode*> moduleMap = fGeoHandler->FillModuleMap();
+
+  Int_t nrModules = fDigiPar->GetNrOfModules();
+  Int_t nrNodes = moduleMap.size();
+  if (nrModules != nrNodes) LOG(FATAL) << "Geometry and parameter files have different number of modules.";
+  for (Int_t loop=0; loop< nrModules; ++loop) {
+     Int_t address = fDigiPar->GetModuleId(loop);
+     std::map<Int_t, TGeoPhysicalNode*>::iterator it = moduleMap.find(address);
+     if ( it  == moduleMap.end() ) {
+       LOG(FATAL) << "Expected module with address " << address << " wasn't found in the map with TGeoNode information.";
+     }
+     AddModule(address, it->second);
+  }
+
 //   // new call needed when parameters are initialized from ROOT file
 //   fDigiPar->Initialize();
 
@@ -198,10 +212,10 @@ void CbmTrdClusterFinder::Exec(Option_t* /*option*/)
   for (Int_t iDigi=0; iDigi < nentries; iDigi++ ) {
     CbmTrdDigi *digi = (CbmTrdDigi*) fDigis->At(iDigi);
     Int_t moduleAddress = digi->GetAddressModule();
+
     std::map<Int_t, CbmTrdModuleRec*>::iterator imod = fModules.find(moduleAddress);
-    if(imod==fModules.end()) mod = AddModule(digi);
-    else mod = imod->second;
-    //cout<<iDigi<<" : "<<digi->ToString()<<endl;
+    mod=imod->second;
+
     mod->AddDigi(digi, iDigi);    
   }
   
