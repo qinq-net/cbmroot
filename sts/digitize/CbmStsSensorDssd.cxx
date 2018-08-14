@@ -108,10 +108,9 @@ Int_t CbmStsSensorDssd::FindHits(std::vector<CbmStsCluster*>& clusters,
     for (Int_t iClusterB = 0; iClusterB < nClustersB;   iClusterB++) {
       CbmStsCluster* clusterB = clusters[backClusters[iClusterB]];
 
-      // --- For time-based hit finding ---
-      if ( dTime > 0. && fabs(clusterF->GetTime() - clusterB->GetTime()) > dTime ) continue;
-      // ----------------------
-
+      Double_t sigma = TMath::Sqrt( clusterF->GetTimeError() * clusterF->GetTimeError()
+                                    + clusterB->GetTimeError() * clusterB->GetTimeError() );
+      if ( fabs(clusterF->GetTime() - clusterB->GetTime()) > 4. * sigma ) continue;
 
       // --- Calculate intersection points
       Int_t nOfHits = IntersectClusters(clusterF, clusterB);
