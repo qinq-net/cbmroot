@@ -102,6 +102,16 @@ Int_t CbmTrdModuleRecR::FindClusters()
 
     //block to erase processed digis
     CbmTrdDigi *digi =       (CbmTrdDigi*) get<2>(*mainit);
+
+    // --- VF: Had to introduce this condition to make the code running. Problem is that
+    // --- the container is modified (by erase) within the loop. This also changes
+    // --- fDigiMap.end(). A crash happens when after erasing, a single digi remains
+    // --- in fDigiMap. Mainit then points at the next element, which is not defined.
+    // --- The break condition mainit != fDigiMap.end() seems not to be fulfilled in that case.
+    // --- I honestly do not know what happens in all other cases when erase is used.
+    // --- The code surely needs being revised.
+    if ( ! digi ) break;
+
     time =                   digi->GetTime();
     if(lasttime >0 )         timediff=time-lasttime;
     lasttime=                time;
