@@ -60,7 +60,7 @@
 #pragma link C++ class CbmRichTrbRecoQaStudyReport+;
 
 //mirrors
-#pragma link C++ class CbmRichRonchiAna+;
+//#pragma link C++ class CbmRichRonchiAna+;
 
 
 #endif

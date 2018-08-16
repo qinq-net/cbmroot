@@ -140,7 +140,7 @@ prototype/beamtime/CbmRichTrbRecoQa.cxx
 prototype/beamtime/CbmRichTrbPulserQa.cxx
 prototype/beamtime/CbmRichHitInfo.cxx
 prototype/beamtime/CbmRichTrbRecoQaStudyReport.cxx
-mirrors/CbmRichRonchiAna.cxx
+#mirrors/CbmRichRonchiAna.cxx
 )
 
 If(TBB_FOUND)
@@ -192,7 +192,7 @@ prototype/beamtime/CbmRichHitInfo.h
 prototype/beamtime/CbmRichTrbRecoQaStudyReport.h
 prototype/smallprototype/CbmRichSmallPrototypeQa.h
 prototype/smallprototype/CbmRichSmallPrototypeStudyReport.h
-mirrors/CbmRichRonchiAna.h
+#mirrors/CbmRichRonchiAna.h
 )
 
 If(TBB_FOUND)
