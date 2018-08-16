@@ -43,6 +43,7 @@ void CbmAnaDielectronTaskDrawAll::DrawHistosFromFile(
 {
     fOutputDir = outputDir;
     fUseMvd = useMvd;
+    fDrawQgp = (fileNameQgp != "");
     
     //SetDefaultDrawStyle();
     vector<string> fileNames = {fileNameInmed, fileNameQgp, fileNameOmega, fileNamePhi, fileNameOmegaDalitz};
@@ -50,6 +51,7 @@ void CbmAnaDielectronTaskDrawAll::DrawHistosFromFile(
     fHM.resize(fNofSignals);
     for (int i = 0; i < fNofSignals; i++){
         fHM[i] = new CbmHistManager();
+        if (fileNames[i] == "") continue;
         TFile* file = new TFile(fileNames[i].c_str());
         fHM[i]->ReadFromFile(file);
         Int_t nofEvents = (int) H1(i, "fh_event_number")->GetEntries();
@@ -99,7 +101,7 @@ TH1D* CbmAnaDielectronTaskDrawAll::GetCoctailMinv(
                                                   CbmLmvmAnalysisSteps step)
 {
     TH1D* sInmed = (TH1D*) H1(kInmed, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
-    TH1D* sQgp = (TH1D*) H1(kQgp, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+    TH1D* sQgp = (fDrawQgp)?(TH1D*) H1(kQgp, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone():nullptr;
     TH1D* sOmega = (TH1D*) H1(kOmega, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
     TH1D* sPhi = (TH1D*) H1(kPhi, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
     TH1D* sEta = fh_mean_eta_minv[step];
@@ -107,7 +109,7 @@ TH1D* CbmAnaDielectronTaskDrawAll::GetCoctailMinv(
     TH1D* sOmegaDalitz = (TH1D*) H1(kOmegaD, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
     
     TH1D* coctail = (TH1D*)sInmed->Clone();
-    coctail->Add(sQgp);
+    if (fDrawQgp) coctail->Add(sQgp);
     coctail->Add(sOmega);
     coctail->Add(sPhi);
     coctail->Add(sEta);
@@ -139,7 +141,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
                                            CbmLmvmAnalysisSteps step)
 {
     TH1D* sInmed = (TH1D*) H1(kInmed, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
-    TH1D* sQgp = (TH1D*) H1(kQgp, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+    TH1D* sQgp = (fDrawQgp)?(TH1D*) H1(kQgp, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone():nullptr;
     TH1D* sOmega = (TH1D*) H1(kOmega, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
     TH1D* sPhi = (TH1D*) H1(kPhi, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
     TH1D* bg = (TH1D*)fh_mean_bg_minv[step]->Clone();
@@ -151,7 +153,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
     
     TH1D* sbg = (TH1D*)bg->Clone();
     sbg->Add(sInmed);
-    sbg->Add(sQgp);
+    if (fDrawQgp) sbg->Add(sQgp);
     sbg->Add(sOmega);
     sbg->Add(sPhi);
     sbg->Add(sEta);
@@ -168,7 +170,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
     sOmegaDalitz->Rebin(nRebin);
     sOmega->Rebin(nRebin);
     sInmed->Rebin(nRebin);
-    sQgp->Rebin(nRebin);
+    if (fDrawQgp) sQgp->Rebin(nRebin);
     sPhi->Rebin(nRebin);
     
     /*sbg->Scale(1./nRebin);
@@ -191,7 +193,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
     sOmegaDalitz->Scale(1./binWidth);
     sOmega->Scale(1./binWidth);
     sInmed->Scale(1./binWidth);
-    sQgp->Scale(1./binWidth);
+    if (fDrawQgp) sQgp->Scale(1./binWidth);
     sPhi->Scale(1./binWidth);
     
     
@@ -205,7 +207,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
     sOmegaDalitz->GetXaxis()->SetRangeUser(0, 2.);
     sOmega->GetXaxis()->SetRangeUser(0, 2.);
     sInmed->GetXaxis()->SetRangeUser(0, 2.);
-    sQgp->GetXaxis()->SetRangeUser(0, 2.);
+    if (fDrawQgp) sQgp->GetXaxis()->SetRangeUser(0, 2.);
     sPhi->GetXaxis()->SetRangeUser(0, 2.);
     
 /*    
@@ -219,11 +221,21 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
   */  
   
     if (step == kMc) {
-        DrawH1({coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sQgp, sPhi},
+        if (fDrawQgp) {
+            DrawH1({coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sQgp, sPhi},
                 {"", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
+        } else {
+            DrawH1({coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sPhi},
+                            {"", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
+        }
     } else {
-        DrawH1({sbg, bg, coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sQgp, sPhi},
+        if (fDrawQgp) {
+            DrawH1({sbg, bg, coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sQgp, sPhi},
                 {"", "", "", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
+        } else {
+            DrawH1({sbg, bg, coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sPhi},
+                            {"", "", "", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
+        }
     }
     
     string yTitle = "dN/dM_{ee} [GeV/c^{2}]^{-1}";
@@ -238,11 +250,13 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
     sInmed->SetLineWidth(3);
     sInmed->SetFillStyle(3344);
 
-    sQgp->SetFillColor(kOrange-2);
-    sQgp->SetLineColor(kOrange-3);
-    sQgp->SetLineStyle(0);
-    sQgp->SetLineWidth(3);
-    sQgp->SetFillStyle(3444);
+    if (fDrawQgp) {
+        sQgp->SetFillColor(kOrange-2);
+        sQgp->SetLineColor(kOrange-3);
+        sQgp->SetLineStyle(0);
+        sQgp->SetLineWidth(3);
+        sQgp->SetFillStyle(3444);
+    }
     
 
     sOmega->SetFillColor(kOrange+7);
@@ -298,7 +312,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
         legend->AddEntry(sOmegaDalitz, "#omega #rightarrow #pi^{0}e^{+}e^{-}", "f");
         legend->AddEntry(sPhi, "#phi #rightarrow e^{+}e^{-}", "f");
         legend->AddEntry(sInmed, "in-medium #rho", "f");
-        legend->AddEntry(sQgp, "QGP radiation", "f");
+        if (fDrawQgp) legend->AddEntry(sQgp, "QGP radiation", "f");
         legend->AddEntry(sEta, "#eta #rightarrow #gammae^{+}e^{-}", "f");
         legend->AddEntry(sPi0, "#pi^{0} #rightarrow #gammae^{+}e^{-}", "f");
         legend->AddEntry(coctail, "Coctail", "f");
@@ -313,7 +327,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
         legend->AddEntry(sOmegaDalitz, "#omega #rightarrow #pi^{0}e^{+}e^{-}", "f");
         legend->AddEntry(sPhi, "#phi #rightarrow e^{+}e^{-}", "f");
         legend->AddEntry(sInmed, "in-medium #rho", "f");
-        legend->AddEntry(sQgp, "QGP radiation", "f");
+        if (fDrawQgp)legend->AddEntry(sQgp, "QGP radiation", "f");
         legend->AddEntry(sEta, "#eta #rightarrow #gammae^{+}e^{-}", "f");
         legend->AddEntry(sPi0, "#pi^{0} #rightarrow #gammae^{+}e^{-}", "f");
         legend->AddEntry(coctail, "Coctail", "f");
@@ -359,7 +373,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinvPt(
                                              CbmLmvmAnalysisSteps step)
 {
     TH2D* sInmed = (TH2D*) H2(kInmed, "fh_signal_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone();
-    TH2D* sQgp = (TH2D*) H2(kQgp, "fh_signal_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+    TH2D* sQgp = (fDrawQgp)?(TH2D*) H2(kQgp, "fh_signal_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone():nullptr;
     TH2D* sOmega = (TH2D*) H2(kOmega, "fh_signal_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone();
     TH2D* sOmegaDalitz = (TH2D*) H2(kOmegaD, "fh_signal_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone();
     TH2D* sPhi = (TH2D*) H2(kPhi, "fh_signal_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone();
@@ -367,7 +381,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinvPt(
     TH2D* sPi0 = fh_mean_pi0_minv_pt[step];
     
     TH2D* coctail = (TH2D*)sInmed->Clone();
-    coctail->Add(sQgp);
+    if (fDrawQgp) coctail->Add(sQgp);
     coctail->Add(sOmega);
     coctail->Add(sPhi);
     coctail->Add(sOmegaDalitz);
@@ -425,7 +439,7 @@ void CbmAnaDielectronTaskDrawAll::FillSumSignalsHist()
 {
     for (int step = 0; step < CbmLmvmHist::fNofAnaSteps; step++){
         fh_sum_s_minv[step] = (TH1D*)H1(kInmed, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
-        fh_sum_s_minv[step] = (TH1D*)H1(kQgp, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+        if (fDrawQgp) fh_sum_s_minv[step]->Add( (TH1D*)H1(kQgp, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
         fh_sum_s_minv[step]->Add( (TH1D*)H1(kOmega, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
         fh_sum_s_minv[step]->Add( (TH1D*)H1(kPhi, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
         fh_sum_s_minv[step]->Add( (TH1D*)H1(kOmegaD, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );

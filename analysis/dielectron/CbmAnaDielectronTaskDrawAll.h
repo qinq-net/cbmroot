@@ -81,6 +81,7 @@ private:
     static const int fNofSignals = 5;
     
     Bool_t fUseMvd; // do you want to draw histograms related to the MVD detector?
+    Bool_t fDrawQgp; // do you wan to draq QGP signal
     
     //[0]=rho0, [1]=omega, [2]=phi, [3]=omegaDalitz
     std::vector<CbmHistManager*> fHM;
