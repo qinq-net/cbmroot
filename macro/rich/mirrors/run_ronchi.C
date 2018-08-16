@@ -7,5 +7,6 @@ void run_ronchi() {
     std::string fileName1 = "ronchi.tiff";
 
     CbmRichRonchiAna *ronchiAna = new CbmRichRonchiAna();
+    ronchiAna->SetTiffFileName("/Users/slebedev/Downloads/test1.tif");
     ronchiAna->Run();
 }
