@@ -32,15 +32,15 @@ public:
 	virtual ~CbmRichRing();
 
 	/** to attach the rich hit to the ring */
-	void AddHit(UShort_t pHit)  {fHitCollection.push_back(pHit);}
+	void AddHit(UInt_t pHit)  {fHitCollection.push_back(pHit);}
 	/** remove hit from ring
 	 * hitId is the index in the RICH hit array
      * return false if hit is not found in ring*/
-	Bool_t RemoveHit(UShort_t hitId);
+	Bool_t RemoveHit(UInt_t hitId);
 	/** to obtain the number of hits associated to the ring */
 	Int_t GetNofHits() const { return fHitCollection.size(); }
 	/** to obtain the rich hit at a particular index */
-	UShort_t GetHit(Int_t i) const {return fHitCollection[i];}
+	UInt_t GetHit(Int_t i) const {return fHitCollection[i];}
 	/** to print ring parameters **/
 	virtual void Print(Option_t* opt="") const;
 
@@ -70,6 +70,7 @@ public:
 	void SetNofHitsOnRing(Int_t onring) {fNofHitsOnRing = onring;}
 	/** number between -1 and 1: -1 = fake ring, 1 = good ring (selection by neural net)*/
 	void SetSelectionNN (Double_t selectionNN ) {fSelectionNN = selectionNN;}
+	void SetTime(Double_t time) {fTime = time;}
 
 /** Accessors **/
 	Double_t GetAPar() const {return fAPar;}
@@ -101,10 +102,10 @@ public:
 	Int_t GetNofHitsOnRing() const {return fNofHitsOnRing;}
 	Double_t GetRadialAngle() const;
 	Int_t GetRecFlag() const {return fRecFlag;}
-	//CbmRichRingLight* toLightRing();
+	Double_t GetTime() const {return fTime;}
 private:
 
-  std::vector<UShort_t> fHitCollection; /** STL container to hold the hits */
+  std::vector<UInt_t> fHitCollection; /** STL container to hold the hits */
 
 protected:
 
@@ -133,6 +134,8 @@ protected:
 	Double_t fSelectionNN; // value for selection high quality rings
 
 	Int_t fRecFlag;
+
+	Double_t fTime;
 
 ClassDef(CbmRichRing,2)
 };

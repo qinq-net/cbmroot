@@ -119,6 +119,24 @@ void run_sim_urqmdtest(Int_t nEvents = 20)
 
     CbmUnigenGenerator*  urqmdGen = new CbmUnigenGenerator(inFile);
     urqmdGen->SetEventPlane(0. , 360.);
+
+    FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 5);
+    boxGen1->SetPtRange(0.,3.);
+    boxGen1->SetPhiRange(0.,360.);
+    boxGen1->SetThetaRange(2.5,25.);
+    boxGen1->SetCosTheta();
+    boxGen1->Init();
+    primGen->AddGenerator(boxGen1);
+
+    FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, 5);
+    boxGen2->SetPtRange(0.,3.);
+    boxGen2->SetPhiRange(0.,360.);
+    boxGen2->SetThetaRange(2.5,25.);
+    boxGen2->SetCosTheta();
+    boxGen2->Init();
+    primGen->AddGenerator(boxGen2);
+
+
     primGen->AddGenerator(urqmdGen);
     run->SetGenerator(primGen);
     

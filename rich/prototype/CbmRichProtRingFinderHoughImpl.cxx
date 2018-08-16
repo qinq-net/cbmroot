@@ -187,10 +187,7 @@ void CbmRichProtRingFinderHoughImpl::DefineLocalAreaAndHits(
 		fHitInd[i].reserve( (*indmax-*indmin) / fNofParts);
 	}
 
-	unsigned short indmin1 = (unsigned short)(*indmin);
-	unsigned short indmax1 = (unsigned short)(*indmax);
-
-   for (unsigned short i = indmin1; i <= indmax1; i++) {
+   for (int i = *indmin; i <= *indmax; i++) {
       if (fData[i].fIsUsed == true) continue;
       float ry = y0 - fData[i].fHit.fY;
       if (fabs(ry) > fMaxDistance) continue;
@@ -210,8 +207,8 @@ void CbmRichProtRingFinderHoughImpl::DefineLocalAreaAndHits(
 }
 
 void CbmRichProtRingFinderHoughImpl::HoughTransform(
-      unsigned short int indmin,
-      unsigned short int indmax)
+      unsigned int indmin,
+      unsigned int indmax)
 {
     for (int iPart = 0; iPart < fNofParts; iPart++){
     	 HoughTransformGroup(indmin, indmax, iPart);
@@ -219,8 +216,8 @@ void CbmRichProtRingFinderHoughImpl::HoughTransform(
 }
 
 void CbmRichProtRingFinderHoughImpl::HoughTransformGroup(
-      unsigned short int /*indmin*/,
-		unsigned short int /*indmax*/,
+      unsigned int /*indmin*/,
+		unsigned int /*indmax*/,
 		int iPart)
 {
    unsigned short nofHits = fHitInd[iPart].size();
@@ -335,7 +332,7 @@ void CbmRichProtRingFinderHoughImpl::FindPeak(
 
 		dr = fabs(sqrt(rx * rx + ry * ry) - r);
 		if (dr > 0.6f) continue;
-		ring1->AddHit(fData[j].fHit, fData[j].fId);
+		ring1->AddHit(fData[j].fHit);
 	}
 	if (ring1->GetNofHits() < 7) {
 	   delete ring1;
@@ -360,7 +357,7 @@ void CbmRichProtRingFinderHoughImpl::FindPeak(
 		dr = fabs(sqrt(rx * rx + ry * ry) - r);
 		if (dr > drCOPCut) continue;
 		fData[j+indmin].fIsUsed = true;
-		ring2->AddHit(fData[j].fHit, fData[j].fId);
+		ring2->AddHit(fData[j].fHit);
 	}
 
 	if (ring2->GetNofHits() < 7) {
@@ -409,8 +406,8 @@ void CbmRichProtRingFinderHoughImpl::RingSelection()
 {
 	int nofRings = fFoundRings.size();
 	sort(fFoundRings.begin(), fFoundRings.end(), CbmRichRingComparatorMore());
-	set<unsigned short> usedHitsAll;
-	vector<unsigned short> goodRingIndex;
+	set<unsigned int> usedHitsAll;
+	vector<unsigned int> goodRingIndex;
 	goodRingIndex.reserve(nofRings);
 //	CbmRichRingLight* ring2;
 
@@ -421,7 +418,7 @@ void CbmRichProtRingFinderHoughImpl::RingSelection()
 		bool isGoodRingAll = true;
 		int nofUsedHitsAll = 0;
 		for(int iHit = 0; iHit < nofHits; iHit++){
-			set<unsigned short>::iterator it = usedHitsAll.find(ring->GetHitId(iHit));
+			set<unsigned int>::iterator it = usedHitsAll.find(ring->GetHitId(iHit));
 			if(it != usedHitsAll.end()){
 				nofUsedHitsAll++;
 			}
@@ -457,9 +454,9 @@ void CbmRichProtRingFinderHoughImpl::ReAssignSharedHits(
 	int nofHits2 = ring2->GetNofHits();
 
 	for(int iHit1 = 0; iHit1 < nofHits1; iHit1++){
-		unsigned short hitInd1 = ring1->GetHitId(iHit1);
+		unsigned int hitInd1 = ring1->GetHitId(iHit1);
 		for(int iHit2 = 0; iHit2 < nofHits2; iHit2++){
-			unsigned short hitInd2 = ring2->GetHitId(iHit2);
+			unsigned int hitInd2 = ring2->GetHitId(iHit2);
 			if(hitInd1 != hitInd2) continue;
 			int hitIndData =  GetHitIndex(hitInd1);
 			float hitX = fData[hitIndData].fHit.fX;
@@ -482,11 +479,11 @@ void CbmRichProtRingFinderHoughImpl::ReAssignSharedHits(
 }
 
 int CbmRichProtRingFinderHoughImpl::GetHitIndex(
-      unsigned short hitInd)
+      unsigned int hitInd)
 {
-   unsigned short size = fData.size();
-	for (unsigned short i = 0; i < size; i++){
-		if (fData[i].fId == hitInd) return i;
+   unsigned int size = fData.size();
+	for (unsigned int i = 0; i < size; i++){
+		if (fData[i].fHit.fId == hitInd) return i;
 	}
 	return -1;
 }

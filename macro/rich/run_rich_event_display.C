@@ -6,31 +6,25 @@
 
 void run_rich_event_display()
 {
-   gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-   basiclibs();
-
-   gROOT->LoadMacro("$VMCWORKDIR/macro/rich/cbmlibs.C");
-   cbmlibs();
     
     TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/urqmdtest/";
-    TString paramFile =  outDir + "param.v16a.0.root";
-    TString mcFile = outDir + "mc.v16a.0.root";
-    TString recoFile = outDir + "reco.v16a.0.root";
-    TString outFile = outDir + "ed.v16a.0.root";
-    
-    //TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.00000.root";
-    //TString paramFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00000.root";
-    //TString recoFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.00000.root";
-    //TString outFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/ed.00000.root";
-   //TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/richurqmdtest/8gev.mc.0000.root";
-   //TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/richurqmdtest/8gev.reco.0000.root";
-   //TString paramFile = "/Users/slebedev/Development/cbm/data/simulations/richurqmdtest/8gev.param.0000.root";
-   //TString outFile = "/Users/slebedev/Development/cbm/data/simulations/richurqmdtest/8gev.test.ed.root";
+    TString parFile =  outDir + "param.00000.root";
+    TString mcFile = outDir + "mc.00000.root";
+    TString recoFile = outDir + "reco.00000.root";
+    TString outFile = outDir + "ed.00000.root";
 
-   FairRunAna *run= new FairRunAna();
-   run->SetInputFile(mcFile);
-   run->AddFriend(recoFile);
-   run->SetOutputFile(outFile);
+    FairRunAna *run = new FairRunAna();
+    FairFileSource* inputSource = new FairFileSource(mcFile);
+    inputSource->AddFriend(recoFile);
+    run->SetSource(inputSource);
+    run->SetOutputFile(outFile);
+    run->SetGenerateRunInfo(kTRUE);
+
+    TList *parFileList = new TList();
+
+    CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+    mcManager->AddFile(mcFile);
+    run->AddTask(mcManager);
 
 
    CbmRichEventDisplay *ed = new CbmRichEventDisplay();
@@ -40,16 +34,17 @@ void run_rich_event_display()
    ed->SetDrawProjections(true);
    run->AddTask(ed);
 
-
    FairRuntimeDb* rtdb = run->GetRuntimeDb();
    FairParRootFileIo* parIo1 = new FairParRootFileIo();
    FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-   parIo1->open(paramFile.Data());
+   parIo1->open(parFile.Data(),"UPDATE");
    rtdb->setFirstInput(parIo1);
-   rtdb->setOutput(parIo1);
-   rtdb->saveOutput();
+   if ( ! parFileList->IsEmpty() ) {
+       parIo2->open(parFileList, "in");
+       rtdb->setSecondInput(parIo2);
+   }
 
    run->Init();
    cout << "Starting run" << endl;
-   run->Run(0, 10);
+   run->Run(0, 20);
 }

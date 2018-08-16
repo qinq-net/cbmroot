@@ -28,8 +28,8 @@ void do_setup()
  // setup->SetModule(kMvd, mvdGeoTag);
   setup->SetModule(kSts, stsGeoTag);
   setup->SetModule(kRich, richGeoTag);
-  setup->SetModule(kTrd, trdGeoTag);
-  setup->SetModule(kTof, tofGeoTag);
+ // setup->SetModule(kTrd, trdGeoTag);
+ // setup->SetModule(kTof, tofGeoTag);
   //setup->SetModule(kPsd, psdGeoTag);
   //setup->SetModule(kPlatform, platGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);

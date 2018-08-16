@@ -52,7 +52,7 @@ public:
          Int_t hitInd = ring1->GetHit(i);
          CbmRichHit* hit = (CbmRichHit*) fRichHits->At(hitInd);
          if (NULL == hit) continue;
-         CbmRichHitLight hl(hit->GetX(), hit->GetY());
+         CbmRichHitLight hl(hit->GetX(), hit->GetY(), hitInd);
          ring2->AddHit(hl);
       }
    }

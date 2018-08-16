@@ -158,6 +158,7 @@ void run_sim(Int_t nEvents = 20)
     run->SetGenerator(primGen);
 
     std::cout << std::endl << "-I- " << myName << ": Initialise run" << std::endl;
+    run->SetStoreTraj(kTRUE);
     run->Init();
 
     // -----   Runtime database   ---------------------------------------------

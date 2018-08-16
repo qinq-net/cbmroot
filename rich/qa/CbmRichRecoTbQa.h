@@ -1,6 +1,6 @@
 
-#ifndef CBM_RICH_RECO_TB_RECO_QA
-#define CBM_RICH_RECO_TB_RECO_QA
+#ifndef CBM_RICH_RECO_TB_QA
+#define CBM_RICH_RECO_TB_QA
 
 #include "FairTask.h"
 class CbmMCDataArray;
@@ -8,25 +8,26 @@ class TClonesArray;
 class CbmHistManager;
 class CbmRichPoint;
 class CbmMCTrack;
+class CbmMCEventList;
 
 #include <vector>
 #include <map>
 
 using namespace std;
 
-class CbmRichRecoTbRecoQa : public FairTask
+class CbmRichRecoTbQa : public FairTask
 {
     
 public:
     /**
      * \brief Standard constructor.
      */
-    CbmRichRecoTbRecoQa();
+    CbmRichRecoTbQa();
     
     /**
      * \brief Standard destructor.
      */
-    virtual ~CbmRichRecoTbRecoQa() {}
+    virtual ~CbmRichRecoTbQa() {}
     
     /**
      * \brief Inherited from FairTask.
@@ -69,17 +70,52 @@ private:
 
     void Process();
 
+    void ProcessMc();
 
+    void RingRecoEfficiency();
+
+    Int_t GetNofPrimaryMcTracks(Int_t iEv);
+
+    Bool_t IsCherenkovPhoton(
+            const CbmRichPoint* point,
+            Int_t fileId,
+            Int_t eventId);
+
+    Bool_t IsCherenkovPhotonFromPrimaryElectron(
+            const CbmRichPoint* point,
+            Int_t fileId,
+            Int_t eventId);
+
+    Bool_t IsCherenkovPhotonFromSecondaryElectron(
+            const CbmRichPoint* point,
+            Int_t fileId,
+            Int_t eventId);
+
+    Bool_t IsMcPrimaryElectron(
+            const CbmMCTrack* mctrack);
+
+    Bool_t IsCherenkovPhotonFromPion(
+            const CbmRichPoint* point,
+            Int_t fileId,
+            Int_t eventId);
+
+    Bool_t IsMcPion(
+                const CbmMCTrack* mctrack);
+
+    void DrawTimeLog (
+            const string& hMainName,
+            Int_t nofLogEvents,
+            bool withNoise = false);
 
     /**
      * \brief Copy constructor.
      */
-    CbmRichRecoTbRecoQa(const CbmRichRecoTbRecoQa&);
+    CbmRichRecoTbQa(const CbmRichRecoTbQa&);
     
     /**
      * \brief Assignment operator.
      */
-    CbmRichRecoTbRecoQa& operator=(const CbmRichRecoTbRecoQa&);
+    CbmRichRecoTbQa& operator=(const CbmRichRecoTbQa&);
     
     
     CbmHistManager* fHM;
@@ -94,8 +130,13 @@ private:
     CbmMCDataArray* fStsPoints;
     TClonesArray* fRichDigis;
     TClonesArray* fRichHits;
+    TClonesArray* fRichRings;
+    TClonesArray* fRichRingMatches;
+    CbmMCEventList* fEventList;
     
-    ClassDef(CbmRichRecoTbRecoQa,1)
+    vector<pair<Int_t, Int_t> > fRecRings;
+
+    ClassDef(CbmRichRecoTbQa,1)
 };
 
 #endif

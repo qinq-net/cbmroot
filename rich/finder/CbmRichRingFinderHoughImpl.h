@@ -69,16 +69,20 @@ protected:
 	float fAnnCut; //remove found hits only for good quality rings
 	float fUsedHitsAllCut; // percent of used hits
 
+	double fTimeCut;
+
 	float fCurMinX; // current minimum X position of the local area
 	float fCurMinY; // current minimum Y position of the local area
 
 	vector<CbmRichHoughHit> fData; // Rich hits
 	vector<unsigned short> fHist; // XY histogram
 	vector<unsigned short> fHistR; // Radius histogram
-	vector< vector<unsigned short> > fHitInd; // store hit indexes for different group of hits
+	vector< vector<unsigned int> > fHitInd; // store hit indexes for different group of hits
 	vector<CbmRichRingLight*> fFoundRings; // collect found rings
 	CbmRichRingFitterCOP* fFitCOP; // COP ring fitter
 	CbmRichRingSelectAnn* fANNSelect; // ANN selection criteria
+
+	double fCurTime;
 
 public:
 	/**
@@ -135,8 +139,8 @@ public:
 	 * \param[in] indmax Maximum index of the hit in local area.
 	 */
 	virtual void HoughTransform(
-	      unsigned short indmin,
-			unsigned short indmax);
+	      unsigned int indmin,
+			unsigned int indmax);
 
 	/**
 	 * \brief Main procedure for Hough Transform.
@@ -145,8 +149,8 @@ public:
     * \param[in] iPart Index of the hit group.
     */
 	virtual void HoughTransformGroup(
-	      unsigned short indmin,
-			unsigned short indmax,
+	      unsigned int indmin,
+			unsigned int indmax,
 			int iPart);
 
 	/**
@@ -176,8 +180,8 @@ public:
     * \brief Return hit indez in the internal Array.
     * \param[in] hitInd Index in TClonesArray.
     */
-   int GetHitIndex(
-         unsigned short hitInd);
+   int GetHitIndexById(
+         unsigned int hitId);
 
    /**
     * \brief Set fIsUsed flag to true for hits attached to the ring.

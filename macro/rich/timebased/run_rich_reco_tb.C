@@ -10,10 +10,10 @@ void run_rich_reco_tb()
    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100_tb.C";
 
    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/tb/";
-   TString mcFile = outDir + "mc.00000.root";
-   TString parFile = outDir + "param.00000.root";
-   TString digiFile = outDir + "digi.00000.root";
-   TString recoFile = outDir + "reco.00000.root";
+   TString mcFile = outDir + "mc.00001.root";
+   TString parFile = outDir + "param.00001.root";
+   TString digiFile = outDir + "digi.00001.root";
+   TString recoFile = outDir + "reco.00001.root";
    std::string resultDir = "results_geotest/";
 
 
@@ -47,7 +47,7 @@ void run_rich_reco_tb()
    //run->SetEventMeanTime(1.e9 / eventRate);
    FairRootManager::Instance()->SetUseFairLinks(kTRUE);
 
-   FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+   FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
    FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
    CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", false);
@@ -59,26 +59,19 @@ void run_rich_reco_tb()
    CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
    run->AddTask(richHitProd);
 
-   CbmRichRecoTbRecoQa* richRecoTbRecoQa = new CbmRichRecoTbRecoQa();
-   run->AddTask(richRecoTbRecoQa);
+   CbmRichReconstruction* richReco  = new CbmRichReconstruction();
+   richReco->SetRunExtrapolation(false);
+   richReco->SetRunProjection(false);
+   richReco->SetRunFinder(true);
+   richReco->SetRunFitter(true);
+   richReco->SetRunTrackAssign(false);
+   run->AddTask(richReco);
 
+   CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
+   run->AddTask(matchRecoToMc);
 
-//
-//   CbmRichReconstruction* richReco = new CbmRichReconstruction();
-//   richReco->SetRunExtrapolation(false);
-//   richReco->SetRunProjection(false);
-//   richReco->SetRunTrackAssign(false);
-//   richReco->SetFinderName("ideal");
-//   run->AddTask(richReco);
-//
-//   CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
-//   run->AddTask(matchRecoToMc);
-
-//   CbmRichGeoTest* geoTest = new CbmRichGeoTest();
-//   geoTest->SetOutputDir(resultDir);
-//   run->AddTask(geoTest);
-
-
+   CbmRichRecoTbQa* richRecoTbQa = new CbmRichRecoTbQa();
+   run->AddTask(richRecoTbQa);
 
    std::cout << std::endl << std::endl << "-I- " << myName << ": Set runtime DB" << std::endl;
    FairRuntimeDb* rtdb = run->GetRuntimeDb();

@@ -845,21 +845,22 @@ vector<pair<Int_t, Int_t> > CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
     vector<CbmLink> links = digiMatch->GetLinks();
     for (UInt_t i = 0; i < links.size(); i++) {
         Int_t pointId = links[i].GetIndex();
+        Int_t eventId = links[i].GetEntry();
         if (pointId < 0) continue; // noise hit
+        const CbmRichPoint* pMCpt = static_cast<const CbmRichPoint*>(richPoints->Get(0, eventId, pointId));
 
-        const CbmRichPoint* pMCpt = static_cast<const CbmRichPoint*>(richPoints->Get(0, eventNumber, pointId));
         if ( NULL == pMCpt ) continue;
         Int_t mcTrackIndex = pMCpt->GetTrackID();
         if ( mcTrackIndex < 0 ) continue;
         //TODO: Currently we support only legacy mode of CbmMCDataArray
-        const CbmMCTrack *mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventNumber, mcTrackIndex));
+        const CbmMCTrack *mcTrack = static_cast<const CbmMCTrack*>(mcTracks->Get(0, eventId, mcTrackIndex));
        // CbmMCTrack* pMCtr = (CbmMCTrack*) mcTracks->At(mcTrackIndex);
         if ( NULL == mcTrack ) continue;
         if ( mcTrack->GetPdgCode() != 50000050) continue; // select only Cherenkov photons
         Int_t motherId = mcTrack->GetMotherId();
         // several photons can have same mother track
         // count only unique motherIds
-        pair<Int_t, Int_t> val = std::make_pair(eventNumber, motherId);
+        pair<Int_t, Int_t> val = std::make_pair(eventId, motherId);
         if(std::find(result.begin(), result.end(), val) == result.end()) {
             result.push_back(val);
         }

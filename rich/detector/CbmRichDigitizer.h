@@ -104,6 +104,11 @@ public:
    void SetTimeResolution(Double_t dt){ fTimeResolution = dt; }
 
 
+   /**
+    * \brief Set Pixel dead time.
+    */
+   void SetPixelDeadTime(Double_t dt){ fPixelDeadTime = dt; }
+
    /** @brief Write a digi to the output
     ** @param digi  Pointer to digi object
     **/
@@ -120,9 +125,9 @@ private:
    TClonesArray* fRichDigis; // RICH digis (output array)
    TClonesArray* fMcTracks; // Monte-Carlo tracks
 
-   Double_t fNofPoints;  ///< total number of MCPoints processed
-   Double_t fNofDigis;   ///< total number of digis created
-   Double_t fTimeTot; ///< sum of execution time
+   Double_t fNofPoints;  // total number of MCPoints processed
+   Double_t fNofDigis;   // total number of digis created
+   Double_t fTimeTot; // sum of execution time
 
    CbmRichPmt fPmt;
    Double_t fCrossTalkProbability; // probability of the crosstalk for direct neighbor for one pixel
@@ -132,9 +137,10 @@ private:
 
    map<Int_t, CbmRichDigi*> fDigisMap; //map which contains all fired digis, one digi per pixel
 
-   //Double_t fEventTime; // TODO: is already in base class
    Double_t fTimeResolution; // in ns
    Double_t fDarkRatePerPixel; // dark rate per pixel in Hz
+   Double_t fPixelDeadTime; // in ns, during this time pixel can not be fired
+   map<Int_t, Double_t> fFiredPixelsMap; // first: pixel address, second: last fired time.
 
    /*
     * \brief Add crasstalk digis to the output array for the digi assuming fCrossTalkProbability

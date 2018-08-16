@@ -125,10 +125,10 @@ void CbmRichRing::SetXYABPhi(Double_t x, Double_t y,
     fPhi = phi;
 }
 
-Bool_t CbmRichRing::RemoveHit(UShort_t hitId)
+Bool_t CbmRichRing::RemoveHit(UInt_t hitId)
 {
 	//Int_t nofHits = fHitCollection.size();
-	std::vector<UShort_t>::iterator it;
+	std::vector<UInt_t>::iterator it;
 	for (it = fHitCollection.begin(); it!=fHitCollection.end(); it++){
 		if (hitId == *it){
 			fHitCollection.erase(it);

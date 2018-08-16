@@ -1,110 +1,56 @@
 
-void run_rich_digi_tb(Int_t nEvents = 100)
+
+void run_rich_digi_tb(
+    Int_t nEvents = 1000
+)
 {
-   TTree::SetMaxTreeSize(90000000000);
-   TString script = TString(gSystem->Getenv("SCRIPT"));
 
-   TString myName = "run_rich_digi_tb";
-   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+  FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
+  FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
-   TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100_tb.C";
+  Bool_t overwrite = kTRUE;
+  Double_t eventRate = 1.e7;        // Interaction rate [1/s]
+  // workaround for the moment QA works if only one time slice exists for one mc file
+  Double_t timeSliceLength = 1.e4;// 1.e4;   // Length of time-slice [ns]
+  Bool_t eventMode = kFALSE;         // Event-by-event mode
 
-   TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/tb/";
-   TString mcFile = outDir + "mc.00000.root";
-   TString parFile = outDir + "param.00000.root";
-   TString digiFile = outDir + "digi.00000.root";
-   std::string resultDir = "results_tb/";
+  TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/tb/";
+  TString mcFile = outDir + "mc.00001.root";
+  TString parFile = outDir + "param.00001.root";
+  TString digiFile = outDir + "digi.00001.root";
 
-   //   if (script == "yes") {
-   //      mcFile = TString(gSystem->Getenv("MC_FILE"));
-   //      recoFile = TString(gSystem->Getenv("RECO_FILE"));
-   //      parFile = TString(gSystem->Getenv("PAR_FILE"));
-   //      resultDir = TString(gSystem->Getenv("RESULT_DIR"));
-   //   }
+  TStopwatch timer;
+  timer.Start();
 
-   // Specify interaction rate in 1/s
-   Double_t eventRate = 1.e7;//1.e4;
-   // Specify duration of time slices in output [ns]
-   Double_t timeSliceSize = 300;//1.e8;
+  // Run digitization
+  CbmDigitization run;
 
-   remove(digiFile.Data());
+  run.AddInput(mcFile, eventRate);
+  run.SetOutputFile(digiFile, overwrite);
+  run.SetParameterRootFile(parFile);
+  run.SetTimeSliceLength(timeSliceLength);
+  run.SetEventMode(eventMode);
 
-//   TString setupFunct = "do_setup()";
-//   std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
-//   gROOT->LoadMacro(geoSetupFile);
-//   gROOT->ProcessLine(setupFunct);
+  CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
+  //richDigitizer->SetPixelDeadTime(0.);
+  run.SetDigitizer(kRich, richDigitizer);
 
-   std::cout << std::endl<< "-I- " << myName << ": Defining parameter files " << std::endl;
-   TList *parFileList = new TList();
+  run.Deactivate(kSts);
 
-
-   TStopwatch timer;
-   timer.Start();
-   gDebug = 0;
-
-   // -----   Reconstruction run   -------------------------------------------
-   CbmRunAna *run = new CbmRunAna();
-   FairFileSource* inputSource = new FairFileSource(mcFile);
-   inputSource->SetEventMeanTime(1.e9 / eventRate);
-   run->SetSource(inputSource);
-   run->SetAsync();                         // asynchroneous mode
-   run->SetOutputFile(digiFile);
-   FairRootManager::Instance()->SetUseFairLinks(kTRUE);
-   // ------------------------------------------------------------------------
+  run.Run(nEvents);
 
 
-   FairLogger::GetLogger()->SetLogScreenLevel("INFO");
-   FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
-//   CbmStsDigitize* stsDigi = new CbmStsDigitize();
-//   run->AddTask(stsDigi);
-
-   CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
-   run->AddTask(richDigitizer);
-
-   FairTask* daq = new CbmDaq(timeSliceSize);
-   run->AddTask(daq);
-
-   CbmRichRecoTbMcQa* richRecoTbMcQa = new CbmRichRecoTbMcQa();
-   run->AddTask(richRecoTbMcQa);
-
-
-   std::cout << std::endl << std::endl << "-I- " << myName << ": Set runtime DB" << std::endl;
-   FairRuntimeDb* rtdb = run->GetRuntimeDb();
-   FairParRootFileIo* parIo1 = new FairParRootFileIo();
-   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-   parIo1->open(parFile.Data(),"UPDATE");
-   rtdb->setFirstInput(parIo1);
-   if ( ! parFileList->IsEmpty() ) {
-      parIo2->open(parFileList, "in");
-      rtdb->setSecondInput(parIo2);
-   }
-
-
-   std::cout << std::endl << "-I- " << myName << ": Initialize run" << std::endl;
-   run->Init();
-
-
-   rtdb->setOutput(parIo1);
-   rtdb->saveOutput();
-   rtdb->print();
-
-
-   std::cout << std::endl << std::endl;
-   std::cout << "-I- " << myName << ": Starting run" << std::endl;
-   run->Run(0, nEvents);
-
-
-   timer.Stop();
-   Double_t rtime = timer.RealTime();
-   Double_t ctime = timer.CpuTime();
-   std::cout << std::endl << std::endl;
-   std::cout << "Macro finished successfully." << std::endl;
-   std::cout << "Output file is " << digiFile << std::endl;
-   std::cout << "Parameter file is " << parFile << std::endl;
-   std::cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << std::endl;
-   std::cout << std::endl;
-   std::cout << " Test passed" << std::endl;
-   std::cout << " All ok " << std::endl;
+  timer.Stop();
+  Double_t rtime = timer.RealTime();
+  Double_t ctime = timer.CpuTime();
+  std::cout << std::endl;
+  std::cout << "Macro finished successfully." << std::endl;
+  std::cout << "Digi file is " << digiFile << std::endl;
+  std::cout << "Parameter file is " << parFile << std::endl;
+  std::cout << "Real time " << rtime << " s, CPU time " << ctime  << " s" << std::endl << std::endl;
+  std::cout << " Test passed" << std::endl;
+  std::cout << " All ok " << std::endl;
 
 }
+

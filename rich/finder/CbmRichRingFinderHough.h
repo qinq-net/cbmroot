@@ -75,10 +75,12 @@ private:
 	/**
 	 * \brief Add found rings to the output TClonesArray.
 	 * \param[out] rRingArray Output array of CbmRichRing.
+	 * \param[in] rHitArray  Array of CbmRichHit.
 	 * \param[in] rings Found rings.
 	 */
 	void AddRingsToOutputArray(
 	      TClonesArray *rRingArray,
+	      TClonesArray *rHitArray,
 	      const vector<CbmRichRingLight*>& rings);
 
 	/**

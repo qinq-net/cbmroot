@@ -75,8 +75,8 @@ Int_t CbmRichProtRingFinderHough::DoFind(
 			CbmRichHoughHit tempPoint;
 			tempPoint.fHit.fX = hit->GetX();
 			tempPoint.fHit.fY = hit->GetY();
+			tempPoint.fHit.fId = iHit;
 			tempPoint.fX2plusY2 = hit->GetX() * hit->GetX() + hit->GetY() * hit->GetY();
-			tempPoint.fId = iHit;
 			tempPoint.fIsUsed = false;
 			allH.push_back(tempPoint);
 		}

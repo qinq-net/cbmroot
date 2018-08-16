@@ -11,6 +11,7 @@ void run_reco_urqmdtest(Int_t nEvents = 20)
     TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/urqmdtest/";
     TString mcFile = outDir + "mc.00000.root";
     TString parFile = outDir + "param.00000.root";
+    TString digiFile = outDir + "digi.00000.root";
     TString recoFile = outDir + "reco.00000.root";
     std::string resultDir = "results_urqmdtest/";
 
@@ -18,6 +19,7 @@ void run_reco_urqmdtest(Int_t nEvents = 20)
         mcFile = TString(gSystem->Getenv("MC_FILE"));
         recoFile = TString(gSystem->Getenv("RECO_FILE"));
         parFile = TString(gSystem->Getenv("PAR_FILE"));
+        digiFile = TString(gSystem->Getenv("DIGI_FILE"));
         resultDir = TString(gSystem->Getenv("RESULT_DIR"));
         geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
     }
@@ -42,6 +44,7 @@ void run_reco_urqmdtest(Int_t nEvents = 20)
 
     FairRunAna *run = new FairRunAna();
     FairFileSource* inputSource = new FairFileSource(mcFile);
+    inputSource->AddFriend(digiFile);
     run->SetSource(inputSource);
     run->SetOutputFile(recoFile);
     run->SetGenerateRunInfo(kTRUE);
@@ -55,8 +58,8 @@ void run_reco_urqmdtest(Int_t nEvents = 20)
     run->AddTask(mcManager);
 
 
-    CbmStsDigitize* stsDigi = new CbmStsDigitize();
-    run->AddTask(stsDigi);
+//    CbmStsDigitize* stsDigi = new CbmStsDigitize();
+//    run->AddTask(stsDigi);
 
     CbmStsFindClusters* stsCluster = new CbmStsFindClusters();
     stsCluster->UseEventMode();
@@ -89,9 +92,9 @@ void run_reco_urqmdtest(Int_t nEvents = 20)
     run->AddTask(finder);
 
 
-    CbmRichDigitizer* richDigi  = new CbmRichDigitizer();
-    richDigi->SetNoiseHitRate(0.); // We do not need noise hits for UrqmdTest
-    run->AddTask(richDigi);
+//    CbmRichDigitizer* richDigi  = new CbmRichDigitizer();
+//    richDigi->SetNoiseDigiRate(10.); // We do not need noise hits for UrqmdTest
+//    run->AddTask(richDigi);
 
     CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
     run->AddTask(richHitProd);
@@ -143,7 +146,7 @@ void run_reco_urqmdtest(Int_t nEvents = 20)
     Double_t ctime = timer.CpuTime();
     std::cout << std::endl << std::endl;
     std::cout << "Macro finished succesfully." << std::endl;
-    std::cout << "Output file is " << mcFile << std::endl;
+    std::cout << "Reco file is " << recoFile << std::endl;
     std::cout << "Parameter file is " << parFile << std::endl;
     std::cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << std::endl;
     std::cout << std::endl;

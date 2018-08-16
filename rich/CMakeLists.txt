@@ -111,8 +111,7 @@ qa/CbmRichTestSim.cxx
 qa/CbmRichTestHits.cxx 
 qa/CbmRichRingFitterQa.cxx
 qa/CbmRichGeoOpt.cxx
-qa/CbmRichRecoTbMcQa.cxx
-qa/CbmRichRecoTbRecoQa.cxx
+qa/CbmRichRecoTbQa.cxx
 #qa/CbmRichParallelQa.cxx 
 selection/CbmRichRingSelectAnn.cxx
 prototype/CbmRichProt.cxx
@@ -141,6 +140,7 @@ prototype/beamtime/CbmRichTrbRecoQa.cxx
 prototype/beamtime/CbmRichTrbPulserQa.cxx
 prototype/beamtime/CbmRichHitInfo.cxx
 prototype/beamtime/CbmRichTrbRecoQaStudyReport.cxx
+mirrors/CbmRichRonchiAna.cxx
 )
 
 If(TBB_FOUND)
@@ -177,8 +177,7 @@ qa/CbmRichGeoTest.h
 qa/CbmRichUrqmdTest.h
 qa/CbmRichGeoOpt.h
 qa/CbmRichRecoQa.h
-qa/CbmRichRecoTbMcQa.h
-qa/CbmRichRecoTbRecoQa.h
+qa/CbmRichRecoTbQa.h
 prototype/beamtime/CbmRichTrbUnpack.h
 prototype/beamtime/CbmRichTrbUnpack2.h
 prototype/beamtime/CbmTrbEdgeMatcher.h
@@ -193,6 +192,7 @@ prototype/beamtime/CbmRichHitInfo.h
 prototype/beamtime/CbmRichTrbRecoQaStudyReport.h
 prototype/smallprototype/CbmRichSmallPrototypeQa.h
 prototype/smallprototype/CbmRichSmallPrototypeStudyReport.h
+mirrors/CbmRichRonchiAna.h
 )
 
 If(TBB_FOUND)

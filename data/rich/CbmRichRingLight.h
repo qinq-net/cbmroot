@@ -19,7 +19,8 @@ public:
     */
    CbmRichHitLight():
       fX(0.),
-      fY(0.){}
+      fY(0.),
+      fId(0){}
 
    /**
     * \brief Distructor.
@@ -33,12 +34,15 @@ public:
     */
    CbmRichHitLight(
          float x,
-         float y):
+         float y,
+         unsigned int hitId = 0):
       fX(x),
-      fY(y) {}
+      fY(y),
+      fId(hitId){}
 
 	float fX; // x coordinate of the hit
 	float fY; // y coordinate of the hit
+	unsigned int fId; // hit id
 };
 
 class CbmRichRingLight
@@ -50,7 +54,6 @@ public:
     */
    CbmRichRingLight():
       fHits(),
-      fHitIds(),
 
       fCenterX(0.f),
       fCenterY(0.f),
@@ -75,8 +78,7 @@ public:
       fSelectionNN(0.f)
 
    {
-      fHits.reserve(30);
-      fHitIds.reserve(30);
+      fHits.reserve(40);
    }
 
    /**
@@ -85,20 +87,16 @@ public:
    virtual ~CbmRichRingLight()
    {
       fHits.clear();
-      fHitIds.clear();
    }
 
    /**
     * \brief Add new hit to the ring.
     * \param[in] hit New hit to be added.
-    * \param[in] id index of hit in TClonesArray.
     */
    void AddHit(
-         CbmRichHitLight hit,
-         unsigned short id = -1)
+         CbmRichHitLight hit)
    {
       fHits.push_back(hit);
-      fHitIds.push_back(id);
    }
 
    /**
@@ -109,10 +107,10 @@ public:
    bool RemoveHit(
          int hitId)
    {
-      std::vector<unsigned short>::iterator it;
-      for (it = fHitIds.begin(); it!= fHitIds.end(); it++){
-         if (hitId == *it){
-            fHitIds.erase(it);
+      std::vector<CbmRichHitLight>::iterator it;
+      for (it = fHits.begin(); it!= fHits.end(); it++){
+         if (hitId == it->fId){
+            fHits.erase(it);
             return true;
          }
       }
@@ -122,7 +120,7 @@ public:
    /**
     * \brief Return number of hits in ring.
     */
-	int GetNofHits() const {return fHitIds.size(); }
+	int GetNofHits() const {return fHits.size(); }
 
 	/**
 	 * \brief Return hit by the index.
@@ -134,10 +132,10 @@ public:
 	 * \brief Return hit index in TClonesArray.
 	 * \param[in] ind Index of hit in local array.
 	 */
-	unsigned short GetHitId(int ind) {return fHitIds[ind];}
+	unsigned int GetHitId(int ind) {return fHits[ind].fId;}
 
 	void SetCenterX(float x) {fCenterX = x;}
-   void SetCenterY(float y) {fCenterY = y;}
+    void SetCenterY(float y) {fCenterY = y;}
 	void SetRadius(float r) {fRadius = r;}
 
    /**
@@ -300,7 +298,6 @@ public:
 
 private:
    std::vector<CbmRichHitLight> fHits; // STL container for CbmRichHitLight
-   std::vector<unsigned short> fHitIds; // STL container for hit indexes
 
    float fCenterX;
 	float fCenterY;

@@ -30,8 +30,7 @@
 #pragma link C++ class CbmRichGeoOpt+;
 #pragma link C++ class CbmRichRingFitterQa+;
 #pragma link C++ class CbmRichRecoQa+;
-#pragma link C++ class CbmRichRecoTbMcQa+;
-#pragma link C++ class CbmRichRecoTbRecoQa+;
+#pragma link C++ class CbmRichRecoTbQa+;
 
 //prototype
 #pragma link C++ class CbmRichProt+;
@@ -59,6 +58,9 @@
 #pragma link C++ class CbmRichTrbPulserQa+;
 #pragma link C++ class CbmRichHitInfo+;
 #pragma link C++ class CbmRichTrbRecoQaStudyReport+;
+
+//mirrors
+#pragma link C++ class CbmRichRonchiAna+;
 
 
 #endif

@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void run_rich_sim_tb(Int_t nEvents = 100)
+void run_rich_sim_tb(Int_t nEvents = 1000)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -9,13 +9,13 @@ void run_rich_sim_tb(Int_t nEvents = 100)
    TString myName = "run_sim_tb";  // this macro's name for screen output
    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-   TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100_tb.C";
+   TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis300_tb.C";
 
-   TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root";
+   TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/mbias/urqmd.auau.25gev.mbias.00001.root";
    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/tb/";
-   TString parFile =  outDir + "param.00000.root";
-   TString mcFile = outDir + "mc.00000.root";
-   TString geoFile = outDir + "geo_file.root";
+   TString parFile =  outDir + "param.00001.root";
+   TString mcFile = outDir + "mc.00001.root";
+   TString geoFile = outDir + "geofile.00001.root";
 
    remove(parFile.Data());
    remove(mcFile.Data());

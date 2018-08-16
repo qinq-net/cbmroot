@@ -44,7 +44,9 @@ CbmRichDigitizer::CbmRichDigitizer()
    fNoiseDigiRate(5.),
    fDigisMap(),
    fTimeResolution(1.),
-   fDarkRatePerPixel(1000)
+   fDarkRatePerPixel(1000),
+   fPixelDeadTime(30.),
+   fFiredPixelsMap()
 {
 
 }
@@ -88,10 +90,9 @@ InitStatus CbmRichDigitizer::Init()
    fRichDigis = new TClonesArray("CbmRichDigi");
    manager->Register("RichDigi","RICH", fRichDigis, IsOutputBranchPersistent("RichDigi"));
 
-   // --- Screen output
    LOG(INFO) << GetName() << ": Initialisation successful" << FairLogger::endl;
-   LOG(INFO) << "==========================================================" << FairLogger::endl;
-   std::cout << std::endl;
+
+   fFiredPixelsMap.clear();
 
    return kSUCCESS;
 }
@@ -135,8 +136,6 @@ void CbmRichDigitizer::Exec(
 	          << ", digis: " << nDigis << ". Exec time " << setprecision(6)
 	          << timer.RealTime() << " s."
 	          << FairLogger::endl;
-
-
 }
 
 Int_t CbmRichDigitizer::ProcessMcEvent()
@@ -290,7 +289,6 @@ void CbmRichDigitizer::AddNoiseDigis(
     for(Int_t j = 0; j < nofNoiseDigis; j++) {
         Int_t address = CbmRichDigiMapManager::GetInstance().GetRandomAddress();
         CbmLink link(1., -1, eventNum, inputNum);
-        // TODO: what time to assign for noise hits
         Double_t time = fCurrentEventTime + gRandom->Uniform(0, dT);
         AddDigi(address, time, link);
     }
@@ -298,22 +296,48 @@ void CbmRichDigitizer::AddNoiseDigis(
 
 void CbmRichDigitizer::AddDigi(Int_t address, Double_t time, const CbmLink& link)
 {
-	std::map<Int_t, CbmRichDigi*>::iterator it = fDigisMap.find(address);
-	if (it == fDigisMap.end()) {
-		CbmRichDigi* digi = new CbmRichDigi();
-		digi->SetAddress(address);
-		// TODO: what time to assign if one has several MCPoints in digi
-		digi->SetTime(time);
-		CbmMatch* match = new CbmMatch();
-		match->AddLink(link);
-		digi->SetMatch(match);
-		fDigisMap.insert(pair<Int_t, CbmRichDigi*>(address, digi));
-	} else {
-		CbmRichDigi* digi = it->second;
-		CbmMatch* match = digi->GetMatch();
-		match->AddLink(link);
-	}
+    Bool_t wasFired = fFiredPixelsMap.count(address) > 0;
+    Bool_t isDetected = true;
+    if (wasFired) {
+        Double_t lastFiredTime = fFiredPixelsMap[address];
+        Double_t dt = std::fabs(time - lastFiredTime);
 
+        if (dt < fPixelDeadTime) {
+            isDetected = false;
+//            LOG(DEBUG) << "CbmRichDigitizer::AddDigi pixel NOT registered: address:" << address << " cur-last=dT: "<< time << "-"
+//                                        << lastFiredTime << "=" <<  dt << " fPixelDeadTime:" << fPixelDeadTime
+//                                        << " fFiredPixelsMap.size():" << fFiredPixelsMap.size() << " link: " << link.GetIndex()<< FairLogger::endl;
+        } else {
+            isDetected = true;
+//            LOG(DEBUG) << "CbmRichDigitizer::AddDigi pixel registered: address:" << address << " cur-last=dT: "<< time << "-"
+//                                        << lastFiredTime << "=" <<  dt << " fPixelDeadTime:" << fPixelDeadTime
+//                                        << " fFiredPixelsMap.size():" << fFiredPixelsMap.size() << " link: " << link.GetIndex() << FairLogger::endl;
+        }
+    } else {
+        isDetected = true;
+//        LOG(DEBUG) << "CbmRichDigitizer::AddDigi pixel was not fired before: address:" << address << " time:" << time
+//                << " fFiredPixelsMap.size():" << fFiredPixelsMap.size() << " link: " << link.GetIndex() << FairLogger::endl;
+
+    }
+
+    if (isDetected) {
+        std::map<Int_t, CbmRichDigi*>::iterator it = fDigisMap.find(address);
+        if (it == fDigisMap.end()) {
+            CbmRichDigi* digi = new CbmRichDigi();
+            digi->SetAddress(address);
+            digi->SetTime(time);
+            CbmMatch* match = new CbmMatch();
+            match->AddLink(link);
+            digi->SetMatch(match);
+            fDigisMap.insert(pair<Int_t, CbmRichDigi*>(address, digi));
+        } else {
+            CbmRichDigi* digi = it->second;
+            CbmMatch* match = digi->GetMatch();
+            match->AddLink(link);
+        }
+    }
+
+	fFiredPixelsMap[address] = time;
 }
 
 
@@ -326,8 +350,7 @@ void CbmRichDigitizer::WriteDigi(CbmDigi* digi) {
 
 
 void CbmRichDigitizer::ResetArrays() {
-  LOG(DEBUG) << fName << ": Resetting output arrays with size "
-      << fRichDigis->GetEntriesFast();
+  LOG(DEBUG) << fName << ": Resetting output arrays with size " << fRichDigis->GetEntriesFast();
   if ( fRichDigis ) fRichDigis->Delete();
 }
 

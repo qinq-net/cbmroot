@@ -25,7 +25,7 @@ public:
    CbmRichHoughHit():
       fHit(),
       fX2plusY2(0.f),
-      fId(0),
+      fTime(0.),
       fIsUsed(false)
    { }
 
@@ -33,7 +33,7 @@ public:
 
    CbmRichHitLight fHit;
    float fX2plusY2;
-   unsigned short fId;
+   double fTime;
    bool fIsUsed;
 };
 

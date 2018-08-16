@@ -13,6 +13,8 @@
 #include "CbmRichRing.h"
 
 #include "TClonesArray.h"
+#include "FairLogger.h"
+#include "TStopwatch.h"
 
 #include <iostream>
 
@@ -49,20 +51,22 @@ Int_t CbmRichRingFinderHough::DoFind(
       TClonesArray* /*rProjArray*/,
       TClonesArray* rRingArray)
 {
+    TStopwatch timer;
+    timer.Start();
 	fNEvent++;
-	if (fVerbose) cout << "-I- CbmRichRingFinderHough  Event no. " << fNEvent << endl;
+	LOG(INFO) << "-I- CbmRichRingFinderHough  Event/Timeslice no. " << fNEvent << FairLogger::endl;
 
 	vector<CbmRichHoughHit> UpH;
 	vector<CbmRichHoughHit> DownH;
-   fRingCount = 0;
+    fRingCount = 0;
 
 	if (NULL == rHitArray) {
-		cout << "-E- CbmRichRingFinderHough::DoFind: Hit array missing!"<< rHitArray << endl;
+	    LOG(ERROR) << "-E- CbmRichRingFinderHough::DoFind: Hit array missing!"<< rHitArray << FairLogger::endl;
 		return -1;
 	}
 	const Int_t nhits = rHitArray->GetEntriesFast();
 	if (nhits <= 0) {
-		cout << "-E- CbmRichRingFinderHough::DoFind: No hits in this event!"	<< endl;
+		LOG(ERROR) << "-E- CbmRichRingFinderHough::DoFind: No hits in this event!"	<< FairLogger::endl;
 		return -1;
 	}
 
@@ -72,13 +76,14 @@ Int_t CbmRichRingFinderHough::DoFind(
 	// convert CbmRichHit to CbmRichHoughHit and
 	// sort hits according to the photodetector (up or down)
 	for(Int_t iHit = 0; iHit < nhits; iHit++) {
-		CbmRichHit * hit = (CbmRichHit*) rHitArray->At(iHit);
+		CbmRichHit * hit = static_cast<CbmRichHit*>( rHitArray->At(iHit) );
 		if (hit) {
 			CbmRichHoughHit tempPoint;
 			tempPoint.fHit.fX = hit->GetX();
 			tempPoint.fHit.fY = hit->GetY();
+			tempPoint.fHit.fId = iHit;
 			tempPoint.fX2plusY2 = hit->GetX() * hit->GetX() + hit->GetY() * hit->GetY();
-			tempPoint.fId = iHit;
+			tempPoint.fTime = hit->GetTime();
 			tempPoint.fIsUsed = false;
 			if (hit->GetY() >= 0)
 				UpH.push_back(tempPoint);
@@ -87,33 +92,59 @@ Int_t CbmRichRingFinderHough::DoFind(
 		}
 	}
 
+	timer.Stop();
+	Double_t dt1 = timer.RealTime();
+
+	timer.Start();
+	LOG(DEBUG) << "-I- CbmRichRingFinderHough nofHits Up:" << UpH.size() << FairLogger::endl;
+
 	fHTImpl->SetData(UpH);
 	fHTImpl->DoFind();
-	if (rRingArray!=NULL) AddRingsToOutputArray(rRingArray, fHTImpl->GetFoundRings());
+	if (rRingArray!=NULL) AddRingsToOutputArray(rRingArray, rHitArray, fHTImpl->GetFoundRings());
 	//for_each(UpH.begin(), UpH.end(), DeleteObject());
 	UpH.clear();
 
+	timer.Stop();
+	Double_t dt2 = timer.RealTime();
+
+	timer.Start();
+	LOG(DEBUG) << "-I- CbmRichRingFinderHough nofHits Down:" << DownH.size() << FairLogger::endl;
 	fHTImpl->SetData(DownH);
 	fHTImpl->DoFind();
-	if (rRingArray!=NULL) AddRingsToOutputArray(rRingArray, fHTImpl->GetFoundRings());
+	if (rRingArray!=NULL) AddRingsToOutputArray(rRingArray, rHitArray, fHTImpl->GetFoundRings());
 	//for_each(DownH.begin(), DownH.end(), DeleteObject());
 	DownH.clear();
+	timer.Stop();
+	Double_t dt3 = timer.RealTime();
 
-	cout << "CbmRichRingFinderHough. Number of found rings "<< rRingArray->GetEntriesFast() << endl;
+	LOG(INFO) << "CbmRichRingFinderHough. Number of found rings "<< rRingArray->GetEntriesFast() << FairLogger::endl;
+
+	LOG(INFO) << "time1:"<< dt1 << " time2:" << dt2 << " time3:" << dt3 << " total:" << dt1 + dt2 + dt3 <<  FairLogger::endl;
 
 	return 1;
 }
 
 void CbmRichRingFinderHough::AddRingsToOutputArray(
       TClonesArray *rRingArray,
+      TClonesArray *rHitArray,
 		const vector<CbmRichRingLight*>& rings)
 {
 	for (UInt_t iRing = 0; iRing < rings.size(); iRing++) {
 		if (rings[iRing]->GetRecFlag() == -1)	continue;
 		CbmRichRing* r = new CbmRichRing();
-		for (Int_t i = 0; i < rings[iRing]->GetNofHits(); i++){
-			r->AddHit(rings[iRing]->GetHitId(i));
+        double ringTime = 0.;
+        Int_t ringCounter = 0;
+
+		for (Int_t iH = 0; iH < rings[iRing]->GetNofHits(); iH++){
+		    Int_t hitId = rings[iRing]->GetHitId(iH);
+			r->AddHit(hitId);
+			CbmRichHit * hit = static_cast<CbmRichHit*>( rHitArray->At(hitId) );
+			if (hit != nullptr) {
+			    ringCounter++;
+			    ringTime += hit->GetTime();
+			}
 		}
+		r->SetTime(ringTime / (double) ringCounter);
 		new ((*rRingArray)[fRingCount]) CbmRichRing(*r);
 		fRingCount++;
 	}

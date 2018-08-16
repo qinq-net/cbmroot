@@ -51,14 +51,14 @@ InitStatus CbmRichHitProducer::Init()
     FairRootManager* manager = FairRootManager::Instance();
 
     fCbmEvents = dynamic_cast<TClonesArray*>(manager->GetObject("Event"));
-    if ( fCbmEvents == NULL) {
+    if ( fCbmEvents == nullptr) {
         LOG(INFO) << ": CbmEvent NOT found \n \n \n" << FairLogger::endl;
     } else {
         LOG(INFO) << ": CbmEvent found \n \n \n" << FairLogger::endl;
     }
 
     fRichDigis = (TClonesArray*)manager->GetObject("RichDigi");
-    if (NULL == fRichDigis) { Fatal("CbmRichHitProducer::Init","No RichDigi array!"); }
+    if (nullptr == fRichDigis) { Fatal("CbmRichHitProducer::Init","No RichDigi array!"); }
 
     fRichHits = new TClonesArray("CbmRichHit");
     manager->Register("RichHit","RICH", fRichHits, IsOutputBranchPersistent("RichHit"));
@@ -76,10 +76,10 @@ void CbmRichHitProducer::Exec(
 
     // if CbmEvent does not exist then process standard event.
     // if CbmEvent exists then proceed all events in time slice.
-    Int_t nUnits = ( fCbmEvents != NULL) ? fCbmEvents->GetEntriesFast() : 1;
+    Int_t nUnits = ( fCbmEvents != nullptr) ? fCbmEvents->GetEntriesFast() : 1;
 
     for (Int_t iUnit = 0; iUnit < nUnits; iUnit++) {
-        CbmEvent* event = ( fCbmEvents != NULL) ? static_cast<CbmEvent*>(fCbmEvents->At(iUnit)) : NULL;
+        CbmEvent* event = ( fCbmEvents != nullptr) ? static_cast<CbmEvent*>(fCbmEvents->At(iUnit)) : nullptr;
         ProcessData(event);
     }
 }
@@ -92,14 +92,14 @@ void CbmRichHitProducer::ProcessData(
         Int_t nofDigis = event->GetNofData(kRichDigi);
         LOG(INFO) << "nofDigis: " << nofDigis << FairLogger::endl;
 
-        for (Int_t i = 0; i < nofDigis; i++) {
-            Int_t digiIndex = event->GetIndex(kRichDigi, i);
-            ProcessDigi(event, i);
+        for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
+            Int_t digiIndex = event->GetIndex(kRichDigi, iDigi);
+            ProcessDigi(event, iDigi);
         }
 
     } else {
-        for(Int_t i = 0; i < fRichDigis->GetEntries(); i++){
-            ProcessDigi(event, i);
+        for(Int_t iDigi = 0; iDigi < fRichDigis->GetEntries(); iDigi++){
+            ProcessDigi(event, iDigi);
         }
     }
 }
@@ -109,7 +109,7 @@ void CbmRichHitProducer::ProcessDigi(
         Int_t digiIndex)
 {
     CbmRichDigi* digi = static_cast<CbmRichDigi*>(fRichDigis->At(digiIndex));
-    if (digi == NULL) return;
+    if (digi == nullptr) return;
     if (digi->GetAddress() < 0) return;
     CbmRichMapData* data =  CbmRichDigiMapManager::GetInstance().GetDataByAddress(digi->GetAddress());
     TVector3 posPoint;
