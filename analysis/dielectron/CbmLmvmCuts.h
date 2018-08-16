@@ -38,25 +38,30 @@ public:
 	 * Set default electron ID and analysis cuts.
 	 */
 	void SetDefaultCuts()
-	{
-		//electron ID cuts, we use CbmLitGlobalElectronId for identification
-		fMomentumCut = -1.; // if cut < 0 it is not used
+	{ 	 //electron ID cuts, we use CbmLitGlobalElectronId for identification
+                fMomentumCut = -1.; // if cut < 0 it is not used
 
-		// analysis cuts
-		fPtCut = 0.2;
-		fAngleCut = 1.;
-		fChiPrimCut = 3.;
-		fGammaCut = 0.025;
-		fStCutAngle = 1.5;
-		fStCutPP = 1.5;
-		fTtCutAngle = 0.75;
-		fTtCutPP = 4.0;
-		fRtCutAngle = 1.0;
-		fRtCutPP = 2.5;
-		fMvd1CutP = 1.2;
-		fMvd1CutD = 0.4;
-		fMvd2CutP = 1.5;
-		fMvd2CutD = 0.5;
+                // analysis cuts
+                fPtCut = 0.2;
+                fAngleCut = 1.;
+                fChiPrimCut = 3.;
+                fGammaCut = 0.025;
+                //fStCutAngle = 1.5;
+                //fStCutPP = 1.5;
+                fStCutAngle = 2.4;
+                fStCutPP = 1.;
+                //fTtCutAngle = 0.75;
+                //fTtCutPP = 4.0;
+                fTtCutAngle = 1.5;
+                fTtCutPP = 1.7;
+                //fRtCutAngle = 1.0;
+                //fRtCutPP = 2.5;
+                fRtCutAngle = 1.6;
+                fRtCutPP = 1.2;
+                fMvd1CutP = 1.2;
+                fMvd1CutD = 0.4;
+                fMvd2CutP = 1.5;
+                fMvd2CutD = 0.5;
 	}
 
 	/*

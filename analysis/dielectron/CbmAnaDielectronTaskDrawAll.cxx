@@ -51,7 +51,7 @@ void CbmAnaDielectronTaskDrawAll::DrawHistosFromFile(
     fHM.resize(fNofSignals);
     for (int i = 0; i < fNofSignals; i++){
         fHM[i] = new CbmHistManager();
-        if (fileNames[i] == "") continue;
+        if (!fDrawQgp && i == kQgp) continue;
         TFile* file = new TFile(fileNames[i].c_str());
         fHM[i]->ReadFromFile(file);
         Int_t nofEvents = (int) H1(i, "fh_event_number")->GetEntries();
@@ -226,7 +226,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
                 {"", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
         } else {
             DrawH1({coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sPhi},
-                            {"", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
+                            {"", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
         }
     } else {
         if (fDrawQgp) {
@@ -234,7 +234,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
                 {"", "", "", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
         } else {
             DrawH1({sbg, bg, coctail, sPi0, sEta, sOmegaDalitz, sOmega, sInmed, sPhi},
-                            {"", "", "", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
+                            {"", "", "", "", "", "", "", "", ""}, kLinear, kLog, false, 0.8, 0.8, 0.99, 0.99, "HIST L");
         }
     }
     
@@ -395,6 +395,7 @@ void CbmAnaDielectronTaskDrawAll::FillMeanHist()
 {
     for (int step = 0; step < CbmLmvmHist::fNofAnaSteps; step++){
         for (int iS = 0; iS < fNofSignals; iS++){
+            if (!fDrawQgp && iS == kQgp) continue;
             if (iS == 0) {
                 fh_mean_bg_minv[step] = (TH1D*)H1(iS, "fh_bg_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
                 fh_mean_eta_minv[step] = (TH1D*)H1(iS, "fh_eta_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
@@ -564,6 +565,7 @@ void CbmAnaDielectronTaskDrawAll::DrawSBgSignals()
     latex->DrawLatex(0.85, 0.95, "sigma");
     TString str;
     for (int iF = 0; iF < fNofSignals - 1; iF++){
+        if (!fDrawQgp && iF == kQgp) continue;
         string signalName = CbmLmvmHist::fSignalNames[iF];
         cout << "Signal: " << signalName << endl;
         stringstream ss;

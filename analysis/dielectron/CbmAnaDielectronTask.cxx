@@ -1671,6 +1671,7 @@ void CbmAnaDielectronTask::IsElectron(
         cand->fTrdAnn = CbmLitGlobalElectronId::GetInstance().GetTrdAnn(globalTrackIndex, momentum);
 
         Bool_t tofEl = CbmLitGlobalElectronId::GetInstance().IsTofElectron(globalTrackIndex, momentum);
+        cout << "tof momentum: " << momentum << endl;
         Bool_t momCut = (fCuts.fMomentumCut > 0.)?(momentum < fCuts.fMomentumCut):true;
         
         if (richEl && trdEl && tofEl && momCut) {
