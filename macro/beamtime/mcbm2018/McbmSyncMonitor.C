@@ -10,7 +10,7 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void PulserMonitor(TString inFile = "",
+void McbmSyncMonitor(TString inFile = "",
                  Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
                  Int_t iStartFile = -1, Int_t iStopFile = -1 )
 {
@@ -33,9 +33,13 @@ void PulserMonitor(TString inFile = "",
   TList *parFileList = new TList();
   TString paramDir = "./";
 
-  TString paramFileHodo = paramDir + "PulserPar.par";
-  TObjString* tutDetDigiFileHodo = new TObjString(paramFileHodo);
-  parFileList->Add(tutDetDigiFileHodo);
+  TString paramFileSts = paramDir + "PulserPar.par";
+  TObjString* tutDetDigiFileSts = new TObjString(paramFileSts);
+  parFileList->Add(tutDetDigiFileSts);
+
+  TString paramFileTof = paramDir + "MapTofGbtx.par";
+  TObjString* tutDetDigiFileTof = new TObjString(paramFileTof);
+  parFileList->Add(tutDetDigiFileTof);
 
   // --- Set debug level
   gDebug = 0;
@@ -50,13 +54,14 @@ void PulserMonitor(TString inFile = "",
   std::cout << ">>> Cern2017Monitor: Initialising..." << std::endl;
 
   // Hodoscopes Monitor
-  CbmMcbm2018MonitorStsSync* monitorPulser = new CbmMcbm2018MonitorStsSync();
+  CbmMcbm2018MonitorMcbmSync* monitorPulser = new CbmMcbm2018MonitorMcbmSync();
   monitorPulser->SetHistoFileName( "data/PulserHistos.root" );
 //  monitorPulser->SetPrintMessage();
 //  monitorPulser->SetMsOverlap( 1 );
 //  monitorPulser->SetLongDurationLimits( 3600, 10 );
   monitorPulser->SetLongDurationLimits( 7200, 60 );
-  monitorPulser->SetCoincidenceBorder(   0.0,  200 );
+//  monitorPulser->SetCoincidenceBorder(   0.0,  200 );
+  monitorPulser->SetTofFitZoomWidthPs();
 
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();
@@ -75,11 +80,13 @@ void PulserMonitor(TString inFile = "",
   } // if( "" != inFile )
       else
       {
-         source->SetHostName( "localhost");
+//         source->SetHostName( "localhost");
+         source->SetHostName( "cbmflib22");
          source->SetPortNumber( 5556 );
       }
 
-  source->AddUnpacker(monitorPulser,  0x10, 6); // stsXyter DPBs
+//  source->AddUnpacker(monitorPulser,  0x10, 6); // stsXyter DPBs
+  source->AddUnpacker(monitorPulser,  0x60, 6); // stsXyter DPB
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();
