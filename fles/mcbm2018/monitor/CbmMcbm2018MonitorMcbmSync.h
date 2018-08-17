@@ -84,6 +84,9 @@ public:
 
    inline void SetHistoryHistoSize( UInt_t inHistorySizeSec = 1800 ) { fuTofHistoryHistoSize = inHistorySizeSec; }
 
+   inline void SetTofFitZoomWidthPs( Double_t inZoomWidth = 1000.0 ) { fdTofFitZoomWidthPs = inZoomWidth; }
+   void UpdateZoomedFitTof();
+
 private:
    /// Parameters
       /// FLES containers

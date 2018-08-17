@@ -29,6 +29,7 @@
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TMath.h"
+#include "TF1.h"
 
 // C++11
 
@@ -39,6 +40,14 @@
 
 Bool_t bMcbm2018ResetSync = kFALSE;
 Bool_t bMcbm2018WriteSync = kFALSE;
+/*
+Bool_t bMcbm2018ResetSync = kFALSE;
+Bool_t bMcbm2018WriteSync = kFALSE;
+*/
+Bool_t bMcbm2018SyncResetHistosTof = kFALSE;
+Bool_t bMcbm2018SyncSaveHistosTof  = kFALSE;
+Bool_t bMcbm2018SyncUpdateZoomedFit = kFALSE;
+
 
 CbmMcbm2018MonitorMcbmSync::CbmMcbm2018MonitorMcbmSync() :
    CbmMcbmUnpack(),
@@ -129,7 +138,7 @@ CbmMcbm2018MonitorMcbmSync::CbmMcbm2018MonitorMcbmSync() :
    fuTofGet4Id( 0 ),
    fuTofGet4Nr( 0 ),
    fiTofEquipmentId( 0 ),
-   fviTofMsgCounter(),
+   fviTofMsgCounter( 1 + gdpbv100::MSG_STAR_TRI_D, 0),
    fvulTofGdpbTsMsb(),
    fvulTofGdpbTsLsb(),
    fvulTofStarTsMsb(),
@@ -408,7 +417,20 @@ Bool_t CbmMcbm2018MonitorMcbmSync::ReInitContainers()
       fvuTofStarTrigCmdLast[ uGdpb ] = 0;
    } // for (Int_t iGdpb = 0; iGdpb < fuTofNrOfGdpbs; ++iGdpb)
 
+   /// Suppressed epoch buffering (epoch after data
    fvmTofEpSupprBuffer.resize( fuTofNrOfGet4 );
+
+   /// Epoch indedx book-keeping
+   fvulTofCurrentEpoch.resize( fuTofNrOfGdpbs * fuTofNrOfGet4PerGdpb );
+   fvbTofFirstEpochSeen.resize( fuTofNrOfGdpbs * fuTofNrOfGet4PerGdpb );
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      for( UInt_t uGet4 = 0; uGet4 < fuTofNrOfGet4PerGdpb; ++uGet4 )
+      {
+         fvulTofCurrentEpoch[  GetArrayIndexGet4(uGdpb, uGet4) ] = 0;
+         fvbTofFirstEpochSeen[ GetArrayIndexGet4(uGdpb, uGet4) ] = kFALSE;
+      } // for( UInt_t uGet4 = 0; uGet4 < fuTofNrOfGet4PerGdpb; ++uGet4 )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
 
    ///* Pulser monitoring *///
    fvdTofTsLastPulserHit.resize( fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs, 0.0 );
@@ -1130,9 +1152,10 @@ void CbmMcbm2018MonitorMcbmSync::CreateTofHistograms()
    sHistName = "hSysMessType";
    title = "Nb of system message for each type; System Type";
    fhTofSysMessType = new TH1I(sHistName, title, 1 + gdpbv100::SYS_SYNC_ERROR, 0., 1 + gdpbv100::SYS_SYNC_ERROR);
-   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR, "GET4 ERROR");
-   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN, "UNKW GET4 MSG");
-   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR, "SYNC ERROR");
+   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR,     "GET4 ERROR");
+   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN,     "UNKW GET4 MSG");
+   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_SYNC_MISS, "SYS_GET4_SYNC_MISS");
+   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR,     "SYNC ERROR");
 
    /*******************************************************************/
    sHistName = "hGet4MessType";
@@ -1511,13 +1534,12 @@ void CbmMcbm2018MonitorMcbmSync::CreateTofHistograms()
       server->Register("/TofRaw", fhTofTimeRmsZoomFitPuls );
       server->Register("/TofRaw", fhTofTimeResFitPuls );
 
+      server->RegisterCommand("/Reset_All_TOF",  "bMcbm2018SyncResetHistosTof=kTRUE");
+      server->RegisterCommand("/Save_All_Tof",   "bMcbm2018SyncSaveHistosTof=kTRUE");
+      server->RegisterCommand("/Update_PulsFit", "bMcbm2018SyncUpdateZoomedFit=kTRUE");
 
-      server->RegisterCommand("/Reset_All_eTOF", "bResetTofStarMoniShiftHistos=kTRUE");
-      server->RegisterCommand("/Save_All_eTof",  "bSaveTofStarMoniShiftHistos=kTRUE");
-      server->RegisterCommand("/Update_PulsFit", "bTofUpdateZoomedFitMoniShift=kTRUE");
-
-      server->Restrict("/Reset_All_eTof", "allow=admin");
-      server->Restrict("/Save_All_eTof",  "allow=admin");
+      server->Restrict("/Reset_All_Tof", "allow=admin");
+      server->Restrict("/Save_All_Tof",  "allow=admin");
       server->Restrict("/Update_PulsFit", "allow=admin");
    } // if( server )
 #endif
@@ -1788,6 +1810,7 @@ void CbmMcbm2018MonitorMcbmSync::CreateTofHistograms()
 
 Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
+   /// General commands
    if( bMcbm2018ResetSync )
    {
       ResetAllHistos();
@@ -1798,6 +1821,27 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
       SaveAllHistos( fsHistoFileFullname );
       bMcbm2018WriteSync = kFALSE;
    } // if( bMcbm2018WriteSync )
+
+   /// STS commands
+
+   /// TOF commands
+   if( bMcbm2018SyncResetHistosTof )
+   {
+      LOG(INFO) << "Reset TOF histos " << FairLogger::endl;
+      ResetAllHistos();
+      bMcbm2018SyncResetHistosTof = kFALSE;
+   } // if( bMcbm2018SyncResetHistosTof )
+   if( bMcbm2018SyncSaveHistosTof )
+   {
+      LOG(INFO) << "Start saving TOF histos " << FairLogger::endl;
+      SaveAllHistos( "data/histosMcbmTof.root" );
+      bMcbm2018SyncSaveHistosTof = kFALSE;
+   } // if( bMcbm2018SyncSaveHistosTof )
+   if( bMcbm2018SyncUpdateZoomedFit )
+   {
+      UpdateZoomedFitTof();
+      bMcbm2018SyncUpdateZoomedFit = kFALSE;
+   } // if (bMcbm2018SyncUpdateZoomedFit)
 
    LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
               << "microslices." << FairLogger::endl;
@@ -1913,6 +1957,21 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
 /****************** STS Sync ******************************************/
 
 /****************** TOF Sync ******************************************/
+
+      // Update RMS plots only every 10s in data
+      if( 10.0 < fdTofTsStartTime - fdTofLastRmsUpdateTime )
+      {
+         // Reset summary histograms for safety
+         fhTofTimeRmsPulser->Reset();
+
+         for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeA++)
+            for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeB++)
+               if( NULL != fvhTofTimeDiffPulser[uFeeA][uFeeB] )
+               {
+                  fhTofTimeRmsPulser->Fill( uFeeA, uFeeB, fvhTofTimeDiffPulser[uFeeA][uFeeB]->GetRMS() );
+               } // if( NULL != fvhTimeDiffPulser[uFeeA][uFeeB] )
+         fdTofLastRmsUpdateTime = fdTofTsStartTime;
+      } // if( 10.0 < fdTofTsStartTime - fdTofLastRmsUpdateTime )
 /****************** TOF Sync ******************************************/
    } // for( UInt_t uMsIdx = 0; uMsIdx < uNbMsLoop; uMsIdx ++ )
 
@@ -1959,6 +2018,10 @@ Bool_t CbmMcbm2018MonitorMcbmSync::ProcessStsMs(const fles::Timeslice& ts, size_
    fuCurrDpbId  = static_cast< uint32_t >( fuCurrentEquipmentId & 0xFFFF );
    fuCurrDpbIdx = fmStsDpbIdIndexMap[ fuCurrDpbId ];
 
+   /*** TODO for TOF, should be changed ?!? ***/
+   if( 0 == uMsIdx )
+      fdTofTsStartTime = (1e-9) * fulCurrentMsIdx;
+   /*** TODO for TOF, should be changed ?!? ***/
 
    if( fdStsStartTimeMsSz < 0 )
       fdStsStartTimeMsSz = dMsTime;
@@ -2234,7 +2297,13 @@ Bool_t CbmMcbm2018MonitorMcbmSync::ProcessTofMs( const fles::Timeslice& ts, size
 {
    auto msDescriptor = ts.descriptor( uMsComp, uMsIdx );
    fuCurrentEquipmentId = msDescriptor.eq_id;
+   fdTofMsIndex = static_cast<double>(msDescriptor.idx);
    const uint8_t* msContent = reinterpret_cast<const uint8_t*>( ts.content( uMsComp, uMsIdx ) );
+
+   /*** TODO for TOF, should be changed ?!? ***/
+   if( 0 == uMsIdx )
+      fdTofTsStartTime = (1e-9) * fdTofMsIndex;
+   /*** TODO for TOF, should be changed ?!? ***/
 
    uint32_t size = msDescriptor.size;
 //    fulLastMsIdx = msDescriptor.idx;
@@ -2697,6 +2766,11 @@ void CbmMcbm2018MonitorMcbmSync::FillTofSysInfo(gdpbv100::Message mess)
                     << FairLogger::endl;
          break;
       } // case gdpbv100::SYS_GDPB_UNKWN:
+      case gdpbv100::SYS_GET4_SYNC_MISS:
+      {
+         LOG(DEBUG) << "GET4 synchronization pulse missing" << FairLogger::endl;
+         break;
+      } // case gdpbv100::SYS_GET4_SYNC_MISS:
       case gdpbv100::SYS_SYNC_ERROR:
       {
          LOG(DEBUG) << "Closy synchronization error" << FairLogger::endl;
@@ -2801,6 +2875,100 @@ void CbmMcbm2018MonitorMcbmSync::FillTofStarTrigInfo(gdpbv100::Message mess)
    } // switch( iMsgIndex )
 }
 /****************** TOF Sync ******************************************/
+
+/****************** STS histos ****************************************/
+/****************** STS histos ****************************************/
+
+/****************** TOF histos ****************************************/
+void CbmMcbm2018MonitorMcbmSync::UpdateZoomedFitTof()
+{
+   // Only do something is the user defined the width he want for the zoom
+   if( 0.0 < fdTofFitZoomWidthPs )
+   {
+      // Reset summary histograms for safety
+      fhTofTimeRmsZoomFitPuls->Reset();
+      fhTofTimeResFitPuls->Reset();
+
+      Double_t dRes = 0;
+      TF1 *fitFuncPairs[ fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs ][ fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs ];
+
+      for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeA++)
+         for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeB++)
+            if( NULL != fvhTofTimeDiffPulser[uFeeA][uFeeB] )
+      {
+         // Check that we have at least 1 entry
+         if( 0 == fvhTofTimeDiffPulser[uFeeA][uFeeB]->GetEntries() )
+         {
+            fhTofTimeRmsZoomFitPuls->Fill( uFeeA, uFeeB, 0.0 );
+            fhTofTimeResFitPuls->Fill( uFeeA, uFeeB, 0.0 );
+            LOG(DEBUG) << "CbmMcbm2018MonitorMcbmSync::UpdateZoomedFitTof => Empty input "
+                         << "for FEE pair " << uFeeA << " and " << uFeeB << " !!! "
+                         << FairLogger::endl;
+            continue;
+         } // if( 0 == fvhTofTimeDiffPulser[uFeeA][uFeeB]->GetEntries() )
+
+         // Read the peak position (bin with max counts) + total nb of entries
+         Int_t    iBinWithMax = fvhTofTimeDiffPulser[uFeeA][uFeeB]->GetMaximumBin();
+         Double_t dNbCounts   = fvhTofTimeDiffPulser[uFeeA][uFeeB]->Integral();
+
+         // Zoom the X axis to +/- ZoomWidth around the peak position
+         Double_t dPeakPos = fvhTofTimeDiffPulser[uFeeA][uFeeB]->GetXaxis()->GetBinCenter( iBinWithMax );
+         fvhTofTimeDiffPulser[uFeeA][uFeeB]->GetXaxis()->SetRangeUser( dPeakPos - fdTofFitZoomWidthPs,
+                                                                    dPeakPos + fdTofFitZoomWidthPs );
+
+         // Read integral and check how much we lost due to the zoom (% loss allowed)
+         Double_t dZoomCounts = fvhTofTimeDiffPulser[uFeeA][uFeeB]->Integral();
+         if( ( dZoomCounts / dNbCounts ) < 0.99 )
+         {
+            fhTofTimeRmsZoomFitPuls->Fill( uFeeA, uFeeB, 0.0 );
+            fhTofTimeResFitPuls->Fill( uFeeA, uFeeB, 0.0 );
+            LOG(WARNING) << "CbmMcbm2018MonitorMcbmSync::UpdateZoomedFitTof => Zoom too strong, "
+                         << "more than 1% loss for FEE pair " << uFeeA << " and " << uFeeB << " !!! "
+                         << FairLogger::endl;
+            continue;
+         } // if( ( dZoomCounts / dNbCounts ) < 0.99 )
+
+         // Fill new RMS after zoom into summary histo
+         fhTofTimeRmsZoomFitPuls->Fill( uFeeA, uFeeB, fvhTofTimeDiffPulser[uFeeA][uFeeB]->GetRMS() );
+
+
+         // Fit using zoomed boundaries + starting gaussian width, store into summary histo
+         dRes = 0;
+         fitFuncPairs[uFeeA][uFeeB] = new TF1( Form("fPair_%02d_%02d", uFeeA, uFeeB ), "gaus",
+                                        dPeakPos - fdTofFitZoomWidthPs ,
+                                        dPeakPos + fdTofFitZoomWidthPs);
+         // Fix the Mean fit value around the Histogram Mean
+         fitFuncPairs[uFeeA][uFeeB]->SetParameter( 0, dZoomCounts );
+         fitFuncPairs[uFeeA][uFeeB]->SetParameter( 1, dPeakPos );
+         fitFuncPairs[uFeeA][uFeeB]->SetParameter( 2, 200.0 ); // Hardcode start with ~4*BinWidth, do better later
+         // Using integral instead of bin center seems to lead to unrealistic values => no "I"
+         fvhTofTimeDiffPulser[uFeeA][uFeeB]->Fit( Form("fPair_%02d_%02d", uFeeA, uFeeB ), "QRM0");
+         // Get Sigma
+         dRes = fitFuncPairs[uFeeA][uFeeB]->GetParameter(2);
+         // Cleanup memory
+         delete fitFuncPairs[uFeeA][uFeeB];
+         // Fill summary
+         fhTofTimeResFitPuls->Fill( uFeeA, uFeeB,  dRes / TMath::Sqrt2() );
+
+
+         LOG(INFO) << "CbmMcbm2018MonitorMcbmSync::UpdateZoomedFitTof => "
+                      << "For FEE pair " << uFeeA << " and " << uFeeB
+                      << " we have zoomed RMS = " << fvhTofTimeDiffPulser[uFeeA][uFeeB]->GetRMS()
+                      << " and a resolution of " << dRes / TMath::Sqrt2()
+                      << FairLogger::endl;
+
+         // Restore original axis state?
+         fvhTofTimeDiffPulser[uFeeA][uFeeB]->GetXaxis()->UnZoom();
+      } // loop on uFeeA and uFeeB + check if corresponding fvhTofTimeDiffPulser exists
+   } // if( 0.0 < fdTofFitZoomWidthPs )
+      else
+      {
+         LOG(ERROR) << "CbmMcbm2018MonitorMcbmSync::UpdateZoomedFitTof => Zoom width not defined, "
+                    << "please use SetTofFitZoomWidthPs, e.g. in macro, before trying this update !!!"
+                    << FairLogger::endl;
+      } // else of if( 0.0 < fdTofFitZoomWidthPs )
+}
+/****************** TOF Histos ****************************************/
 
 void CbmMcbm2018MonitorMcbmSync::Reset()
 {
