@@ -15,6 +15,7 @@
 // Data
 #include "StsXyterMessage.h"
 #include "StsXyterFinalHit.h"
+#include "gDpbMessv100.h"
 
 // CbmRoot
 #include "CbmMcbmUnpack.h"
@@ -31,6 +32,8 @@
 class CbmDigi;
 class CbmCern2017UnpackParHodo;
 class CbmCern2017UnpackParSts;
+
+class CbmTofStar2018Par;
 
 class CbmMcbm2018MonitorMcbmSync: public CbmMcbmUnpack
 {
@@ -79,25 +82,38 @@ public:
    void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
    void SetStsCoincidenceBorder( Double_t dCenterPos, Double_t dBorderVal );
 
+   inline void SetHistoryHistoSize( UInt_t inHistorySizeSec = 1800 ) { fuTofHistoryHistoSize = inHistorySizeSec; }
+
 private:
-   // Parameters
-      // FLES containers
+   /// Parameters
+      /// FLES containers
    std::vector< size_t >    fvMsComponentsListSts; //!
    std::vector< size_t >    fvMsComponentsListTof; //!
    size_t                   fuNbCoreMsPerTs; //!
    size_t                   fuNbOverMsPerTs; //!
    Bool_t                   fbIgnoreOverlapMs; //! /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
-      // Unpacking and mapping
+      /// Unpacking and mapping parameters for STS
    CbmCern2017UnpackParHodo* fUnpackParHodo; //!
-   UInt_t                   fuStsNrOfDpbs;       //! Total number of Sts DPBs in system
-   std::map<UInt_t, UInt_t> fmStsDpbIdIndexMap;  //! Map of DPB Identifier to DPB index
-   UInt_t                   fuStsNbElinksPerDpb; //! Number of possible eLinks per DPB
-   UInt_t                   fuStsNbStsXyters;    //! Number of StsXyter ASICs
-   UInt_t                   fuStsNbChanPerAsic;  //! Number of channels per StsXyter ASIC => should be constant somewhere!!!!
+   UInt_t                    fuStsNrOfDpbs;       //! Total number of Sts DPBs in system
+   std::map<UInt_t, UInt_t>  fmStsDpbIdIndexMap;  //! Map of DPB Identifier to DPB index
+   UInt_t                    fuStsNbElinksPerDpb; //! Number of possible eLinks per DPB
+   UInt_t                    fuStsNbStsXyters;    //! Number of StsXyter ASICs
+   UInt_t                    fuStsNbChanPerAsic;  //! Number of channels per StsXyter ASIC => should be constant somewhere!!!!
    std::vector< std::vector< UInt_t > > fvuStsElinkToAsic;   //! Vector holding for each link the corresponding ASIC index [fuNrOfDpbs * fuStsNbElinksPerDpb]
+      /// Unpacking and mapping parameters for TOF
+   CbmTofStar2018Par* fUnpackParTof;         //!
+   UInt_t             fuTofNrOfGdpbs;           //! Total number of GDPBs in the system
+   UInt_t             fuTofNrOfFeePerGdpb;      //! Number of FEBs per GDPB
+   UInt_t             fuTofNrOfGet4PerFee;      //! Number of GET4s per FEE <= Constant, should be treated as such, maybe in param class?
+   UInt_t             fuTofNrOfChannelsPerGet4; //! Number of channels in each GET4 <= Constant, should be treated as such, maybe in param class?
+   UInt_t             fuTofNrOfChannelsPerFee;  //! Number of channels in each FEE <= Constant, should be treated as such, maybe in param class?
+   UInt_t             fuTofNrOfGet4;            //! Total number of Get4 chips in the system
+   UInt_t             fuTofNrOfGet4PerGdpb;     //! Number of GET4s per GDPB
+   UInt_t             fuTofNrOfChannelsPerGdpb; //! Number of channels per GDPB
 
    // Constants
-   static const UInt_t   kuStsBytesPerMessage = 4;
+   static const UInt_t   kuStsBytesPerMessage = 4; //! TODO => move to the message class!!
+   static const UInt_t   kuTofBytesPerMessage = 8;
 
    // Internal Control/status of monitor
       // Histo File name and path
@@ -126,8 +142,8 @@ private:
    std::vector< std::vector< Double_t  > > fvdStsChanLastHitTime;    //! Last hit time in ns   for each Channel
 
       // Starting state book-keeping
-   Double_t              fdStartTime;           /** Time of first valid hit (TS_MSB available), used as reference for evolution plots**/
-   Double_t              fdStartTimeMsSz;       /** Time of first microslice, used as reference for evolution plots**/
+   Double_t              fdStsStartTime;           /** Time of first valid hit (TS_MSB available), used as reference for evolution plots**/
+   Double_t              fdStsStartTimeMsSz;       /** Time of first microslice, used as reference for evolution plots**/
    std::chrono::steady_clock::time_point ftStartTimeUnix; /** Time of run Start from UNIX system, used as reference for long evolution plots against reception time **/
 
       // Hits time-sorting
@@ -186,6 +202,7 @@ private:
    std::vector<TH1 *>                fhStsIntervalAsic;
    std::vector<TH1 *>                fhStsIntervalLongAsic;
 
+   /// Processing methods
    void CreateStsHistograms();
 
    Bool_t ProcessStsMs( const fles::Timeslice& ts, size_t uMsComp, UInt_t uMsIdx );
@@ -196,27 +213,142 @@ private:
 /****************** STS Sync ******************************************/
 
 /****************** TOF Sync ******************************************/
-   ///* PADI channel to GET4 channel mapping and reverse *///
-/*
-   inline Int_t GetArrayIndex(Int_t gdpbId, Int_t get4Id)
-   {
-      return gdpbId * fuNrOfGet4PerGdpb + get4Id;
-   }
 
-   std::vector< UInt_t > fvuPadiToGet4;
-   std::vector< UInt_t > fvuGet4ToPadi;
+   /// Running indices
+   uint64_t fulTofCurrentTsIndex;  // Idx of the current TS
+   size_t   fuTofCurrentMs; // Idx of the current MS in TS (0 to fuTotalMsNb)
+   Double_t fdTofMsIndex;   // Time in ns of current MS from its index
+   UInt_t   fuTofGdpbId;    // Id (hex number) of the GDPB for current message
+   UInt_t   fuTofGdpbNr;    // running number (0 to fuNrOfGdpbs) of the GDPB for current message
+   UInt_t   fuTofGet4Id;    // running number (0 to fuNrOfGet4PerGdpb) of the Get4 chip of a unique GDPB for current message
+   UInt_t   fuTofGet4Nr;    // running number (0 to fuNrOfGet4) of the Get4 chip in the system for current message
+   Int_t    fiTofEquipmentId;
+   std::vector<int> fviTofMsgCounter;
 
+   /// STAR TRIGGER detection
+   std::vector< ULong64_t > fvulTofGdpbTsMsb;
+   std::vector< ULong64_t > fvulTofGdpbTsLsb;
+   std::vector< ULong64_t > fvulTofStarTsMsb;
+   std::vector< ULong64_t > fvulTofStarTsMid;
+   std::vector< ULong64_t > fvulTofGdpbTsFullLast;
+   std::vector< ULong64_t > fvulTofStarTsFullLast;
+   std::vector< UInt_t    > fvuTofStarTokenLast;
+   std::vector< UInt_t    > fvuTofStarDaqCmdLast;
+   std::vector< UInt_t    > fvuTofStarTrigCmdLast;
+
+   /** Current epoch marker for each GDPB and GET4
+     * (first epoch in the stream initializes the map item)
+     * pointer points to an array of size fuNrOfGdpbs * fuNrOfGet4PerGdpb
+     * The correct array index is calculated using the function
+     * GetArrayIndex(gdpbId, get4Id)
+     **/
+   std::vector< ULong64_t > fvulTofCurrentEpoch; //!
+   std::vector< Bool_t >    fvbTofFirstEpochSeen; //!
+
+   ULong64_t fulTofCurrentEpochTime;     /** Time stamp of current epoch **/
+
+   /// Map of ID to index for the gDPBs
+   std::map<UInt_t, UInt_t> fmTofGdpbIdIndexMap;
+
+   /// Buffer for suppressed epoch processing
+   std::vector< std::vector < gdpbv100::Message > > fvmTofEpSupprBuffer;
+
+   /// Buffer for pulser channels
+   std::vector<  Double_t  > fvdTofTsLastPulserHit;
+
+   /// Histograms and histogram control variables
+      /// Default value for nb bins in Pulser time difference histos
+   const UInt_t kuTofNbBinsDt    = 300;
+   Double_t fdTofMinDt;
+   Double_t fdTofMaxDt;
+      /// Default number of FEET per channels histograms
+   UInt_t fuTofNbFeePlot;
+   UInt_t fuTofNbFeePlotsPerGdpb;
+      /// Evolution plots control
+   Double_t fdTofTsStartTime;
+   Double_t fdTofStartTime; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
+   Double_t fdTofStartTimeLong; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
+   UInt_t   fuTofHistoryHistoSize; /** Size in seconds of the evolution histograms **/
+   UInt_t   fuTofHistoryHistoSizeLong; /** Size in seconds of the evolution histograms **/
+      /// Pulser plots
+   Double_t fdTofLastRmsUpdateTime;
+   Double_t fdTofFitZoomWidthPs;
+      /// Messages types and flags
+   TH1* fhTofMessType;
+   TH1* fhTofSysMessType;
+   TH2* fhTofGet4MessType;
+   TH2* fhTofGet4ChanScm;
+   TH2* fhTofGet4ChanErrors;
+   TH2* fhTofGet4EpochFlags;
+      /// Slow control messages
+   TH2* fhTofScmScalerCounters;
+   TH2* fhTofScmDeadtimeCounters;
+   TH2* fhTofScmSeuCounters;
+   TH2* fhTofScmSeuCountersEvo;
+      /// Hit messages
+   std::vector< TH2      * > fvhTofRawFt_gDPB;
+   std::vector< TH2      * > fvhTofRawTot_gDPB;
+   std::vector< TH1      * > fvhTofChCount_gDPB;
+   std::vector< TH2      * > fvhTofChannelRate_gDPB;
+   std::vector< TH2      * > fvhTofRemapTot_gDPB;
+   std::vector< TH1      * > fvhTofRemapChCount_gDPB;
+   std::vector< TH2      * > fvhTofRemapChRate_gDPB;
+   std::vector< TH1      * > fvhTofFeeRate_gDPB;
+   std::vector< TH1      * > fvhTofFeeErrorRate_gDPB;
+   std::vector< TProfile * > fvhTofFeeErrorRatio_gDPB;
+   std::vector< TH1      * > fvhTofFeeRateLong_gDPB;
+   std::vector< TH1      * > fvhTofFeeErrorRateLong_gDPB;
+   std::vector< TProfile * > fvhTofFeeErrorRatioLong_gDPB;
+
+      /// STAR TRIGGER detection
+   std::vector< TH1 *      > fvhTofTokenMsgType;
+   std::vector< TH1 *      > fvhTofTriggerRate;
+   std::vector< TH2 *      > fvhTofCmdDaqVsTrig;
+   std::vector< TH2 *      > fvhTofStarTokenEvo;
+   std::vector< TProfile * > fvhTofStarTrigGdpbTsEvo;
+   std::vector< TProfile * > fvhTofStarTrigStarTsEvo;
+
+      /// Pulser monitoring
+   const Double_t kdTofMaxDtPulserPs = 100e3;
+   std::vector< std::vector< TH1 * > > fvhTofTimeDiffPulser;
+   TH2 * fhTofTimeRmsPulser;
+   TH2 * fhTofTimeRmsZoomFitPuls;
+   TH2 * fhTofTimeResFitPuls;
+
+
+   /// Processing methods
    void CreateTofHistograms();
 
    Bool_t ProcessTofMs( const fles::Timeslice& ts, size_t uMsComp, UInt_t uMsIdx );
 
-   void FillHitInfo(       gdpbv100::Message );
-   void FillEpochInfo(     gdpbv100::Message );
-   void PrintSlcInfo(      gdpbv100::Message );
-   void PrintSysInfo(      gdpbv100::Message );
-   void PrintGenInfo(      gdpbv100::Message );
-   void FillStarTrigInfo(  gdpbv100::Message );
-*/
+   void FillTofHitInfo(      gdpbv100::Message );
+   void FillTofEpochInfo(    gdpbv100::Message );
+   void FillTofSlcInfo(      gdpbv100::Message );
+   void FillTofSysInfo(      gdpbv100::Message );
+   void PrintTofGenInfo(     gdpbv100::Message );
+   void FillTofStarTrigInfo( gdpbv100::Message );
+
+   inline Int_t GetArrayIndexGet4(Int_t gdpbId, Int_t get4Id)
+   {
+      return gdpbId * fuTofNrOfGet4PerGdpb + get4Id;
+   }
+
+   /// PADI channel to GET4 channel mapping and reverse
+   std::vector< UInt_t > fvuPadiToGet4;
+   std::vector< UInt_t > fvuGet4ToPadi;
+
+   /// GET4 to eLink mapping and reverse
+   static const UInt_t kuNbGet4PerGbtx = 5 * 8; /// 5 FEE with 8 GET4 each
+   std::vector< UInt_t > fvuElinkToGet4;
+   std::vector< UInt_t > fvuGet4ToElink;
+   inline UInt_t ConvertElinkToGet4( UInt_t uElinkIdx )
+   {
+      return fvuElinkToGet4[ uElinkIdx % kuNbGet4PerGbtx ] + kuNbGet4PerGbtx * (uElinkIdx / kuNbGet4PerGbtx);
+   }
+   inline UInt_t ConvertGet4ToElink( UInt_t uGet4Idx )
+   {
+      return fvuGet4ToElink[ uGet4Idx % kuNbGet4PerGbtx ] + kuNbGet4PerGbtx * (uGet4Idx / kuNbGet4PerGbtx);
+   }
 /****************** TOF Sync ******************************************/
 
    CbmMcbm2018MonitorMcbmSync(const CbmMcbm2018MonitorMcbmSync&);

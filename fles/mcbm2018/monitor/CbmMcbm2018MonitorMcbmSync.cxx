@@ -46,14 +46,23 @@ CbmMcbm2018MonitorMcbmSync::CbmMcbm2018MonitorMcbmSync() :
    fuNbCoreMsPerTs(0),
    fuNbOverMsPerTs(0),
    fbIgnoreOverlapMs(kFALSE),
-   fUnpackParHodo(NULL),
+   fUnpackParHodo(nullptr),
    fuStsNrOfDpbs(0),
    fmStsDpbIdIndexMap(),
    fuStsNbElinksPerDpb(0),
    fuStsNbStsXyters(0),
    fuStsNbChanPerAsic(0),
    fvuStsElinkToAsic(),
-   fsHistoFileFullname( "data/SetupHistos.root" ),
+   fUnpackParTof(nullptr),
+   fuTofNrOfGdpbs(0),
+   fuTofNrOfFeePerGdpb(0),
+   fuTofNrOfGet4PerFee(0),
+   fuTofNrOfChannelsPerGet4(0),
+   fuTofNrOfChannelsPerFee(0),
+   fuTofNrOfGet4(0),
+   fuTofNrOfGet4PerGdpb(0),
+   fuTofNrOfChannelsPerGdpb(0),
+   fsHistoFileFullname( "data/mCBMsyncHistos.root" ),
    fbPrintMessages( kFALSE ),
    fPrintMessCtrlSts( stsxyter::MessagePrintMask::msg_print_Human ),
    fulCurrentTsIdx( 0 ),
@@ -68,8 +77,8 @@ CbmMcbm2018MonitorMcbmSync::CbmMcbm2018MonitorMcbmSync() :
    fvuStsCurrentTsMsbCycle(),
    fvulStsChanLastHitTime(),
    fvdStsChanLastHitTime(),
-   fdStartTime(-1.0),
-   fdStartTimeMsSz(-1.0),
+   fdStsStartTime(-1.0),
+   fdStsStartTimeMsSz(-1.0),
    ftStartTimeUnix( std::chrono::steady_clock::now() ),
    fvmStsHitsInMs(),
    fvmStsAsicHitsInMs(),
@@ -81,12 +90,12 @@ CbmMcbm2018MonitorMcbmSync::CbmMcbm2018MonitorMcbmSync() :
    fdStsCoincBorder(  50.0 ),
    fdStsCoincMin( fdStsCoincCenter - fdStsCoincBorder ),
    fdStsCoincMax( fdStsCoincCenter + fdStsCoincBorder ),
-   fhStsMessType(NULL),
-   fhStsSysMessType(NULL),
-   fhStsMessTypePerDpb(NULL),
-   fhStsSysMessTypePerDpb(NULL),
-   fhStsMessTypePerElink(NULL),
-   fhStsSysMessTypePerElink(NULL),
+   fhStsMessType(nullptr),
+   fhStsSysMessType(nullptr),
+   fhStsMessTypePerDpb(nullptr),
+   fhStsSysMessTypePerDpb(nullptr),
+   fhStsMessTypePerElink(nullptr),
+   fhStsSysMessTypePerElink(nullptr),
    fhStsChanCntRaw(),
    fhStsChanCntRawGood(),
    fhStsChanAdcRaw(),
@@ -110,7 +119,79 @@ CbmMcbm2018MonitorMcbmSync::CbmMcbm2018MonitorMcbmSync() :
    fhStsTsLsbMatchPerAsicPair(),
    fhStsTsMsbMatchPerAsicPair(),
    fhStsIntervalAsic(),
-   fhStsIntervalLongAsic()
+   fhStsIntervalLongAsic(),
+   fulTofCurrentTsIndex( 0 ),
+   fuTofCurrentMs( 0 ),
+   fdTofMsIndex( 0 ),
+   fuTofGdpbId( 0 ),
+   fuTofGdpbNr( 0 ),
+   fuTofGet4Id( 0 ),
+   fuTofGet4Nr( 0 ),
+   fiTofEquipmentId( 0 ),
+   fviTofMsgCounter(),
+   fvulTofGdpbTsMsb(),
+   fvulTofGdpbTsLsb(),
+   fvulTofStarTsMsb(),
+   fvulTofStarTsMid(),
+   fvulTofGdpbTsFullLast(),
+   fvulTofStarTsFullLast(),
+   fvuTofStarTokenLast(),
+   fvuTofStarDaqCmdLast(),
+   fvuTofStarTrigCmdLast(),
+   fvulTofCurrentEpoch(),
+   fvbTofFirstEpochSeen(),
+   fulTofCurrentEpochTime( 0 ),
+   fmTofGdpbIdIndexMap(),
+   fvmTofEpSupprBuffer(),
+   fvdTofTsLastPulserHit(),
+   fdTofMinDt(-1.*(kuTofNbBinsDt*gdpbv100::kdBinSize/2.) - gdpbv100::kdBinSize/2.),
+   fdTofMaxDt(1.*(kuTofNbBinsDt*gdpbv100::kdBinSize/2.) + gdpbv100::kdBinSize/2.),
+   fuTofNbFeePlot(2),
+   fuTofNbFeePlotsPerGdpb(0),
+   fdTofTsStartTime(-1.),
+   fdTofStartTime(-1.),
+   fdTofStartTimeLong(-1.),
+   fuTofHistoryHistoSize( 1800 ),
+   fuTofHistoryHistoSizeLong( 6400 ),
+   fdTofLastRmsUpdateTime(0.0),
+   fdTofFitZoomWidthPs(0.0),
+   fhTofMessType( nullptr ),
+   fhTofSysMessType( nullptr ),
+   fhTofGet4MessType( nullptr ),
+   fhTofGet4ChanScm( nullptr ),
+   fhTofGet4ChanErrors( nullptr ),
+   fhTofGet4EpochFlags( nullptr ),
+   fhTofScmScalerCounters( nullptr ),
+   fhTofScmDeadtimeCounters( nullptr ),
+   fhTofScmSeuCounters( nullptr ),
+   fhTofScmSeuCountersEvo( nullptr ),
+   fvhTofRawFt_gDPB(),
+   fvhTofRawTot_gDPB(),
+   fvhTofChCount_gDPB(),
+   fvhTofChannelRate_gDPB(),
+   fvhTofRemapTot_gDPB(),
+   fvhTofRemapChCount_gDPB(),
+   fvhTofRemapChRate_gDPB(),
+   fvhTofFeeRate_gDPB(),
+   fvhTofFeeErrorRate_gDPB(),
+   fvhTofFeeErrorRatio_gDPB(),
+   fvhTofFeeRateLong_gDPB(),
+   fvhTofFeeErrorRateLong_gDPB(),
+   fvhTofFeeErrorRatioLong_gDPB(),
+   fvhTofTokenMsgType(),
+   fvhTofTriggerRate(),
+   fvhTofCmdDaqVsTrig(),
+   fvhTofStarTokenEvo(),
+   fvhTofStarTrigGdpbTsEvo(),
+   fvhTofStarTrigStarTsEvo(),
+   fvhTofTimeDiffPulser(),
+   fhTofTimeRmsPulser( nullptr ),
+   fhTofTimeRmsZoomFitPuls( nullptr ),
+   fhTofTimeResFitPuls( nullptr ),
+   fvuPadiToGet4(),
+   fvuGet4ToPadi(),
+   fvuElinkToGet4(),
+   fvuGet4ToElink()
 {
 }
 
@@ -123,7 +204,7 @@ Bool_t CbmMcbm2018MonitorMcbmSync::Init()
   LOG(INFO) << "Initializing flib StsXyter unpacker for STS" << FairLogger::endl;
 
   FairRootManager* ioman = FairRootManager::Instance();
-  if (ioman == NULL) {
+  if (ioman == nullptr) {
     LOG(FATAL) << "No FairRootManager instance" << FairLogger::endl;
   }
 
@@ -243,6 +324,59 @@ Bool_t CbmMcbm2018MonitorMcbmSync::ReInitContainers()
 /***************** STS parameters *************************************/
 
 /***************** TOF parameters *************************************/
+/// TODO: move these constants somewhere shared, e.g the parameter file
+
+   /// PADI channel to GET4 channel mapping and reverse
+   fvuPadiToGet4.resize( fuTofNrOfChannelsPerFee );
+   fvuGet4ToPadi.resize( fuTofNrOfChannelsPerFee );
+   UInt_t uGet4topadi[32] = {
+        4,  3,  2,  1,  // provided by Jochen
+      24, 23, 22, 21,
+       8,  7,  6,  5,
+      28, 27, 26, 25,
+      12, 11, 10,  9,
+      32, 31, 30, 29,
+      16, 15, 14, 13,
+      20, 19, 18, 17 };
+
+  UInt_t uPaditoget4[32] = {
+       4,  3,  2,  1,  // provided by Jochen
+      12, 11, 10,  9,
+      20, 19, 18, 17,
+      28, 27, 26, 25,
+      32, 31, 30, 29,
+       8,  7,  6,  5,
+      16, 15, 14, 13,
+      24, 23, 22, 21 };
+
+   for( UInt_t uChan = 0; uChan < fuTofNrOfChannelsPerFee; ++uChan )
+   {
+      fvuPadiToGet4[ uChan ] = uPaditoget4[ uChan ] - 1;
+      fvuGet4ToPadi[ uChan ] = uGet4topadi[ uChan ] - 1;
+   } // for( UInt_t uChan = 0; uChan < fuTofNrOfChannelsPerFee; ++uChan )
+
+   /// GET4 to eLink mapping and reverse
+   fvuElinkToGet4.resize( kuNbGet4PerGbtx );
+   fvuGet4ToElink.resize( kuNbGet4PerGbtx );
+   UInt_t kuElinkToGet4[ kuNbGet4PerGbtx ] = { 27,  2,  7,  3, 31, 26, 30,  1,
+                                               33, 37, 32, 13,  9, 14, 10, 15,
+                                               17, 21, 16, 35, 34, 38, 25, 24,
+                                                0,  6, 20, 23, 18, 22, 28,  4,
+                                               29,  5, 19, 36, 39,  8, 12, 11
+                                              };
+   UInt_t kuGet4ToElink[ kuNbGet4PerGbtx ] = { 24,  7,  1,  3, 31, 33, 25,  2,
+                                               37, 12, 14, 39, 38, 11, 13, 15,
+                                               18, 16, 28, 34, 26, 17, 29, 27,
+                                               23, 22,  5,  0, 30, 32,  6,  4,
+                                               10,  8, 20, 19, 35,  9, 21, 36
+                                              };
+
+   for( UInt_t uLinkAsic = 0; uLinkAsic < kuNbGet4PerGbtx; ++uLinkAsic )
+   {
+      fvuElinkToGet4[ uLinkAsic ] = kuElinkToGet4[ uLinkAsic ];
+      fvuGet4ToElink[ uLinkAsic ] = kuGet4ToElink[ uLinkAsic ];
+   } // for( UInt_t uChan = 0; uChan < fuTofNrOfChannelsPerFee; ++uChan )
+
 /***************** TOF parameters *************************************/
 
    return kTRUE;
@@ -300,6 +434,7 @@ void CbmMcbm2018MonitorMcbmSync::SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapM
    UInt_t uNbMsTotal = fuNbCoreMsPerTs + fuNbOverMsPerTs;
 }
 
+/***************** STS Histograms *************************************/
 void CbmMcbm2018MonitorMcbmSync::SetStsCoincidenceBorder( Double_t dCenterPos, Double_t dBorderVal )
 {
    fdStsCoincCenter = dCenterPos;
@@ -596,11 +731,11 @@ void CbmMcbm2018MonitorMcbmSync::CreateStsHistograms()
       } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuStsNbStsXyters; ++uXyterIdxB )
 
       sHistName = Form( "fhStsIntervalAsic_%03u", uXyterIdx );
-      title =  Form( "Time diff between consecutive hits in ASIC %03us; dt [ns];  Counts", uXyterIdx, uXyterIdx );
+      title =  Form( "Time diff between consecutive hits in ASIC %03us; dt [ns];  Counts", uXyterIdx );
       fhStsIntervalAsic.push_back( new TH1I( sHistName, title, 200, 0, 200 * stsxyter::kdClockCycleNs ) );
 
       sHistName = Form( "fhStsIntervalLongAsic_%03u", uXyterIdx );
-      title =  Form( "Time diff between consecutive hits in ASIC %03us; dt [ns];  Counts", uXyterIdx, uXyterIdx );
+      title =  Form( "Time diff between consecutive hits in ASIC %03us; dt [ns];  Counts", uXyterIdx );
       fhStsIntervalLongAsic.push_back( new TH1I( sHistName, title, 1e5, 0, 1e6 * stsxyter::kdClockCycleNs ) );
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
@@ -873,7 +1008,694 @@ void CbmMcbm2018MonitorMcbmSync::CreateStsHistograms()
 //====================================================================//
 
   /*****************************/
+  LOG(INFO) << "Done Creating STS Histograms" << FairLogger::endl;
 }
+/***************** STS Histograms *************************************/
+
+/***************** TOF Histograms *************************************/
+void CbmMcbm2018MonitorMcbmSync::CreateTofHistograms()
+{
+   TString sHistName{""};
+   TString title{""};
+
+   // Full Fee time difference test
+   UInt_t uNbBinsDt = kuTofNbBinsDt + 1; // To account for extra bin due to shift by 1/2 bin of both ranges
+
+   fuTofNbFeePlotsPerGdpb = fuTofNrOfFeePerGdpb/fuTofNbFeePlot + ( 0 != fuTofNrOfFeePerGdpb%fuTofNbFeePlot ? 1 : 0 );
+   Double_t dBinSzG4v2 = (6250. / 112.);
+   fdTofMinDt     = -1.*(kuTofNbBinsDt*dBinSzG4v2/2.) - dBinSzG4v2/2.;
+   fdTofMaxDt     =  1.*(kuTofNbBinsDt*dBinSzG4v2/2.) + dBinSzG4v2/2.;
+
+   /*******************************************************************/
+   sHistName = "hMessageType";
+   title = "Nb of message for each type; Type";
+   // Test Big Data readout with plotting
+   fhTofMessType = new TH1I(sHistName, title, 1 + gdpbv100::MSG_STAR_TRI_A, 0., 1 + gdpbv100::MSG_STAR_TRI_A);
+   fhTofMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_HIT,        "HIT");
+   fhTofMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_EPOCH,      "EPOCH");
+   fhTofMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_SLOWC,      "SLOWC");
+   fhTofMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_SYST,       "SYST");
+   fhTofMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_A, "MSG_STAR_TRI");
+
+   /*******************************************************************/
+   sHistName = "hSysMessType";
+   title = "Nb of system message for each type; System Type";
+   fhTofSysMessType = new TH1I(sHistName, title, 1 + gdpbv100::SYS_SYNC_ERROR, 0., 1 + gdpbv100::SYS_SYNC_ERROR);
+   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR, "GET4 ERROR");
+   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN, "UNKW GET4 MSG");
+   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR, "SYNC ERROR");
+
+   /*******************************************************************/
+   sHistName = "hGet4MessType";
+   title = "Nb of message for each type per GET4; GET4 chip # ; Type";
+   fhTofGet4MessType = new TH2I(sHistName, title, fuTofNrOfGet4, 0., fuTofNrOfGet4, 6, 0., 6.);
+   fhTofGet4MessType->GetYaxis()->SetBinLabel( 1, "DATA 32b");
+   fhTofGet4MessType->GetYaxis()->SetBinLabel( 2, "EPOCH");
+   fhTofGet4MessType->GetYaxis()->SetBinLabel( 3, "S.C. M");
+   fhTofGet4MessType->GetYaxis()->SetBinLabel( 4, "ERROR");
+   fhTofGet4MessType->GetYaxis()->SetBinLabel( 5, "DATA 24b");
+   fhTofGet4MessType->GetYaxis()->SetBinLabel( 6, "STAR Trigger");
+
+   /*******************************************************************/
+   sHistName = "hGet4ChanScm";
+   title = "SC messages per GET4 channel; GET4 channel # ; SC type";
+   fhTofGet4ChanScm =  new TH2I(sHistName, title,
+         2 * fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4, 0., fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4,
+         5, 0., 5.);
+   fhTofGet4ChanScm->GetYaxis()->SetBinLabel( 1, "Hit Scal" );
+   fhTofGet4ChanScm->GetYaxis()->SetBinLabel( 2, "Deadtime" );
+   fhTofGet4ChanScm->GetYaxis()->SetBinLabel( 3, "SPI" );
+   fhTofGet4ChanScm->GetYaxis()->SetBinLabel( 4, "SEU Scal" );
+   fhTofGet4ChanScm->GetYaxis()->SetBinLabel( 5, "START" );
+
+   /*******************************************************************/
+   sHistName = "hGet4ChanErrors";
+   title = "Error messages per GET4 channel; GET4 channel # ; Error";
+   fhTofGet4ChanErrors = new TH2I(sHistName, title,
+            fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4, 0., fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4,
+            21, 0., 21.);
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel( 1, "0x00: Readout Init    ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel( 2, "0x01: Sync            ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel( 3, "0x02: Epoch count sync");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel( 4, "0x03: Epoch           ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel( 5, "0x04: FIFO Write      ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel( 6, "0x05: Lost event      ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel( 7, "0x06: Channel state   ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel( 8, "0x07: Token Ring state");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel( 9, "0x08: Token           ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(10, "0x09: Error Readout   ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(11, "0x0a: SPI             ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(12, "0x0b: DLL Lock error  "); // <- From GET4 v1.2
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(13, "0x0c: DLL Reset invoc."); // <- From GET4 v1.2
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(14, "0x11: Overwrite       ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(15, "0x12: ToT out of range");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(16, "0x13: Event Discarded ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(17, "0x14: Add. Rising edge"); // <- From GET4 v1.3
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(18, "0x15: Unpaired Falling"); // <- From GET4 v1.3
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(19, "0x16: Sequence error  "); // <- From GET4 v1.3
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(20, "0x7f: Unknown         ");
+   fhTofGet4ChanErrors->GetYaxis()->SetBinLabel(21, "Corrupt/unsuprtd error");
+
+   /*******************************************************************/
+   sHistName = "hGet4EpochFlags";
+   title = "Epoch flags per GET4; GET4 chip # ; Type";
+   fhTofGet4EpochFlags = new TH2I(sHistName, title, fuTofNrOfGet4, 0., fuTofNrOfGet4, 4, 0., 4.);
+   fhTofGet4EpochFlags->GetYaxis()->SetBinLabel(1, "SYNC");
+   fhTofGet4EpochFlags->GetYaxis()->SetBinLabel(2, "Ep LOSS");
+   fhTofGet4EpochFlags->GetYaxis()->SetBinLabel(3, "Da LOSS");
+   fhTofGet4EpochFlags->GetYaxis()->SetBinLabel(4, "MISSMAT");
+
+   /*******************************************************************/
+      // Slow control messages analysis
+   sHistName = "hScmScalerCounters";
+   title = "Content of Scaler counter SC messages; Scaler counter [hit]; Channel []";
+   fhTofScmScalerCounters = new TH2I(sHistName, title, fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4 * 2, 0., fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4,
+                                               8192, 0., 8192.);
+
+   sHistName = "hScmDeadtimeCounters";
+   title = "Content of Deadtime counter SC messages; Deadtime [Clk Cycles]; Channel []";
+   fhTofScmDeadtimeCounters = new TH2I(sHistName, title, fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4 * 2, 0., fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4,
+                                               8192, 0., 8192.);
+
+   sHistName = "hScmSeuCounters";
+   title = "Content of SEU counter SC messages; SEU []; Channel []";
+   fhTofScmSeuCounters = new TH2I(sHistName, title, fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4 * 2, 0., fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4,
+                                               8192, 0., 8192.);
+
+   sHistName = "hScmSeuCountersEvo";
+   title = "SEU counter rate from SC messages; Time in Run [s]; Channel []; SEU []";
+   fhTofScmSeuCountersEvo = new TH2I(sHistName, title, fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4 * 2, 0., fuTofNrOfGet4 * fuTofNrOfChannelsPerGet4,
+                                               fuTofHistoryHistoSize, 0., fuTofHistoryHistoSize);
+
+   /*******************************************************************/
+  for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+  {
+      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
+      sHistName = Form("RawFt_gDPB_%02u", uGdpb);
+      title = Form("Raw FineTime gDPB %02u Plot 0; channel; FineTime [bin]", uGdpb);
+      fvhTofRawFt_gDPB.push_back(
+         new TH2F(sHistName.Data(), title.Data(),
+            fuTofNrOfChannelsPerGdpb, 0, fuTofNrOfChannelsPerGdpb,
+            128, 0, 128 ) );
+
+      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
+/*
+      sHistName = Form("RawTot_gDPB_%02u_0", uGdpb);
+      title = Form("Raw TOT gDPB %02u Plot 0; channel; TOT [bin]", uGdpb);
+      fvhTofRawTot_gDPB.push_back(
+         new TH2F(sHistName.Data(), title.Data(),
+            fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 0*fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 1*fuTofNbFeePlot*fuTofNrOfChannelsPerFee,
+            256, 0, 256 ) );
+
+      if( fuTofNbFeePlot < fuTofNrOfFeePerGdpb )
+      {
+         sHistName = Form("RawTot_gDPB_%02u_1", uGdpb);
+         title = Form("Raw TOT gDPB %02u Plot 1; channel; TOT [bin]", uGdpb);
+         fvhTofRawTot_gDPB.push_back(
+            new TH2F(sHistName.Data(), title.Data(),
+               fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 1*fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 2*fuTofNbFeePlot*fuTofNrOfChannelsPerFee,
+               256, 0, 256));
+      } // if( fuTofNbFeePlot < fuTofNrOfFeePerGdpb )
+      if( 2 * fuTofNbFeePlot < fuTofNrOfFeePerGdpb )
+      {
+         sHistName = Form("RawTot_gDPB_%02u_2", uGdpb);
+         title = Form("Raw TOT gDPB %02u Plot 2; channel; TOT [bin]", uGdpb);
+         fvhTofRawTot_gDPB.push_back(
+            new TH2F(sHistName.Data(), title.Data(),
+               fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 2*fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 3*fuTofNbFeePlot*fuTofNrOfChannelsPerFee,
+               256, 0, 256));
+      } // if( 2 * fuTofNbFeePlot < fuTofNrOfFeePerGdpb )
+*/
+      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
+       sHistName = Form("ChCount_gDPB_%02u", uGdpb);
+       title = Form("Channel counts gDPB %02u; channel; Hits", uGdpb);
+       fvhTofChCount_gDPB.push_back( new TH1I(sHistName.Data(), title.Data(),
+                fuTofNrOfFeePerGdpb * fuTofNrOfChannelsPerFee, 0, fuTofNrOfFeePerGdpb * fuTofNrOfChannelsPerFee) );
+
+      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
+       sHistName = Form("ChRate_gDPB_%02u", uGdpb);
+       title = Form("Channel rate gDPB %02u; Time in run [s]; channel; Rate [1/s]", uGdpb);
+       fvhTofChannelRate_gDPB.push_back( new TH2D(sHistName.Data(), title.Data(),
+                fuTofHistoryHistoSize, 0, fuTofHistoryHistoSize,
+                fuTofNrOfFeePerGdpb * fuTofNrOfChannelsPerFee, 0, fuTofNrOfFeePerGdpb * fuTofNrOfChannelsPerFee ) );
+
+      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
+/*
+      sHistName = Form("RemapTot_gDPB_%02u_0", uGdpb);
+      title = Form("Raw TOT gDPB %02u remapped Plot 0; PADI channel; TOT [bin]", uGdpb);
+      fvhTofRemapTot_gDPB.push_back(
+         new TH2F(sHistName.Data(), title.Data(),
+            fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 0*fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 1*fuTofNbFeePlot*fuTofNrOfChannelsPerFee,
+            256, 0, 256 ) );
+
+      if( fuTofNbFeePlot < fuTofNrOfFeePerGdpb )
+      {
+         sHistName = Form("RemapTot_gDPB_%02u_1", uGdpb);
+         title = Form("Raw TOT gDPB %02u remapped Plot 1; PADI channel; TOT [bin]", uGdpb);
+         fvhTofRemapTot_gDPB.push_back(
+            new TH2F(sHistName.Data(), title.Data(),
+               fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 1*fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 2*fuTofNbFeePlot*fuTofNrOfChannelsPerFee,
+               256, 0, 256));
+      } // if( fuTofNbFeePlot < fuTofNrOfFeePerGdpb )
+      if( 2 * fuTofNbFeePlot < fuTofNrOfFeePerGdpb )
+      {
+         sHistName = Form("RemapTot_gDPB_%02u_2", uGdpb);
+         title = Form("Raw TOT gDPB %02u remapped Plot 2; PADI channel; TOT [bin]", uGdpb);
+         fvhTofRemapTot_gDPB.push_back(
+            new TH2F(sHistName.Data(), title.Data(),
+               fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 2*fuTofNbFeePlot*fuTofNrOfChannelsPerFee, 3*fuTofNbFeePlot*fuTofNrOfChannelsPerFee,
+               256, 0, 256));
+      } // if( 2 * fuTofNbFeePlot < fuTofNrOfFeePerGdpb )
+*/
+      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
+       sHistName = Form("RemapChCount_gDPB_%02u", uGdpb);
+       title = Form("Channel counts gDPB %02u remapped; PADI channel; Hits", uGdpb);
+       fvhTofRemapChCount_gDPB.push_back( new TH1I(sHistName.Data(), title.Data(),
+                fuTofNrOfFeePerGdpb * fuTofNrOfChannelsPerFee, 0, fuTofNrOfFeePerGdpb * fuTofNrOfChannelsPerFee) );
+
+      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
+       sHistName = Form("RemapChRate_gDPB_%02u", uGdpb);
+       title = Form("PADI channel rate gDPB %02u; Time in run [s]; PADI channel; Rate [1/s]", uGdpb);
+       fvhTofRemapChRate_gDPB.push_back( new TH2D(sHistName.Data(), title.Data(),
+                fuTofHistoryHistoSize, 0, fuTofHistoryHistoSize,
+                fuTofNrOfFeePerGdpb * fuTofNrOfChannelsPerFee, 0, fuTofNrOfFeePerGdpb * fuTofNrOfChannelsPerFee ) );
+
+      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
+      for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; ++ uFee)
+      {
+         sHistName = Form("FeeRate_gDPB_g%02u_f%1u", uGdpb, uFee);
+         title = Form(
+             "Counts per second in Fee %1u of gDPB %02u; Time[s] ; Counts", uFee,
+             uGdpb);
+         fvhTofFeeRate_gDPB.push_back( new TH1D(sHistName.Data(), title.Data(), fuTofHistoryHistoSize, 0, fuTofHistoryHistoSize) );
+
+         sHistName = Form("FeeErrorRate_gDPB_g%02u_f%1u", uGdpb, uFee);
+         title = Form(
+             "Error Counts per second in Fee %1u of gDPB %02u; Time[s] ; Error Counts", uFee,
+             uGdpb);
+         fvhTofFeeErrorRate_gDPB.push_back( new TH1D(sHistName.Data(), title.Data(), fuTofHistoryHistoSize, 0, fuTofHistoryHistoSize) );
+
+         sHistName = Form("FeeErrorRatio_gDPB_g%02u_f%1u", uGdpb, uFee);
+         title = Form(
+             "Error to data ratio per second in Fee %1u of gDPB %02u; Time[s] ; Error ratio[]", uFee,
+             uGdpb);
+         fvhTofFeeErrorRatio_gDPB.push_back( new TProfile(sHistName.Data(), title.Data(), fuTofHistoryHistoSize, 0, fuTofHistoryHistoSize) );
+
+         sHistName = Form("FeeRateLong_gDPB_g%02u_f%1u", uGdpb, uFee);
+         title = Form(
+             "Counts per minutes in Fee %1u of gDPB %02u; Time[min] ; Counts", uFee,
+             uGdpb);
+         fvhTofFeeRateLong_gDPB.push_back( new TH1D(sHistName.Data(), title.Data(), fuTofHistoryHistoSizeLong, 0, fuTofHistoryHistoSizeLong) );
+
+         sHistName = Form("FeeErrorRateLong_gDPB_g%02u_f%1u", uGdpb, uFee);
+         title = Form(
+             "Error Counts per minutes in Fee %1u of gDPB %02u; Time[min] ; Error Counts", uFee,
+             uGdpb);
+         fvhTofFeeErrorRateLong_gDPB.push_back( new TH1D(sHistName.Data(), title.Data(), fuTofHistoryHistoSizeLong, 0, fuTofHistoryHistoSizeLong) );
+
+         sHistName = Form("FeeErrorRatioLong_gDPB_g%02u_f%1u", uGdpb, uFee);
+         title = Form(
+             "Error to data ratio per minutes in Fee %1u of gDPB %02u; Time[min] ; Error ratio[]", uFee,
+             uGdpb);
+         fvhTofFeeErrorRatioLong_gDPB.push_back( new TProfile(sHistName.Data(), title.Data(), fuTofHistoryHistoSizeLong, 0, fuTofHistoryHistoSizeLong) );
+      } // for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; uFee++)
+
+      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
+      /// STAR Trigger decoding and monitoring
+      sHistName = Form( "hTokenMsgType_gDPB_%02u", uGdpb);
+      title = Form( "STAR trigger Messages type gDPB %02u; Type ; Counts", uGdpb);
+      fvhTofTokenMsgType.push_back(  new TH1F(sHistName, title, 4, 0, 4) );
+      fvhTofTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 1, "A"); // gDPB TS high
+      fvhTofTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 2, "B"); // gDPB TS low, STAR TS high
+      fvhTofTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 3, "C"); // STAR TS mid
+      fvhTofTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 4, "D"); // STAR TS low, token, CMDs
+
+      sHistName = Form( "hTriggerRate_gDPB_%02u", uGdpb);
+      title = Form( "STAR trigger signals per second gDPB %02u; Time[s] ; Counts", uGdpb);
+      fvhTofTriggerRate.push_back(  new TH1F(sHistName, title, fuTofHistoryHistoSize, 0, fuTofHistoryHistoSize) );
+
+      sHistName = Form( "hCmdDaqVsTrig_gDPB_%02u", uGdpb);
+      title = Form( "STAR daq command VS STAR trigger command gDPB %02u; DAQ ; TRIGGER", uGdpb);
+      fvhTofCmdDaqVsTrig.push_back( new TH2I(sHistName, title, 16, 0, 16, 16, 0, 16 ) );
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 1, "0x0: no-trig "); // idle link
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 2, "0x1: clear   "); // clears redundancy counters on the readout boards
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 3, "0x2: mast-rst"); // general reset of the whole front-end logic
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 4, "0x3: spare   "); // reserved
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 5, "0x4: trigg. 0"); // Default physics readout, all det support required
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 6, "0x5: trigg. 1"); //
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 7, "0x6: trigg. 2"); //
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 8, "0x7: trigg. 3"); //
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel( 9, "0x8: puls.  0"); //
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(10, "0x9: puls.  1"); //
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(11, "0xA: puls.  2"); //
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(12, "0xB: puls.  3"); //
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(13, "0xC: config  "); // housekeeping trigger: return geographic info of FE
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(14, "0xD: abort   "); // aborts and clears an active event
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(15, "0xE: L1accept"); //
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetXaxis()->SetBinLabel(16, "0xF: L2accept"); //
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 1, "0x0:  0"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 2, "0x1:  1"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 3, "0x2:  2"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 4, "0x3:  3"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 5, "0x4:  4"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 6, "0x5:  5"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 7, "0x6:  6"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 8, "0x7:  7"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel( 9, "0x8:  8"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(10, "0x9:  9"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(11, "0xA: 10"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(12, "0xB: 11"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(13, "0xC: 12"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(14, "0xD: 13"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(15, "0xE: 14"); // To be filled at STAR
+      fvhTofCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(16, "0xF: 15"); // To be filled at STAR
+
+      sHistName = Form( "hStarTokenEvo_gDPB_%02u", uGdpb);
+      title = Form( "STAR token value VS time gDPB %02u; Time in Run [s] ; STAR Token; Counts", uGdpb);
+      fvhTofStarTokenEvo.push_back( new TH2I(sHistName, title, fuTofHistoryHistoSize, 0, fuTofHistoryHistoSize, 410, 0, 4100 ) );
+
+
+      sHistName = Form( "hStarTrigGdpbTsEvo_gDPB_%02u", uGdpb);
+      title = Form( "gDPB TS in STAR triger tokens for gDPB %02u; Time in Run [s] ; gDPB TS;", uGdpb);
+      fvhTofStarTrigGdpbTsEvo.push_back( new TProfile(sHistName, title, fuTofHistoryHistoSize, 0, fuTofHistoryHistoSize ) );
+
+      sHistName = Form( "hStarTrigStarTsEvo_gDPB_%02u", uGdpb);
+      title = Form( "STAR TS in STAR triger tokens for gDPB %02u; Time in Run [s] ; STAR TS;", uGdpb);
+      fvhTofStarTrigStarTsEvo.push_back( new TProfile(sHistName, title, fuTofHistoryHistoSize, 0, fuTofHistoryHistoSize ) );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+
+   /*******************************************************************/
+   /// FEET pulser test channels
+   fvhTofTimeDiffPulser.resize( fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs );
+   for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeA++)
+   {
+      fvhTofTimeDiffPulser[uFeeA].resize( fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs );
+      for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeB++)
+      {
+         if( uFeeA < uFeeB )
+         {
+            UInt_t uGdpbA  = uFeeA / ( fuTofNrOfFeePerGdpb );
+            UInt_t uFeeIdA = uFeeA - ( fuTofNrOfFeePerGdpb * uGdpbA );
+            UInt_t uGdpbB  = uFeeB / ( fuTofNrOfFeePerGdpb );
+            UInt_t uFeeIdB = uFeeB - ( fuTofNrOfFeePerGdpb * uGdpbB );
+            fvhTofTimeDiffPulser[uFeeA][uFeeB] = new TH1I(
+               Form("hTimeDiffPulser_g%02u_f%1u_g%02u_f%1u", uGdpbA, uFeeIdA, uGdpbB, uFeeIdB),
+               Form("Time difference for pulser on gDPB %02u FEE %1u and gDPB %02u FEE %1u; DeltaT [ps]; Counts",
+                     uGdpbA, uFeeIdA, uGdpbB, uFeeIdB ),
+               uNbBinsDt, fdTofMinDt, fdTofMaxDt);
+         } // if( uFeeA < uFeeB )
+            else fvhTofTimeDiffPulser[uFeeA][uFeeB] = nullptr;
+      } // for( UInt_t uFeeB = uFeeA; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1; uFeeB++)
+   } // for( UInt_t uFeeA = 0; uFeeA < kuNbChanTest - 1; uFeeA++)
+
+   sHistName = "hTimeRmsPulser";
+   fhTofTimeRmsPulser = new TH2D( sHistName.Data(),
+         "Time difference RMS for each FEE pairs; FEE A; FEE B ; [ps]",
+         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1, -0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1.5,
+         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1,  0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 0.5 );
+
+   sHistName = "hTimeRmsZoomFitPuls";
+   fhTofTimeRmsZoomFitPuls = new TH2D( sHistName.Data(),
+         "Time difference RMS after zoom for each FEE pairs; FEE A; FEE B ; RMS [ps]",
+         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1, -0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1.5,
+         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1,  0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 0.5 );
+
+   sHistName = "hTimeResFitPuls";
+   fhTofTimeResFitPuls = new TH2D( sHistName.Data(),
+         "Time difference Res from fit for each FEE pairs; FEE A; FEE B ; Sigma [ps]",
+         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1, -0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1.5,
+         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1,  0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 0.5 );
+
+#ifdef USE_HTTP_SERVER
+   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
+   if( server )
+   {
+      server->Register("/TofRaw", fhTofMessType );
+      server->Register("/TofRaw", fhTofSysMessType );
+      server->Register("/TofRaw", fhTofGet4MessType );
+      server->Register("/TofRaw", fhTofGet4ChanScm );
+      server->Register("/TofRaw", fhTofGet4ChanErrors );
+      server->Register("/TofRaw", fhTofGet4EpochFlags );
+      server->Register("/TofRaw", fhTofScmScalerCounters );
+      server->Register("/TofRaw", fhTofScmDeadtimeCounters );
+      server->Register("/TofRaw", fhTofScmSeuCounters );
+      server->Register("/TofRaw", fhTofScmSeuCountersEvo );
+/*
+      for( UInt_t uTotPlot = 0; uTotPlot < fvhTofRawTot_gDPB.size(); ++uTotPlot )
+         server->Register("/TofRaw", fvhTofRawTot_gDPB[ uTotPlot ] );
+
+      for( UInt_t uTotPlot = 0; uTotPlot < fvhTofRemapTot_gDPB.size(); ++uTotPlot )
+         server->Register("/TofRaw", fvhTofRemapTot_gDPB[ uTotPlot ] );
+*/
+      for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+      {
+         server->Register("/TofRaw", fvhTofRawFt_gDPB[ uGdpb ] );
+         server->Register("/TofRaw", fvhTofChCount_gDPB[ uGdpb ] );
+         server->Register("/TofRates", fvhTofChannelRate_gDPB[ uGdpb ] );
+         server->Register("/TofRaw", fvhTofRemapChCount_gDPB[ uGdpb ] );
+         server->Register("/TofRates", fvhTofRemapChRate_gDPB[ uGdpb ] );
+
+         for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; ++ uFee)
+         {
+            server->Register("/TofRates", fvhTofFeeRate_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFee ] );
+            server->Register("/TofRates", fvhTofFeeErrorRate_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFee ] );
+            server->Register("/TofRates", fvhTofFeeErrorRatio_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFee ] );
+            server->Register("/TofRates", fvhTofFeeRateLong_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFee ] );
+            server->Register("/TofRates", fvhTofFeeErrorRateLong_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFee ] );
+            server->Register("/TofRates", fvhTofFeeErrorRatioLong_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFee ] );
+         } // for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; ++ uFee)
+
+         server->Register("/StarRaw", fvhTofTokenMsgType[ uGdpb ] );
+         server->Register("/StarRaw", fvhTofTriggerRate[ uGdpb ] );
+         server->Register("/StarRaw", fvhTofCmdDaqVsTrig[ uGdpb ] );
+         server->Register("/StarRaw", fvhTofStarTokenEvo[ uGdpb ] );
+         server->Register("/StarRaw", fvhTofStarTrigGdpbTsEvo[ uGdpb ] );
+         server->Register("/StarRaw", fvhTofStarTrigStarTsEvo[ uGdpb ] );
+      } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+
+      for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeA++)
+         for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeB++)
+            if( nullptr != fvhTofTimeDiffPulser[uFeeA][uFeeB] )
+               server->Register("/TofDt", fvhTofTimeDiffPulser[uFeeA][uFeeB] );
+
+      server->Register("/TofRaw", fhTofTimeRmsPulser );
+      server->Register("/TofRaw", fhTofTimeRmsZoomFitPuls );
+      server->Register("/TofRaw", fhTofTimeResFitPuls );
+
+
+      server->RegisterCommand("/Reset_All_eTOF", "bResetTofStarMoniShiftHistos=kTRUE");
+      server->RegisterCommand("/Save_All_eTof",  "bSaveTofStarMoniShiftHistos=kTRUE");
+      server->RegisterCommand("/Update_PulsFit", "bTofUpdateZoomedFitMoniShift=kTRUE");
+
+      server->Restrict("/Reset_All_eTof", "allow=admin");
+      server->Restrict("/Save_All_eTof",  "allow=admin");
+      server->Restrict("/Update_PulsFit", "allow=admin");
+   } // if( server )
+#endif
+
+   /** Create summary Canvases for STAR 2018 **/
+   Double_t w = 10;
+   Double_t h = 10;
+   TCanvas* cSummary = new TCanvas("cSummary", "gDPB Monitoring Summary", w, h);
+   cSummary->Divide(2, 3);
+
+   // 1st Column: Messages types
+   cSummary->cd(1);
+   gPad->SetLogy();
+   fhTofMessType->Draw();
+
+   cSummary->cd(2);
+   gPad->SetLogy();
+   fhTofSysMessType->Draw();
+
+   cSummary->cd(3);
+   gPad->SetLogz();
+   fhTofGet4MessType->Draw("colz");
+
+   // 2nd Column: GET4 Errors + Epoch flags + SCm
+   cSummary->cd(4);
+   gPad->SetLogz();
+   fhTofGet4ChanErrors->Draw("colz");
+
+   cSummary->cd(5);
+   gPad->SetLogz();
+   fhTofGet4EpochFlags->Draw("colz");
+
+   cSummary->cd(6);
+   fhTofGet4ChanScm->Draw("colz");
+   /*****************************/
+
+   /** Create FEET rates Canvas for STAR 2018 **/
+   TCanvas* cFeeRates = new TCanvas("cFeeRates", "gDPB Monitoring FEET rates", w, h);
+   cFeeRates->Divide(fuTofNrOfFeePerGdpb, fuTofNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; ++uFee )
+      {
+         cFeeRates->cd( 1 + uGdpb * fuTofNrOfFeePerGdpb + uFee );
+         gPad->SetLogy();
+         fvhTofFeeRate_gDPB[uGdpb * fuTofNrOfFeePerGdpb + uFee]->Draw("hist");
+
+         fvhTofFeeErrorRate_gDPB[uGdpb * fuTofNrOfFeePerGdpb + uFee]->SetLineColor( kRed );
+         fvhTofFeeErrorRate_gDPB[uGdpb * fuTofNrOfFeePerGdpb + uFee]->Draw("same hist");
+      } // for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; ++uFee )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create FEET error ratio Canvas for STAR 2018 **/
+   TCanvas* cFeeErrRatio = new TCanvas("cFeeErrRatio", "gDPB Monitoring FEET error ratios", w, h);
+   cFeeErrRatio->Divide(fuTofNrOfFeePerGdpb, fuTofNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; ++uFee )
+      {
+         cFeeErrRatio->cd( 1 + uGdpb * fuTofNrOfFeePerGdpb + uFee );
+         gPad->SetLogy();
+         fvhTofFeeErrorRatio_gDPB[uGdpb * fuTofNrOfFeePerGdpb + uFee]->Draw( "hist le0");
+      } // for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; ++uFee )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+
+   /** Create FEET rates long Canvas for STAR 2018 **/
+   TCanvas* cFeeRatesLong = new TCanvas("cFeeRatesLong", "gDPB Monitoring FEET rates", w, h);
+   cFeeRatesLong->Divide(fuTofNrOfFeePerGdpb, fuTofNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; ++uFee )
+      {
+         cFeeRatesLong->cd( 1 + uGdpb * fuTofNrOfFeePerGdpb + uFee );
+         gPad->SetLogy();
+         fvhTofFeeRateLong_gDPB[uGdpb]->Draw( "hist" );
+
+         fvhTofFeeErrorRateLong_gDPB[uGdpb * fuTofNrOfFeePerGdpb + uFee]->SetLineColor( kRed );
+         fvhTofFeeErrorRateLong_gDPB[uGdpb * fuTofNrOfFeePerGdpb + uFee]->Draw("same hist");
+      } // for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; ++uFee )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create FEET error ratio long Canvas for STAR 2018 **/
+   TCanvas* cFeeErrRatioLong = new TCanvas("cFeeErrRatioLong", "gDPB Monitoring FEET error ratios", w, h);
+   cFeeErrRatioLong->Divide(fuTofNrOfFeePerGdpb, fuTofNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; ++uFee )
+      {
+         cFeeErrRatioLong->cd( 1 + uGdpb * fuTofNrOfFeePerGdpb + uFee );
+         gPad->SetLogy();
+         fvhTofFeeErrorRatioLong_gDPB[uGdpb * fuTofNrOfFeePerGdpb + uFee]->Draw( "hist le0");
+      } // for (UInt_t uFee = 0; uFee < fuTofNrOfFeePerGdpb; ++uFee )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create channel count Canvas for STAR 2018 **/
+   TCanvas* cGdpbChannelCount = new TCanvas("cGdpbChannelCount", "Integrated Get4 channel counts per gDPB", w, h);
+   cGdpbChannelCount->Divide( 1, fuTofNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      cGdpbChannelCount->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogy();
+      fvhTofChCount_gDPB[ uGdpb ]->Draw();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create remapped channel count Canvas for STAR 2018 **/
+   TCanvas* cGdpbRemapChCount = new TCanvas("cGdpbRemapChCount", "Integrated PADI channel counts per gDPB", w, h);
+   cGdpbRemapChCount->Divide( 1, fuTofNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      cGdpbRemapChCount->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogy();
+      fvhTofRemapChCount_gDPB[ uGdpb ]->Draw();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create channel rate Canvas for STAR 2018 **/
+   TCanvas* cGdpbChannelRate = new TCanvas("cGdpbChannelRate", "Get4 channel rate per gDPB", w, h);
+   cGdpbChannelRate->Divide( 1, fuTofNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      cGdpbChannelRate->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
+      fvhTofChannelRate_gDPB[ uGdpb ]->Draw( "colz" );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create remapped rate count Canvas for STAR 2018 **/
+   TCanvas* cGdpbRemapChRate = new TCanvas("cGdpbRemapChRate", "PADI channel rate per gDPB", w, h);
+   cGdpbRemapChRate->Divide( 1, fuTofNrOfGdpbs );
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      cGdpbRemapChRate->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
+      fvhTofRemapChRate_gDPB[ uGdpb ]->Draw( "colz" );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   /*****************************/
+
+   /** Create TOT Canvas(es) for STAR 2018 **/
+/*
+   TCanvas* cTotPnt = nullptr;
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      cTotPnt = new TCanvas( Form("cTot_g%02u", uGdpb),
+                             Form("gDPB %02u TOT distributions", uGdpb),
+                             w, h);
+      cTotPnt->Divide( fuTofNbFeePlotsPerGdpb );
+
+      for( UInt_t uFeePlot = 0; uFeePlot < fuTofNbFeePlotsPerGdpb; ++uFeePlot )
+      {
+         cTotPnt->cd( 1 + uFeePlot );
+         gPad->SetGridx();
+         gPad->SetGridy();
+         gPad->SetLogz();
+
+         fvhTofRawTot_gDPB[ uGdpb * fuTofNbFeePlotsPerGdpb + uFeePlot ]->Draw( "colz" );
+      } // for (UInt_t uFee = 0; uFee < fuTofNbFeePlotsPerGdpb; ++uFee )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   cTotPnt  = new TCanvas( "cTot_all", "TOT distributions", w, h);
+   cTotPnt->Divide( fuTofNrOfGdpbs, fuTofNbFeePlotsPerGdpb );
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+      for( UInt_t uFeePlot = 0; uFeePlot < fuTofNbFeePlotsPerGdpb; ++uFeePlot )
+      {
+         cTotPnt->cd( 1 + uGdpb + fuTofNrOfGdpbs * uFeePlot );
+         gPad->SetGridx();
+         gPad->SetGridy();
+         gPad->SetLogz();
+
+         fvhTofRawTot_gDPB[ uGdpb * fuTofNbFeePlotsPerGdpb + uFeePlot]->Draw( "colz" );
+      } // for (UInt_t uFee = 0; uFee < fuTofNbFeePlotsPerGdpb; ++uFee )
+*/
+   /**************************************************/
+
+   /** Create PADI TOT Canvas(es) for STAR 2018 **/
+/*
+   cTotPnt = nullptr;
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      cTotPnt = new TCanvas( Form("cTotRemap_g%02u", uGdpb),
+                             Form("PADI ch gDPB %02u TOT distributions", uGdpb),
+                             w, h);
+      cTotPnt->Divide( fuTofNbFeePlotsPerGdpb );
+
+      for( UInt_t uFeePlot = 0; uFeePlot < fuTofNbFeePlotsPerGdpb; ++uFeePlot )
+      {
+         cTotPnt->cd( 1 + uFeePlot );
+         gPad->SetGridx();
+         gPad->SetGridy();
+         gPad->SetLogz();
+
+         fvhTofRemapTot_gDPB[ uGdpb * fuTofNbFeePlotsPerGdpb + uFeePlot ]->Draw( "colz" );
+      } // for (UInt_t uFee = 0; uFee < fuTofNbFeePlotsPerGdpb; ++uFee )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   cTotPnt  = new TCanvas( "cTotRemap_all", "TOT distributions", w, h);
+   cTotPnt->Divide( fuTofNrOfGdpbs, fuTofNbFeePlotsPerGdpb );
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+      for( UInt_t uFeePlot = 0; uFeePlot < fuTofNbFeePlotsPerGdpb; ++uFeePlot )
+      {
+         cTotPnt->cd( 1 + uGdpb + fuTofNrOfGdpbs * uFeePlot );
+         gPad->SetGridx();
+         gPad->SetGridy();
+         gPad->SetLogz();
+
+         fvhTofRemapTot_gDPB[ uGdpb * fuTofNbFeePlotsPerGdpb + uFeePlot]->Draw( "colz" );
+      } // for (UInt_t uFee = 0; uFee < fuTofNbFeePlotsPerGdpb; ++uFee )
+*/
+   /**************************************************/
+
+   /** Create STAR token Canvas for STAR 2018 **/
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; uGdpb ++)
+   {
+      TCanvas* cStarToken = new TCanvas( Form("cStarToken_g%02u", uGdpb),
+                                           Form("STAR token detection info for gDPB %02u", uGdpb),
+                                           w, h);
+      cStarToken->Divide( 2, 2 );
+
+      cStarToken->cd(1);
+      fvhTofTriggerRate[uGdpb]->Draw();
+
+      cStarToken->cd(2);
+      fvhTofCmdDaqVsTrig[uGdpb]->Draw( "colz" );
+
+      cStarToken->cd(3);
+      fvhTofStarTokenEvo[uGdpb]->Draw();
+
+      cStarToken->cd(4);
+      fvhTofStarTrigGdpbTsEvo[uGdpb]->Draw( "hist le0" );
+      fvhTofStarTrigStarTsEvo[uGdpb]->SetLineColor( kRed );
+      fvhTofStarTrigStarTsEvo[uGdpb]->Draw( "same hist le0" );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; uGdpb ++)
+   /*****************************/
+
+   /** Create Pulser check Canvas for STAR 2018 **/
+   TCanvas* cPulser = new TCanvas("cPulser", "Time difference RMS for pulser channels when FEE pulser mode is ON", w, h);
+   cPulser->Divide( 3 );
+
+   cPulser->cd(1);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   fhTofTimeRmsPulser->Draw( "colz" );
+
+   cPulser->cd(2);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   fhTofTimeRmsZoomFitPuls->Draw( "colz" );
+
+   cPulser->cd(3);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   fhTofTimeResFitPuls->Draw( "colz" );
+   /*****************************/
+  LOG(INFO) << "Done Creating TOF Histograms" << FairLogger::endl;
+}
+/***************** TOF Histograms *************************************/
 
 Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
@@ -908,7 +1730,7 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
          if( kFALSE == ProcessStsMs( ts, uMsComp, uMsIdx ) )
             return kFALSE;
       } // for( UInt_t uMsComp = 0; uMsComp < fvMsComponentsListSts.size(); ++uMsComp )
-/*
+
       // Loop over registered TOF components
       for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsListTof.size(); ++uMsCompIdx )
       {
@@ -917,7 +1739,7 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
          if( kFALSE == ProcessTofMs( ts, uMsComp, uMsIdx ) )
             return kFALSE;
       } // for( UInt_t uMsComp = 0; uMsComp < fvMsComponentsListSts.size(); ++uMsComp )
-*/
+
 /****************** STS Sync ******************************************/
       /// Pulses time difference calculation and plotting
       // Sort the buffer of hits
@@ -946,7 +1768,7 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
             ULong64_t ulHitTs  = (*it).GetTs();
             UShort_t  usHitAdc = (*it).GetAdc();
 
-            Double_t dTimeSinceStartSec = (ulHitTs * stsxyter::kdClockCycleNs - fdStartTime)* 1e-9;
+            Double_t dTimeSinceStartSec = (ulHitTs * stsxyter::kdClockCycleNs - fdStsStartTime)* 1e-9;
 
             fvmStsAsicHitsInMs[ usAsicIdx ].push_back( (*it) );
          } // loop on time sorted hits and split per asic
@@ -1000,6 +1822,9 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
          } // for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
       } // if( 0 < fvmStsHitsInMs.size() )
 /****************** STS Sync ******************************************/
+
+/****************** TOF Sync ******************************************/
+/****************** TOF Sync ******************************************/
    } // for( UInt_t uMsIdx = 0; uMsIdx < uNbMsLoop; uMsIdx ++ )
 
    if( 0 == ts.index() % 1000 )
@@ -1028,6 +1853,7 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
   return kTRUE;
 }
 
+/****************** STS Sync ******************************************/
 Bool_t CbmMcbm2018MonitorMcbmSync::ProcessStsMs(const fles::Timeslice& ts, size_t uMsComp, UInt_t uMsIdx)
 {
    auto msDescriptor = ts.descriptor( uMsComp, uMsIdx );
@@ -1045,8 +1871,8 @@ Bool_t CbmMcbm2018MonitorMcbmSync::ProcessStsMs(const fles::Timeslice& ts, size_
    fuCurrDpbIdx = fmStsDpbIdIndexMap[ fuCurrDpbId ];
 
 
-   if( fdStartTimeMsSz < 0 )
-      fdStartTimeMsSz = dMsTime;
+   if( fdStsStartTimeMsSz < 0 )
+      fdStsStartTimeMsSz = dMsTime;
 
    // If not integer number of message in input buffer, print warning/error
    if( 0 != ( uSize % kuStsBytesPerMessage ) )
@@ -1205,11 +2031,11 @@ void CbmMcbm2018MonitorMcbmSync::FillStsHitInfo( stsxyter::Message mess, const U
                 << FairLogger::endl;
 */
    // Check Starting point of histos with time as X axis
-   if( -1 == fdStartTime )
-      fdStartTime = fvdStsChanLastHitTime[ uAsicIdx ][ usChan ];
+   if( -1 == fdStsStartTime )
+      fdStsStartTime = fvdStsChanLastHitTime[ uAsicIdx ][ usChan ];
 
    // Fill histos with time as X axis
-   Double_t dTimeSinceStartSec = (fvdStsChanLastHitTime[ uAsicIdx ][ usChan ] - fdStartTime)* 1e-9;
+   Double_t dTimeSinceStartSec = (fvdStsChanLastHitTime[ uAsicIdx ][ usChan ] - fdStsStartTime)* 1e-9;
    Double_t dTimeSinceStartMin = dTimeSinceStartSec / 60.0;
    fhStsChanHitRateEvo[ uAsicIdx ]->Fill( dTimeSinceStartSec , usChan );
    fhStsFebRateEvo[ uAsicIdx ]->Fill(   dTimeSinceStartSec );
@@ -1311,6 +2137,581 @@ void CbmMcbm2018MonitorMcbmSync::FillStsEpochInfo( stsxyter::Message mess )
 {
    UInt_t uVal    = mess.GetTsMsbVal();
 }
+/****************** STS Sync ******************************************/
+
+/****************** TOF Sync ******************************************/
+
+Bool_t CbmMcbm2018MonitorMcbmSync::ProcessTofMs( const fles::Timeslice& ts, size_t uMsComp, UInt_t uMsIdx )
+{
+   auto msDescriptor = ts.descriptor( uMsComp, uMsIdx );
+   fuCurrentEquipmentId = msDescriptor.eq_id;
+   const uint8_t* msContent = reinterpret_cast<const uint8_t*>( ts.content( uMsComp, uMsIdx ) );
+
+   uint32_t size = msDescriptor.size;
+//    fulLastMsIdx = msDescriptor.idx;
+   if (size > 0)
+      LOG(DEBUG) << "Microslice: " << msDescriptor.idx << " has size: " << size
+                 << FairLogger::endl;
+
+   Int_t messageType = -111;
+
+   // If not integer number of message in input buffer, print warning/error
+   if (0 != (size % kuTofBytesPerMessage))
+      LOG(ERROR) << "The input microslice buffer does NOT "
+                 << "contain only complete nDPB messages!"
+                 << FairLogger::endl;
+
+   // Compute the number of complete messages in the input microslice buffer
+   uint32_t uNbMessages = (size - (size % kuTofBytesPerMessage)) / kuTofBytesPerMessage;
+
+   // Get the gDPB ID from the MS header
+   fuTofGdpbId = fuCurrentEquipmentId;
+   fuTofGdpbNr = fmTofGdpbIdIndexMap[fuTofGdpbId];
+
+   // Prepare variables for the loop on contents
+   const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>(msContent);
+   for( uint32_t uIdx = 0; uIdx < uNbMessages; uIdx++ )
+   {
+      // Fill message
+      uint64_t ulData = static_cast<uint64_t>(pInBuff[uIdx]);
+      gdpbv100::Message mess(ulData);
+
+      if (gLogger->IsLogNeeded(DEBUG2))
+      {
+         mess.printDataCout();
+      } // if (gLogger->IsLogNeeded(DEBUG2))
+
+
+      // Increment counter for different message types
+      // and fill the corresponding histogram
+      messageType = mess.getMessageType();
+      fviTofMsgCounter[messageType]++;
+      fhTofMessType->Fill(messageType);
+
+      fuTofGet4Id = mess.getGdpbGenChipId();
+      fuTofGet4Nr = (fuTofGdpbNr * fuTofNrOfGet4PerGdpb) + fuTofGet4Id;
+
+      if( fuTofNrOfGet4PerGdpb <= fuTofGet4Id &&
+          !mess.isStarTrigger()  &&
+          ( gdpbv100::kuChipIdMergedEpoch != fuTofGet4Id ) )
+         LOG(WARNING) << "Message with Get4 ID too high: " << fuTofGet4Id
+                      << " VS " << fuTofNrOfGet4PerGdpb << " set in parameters." << FairLogger::endl;
+
+      switch (messageType)
+      {
+         case gdpbv100::MSG_HIT:
+         {
+            if( mess.getGdpbHitIs24b() )
+            {
+               fhTofGet4MessType->Fill(fuTofGet4Nr, 4 );
+               PrintTofGenInfo(mess);
+            } // if( getGdpbHitIs24b() )
+               else
+               {
+                  fhTofGet4MessType->Fill(fuTofGet4Nr, 0 );
+                  fvmTofEpSupprBuffer[fuTofGet4Nr].push_back( mess );
+               } // else of if( getGdpbHitIs24b() )
+            break;
+         } // case gdpbv100::MSG_HIT:
+         case gdpbv100::MSG_EPOCH:
+         {
+            if( gdpbv100::kuChipIdMergedEpoch == fuTofGet4Id )
+            {
+               for( uint32_t uGet4Index = 0; uGet4Index < fuTofNrOfGet4PerGdpb; uGet4Index ++ )
+               {
+                  fuTofGet4Id = uGet4Index;
+                  fuTofGet4Nr = (fuTofGdpbNr * fuTofNrOfGet4PerGdpb) + fuTofGet4Id;
+                  gdpbv100::Message tmpMess(mess);
+                  tmpMess.setGdpbGenChipId( uGet4Index );
+
+                  fhTofGet4MessType->Fill(fuTofGet4Nr, 1);
+                  FillTofEpochInfo(tmpMess);
+               } // for( uint32_t uGet4Index = 0; uGet4Index < fuTofNrOfGet4PerGdpb; uGetIndex ++ )
+            } // if this epoch message is a merged one valiud for all chips
+            else
+            {
+               fhTofGet4MessType->Fill(fuTofGet4Nr, 1);
+               FillTofEpochInfo(mess);
+            } // if single chip epoch message
+            break;
+         } // case gdpbv100::MSG_EPOCH:
+         case gdpbv100::MSG_SLOWC:
+         {
+            fhTofGet4MessType->Fill(fuTofGet4Nr, 2);
+            FillTofSlcInfo(mess);
+            break;
+         } // case gdpbv100::MSG_SLOWC:
+         case gdpbv100::MSG_SYST:
+         {
+            fhTofSysMessType->Fill(mess.getGdpbSysSubType());
+            if( gdpbv100::SYS_GET4_ERROR == mess.getGdpbSysSubType() )
+            {
+               fhTofGet4MessType->Fill(fuTofGet4Nr, 3);
+
+               UInt_t uFeeNr   = (fuTofGet4Id / fuTofNrOfGet4PerFee);
+               if (0 <= fdTofStartTime)
+               {
+                  fvhTofFeeErrorRate_gDPB[(fuTofGdpbNr * fuTofNrOfFeePerGdpb) + uFeeNr]->Fill(
+                     1e-9 * (mess.getMsgFullTimeD(fvulTofCurrentEpoch[fuTofGet4Nr]) - fdTofStartTime));
+                  fvhTofFeeErrorRatio_gDPB[(fuTofGdpbNr * fuTofNrOfFeePerGdpb) + uFeeNr]->Fill(
+                     1e-9 * (mess.getMsgFullTimeD(fvulTofCurrentEpoch[fuTofGet4Nr]) - fdTofStartTime), 1, 1 );
+               } // if (0 <= fdTofStartTime)
+               if (0 <= fdTofStartTimeLong)
+               {
+                  fvhTofFeeErrorRateLong_gDPB[(fuTofGdpbNr * fuTofNrOfFeePerGdpb) + uFeeNr]->Fill(
+                     1e-9 / 60.0 * (mess.getMsgFullTimeD(fvulTofCurrentEpoch[fuTofGet4Nr]) - fdTofStartTimeLong), 1 / 60.0);
+                  fvhTofFeeErrorRatioLong_gDPB[(fuTofGdpbNr * fuTofNrOfFeePerGdpb) + uFeeNr]->Fill(
+                     1e-9 / 60.0 * (mess.getMsgFullTimeD(fvulTofCurrentEpoch[fuTofGet4Nr]) - fdTofStartTimeLong), 1, 1 / 60.0);
+               } // if (0 <= fdTofStartTime)
+
+               Int_t dFullChId =  fuTofGet4Nr * fuTofNrOfChannelsPerGet4 + mess.getGdpbSysErrChanId();
+               switch( mess.getGdpbSysErrData() )
+               {
+                  case gdpbv100::GET4_V2X_ERR_READ_INIT:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 0);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_SYNC:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 1);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_EP_CNT_SYNC:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 2);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_EP:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 3);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_FIFO_WRITE:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 4);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_LOST_EVT:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 5);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_CHAN_STATE:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 6);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_TOK_RING_ST:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 7);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_TOKEN:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 8);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_READOUT_ERR:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 9);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_SPI:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 10);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_DLL_LOCK:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 11);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_DLL_RESET:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 12);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_TOT_OVERWRT:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 13);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_TOT_RANGE:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 14);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_EVT_DISCARD:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 15);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_ADD_RIS_EDG:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 16);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_UNPAIR_FALL:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 17);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_SEQUENCE_ER:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 18);
+                     break;
+                  case gdpbv100::GET4_V2X_ERR_UNKNOWN:
+                     fhTofGet4ChanErrors->Fill(dFullChId, 19);
+                     break;
+                  default: // Corrupt error or not yet supported error
+                     fhTofGet4ChanErrors->Fill(dFullChId, 20);
+                     break;
+               } // Switch( mess.getGdpbSysErrData() )
+            } // if( gdpbv100::SYSMSG_GET4_EVENT == mess.getGdpbSysSubType() )
+            FillTofSysInfo(mess);
+            break;
+         } // case gdpbv100::MSG_SYST:
+         case gdpbv100::MSG_STAR_TRI_A:
+         case gdpbv100::MSG_STAR_TRI_B:
+         case gdpbv100::MSG_STAR_TRI_C:
+         case gdpbv100::MSG_STAR_TRI_D:
+            fhTofGet4MessType->Fill(fuTofGet4Nr, 5);
+            FillTofStarTrigInfo(mess);
+            break;
+         default:
+            LOG(ERROR) << "Message type " << std::hex
+                       << std::setw(2) << static_cast<uint16_t>(messageType)
+                       << " not included in Get4 unpacker."
+                       << FairLogger::endl;
+      } // switch( mess.getMessageType() )
+   } // for (uint32_t uIdx = 0; uIdx < uNbMessages; uIdx ++)
+
+   return kTRUE;
+}
+
+void CbmMcbm2018MonitorMcbmSync::FillTofHitInfo(gdpbv100::Message mess)
+{
+   UInt_t uChannel = mess.getGdpbHitChanId();
+   UInt_t uTot     = mess.getGdpbHit32Tot();
+   UInt_t uFts     = mess.getGdpbHitFineTs();
+
+   ULong64_t ulCurEpochGdpbGet4 = fvulTofCurrentEpoch[ fuTofGet4Nr ];
+
+   // In Ep. Suppr. Mode, receive following epoch instead of previous
+   if( 0 < ulCurEpochGdpbGet4 )
+      ulCurEpochGdpbGet4 --;
+      else ulCurEpochGdpbGet4 = gdpbv100::kuEpochCounterSz; // Catch epoch cycle!
+
+   UInt_t uChannelNr = fuTofGet4Id * fuTofNrOfChannelsPerGet4 + uChannel;
+   UInt_t uChannelNrInFeet = (fuTofGet4Id % fuTofNrOfGet4PerFee) * fuTofNrOfChannelsPerGet4 + uChannel;
+   UInt_t uFeeNr   = (fuTofGet4Id / fuTofNrOfGet4PerFee);
+   UInt_t uFeeNrInSys = fuTofGdpbNr * fuTofNrOfFeePerGdpb + uFeeNr;
+   UInt_t uRemappedChannelNr = uFeeNr * fuTofNrOfChannelsPerFee + fvuGet4ToPadi[ uChannelNrInFeet ];
+
+   ULong_t  ulHitTime = mess.getMsgFullTime(ulCurEpochGdpbGet4);
+   Double_t dHitTime  = mess.getMsgFullTimeD(ulCurEpochGdpbGet4);
+
+   // In 32b mode the coarse counter is already computed back to 112 FTS bins
+   // => need to hide its contribution from the Finetime
+   // => FTS = Fullt TS modulo 112
+   uFts = mess.getGdpbHitFullTs() % 112;
+
+   fvhTofChCount_gDPB[fuTofGdpbNr]->Fill(uChannelNr);
+   fvhTofRawFt_gDPB[fuTofGdpbNr]->Fill(uChannelNr, uFts);
+//   fvhTofRawTot_gDPB[ fuTofGdpbNr * fuTofNbFeePlotsPerGdpb + uFeeNr/fuTofNbFeePlot ]->Fill(uChannelNr, uTot);
+
+   /// Remapped for PADI to GET4
+   fvhTofRemapChCount_gDPB[fuTofGdpbNr]->Fill( uRemappedChannelNr );
+//   fvhTofRemapTot_gDPB[ fuTofGdpbNr * fuTofNbFeePlotsPerGdpb + uFeeNr/fuTofNbFeePlot ]->Fill(  uRemappedChannelNr , uTot);
+
+   ///* Pulser monitoring *///
+   /// Save last hist time if pulser channel
+   /// Fill the corresponding histos if the time difference is reasonnable
+   if( gdpbv100::kuFeePulserChannel == uChannelNrInFeet )
+   {
+      fvdTofTsLastPulserHit[ uFeeNrInSys ] = dHitTime;
+
+      /// Update the difference to all other FEE with lower indices
+      for( UInt_t uFeeB = 0; uFeeB < uFeeNrInSys; uFeeB++)
+         if( nullptr != fvhTofTimeDiffPulser[uFeeB][uFeeNrInSys] )
+         {
+            Double_t dTimeDiff = 1e3 * ( fvdTofTsLastPulserHit[ uFeeNrInSys ] - fvdTofTsLastPulserHit[ uFeeB ] );
+            if( TMath::Abs( dTimeDiff ) < kdTofMaxDtPulserPs )
+               fvhTofTimeDiffPulser[uFeeB][uFeeNrInSys]->Fill( dTimeDiff );
+         } // if( nullptr != fvhTofTimeDiffPulser[uFeeB][uFeeB] )
+
+      /// Update the difference to all other FEE with higher indices
+      for( UInt_t uFeeB = uFeeNrInSys + 1; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeB++)
+         if( nullptr != fvhTofTimeDiffPulser[uFeeNrInSys][uFeeB] )
+         {
+            Double_t dTimeDiff = 1e3 * ( fvdTofTsLastPulserHit[ uFeeB ] - fvdTofTsLastPulserHit[ uFeeNrInSys ] );
+            if( TMath::Abs( dTimeDiff ) < kdTofMaxDtPulserPs )
+               fvhTofTimeDiffPulser[uFeeNrInSys][uFeeB]->Fill( dTimeDiff );
+         } // if( nullptr != fvhTofTimeDiffPulser[uFeeNrInSys][uFeeB] )
+   } // if( gdpbv100::kuFeePulserChannel == uChannelNrInFeet )
+
+   // In Run rate evolution
+   if (fdTofStartTime < 0)
+      fdTofStartTime = dHitTime;
+/*
+   // Reset the evolution Histogram and the start time when we reach the end of the range
+   if( fuTofHistoryHistoSize < 1e-9 * (dHitTime - fdTofStartTime) )
+   {
+      ResetEvolutionHistograms();
+      fdTofStartTime = dHitTime;
+   } // if( fuTofHistoryHistoSize < 1e-9 * (dHitTime - fdTofStartTime) )
+*/
+   // In Run rate evolution
+   if (fdTofStartTimeLong < 0)
+      fdTofStartTimeLong = dHitTime;
+/*
+   // Reset the evolution Histogram and the start time when we reach the end of the range
+   if( fuTofHistoryHistoSizeLong < 1e-9 * (dHitTime - fdTofStartTimeLong) / 60.0 )
+   {
+      ResetLongEvolutionHistograms();
+      fdTofStartTimeLong = dHitTime;
+   } // if( fuTofHistoryHistoSize < 1e-9 * (dHitTime - fdTofStartTime) / 60.0 )
+*/
+   if (0 <= fdTofStartTime)
+   {
+      fvhTofChannelRate_gDPB[ fuTofGdpbNr ]->Fill( 1e-9 * (dHitTime - fdTofStartTime), uChannelNr );
+      fvhTofRemapChRate_gDPB[ fuTofGdpbNr ]->Fill( 1e-9 * (dHitTime - fdTofStartTime), uRemappedChannelNr );
+      fvhTofFeeRate_gDPB[(fuTofGdpbNr * fuTofNrOfFeePerGdpb) + uFeeNr]->Fill( 1e-9 * (dHitTime - fdTofStartTime));
+      fvhTofFeeErrorRatio_gDPB[(fuTofGdpbNr * fuTofNrOfFeePerGdpb) + uFeeNr]->Fill( 1e-9 * (dHitTime - fdTofStartTime), 0, 1);
+   } // if (0 <= fdTofStartTime)
+
+   if (0 <= fdTofStartTimeLong)
+   {
+      fvhTofFeeRateLong_gDPB[(fuTofGdpbNr * fuTofNrOfFeePerGdpb) + uFeeNr]->Fill(
+            1e-9 / 60.0 * (dHitTime - fdTofStartTimeLong), 1 / 60.0 );
+      fvhTofFeeErrorRatioLong_gDPB[(fuTofGdpbNr * fuTofNrOfFeePerGdpb) + uFeeNr]->Fill(
+            1e-9 / 60.0 * (dHitTime - fdTofStartTimeLong), 0, 1 / 60.0 );
+   } // if (0 <= fdTofStartTimeLong)
+}
+
+void CbmMcbm2018MonitorMcbmSync::FillTofEpochInfo(gdpbv100::Message mess)
+{
+   ULong64_t ulEpochNr = mess.getGdpbEpEpochNb();
+
+   fvulTofCurrentEpoch[fuTofGet4Nr] = ulEpochNr;
+
+   if (1 == mess.getGdpbEpSync())
+      fhTofGet4EpochFlags->Fill(fuTofGet4Nr, 0);
+   if (1 == mess.getGdpbEpDataLoss())
+      fhTofGet4EpochFlags->Fill(fuTofGet4Nr, 1);
+   if (1 == mess.getGdpbEpEpochLoss())
+      fhTofGet4EpochFlags->Fill(fuTofGet4Nr, 2);
+   if (1 == mess.getGdpbEpMissmatch())
+      fhTofGet4EpochFlags->Fill(fuTofGet4Nr, 3);
+
+   fulTofCurrentEpochTime = mess.getMsgFullTime(ulEpochNr);
+
+   /// Re-align the epoch number of the message in case it will be used later:
+   /// We received the epoch after the data instead of the one before!
+   if( 0 < ulEpochNr )
+      mess.setGdpbEpEpochNb( ulEpochNr - 1 );
+      else mess.setGdpbEpEpochNb( gdpbv100::kuEpochCounterSz );
+
+   Int_t iBufferSize = fvmTofEpSupprBuffer[fuTofGet4Nr].size();
+   if( 0 < iBufferSize )
+   {
+      LOG(DEBUG) << "Now processing stored messages for for get4 " << fuTofGet4Nr << " with epoch number "
+                 << (fvulTofCurrentEpoch[fuTofGet4Nr] - 1) << FairLogger::endl;
+
+      /// Data are sorted between epochs, not inside => Epoch level ordering
+      /// Sorting at lower bin precision level
+      std::stable_sort( fvmTofEpSupprBuffer[fuTofGet4Nr].begin(), fvmTofEpSupprBuffer[fuTofGet4Nr].begin() );
+
+      for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+      {
+         FillTofHitInfo( fvmTofEpSupprBuffer[fuTofGet4Nr][ iMsgIdx ] );
+      } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+
+      fvmTofEpSupprBuffer[fuTofGet4Nr].clear();
+   } // if( 0 < fvmTofEpSupprBuffer[fuTofGet4Nr] )
+}
+
+void CbmMcbm2018MonitorMcbmSync::FillTofSlcInfo(gdpbv100::Message mess)
+{
+   if (fmTofGdpbIdIndexMap.end() != fmTofGdpbIdIndexMap.find(fuTofGdpbId))
+   {
+      UInt_t uChip = mess.getGdpbGenChipId();
+      UInt_t uChan = mess.getGdpbSlcChan();
+      UInt_t uEdge = mess.getGdpbSlcEdge();
+      UInt_t uData = mess.getGdpbSlcData();
+      UInt_t uType = mess.getGdpbSlcType();
+      Double_t dFullChId =  fuTofGet4Nr * fuTofNrOfChannelsPerGet4 + mess.getGdpbSlcChan() + 0.5 * mess.getGdpbSlcEdge();
+      Double_t dMessTime = static_cast< Double_t>( fulTofCurrentEpochTime ) * 1.e-9;
+
+      switch( uType )
+      {
+         case 0: // Scaler counter
+         {
+            fhTofGet4ChanScm->Fill(dFullChId, uType );
+            fhTofScmScalerCounters->Fill( uData, dFullChId);
+            break;
+         }
+         case 1: // Deadtime counter
+         {
+            fhTofGet4ChanScm->Fill(dFullChId, uType );
+            fhTofScmDeadtimeCounters->Fill( uData, dFullChId);
+            break;
+         }
+         case 2: // SPI message
+         {
+            fhTofGet4ChanScm->Fill(dFullChId, uType );
+            break;
+         }
+         case 3: // Start message or SEU counter
+         {
+            if( 0 == mess.getGdpbSlcChan() && 0 == mess.getGdpbSlcEdge() ) // START message
+            {
+               fhTofGet4ChanScm->Fill(dFullChId, uType + 1);
+            } // if( 0 == mess.getGdpbSlcChan() && 0 == mess.getGdpbSlcEdge() )
+            else if( 0 == mess.getGdpbSlcChan() && 1 == mess.getGdpbSlcEdge() ) // SEU counter message
+            {
+               fhTofGet4ChanScm->Fill(dFullChId, uType );
+               fhTofScmSeuCounters->Fill( uData, dFullChId);
+               fhTofScmSeuCountersEvo->Fill( dMessTime - fdTofStartTime* 1.e-9, uData, dFullChId);
+             } // else if( 0 == mess.getGdpbSlcChan() && 1 == mess.getGdpbSlcEdge() )
+            break;
+         }
+         default: // Should never happen
+            break;
+      } // switch( mess.getGdpbSlcType() )
+   }
+}
+
+void CbmMcbm2018MonitorMcbmSync::PrintTofGenInfo(gdpbv100::Message mess)
+{
+   Int_t mType = mess.getMessageType();
+   Int_t channel = mess.getGdpbHitChanId();
+   uint64_t uData = mess.getData();
+
+   LOG(DEBUG) << "Get4 MSG type " << mType << " from gdpbId " << fuTofGdpbId
+              << ", getId " << fuTofGet4Id << ", (hit channel) " << channel
+              << " data " << std::hex << uData
+              << FairLogger::endl;
+}
+
+void CbmMcbm2018MonitorMcbmSync::FillTofSysInfo(gdpbv100::Message mess)
+{
+   if (fmTofGdpbIdIndexMap.end() != fmTofGdpbIdIndexMap.find(fuTofGdpbId))
+      LOG(DEBUG) << "GET4 System message,       epoch "
+                 << static_cast<Int_t>(fvulTofCurrentEpoch[fuTofGet4Nr]) << ", time " << std::setprecision(9)
+                 << std::fixed << Double_t(fulTofCurrentEpochTime) * 1.e-9 << " s "
+                 << " for board ID " << std::hex << std::setw(4) << fuTofGdpbId
+                 << std::dec << FairLogger::endl;
+
+   switch( mess.getGdpbSysSubType() )
+   {
+      case gdpbv100::SYS_GET4_ERROR:
+      {
+         uint32_t uData = mess.getGdpbSysErrData();
+         if( gdpbv100::GET4_V2X_ERR_TOT_OVERWRT == uData
+          || gdpbv100::GET4_V2X_ERR_TOT_RANGE   == uData
+          || gdpbv100::GET4_V2X_ERR_EVT_DISCARD == uData
+          || gdpbv100::GET4_V2X_ERR_ADD_RIS_EDG == uData
+          || gdpbv100::GET4_V2X_ERR_UNPAIR_FALL == uData
+          || gdpbv100::GET4_V2X_ERR_SEQUENCE_ER == uData
+           )
+            LOG(DEBUG) << " +++++++ > gDPB: " << std::hex << std::setw(4) << fuTofGdpbId
+                       << std::dec << ", Chip = " << std::setw(2)
+                       << mess.getGdpbGenChipId() << ", Chan = " << std::setw(1)
+                       << mess.getGdpbSysErrChanId() << ", Edge = "
+                       << std::setw(1) << mess.getGdpbSysErrEdge() << ", Empt = "
+                       << std::setw(1) << mess.getGdpbSysErrUnused()
+                       << ", Data = " << std::hex << std::setw(2) << uData
+                       << std::dec << " -- GET4 V1 Error Event"
+                       << FairLogger::endl;
+            else LOG(DEBUG) << " +++++++ >gDPB: " << std::hex << std::setw(4) << fuTofGdpbId
+                            << std::dec << ", Chip = " << std::setw(2)
+                            << mess.getGdpbGenChipId() << ", Chan = " << std::setw(1)
+                            << mess.getGdpbSysErrChanId() << ", Edge = "
+                            << std::setw(1) << mess.getGdpbSysErrEdge() << ", Empt = "
+                            << std::setw(1) << mess.getGdpbSysErrUnused()
+                            << ", Data = " << std::hex << std::setw(2) << uData
+                            << std::dec << " -- GET4 V1 Error Event "
+                            << FairLogger::endl;
+         break;
+      } // case gdpbv100::SYSMSG_GET4_EVENT
+      case gdpbv100::SYS_GDPB_UNKWN:
+      {
+         LOG(DEBUG) << "Unknown GET4 message, data: " << std::hex << std::setw(8)
+                    << mess.getGdpbSysUnkwData() << std::dec
+                    <<" Full message: " << std::hex << std::setw(16)
+                    << mess.getData() << std::dec
+                    << FairLogger::endl;
+         break;
+      } // case gdpbv100::SYS_GDPB_UNKWN:
+      case gdpbv100::SYS_SYNC_ERROR:
+      {
+         LOG(DEBUG) << "Closy synchronization error" << FairLogger::endl;
+         break;
+      } // case gdpbv100::SYS_SYNC_ERROR:
+   } // switch( getGdpbSysSubType() )
+}
+
+void CbmMcbm2018MonitorMcbmSync::FillTofStarTrigInfo(gdpbv100::Message mess)
+{
+   Int_t iMsgIndex = mess.getStarTrigMsgIndex();
+
+   switch( iMsgIndex )
+   {
+      case 0:
+         fvhTofTokenMsgType[fuTofGdpbNr]->Fill(0);
+         fvulTofGdpbTsMsb[fuTofGdpbNr] = mess.getGdpbTsMsbStarA();
+         break;
+      case 1:
+         fvhTofTokenMsgType[fuTofGdpbNr]->Fill(1);
+         fvulTofGdpbTsLsb[fuTofGdpbNr] = mess.getGdpbTsLsbStarB();
+         fvulTofStarTsMsb[fuTofGdpbNr] = mess.getStarTsMsbStarB();
+         break;
+      case 2:
+         fvhTofTokenMsgType[fuTofGdpbNr]->Fill(2);
+         fvulTofStarTsMid[fuTofGdpbNr] = mess.getStarTsMidStarC();
+         break;
+      case 3:
+      {
+         fvhTofTokenMsgType[fuTofGdpbNr]->Fill(3);
+
+         ULong64_t ulNewGdpbTsFull = ( fvulTofGdpbTsMsb[fuTofGdpbNr] << 24 )
+                                   + ( fvulTofGdpbTsLsb[fuTofGdpbNr]       );
+         ULong64_t ulNewStarTsFull = ( fvulTofStarTsMsb[fuTofGdpbNr] << 48 )
+                                   + ( fvulTofStarTsMid[fuTofGdpbNr] <<  8 )
+                                   + mess.getStarTsLsbStarD();
+         UInt_t uNewToken  = mess.getStarTokenStarD();
+         UInt_t uNewDaqCmd  = mess.getStarDaqCmdStarD();
+         UInt_t uNewTrigCmd = mess.getStarTrigCmdStarD();
+
+         if( ( uNewToken == fvuTofStarTokenLast[fuTofGdpbNr] ) && ( ulNewGdpbTsFull == fvulTofGdpbTsFullLast[fuTofGdpbNr] ) &&
+             ( ulNewStarTsFull == fvulTofStarTsFullLast[fuTofGdpbNr] ) && ( uNewDaqCmd == fvuTofStarDaqCmdLast[fuTofGdpbNr] ) &&
+             ( uNewTrigCmd == fvuTofStarTrigCmdLast[fuTofGdpbNr] ) )
+         {
+            UInt_t uTrigWord =  ( (fvuTofStarTrigCmdLast[fuTofGdpbNr] & 0x00F) << 16 )
+                     + ( (fvuTofStarDaqCmdLast[fuTofGdpbNr]   & 0x00F) << 12 )
+                     + ( (fvuTofStarTokenLast[fuTofGdpbNr]    & 0xFFF)       );
+            LOG(WARNING) << "Possible error: identical STAR tokens found twice in a row => ignore 2nd! "
+                         << " TS " << fulTofCurrentTsIndex
+                         << " gDBB #" << fuTofGdpbNr << " "
+                         << Form("token = %5u ", fvuTofStarTokenLast[fuTofGdpbNr] )
+                         << Form("gDPB ts  = %12llu ", fvulTofGdpbTsFullLast[fuTofGdpbNr] )
+                         << Form("STAR ts = %12llu ", fvulTofStarTsFullLast[fuTofGdpbNr] )
+                         << Form("DAQ cmd = %2u ", fvuTofStarDaqCmdLast[fuTofGdpbNr] )
+                         << Form("TRG cmd = %2u ", fvuTofStarTrigCmdLast[fuTofGdpbNr] )
+                         << Form("TRG Wrd = %5x ", uTrigWord )
+                         << FairLogger::endl;
+            return;
+         } // if exactly same message repeated
+
+         // STAR TS counter reset detection
+         if( ulNewStarTsFull < fvulTofStarTsFullLast[fuTofGdpbNr] )
+            LOG(DEBUG) << "Probable reset of the STAR TS: old = " << Form("%16llu", fvulTofStarTsFullLast[fuTofGdpbNr])
+                       << " new = " << Form("%16llu", ulNewStarTsFull)
+                       << " Diff = -" << Form("%8llu", fvulTofStarTsFullLast[fuTofGdpbNr] - ulNewStarTsFull)
+                       << FairLogger::endl;
+
+         ULong64_t ulGdpbTsDiff = ulNewGdpbTsFull - fvulTofGdpbTsFullLast[fuTofGdpbNr];
+         fvulTofGdpbTsFullLast[fuTofGdpbNr] = ulNewGdpbTsFull;
+         fvulTofStarTsFullLast[fuTofGdpbNr] = ulNewStarTsFull;
+         fvuTofStarTokenLast[fuTofGdpbNr]   = uNewToken;
+         fvuTofStarDaqCmdLast[fuTofGdpbNr]  = uNewDaqCmd;
+         fvuTofStarTrigCmdLast[fuTofGdpbNr] = uNewTrigCmd;
+
+
+         /// In Run rate evolution
+         if( 0 <= fdTofStartTime )
+         {
+/*
+            /// Reset the evolution Histogram and the start time when we reach the end of the range
+            if( fuTofHistoryHistoSize < 1e-9 * (fvulTofGdpbTsFullLast[fuTofGdpbNr] * gdpbv100::kdClockCycleSizeNs - fdTofStartTime) )
+            {
+               ResetEvolutionHistograms();
+               fdTofStartTime = fvulTofGdpbTsFullLast[fuTofGdpbNr] * gdpbv100::kdClockCycleSizeNs;
+            } // if( fuTofHistoryHistoSize < 1e-9 * (fulGdpbTsFullLast * gdpbv100::kdClockCycleSizeNs - fdTofStartTime) )
+*/
+            fvhTofTriggerRate[fuTofGdpbNr]->Fill( 1e-9 * ( fvulTofGdpbTsFullLast[fuTofGdpbNr] * gdpbv100::kdClockCycleSizeNs - fdTofStartTime ) );
+            fvhTofStarTokenEvo[fuTofGdpbNr]->Fill( 1e-9 * ( fvulTofGdpbTsFullLast[fuTofGdpbNr] * gdpbv100::kdClockCycleSizeNs - fdTofStartTime ),
+                                            fvuTofStarTokenLast[fuTofGdpbNr] );
+            fvhTofStarTrigGdpbTsEvo[fuTofGdpbNr]->Fill( 1e-9 * ( fvulTofGdpbTsFullLast[fuTofGdpbNr] * gdpbv100::kdClockCycleSizeNs - fdTofStartTime ),
+                                                  fvulTofGdpbTsFullLast[fuTofGdpbNr] );
+            fvhTofStarTrigStarTsEvo[fuTofGdpbNr]->Fill( 1e-9 * ( fvulTofGdpbTsFullLast[fuTofGdpbNr] * gdpbv100::kdClockCycleSizeNs - fdTofStartTime ),
+                                                  fvulTofStarTsFullLast[fuTofGdpbNr] );
+         } // if( 0 < fdTofStartTime )
+            else fdTofStartTime = fvulTofGdpbTsFullLast[fuTofGdpbNr] * gdpbv100::kdClockCycleSizeNs;
+         fvhTofCmdDaqVsTrig[fuTofGdpbNr]->Fill( fvuTofStarDaqCmdLast[fuTofGdpbNr], fvuTofStarTrigCmdLast[fuTofGdpbNr] );
+
+         break;
+      } // case 3
+      default:
+         LOG(ERROR) << "Unknown Star Trigger messageindex: " << iMsgIndex << FairLogger::endl;
+   } // switch( iMsgIndex )
+}
+/****************** TOF Sync ******************************************/
 
 void CbmMcbm2018MonitorMcbmSync::Reset()
 {
@@ -1341,8 +2742,8 @@ void CbmMcbm2018MonitorMcbmSync::FillOutput(CbmDigi* /*digi*/)
 
 void CbmMcbm2018MonitorMcbmSync::SaveAllHistos( TString sFileName )
 {
-   TDirectory * oldDir = NULL;
-   TFile * histoFile = NULL;
+   TDirectory * oldDir = nullptr;
+   TFile * histoFile = nullptr;
    if( "" != sFileName )
    {
       // Store current directory position to allow restore later
@@ -1394,11 +2795,11 @@ void CbmMcbm2018MonitorMcbmSync::SaveAllHistos( TString sFileName )
    gDirectory->cd("Flib_Raw");
 
    TH1 * pMissedTsH1    = dynamic_cast< TH1 * >( gROOT->FindObjectAny( "Missed_TS" ) );
-   if( NULL != pMissedTsH1 )
+   if( nullptr != pMissedTsH1 )
       pMissedTsH1->Write();
 
    TProfile * pMissedTsEvoP = dynamic_cast< TProfile * >( gROOT->FindObjectAny( "Missed_TS_Evo" ) );
-   if( NULL != pMissedTsEvoP )
+   if( nullptr != pMissedTsEvoP )
       pMissedTsEvoP->Write();
 
    gDirectory->cd("..");
@@ -1414,8 +2815,8 @@ void CbmMcbm2018MonitorMcbmSync::SaveAllHistos( TString sFileName )
 }
 void CbmMcbm2018MonitorMcbmSync::SavePulserHistos( TString sFileName )
 {
-   TDirectory * oldDir = NULL;
-   TFile * histoFile = NULL;
+   TDirectory * oldDir = nullptr;
+   TFile * histoFile = nullptr;
    if( "" != sFileName )
    {
       // Store current directory position to allow restore later
@@ -1497,8 +2898,11 @@ void CbmMcbm2018MonitorMcbmSync::ResetAllHistos()
       fhStsIntervalLongAsic[ uXyterIdx ]->Reset();
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuStsNbStsXyters; ++uXyterIdx )
 
-  fdStartTime = -1;
-  fdStartTimeMsSz = -1;
+  fdStsStartTime = -1;
+  fdStsStartTimeMsSz = -1;
+
+  fdTofStartTime = -1;
+  fdTofStartTimeLong = -1;
 }
 
 void CbmMcbm2018MonitorMcbmSync::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )
