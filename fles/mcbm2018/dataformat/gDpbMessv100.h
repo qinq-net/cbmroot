@@ -55,9 +55,10 @@ namespace gdpbv100 {
    };
 
    enum SysMessageTypes {
-      SYS_GET4_ERROR = 0, // GET4 error event
-      SYS_GDPB_UNKWN = 1, // Raw data from gDPB in case of unknown message type from GET4
-      SYS_SYNC_ERROR = 2  // added to data stream when the closy-sync-strobe does not match the rocs 156MHz timestamp counter
+      SYS_GET4_ERROR = 0,     // GET4 error event
+      SYS_GDPB_UNKWN = 1,     // Raw data from gDPB in case of unknown message type from GET4
+      SYS_GET4_SYNC_MISS = 2, // Added when at least when GET4 is missing the SYNC flag when it is expected
+      SYS_SYNC_ERROR     = 3  // added to data stream when the closy-sync-strobe does not match the gDPB 160MHz timestamp counter
    };
 
    enum MessagePrintMask {
