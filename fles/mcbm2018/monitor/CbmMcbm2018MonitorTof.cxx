@@ -38,9 +38,12 @@
 #include <iomanip>
 #include <ctime>
 
-Bool_t bResetTofStarMoniShiftHistos = kFALSE;
-Bool_t bSaveTofStarMoniShiftHistos  = kFALSE;
-Bool_t bTofUpdateZoomedFitMoniShift = kFALSE;
+Bool_t bMcbmMoniTofResetHistos = kFALSE;
+Bool_t bMcbmMoniTofSaveHistos  = kFALSE;
+Bool_t bMcbmMoniTofUpdateZoomedFit = kFALSE;
+Bool_t bMcbmMoniTofRawDataPrint     = kFALSE;
+Bool_t bMcbmMoniTofPrintAllHitsEna  = kFALSE;
+Bool_t bMcbmMoniTofPrintAllEpochsEna = kFALSE;
 
 CbmMcbm2018MonitorTof::CbmMcbm2018MonitorTof() :
     CbmTSUnpack(),
@@ -61,6 +64,10 @@ CbmMcbm2018MonitorTof::CbmMcbm2018MonitorTof() :
     fuNrOfGet4(0),
     fuNrOfGet4PerGdpb(0),
     fuNrOfChannelsPerGdpb(0),
+    fuRawDataPrintMsgNb(100),
+    fuRawDataPrintMsgIdx(fuRawDataPrintMsgNb),
+    fbPrintAllHitsEnable(kFALSE),
+    fbPrintAllEpochsEnable(kFALSE),
     fulCurrentTsIndex(0),
     fuCurrentMs(0),
     fdMsIndex(0),
@@ -306,6 +313,29 @@ Bool_t CbmMcbm2018MonitorTof::ReInitContainers()
       fvuGet4ToPadi[ uChan ] = uGet4topadi[ uChan ] - 1;
    } // for( UInt_t uChan = 0; uChan < fuNrOfChannelsPerFeet; ++uChan )
 
+
+/// TODO: move these constants somewhere shared, e.g the parameter file
+   fvuElinkToGet4.resize( kuNbGet4PerGbtx );
+   fvuGet4ToElink.resize( kuNbGet4PerGbtx );
+   UInt_t kuElinkToGet4[ kuNbGet4PerGbtx ] = { 27,  2,  7,  3, 31, 26, 30,  1,
+                                               33, 37, 32, 13,  9, 14, 10, 15,
+                                               17, 21, 16, 35, 34, 38, 25, 24,
+                                                0,  6, 20, 23, 18, 22, 28,  4,
+                                               29,  5, 19, 36, 39,  8, 12, 11
+                                              };
+   UInt_t kuGet4ToElink[ kuNbGet4PerGbtx ] = { 24,  7,  1,  3, 31, 33, 25,  2,
+                                               37, 12, 14, 39, 38, 11, 13, 15,
+                                               18, 16, 28, 34, 26, 17, 29, 27,
+                                               23, 22,  5,  0, 30, 32,  6,  4,
+                                               10,  8, 20, 19, 35,  9, 21, 36
+                                              };
+
+   for( UInt_t uLinkAsic = 0; uLinkAsic < kuNbGet4PerGbtx; ++uLinkAsic )
+   {
+      fvuElinkToGet4[ uLinkAsic ] = kuElinkToGet4[ uLinkAsic ];
+      fvuGet4ToElink[ uLinkAsic ] = kuGet4ToElink[ uLinkAsic ];
+   } // for( UInt_t uChan = 0; uChan < fuNrOfChannelsPerFeet; ++uChan )
+   
 	return kTRUE;
 }
 
@@ -344,9 +374,10 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    name = "hSysMessType";
    title = "Nb of system message for each type; System Type";
    fhSysMessType = new TH1I(name, title, 1 + gdpbv100::SYS_SYNC_ERROR, 0., 1 + gdpbv100::SYS_SYNC_ERROR);
-   fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR, "GET4 ERROR");
-   fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN, "UNKW GET4 MSG");
-   fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR, "SYNC ERROR");
+   fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR,     "GET4 ERROR");
+   fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN,     "UNKW GET4 MSG");
+   fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_SYNC_MISS, "SYS_GET4_SYNC_MISS");
+   fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR,     "SYNC ERROR");
 
    /*******************************************************************/
    name = "hGet4MessType";
@@ -737,13 +768,19 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       server->Register("/TofRaw", fhTimeResFitPuls );
 
 
-      server->RegisterCommand("/Reset_All_eTOF", "bResetTofStarMoniShiftHistos=kTRUE");
-      server->RegisterCommand("/Save_All_eTof",  "bSaveTofStarMoniShiftHistos=kTRUE");
-      server->RegisterCommand("/Update_PulsFit", "bTofUpdateZoomedFitMoniShift=kTRUE");
+      server->RegisterCommand("/Reset_All_eTOF", "bMcbmMoniTofResetHistos=kTRUE");
+      server->RegisterCommand("/Save_All_eTof",  "bMcbmMoniTofSaveHistos=kTRUE");
+      server->RegisterCommand("/Update_PulsFit", "bMcbmMoniTofUpdateZoomedFit=kTRUE");
+      server->RegisterCommand("/Print_Raw_Data", "bMcbmMoniTofRawDataPrint=kTRUE");
+      server->RegisterCommand("/Print_AllHits",  "bMcbmMoniTofPrintAllHitsEna=kTRUE");
+      server->RegisterCommand("/Print_AllEps",   "bMcbmMoniTofPrintAllEpochsEna=kTRUE");
 
       server->Restrict("/Reset_All_eTof", "allow=admin");
       server->Restrict("/Save_All_eTof",  "allow=admin");
       server->Restrict("/Update_PulsFit", "allow=admin");
+      server->Restrict("/Print_Raw_Data", "allow=admin");
+      server->Restrict("/Print_AllHits",  "allow=admin");
+      server->Restrict("/Print_AllEps",   "allow=admin");
    } // if( server )
 #endif
 
@@ -1026,23 +1063,39 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
 Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
     size_t component)
 {
-   if( bResetTofStarMoniShiftHistos )
+   if( bMcbmMoniTofResetHistos )
    {
       LOG(INFO) << "Reset eTOF STAR histos " << FairLogger::endl;
       ResetAllHistos();
-      bResetTofStarMoniShiftHistos = kFALSE;
-   } // if( bResetTofStarMoniShiftHistos )
-   if( bSaveTofStarMoniShiftHistos )
+      bMcbmMoniTofResetHistos = kFALSE;
+   } // if( bMcbmMoniTofResetHistos )
+   if( bMcbmMoniTofSaveHistos )
    {
       LOG(INFO) << "Start saving eTOF STAR histos " << FairLogger::endl;
       SaveAllHistos( "data/histos_Shift_StarTof.root" );
-      bSaveTofStarMoniShiftHistos = kFALSE;
+      bMcbmMoniTofSaveHistos = kFALSE;
    } // if( bSaveStsHistos )
-   if( bTofUpdateZoomedFitMoniShift )
+   if( bMcbmMoniTofUpdateZoomedFit )
    {
       UpdateZoomedFit();
-      bTofUpdateZoomedFitMoniShift = kFALSE;
-   } // if (bTofUpdateZoomedFitMoniShift)
+      bMcbmMoniTofUpdateZoomedFit = kFALSE;
+   } // if (bMcbmMoniTofUpdateZoomedFit)
+   if( bMcbmMoniTofRawDataPrint )
+   {
+      fuRawDataPrintMsgIdx = 0;
+      bMcbmMoniTofRawDataPrint = kFALSE;
+   } // if( bMcbmMoniTofRawDataPrint )
+   if( bMcbmMoniTofPrintAllHitsEna )
+   {
+      fbPrintAllHitsEnable = !fbPrintAllHitsEnable;
+      bMcbmMoniTofPrintAllHitsEna = kFALSE;
+   } // if( bMcbmMoniTofPrintAllHitsEna )
+   if( bMcbmMoniTofPrintAllEpochsEna )
+   {
+      fbPrintAllEpochsEnable = !fbPrintAllEpochsEnable;
+      bMcbmMoniTofPrintAllHitsEna = kFALSE;
+   } // if( bMcbmMoniTofPrintAllEpochsEna )
+   
 
   LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
                  << "microslices." << FairLogger::endl;
@@ -1166,10 +1219,11 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
          uint64_t ulData = static_cast<uint64_t>(pInBuff[uIdx]);
          gdpbv100::Message mess(ulData);
 
-         if (gLogger->IsLogNeeded(DEBUG2))
+         if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
          {
             mess.printDataCout();
-         } // if (gLogger->IsLogNeeded(DEBUG2))
+            fuRawDataPrintMsgIdx ++;
+         } // if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
 
 
          // Increment counter for different message types
@@ -1178,7 +1232,8 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
          fviMsgCounter[messageType]++;
          fhMessType->Fill(messageType);
 
-         fuGet4Id = mess.getGdpbGenChipId();
+///         fuGet4Id = mess.getGdpbGenChipId();
+         fuGet4Id = ConvertElinkToGet4( mess.getGdpbGenChipId() );
          fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
 
          if( fuNrOfGet4PerGdpb <= fuGet4Id &&
@@ -1217,7 +1272,20 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                      fhGet4MessType->Fill(fuGet4Nr, 1);
                      FillEpochInfo(tmpMess);
                   } // for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGetIndex ++ )
-               } // if this epoch message is a merged one valiud for all chips
+                  
+                  if( kTRUE == fbPrintAllEpochsEnable )
+                  {
+                     LOG(INFO) << "Epoch: " << Form("0x%08x ", fuGdpbId)
+                               << ", " << std::setw(2) << fuGet4Nr
+                               << ", Link " << std::setw(1) << mess.getGdpbEpLinkId()
+                               << ", epoch " << std::setw(8) << mess.getGdpbEpEpochNb()
+                               << ", Sync " << std::setw(1) << mess.getGdpbEpSync()
+                               << ", Data loss " << std::setw(1) << mess.getGdpbEpDataLoss()
+                               << ", Epoch loss " << std::setw(1) << mess.getGdpbEpEpochLoss()
+                               << ", Epoch miss " << std::setw(1) << mess.getGdpbEpMissmatch()
+                               << FairLogger::endl;
+                  } // if( kTRUE == fbPrintAllEpochsEnable )
+               } // if this epoch message is a merged one valid for all chips
                else
                {
                   fhGet4MessType->Fill(fuGet4Nr, 1);
@@ -1457,6 +1525,19 @@ void CbmMcbm2018MonitorTof::FillHitInfo(gdpbv100::Message mess)
       fvhFeetErrorRatioLong_gDPB[(fuGdpbNr * fuNrOfFeetPerGdpb) + uFeetNr]->Fill(
             1e-9 / 60.0 * (dHitTime - fdStartTimeLong), 0, 1 / 60.0 );
    } // if (0 <= fdStartTimeLong)
+
+   if( kTRUE == fbPrintAllHitsEnable )
+   {
+      LOG(INFO) << "Hit: " << Form("0x%08x ", fuGdpbId)
+                << ", " << std::setw(2) << fuGet4Nr
+                << ", " << std::setw(3) << uChannel
+                << ", " << std::setw(3) << uTot
+                << ", epoch " << std::setw(3) << ulCurEpochGdpbGet4
+                << ", FullTime Clk " << Form("%12lu ", ulHitTime )
+                << ", FullTime s "  << Form("%12.9f ", dHitTime / 1e9 )
+                << ", FineTime " << uFts
+                << FairLogger::endl;
+   } // if( kTRUE == fbPrintAllHitsEnable ) 
 }
 
 void CbmMcbm2018MonitorTof::FillEpochInfo(gdpbv100::Message mess)
@@ -1663,11 +1744,22 @@ void CbmMcbm2018MonitorTof::PrintSysInfo(gdpbv100::Message mess)
                     << FairLogger::endl;
          break;
       } // case gdpbv100::SYS_GDPB_UNKWN:
+      case gdpbv100::SYS_GET4_SYNC_MISS:
+      {
+         LOG(DEBUG) << "GET$ synchronization pulse missing" << FairLogger::endl;
+         break;
+      } // case gdpbv100::SYS_GET4_SYNC_MISS:
       case gdpbv100::SYS_SYNC_ERROR:
       {
-         LOG(DEBUG) << "Closy synchronization error" << FairLogger::endl;
+         LOG(DEBUG) << "gDPB synchronization pulse error" << FairLogger::endl;
          break;
       } // case gdpbv100::SYS_SYNC_ERROR:
+      default:
+      {
+         LOG(DEBUG) << "Crazy system message, subtype " << mess.getGdpbSysSubType() << FairLogger::endl;
+         break;
+      } // case gdpbv100::SYS_SYNC_ERROR:
+      
    } // switch( getGdpbSysSubType() )
 }
 

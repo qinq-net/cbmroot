@@ -94,6 +94,11 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       UInt_t fuNrOfGet4PerGdpb;     // Number of GET4s per GDPB
       UInt_t fuNrOfChannelsPerGdpb; // Number of channels per GDPB
 
+      /** Control Flags **/
+      UInt_t fuRawDataPrintMsgNb;
+      UInt_t fuRawDataPrintMsgIdx;
+      Bool_t fbPrintAllHitsEnable;
+      Bool_t fbPrintAllEpochsEnable;
 
       /** Running indices **/
       uint64_t fulCurrentTsIndex;  // Idx of the current TS
@@ -218,6 +223,19 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       ///* PADI channel to GET4 channel mapping and reverse *///
       std::vector< UInt_t > fvuPadiToGet4;
       std::vector< UInt_t > fvuGet4ToPadi;
+
+      ///* GET4 to eLink mapping and reverse *///
+      static const UInt_t kuNbGet4PerGbtx = 5 * 8; /// 5 FEE with 8 GET4 each
+      std::vector< UInt_t > fvuElinkToGet4;
+      std::vector< UInt_t > fvuGet4ToElink;
+      inline UInt_t ConvertElinkToGet4( UInt_t uElinkIdx )
+      {
+         return fvuElinkToGet4[ uElinkIdx % kuNbGet4PerGbtx ] + kuNbGet4PerGbtx * (uElinkIdx / kuNbGet4PerGbtx);
+      }
+      inline UInt_t ConvertGet4ToElink( UInt_t uGet4Idx )
+      {
+         return fvuGet4ToElink[ uGet4Idx % kuNbGet4PerGbtx ] + kuNbGet4PerGbtx * (uGet4Idx / kuNbGet4PerGbtx);
+      }
 
       ///* Periodic histos saving *///
       std::chrono::time_point<std::chrono::system_clock> fTimeLastHistoSaving;
