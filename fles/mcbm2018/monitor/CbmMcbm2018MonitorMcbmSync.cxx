@@ -11,6 +11,7 @@
 
 // CbmRoot
 #include "CbmCern2017UnpackParHodo.h"
+#include "CbmTofStar2018Par.h"
 #include "CbmHistManager.h"
 
 // FairRoot
@@ -216,6 +217,7 @@ void CbmMcbm2018MonitorMcbmSync::SetParContainers()
    LOG(INFO) << "Setting parameter containers for " << GetName()
          << FairLogger::endl;
    fUnpackParHodo = (CbmCern2017UnpackParHodo*)(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmCern2017UnpackParHodo"));
+   fUnpackParTof  = (CbmTofStar2018Par*) (FairRun::Instance()->GetRuntimeDb()->getContainer( "CbmTofStar2018Par") );
 }
 
 
@@ -325,6 +327,92 @@ Bool_t CbmMcbm2018MonitorMcbmSync::ReInitContainers()
 /***************** STS parameters *************************************/
 
 /***************** TOF parameters *************************************/
+   fuTofNrOfGdpbs = fUnpackParTof->GetNrOfRocs();
+   LOG(INFO) << "Nr. of Tof GDPBs: " << fuTofNrOfGdpbs << FairLogger::endl;
+
+   fuTofNrOfFeePerGdpb = fUnpackParTof->GetNrOfFebsPerGdpb();
+   LOG(INFO) << "Nr. of FEBS per Tof GDPB: " << fuTofNrOfFeePerGdpb
+               << FairLogger::endl;
+
+   fuTofNrOfGet4PerFee = fUnpackParTof->GetNrOfGet4PerFeb();
+   LOG(INFO) << "Nr. of GET4 per Tof FEB: " << fuTofNrOfGet4PerFee
+               << FairLogger::endl;
+
+   fuTofNrOfChannelsPerGet4 = fUnpackParTof->GetNrOfChannelsPerGet4();
+   LOG(INFO) << "Nr. of channels per GET4: " << fuTofNrOfChannelsPerGet4
+               << FairLogger::endl;
+
+   fuTofNrOfChannelsPerFee = fuTofNrOfGet4PerFee * fuTofNrOfChannelsPerGet4;
+   LOG(INFO) << "Nr. of channels per FEET: " << fuTofNrOfChannelsPerFee
+               << FairLogger::endl;
+
+   fuTofNrOfGet4 = fuTofNrOfGdpbs * fuTofNrOfFeePerGdpb * fuTofNrOfGet4PerFee;
+   LOG(INFO) << "Nr. of GET4s: " << fuTofNrOfGet4 << FairLogger::endl;
+
+   fuTofNrOfGet4PerGdpb = fuTofNrOfFeePerGdpb * fuTofNrOfGet4PerFee;
+   LOG(INFO) << "Nr. of GET4s per GDPB: " << fuTofNrOfGet4PerGdpb
+               << FairLogger::endl;
+
+   fuTofNrOfChannelsPerGdpb = fuTofNrOfGet4PerGdpb * fuTofNrOfChannelsPerGet4;
+   LOG(INFO) << "Nr. of channels per GDPB: " << fuTofNrOfChannelsPerGdpb
+               << FairLogger::endl;
+
+   fmTofGdpbIdIndexMap.clear();
+   for( UInt_t i = 0; i < fuTofNrOfGdpbs; ++i )
+   {
+      fmTofGdpbIdIndexMap[fUnpackParTof->GetRocId(i)] = i;
+      LOG(INFO) << "GDPB Id of TOF  " << i << " : " << std::hex << fUnpackParTof->GetRocId(i)
+                 << std::dec << FairLogger::endl;
+   } // for( UInt_t i = 0; i < fuTofNrOfGdpbs; ++i )
+   UInt_t uNrOfChannels = fUnpackParTof->GetNumberOfChannels();
+   LOG(INFO) << "Nr. of mapped Tof channels: " << uNrOfChannels;
+   for( UInt_t i = 0; i < uNrOfChannels; ++i)
+   {
+      if (i % 8 == 0)
+         LOG(INFO) << FairLogger::endl;
+      LOG(INFO) << Form(" 0x%08x", fUnpackParTof->GetChannelToDetUIdMap(i) );
+   } // for( UInt_t i = 0; i < uNrOfChannels; ++i)
+   LOG(INFO) << FairLogger::endl;
+/*
+   fuTotalMsNb   = fUnpackParTof->GetNbMsTot();
+   fuOverlapMsNb = fUnpackParTof->GetNbMsOverlap();
+   fuCoreMs      = fuTotalMsNb - fuOverlapMsNb;
+   fdMsSizeInNs  = fUnpackParTof->GetSizeMsInNs();
+   fdTsCoreSizeInNs = fdMsSizeInNs * fuCoreMs;
+   LOG(INFO) << "Timeslice parameters: "
+             << fuTotalMsNb << " MS per link, of which "
+             << fuOverlapMsNb << " overlap MS, each MS is "
+             << fdMsSizeInNs << " ns"
+             << FairLogger::endl;
+*/
+   /// STAR Trigger decoding and monitoring
+   fvulTofGdpbTsMsb.resize(  fuTofNrOfGdpbs );
+   fvulTofGdpbTsLsb.resize(  fuTofNrOfGdpbs );
+   fvulTofStarTsMsb.resize(  fuTofNrOfGdpbs );
+   fvulTofStarTsMid.resize(  fuTofNrOfGdpbs );
+   fvulTofGdpbTsFullLast.resize(  fuTofNrOfGdpbs );
+   fvulTofStarTsFullLast.resize(  fuTofNrOfGdpbs );
+   fvuTofStarTokenLast.resize(  fuTofNrOfGdpbs );
+   fvuTofStarDaqCmdLast.resize(  fuTofNrOfGdpbs );
+   fvuTofStarTrigCmdLast.resize(  fuTofNrOfGdpbs );
+   for (UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb)
+   {
+      fvulTofGdpbTsMsb[ uGdpb ] = 0;
+      fvulTofGdpbTsLsb[ uGdpb ] = 0;
+      fvulTofStarTsMsb[ uGdpb ] = 0;
+      fvulTofStarTsMid[ uGdpb ] = 0;
+      fvulTofGdpbTsFullLast[ uGdpb ] = 0;
+      fvulTofStarTsFullLast[ uGdpb ] = 0;
+      fvuTofStarTokenLast[ uGdpb ]   = 0;
+      fvuTofStarDaqCmdLast[ uGdpb ]  = 0;
+      fvuTofStarTrigCmdLast[ uGdpb ] = 0;
+   } // for (Int_t iGdpb = 0; iGdpb < fuTofNrOfGdpbs; ++iGdpb)
+
+   fvmTofEpSupprBuffer.resize( fuTofNrOfGet4 );
+
+   ///* Pulser monitoring *///
+   fvdTofTsLastPulserHit.resize( fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs, 0.0 );
+
 /// TODO: move these constants somewhere shared, e.g the parameter file
 
    /// PADI channel to GET4 channel mapping and reverse
