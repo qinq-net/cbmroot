@@ -226,6 +226,7 @@ Bool_t CbmMcbm2018MonitorMcbmSync::InitContainers()
 
    Bool_t bReInit = ReInitContainers();
    CreateStsHistograms();
+   CreateTofHistograms();
 
    return bReInit;
 }
