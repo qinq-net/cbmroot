@@ -612,6 +612,9 @@ Bool_t   CbmTofAnaTestbeam::RegisterInputs()
 
    if (!fEventsColl) {
      if( NULL == fTofDigisColl)
+       fTofDigisColl   = (TClonesArray *) fManager->GetObject("TofCalDigi");
+
+     if( NULL == fTofDigisColl)
        fTofDigisColl   = (TClonesArray *) fManager->GetObject("CbmTofDigiExp");
 
      if( NULL == fTofDigisColl)
