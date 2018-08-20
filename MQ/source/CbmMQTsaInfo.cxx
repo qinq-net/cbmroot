@@ -127,7 +127,7 @@ bool CbmMQTsaInfo::ConditionalRun()
 
 
     const fles::Timeslice& ts = *timeslice;
-    auto tsIndex = ts.index();
+//    auto tsIndex = ts.index();
 
 
     LOG(INFO) << "Found " << ts.num_components()

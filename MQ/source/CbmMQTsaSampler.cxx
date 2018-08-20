@@ -143,7 +143,7 @@ bool CbmMQTsaSampler::ConditionalRun()
 
 
       const fles::Timeslice& ts = *timeslice;
-      auto tsIndex = ts.index();
+//      auto tsIndex = ts.index();
 
 
       LOG(INFO) << "Found " << ts.num_components()
@@ -152,7 +152,7 @@ bool CbmMQTsaSampler::ConditionalRun()
 
       CheckTimeslice(ts);
 
-      for (int nrComp = 0; nrComp < ts.num_components(); ++nrComp) {
+      for (unsigned int nrComp = 0; nrComp < ts.num_components(); ++nrComp) {
         CreateAndSendComponent(ts, nrComp);
       }
       return true;

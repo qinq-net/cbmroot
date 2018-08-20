@@ -459,8 +459,8 @@ Bool_t CbmDeviceUnpackTofStar2018::DoUnpack(const fles::Timeslice& ts, size_t co
 	      if( fbEpochSuppModeOn )
 	      {
 		fvmEpSupprBuffer[ fuGet4Nr ].push_back( mess );
-		LOG(DEBUG) << Form("Add 32B message from Gdpb %d to EpSupprBuffer of Get4 %d, size %u",
-				   fuGdpbNr, fuGet4Nr, fvmEpSupprBuffer[ fuGet4Nr ].size());
+		LOG(DEBUG) << "Add 32B message from Gdpb " << fuGdpbNr << " to EpSupprBuffer of Get4 " 
+                           << fuGet4Nr << " size " << fvmEpSupprBuffer[ fuGet4Nr ].size();
 	      }
 	      else FillHitInfo(mess);
               break;
@@ -507,7 +507,7 @@ void CbmDeviceUnpackTofStar2018::FillHitInfo( ngdpb::Message mess )
    UInt_t uGet4Id     = mess.getGdpbGenChipId();
    UInt_t uChannel    = mess.getGdpbHitChanId();
    UInt_t uTot        = mess.getGdpbHit32Tot();
-   UInt_t uFts        = mess.getGdpbHitFineTs();
+//   UInt_t uFts        = mess.getGdpbHitFineTs();
 
    ULong_t  ulCurEpochGdpbGet4 = fvulCurrentEpoch[ fuGet4Nr ];
 
@@ -518,33 +518,33 @@ void CbmDeviceUnpackTofStar2018::FillHitInfo( ngdpb::Message mess )
          ulCurEpochGdpbGet4 --;
          else ulCurEpochGdpbGet4 = get4v1x::kuEpochCounterSz; // Catch epoch cycle!
 
-      ULong_t  ulhitTime;
+//      ULong_t  ulhitTime;
       Double_t dHitTime;
       if( fbGet4v20 )
       {
-	ulhitTime = mess.getMsgG4v2FullTime(  ulCurEpochGdpbGet4 );
+//	ulhitTime = mess.getMsgG4v2FullTime(  ulCurEpochGdpbGet4 );
 	dHitTime = mess.getMsgG4v2FullTimeD( ulCurEpochGdpbGet4 );
 
       // In 32b mode the coarse counter is already computed back to 112 FTS bins
       // => need to hide its contribution from the Finetime
       // => FTS = Fullt TS modulo 112
-	if( !fbGet4M24b )
-	  uFts = mess.getGdpbHitFullTs() % 112;
+//	if( !fbGet4M24b )
+//	  uFts = mess.getGdpbHitFullTs() % 112;
       } // if( fbGet4v20 )
       else
       {
-         ulhitTime  = mess.getMsgFullTime(ulCurEpochGdpbGet4);
+//         ulhitTime  = mess.getMsgFullTime(ulCurEpochGdpbGet4);
          dHitTime   = mess.getMsgFullTimeD(ulCurEpochGdpbGet4);
       } // else of if( fbGet4v20 )
 
       Double_t dHitTot   = uTot;     // in bins
 
 
-      UInt_t uFebIdx     = (uGet4Id / fuNrOfGet4PerFeb);
-      UInt_t uFullFebIdx = (fuGdpbNr * fuNrOfFebsPerGdpb) + uFebIdx;
+//      UInt_t uFebIdx     = (uGet4Id / fuNrOfGet4PerFeb);
+//      UInt_t uFullFebIdx = (fuGdpbNr * fuNrOfFebsPerGdpb) + uFebIdx;
 
       UInt_t uChanInGdpb = uGet4Id * fuNrOfChannelsPerGet4 + uChannel;
-      UInt_t uChanInSyst = fuGdpbNr * fuNrOfChannelsPerGdpb + uChanInGdpb;
+      Int_t uChanInSyst = fuGdpbNr * fuNrOfChannelsPerGdpb + uChanInGdpb;
       if( fUnpackPar->GetNumberOfChannels() < uChanInSyst )
       {
          LOG(ERROR) << "Invalid mapping index " << uChanInSyst
@@ -652,7 +652,7 @@ void CbmDeviceUnpackTofStar2018::FillEpochInfo( ngdpb::Message mess )
    } // if( 0 < fvmEpSupprBuffer[fGet4Nr] )
 }
 
-void CbmDeviceUnpackTofStar2018::PrintSlcInfo(ngdpb::Message mess)
+void CbmDeviceUnpackTofStar2018::PrintSlcInfo(ngdpb::Message /*mess*/)
 {
    /// Nothing to do, maybe later use it to trakc parameter changes like treshold?
 /*
