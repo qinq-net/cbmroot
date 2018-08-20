@@ -45,7 +45,7 @@ class CbmDigitize : public FairTask
      ** This method allows the digitizer to implement additional functionality
      ** than writing digis and match objects. It will be called from CbmDaq.
      **/
-    virtual void FillCustomData(Double_t fillTime, Bool_t limit = kTRUE) {
+    virtual void FillCustomData(Double_t /*fillTime*/, Bool_t /*limit*/ = kTRUE) {
     }
 
 
