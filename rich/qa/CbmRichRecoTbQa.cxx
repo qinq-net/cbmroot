@@ -60,7 +60,8 @@ CbmRichRecoTbQa::CbmRichRecoTbQa()
   fRichRingMatches(nullptr),
   fEventList(nullptr),
   fTimeSliceNum(0.),
-  fNofLogEvents(150)
+  fNofLogEvents(150),
+  fRecRings()
 {
 
 }

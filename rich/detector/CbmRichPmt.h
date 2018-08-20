@@ -23,6 +23,8 @@ public:
     Double_t fLambdaMax; // maximum wavelength in QE table
     Double_t fLambdaStep; // wavelaength in QE table
     vector<Double_t> fEfficiency; // Array of QE
+
+    CbmRichPmtQEData() : fDetectorType(), fLambdaMin(0.), fLambdaMax(0.), fLambdaStep(0.), fEfficiency() {}
 };
 
 class CbmRichPmt : public TObject {

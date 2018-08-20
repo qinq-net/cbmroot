@@ -117,7 +117,8 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem()
   fTimeTot(),
   fAddressCharge(),
   fGenerateElectronicsNoise(kFALSE),
-  fPerPadNoiseRate(10e-9)
+  fPerPadNoiseRate(10e-9),
+  fNoiseCharge(nullptr)
 {
   fSigma[0] = new TF1("sigma_e","pol6",-5,10);
   fSigma[0]->SetParameters(sigma_e);
@@ -194,7 +195,8 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName, Int_t flag)
   fTimeTot(),
   fAddressCharge(),
   fGenerateElectronicsNoise(kFALSE),
-  fPerPadNoiseRate(10e-9)
+  fPerPadNoiseRate(10e-9),
+  fNoiseCharge(nullptr)
 {
   fSigma[0] = new TF1("sigma_e","pol6",-5,10);
   fSigma[0]->SetParameters(sigma_e);

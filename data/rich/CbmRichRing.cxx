@@ -69,7 +69,8 @@ CbmRichRing::CbmRichRing()
     fAngle(0.),
     fNofHitsOnRing(-1),
     fSelectionNN(-1.),
-    fRecFlag(0)
+    fRecFlag(0),
+    fTime(0.)
 {
     fHitCollection.reserve(40);
 }
@@ -100,7 +101,8 @@ CbmRichRing::CbmRichRing ( Float_t x,
     fAngle(0.),
     fNofHitsOnRing(-1),
     fSelectionNN(-1.),
-    fRecFlag(0)
+    fRecFlag(0),
+    fTime(0.)
 {
     fHitCollection.reserve(40);
 }

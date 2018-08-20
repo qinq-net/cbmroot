@@ -141,6 +141,8 @@ CbmMcbm2018MonitorTof::CbmMcbm2018MonitorTof() :
     fhTimeResFitPuls(NULL),
     fvuPadiToGet4(),
     fvuGet4ToPadi(),
+    fvuElinkToGet4(),
+    fvuGet4ToElink(),
     fTimeLastHistoSaving()
 {
 }

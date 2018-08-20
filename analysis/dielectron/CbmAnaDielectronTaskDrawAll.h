@@ -40,6 +40,7 @@ public:
     CbmAnaDielectronTaskDrawAll()
     : TObject(),
     fUseMvd(false),
+    fDrawQgp(false),
     fHM(),
     fh_mean_bg_minv(),
     fh_mean_eta_minv(),
