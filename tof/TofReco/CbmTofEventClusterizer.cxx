@@ -240,7 +240,8 @@ CbmTofEventClusterizer::CbmTofEventClusterizer(const char *name, Int_t verbose, 
    fdEvent(0),
    fbSwapChannelSides(kFALSE),
    fiOutputTreeEntry(0),
-   fiFileIndex(0)
+   fiFileIndex(0),
+   fbAlternativeBranchNames(kFALSE)
 {
     if ( !fInstance ) fInstance = this;
 }
@@ -371,7 +372,7 @@ void CbmTofEventClusterizer::Exec(Option_t* option)
 void CbmTofEventClusterizer::ExecEvent(Option_t* /*option*/)
 {
    // Clear output arrays 
-   fTofCalDigisColl->Clear("C");
+   fTofCalDigisColl->Delete(); //otherwise memoryleak if 'CbmDigi::fMatch' points to valid MC match objects (simulation)! FIXME
    fTofHitsColl->Clear("C");
    //fTofHitsColl->Delete();  // Computationally costly!, but hopefully safe
    //for (Int_t i=0; i<fTofDigiMatchColl->GetEntries(); i++) ((CbmMatch *)(fTofDigiMatchColl->At(i)))->ClearLinks();  // FIXME, try to tamper memory leak (did not help)
@@ -485,21 +486,37 @@ Bool_t   CbmTofEventClusterizer::RegisterOutputs()
 
    fTofDigiMatchColl = new TClonesArray("CbmMatch",100);
 
+
+   TString tHitBranchName;
+   TString tHitDigiMatchBranchName;
+
+   if(fbAlternativeBranchNames)
+   {
+     tHitBranchName          = "ATofHit";
+     tHitDigiMatchBranchName = "ATofDigiMatch";
+   }
+   else
+   {
+     tHitBranchName          = "TofHit";
+     tHitDigiMatchBranchName = "TofDigiMatch";
+   }
+
+
    if (NULL == fEventsColl) {
      // Flag check to control whether digis are written in output root file
      rootMgr->Register( "TofCalDigi","Tof", fTofCalDigisColl, fbWriteDigisInOut);
 
      // Flag check to control whether digis are written in output root file
-     rootMgr->Register( "TofHit","Tof", fTofHitsColl, fbWriteHitsInOut);
+     rootMgr->Register(tHitBranchName,"Tof", fTofHitsColl, fbWriteHitsInOut);
 
-     rootMgr->Register( "TofDigiMatch","Tof", fTofDigiMatchColl, fbWriteHitsInOut);
+     rootMgr->Register(tHitDigiMatchBranchName,"Tof", fTofDigiMatchColl, fbWriteHitsInOut);
    } else {  // CbmEvent - mode 
      fTofCalDigisCollOut  = new TClonesArray("CbmTofDigiExp");
      fTofHitsCollOut      = new TClonesArray("CbmTofHit");
      fTofDigiMatchCollOut = new TClonesArray("CbmMatch",100);
      rootMgr->Register( "TofCalDigi","Tof", fTofCalDigisCollOut, fbWriteDigisInOut);
-     rootMgr->Register( "TofHit","Tof", fTofHitsCollOut, fbWriteHitsInOut);
-     rootMgr->Register( "TofDigiMatch","Tof", fTofDigiMatchCollOut, fbWriteHitsInOut);
+     rootMgr->Register(tHitBranchName,"Tof", fTofHitsCollOut, fbWriteHitsInOut);
+     rootMgr->Register(tHitDigiMatchBranchName,"Tof", fTofDigiMatchCollOut, fbWriteHitsInOut);
    }
    return kTRUE;
 

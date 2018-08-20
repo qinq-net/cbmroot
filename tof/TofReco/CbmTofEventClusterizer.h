@@ -157,6 +157,9 @@ class CbmTofEventClusterizer : public FairTask
 
       void SwapChannelSides(Bool_t bSwap) {fbSwapChannelSides = bSwap;}
       void SetFileIndex(Int_t iIndex) {fiFileIndex = iIndex;}
+      void SetWriteDigisInOut(Bool_t bDigis) {fbWriteDigisInOut = bDigis;}
+      void SetWriteHitsInOut(Bool_t bHits) {fbWriteHitsInOut = bHits;}
+      void SetAlternativeBranchNames(Bool_t bNames) {fbAlternativeBranchNames = bNames;}
       void SetDeadStrips (Int_t iDet, Int_t ival);
 
    protected:
@@ -422,6 +425,7 @@ class CbmTofEventClusterizer : public FairTask
       Bool_t fbSwapChannelSides;
       Int_t fiOutputTreeEntry;
       Int_t fiFileIndex;
+      Bool_t fbAlternativeBranchNames;
 
    ClassDef(CbmTofEventClusterizer, 1);
 };
