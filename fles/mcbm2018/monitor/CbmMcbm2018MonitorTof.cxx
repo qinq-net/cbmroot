@@ -337,7 +337,7 @@ Bool_t CbmMcbm2018MonitorTof::ReInitContainers()
       fvuElinkToGet4[ uLinkAsic ] = kuElinkToGet4[ uLinkAsic ];
       fvuGet4ToElink[ uLinkAsic ] = kuGet4ToElink[ uLinkAsic ];
    } // for( UInt_t uChan = 0; uChan < fuNrOfChannelsPerFeet; ++uChan )
-   
+
 	return kTRUE;
 }
 
@@ -475,33 +475,13 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
             128, 0, 128 ) );
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
-/*
-      name = Form("RawTot_gDPB_%02u_0", uGdpb);
-      title = Form("Raw TOT gDPB %02u Plot 0; channel; TOT [bin]", uGdpb);
+      name = Form("RawTot_gDPB_%02u", uGdpb);
+      title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
       fvhRawTot_gDPB.push_back(
          new TH2F(name.Data(), title.Data(),
-            fuNbFeetPlot*fuNrOfChannelsPerFeet, 0*fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet,
+            fuNrOfChannelsPerGdpb, 0, fuNrOfChannelsPerGdpb,
             256, 0, 256 ) );
 
-      if( fuNbFeetPlot < fuNrOfFeetPerGdpb )
-      {
-         name = Form("RawTot_gDPB_%02u_1", uGdpb);
-         title = Form("Raw TOT gDPB %02u Plot 1; channel; TOT [bin]", uGdpb);
-         fvhRawTot_gDPB.push_back(
-            new TH2F(name.Data(), title.Data(),
-               fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet,
-               256, 0, 256));
-      } // if( fuNbFeetPlot < fuNrOfFeetPerGdpb )
-      if( 2 * fuNbFeetPlot < fuNrOfFeetPerGdpb )
-      {
-         name = Form("RawTot_gDPB_%02u_2", uGdpb);
-         title = Form("Raw TOT gDPB %02u Plot 2; channel; TOT [bin]", uGdpb);
-         fvhRawTot_gDPB.push_back(
-            new TH2F(name.Data(), title.Data(),
-               fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet, 3*fuNbFeetPlot*fuNrOfChannelsPerFeet,
-               256, 0, 256));
-      } // if( 2 * fuNbFeetPlot < fuNrOfFeetPerGdpb )
-*/
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
        name = Form("ChCount_gDPB_%02u", uGdpb);
        title = Form("Channel counts gDPB %02u; channel; Hits", uGdpb);
@@ -516,33 +496,13 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
                 fuNrOfFeetPerGdpb * fuNrOfChannelsPerFeet, 0, fuNrOfFeetPerGdpb * fuNrOfChannelsPerFeet ) );
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
-/*
-      name = Form("RemapTot_gDPB_%02u_0", uGdpb);
-      title = Form("Raw TOT gDPB %02u remapped Plot 0; PADI channel; TOT [bin]", uGdpb);
+      name = Form("RemapTot_gDPB_%02u", uGdpb);
+      title = Form("Raw TOT gDPB %02u remapped; PADI channel; TOT [bin]", uGdpb);
       fvhRemapTot_gDPB.push_back(
          new TH2F(name.Data(), title.Data(),
-            fuNbFeetPlot*fuNrOfChannelsPerFeet, 0*fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet,
+            fuNrOfChannelsPerGdpb, 0, fuNrOfChannelsPerGdpb,
             256, 0, 256 ) );
 
-      if( fuNbFeetPlot < fuNrOfFeetPerGdpb )
-      {
-         name = Form("RemapTot_gDPB_%02u_1", uGdpb);
-         title = Form("Raw TOT gDPB %02u remapped Plot 1; PADI channel; TOT [bin]", uGdpb);
-         fvhRemapTot_gDPB.push_back(
-            new TH2F(name.Data(), title.Data(),
-               fuNbFeetPlot*fuNrOfChannelsPerFeet, 1*fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet,
-               256, 0, 256));
-      } // if( fuNbFeetPlot < fuNrOfFeetPerGdpb )
-      if( 2 * fuNbFeetPlot < fuNrOfFeetPerGdpb )
-      {
-         name = Form("RemapTot_gDPB_%02u_2", uGdpb);
-         title = Form("Raw TOT gDPB %02u remapped Plot 2; PADI channel; TOT [bin]", uGdpb);
-         fvhRemapTot_gDPB.push_back(
-            new TH2F(name.Data(), title.Data(),
-               fuNbFeetPlot*fuNrOfChannelsPerFeet, 2*fuNbFeetPlot*fuNrOfChannelsPerFeet, 3*fuNbFeetPlot*fuNrOfChannelsPerFeet,
-               256, 0, 256));
-      } // if( 2 * fuNbFeetPlot < fuNrOfFeetPerGdpb )
-*/
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
        name = Form("RemapChCount_gDPB_%02u", uGdpb);
        title = Form("Channel counts gDPB %02u remapped; PADI channel; Hits", uGdpb);
@@ -727,13 +687,13 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       server->Register("/TofRaw", fhScmDeadtimeCounters );
       server->Register("/TofRaw", fhScmSeuCounters );
       server->Register("/TofRaw", fhScmSeuCountersEvo );
-/*
+
       for( UInt_t uTotPlot = 0; uTotPlot < fvhRawTot_gDPB.size(); ++uTotPlot )
          server->Register("/TofRaw", fvhRawTot_gDPB[ uTotPlot ] );
 
       for( UInt_t uTotPlot = 0; uTotPlot < fvhRemapTot_gDPB.size(); ++uTotPlot )
          server->Register("/TofRaw", fvhRemapTot_gDPB[ uTotPlot ] );
-*/
+
       for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
       {
          server->Register("/TofRaw", fvhRawFt_gDPB[ uGdpb ] );
@@ -934,73 +894,61 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    /*****************************/
 
    /** Create TOT Canvas(es) for STAR 2018 **/
-/*
    TCanvas* cTotPnt = NULL;
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       cTotPnt = new TCanvas( Form("cTot_g%02u", uGdpb),
                              Form("gDPB %02u TOT distributions", uGdpb),
                              w, h);
-      cTotPnt->Divide( fuNbFeetPlotsPerGdpb );
 
-      for( UInt_t uFeetPlot = 0; uFeetPlot < fuNbFeetPlotsPerGdpb; ++uFeetPlot )
-      {
-         cTotPnt->cd( 1 + uFeetPlot );
-         gPad->SetGridx();
-         gPad->SetGridy();
-         gPad->SetLogz();
+      cTotPnt->cd( );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
 
-         fvhRawTot_gDPB[ uGdpb * fuNbFeetPlotsPerGdpb + uFeetPlot ]->Draw( "colz" );
-      } // for (UInt_t uFeet = 0; uFeet < fuNbFeetPlotsPerGdpb; ++uFeet )
+      fvhRawTot_gDPB[ uGdpb ]->Draw( "colz" );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    cTotPnt  = new TCanvas( "cTot_all", "TOT distributions", w, h);
-   cTotPnt->Divide( fuNrOfGdpbs, fuNbFeetPlotsPerGdpb );
+   cTotPnt->Divide( fuNrOfGdpbs );
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
-      for( UInt_t uFeetPlot = 0; uFeetPlot < fuNbFeetPlotsPerGdpb; ++uFeetPlot )
-      {
-         cTotPnt->cd( 1 + uGdpb + fuNrOfGdpbs * uFeetPlot );
-         gPad->SetGridx();
-         gPad->SetGridy();
-         gPad->SetLogz();
+   {
+      cTotPnt->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
 
-         fvhRawTot_gDPB[ uGdpb * fuNbFeetPlotsPerGdpb + uFeetPlot]->Draw( "colz" );
-      } // for (UInt_t uFeet = 0; uFeet < fuNbFeetPlotsPerGdpb; ++uFeet )
-*/
+      fvhRawTot_gDPB[ uGdpb]->Draw( "colz" );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
    /**************************************************/
 
    /** Create PADI TOT Canvas(es) for STAR 2018 **/
-/*
    cTotPnt = NULL;
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       cTotPnt = new TCanvas( Form("cTotRemap_g%02u", uGdpb),
                              Form("PADI ch gDPB %02u TOT distributions", uGdpb),
                              w, h);
-      cTotPnt->Divide( fuNbFeetPlotsPerGdpb );
 
-      for( UInt_t uFeetPlot = 0; uFeetPlot < fuNbFeetPlotsPerGdpb; ++uFeetPlot )
-      {
-         cTotPnt->cd( 1 + uFeetPlot );
-         gPad->SetGridx();
-         gPad->SetGridy();
-         gPad->SetLogz();
+      cTotPnt->cd( );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
 
-         fvhRemapTot_gDPB[ uGdpb * fuNbFeetPlotsPerGdpb + uFeetPlot ]->Draw( "colz" );
-      } // for (UInt_t uFeet = 0; uFeet < fuNbFeetPlotsPerGdpb; ++uFeet )
+      fvhRemapTot_gDPB[ uGdpb ]->Draw( "colz" );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    cTotPnt  = new TCanvas( "cTotRemap_all", "TOT distributions", w, h);
-   cTotPnt->Divide( fuNrOfGdpbs, fuNbFeetPlotsPerGdpb );
+   cTotPnt->Divide( fuNrOfGdpbs );
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
-      for( UInt_t uFeetPlot = 0; uFeetPlot < fuNbFeetPlotsPerGdpb; ++uFeetPlot )
-      {
-         cTotPnt->cd( 1 + uGdpb + fuNrOfGdpbs * uFeetPlot );
-         gPad->SetGridx();
-         gPad->SetGridy();
-         gPad->SetLogz();
+   {
+      cTotPnt->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
 
-         fvhRemapTot_gDPB[ uGdpb * fuNbFeetPlotsPerGdpb + uFeetPlot]->Draw( "colz" );
-      } // for (UInt_t uFeet = 0; uFeet < fuNbFeetPlotsPerGdpb; ++uFeet )
-*/
+      fvhRemapTot_gDPB[ uGdpb ]->Draw( "colz" );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
    /**************************************************/
 
    /** Create STAR token Canvas for STAR 2018 **/
@@ -1097,7 +1045,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
       fbPrintAllEpochsEnable = !fbPrintAllEpochsEnable;
       bMcbmMoniTofPrintAllHitsEna = kFALSE;
    } // if( bMcbmMoniTofPrintAllEpochsEna )
-   
+
 
   LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
                  << "microslices." << FairLogger::endl;
@@ -1212,7 +1160,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
       // Get the gDPB ID from the MS header
       fuGdpbId = fiEquipmentId;
       fuGdpbNr = fGdpbIdIndexMap[fuGdpbId];
-         
+
       // Prepare variables for the loop on contents
       const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>(msContent);
       for( uint32_t uIdx = 0; uIdx < uNbMessages; uIdx++ )
@@ -1274,7 +1222,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                      fhGet4MessType->Fill(fuGet4Nr, 1);
                      FillEpochInfo(tmpMess);
                   } // for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGetIndex ++ )
-                  
+
                   if( kTRUE == fbPrintAllEpochsEnable )
                   {
                      LOG(INFO) << "Epoch: " << Form("0x%08x ", fuGdpbId)
@@ -1458,11 +1406,11 @@ void CbmMcbm2018MonitorTof::FillHitInfo(gdpbv100::Message mess)
 
    fvhChCount_gDPB[fuGdpbNr]->Fill(uChannelNr);
    fvhRawFt_gDPB[fuGdpbNr]->Fill(uChannelNr, uFts);
-//   fvhRawTot_gDPB[ fuGdpbNr * fuNbFeetPlotsPerGdpb + uFeetNr/fuNbFeetPlot ]->Fill(uChannelNr, uTot);
+   fvhRawTot_gDPB[ fuGdpbNr ]->Fill(uChannelNr, uTot);
 
    /// Remapped for PADI to GET4
    fvhRemapChCount_gDPB[fuGdpbNr]->Fill( uRemappedChannelNr );
-//   fvhRemapTot_gDPB[ fuGdpbNr * fuNbFeetPlotsPerGdpb + uFeetNr/fuNbFeetPlot ]->Fill(  uRemappedChannelNr , uTot);
+   fvhRemapTot_gDPB[ fuGdpbNr ]->Fill(  uRemappedChannelNr , uTot);
 
    ///* Pulser monitoring *///
    /// Save last hist time if pulser channel
@@ -1539,7 +1487,7 @@ void CbmMcbm2018MonitorTof::FillHitInfo(gdpbv100::Message mess)
                 << ", FullTime s "  << Form("%12.9f ", dHitTime / 1e9 )
                 << ", FineTime " << uFts
                 << FairLogger::endl;
-   } // if( kTRUE == fbPrintAllHitsEnable ) 
+   } // if( kTRUE == fbPrintAllHitsEnable )
 }
 
 void CbmMcbm2018MonitorTof::FillEpochInfo(gdpbv100::Message mess)
@@ -1761,7 +1709,7 @@ void CbmMcbm2018MonitorTof::PrintSysInfo(gdpbv100::Message mess)
          LOG(DEBUG) << "Crazy system message, subtype " << mess.getGdpbSysSubType() << FairLogger::endl;
          break;
       } // case gdpbv100::SYS_SYNC_ERROR:
-      
+
    } // switch( getGdpbSysSubType() )
 }
 
@@ -1978,13 +1926,13 @@ void CbmMcbm2018MonitorTof::SaveAllHistos( TString sFileName )
    fhScmDeadtimeCounters->Write();
    fhScmSeuCounters->Write();
    fhScmSeuCountersEvo->Write();
-/*
+
    for( UInt_t uTotPlot = 0; uTotPlot < fvhRawTot_gDPB.size(); ++uTotPlot )
       fvhRawTot_gDPB[ uTotPlot ]->Write();
 
    for( UInt_t uTotPlot = 0; uTotPlot < fvhRemapTot_gDPB.size(); ++uTotPlot )
       fvhRemapTot_gDPB[ uTotPlot ]->Write();
-*/
+
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       fvhRawFt_gDPB[ uGdpb ]->Write();
@@ -2084,13 +2032,13 @@ void CbmMcbm2018MonitorTof::ResetAllHistos()
    fhScmDeadtimeCounters->Reset();
    fhScmSeuCounters->Reset();
    fhScmSeuCountersEvo->Reset();
-/*
+
    for( UInt_t uTotPlot = 0; uTotPlot < fvhRawTot_gDPB.size(); ++uTotPlot )
       fvhRawTot_gDPB[ uTotPlot ]->Reset();
 
    for( UInt_t uTotPlot = 0; uTotPlot < fvhRemapTot_gDPB.size(); ++uTotPlot )
       fvhRemapTot_gDPB[ uTotPlot ]->Reset();
-*/
+
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       fvhRawFt_gDPB[ uGdpb ]->Reset();
