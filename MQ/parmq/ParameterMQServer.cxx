@@ -24,6 +24,8 @@
 #include "FairMQLogger.h"
 #include "FairMQProgOptions.h"
 
+#include "TList.h"
+#include "TObjString.h"
 
 using namespace std;
 
@@ -61,7 +63,22 @@ void ParameterMQServer::InitTask()
         else if (fFirstInputType == "ASCII")
         {
             FairParAsciiFileIo* par1A = new FairParAsciiFileIo();
-            par1A->open(fFirstInputName.data(), "in");
+            if (fFirstInputName.find(";") != std::string::npos) {
+              LOG(INFO) << "File list found!";
+              TList *parFileList = new TList();
+              TObjString* parFile(NULL);
+              istringstream f(fFirstInputName);
+              string s;    
+              while (getline(f, s, ';')) {
+                LOG(INFO)<< "File: " << s;
+                parFile = new TObjString(s.c_str());
+                parFileList->Add(parFile);
+                par1A->open(parFileList, "in");
+              }
+            } else {
+              LOG(INFO) << "Single input file found!";
+              par1A->open(fFirstInputName.data(), "in");
+            }         
             fRtdb->setFirstInput(par1A);
         }
 
@@ -76,9 +93,24 @@ void ParameterMQServer::InitTask()
             }
             else if (fSecondInputType == "ASCII")
             {
-                FairParAsciiFileIo* par2A = new FairParAsciiFileIo();
-                par2A->open(fSecondInputName.data(), "in");
-                fRtdb->setSecondInput(par2A);
+              FairParAsciiFileIo* par2A = new FairParAsciiFileIo();
+              if (fSecondInputName.find(";") != std::string::npos) {
+                LOG(INFO) << "File list found!";
+                TList *parFileList = new TList();
+                TObjString* parFile(NULL);
+                istringstream f(fSecondInputName);
+                string s;    
+                while (getline(f, s, ';')) {
+                  LOG(INFO)<< "File: " << s;
+                  parFile = new TObjString(s.c_str());
+                  parFileList->Add(parFile);
+                  par2A->open(parFileList, "in");
+                }
+              } else {
+                LOG(INFO) << "Single input file found!";
+                par2A->open(fFirstInputName.data(), "in");
+              }         
+              fRtdb->setSecondInput(par2A);
             }
         }
 
