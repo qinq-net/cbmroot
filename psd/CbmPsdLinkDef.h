@@ -11,7 +11,7 @@
 #pragma link C++ class  CbmPsdMC;
 #pragma link C++ class  CbmGeoPsd+;
 #pragma link C++ class  CbmGeoPsdPar+;
-#pragma link C++ class  CbmPsdv1+;
+// #pragma link C++ class  CbmPsdv1+;
 #pragma link C++ class  CbmPsdIdealDigitizer+;
 #pragma link C++ class  CbmPsdSimpleDigitizer+;
 #pragma link C++ class  CbmPsdHitProducer+;
@@ -20,8 +20,8 @@
 // #pragma link C++ class  CbmPsdWoutv1_for44mods_sub1+; 
 // #pragma link C++ class  CbmPsdWoutv1_for44mods_sub2+; 
 // #pragma link C++ class  CbmPsdWoutv1_for44mods_sub3+;
-#pragma link C++ class  CbmPsdTest+;
-#pragma link C++ class  CbmPsdNA61+;
+// #pragma link C++ class  CbmPsdTest+;
+// #pragma link C++ class  CbmPsdNA61+;
 
 
 

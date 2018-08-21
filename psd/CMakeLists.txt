@@ -31,7 +31,7 @@ CbmPsd.cxx
 CbmPsdMC.cxx  
 CbmGeoPsd.cxx  
 CbmGeoPsdPar.cxx  
-CbmPsdv1.cxx 
+# CbmPsdv1.cxx 
 CbmPsdIdealDigitizer.cxx
 CbmPsdSimpleDigitizer.cxx
 CbmPsdHitProducer.cxx
@@ -40,8 +40,8 @@ CbmPsdHitProducer.cxx
 # CbmPsdWoutv1_for44mods_sub1.cxx 
 # CbmPsdWoutv1_for44mods_sub2.cxx 
 # CbmPsdWoutv1_for44mods_sub3.cxx
-CbmPsdTest.cxx
-CbmPsdNA61.cxx
+# CbmPsdTest.cxx
+# CbmPsdNA61.cxx
 
 )
 
