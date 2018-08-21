@@ -35,14 +35,16 @@ class L1StsHit
   
   L1StsHit() 
     : f(0),b(0),iz(0), n(0), dx(0.), dy(0.), dxy(0.), du(0.), dv(0.), 
-     used(false),t_reco(0.f),t_er(0.),t_mc(0.),ista(-1), time1(0.), time2(0.) 
+      used(false),t_reco(0.f),t_er(0.),t_mc(0.),ista(-1), time1(0.), time2(0.),
+      x(0.), y(0.)
   {
 //   CandidatesB.resize(0, 0);
 //   CandidatesF.resize(0, 0);
   }
   L1StsHit(L1StsHit &h,  /*short*/ int sh, /*short*/ int shB)
     : f(h.f + sh),b(h.b + shB),iz(0), n(0), dx(0.), dy(0.), dxy(0.), du(0.), dv(0.), 
-      used(false),t_reco(0.f),t_er(0.),t_mc(0.),ista(-1),time1(0.), time2(0.) {}
+      used(false),t_reco(0.f),t_er(0.),t_mc(0.),ista(-1),time1(0.), time2(0.), x(0.), y(0.) 
+      {}
 };
 
 #endif
