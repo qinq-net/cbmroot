@@ -124,7 +124,10 @@ void CbmPsdMC::ConstructGeometry() {
   }
 
   // Register all sensitive volumes
-  RegisterSensitiveVolumes(psdVolume->GetNode(0));
+  for (Int_t i=0; i<44; ++i)              //TODO replace with getter for number of modules
+    RegisterSensitiveVolumes(psdVolume->GetNode(i));
+//   RegisterSensitiveVolumes(psdVolume->GetNode(0));
+  
   LOG(DEBUG) << GetName() << ": " << fNbOfSensitiveVol
       << " sensitive volumes" << FairLogger::endl;
 
