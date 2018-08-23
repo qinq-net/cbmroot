@@ -8,24 +8,25 @@ void run_sim(Int_t nEvents = 2)
     TString myName = "run_sim";  // this macro's name for screen output
     TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+    //TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+    TString geoSetupFile = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/trunk/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+//    TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root";
+    TString urqmdFile =  "/lustre/nyx/cbm/prod/gen/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00002.root";
 
-    TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root";
-//    TString urqmdFile =  "/lustre/nyx/cbm/prod/gen/urqmd/auau/4gev/";
-
-    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
-//    TString outDir = "/home/aghoehne/Documents/CbmRoot/Gregor/results_dielectrons/";
-    TString parFile = outDir + "param.00000.root";
-    TString mcFile = outDir + "mc.00000.root";
-    TString geoFile = outDir + "geosim.00000.root";
+//    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
+    TString outDir = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/data/lmvm/august18_1kk_field50/8gev/omegaepem/";
+    TString parFile = outDir + "params.auau.8gev.centr.00002.root";
+    TString mcFile = outDir + "mc.auau.8gev.centr.00002.root";
+    TString geoFile = outDir + "geosim.00002.root";
+	
 
     TString electrons = "yes"; // If "yes" than primary electrons will be generated
-    Int_t NELECTRONS = 5; // number of e- to be generated
-    Int_t NPOSITRONS = 5; // number of e+ to be generated
+    Int_t NELECTRONS = 0; // number of e- to be generated
+    Int_t NPOSITRONS = 0; // number of e+ to be generated
     TString urqmd = "yes"; // If "yes" than UrQMD will be used as background
-    TString pluto = "no"; // If "yes" PLUTO particles will be embedded
-    TString plutoFile = "";
-    TString plutoParticle = "";
+    TString pluto = "yes"; // If "yes" PLUTO particles will be embedded
+    TString plutoFile = "/lustre/nyx/cbm/prod/gen/pluto/auau/cktA/8gev/omega/epem/pluto.auau.8gev.omega.epem.0002.root";
+    TString plutoParticle = "omegaepem";
 
 
     if (script == "yes") {
@@ -49,7 +50,7 @@ void run_sim(Int_t nEvents = 2)
 
     // Target geometry
     TString  targetElement   = "Gold";
-    Double_t targetThickness = 0.025;  // full thickness in cm // for lmvm - 0.0025; // 25 mum
+    Double_t targetThickness = 0.0025;  // full thickness in cm // for lmvm - 0.0025; // 25 mum
     Double_t targetDiameter  = 2.5;    // diameter in cm
     Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
     Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
@@ -76,6 +77,11 @@ void run_sim(Int_t nEvents = 2)
     FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
     TString setupFunct = "do_setup()";
+
+    if(script=="yes"){
+	setupFunct = TString(gSystem->Getenv("SETUP_FUNCT"));
+    }
+    cout << "setupFunct: " << setupFunct << endl;
     std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
     gROOT->LoadMacro(geoSetupFile);
     gROOT->ProcessLine(setupFunct);

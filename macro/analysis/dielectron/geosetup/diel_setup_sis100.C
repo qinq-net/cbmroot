@@ -4,7 +4,7 @@ void do_setup()
 
   TString magnetGeoTag    = "v15a";
   TString pipeGeoTag      = "v16b_1e";
-  TString mvdGeoTag       = "v17a_tr";
+  //TString mvdGeoTag       = "v17a_tr";
   TString stsGeoTag       = "v16g";
   TString richGeoTag      = "v17a_1e";
   TString trdGeoTag       = "v17n_1e";
@@ -14,7 +14,7 @@ void do_setup()
 
   TString fieldTag = "v12b";
   Double_t fieldZ = 40.; // field centre z position
-  Double_t fieldScale = 1.; // field scaling factor
+  Double_t fieldScale = 0.5; // field scaling factor
 
 
   CbmSetup* setup = CbmSetup::Instance();
@@ -25,13 +25,13 @@ void do_setup()
   setup->SetTitle("RICH SIS100");
   setup->SetModule(kMagnet, magnetGeoTag);
   setup->SetModule(kPipe, pipeGeoTag);
-  setup->SetModule(kMvd, mvdGeoTag);
+//  setup->SetModule(kMvd, mvdGeoTag);
   setup->SetModule(kSts, stsGeoTag);
   setup->SetModule(kRich, richGeoTag);
   setup->SetModule(kTrd, trdGeoTag);
   setup->SetModule(kTof, tofGeoTag);
   setup->SetModule(kPsd, psdGeoTag);
-  //setup->SetModule(kPlatform, platGeoTag);
+//  setup->SetModule(kPlatform, platGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
 
 

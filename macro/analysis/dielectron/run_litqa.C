@@ -3,10 +3,12 @@ void run_litqa(Int_t nEvents = 2)
     TTree::SetMaxTreeSize(90000000000);
     TString script = TString(gSystem->Getenv("SCRIPT"));
 
-    TString myName = "run_reco";
+    TString myName = "run_litqa";
     TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+//    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+
+    TString geoSetupFile = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/trunk/geometry/setup/setup_sis100_electron.C";  
 
     TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
     TString mcFile = outDir + "mc.00000.root";
@@ -14,8 +16,16 @@ void run_litqa(Int_t nEvents = 2)
     TString recoFile = outDir + "reco.00000.root";
     TString litqaFile = outDir + "litqa.00000.root";
 
-    TString energy = "8gev";
-    TString plutoParticle = "rho0";
+
+/*    
+    TString mcFile =  "/lustre/nyx/cbm/prod/mc/r13109/sis100_electron.00001.tra.root";
+    TString parFile = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/data/lmvm/testUhlig/sis100_electron.00001.par.root";
+    TString recoFile = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/data/lmvm/testUhlig/sis100_electron.00001.reco.root";
+    TString litqaFile = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/data/lmvm/testUhlig/sis100_electron.00001.litqa.root";
+*/
+    TString energy = "4.5gev";
+    TString plutoParticle = "omegaepem";
+
 
     std::string resultDir = "results_recoqa/";
 
@@ -33,6 +43,11 @@ void run_litqa(Int_t nEvents = 2)
     remove(litqaFile.Data());
 
     TString setupFunct = "do_setup()";
+
+    if(script=="yes"){
+        setupFunct = TString(gSystem->Getenv("SETUP_FUNCT"));
+    }
+
     std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
     gROOT->LoadMacro(geoSetupFile);
     gROOT->ProcessLine(setupFunct);
@@ -87,7 +102,10 @@ void run_litqa(Int_t nEvents = 2)
     trackingQa->SetQuotaRich(0.6);
     trackingQa->SetOutputDir(resultDir);
     trackingQa->SetPRange(12, 0., 6.);
-    // trackingQa->SetTrdAnnCut(trdAnnCut);
+    
+    trackingQa->SetTrdAnnCut(0.85);
+    trackingQa->SetRichAnnCut(-0.4);
+
     std::vector<std::string> trackCat, richCat;
     trackCat.push_back("All");
     trackCat.push_back("Electron");

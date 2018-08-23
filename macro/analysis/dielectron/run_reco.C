@@ -6,14 +6,17 @@ void run_reco(Int_t nEvents = 100)
     TString myName = "run_reco";
     TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
-
+//    TString geoSetupFile = srcDir + "/macro/analysis/dielectron/geosetup/diel_setup_sis100.C";
+    TString geoSetupFile = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/trunk/geometry/setup/setup_sis100_electron.C";
     //TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";
     TString outDir = "/lustre/nyx/cbm/users/slebedev/cbm/data/lmvm/agagtest/";
     TString mcFile = "/lustre/nyx/cbm/prod/mc/r13109/sis100_electron.00001.tra.root";//outDir + "mc.00000.root";
-    TString parFile = outDir + "sis100_electron.00001.par.root";//outDir + "param.00000.root";
+    TString parFile ="/lustre/nyx/cbm/users/gpitsch/CbmRoot/data/lmvm/testUhlig/sis100_electron.00001.par.root";//outDir + "param.00000.root";
     TString recoFile = outDir + "reco.00000.root";
 
+//    TString mcFile =  "/lustre/nyx/cbm/prod/mc/r13109/sis100_electron.00001.tra.root";
+//    TString parFile = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/data/lmvm/testUhlig/sis100_electron.00001.par.root";
+//    TString recoFile = "/lustre/nyx/cbm/users/gpitsch/CbmRoot/data/lmvm/testUhlig/sis100_electron.00001.reco.root";
 
     if (script == "yes") {
         mcFile = TString(gSystem->Getenv("MC_FILE"));
@@ -25,6 +28,10 @@ void run_reco(Int_t nEvents = 100)
     remove(recoFile.Data());
 
     TString setupFunct = "do_setup()";
+    if(script=="yes"){
+        setupFunct = TString(gSystem->Getenv("SETUP_FUNCT"));
+    }
+
     std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
     gROOT->LoadMacro(geoSetupFile);
     gROOT->ProcessLine(setupFunct);
