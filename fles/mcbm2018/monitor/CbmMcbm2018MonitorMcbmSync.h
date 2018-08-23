@@ -110,6 +110,7 @@ private:
    UInt_t             fuTofNrOfGet4PerFee;      //! Number of GET4s per FEE <= Constant, should be treated as such, maybe in param class?
    UInt_t             fuTofNrOfChannelsPerGet4; //! Number of channels in each GET4 <= Constant, should be treated as such, maybe in param class?
    UInt_t             fuTofNrOfChannelsPerFee;  //! Number of channels in each FEE <= Constant, should be treated as such, maybe in param class?
+   UInt_t             fuTofNrOfFee;             //! Total number of FEE boards in the system
    UInt_t             fuTofNrOfGet4;            //! Total number of Get4 chips in the system
    UInt_t             fuTofNrOfGet4PerGdpb;     //! Number of GET4s per GDPB
    UInt_t             fuTofNrOfChannelsPerGdpb; //! Number of channels per GDPB
@@ -259,6 +260,9 @@ private:
    /// Buffer for pulser channels
    std::vector<  Double_t  > fvdTofTsLastPulserHit;
 
+   /// Buffer for system sync check
+   std::vector< std::vector< gdpbv100::FullMessage > > fvmTofFeeHitsInMs; //! All hits (time in bins, tot in bins, asic, channel, epoch) in last MS, per FEE, sorted with "<" operator
+
    /// Histograms and histogram control variables
       /// Default value for nb bins in Pulser time difference histos
    const UInt_t kuTofNbBinsDt    = 300;
@@ -353,6 +357,19 @@ private:
       return fvuGet4ToElink[ uGet4Idx % kuNbGet4PerGbtx ] + kuNbGet4PerGbtx * (uGet4Idx / kuNbGet4PerGbtx);
    }
 /****************** TOF Sync ******************************************/
+
+/****************** mCBM Sync *****************************************/
+   Double_t fdMcbmStartTs;
+   Double_t fdMcbmLastRmsUpdateTime;
+
+   std::vector< std::vector<TH1 *> >      fvhMcbmTimeDiffStsTof;
+   std::vector< std::vector<TProfile *> > fvhMcbmTimeDiffStsTofEvo;
+   TH2 * fhMcbmTimeDiffStsTofMean;
+   TH2 * fhMcbmTimeDiffStsTofRMS;
+
+   void CreateMcbmHistograms();
+/****************** mCBM Sync *****************************************/
+
 
    CbmMcbm2018MonitorMcbmSync(const CbmMcbm2018MonitorMcbmSync&);
    CbmMcbm2018MonitorMcbmSync operator=(const CbmMcbm2018MonitorMcbmSync&);

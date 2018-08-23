@@ -69,6 +69,7 @@ CbmMcbm2018MonitorMcbmSync::CbmMcbm2018MonitorMcbmSync() :
    fuTofNrOfGet4PerFee(0),
    fuTofNrOfChannelsPerGet4(0),
    fuTofNrOfChannelsPerFee(0),
+   fuTofNrOfFee(0),
    fuTofNrOfGet4(0),
    fuTofNrOfGet4PerGdpb(0),
    fuTofNrOfChannelsPerGdpb(0),
@@ -154,6 +155,7 @@ CbmMcbm2018MonitorMcbmSync::CbmMcbm2018MonitorMcbmSync() :
    fmTofGdpbIdIndexMap(),
    fvmTofEpSupprBuffer(),
    fvdTofTsLastPulserHit(),
+   fvmTofFeeHitsInMs(),
    fdTofMinDt(-1.*(kuTofNbBinsDt*gdpbv100::kdBinSize/2.) - gdpbv100::kdBinSize/2.),
    fdTofMaxDt(1.*(kuTofNbBinsDt*gdpbv100::kdBinSize/2.) + gdpbv100::kdBinSize/2.),
    fuTofNbFeePlot(2),
@@ -238,6 +240,7 @@ Bool_t CbmMcbm2018MonitorMcbmSync::InitContainers()
    Bool_t bReInit = ReInitContainers();
    CreateStsHistograms();
    CreateTofHistograms();
+   CreateMcbmHistograms();
 
    return bReInit;
 }
@@ -355,7 +358,10 @@ Bool_t CbmMcbm2018MonitorMcbmSync::ReInitContainers()
    LOG(INFO) << "Nr. of channels per FEET: " << fuTofNrOfChannelsPerFee
                << FairLogger::endl;
 
-   fuTofNrOfGet4 = fuTofNrOfGdpbs * fuTofNrOfFeePerGdpb * fuTofNrOfGet4PerFee;
+   fuTofNrOfFee = fuTofNrOfGdpbs * fuTofNrOfFeePerGdpb;
+   LOG(INFO) << "Nr. of FEEs: " << fuTofNrOfFee << FairLogger::endl;
+
+   fuTofNrOfGet4 = fuTofNrOfFee * fuTofNrOfGet4PerFee;
    LOG(INFO) << "Nr. of GET4s: " << fuTofNrOfGet4 << FairLogger::endl;
 
    fuTofNrOfGet4PerGdpb = fuTofNrOfFeePerGdpb * fuTofNrOfGet4PerFee;
@@ -420,6 +426,7 @@ Bool_t CbmMcbm2018MonitorMcbmSync::ReInitContainers()
    /// Suppressed epoch buffering (epoch after data
    fvmTofEpSupprBuffer.resize( fuTofNrOfGet4 );
 
+
    /// Epoch indedx book-keeping
    fvulTofCurrentEpoch.resize( fuTofNrOfGdpbs * fuTofNrOfGet4PerGdpb );
    fvbTofFirstEpochSeen.resize( fuTofNrOfGdpbs * fuTofNrOfGet4PerGdpb );
@@ -432,8 +439,11 @@ Bool_t CbmMcbm2018MonitorMcbmSync::ReInitContainers()
       } // for( UInt_t uGet4 = 0; uGet4 < fuTofNrOfGet4PerGdpb; ++uGet4 )
    } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
 
-   ///* Pulser monitoring *///
-   fvdTofTsLastPulserHit.resize( fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs, 0.0 );
+   /// Pulser monitoring
+   fvdTofTsLastPulserHit.resize( fuTofNrOfFee, 0.0 );
+
+   /// System sync monitoring
+   fvmTofFeeHitsInMs.resize( fuTofNrOfFee );
 
 /// TODO: move these constants somewhere shared, e.g the parameter file
 
@@ -1438,11 +1448,11 @@ void CbmMcbm2018MonitorMcbmSync::CreateTofHistograms()
 
    /*******************************************************************/
    /// FEET pulser test channels
-   fvhTofTimeDiffPulser.resize( fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs );
-   for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeA++)
+   fvhTofTimeDiffPulser.resize( fuTofNrOfFee );
+   for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFee; uFeeA++)
    {
-      fvhTofTimeDiffPulser[uFeeA].resize( fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs );
-      for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeB++)
+      fvhTofTimeDiffPulser[uFeeA].resize( fuTofNrOfFee );
+      for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFee; uFeeB++)
       {
          if( uFeeA < uFeeB )
          {
@@ -1457,26 +1467,26 @@ void CbmMcbm2018MonitorMcbmSync::CreateTofHistograms()
                uNbBinsDt, fdTofMinDt, fdTofMaxDt);
          } // if( uFeeA < uFeeB )
             else fvhTofTimeDiffPulser[uFeeA][uFeeB] = nullptr;
-      } // for( UInt_t uFeeB = uFeeA; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1; uFeeB++)
+      } // for( UInt_t uFeeB = uFeeA; uFeeB < fuTofNrOfFee - 1; uFeeB++)
    } // for( UInt_t uFeeA = 0; uFeeA < kuNbChanTest - 1; uFeeA++)
 
    sHistName = "hTimeRmsPulser";
    fhTofTimeRmsPulser = new TH2D( sHistName.Data(),
          "Time difference RMS for each FEE pairs; FEE A; FEE B ; [ps]",
-         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1, -0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1.5,
-         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1,  0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 0.5 );
+         fuTofNrOfFee - 1, -0.5, fuTofNrOfFee - 1.5,
+         fuTofNrOfFee - 1,  0.5, fuTofNrOfFee - 0.5 );
 
    sHistName = "hTimeRmsZoomFitPuls";
    fhTofTimeRmsZoomFitPuls = new TH2D( sHistName.Data(),
          "Time difference RMS after zoom for each FEE pairs; FEE A; FEE B ; RMS [ps]",
-         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1, -0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1.5,
-         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1,  0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 0.5 );
+         fuTofNrOfFee - 1, -0.5, fuTofNrOfFee - 1.5,
+         fuTofNrOfFee - 1,  0.5, fuTofNrOfFee - 0.5 );
 
    sHistName = "hTimeResFitPuls";
    fhTofTimeResFitPuls = new TH2D( sHistName.Data(),
          "Time difference Res from fit for each FEE pairs; FEE A; FEE B ; Sigma [ps]",
-         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1, -0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1.5,
-         fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 1,  0.5, fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs - 0.5 );
+         fuTofNrOfFee - 1, -0.5, fuTofNrOfFee - 1.5,
+         fuTofNrOfFee - 1,  0.5, fuTofNrOfFee - 0.5 );
 
 #ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
@@ -1525,8 +1535,8 @@ void CbmMcbm2018MonitorMcbmSync::CreateTofHistograms()
          server->Register("/StarRaw", fvhTofStarTrigStarTsEvo[ uGdpb ] );
       } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
 
-      for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeA++)
-         for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeB++)
+      for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFee; uFeeA++)
+         for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFee; uFeeB++)
             if( nullptr != fvhTofTimeDiffPulser[uFeeA][uFeeB] )
                server->Register("/TofDt", fvhTofTimeDiffPulser[uFeeA][uFeeB] );
 
@@ -1808,6 +1818,94 @@ void CbmMcbm2018MonitorMcbmSync::CreateTofHistograms()
 }
 /***************** TOF Histograms *************************************/
 
+/***************** mCBM Histograms ************************************/
+void CbmMcbm2018MonitorMcbmSync::CreateMcbmHistograms()
+{
+   TString sHistName{""};
+   TString sHistTitle{""};
+
+   // Full Fee time difference test
+   UInt_t uNbBinsDt = kuTofNbBinsDt + 1; // To account for extra bin due to shift by 1/2 bin of both ranges
+
+   fuTofNbFeePlotsPerGdpb = fuTofNrOfFeePerGdpb/fuTofNbFeePlot + ( 0 != fuTofNrOfFeePerGdpb%fuTofNbFeePlot ? 1 : 0 );
+   Double_t dBinSzG4v2 = (6250. / 112.);
+   fdTofMinDt     = -1.*(kuTofNbBinsDt*dBinSzG4v2/2.) - dBinSzG4v2/2.;
+   fdTofMaxDt     =  1.*(kuTofNbBinsDt*dBinSzG4v2/2.) + dBinSzG4v2/2.;
+
+   /*******************************************************************/
+   for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
+   {
+      for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+      {
+         sHistName  = Form( "hMcbmTimeDiffStsTof_%03u_%03u", uAsic, uFee);
+         sHistTitle = Form( "Time difference between STS ASIC %03u and TOF FEE %03u; tTOF - tSTS [ns]; Counts", uAsic, uFee);
+         fvhMcbmTimeDiffStsTof[uAsic][uFee] = new TH1D( sHistName, sHistTitle,
+                                                        uNbBinsDt, fdTofMinDt, fdTofMaxDt);
+
+         sHistName  = Form( "hMcbmTimeDiffStsTofEvo_%03u_%03u", uAsic, uFee);
+         sHistTitle = Form( "Evolution of time difference between STS ASIC %03u and TOF FEE %03u; Time in run [s]; tTOF - tSTS [ns]", uAsic, uFee);
+         fvhMcbmTimeDiffStsTofEvo[uAsic][uFee] = new TProfile( sHistName, sHistTitle, 3600, 0., 3600.);
+      } // for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+   } // for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
+
+   sHistName  = "hMcbmTimeDiffStsTofMean";
+   sHistTitle = "Mean Time difference between STS ASIC and TOF FEE pairs; STS ASIC []; TOF FEE []; <tTOF - tSTS> [ns]";
+   fhMcbmTimeDiffStsTofMean = new TH2D( sHistName, sHistTitle,
+                                        fuStsNbStsXyters, 0., fuStsNbStsXyters,
+                                        fuTofNrOfFee, 0., fuTofNrOfFee);
+   sHistName  = "fhMcbmTimeDiffStsTofRMS";
+   sHistTitle = "width of Time difference between STS ASIC and TOF FEE pairs; STS ASIC []; TOF FEE []; d(tTOF - tSTS) [ns]";
+   fhMcbmTimeDiffStsTofRMS = new TH2D( sHistName, sHistTitle,
+                                       fuStsNbStsXyters, 0., fuStsNbStsXyters,
+                                       fuTofNrOfFee, 0., fuTofNrOfFee);
+
+#ifdef USE_HTTP_SERVER
+   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
+   if( server )
+   {
+      server->Register("/mCbmDt", fhMcbmTimeDiffStsTofMean );
+      server->Register("/mCbmDt", fhMcbmTimeDiffStsTofRMS );
+
+      for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
+      {
+         for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+         {
+            server->Register("/mCbmDt", fvhMcbmTimeDiffStsTof[uAsic][uFee] );
+            server->Register("/mCbmDt", fvhMcbmTimeDiffStsTof[uAsic][uFee] );
+         } // for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+      } // for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
+/*
+      server->RegisterCommand("/Reset_All_TOF",  "bMcbm2018SyncResetHistosTof=kTRUE");
+      server->RegisterCommand("/Save_All_Tof",   "bMcbm2018SyncSaveHistosTof=kTRUE");
+      server->RegisterCommand("/Update_PulsFit", "bMcbm2018SyncUpdateZoomedFit=kTRUE");
+
+      server->Restrict("/Reset_All_Tof", "allow=admin");
+      server->Restrict("/Save_All_Tof",  "allow=admin");
+      server->Restrict("/Update_PulsFit", "allow=admin");
+*/
+   } // if( server )
+#endif
+
+   Double_t w = 10;
+   Double_t h = 10;
+   /** Create Pulser check Canvas for STS vs TOF **/
+   TCanvas* cPulserMcbm = new TCanvas("cPulserMcbm", "Time difference Mean and RMS for STS ASIC vs TOF FEE", w, h);
+   cPulserMcbm->Divide( 2);
+
+   cPulserMcbm->cd(1);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   fhMcbmTimeDiffStsTofMean->Draw( "colz" );
+
+   cPulserMcbm->cd(2);
+   gPad->SetGridx();
+   gPad->SetGridy();
+   fhMcbmTimeDiffStsTofRMS->Draw( "colz" );
+   /*****************************/
+  LOG(INFO) << "Done Creating mCBM Histograms" << FairLogger::endl;
+}
+/***************** mCBM Histograms ************************************/
+
 Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
    /// General commands
@@ -1949,9 +2047,6 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
                fhStsIntervalLongAsic[ uAsic ]->Fill( dDtPulse );
                fvmStsLastHitAsic[ uAsic ] = (*it);
             } // for( it  = fvmStsAsicHitsInMs[ uAsic ].begin(); it != fvmStsAsicHitsInMs[ uAsic ].end(); ++it )
-
-            /// Data in vector are not needed anymore as all possible matches are already checked
-            fvmStsAsicHitsInMs[ uAsic ].clear();
          } // for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
       } // if( 0 < fvmStsHitsInMs.size() )
 /****************** STS Sync ******************************************/
@@ -1964,8 +2059,8 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
          // Reset summary histograms for safety
          fhTofTimeRmsPulser->Reset();
 
-         for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeA++)
-            for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeB++)
+         for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFee; uFeeA++)
+            for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFee; uFeeB++)
                if( NULL != fvhTofTimeDiffPulser[uFeeA][uFeeB] )
                {
                   fhTofTimeRmsPulser->Fill( uFeeA, uFeeB, fvhTofTimeDiffPulser[uFeeA][uFeeB]->GetRMS() );
@@ -1973,6 +2068,63 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
          fdTofLastRmsUpdateTime = fdTofTsStartTime;
       } // if( 10.0 < fdTofTsStartTime - fdTofLastRmsUpdateTime )
 /****************** TOF Sync ******************************************/
+
+/****************** mCBM Sync *****************************************/
+      /// Build time difference for each pair of (StsXyter, Fee)
+      for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
+      {
+         std::vector< stsxyter::FinalHit >::iterator itSts;
+         for( itSts = fvmStsAsicHitsInMs[ uAsic ].begin(); itSts != fvmStsAsicHitsInMs[ uAsic ].end(); ++itSts )
+         {
+            UShort_t usChanIdxSts = (*itSts).GetChan();
+            Double_t dStsHitTime = (*itSts).GetTs() * stsxyter::kdClockCycleNs;
+            if( 0.0 == fdMcbmStartTs )
+            {
+               fdMcbmStartTs = dStsHitTime;
+            } // if( 0.0 == fdMcbmStartTs )
+            Double_t dTimeSinceStartSec = ( dStsHitTime - fdMcbmStartTs ) * 1e-9;
+
+            for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+            {
+               std::vector< gdpbv100::FullMessage >::iterator itTof;
+               for( itTof  = fvmTofFeeHitsInMs[ uFee ].begin(); itTof != fvmTofFeeHitsInMs[ uFee ].end(); ++itTof )
+               {
+                  Double_t dDtNs = (*itTof).GetFullTimeNs()
+                                  - static_cast< Double_t >( (*itSts).GetTs() )* stsxyter::kdClockCycleNs;
+
+                  fvhMcbmTimeDiffStsTof[ uAsic ][ uFee ]->Fill( dDtNs );
+                  fvhMcbmTimeDiffStsTofEvo[ uAsic ][ uFee ]->Fill( dTimeSinceStartSec, dDtNs );
+               } // for( itTof  = fvmTofFeeHitsInMs[ uAsic ].begin(); itTof != fvmTofFeeHitsInMs[ uAsic ].end(); ++itTof )
+
+            } // for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+         } // for( itSts = fvmStsAsicHitsInMs[ uAsic ].begin(); itSts != fvmStsAsicHitsInMs[ uAsic ].end(); ++itSts )
+
+
+         /// Data in vector are not needed anymore as all possible matches are already checked
+         fvmStsAsicHitsInMs[ uAsic ].clear();
+      } // for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
+
+      /// Data in vectors are not needed anymore as all possible matches are already checked
+      for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+         fvmTofFeeHitsInMs[ uFee ].clear();
+
+      /// Update RMS plots only every 10s in data
+      if( 10.0 < fdTofTsStartTime - fdMcbmLastRmsUpdateTime )
+      {
+         /// Reset summary histograms for safety
+         fhMcbmTimeDiffStsTofMean->Reset();
+         fhMcbmTimeDiffStsTofMean->Reset();
+
+         for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
+            for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+               if( NULL != fvhMcbmTimeDiffStsTof[uAsic][uFee] )
+               {
+                  fhMcbmTimeDiffStsTofMean->Fill( uAsic, uFee, fvhMcbmTimeDiffStsTof[uAsic][uFee]->GetMean() );
+                  fhMcbmTimeDiffStsTofRMS->Fill( uAsic, uFee, fvhMcbmTimeDiffStsTof[uAsic][uFee]->GetRMS() );
+               } // if( NULL != fvhTimeDiffPulser[uFeeA][uFeeB] )
+         fdMcbmLastRmsUpdateTime = fdTofTsStartTime;
+      } // if( 10.0 < fdTofTsStartTime - fdMcbmLastRmsUpdateTime )
+/****************** mCBM Sync *****************************************/
    } // for( UInt_t uMsIdx = 0; uMsIdx < uNbMsLoop; uMsIdx ++ )
 
    if( 0 == ts.index() % 1000 )
@@ -2563,7 +2715,7 @@ void CbmMcbm2018MonitorMcbmSync::FillTofHitInfo(gdpbv100::Message mess)
          } // if( nullptr != fvhTofTimeDiffPulser[uFeeB][uFeeB] )
 
       /// Update the difference to all other FEE with higher indices
-      for( UInt_t uFeeB = uFeeNrInSys + 1; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeB++)
+      for( UInt_t uFeeB = uFeeNrInSys + 1; uFeeB < fuTofNrOfFee; uFeeB++)
          if( nullptr != fvhTofTimeDiffPulser[uFeeNrInSys][uFeeB] )
          {
             Double_t dTimeDiff = 1e3 * ( fvdTofTsLastPulserHit[ uFeeB ] - fvdTofTsLastPulserHit[ uFeeNrInSys ] );
@@ -2571,6 +2723,9 @@ void CbmMcbm2018MonitorMcbmSync::FillTofHitInfo(gdpbv100::Message mess)
                fvhTofTimeDiffPulser[uFeeNrInSys][uFeeB]->Fill( dTimeDiff );
          } // if( nullptr != fvhTofTimeDiffPulser[uFeeNrInSys][uFeeB] )
    } // if( gdpbv100::kuFeePulserChannel == uChannelNrInFeet )
+
+   /// system sync check buffering
+   fvmTofFeeHitsInMs[ uFeeNrInSys ].push_back( gdpbv100::FullMessage( mess, ulCurEpochGdpbGet4 ) );
 
    // In Run rate evolution
    if (fdTofStartTime < 0)
@@ -2890,10 +3045,10 @@ void CbmMcbm2018MonitorMcbmSync::UpdateZoomedFitTof()
       fhTofTimeResFitPuls->Reset();
 
       Double_t dRes = 0;
-      TF1 *fitFuncPairs[ fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs ][ fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs ];
+      TF1 *fitFuncPairs[ fuTofNrOfFee ][ fuTofNrOfFee ];
 
-      for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeA++)
-         for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFeePerGdpb * fuTofNrOfGdpbs; uFeeB++)
+      for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFee; uFeeA++)
+         for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFee; uFeeB++)
             if( NULL != fvhTofTimeDiffPulser[uFeeA][uFeeB] )
       {
          // Check that we have at least 1 entry
@@ -3010,7 +3165,7 @@ void CbmMcbm2018MonitorMcbmSync::SaveAllHistos( TString sFileName )
       histoFile->cd();
    } // if( "" != sFileName )
 
-   /***************************/
+/****************** STS Sync ******************************************/
    gDirectory->mkdir("Sts_Raw");
    gDirectory->cd("Sts_Raw");
 
@@ -3044,7 +3199,96 @@ void CbmMcbm2018MonitorMcbmSync::SaveAllHistos( TString sFileName )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuStsNbStsXyters; ++uXyterIdx )
 
    gDirectory->cd("..");
-   /***************************/
+/****************** STS Sync ******************************************/
+
+/****************** TOF Sync ******************************************/
+   gDirectory->mkdir("Tof_Raw_gDPB");
+   gDirectory->cd("Tof_Raw_gDPB");
+
+   fhTofMessType->Write();
+   fhTofSysMessType->Write();
+   fhTofGet4MessType->Write();
+   fhTofGet4ChanScm->Write();
+   fhTofGet4ChanErrors->Write();
+   fhTofGet4EpochFlags->Write();
+   fhTofScmScalerCounters->Write();
+   fhTofScmDeadtimeCounters->Write();
+   fhTofScmSeuCounters->Write();
+   fhTofScmSeuCountersEvo->Write();
+
+   for( UInt_t uTotPlot = 0; uTotPlot < fvhTofRawTot_gDPB.size(); ++uTotPlot )
+      fvhTofRawTot_gDPB[ uTotPlot ]->Write();
+
+   for( UInt_t uTotPlot = 0; uTotPlot < fvhTofRemapTot_gDPB.size(); ++uTotPlot )
+      fvhTofRemapTot_gDPB[ uTotPlot ]->Write();
+
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      fvhTofRawFt_gDPB[ uGdpb ]->Write();
+      fvhTofChCount_gDPB[ uGdpb ]->Write();
+      fvhTofChannelRate_gDPB[ uGdpb ]->Write();
+      fvhTofRemapChCount_gDPB[ uGdpb ]->Write();
+      fvhTofRemapChRate_gDPB[ uGdpb ]->Write();
+
+      for (UInt_t uFeet = 0; uFeet < fuTofNrOfFeePerGdpb; ++ uFeet)
+      {
+         fvhTofFeeRate_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Write();
+         fvhTofFeeErrorRate_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Write();
+         fvhTofFeeErrorRatio_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Write();
+         fvhTofFeeRateLong_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Write();
+         fvhTofFeeErrorRateLong_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Write();
+         fvhTofFeeErrorRatioLong_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Write();
+      } // for (UInt_t uFeet = 0; uFeet < fuTofNrOfFeePerGdpb; ++ uFeet)
+
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   fhTofTimeRmsPulser->Write();
+   fhTofTimeRmsZoomFitPuls->Write();
+   fhTofTimeResFitPuls->Write();
+
+   gDirectory->cd("..");
+
+   ///* STAR event building/cutting *///
+   gDirectory->mkdir("Star_Raw");
+   gDirectory->cd("Star_Raw");
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      fvhTofTokenMsgType[ uGdpb ]->Write();
+      fvhTofTriggerRate[ uGdpb ]->Write();
+      fvhTofCmdDaqVsTrig[ uGdpb ]->Write();
+      fvhTofStarTokenEvo[ uGdpb ]->Write();
+      fvhTofStarTrigGdpbTsEvo[ uGdpb ]->Write();
+      fvhTofStarTrigStarTsEvo[ uGdpb ]->Write();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   gDirectory->cd("..");
+
+   ///* Pulser monitoring *///
+   gDirectory->mkdir("TofDt");
+   gDirectory->cd("TofDt");
+   for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFee; uFeeA++)
+      for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFee; uFeeB++)
+         if( NULL != fvhTofTimeDiffPulser[uFeeA][uFeeB] )
+            fvhTofTimeDiffPulser[uFeeA][uFeeB]->Write();
+   gDirectory->cd("..");
+/****************** TOF Sync ******************************************/
+
+/****************** mCBM Sync *****************************************/
+   gDirectory->mkdir("mCbmDt");
+   gDirectory->cd("mCbmDt");
+
+   fhMcbmTimeDiffStsTofMean->Write();
+   fhMcbmTimeDiffStsTofRMS->Write();
+
+   for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
+   {
+      for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+      {
+         fvhMcbmTimeDiffStsTof[uAsic][uFee]->Write();
+         fvhMcbmTimeDiffStsTof[uAsic][uFee]->Write();
+      } // for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+   } // for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
+
+   gDirectory->cd("..");
+/****************** mCBM Sync *****************************************/
 
    /***************************/
    // Flib Histos
@@ -3083,7 +3327,7 @@ void CbmMcbm2018MonitorMcbmSync::SavePulserHistos( TString sFileName )
       histoFile->cd();
    } // if( "" != sFileName )
 
-   /***************************/
+/****************** STS Sync ******************************************/
    gDirectory->mkdir("Sts_Pulser");
    gDirectory->cd("Sts_Pulser");
 
@@ -3097,7 +3341,7 @@ void CbmMcbm2018MonitorMcbmSync::SavePulserHistos( TString sFileName )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuStsNbStsXyters; ++uXyterIdx )
 
    gDirectory->cd("..");
-   /***************************/
+/****************** STS Sync ******************************************/
 
    if( "" != sFileName )
    {
@@ -3109,6 +3353,7 @@ void CbmMcbm2018MonitorMcbmSync::SavePulserHistos( TString sFileName )
 }
 void CbmMcbm2018MonitorMcbmSync::ResetAllHistos()
 {
+/****************** STS Sync ******************************************/
    LOG(INFO) << "Reseting all STS histograms." << FairLogger::endl;
 
    fhStsMessType->Reset();
@@ -3155,11 +3400,85 @@ void CbmMcbm2018MonitorMcbmSync::ResetAllHistos()
       fhStsIntervalLongAsic[ uXyterIdx ]->Reset();
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuStsNbStsXyters; ++uXyterIdx )
 
-  fdStsStartTime = -1;
-  fdStsStartTimeMsSz = -1;
+   fdStsStartTime = -1;
+   fdStsStartTimeMsSz = -1;
+/****************** STS Sync ******************************************/
 
-  fdTofStartTime = -1;
-  fdTofStartTimeLong = -1;
+/****************** TOF Sync ******************************************/
+   fhTofMessType->Reset();
+   fhTofSysMessType->Reset();
+   fhTofGet4MessType->Reset();
+   fhTofGet4ChanScm->Reset();
+   fhTofGet4ChanErrors->Reset();
+   fhTofGet4EpochFlags->Reset();
+   fhTofScmScalerCounters->Reset();
+   fhTofScmDeadtimeCounters->Reset();
+   fhTofScmSeuCounters->Reset();
+   fhTofScmSeuCountersEvo->Reset();
+
+   for( UInt_t uTotPlot = 0; uTotPlot < fvhTofRawTot_gDPB.size(); ++uTotPlot )
+      fvhTofRawTot_gDPB[ uTotPlot ]->Reset();
+
+   for( UInt_t uTotPlot = 0; uTotPlot < fvhTofRemapTot_gDPB.size(); ++uTotPlot )
+      fvhTofRemapTot_gDPB[ uTotPlot ]->Reset();
+
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      fvhTofRawFt_gDPB[ uGdpb ]->Reset();
+      fvhTofChCount_gDPB[ uGdpb ]->Reset();
+      fvhTofChannelRate_gDPB[ uGdpb ]->Reset();
+      fvhTofRemapChCount_gDPB[ uGdpb ]->Reset();
+      fvhTofRemapChRate_gDPB[ uGdpb ]->Reset();
+
+      for (UInt_t uFeet = 0; uFeet < fuTofNrOfFeePerGdpb; ++ uFeet)
+      {
+         fvhTofFeeRate_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Reset();
+         fvhTofFeeErrorRate_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Reset();
+         fvhTofFeeErrorRatio_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Reset();
+         fvhTofFeeRateLong_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Reset();
+         fvhTofFeeErrorRateLong_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Reset();
+         fvhTofFeeErrorRatioLong_gDPB[ uGdpb * fuTofNrOfFeePerGdpb + uFeet ]->Reset();
+      } // for (UInt_t uFeet = 0; uFeet < fuTofNrOfFeePerGdpb; ++ uFeet)
+
+   } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   fhTofTimeRmsPulser->Reset();
+   fhTofTimeRmsZoomFitPuls->Reset();
+   fhTofTimeResFitPuls->Reset();
+
+   ///* STAR event building/cutting *///
+   for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfGdpbs; ++uGdpb )
+   {
+      fvhTofTokenMsgType[ uGdpb ]->Reset();
+      fvhTofTriggerRate[ uGdpb ]->Reset();
+      fvhTofCmdDaqVsTrig[ uGdpb ]->Reset();
+      fvhTofStarTokenEvo[ uGdpb ]->Reset();
+      fvhTofStarTrigGdpbTsEvo[ uGdpb ]->Reset();
+      fvhTofStarTrigStarTsEvo[ uGdpb ]->Reset();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   ///* Pulser monitoring *///
+   for( UInt_t uFeeA = 0; uFeeA < fuTofNrOfFee; uFeeA++)
+      for( UInt_t uFeeB = 0; uFeeB < fuTofNrOfFee; uFeeB++)
+         if( NULL != fvhTofTimeDiffPulser[uFeeA][uFeeB] )
+            fvhTofTimeDiffPulser[uFeeA][uFeeB]->Reset();
+
+   fdTofStartTime = -1;
+   fdTofStartTimeLong = -1;
+/****************** TOF Sync ******************************************/
+
+/****************** mCBM Sync *****************************************/
+   fhMcbmTimeDiffStsTofMean->Reset();
+   fhMcbmTimeDiffStsTofRMS->Reset();
+
+   for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
+   {
+      for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+      {
+         fvhMcbmTimeDiffStsTof[uAsic][uFee]->Reset();
+         fvhMcbmTimeDiffStsTof[uAsic][uFee]->Reset();
+      } // for( UInt_t uFee = 0; uFee < fuTofNrOfFee; uFee++)
+   } // for( UInt_t uAsic = 0; uAsic < fuStsNbStsXyters; uAsic++)
+/****************** mCBM Sync *****************************************/
 }
 
 void CbmMcbm2018MonitorMcbmSync::SetRunStart( Int_t dateIn, Int_t timeIn, Int_t iBinSize )
