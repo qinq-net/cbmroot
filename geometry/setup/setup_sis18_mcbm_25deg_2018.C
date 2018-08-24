@@ -43,8 +43,8 @@ void setup_sis18_mcbm_25deg_2018()
   //  TString muchGeoTag      = "v18g_mcbm";    // 11 o'clock, Mv2 size
   TString muchGeoTag      = "v18i_mcbm";    // 2018 // problem with only 2 layers
   //  TString trdGeoTag       = "v18o_mcbm";    // long, with mBUCH
-  //  TString trdGeoTag       = "v18n_mcbm";    // long, without mBUCH
-  TString trdGeoTag       = "v18q_mcbm";    // 2018 // 2 TRD modules 
+  TString trdGeoTag       = "v18n_mcbm";    // 2018 // 4 TRD modules 
+  //  TString trdGeoTag       = "v18q_mcbm";    // 2018 // 2 TRD modules 
   TString tofGeoTag       = "v18j_mcbm";    // long distance
   TString richGeoTag      = "v18d_mcbm";    // long distance
   TString psdGeoTag       = "v18d_mcbm";    // at 25 degree, below the beampipe
