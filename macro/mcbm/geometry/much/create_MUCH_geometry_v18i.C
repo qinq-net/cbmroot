@@ -230,7 +230,7 @@ TGeoVolume * CreateStations(int ist){
   
 
      gLayer[ii] = CreateLayers(ist, ii);
-     if (ii!=1)  // DE -skip middle GEM module for 2018
+     if (ii!=2)  // DE - skip 3rd=last GEM module for 2018
        station->AddNode(gLayer[ii],ii);
 
   }
