@@ -10,7 +10,7 @@ using std::stringstream;
 using std::string;
 
 /**
- * fAddress defition ATTf.ffnn nnnL.LLMM MMMM.pppp pppp.pppp
+ * fAddress defition ATTf.ffnn nLLL.LMMM MMMM.pppp pppp.pppp
  * A - Asic type according to CbmTrdAsicType
  * T - trigger type according to CbmTrdTriggerType
  * f - flags according to CbmTrdDigiDef
@@ -20,7 +20,7 @@ using std::string;
  * p - pad address within the module
  */
 Float_t CbmTrdDigi::fgClk[] = {62.5, 12.5};
-Float_t CbmTrdDigi::fgPrecission[] = {1.e3, 1.e1};
+Float_t CbmTrdDigi::fgPrecission[] = {1.e3, 1.};
 //__________________________________________________________________________________________
 CbmTrdDigi::CbmTrdDigi()
   : CbmDigi()
@@ -82,19 +82,22 @@ void CbmTrdDigi::AddCharge(CbmTrdDigi *sd, Double_t f)
     LOG(WARNING)<<"CbmTrdDigi::AddCharge(CbmTrdDigi*, Double_t) : Only available for FASP. Use AddCharge(Double_t, Double_t) instead."<<FairLogger::endl;
     return;
   } 
-  UInt_t  t = ((fCharge&0xffff0000)>>16),
-          r = (fCharge&0xffff),
-          ts= ((sd->fCharge&0xffff0000)>>16),
-          rs= (sd->fCharge&0xffff);
+  Char_t dt = fCharge>>24, dts=sd->fCharge>>24;
+  UInt_t  t = ((fCharge&0xfff000)>>12),
+          r = (fCharge&0xfff),
+          ts= ((sd->fCharge&0xfff000)>>12),
+          rs= (sd->fCharge&0xfff);
   // apply correction factor to charge        
   Float_t tsf = f*ts/fgPrecission[kFASP], rsf = f*rs/fgPrecission[kFASP];
   ts = tsf*fgPrecission[kFASP]; rs = rsf*fgPrecission[kFASP]; 
   
-  if(t+ts<0xffff) t+=ts;
-  else t = 0xffff;
-  if(r+rs<0xffff) r+=rs;
-  else r = 0xffff;
-  fCharge = r|(t<<16);
+  if(t+ts<0xfff) t+=ts;
+  else t = 0xfff;
+  if(r+rs<0xfff) r+=rs;
+  else r = 0xfff;
+  dt+=dts;
+  fCharge = r|(t<<12);
+  fCharge |= dt<<24;
 }
 
 //__________________________________________________________________________________________
@@ -134,15 +137,21 @@ Double_t CbmTrdDigi::GetCharge()  const
 }
 
 //__________________________________________________________________________________________
-Double_t CbmTrdDigi::GetCharge(Double_t &tilt)  const
+Double_t CbmTrdDigi::GetCharge(Double_t &tilt, Int_t& dt)  const
 {
+/** Retrieve signal information for FASP.
+ * Memory allocation of 32 bits: tttt.tttt TTTT.TTTT TTTT.RRRR RRRR.RRRR
+ *    t : time difference of rectangular to tilt pads
+ *    T : tilt pads signal
+ *    R : Rectangular pads signal
+ */
   if(GetType()!=kFASP){
     LOG(WARNING)<<"CbmTrdDigi::GetCharge(Double_t &) : Use Double_t GetCharge() instead."<<FairLogger::endl;
     return 0;
   } 
-  
-  tilt = ((fCharge&0xffff0000)>>16)/fgPrecission[kFASP];
-  return (fCharge&0xffff)/fgPrecission[kFASP];
+  Char_t toff = fCharge>>24; dt = toff;
+  tilt = ((fCharge&0xfff000)>>12)/fgPrecission[kFASP];
+  return (fCharge&0xfff)/fgPrecission[kFASP];
 }
 
 //__________________________________________________________________________________________
@@ -173,12 +182,22 @@ void CbmTrdDigi::SetAsic(CbmTrdAsicType ty)
 }
 
 //__________________________________________________________________________________________
-void CbmTrdDigi::SetCharge(Float_t cT, Float_t cR)   
+void CbmTrdDigi::SetCharge(Float_t cT, Float_t cR, Int_t dt)   
 { 
+/** Load signal information for FASP.
+ * Memory allocation of 32 bits: tttt.tttt TTTT.TTTT TTTT.RRRR RRRR.RRRR
+ *    t : time difference of rectangular to tilt pads (8 bits)
+ *    T : tilt pads signal (12 bits)
+ *    R : Rectangular pads signal (12 bits)
+ */
   UInt_t r=UInt_t(cR*fgPrecission[kFASP]), t=UInt_t(cT*fgPrecission[kFASP]);
-  if(r>0xffff) r=0xffff;
-  if(t>0xffff) t=0xffff;
-  fCharge = r|(t<<16); 
+  Char_t toff = dt;
+  if(dt>127) toff = 127;
+  else if(dt<-127) toff = -127;
+  if(r>0xfff) r=0xfff;
+  if(t>0xfff) t=0xfff;
+  fCharge = r|(t<<12); 
+  fCharge |= toff<<24;
 }
 
 //__________________________________________________________________________________________
@@ -200,6 +219,13 @@ void CbmTrdDigi::SetFlag(const Int_t iflag, Bool_t set)
 }
 
 //__________________________________________________________________________________________
+void CbmTrdDigi::SetTimeOffset(Char_t t)
+{ 
+  fCharge <<= 8; fCharge >>= 8;
+  fCharge |= t<<24;
+}
+
+//__________________________________________________________________________________________
 void CbmTrdDigi::SetTriggerType(const Int_t ttype)
 {
   if(GetType()==kFASP) return;
@@ -213,10 +239,10 @@ string CbmTrdDigi::ToString() const
   stringstream ss;
   ss << "CbmTrdDigi("<<(GetType()==kFASP?"T)":"R)")<<" | moduleAddress=" << GetAddressModule() <<" | layer=" << Layer() <<" | moduleId=" << Module() <<" | pad=" << GetAddressChannel() << " | time[ns]=" <<std::fixed<< std::setprecision(1)<< GetTime();
   if(GetType()==kFASP) {
-    Double_t t, r = GetCharge(t);
+    Int_t dt; Double_t t, r = GetCharge(t, dt);
     ss<<" | pu="<<(IsPileUp()?"y":"n")
       <<" | mask="<<(IsMasked()?"y":"n")
-      <<" |charge="<<std::fixed<<std::setw(6)<<std::setprecision(1)<<r<<"/"<<t;
+      <<" |charge="<<std::fixed<<std::setw(6)<<std::setprecision(1)<<t<<"/"<<r<<"["<<dt<<"]";
   } else {
     ss<< " | charge=" << GetCharge()
       << " TriggerType=" << GetTriggerType()

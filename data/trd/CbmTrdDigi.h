@@ -85,14 +85,15 @@ public:
   /** \brief Charge getter for SPADIC*/
   Double_t  GetCharge()  const;
   /** \brief Charge getter for FASP
-   * \param[in] tilt on returns contain the charge measured on tilted pads
+   * \param[out] tilt on returns contain the charge measured on tilted pads
+   * \param[out] dt on returns contain the time difference wrt tilted pads
    * \return charge measured on rectangular coupled pads
    */
-  Double_t  GetCharge(Double_t &tilt)  const;
+  Double_t  GetCharge(Double_t &tilt, Int_t &dt)  const;
   /** \brief Charge error parametrisation. SPADIC specific see GetErrorClass()*/
   Double_t  GetChargeError()  const;
   /** \brief Channel status. SPADIC specific see LUT*/
-  Int_t     GetErrorClass() const           { return (fAddress>>fgkErrOffset)&0x1f;}
+  Int_t     GetErrorClass() const           { return (fAddress>>fgkErrOffset)&0x7;}
   /** \brief Inherited from CbmDigi.*/
   Int_t     GetSystemId() const             { return kTrd;} 
   /** \brief Getter for physical time [ns]. Accounts for clock representation of each ASIC*/
@@ -110,8 +111,8 @@ public:
   Bool_t    IsPileUp() const {return (GetType()==kFASP)&&IsFlagged(kFlag2);}
   /** \brief Query flag status (generic)*/
   Bool_t    IsFlagged(const Int_t iflag)  const;
-  Int_t     Layer() const    { return (fAddress>>fgkLyOffset)&0x7;}
-  Int_t     Module() const   { return (fAddress>>fgkModOffset)&0x3f;}
+  Int_t     Layer() const    { return (fAddress>>fgkLyOffset)&0xf;}
+  Int_t     Module() const   { return (fAddress>>fgkModOffset)&0x7f;}
 
   /** \brief Module address setter for digi
    * \param[in] a module address as it is defined in CbmTrdAddress
@@ -128,8 +129,9 @@ public:
   /** \brief Charge setter for FASP ASIC
    * \param[in] cT charge on tilt paired
    * \param[in] cR charge on rectangular paired
+   * \param[in] dt time difference between T and R channel
    */
-  void      SetCharge(Float_t cT, Float_t cR);
+  void      SetCharge(Float_t cT, Float_t cR, Int_t dt=0);
   /** \brief Generic flag status setter*/
   void      SetFlag(const Int_t iflag, Bool_t set=kTRUE);
   /** \brief Set digi mask (FASP only)*/
@@ -140,11 +142,13 @@ public:
   void      SetTime(Double_t t)             { fTime=ULong64_t(t/fgClk[GetType()]);}
   /** \brief Set global digi time (clk)*/
   void      SetTimeDAQ(ULong64_t t)         { fTime=t;}
+  /** \brief Set time offset of rectangular to tilt pads for FASP (clk)*/
+  void      SetTimeOffset(Char_t t);         
   /** \brief Set digi trigger type (SPADIC only)*/
   void      SetTriggerType(const Int_t ttype);
   /** \brief Set digi error class (SPADIC only)*/
-  void      SetErrorClass(const Int_t n)    { fAddress&= ~(0x1f<<fgkErrOffset);
-                                              fAddress|=((n&0x1f)<<fgkErrOffset);}
+  void      SetErrorClass(const Int_t n)    { fAddress&= ~(0x7<<fgkErrOffset);
+                                              fAddress|=((n&0x7)<<fgkErrOffset);}
   /** \brief String representation of a TRD digi. Account for digi type and specific information.*/
   std::string ToString() const;
   
@@ -152,7 +156,7 @@ public:
   // keep backward compatible compilation of CbmTrdSPADIC
   void SetStopType(Int_t /*stopType*/)  {;}
   Int_t GetStopType() {return 0;}
-  void SetPulseShape(Float_t /*pulse*/[45]) {;}
+  void SetPulseShape(Float_t pulse[45]) {;}
   // keep backward compatible compilation of fles/reader/tasks [/tools]
   Double_t GetChargeTR()  {return 0.;}
   void SetInfoType(Int_t /*infoType*/)  {;}
@@ -162,14 +166,14 @@ public:
 protected:
   void      SetChannel(const Int_t a){ fAddress&= ~(0xfff<<fgkRoOffset); 
                                        fAddress|=(a&0xfff)<<fgkRoOffset;}
-  void      SetLayer(const Int_t a)  { fAddress&= ~(0x7<<fgkLyOffset); 
-                                       fAddress|=((a&0x7)<<fgkLyOffset);}
-  void      SetModule(const Int_t a) { fAddress&= ~(0x3f<<fgkModOffset); 
-                                       fAddress|=((a&0x3f)<<fgkModOffset);}
+  void      SetLayer(const Int_t a)  { fAddress&= ~(0xf<<fgkLyOffset); 
+                                       fAddress|=((a&0xf)<<fgkLyOffset);}
+  void      SetModule(const Int_t a) { fAddress&= ~(0x7f<<fgkModOffset); 
+                                       fAddress|=((a&0x7f)<<fgkModOffset);}
 
   UInt_t    fAddress;     //< pad address and extra information
   UInt_t    fCharge;      //< measured charge. For SPADIC is Int_t(charge*1eN) where N is the precission while 
-                          //< for FASP it contains the R and T charges each on 16bits.
+                          //< for FASP it contains the R and T charges each on 12bits and the time difference between R and T pads in CLK (8 bits).
   ULong64_t fTime;        //< global time of the digi in ASIC clock
   
   static Float_t  fgClk[kNTypes]; //< clock length in ns for acquisition
@@ -178,8 +182,8 @@ protected:
 private:    
   static const Int_t fgkRoOffset  =  0;
   static const Int_t fgkModOffset =  12;
-  static const Int_t fgkLyOffset  =  18;
-  static const Int_t fgkErrOffset =  21;
+  static const Int_t fgkLyOffset  =  19;
+  static const Int_t fgkErrOffset =  23;
   static const Int_t fgkFlgOffset =  26;
   static const Int_t fgkTrgOffset =  29;
   static const Int_t fgkTypOffset =  31;
