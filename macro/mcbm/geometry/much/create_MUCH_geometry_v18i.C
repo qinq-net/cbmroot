@@ -100,10 +100,10 @@ Double_t fOverlapR = 0.0;        // Overlap in R direction [cm]
 
 // Station Zceneter [cm] in  the cave reference frame
 
-Double_t fStationZ0=80;
+Double_t fStationZ0=90;
 //Double_t fStationZ0=70;   // DE - move 10 cm upstream
 Int_t fNlayers=3; // Number of layers
-Double_t fLayersDz=10; // distance between the layers
+Double_t fLayersDz=20; // distance between the layers
 Double_t fCoolLz=1.0;  // thickness of the cooling plate also used as support
 
 /* 
