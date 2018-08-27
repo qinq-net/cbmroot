@@ -564,25 +564,47 @@ Double_t CbmTrdModuleSimR::AddNoise(Double_t charge){
 //_______________________________________________________________________________
 Double_t CbmTrdModuleSimR::CheckTime(Int_t address){
 
-
   //compare last entry in the actual channel with the current time
-  std::map<Int_t,Double_t>::                                  iterator timeit;
   Double_t dt=fCurrentTime-fTimeBuffer[address];
   Bool_t go=false;
   if(fCurrentTime>fTimeBuffer[address] && dt>0.0000000){
-    if(dt>fCollectTime && dt!=fCurrentTime)        {ProcessBuffer(address);fTimeBuffer.erase(address);go=true;}
+    if(dt>fCollectTime && dt!=fCurrentTime){
+      ProcessBuffer(address);
+      fTimeBuffer.erase(address);
+      go=true;
+    }
   }
+
 
   //also check other channels if collection time is far over in the actual channel
   if(go){
+/*
+    std::vector<Int_t> markedForDelete;
+    std::map<Int_t,Double_t>::iterator timeit;
     for(timeit=fTimeBuffer.begin(); timeit !=fTimeBuffer.end();timeit++){
       Int_t add=timeit->first;
       dt=fCurrentTime-fTimeBuffer[add];
-      if(dt>fCollectTime && dt!=fCurrentTime){
-        ProcessBuffer(add);
-        fTimeBuffer.erase(add);
+      if(fCurrentTime>fTimeBuffer[add] && dt>0.0000000){
+        if(dt>fCollectTime && dt!=fCurrentTime){
+          ProcessBuffer(add);
+          markedForDelete.push_back(add);
+        }
       }
     }
+    for(size_t i = 0; i < markedForDelete.size(); i++) {
+      fTimeBuffer.erase(markedForDelete[i]);
+    }
+*/
+    for (auto it = fTimeBuffer.begin(); it != fTimeBuffer.end(); ) {
+      dt=fCurrentTime-fTimeBuffer[it->first];
+      if(dt>fCollectTime && dt!=fCurrentTime){
+        ProcessBuffer(it->first);
+        it = fTimeBuffer.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  
   }
 
 }
