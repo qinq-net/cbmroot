@@ -534,6 +534,20 @@ void CbmMuchGeoScheme::StationNode(TGeoNode* fSNode, TString Path){
 
     fDetType[iStation]=3;
     //      fLayersDz[iStation]=10.0;
+
+    //-----------------------------Layer1-------------------------------------------------------
+    TGeoNode* layer1 = static_cast<TGeoNode*>(layers->At(0));//first layer position of station
+    TString Layer1Path = StationPath + "/" + layer1->GetName();
+    TObjArray* Supportlayer1 = layer1->GetNodes(); 
+    TGeoNode* Supportlayer1Node = static_cast<TGeoNode*>(Supportlayer1->At(0));
+
+    TString Supportlayer1Path = Layer1Path + "/" + Supportlayer1Node->GetName();
+    Double_t  fLayer1Z0;
+   //if(Supportlayer2Path.Contains("mcbm")) fLayer2Z0=GetModuleZ(Supportlayer2Path);
+    if (fGeoID ==1)fLayer1Z0=GetModuleZ(Supportlayer1Path);
+ else fLayer1Z0 = GetZ(Supportlayer1Path);
+
+
     //-----------------------------Layer2-------------------------------------------------------
     TGeoNode* layer2 = static_cast<TGeoNode*>(layers->At(1));//second layer position of station
     TString Layer2Path = StationPath + "/" + layer2->GetName();
@@ -547,9 +561,20 @@ void CbmMuchGeoScheme::StationNode(TGeoNode* fSNode, TString Path){
    //if(Supportlayer2Path.Contains("mcbm")) fLayer2Z0=GetModuleZ(Supportlayer2Path);
  if (fGeoID ==1)fLayer2Z0=GetModuleZ(Supportlayer2Path);
  else fLayer2Z0 = GetZ(Supportlayer2Path);
-    fStationZ0[iStation] = fLayer2Z0;
+    //
 
+
+  fLayersDz[iStation]=fLayer2Z0 - fLayer1Z0;
     
+    //if(Supportlayer3Path.Contains("mcbm")) fSupportLz[iStation]=2.0*GetModuleDZ(Supportlayer3Path);
+ if (fGeoID==1) fSupportLz[iStation]=2.0*GetModuleDZ(Supportlayer1Path);
+else fSupportLz[iStation]=2.0*GetSizeZ(Supportlayer1Path);
+//cout<<fSupportLz[iStation]<<"  "<<fLayersDz[iStation]<<endl;
+
+
+Double_t PosY=0.,Phi=0.,Dy=0.;
+
+    if(fNlayers[iStation]==3){
     //------------------------------Layer3-----------------------------------------------------------
     TGeoNode* layer3 = static_cast<TGeoNode*>(layers->At(2));
     TString Layer3Path = StationPath + "/" + layer3->GetName();
@@ -560,25 +585,29 @@ void CbmMuchGeoScheme::StationNode(TGeoNode* fSNode, TString Path){
  
     Double_t  fLayer3Z0;
     //if(Supportlayer3Path.Contains("mcbm"))  fLayer3Z0=GetModuleZ(Supportlayer3Path);
- if(fGeoID==1)  fLayer3Z0=GetModuleZ(Supportlayer3Path);
-   else fLayer3Z0 = GetZ(Supportlayer3Path);
-    fLayersDz[iStation]=fLayer3Z0 - fLayer2Z0;
-    
-    //if(Supportlayer3Path.Contains("mcbm")) fSupportLz[iStation]=2.0*GetModuleDZ(Supportlayer3Path);
- if (fGeoID==1) fSupportLz[iStation]=2.0*GetModuleDZ(Supportlayer3Path);
-else fSupportLz[iStation]=2.0*GetSizeZ(Supportlayer3Path);
-//cout<<fSupportLz[iStation]<<"  "<<fLayersDz[iStation]<<endl;
-
-    //------------------------------Station_Rmax&Rmin-------------------------------------------
+    if(fGeoID==1)  fLayer3Z0=GetModuleZ(Supportlayer3Path);
+                else fLayer3Z0 = GetZ(Supportlayer3Path);
     TGeoNode* Activelayer3Node = static_cast<TGeoNode*>(Supportlayer3->At(1));
     TString Activelayer3Path = Layer3Path + "/" + Activelayer3Node->GetName();
     
-    Double_t PosY=GetModuleY(Activelayer3Path);
+     PosY=GetModuleY(Activelayer3Path);
     // Double_t PosX=GetModuleX(Activelayer3Path);
-    Double_t Phi = GetModulePhi(Activelayer3Path);
-    Double_t Dy = GetModuleH1(Activelayer3Path);
-    fActiveLzSector=2.0*GetModuleDZ(Activelayer3Path);
+     Phi = GetModulePhi(Activelayer3Path);
+     Dy = GetModuleH1(Activelayer3Path);
+     fActiveLzSector=2.0*GetModuleDZ(Activelayer3Path);
+     fStationZ0[iStation] = fLayer2Z0;
+             }else
+{
+    TGeoNode* Activelayer2Node = static_cast<TGeoNode*>(Supportlayer2->At(1));
+    TString Activelayer2Path = Layer2Path + "/" + Activelayer2Node->GetName();
     
+     PosY=GetModuleY(Activelayer2Path);
+    // Double_t PosX=GetModuleX(Activelayer3Path);
+     Phi = GetModulePhi(Activelayer2Path);
+     Dy = GetModuleH1(Activelayer2Path);
+     fActiveLzSector=2.0*GetModuleDZ(Activelayer2Path);
+     fStationZ0[iStation] = (fLayer2Z0-fLayer1Z0)/2.;
+}
     
 
     //chaned by PPB on 16.11.2017
@@ -594,7 +623,7 @@ else fSupportLz[iStation]=2.0*GetSizeZ(Supportlayer3Path);
     muchSt->SetRmin(Rmin);
     muchSt->SetRmax(Rmax);
     
-    if (Supportlayer3->GetEntriesFast()>0) fModuleDesign[iStation]=1;
+    if (Supportlayer1->GetEntriesFast()>0) fModuleDesign[iStation]=1;
     muchSt->SetModuleDesign(fModuleDesign[iStation]);
     
     
