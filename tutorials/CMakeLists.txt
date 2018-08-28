@@ -14,3 +14,6 @@ Set(_fairroot_version_found ${FairRoot_VERSION_MAJOR}.${FairRoot_VERSION_MINOR})
 If(NOT _fairroot_version_found VERSION_LESS 15.11)
 #  add_subdirectory(cbmMQTest)
 EndIf()
+
+# Uncomment the following line if you are interested
+#add_subdirectory(boost_serialization)
