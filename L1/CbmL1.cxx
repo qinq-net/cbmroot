@@ -345,7 +345,7 @@ InitStatus CbmL1::Init()
 #endif
 
 #ifndef mCBM  
-  fUseMUCH = 1;
+  fUseMUCH = 0;
   fUseTRD = 0;
   fUseTOF = 0;
 #endif
