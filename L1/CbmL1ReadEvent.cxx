@@ -131,7 +131,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
   
   int nStsPoints =0;
   int nTrdPoints =0;
-  int nMuchPoints =0;
+  nMuchPoints =0;
   int nTofPoints =0;
   
   vector <CbmLink*> ToFPointsMatch;
@@ -498,8 +498,15 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
         mh->Position(pos);
         mh->PositionError(err);
 
-       th.x = pos.X();
+        th.x = pos.X();
         th.y = pos.Y();
+        
+        th.dx = mh->GetDx();
+        th.dy = mh->GetDy();
+        th.dxy = mh->GetDxy();
+        
+        th.du = mh->GetDu();
+        th.dv = mh->GetDv();
 
         L1Station &st = algo->vStations[th.iStation];
         th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];

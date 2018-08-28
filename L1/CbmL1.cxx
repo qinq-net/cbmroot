@@ -78,6 +78,8 @@ using std::vector;
 
 #include "KFTopoPerformance.h"
 
+//#define GLOBAL
+
 ClassImp(CbmL1)
 
 static L1Algo algo_static _fvecalignment;
@@ -171,7 +173,8 @@ fEventEfficiency()
 }
 
 CbmL1::CbmL1(const char *name, Int_t iVerbose, Int_t _fPerformance, int fSTAPDataMode_, TString fSTAPDataDir_, int findParticleMode_):FairTask(name,iVerbose),
-algo(0), // for access to L1 Algorithm from L1::Instance                       
+algo(0), // for access to L1 Algorithm from L1::Instance   
+fDigiFile(),
 vRTracks(), // reconstructed tracks
 vFileEvent(),
 vHitStore(),
@@ -273,91 +276,6 @@ void CbmL1::SetParContainers()
 
 }
 
-static void FindGeoChild(TGeoNode *node, const char *name, list<TGeoNode*>& results)
-{
-  Int_t nofChildren = node->GetNdaughters();
-  for (Int_t i = 0; i < nofChildren; ++i)
-  {
-    TGeoNode* child = node->GetDaughter(i);
-    TString childName(child->GetName());
-    if (childName.Contains(name, TString::kIgnoreCase))
-      results.push_back(child);
-  }
-}
-
-void CbmL1::HandleGeometry(vector <float> &Rho, vector <float> &Rad)
-{
-TGeoNavigator* pNavigator = gGeoManager->GetCurrentNavigator();
-gGeoManager->cd("/cave_1");
-list<TGeoNode*> detectors;
-FindGeoChild(gGeoManager->GetCurrentNode(), "much", detectors);
-
-for (list<TGeoNode*>::iterator i = detectors.begin(); i != detectors.end(); ++i)
-{ 
-TGeoNode *detector = *i;
-pNavigator->CdDown(detector);
-         list<TGeoNode*> stations;
-         FindGeoChild(detector, "station", stations);
-         int stationNumber = 0;
-         for (list<TGeoNode*>::iterator j = stations.begin(); j != stations.end(); ++j)
-         {
-            TGeoNode* station = *j;
-            pNavigator->CdDown(station);
-            list<TGeoNode*> muchstations;
-            FindGeoChild(station, "muchstation", muchstations);
-            int muchstationnumber = 0;
-         for (list<TGeoNode*>::iterator p = muchstations.begin(); p != muchstations.end(); ++p)
-         {
-            TGeoNode* muchstation = *p;
-            pNavigator->CdDown(muchstation);
-
-            list<TGeoNode*> layers;
-            FindGeoChild(muchstation, "layer", layers);
-            int layerNumber = 0;
-
-
-            for (list<TGeoNode*>::iterator k = layers.begin(); k != layers.end(); ++k)
-            {
-
-               TGeoNode* layer = *k;
-               pNavigator->CdDown(layer);
-
-               list<TGeoNode*> actives;
-               FindGeoChild(layer, "active", actives);
-
-               for (list<TGeoNode*>::iterator l = actives.begin(); l != actives.end(); ++l)
-               {
-                  TGeoNode* active = *l;
-                  pNavigator->CdDown(active);
-                 // TGeoCompositeShape* cs = dynamic_cast<TGeoCompositeShape*> (active->GetVolume()->GetShape());
-                  
-                  TGeoVolume* absVol = gGeoManager->GetCurrentVolume();
-                  
-
-                  
-                  const TGeoBBox* absShape = static_cast<const TGeoBBox*> (absVol->GetShape());
-                 // Double_t radLength = absVol->GetMaterial()->GetRadLen();
-                  Double_t length = 2 * absShape->GetDZ();
-                              
-                  Rho.push_back(absVol->GetMaterial()->GetDensity());
-                  Rad.push_back(absVol->GetMaterial()->GetDensity()*length);
-
-                  pNavigator->CdUp();
-               }
-
-               pNavigator->CdUp();
-               ++layerNumber;
-            }
-            
-               pNavigator->CdUp();
-               ++muchstationnumber;
-            }
-
-            ++stationNumber;
-            pNavigator->CdUp();
-         }         
-}
-}
 
 InitStatus CbmL1::ReInit()
 {
@@ -427,11 +345,13 @@ InitStatus CbmL1::Init()
 #endif
 
 #ifndef mCBM  
-  fUseMUCH = 0;
+  fUseMUCH = 1;
   fUseTRD = 0;
   fUseTOF = 0;
 #endif
 
+  
+  
   fStsPoints = 0;
   fMvdPoints = 0;
   fMuchPoints = 0;
@@ -618,24 +538,14 @@ InitStatus CbmL1::Init()
     geo.push_back(B[2]);
   }
   
-  
-  // count number and Z-position of MuCh stations
-    vector <float> zPositionMuch, RhoMuch, RadLenMuch;  
-    if (fUseMUCH) {
-      
-      for (Int_t i=0;i<Nodes->GetEntries();i++) {
-      
-      CbmMuchStation* station = (CbmMuchStation*) Nodes->At(i);
-      Int_t nLayers = station->GetNLayers();
-      
-        for(Int_t iLayer = 0; iLayer < nLayers; iLayer++){
-        CbmMuchLayer* layer = station->GetLayer(iLayer);
-        zPositionMuch.push_back(layer->GetZ());
-        NMuchStations++;          
-        }
-      }
-     
-     HandleGeometry(RhoMuch, RadLenMuch);   
+
+    CbmMuchGeoScheme* fGeoScheme = CbmMuchGeoScheme::Instance();    
+    
+    if (fUseMUCH) { 
+     TFile* file = new TFile(fDigiFile);
+     TObjArray* stations = (TObjArray*) file->Get("stations"); 
+     fGeoScheme->Init(stations, 0);
+     NMuchStations = fGeoScheme->GetNStations()*3;  
    }
    
    // count TRD stations 
@@ -832,9 +742,7 @@ InitStatus CbmL1::Init()
       int iStation = (ist - NMvdStations - NStsStations)/3;
       
       
-      CbmMuchStation* station = (CbmMuchStation*) Nodes->At(iStation);
-      
-//      Int_t nLayers = station->GetNLayers();
+      CbmMuchStation* station = (CbmMuchStation*) fGeoScheme->GetStation(iStation);
 
       CbmMuchLayer* layer = station->GetLayer((ist - NMvdStations - NStsStations)%3);
          
@@ -847,7 +755,7 @@ InitStatus CbmL1::Init()
       geo.push_back(layer->GetDz());
       geo.push_back(station->GetRmin());
       geo.push_back(station->GetRmax());
-      geo.push_back(RadLenMuch[iStation]);
+      geo.push_back(0);
 
       fscal f_phi=0, f_sigma=1*pads[0]->GetDx()/TMath::Sqrt(12), b_phi=3.14159265358/2., b_sigma=1*pads[0]->GetDy()/TMath::Sqrt(12);
       geo.push_back(f_phi);
@@ -861,17 +769,17 @@ InitStatus CbmL1::Init()
       Ymax = station->GetRmax();
     }
     
-    int num = 0;
+//     int num = 0;
     
     if( (ist < (NMvdStations + NStsStations+NTrdStations+NMuchStations))&& (ist >= (NMvdStations + NStsStations+NMuchStations)) ){
       
       
 
-      if ((ist - NMvdStations - NStsStations-NMuchStations)==0) num = 0;
-      if ((ist - NMvdStations - NStsStations-NMuchStations)==1) num = 1;
-      if ((ist - NMvdStations - NStsStations-NMuchStations)==2) num = 2;
-      if ((ist - NMvdStations - NStsStations-NMuchStations)==3) num = 3;
-      if ((ist - NMvdStations - NStsStations-NMuchStations)==4) num = 4;
+//       if ((ist - NMvdStations - NStsStations-NMuchStations)==0) num = 0;
+//       if ((ist - NMvdStations - NStsStations-NMuchStations)==1) num = 1;
+//       if ((ist - NMvdStations - NStsStations-NMuchStations)==2) num = 2;
+//       if ((ist - NMvdStations - NStsStations-NMuchStations)==3) num = 3;
+//       if ((ist - NMvdStations - NStsStations-NMuchStations)==4) num = 4;
       
      // if (num==4) continue;
       
@@ -1461,20 +1369,31 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
     }
   }
 
+  
   if( fVerbose>1 ) cout<<"L1 Track finder..."<<endl;
-  algo->CATrackFinder();
-
-// IdealTrackFinder();
+  //algo->CATrackFinder();
+  IdealTrackFinder();
      
+  
   if( fVerbose>1 ) cout<<"L1 Track finder ok"<<endl;
 //  algo->L1KFTrackFitter( fExtrapolateToTheEndOfSTS );
 
  
-  L1FieldValue fB0 = algo->GetVtxFieldValue();  
+   
+  
+#if defined(mCBM) || defined(GLOBAL)      
+  
+  L1FieldValue fB0 = algo->GetVtxFieldValue();
   
   if ((fabs(fB0.x[0]) < 0.0000001)&&(fabs(fB0.y[0]) < 0.0000001)&&(fabs(fB0.z[0]) < 0.0000001)) algo->KFTrackFitter_simple();
   
-  else algo->L1KFTrackFitter();
+  else algo->L1KFTrackFitterMuch();
+  
+#else   
+  
+  algo->L1KFTrackFitter();
+  
+#endif  
   
   if( fVerbose>1 ) cout<<"L1 Track fitter  ok"<<endl;
   

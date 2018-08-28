@@ -118,6 +118,7 @@ class CbmL1 : public FairTask
 
    L1Algo *algo; // for access to L1 Algorithm from L1::Instance
 
+   TString fDigiFile;            // Digitization file
    vector<CbmL1Track> vRTracks; // reconstructed tracks
    typedef std::set<std::pair<int, int> > DFSET;
    DFSET vFileEvent;
@@ -147,6 +148,7 @@ class CbmL1 : public FairTask
   void SetTofMaterialBudgetFileName( TString fileName ){ fTofMatBudgetFileName = fileName; }
   void SetExtrapolateToTheEndOfSTS( bool b ){ fExtrapolateToTheEndOfSTS = b; }
   void SetDataMode( int TimesliceMode) { fTimesliceMode = TimesliceMode; }
+  void SetMuchPar( TString fileName ){ fDigiFile = fileName; }
   void Finish();
 
 //   void SetTrackingLevel( Int_t iLevel ){ fTrackingLevel = iLevel; }
@@ -173,8 +175,6 @@ class CbmL1 : public FairTask
    int nMvdPoints;
    vector<int> vMCPoints_in_Time_Slice;
    void IdealTrackFinder(); // just copy all reconstructable MCTracks into RecoTracks.
-   
-   void HandleGeometry(vector <float> &Rho, vector <float> &Rad);
 
     /// Read information about hits, mcPoints and mcTracks into L1 classes
    void ReadEvent(L1AlgoInputData *, CbmEvent* event = NULL);
