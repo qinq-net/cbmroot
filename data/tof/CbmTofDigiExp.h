@@ -25,6 +25,9 @@
 #include "CbmDigi.h"
 #include "CbmTofAddress.h"
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/base_object.hpp>
+
 class TString;
 
 class CbmTofDigiExp : public CbmDigi
@@ -128,11 +131,23 @@ class CbmTofDigiExp : public CbmDigi
       void SetTot(Double_t tot) { fdTot = tot; };
 
       std::string ToString() const;
+
+
    
    private:
       UInt_t   fuAddress; ///< Unique channel address
       Double_t fdTime;    ///< Absolute time [ps]
       Double_t fdTot;     ///< Tot [ps]
+
+      friend class boost::serialization::access;
+
+      template <class Archive>
+      void serialize(Archive& ar, const unsigned int /*version*/)
+      {
+        ar& fuAddress;
+        ar& fdTime;
+        ar& fdTot;
+      }
       
    ClassDef(CbmTofDigiExp, 1);
 };
