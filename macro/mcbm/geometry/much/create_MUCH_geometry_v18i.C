@@ -3,6 +3,7 @@
 /// \brief Generates MUCH geometry in Root format.
 ///    
 
+// 2018-08-28 - DE  - v18i - build a mMUCH with 2 GEM modules at z = 70 and 95 cm
 // 2017-11-20 - DE  - v18g - shift back to z = 70, 80 and 90 cm to avoid mSTS box
 // 2017-11-10 - PPB -      - correct the y position of the modules to generate much points             
 // 2017-11-07 - PPB -      - change the shape of cooling plates from rectangular to sector                           
@@ -100,10 +101,10 @@ Double_t fOverlapR = 0.0;        // Overlap in R direction [cm]
 
 // Station Zceneter [cm] in  the cave reference frame
 
-Double_t fStationZ0=90;
+Double_t fStationZ0=95;
 //Double_t fStationZ0=70;   // DE - move 10 cm upstream
 Int_t fNlayers=3; // Number of layers
-Double_t fLayersDz=20; // distance between the layers
+Double_t fLayersDz=25; // distance between the layers
 Double_t fCoolLz=1.0;  // thickness of the cooling plate also used as support
 
 /* 
