@@ -97,7 +97,7 @@
 #include <iostream>
 
 // Name of output file with geometry
-const TString tagVersion   = "v18q";
+const TString tagVersion   = "v18q_mcbm";
 //const TString subVersion   = "_1h";
 //const TString subVersion   = "_1e";
 //const TString subVersion   = "_1m";
