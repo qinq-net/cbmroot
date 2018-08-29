@@ -112,9 +112,9 @@ const TString setupVer[5] = { "_1h", "_1e", "_1m", "_3e", "_3m" };
 const TString subVersion = setupVer[setupid];
 
 const TString geoVersion   = "trd_" + tagVersion; //  + subVersion;
-const TString FileNameSim  = geoVersion + "_mcbm.geo.root";
-const TString FileNameGeo  = geoVersion + "_mcbm_geo.root";
-const TString FileNameInfo = geoVersion + "_mcbm.geo.info";
+const TString FileNameSim  = geoVersion + ".geo.root";
+const TString FileNameGeo  = geoVersion + "_geo.root";
+const TString FileNameInfo = geoVersion + ".geo.info";
 const TString FileNamePads = "CbmTrdPads_" + tagVersion + ".h";
 
 // display switches
