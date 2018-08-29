@@ -83,7 +83,7 @@ Bool_t CbmDigitization::AddParameterAsciiFile(TString fileName) {
     return kFALSE;
   }
   fParAsciiFiles.Add(new TObjString(fileName.Data()));
-  LOG(INFO) << fName << ": Adding parameter file" << fileName
+  LOG(INFO) << fName << ": Adding parameter file " << fileName
       << FairLogger::endl;
   return kTRUE;
 }
