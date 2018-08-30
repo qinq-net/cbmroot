@@ -120,3 +120,9 @@ set(KFParticle_LIB_DIR ${CMAKE_BINARY_DIR}/lib PARENT_SCOPE)
 set(KFParticle_LIBRARIES KFParticle PARENT_SCOPE)
 set(KFParticle_INCLUDE_DIR "${CMAKE_BINARY_DIR}/include" PARENT_SCOPE)
 set(KFParticle_FOUND TRUE PARENT_SCOPE)
+
+Install(FILES ${CMAKE_BINARY_DIR}/lib/${KFPARTICLE_LIBNAME} 
+              ${CMAKE_BINARY_DIR}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}KFParticle.rootmap
+              ${CMAKE_BINARY_DIR}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}KFParticle_rdict.pcm
+        DESTINATION lib
+       )
