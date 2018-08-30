@@ -29,7 +29,7 @@ export ROOTVER=6
 
 # put your desired variants here:
 export FSOFTDEV=oct17p1
-export FROOTDEV=v-17.10b
+export FROOTDEV=v-17.10c
 
 export FSOFTPRO=mar17
 export FROOTPRO=v-17.03
