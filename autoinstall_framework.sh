@@ -3,6 +3,7 @@
 ##   semi-automated script installing FairSoft, FairRoot and CbmRoot
 #
 
+# 31.08.2018 - re-introduce old version
 # 24.05.2018 - switch to oct17p1 as dev version
 # 31.01.2017 - make ROOT6 the default
 # 17.12.2015 - split fairsoft directory into src and install
@@ -34,12 +35,10 @@ export FROOTDEV=v-17.10c
 export FSOFTPRO=mar17
 export FROOTPRO=v-17.03
 
-# export FSOFTOLD=may16p1
-# export FROOTOLD=v-16.06b
+export FSOFTOLD=mar17
+export FROOTOLD=v-17.03
 
-# former versions
-# fairsoft: mar15p2
-# fairroot: v-15.03a
+#-------------------------------------
 
 export NUMOFCPU=`cat /proc/cpuinfo | grep processor | wc -l`
 export CBMSRCDIR=`pwd`
@@ -66,6 +65,10 @@ if [ $# -ge 1 ]; then
   if [ "$1" == "dev" ]; then
     export FSOFTVER=$FSOFTDEV
     export FROOTVER=$FROOTDEV
+    shift
+  elif [ "$1" == "old" ]; then
+    export FSOFTVER=$FSOFTOLD
+    export FROOTVER=$FROOTOLD
     shift
   fi
 fi
