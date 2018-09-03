@@ -780,7 +780,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
 
    /** Create FEET rates Canvas for STAR 2018 **/
    TCanvas* cFeeRates = new TCanvas("cFeeRates", "gDPB Monitoring FEET rates", w, h);
-   cFeeRates->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+//   cFeeRates->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+   cFeeRates->Divide(kuNbFeePerGbtx, kuNbGbtxPerGdpb * fuNrOfGdpbs );
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )
@@ -797,7 +798,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
 
    /** Create FEET error ratio Canvas for STAR 2018 **/
    TCanvas* cFeeErrRatio = new TCanvas("cFeeErrRatio", "gDPB Monitoring FEET error ratios", w, h);
-   cFeeErrRatio->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+//   cFeeErrRatio->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+   cFeeErrRatio->Divide(kuNbFeePerGbtx, kuNbGbtxPerGdpb * fuNrOfGdpbs );
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )
@@ -812,7 +814,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
 
    /** Create FEET rates long Canvas for STAR 2018 **/
    TCanvas* cFeeRatesLong = new TCanvas("cFeeRatesLong", "gDPB Monitoring FEET rates", w, h);
-   cFeeRatesLong->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+//   cFeeRatesLong->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+   cFeeRatesLong->Divide(kuNbFeePerGbtx, kuNbGbtxPerGdpb * fuNrOfGdpbs );
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )
@@ -829,7 +832,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
 
    /** Create FEET error ratio long Canvas for STAR 2018 **/
    TCanvas* cFeeErrRatioLong = new TCanvas("cFeeErrRatioLong", "gDPB Monitoring FEET error ratios", w, h);
-   cFeeErrRatioLong->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+//   cFeeErrRatioLong->Divide(fuNrOfFeetPerGdpb, fuNrOfGdpbs );
+   cFeeErrRatioLong->Divide(kuNbFeePerGbtx, kuNbGbtxPerGdpb * fuNrOfGdpbs );
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; ++uFeet )

@@ -94,6 +94,9 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       UInt_t fuNrOfGet4PerGdpb;     // Number of GET4s per GDPB
       UInt_t fuNrOfChannelsPerGdpb; // Number of channels per GDPB
 
+      const UInt_t kuNbFeePerGbtx  = 5;
+      const UInt_t kuNbGbtxPerGdpb = 6;
+
       /** Control Flags **/
       UInt_t fuRawDataPrintMsgNb;
       UInt_t fuRawDataPrintMsgIdx;
