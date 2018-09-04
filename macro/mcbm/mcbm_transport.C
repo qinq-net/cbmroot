@@ -15,6 +15,7 @@
 void mcbm_transport(Int_t nEvents = 3,
                     const char* setupName = "sis18_mcbm_25deg_long",
 //                    const char* setupName = "sis18_mcbm_25deg_2018",
+//                    const char* setupName = "sis18_mcbm_25deg_cosmic_2018",
                     const char* output = "test",
                     const char* inputFile = "")
 {
