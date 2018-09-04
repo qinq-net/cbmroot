@@ -63,7 +63,7 @@
                         
 			//Merge matches of both data, created signal is new therefore contain nothing in the fMatch variable. 
 			//adding links of firstData->Match to NewMatch 
-		        (newData->GetMatch())->AddLinks(*(secondData->GetMatch()));
+		        (newData->GetMatch())->AddLinks(*(firstData->GetMatch()));
 			//adding links of SecondData->Match to NewMatch 
 		        (newData->GetMatch())->AddLinks(*(secondData->GetMatch()));
 
