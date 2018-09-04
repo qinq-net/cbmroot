@@ -25,7 +25,7 @@ namespace gdpbv100 {
 
    const double   kdFtSize   = kuFineCounterSize;
    const double   kdFtBinsNb = 112.;
-   
+
    // Nominal bin size of NL are neglected
    const double   kdBinSize     = kdClockCycleSize / static_cast<double>(kuFineCounterSize);
    // Epoch Size in bins
@@ -172,6 +172,8 @@ namespace gdpbv100 {
          inline void setMessageType(uint8_t v) { setField(0, 3, v); }
 
          // ---------- Get4 gDPB 24b/32b ALL access methods ------------------------
+         inline uint16_t getGdpbGenGdpbId()      const { return getField( 48, 16); }
+         inline void     setGdpbGenGdpbId(uint32_t v)   { setField(48, 16, v); }
          inline uint16_t getGdpbGenChipId()      const { return getField( 40,  8); }
          inline void     setGdpbGenChipId(uint32_t v)   { setField(40, 8, v); }
 
@@ -234,7 +236,7 @@ namespace gdpbv100 {
 
          // ---------- Get4 gDPB 24b/32b Epoch setter methods ----------------------
          inline void setGdpbEpEpochNb( uint32_t v )   { setField(  8, 31, v ); }
-         
+
          // ---------- STAR Trigger messages setter methods ------------------------
          inline void setStarTrigMsgIndex( uint8_t v ) { setField(      0,  2, v ); }
          //++++//

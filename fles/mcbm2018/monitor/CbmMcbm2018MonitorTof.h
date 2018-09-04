@@ -147,7 +147,7 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
 
       /// Histograms and histogram control variables
          // Default value for nb bins in Pulser time difference histos
-      const UInt_t kuNbBinsDt    = 300;
+      const UInt_t kuNbBinsDt    = 600;
       Double_t dMinDt;
       Double_t dMaxDt;
          // Default number of FEET per channels histograms
@@ -205,9 +205,12 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       ///* Pulser monitoring *///
       const Double_t kdMaxDtPulserPs = 100e3;
       std::vector< std::vector< TH1 * > > fvhTimeDiffPulser;
+      TH2 * fhTimeMeanPulser;
       TH2 * fhTimeRmsPulser;
       TH2 * fhTimeRmsZoomFitPuls;
       TH2 * fhTimeResFitPuls;
+      std::vector< TProfile * >fvhPulserTimeDiffEvoGbtxGbtx;
+      std::vector< std::vector< TProfile * > > fvvhPulserTimeDiffEvoGdpbGdpb;
 
       void CreateHistograms();
 
