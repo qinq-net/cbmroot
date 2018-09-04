@@ -12,7 +12,7 @@ FairRunOnline *run = NULL;
 
 void MonitorTof(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24bModeOn = kFALSE,
                      Bool_t bMergedEpochsOn = kFALSE, TString sHostname = "localhost" )
-{   
+{
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
   TString inDir  = srcDir + "/input/";
   if( "" != inFile )
@@ -47,7 +47,7 @@ void MonitorTof(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24bMode
 
   // --- Set debug level
   gDebug = 0;
-  
+
   std::cout << std::endl;
   std::cout << ">>> ngDpbMonitorLab: output file is " << outFile << std::endl;
 
@@ -59,33 +59,27 @@ void MonitorTof(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24bMode
 
   // Dummy Unpacker
 //  CbmTSUnpackDummy*    dummy_unpacker     = new CbmTSUnpackDummy();
-  
+
   // Much Monitor
 //  CbmTSMonitorMuch* test_monitor_much = new CbmTSMonitorMuch();
-  
+
   // Get4 Unpacker
   CbmMcbm2018MonitorTof* test_monitor_tof = new CbmMcbm2018MonitorTof();
-/*
-  test_monitor_tof->SetPulserMode();
-  test_monitor_tof->SetPulserFee(0, 0);
-  test_monitor_tof->SetPulserChans(22, 23, 65, 1, 35, 36, 37, 3, 4, 5, 6, 8 );
-  test_monitor_tof->SetGet4v20Mode( bGet4v2Mode );
-  test_monitor_tof->SetGet4Mode24b( b24bModeOn );
-  test_monitor_tof->SetMergedEpochs( bMergedEpochsOn );
-//  if( kTRUE == bMergedEpochsOn )
-//   test_monitor_tof->SetEpochSuppressedMode( kTRUE );
   test_monitor_tof->SetFitZoomWidthPs( );
+  test_monitor_tof->SetHistoryHistoSizeLong( 1000. ); // Night: 6 + 10 H
+//  test_monitor_tof->SetHistoryHistoSizeLong( 3840. ); // WE:    6 + 24 + 24 + 10 H
+/*
   test_monitor_tof->SetMsOverlap();
   test_monitor_tof->SetHistoryHistoSize( 600. );
   test_monitor_tof->SetRawDataPrintMsgNb( 100 );
 */
+
   // --- Source task
   CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
   if( "" != inFile )
       source->SetFileName(inFile);
       else
       {
-//         source->SetHostName( "localhost");
          source->SetHostName( sHostname );
          source->SetPortNumber( 5556 );
       }
@@ -124,9 +118,9 @@ void MonitorTof(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24bMode
   std::cout << ">>> ngDpbMonitorLab: Starting run..." << std::endl;
   run->Run(nEvents, 0); // run until end of input file
   timer.Stop();
-  
+
   std::cout << "Processed " << std::dec << source->GetTsCount() << " timeslices" << std::endl;
-    
+
   // --- End-of-run info
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
