@@ -42,6 +42,7 @@ CbmShieldGenerator.cxx
 CbmUnigenGenerator.cxx
 CbmIonGenerator.cxx
 CbmPlutoGenerator.cxx
+CbmCosmicGenerator.cxx
 unigen/URun.cxx
 unigen/UEvent.cxx
 unigen/UParticle.cxx
