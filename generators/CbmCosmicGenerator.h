@@ -22,6 +22,8 @@
 
 class FairPrimaryGenerator;
 
+class TF1;
+
 class CbmCosmicGenerator : public FairGenerator
 {
   public:
@@ -76,6 +78,7 @@ class CbmCosmicGenerator : public FairGenerator
     Int_t      fMult;                // Multiplicity
 
     Double32_t fX1, fX2, fY, fZ1, fZ2;   // Plane vertex coords 
+    TF1* fCosmicThetaDist;
 
     ClassDef(CbmCosmicGenerator,1);
 

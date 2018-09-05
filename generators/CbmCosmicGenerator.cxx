@@ -12,7 +12,7 @@
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
 #include "TMath.h"
-
+#include "TF1.h"
 // ------------------------------------------------------------------------
 CbmCosmicGenerator::CbmCosmicGenerator() 
   : CbmCosmicGenerator(13,1)
@@ -29,6 +29,7 @@ CbmCosmicGenerator::CbmCosmicGenerator(Int_t pdgid, Int_t mult)
   , fY(0.)
   , fZ1(0.)
   , fZ2(0.)
+  , fCosmicThetaDist(new TF1("f1","cos(x)^2",0.,90.*TMath::DegToRad()))
 {
 }
 
@@ -58,6 +59,9 @@ Bool_t CbmCosmicGenerator::ReadEvent(FairPrimaryGenerator* primGen)
 
   Double_t x = gRandom->Uniform(fX1,fX2);
   Double_t z = gRandom->Uniform(fZ1,fZ2);
+
+  double theta = fCosmicThetaDist->GetRandom();
+  Double_t phi = gRandom->Uniform(0.,360.)* TMath::DegToRad();
 
   Double_t px = -1.; 
   Double_t py = -1.; 
