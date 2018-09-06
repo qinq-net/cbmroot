@@ -29,6 +29,7 @@ TGeoVolume* ConstructModule(const char* name, Double_t moduleSize,
 TGeoVolume* ConstructModuleWithHole(const char* name, Double_t moduleSize,
                             Int_t nLayers, fstream* info = 0, float holesize = 20, Int_t hole_pos = 0);
 
+TGeoVolume* ConstructShield(const char* name, Double_t sizeXY, Double_t holesize, Int_t hole_pos, fstream* info);
 
 // ============================================================================
 // ======                         Main function                           =====
@@ -38,17 +39,20 @@ void create_psdgeo_with_hole()
 {
     
     // -----   Steering variables   ---------------------------------------------
-    const char* geoTag = "44mod_20cm_hole_11cm_xshift";  // Geometry tag
     const Double_t psdX       = 11.;    // x position of PSD in cave
     const Double_t psdY       = 0.;     // y position of PSD in cave
     const Double_t psdZ       = 800.;   // z position of PSD in cave (front side)
-    const Double_t psdRotY    = 0.;     // Rotation of PSD around y axis [degrees]
+    const Double_t psdRotY    = atan2(psdX, psdZ)*180./3.14159 ;     // Rotation of PSD around y axis [degrees]
     const Double_t bigModuleSize = 20.;    // Module size [cm]
     const Double_t holeSize = 20.;      // diagonal size of the square shaped hole 
     
     const Int_t nModulesX  = 8;      // Number of modules in a row (x direction)
     const Int_t nModulesY  = 6;      // Number of modules in a row (x direction)
     const Int_t nLayers    = 60;     // Number of sections in a module (z direction)
+
+    const char* geoTag = "44mod_hole20cm_xshift11cm";  // Geometry tag
+
+    const Double_t shieldWidth = 16.;
     // --------------------------------------------------------------------------
     
     // ---- Number of modules per row/column must be uneven ---------------------
@@ -139,7 +143,16 @@ void create_psdgeo_with_hole()
     TGeoMedium* fibre = gGeoManager->GetMedium("PsdFibre");
     if ( ! fibre ) Fatal("Main", "Medium PsdFibre not found");
     cout << "Created medium: PsdFibre" << endl;
-    
+
+    // ---> Shield Polyethylene
+    FairGeoMedium* mShieldPoly  = geoMedia->getMedium("PsdPolyethylene");
+    if ( ! mShieldPoly ) Fatal("Main", "FairMedium PsdPolyethylene not found");
+    geoBuild->createMedium(mShieldPoly);
+    TGeoMedium* ShieldPoly = gGeoManager->GetMedium("PsdPolyethylene");
+    if ( ! ShieldPoly ) Fatal("Main", "Medium PsdPolyethylene not found");
+    cout << "Created medium: PsdPolyethylene" << endl;
+
+
     // ---> Medium for PSD volume
     TGeoMedium* psdMedium = air;
     // --------------------------------------------------------------------------
@@ -155,7 +168,9 @@ void create_psdgeo_with_hole()
     // -----   Create the PSD modules   -----------------------------------------
     cout << endl;
     TGeoVolume* module2060 = ConstructModule("module2060", bigModuleSize, nLayers, &infoFile);
-//     TGeoVolume* module2060_hole = ConstructModuleWithHole("module2060_hole", bigModuleSize, 60, &infoFile);
+    TGeoVolume* module_shield = ConstructShield("shield20", bigModuleSize, 0., 0, &infoFile);
+
+    //     TGeoVolume* module2060_hole = ConstructModuleWithHole("module2060_hole", bigModuleSize, 60, &infoFile);
     // --------------------------------------------------------------------------
     
     
@@ -167,12 +182,12 @@ void create_psdgeo_with_hole()
     const Double_t psdSizeX = 0.5 * nModulesX * bigModuleSize;
     const Double_t psdSizeY = 0.5 * nModulesY * bigModuleSize;
     TGeoBBox* shape = dynamic_cast<TGeoBBox*>(module2060->GetShape());
-    const Double_t psdSizeZ = shape->GetDZ();
+    const Double_t psdSizeZ = shape->GetDZ(); 
     
     TString psdName = "psd_";
     psdName += geoTag;
     TGeoVolume* psd = gGeoManager->MakeBox(psdName, psdMedium, psdSizeX,
-                                           psdSizeY, psdSizeZ);
+                                           psdSizeY, psdSizeZ + 0.5*shieldWidth);
     cout << "Module array is " << nModulesX << " x " << nModulesY
     << endl;
     cout << "PSD size is " << 2. * psdSizeX << " cm x " << 2. * psdSizeY
@@ -203,25 +218,29 @@ void create_psdgeo_with_hole()
             //       Replace 4 central modules with 12 (10 cm x 10 cm) and a (20 cm x 20 cm) hole
             // Node number and name (convention)
             Int_t iNode = 100 * iModX + iModY;
-            iModule++;
             
             // Position of module inside PSD
-            TGeoTranslation* trans = new TGeoTranslation(xModCurrent, yModCurrent, 0.);
+            TGeoTranslation* trans = new TGeoTranslation(xModCurrent, yModCurrent, -0.5*shieldWidth);
+            TGeoTranslation* trans_shield = new TGeoTranslation(xModCurrent, yModCurrent, psdSizeZ);
             
             // Make hole in 4 central modules
             if ( ( iModX == nModulesX/2 || iModX == nModulesX/2 - 1 )  && ( iModY == nModulesY/2 || iModY == nModulesY/2 - 1 ) )
             {
-                psd->AddNode( ConstructModuleWithHole("module2060_hole", bigModuleSize, nLayers, &infoFile, holeSize, iHole), iModule, trans);
+                psd->AddNode( ConstructModuleWithHole( Form("module2060_hole_%d", iHole), bigModuleSize, nLayers, &infoFile, holeSize, iHole), iModule, trans);
+                psd->AddNode( ConstructShield( Form("shield20_hole_%d", iHole), bigModuleSize, holeSize, iHole, &infoFile), iModule, trans_shield);
                 iHole++;
             }
             else
             {
                 psd->AddNode(module2060, iModule, trans);
+                psd->AddNode(module_shield, iModule, trans_shield);
             }
+            
             
             cout << "Adding module " << setw(5) << right << iModule << " at x = "
             << setw(6) << right << xModCurrent << " cm , y = "
             << setw(6) << right << yModCurrent << " cm" << endl;
+            iModule++;
             nModules++;
             
         } //# modules in y direction
@@ -235,7 +254,7 @@ void create_psdgeo_with_hole()
     // -----   Place PSD in top node (cave) -------------------------------------
     TGeoRotation* psdRot = new TGeoRotation();
     psdRot->RotateY(psdRotY);
-    TGeoCombiTrans* psdTrans = new TGeoCombiTrans(psdX, psdY, psdZ + psdSizeZ,
+    TGeoCombiTrans* psdTrans = new TGeoCombiTrans(psdX, psdY, psdZ + psdSizeZ + 0.5*shieldWidth,
                                                   psdRot);
     top->AddNode(psd, 0, psdTrans);
     cout << endl << "==> PSD position in cave: " << endl;
@@ -280,13 +299,74 @@ void create_psdgeo_with_hole()
     
     
     // ----   Display geometry   ------------------------------------------------
-    gGeoManager->SetVisLevel(5);  // Scintillator level
+//     gGeoManager->SetVisLevel(5);  // Scintillator level
     top->Draw("ogl");
     // --------------------------------------------------------------------------
+//     top->Raytrace();
     
 }
 //  End of main function
 /** ======================================================================= **/
+
+TGeoVolume* ConstructShield(const char* name, Double_t sizeXY, Double_t holesize, Int_t hole_pos, fstream* info) {
+
+    const TString suffix = Form("_shield_%d_%d_%d", int(sizeXY), int(holesize), int(hole_pos));
+
+    const Double_t psd2iron = 2.;
+    const Double_t ironD = 4.;
+    const Double_t iron2poly = 2.;
+    const Double_t polyD = 8.;
+    const Double_t shieldLength = psd2iron + ironD + iron2poly + polyD;
+
+    TGeoMedium* medAir = gGeoManager->GetMedium("air");  // PSD
+    if ( ! medAir ) Fatal("ConstructModule", "Medium air not found");
+    
+    TGeoMedium* medIron = gGeoManager->GetMedium("iron");  // Box
+    if ( ! medIron ) Fatal("ConstructModule", "Medium iron not found");
+
+    TGeoMedium* medShieldPoly = gGeoManager->GetMedium("PsdPolyethylene");
+    if ( ! medShieldPoly ) Fatal("Main", "Medium PsdPolyethylene not found");
+
+    TGeoVolume* shield = gGeoManager->MakeBox(name, medAir, 0.5 * sizeXY, 0.5 * sizeXY, 0.5 * shieldLength);
+    TGeoVolume* iron{nullptr};
+    TGeoVolume* poly{nullptr};
+
+    if (holesize > 0)
+    {
+        Int_t sx, sy;
+        switch (hole_pos)
+        {
+            case 0:  sx =  1;    sy =  1;   break;  // defines hole position in x-y plane
+            case 1:  sx =  1;    sy = -1;   break;
+            case 2:  sx = -1;    sy =  1;   break;
+            case 3:  sx = -1;    sy = -1;   break;
+        }    
+        TGeoCombiTrans* rot45 = new TGeoCombiTrans(Form("rot45%s", suffix.Data()), sx*sizeXY/2., sy*sizeXY/2., 0., new TGeoRotation("rot", 45.,0.,0.));
+        rot45->RegisterYourself();
+        
+        TGeoBBox* iron1 = new TGeoBBox(Form("iron1%s", suffix.Data()), 0.5 * sizeXY, 0.5 * sizeXY, 0.5 * ironD);
+        TGeoBBox* iron2 = new TGeoBBox(Form("iron2%s",suffix.Data() ), 0.5 * holesize, 0.5 * holesize, 0.5 * ironD); //hole
+        
+        TGeoCompositeShape* ironShape = new TGeoCompositeShape(Form("iron1%s-iron2%s:rot45%s", suffix.Data(), suffix.Data(), suffix.Data() ));
+        iron = new TGeoVolume( Form("iron%s", suffix.Data()), ironShape, medIron);
+
+        TGeoBBox* poly1 = new TGeoBBox(Form("poly1%s", suffix.Data()), 0.5 * sizeXY, 0.5 * sizeXY, 0.5 * polyD);
+        TGeoBBox* poly2 = new TGeoBBox(Form("poly2%s",suffix.Data() ), 0.5 * holesize, 0.5 * holesize, 0.5 * polyD); //hole
+
+        TGeoCompositeShape* polyShape = new TGeoCompositeShape(Form("poly1%s-poly2%s:rot45%s", suffix.Data(), suffix.Data(), suffix.Data() ));
+        poly = new TGeoVolume( Form("poly%s", suffix.Data()), polyShape, medShieldPoly);
+    }
+    else
+    {
+        iron = gGeoManager->MakeBox("shield_iron", medIron, 0.5 * sizeXY, 0.5 * sizeXY, 0.5 * ironD);
+        poly = gGeoManager->MakeBox("shield_poly", medShieldPoly, 0.5 * sizeXY, 0.5 * sizeXY, 0.5 * polyD);
+    }
+
+    shield->AddNode(iron, 0, new TGeoTranslation(0., 0., -shieldLength/2. + psd2iron + ironD/2. ));
+    shield->AddNode(poly, 0, new TGeoTranslation(0., 0., -shieldLength/2. + psd2iron + ironD + iron2poly + polyD/2. ));
+    
+    return shield;
+}
 
 /** ======================================================================= **/
 TGeoVolume* ConstructModule(const char* name, Double_t sizeXY,
@@ -496,8 +576,11 @@ TGeoVolume* ConstructModuleWithHole(const char* name, Double_t sizeXY,
     // there is a thick iron layer (the back one acting as first absorber)
     // for constructional reasons.
     
-    const TString suffix = Form("_%d_%d_%d", int(sizeXY), int(holesize), int(hole_pos));
     
+    if (holesize == 0.)
+        return ConstructModule(name, sizeXY, nLayers, info);
+    
+    const TString suffix = Form("_%d_%d_%d", int(sizeXY), int(holesize), int(hole_pos));
     
     cout << "===> Creating Module " << name << ", size " << sizeXY
     << " cm with " << nLayers << " layers...." << endl;
@@ -506,12 +589,29 @@ TGeoVolume* ConstructModuleWithHole(const char* name, Double_t sizeXY,
     const Double_t leadD     =  1.60;  // Thickness of lead layer
     const Double_t scintD    =  0.40;  // Thickness of scintillator layer
     const Double_t tyvekD    =  0.02;  // Thickness of Tyvek wrapper around scintillator
+    
     const Double_t boxDx     =  0.15;  // Thickness of iron box lateral
     const Double_t boxDy     =  0.05;  // Thickness of iron box top/bottom
     const Double_t boxDz     =  2.00;  // Thickness of iron box front/back
+    
     const Double_t chanDy    =  0.20;  // Height of fibre channel
     const Double_t chanDistL =  0.50;  // Distance of channel from left edge of lead
     const Double_t chanDistR =  2.00;  // Distance of channel from right edge of lead
+
+    const Double_t moduleLength = 2. * boxDz + nLayers * ( scintD + 2. * tyvekD ) + ( nLayers - 1 ) * leadD;
+
+        // Dimensions are half-lengths.
+    const Double_t leadLx = 0.5 * sizeXY - boxDx;
+    const Double_t leadLy = 0.5 * sizeXY - boxDy;
+    const Double_t leadLz = 0.5 * moduleLength - boxDz;
+    const Double_t tyvekLz = 0.5 * scintD + tyvekD;  // half-length
+    
+    const Double_t scintLx = leadLx - tyvekD; // Scintillator size x
+    const Double_t scintLy = leadLy - tyvekD; // Scintillator size y
+    const Double_t scintLz = 0.5 * scintD;    // Scintillator size z
+    
+    
+    
     // ------------------------------------------------------------------------
     Int_t sx, sy;
     switch (hole_pos)
@@ -520,7 +620,7 @@ TGeoVolume* ConstructModuleWithHole(const char* name, Double_t sizeXY,
         case 1:  sx =  1;    sy = -1;   break;
         case 2:  sx = -1;    sy =  1;   break;
         case 3:  sx = -1;    sy = -1;   break;
-    }    
+    }
     // -----   Info to file   -------------------------------------------------
     if ( info ) {
         (*info) << "Parameters of module " << name << ": " << endl;
@@ -537,7 +637,6 @@ TGeoVolume* ConstructModuleWithHole(const char* name, Double_t sizeXY,
     }
     // ------------------------------------------------------------------------
     
-    
     // -----   Get required media   -------------------------------------------
     TGeoMedium* medAir = gGeoManager->GetMedium("air");  // PSD
     if ( ! medAir ) Fatal("ConstructModule", "Medium air not found");
@@ -553,17 +652,21 @@ TGeoVolume* ConstructModuleWithHole(const char* name, Double_t sizeXY,
     if ( ! medFibre ) Fatal("ConstructModule", "Medium PsdFibre not found");
     // ------------------------------------------------------------------------
     
-    
+    TGeoCombiTrans* rot45 = new TGeoCombiTrans(Form("rot45%s", suffix.Data()), sx*sizeXY/2., sy*sizeXY/2., 0., new TGeoRotation("rot", 45.,0.,0.));
+    rot45->RegisterYourself();
     
     // -----   Create module volume   -----------------------------------------
     // Module length: nLayers of scintillators, nLayers - 1 of lead
     // plus the iron box front and back.
     // Material is iron.
-    const Double_t moduleLength = 2. * boxDz
-    + nLayers * ( scintD + 2. * tyvekD )
-    + ( nLayers - 1 ) * leadD;
-    TGeoVolume* module = gGeoManager->MakeBox(name, medIron, 0.5 * sizeXY,
-                                              0.5 * sizeXY, 0.5 * moduleLength);
+//     TGeoVolume* module = gGeoManager->MakeBox(name, medIron, 0.5 * sizeXY,
+//                                               0.5 * sizeXY, 0.5 * moduleLength);
+    
+    TGeoBBox* module1 = new TGeoBBox(Form("module1%s", suffix.Data()), 0.5 * sizeXY, 0.5 * sizeXY, 0.5 * moduleLength);
+    TGeoBBox* module2 = new TGeoBBox(Form("module2%s",suffix.Data() ), 0.5 * holesize, 0.5 * holesize, 0.5 * moduleLength); //hole
+    TGeoCompositeShape* moduleShape = new TGeoCompositeShape(Form("module1%s-module2%s:rot45%s", suffix.Data(), suffix.Data(), suffix.Data() ));
+    TGeoVolume* module = new TGeoVolume(name, moduleShape, medIron);
+    
     module->SetLineColor(kRed);
     module->Print();
     cout << endl;
@@ -574,12 +677,13 @@ TGeoVolume* ConstructModuleWithHole(const char* name, Double_t sizeXY,
     // The lead filler represents all lead absorber layers.
     // The Tyvek/scintillator layers and the fibre channel will be placed
     // inside.
-    // Dimensions are half-lengths.
-    const Double_t leadLx = 0.5 * sizeXY - boxDx;
-    const Double_t leadLy = 0.5 * sizeXY - boxDy;
-    const Double_t leadLz = 0.5 * moduleLength - boxDz;
-    TGeoVolume* lead = gGeoManager->MakeBox(Form("lead%s", suffix.Data()), medLead,
-                                            leadLx, leadLy, leadLz);
+//     TGeoVolume* lead = gGeoManager->MakeBox(Form("lead%s", suffix.Data()), medLead, leadLx, leadLy, leadLz);
+    
+    TGeoBBox* lead1 = new TGeoBBox(Form("lead1%s", suffix.Data()), leadLx, leadLy, leadLz);
+    TGeoBBox* lead2 = new TGeoBBox(Form("lead2%s",suffix.Data() ), 0.5 * holesize, 0.5 * holesize, leadLz); //hole
+    TGeoCompositeShape* leadShape = new TGeoCompositeShape(Form("lead1%s-lead2%s:rot45%s", suffix.Data(), suffix.Data(), suffix.Data() ));
+    TGeoVolume* lead = new TGeoVolume(Form("lead%s", suffix.Data()), leadShape, medLead);
+    
     lead->SetLineColor(kBlue);
     // ------------------------------------------------------------------------
 
@@ -587,15 +691,13 @@ TGeoVolume* ConstructModuleWithHole(const char* name, Double_t sizeXY,
     // The scintillator will be placed inside this, leaving only the thin
     // Tyvek as a wrapper. Since these layers will be placed in the lead filler,
     // there has to be a cut-out for the fibre channel.
-    const Double_t tyvekLz = 0.5 * scintD + tyvekD;  // half-length
-    const Double_t sqrt2 = TMath::Sqrt(2.);
+
+
     
     TGeoBBox* tyv1 = new TGeoBBox(Form("psdTyv1%s", suffix.Data()), leadLx, leadLy, tyvekLz);
-    TGeoBBox* tyv2 = new TGeoBBox( Form("psdTyv2%s",suffix.Data() ), holesize/2./sqrt2, holesize/2./sqrt2, tyvekLz);
-    TGeoCombiTrans* trans1 = new TGeoCombiTrans(Form("tPsd1%s", suffix.Data()), sx*sizeXY/2., sy*sizeXY/2., 0., new TGeoRotation("rot", 45.,0.,0.));
+    TGeoBBox* tyv2 = new TGeoBBox( Form("psdTyv2%s",suffix.Data() ), holesize/2., holesize/2., tyvekLz); //hole
     
-    trans1->RegisterYourself();
-    TGeoCompositeShape* tyvekShape = new TGeoCompositeShape(Form("psdTyv1%s-psdTyv2%s:tPsd1%s", suffix.Data(), suffix.Data(), suffix.Data() ));
+    TGeoCompositeShape* tyvekShape = new TGeoCompositeShape(Form("psdTyv1%s-psdTyv2%s:rot45%s", suffix.Data(), suffix.Data(), suffix.Data() ));
     TGeoVolume* tyvek = new TGeoVolume(Form("tyvek%s", suffix.Data()), tyvekShape, medTyvek);
     tyvek->SetLineColor(kGreen);
     // ------------------------------------------------------------------------
@@ -605,34 +707,19 @@ TGeoVolume* ConstructModuleWithHole(const char* name, Double_t sizeXY,
     // The scintillator layer is embedded (as daughter) into the Tyvek layer.
     // It is also a box minus the cut-out for the fibres. The cut-out is
     // slightly smaller than for the Tyvek volume.
-    const Double_t scintLx = leadLx - tyvekD;
-    const Double_t scintLy = leadLy - tyvekD;
-    const Double_t scintLz = 0.5 * scintD;
     TGeoBBox* sci1 = new TGeoBBox( Form("sci1%s", suffix.Data()), scintLx, scintLy, scintLz);
-//     Double_t cutLx = chanLx;
-//     Double_t cutLy = chanLy - tyvekD;
-//     Double_t cutLz = scintLz;
-    TGeoBBox* sci2 = new TGeoBBox(Form("sci2%s", suffix.Data()), holesize/2./sqrt2, holesize/2./sqrt2, scintLz);
-//     Double_t cutShiftX = chanShiftX;
-//     Double_t cutShiftY = scintLy - cutLy;
-    TGeoCombiTrans* trans2 = new TGeoCombiTrans(Form("tPsd2%s", suffix.Data()), sx*sizeXY/2., sy*sizeXY/2., 0., new TGeoRotation("rot", 45.,0.,0.));
-    trans2->RegisterYourself();
+    TGeoBBox* sci2 = new TGeoBBox(Form("sci2%s", suffix.Data()), holesize/2., holesize/2., scintLz);  //hole
     TGeoCompositeShape* scintShape = new TGeoCompositeShape(Form("scintShape%s", suffix.Data()), 
-                                                            Form("sci1%s-sci2%s:tPsd2%s", suffix.Data(), suffix.Data(), suffix.Data()) );
+                                                            Form("sci1%s-sci2%s:rot45%s", suffix.Data(), suffix.Data(), suffix.Data()) );
     TGeoVolume* scint = new TGeoVolume( Form("scint%s", suffix.Data()), scintShape, medScint);
     scint->SetLineColor(kBlack);
-    
-    // ------------------------------------------------------------------------
-    //     cout << " scintLx = " << scintLx << " scintLy = " << scintLy << endl;
-    //     cout << " cutLx = " << cutLx << " cutLy = " << cutLy << endl;
-    //     cout << " cutShiftX = " << cutShiftX << " cutShiftY = " << cutShiftY << endl;
-    
+
     // -----   Place volumes   ------------------------------------------------
     
     // ---> Scintillator into Tyvek
     tyvek->AddNode(scint, 0);
     
-    // ---> Fibre channel into lead filler
+    // ---> Fibre channel into lead filler  
 //     lead->AddNode(channel, 0, trans1);   //Needs addidional size check
     
     // --->  Tyvek layers into lead
