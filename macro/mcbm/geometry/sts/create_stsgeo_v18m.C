@@ -429,7 +429,7 @@ void create_stsgeo_v18m(const char* geoTag="v18m_mcbm")
   // ----------------   Create stations   -------------------------------------
   //  Float_t statPos[8] = {30., 40., 50., 60., 70., 80., 90., 100.};
   //  Float_t statPos[8] = {28., 42., 50., 60., 70., 80., 90., 100.};
-  Float_t statPos[8] = {200., 42., 50., 60., 70., 80., 90., 100.};
+  Float_t statPos[8] = {159., 42., 50., 60., 70., 80., 90., 100.};
   //  Float_t statPos[8] = {30., 45., 50., 60., 70., 80., 90., 100.};
   
   cout << endl << endl;
