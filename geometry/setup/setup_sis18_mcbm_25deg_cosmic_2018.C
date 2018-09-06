@@ -7,6 +7,7 @@
  **
  **/
 
+// 2018-09-06 - DE - add TRD v18r into cosmic setup
 // 2018-09-04 - DE - move mSTS downstream to a position 1m ahead of the mTOF wall
 // 2018-08-24 - DE - this is supposed to be the start version of mCBM in 2018
 // 2018-06-27 - DE - set flipped mTOF v18j geometry as new default
@@ -44,7 +45,7 @@ void setup_sis18_mcbm_25deg_cosmic_2018()
   //  TString muchGeoTag      = "v18g_mcbm";    // 11 o'clock, Mv2 size
   TString muchGeoTag      = "v18i_mcbm";    // 2018 // only 2 layers
   //  TString trdGeoTag       = "v18n_mcbm";    // 2018 // 4 TRD modules 
-  TString trdGeoTag       = "v18q_mcbm";    // 2018 // 2 TRD modules 
+  TString trdGeoTag       = "v18r_mcbm";    // 2018 // 2 TRD modules cosmics
   TString tofGeoTag       = "v18j_mcbm";    // long distance
   TString richGeoTag      = "v18d_mcbm";    // long distance
   TString psdGeoTag       = "v18d_mcbm";    // at 25 degree, below the beampipe
@@ -71,7 +72,7 @@ void setup_sis18_mcbm_25deg_cosmic_2018()
   //  setup->SetModule(kMvd, mvdGeoTag);  // skip mvd in the initial setup
   setup->SetModule(kSts,  stsGeoTag);
 // cosmic  setup->SetModule(kMuch, muchGeoTag);
-// cosmic  setup->SetModule(kTrd,  trdGeoTag);
+  setup->SetModule(kTrd,  trdGeoTag);
   setup->SetModule(kTof,  tofGeoTag);
   // 2019  setup->SetModule(kRich, richGeoTag);
   // 2019  setup->SetModule(kPsd,  psdGeoTag);
