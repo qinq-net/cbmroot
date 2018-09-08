@@ -32,6 +32,8 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${ROOT_INCLUDE_DIR}
   ${IPC_INCLUDE_DIRECTORY}
   ${CBMROOT_SOURCE_DIR}/external/flib_dpb/flib_dpb
+  ${CBMROOT_SOURCE_DIR}/data
+  ${CBMROOT_SOURCE_DIR}/data/tof
   ${CMAKE_SOURCE_DIR}/external/cppzmq
 )
 
@@ -57,7 +59,7 @@ Set(SRCS
 #   unpacker/CbmMcbm2018UnpackerSts.cxx
 #   unpacker/CbmMcbm2018UnpackerMuch.cxx
 #   unpacker/CbmMcbm2018UnpackerTrd.cxx
-#   unpacker/CbmMcbm2018UnpackerTof.cxx
+   unpacker/CbmMcbm2018TofUnpacker.cxx
    monitor/CbmMcbm2018MonitorMcbmSync.cxx
    monitor/CbmMcbm2018MonitorStsSync.cxx
 #   monitor/CbmMcbm2018MonitorStsPulser.cxx

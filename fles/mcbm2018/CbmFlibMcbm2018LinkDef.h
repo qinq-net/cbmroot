@@ -12,6 +12,7 @@
 //#pragma link C++ class CbmMcbm2018UnpackerMuch;
 //#pragma link C++ class CbmMcbm2018UnpackerTrd;
 //#pragma link C++ class CbmMcbm2018UnpackerTof;
+#pragma link C++ class CbmMcbm2018TofUnpacker;
 #pragma link C++ class CbmMcbm2018MonitorMcbmSync;
 #pragma link C++ class CbmMcbm2018MonitorStsSync;
 //#pragma link C++ class CbmMcbm2018MonitorStsPulser;
