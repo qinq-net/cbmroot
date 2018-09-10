@@ -190,7 +190,7 @@ class CbmMuchSegmentManual : public FairTask {
     void DrawSegmentation();
 
     /** Prints summary. */
-    void Print(Option_t* ="");
+    void Print(Option_t* ="") const;
 
     /** Reads input parameters for the segmentation. */
     void ReadInputFile();

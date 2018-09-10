@@ -345,17 +345,17 @@ Bool_t CbmSetup::IsActive(Int_t moduleId) {
 
 
 // -----   Print setup   ---------------------------------------------------
-void CbmSetup::Print(Option_t*) {
-  map<Int_t, TString>::iterator it;
+void CbmSetup::Print(Option_t*) const {
+  map<Int_t, TString>::const_iterator it;
   LOG(INFO) << "CBM setup: " << GetTitle() << ", " << GetNofModules()
   		      << " modules " << FairLogger::endl;
   for ( it = fGeoTags.begin(); it != fGeoTags.end(); it++ ) {
     LOG(INFO) << "  " << setw(8)
     		      << CbmModuleList::GetModuleNameCaps(it->first)
               << ":  " << setw(8) << it->second;
-    if ( fActive[it->first] ) LOG(INFO) << "  *ACTIVE*  ";
+    if ( fActive.at(it->first) ) LOG(INFO) << "  *ACTIVE*  ";
     else                      LOG(INFO) << "            ";
-    LOG(INFO) << " using " << fGeoFileNames[it->first];
+    LOG(INFO) << " using " << fGeoFileNames.at(it->first);
     LOG(INFO) << FairLogger::endl;
   }
   LOG(INFO) << "  Field   :  " << fFieldTag << ", Position ( "

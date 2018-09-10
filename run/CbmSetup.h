@@ -101,7 +101,7 @@ class CbmSetup : public TNamed
 
 
     /** Output to screen  **/
-    virtual void Print(Option_t* opt = "");
+    virtual void Print(Option_t* opt = "") const;
 
 
     /** Remove a module from the current setup

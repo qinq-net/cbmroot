@@ -578,7 +578,7 @@ Bool_t CbmMuchSegmentManual::IsIncompleteSector(CbmMuchSectorRectangular* sector
 // -------------------------------------------------------------------------
 
 // -----   Private method Print  -------------------------------------------
-void CbmMuchSegmentManual::Print(Option_t*) {
+void CbmMuchSegmentManual::Print(Option_t*) const {
   printf("Segmentation written to file %s\n", fDigiFileName);
   Int_t nTotSectors = 0;
   Int_t nTotChannels = 0;
@@ -639,8 +639,8 @@ void CbmMuchSegmentManual::Print(Option_t*) {
     printf("   GEM modules: %i\n", nGems);
     if(nGems) {
       printf("      Sectors: %i, Min.Sector size:%3.2fx%3.2f, Max.Sector size:%3.2fx%3.2f\n",nSectors, secMinLx, secMinLy, secMaxLx, secMaxLy);
-      for(Int_t iReg=0; iReg<fNRegions[iStation]; ++iReg){
-        printf("Region %i: size %fx%f\n", iReg, fSecLx[iStation].at(iReg), fSecLy[iStation].at(iReg));
+      for(Int_t iReg=0; iReg<fNRegions.at(iStation); ++iReg){
+        printf("Region %i: size %fx%f\n", iReg, fSecLx.at(iStation).at(iReg), fSecLy.at(iStation).at(iReg));
       }
       printf("      Pads: %i, Min.Pad size:%3.2fx%3.2f, Max.Pad size:%3.2fx%3.2f\n", nChannels, padMinLx, padMinLy, padMaxLx, padMaxLy);
     }
