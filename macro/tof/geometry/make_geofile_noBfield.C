@@ -19,7 +19,8 @@ void make_geofile_noBfield(TString stofGeom = "tof_v16a_1e" )
   TString inFile  = inDir + "/input/urqmd.ftn14";
   TString outDir  = ".";
   TString outFile = outDir + "/auaumbias." + stofGeom + ".mc.root";
-  TString parFile = outDir + "/auaumbias." + stofGeom + ".params.root";
+  //  TString parFile = outDir + "/auaumbias." + stofGeom + ".params.root";
+  TString parFile = outDir + "/" + stofGeom + ".par.root";
   
   // -----  Geometries  -----------------------------------------------------
   TString caveGeom   = "cave.geo";
@@ -172,6 +173,7 @@ void make_geofile_noBfield(TString stofGeom = "tof_v16a_1e" )
   fieldPar->setChanged();
   fieldPar->setInputVersion(fRun->GetRunId(),1);
   */
+
   Bool_t kParameterMerged = kTRUE;
   FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
   parOut->open(parFile.Data());
@@ -183,6 +185,9 @@ void make_geofile_noBfield(TString stofGeom = "tof_v16a_1e" )
   fRun->Run(nEvents);
   // ------------------------------------------------------------------------
   fRun->CreateGeometryFile("./geofile_"+ stofGeom + ".root");
+
+  CbmGeoTofPar* tofPar = (CbmGeoTofPar*) rtdb->getContainer("CbmGeoTofPar");
+  tofPar->printParams();
 
   // -----   Finish   -------------------------------------------------------
   timer.Stop();
