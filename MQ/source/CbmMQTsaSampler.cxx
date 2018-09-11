@@ -33,7 +33,6 @@ using namespace std;
 
 struct InitTaskError : std::runtime_error { using std::runtime_error::runtime_error; };
 
-
 CbmMQTsaSampler::CbmMQTsaSampler()
     : FairMQDevice()
     , fMaxTimeslices(0)
@@ -46,6 +45,7 @@ CbmMQTsaSampler::CbmMQTsaSampler()
     , fTSNumber(0)
     , fTSCounter(0)
     , fMessageCounter(0)
+    , fSource(nullptr)
     , fTime()
 {
 }
@@ -125,11 +125,10 @@ try
         for (auto&& x : v)
            fInputFileList.push_back(x.string());
 
-        LOG(DEBUG) << "The following files will be used in this order.";
+        LOG(INFO) << "The following files will be used in this order.";
         for (auto&& x : v)
-           LOG(DEBUG) << "    " << x;
+           LOG(INFO) << "    " << x;
       }
-//      throw InitTaskError("Input is a directory");
 
     } else if ( 0 == fFileName.size() &&  0 == fDirName.size() && 0 != fHost.size() && 0!= fPort) {
       isGoodInputCombi=true;
@@ -191,7 +190,7 @@ try
 bool CbmMQTsaSampler::OpenNextFile() 
 { 
   // First Close and delete existing source
-  if( NULL != fSource )
+  if( nullptr != fSource )
     delete fSource;
     
   if (fInputFileList.size() > 0) {
