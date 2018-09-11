@@ -6,7 +6,8 @@
 // -----------------------------------------------------------------------------
 
 #include "CbmMcbm2018TofUnpacker.h"
-#include "CbmTofStar2018Par.h"
+#include "CbmMcbm2018TofPar.h"
+//#include "CbmTofStar2018Par.h"
 //#include "CbmTofUnpackPar.h"
 #include "CbmTofDigiExp.h"
 #include "CbmTofAddress.h"
@@ -130,7 +131,7 @@ Bool_t CbmMcbm2018TofUnpacker::Init()
    }
 */
 
-   //fUnpackPar = (CbmTofStar2018Par*)(FairRun::Instance());
+   //fUnpackPar = (CbmMcbm2018TofPar*)(FairRun::Instance());
 
    return kTRUE;
 }
@@ -139,7 +140,7 @@ void CbmMcbm2018TofUnpacker::SetParContainers()
 {
   LOG(INFO) << "Setting parameter containers for " << GetName()
 	    << FairLogger::endl;
-  fUnpackPar = (CbmTofStar2018Par*)(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmTofStar2018Par"));
+  fUnpackPar = (CbmMcbm2018TofPar*)(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmMcbm2018TofPar"));
 
 }
 
@@ -153,7 +154,7 @@ Bool_t CbmMcbm2018TofUnpacker::InitContainers()
 
    fvulCurrentEpoch.resize( fuNrOfGdpbs * fuNrOfGet4PerGdpb );
    fvbFirstEpochSeen.resize( fuNrOfGdpbs * fuNrOfGet4PerGdpb );
-   fvbChanThere.resize( fUnpackPar->GetNumberOfChannels(), kFALSE );
+   fvbChanThere.resize( fviRpcChUId.size(), kFALSE );
    for( UInt_t i = 0; i < fuNrOfGdpbs; ++i )
    {
       for( UInt_t j = 0; j < fuNrOfGet4PerGdpb; ++j )
@@ -171,16 +172,16 @@ Bool_t CbmMcbm2018TofUnpacker::ReInitContainers()
     LOG(INFO) << "ReInit parameter containers for " << GetName()
              << FairLogger::endl;
 
-   fuNrOfGdpbs = fUnpackPar->GetNrOfRocs();
+   fuNrOfGdpbs = fUnpackPar->GetNrOfGdpbs();
    LOG(INFO) << "Nr. of Tof GDPBs: " << fuNrOfGdpbs << FairLogger::endl;
    fuMinNbGdpb = fuNrOfGdpbs;
 
-   fuNrOfFeetPerGdpb = fUnpackPar->GetNrOfFebsPerGdpb();
-   LOG(INFO) << "Nr. of FEBS per Tof GDPB: " << fuNrOfFeetPerGdpb
+   fuNrOfFeetPerGdpb = fUnpackPar->GetNrOfFeesPerGdpb();
+   LOG(INFO) << "Nr. of FEES per Tof GDPB: " << fuNrOfFeetPerGdpb
                << FairLogger::endl;
 
-   fuNrOfGet4PerFeb = fUnpackPar->GetNrOfGet4PerFeb();
-   LOG(INFO) << "Nr. of GET4 per Tof FEB: " << fuNrOfGet4PerFeb
+   fuNrOfGet4PerFeb = fUnpackPar->GetNrOfGet4PerFee();
+   LOG(INFO) << "Nr. of GET4 per Tof FEE: " << fuNrOfGet4PerFeb
                << FairLogger::endl;
 
    fuNrOfChannelsPerGet4 = fUnpackPar->GetNrOfChannelsPerGet4();
@@ -188,7 +189,7 @@ Bool_t CbmMcbm2018TofUnpacker::ReInitContainers()
                << FairLogger::endl;
 
    fuNrOfChannelsPerFeet = fuNrOfGet4PerFeb * fuNrOfChannelsPerGet4;
-   LOG(INFO) << "Nr. of channels per FEET: " << fuNrOfChannelsPerFeet
+   LOG(INFO) << "Nr. of channels per FEE: " << fuNrOfChannelsPerFeet
                << FairLogger::endl;
 
    fuNrOfGet4 = fuNrOfGdpbs * fuNrOfFeetPerGdpb * fuNrOfGet4PerFeb;
@@ -205,19 +206,10 @@ Bool_t CbmMcbm2018TofUnpacker::ReInitContainers()
    fGdpbIdIndexMap.clear();
    for( UInt_t i = 0; i < fuNrOfGdpbs; ++i )
    {
-      fGdpbIdIndexMap[fUnpackPar->GetRocId(i)] = i;
-      LOG(INFO) << "GDPB Id of TOF  " << i << " : " << std::hex << fUnpackPar->GetRocId(i)
+      fGdpbIdIndexMap[fUnpackPar->GetGdpbId(i)] = i;
+      LOG(INFO) << "GDPB Id of TOF  " << i << " : " << std::hex << fUnpackPar->GetGdpbId(i)
                  << std::dec << FairLogger::endl;
    } // for( UInt_t i = 0; i < fuNrOfGdpbs; ++i )
-
-   UInt_t uNrOfChannels = fUnpackPar->GetNumberOfChannels();
-   for( UInt_t i = 0; i < uNrOfChannels; ++i)
-   {
-      if (i % 8 == 0)
-         LOG(INFO) << FairLogger::endl;
-      LOG(INFO) << Form(" 0x%08x", fUnpackPar->GetChannelToDetUIdMap(i) );
-   } // for( UInt_t i = 0; i < uNrOfChannels; ++i)
-   LOG(INFO) << FairLogger::endl;
 
    fuTotalMsNb   = fUnpackPar->GetNbMsTot();
    fuOverlapMsNb = fUnpackPar->GetNbMsOverlap();
@@ -319,8 +311,8 @@ Bool_t CbmMcbm2018TofUnpacker::ReInitContainers()
    } // for( UInt_t uChan = 0; uChan < fuNrOfChannelsPerFeet; ++uChan )
 
 
+/*
    const UInt_t fuNrOfGbtxPerGdpb = 6;
-
 // FIXME: move these inputs to the parameter file
    const UInt_t kuNrOfGbtx = 12;   // for 2 Gdpbs
    Int_t kiNrOfRpc  [ kuNrOfGbtx ] = { 5, 5, 5, 5,  5,  5,  5,  5,  5,  5,  5,  5};
@@ -329,11 +321,13 @@ Bool_t CbmMcbm2018TofUnpacker::ReInitContainers()
    Int_t kiRpcSide  [ kuNrOfGbtx ] = { 0, 1, 0, 1,  0,  1,  0,  1,  0,  1,  0,  1};
 
    UInt_t uNrOfGbtx  = kuNrOfGbtx;
+*/
+   UInt_t uNrOfGbtx  =  fUnpackPar->GetNrOfGbtx();
    fviRpcType.resize(uNrOfGbtx);
    fviModuleId.resize(uNrOfGbtx);
    fviNrOfRpc.resize(uNrOfGbtx);
    fviRpcSide.resize(uNrOfGbtx);
-
+   /*
    for (Int_t iGbtx = 0; iGbtx < uNrOfGbtx; ++iGbtx) 
    {
      fviNrOfRpc[ iGbtx ]  = kiNrOfRpc[ iGbtx ];   
@@ -341,8 +335,16 @@ Bool_t CbmMcbm2018TofUnpacker::ReInitContainers()
      fviModuleId[ iGbtx ] = kiModuleId[ iGbtx ];   
      fviRpcSide[ iGbtx ]  = kiRpcSide[ iGbtx ];   
    }
+   */
+   for (Int_t iGbtx = 0; iGbtx < uNrOfGbtx; ++iGbtx) 
+   {
+     fviNrOfRpc[ iGbtx ]  = fUnpackPar->GetNrOfRpc( iGbtx );   
+     fviRpcType[ iGbtx ]  = fUnpackPar->GetRpcType( iGbtx );   
+     fviRpcSide[ iGbtx ]  = fUnpackPar->GetRpcSide( iGbtx );   
+     fviModuleId[ iGbtx ] = fUnpackPar->GetModuleId( iGbtx );   
+   }
 
-   uNrOfChannels = fuNrOfGet4 * fuNrOfChannelsPerGet4;
+   UInt_t uNrOfChannels = fuNrOfGet4 * fuNrOfChannelsPerGet4;
    LOG(INFO) << "Nr. of possible Tof channels: " << uNrOfChannels
 	     << FairLogger::endl;
 
@@ -512,7 +514,7 @@ Bool_t CbmMcbm2018TofUnpacker::DoUnpack(const fles::Timeslice& ts, size_t compon
                       << std::hex << fuGdpbId << std::dec
                       << " in microslice " << fdMsIndex
                       << FairLogger::endl
-                      << "If valid this index has to be added in the TOF parameter file in the RocIdArray field"
+                      << "If valid this index has to be added in the TOF parameter file in the GdpbIdArray field"
                       << FairLogger::endl;
             continue;
          } // if( it == fGdpbIdIndexMap.end() )

@@ -23,7 +23,7 @@
 #include <map>
 
 class CbmDigi;
-class CbmTofStar2018Par;
+class CbmMcbm2018TofPar;
 
 class CbmMcbm2018TofUnpacker : public CbmTSUnpack
 {
@@ -67,7 +67,8 @@ private:
    UInt_t   fuCurrNbGdpb;
 
    /** Settings from parameter file **/
-   CbmTofStar2018Par* fUnpackPar;      //!
+   CbmMcbm2018TofPar* fUnpackPar;      //!
+
    UInt_t fuNrOfGdpbs;           // Total number of GDPBs in the system
    UInt_t fuNrOfFeetPerGdpb;     // Number of FEBs per GDPB
    UInt_t fuNrOfGet4PerFeb;      // Number of GET4s per FEB
