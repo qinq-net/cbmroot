@@ -31,6 +31,8 @@ class CbmMQTsaSampler : public FairMQDevice
     uint64_t fMaxTimeslices;
 
     std::string fFileName;
+    std::string fDirName;
+
     std::vector<std::string>   fInputFileList;    ///< List of input files
     uint64_t   fFileCounter;
     std::string fHost;
@@ -46,6 +48,8 @@ class CbmMQTsaSampler : public FairMQDevice
     virtual bool ConditionalRun();
 
  private:
+    bool OpenNextFile();
+
     bool CheckTimeslice(const fles::Timeslice& ts);
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
     bool SendData(const fles::StorableTimeslice& component);

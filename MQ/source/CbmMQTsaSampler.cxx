@@ -6,9 +6,6 @@
  */
 
 
-#include <thread> // this_thread::sleep_for
-#include <chrono>
-
 #include "CbmMQTsaSampler.h"
 #include "FairMQLogger.h"
 #include "FairMQProgOptions.h" // device->fConfig
@@ -17,9 +14,18 @@
 #include "TimesliceInputArchive.hpp"
 
 #include <boost/archive/binary_oarchive.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
+
+namespace filesys = boost::filesystem;
 
 #include <stdio.h>
 #include <ctime>
+#include <thread> // this_thread::sleep_for
+#include <chrono>
+#include <algorithm>
+#include <string>
 
 using namespace std;
 
@@ -32,6 +38,7 @@ CbmMQTsaSampler::CbmMQTsaSampler()
     : FairMQDevice()
     , fMaxTimeslices(0)
     , fFileName("")
+    , fDirName("")
     , fInputFileList()
     , fFileCounter(0)
     , fHost("")
@@ -48,14 +55,94 @@ try
 {
     // Get the values from the command line options (via fConfig)
     fFileName = fConfig->GetValue<string>("filename");
+    fDirName = fConfig->GetValue<string>("dirname");
     fHost = fConfig->GetValue<string>("flib-host");
     fPort = fConfig->GetValue<uint64_t>("flib-port");
     fMaxTimeslices = fConfig->GetValue<uint64_t>("max-timeslices");
 
+    // Check which input is defined 
+    // Posibilities
+    // filename && ! dirname : single file
+    // filename with wildcards && diranme : all files with filename regex in the directory
+    // host && port : connect to the flim server
 
-    LOG(INFO) << "Filename: " << fFileName;
-    LOG(INFO) << "Host: " << fHost;
-    LOG(INFO) << "Port: " << fPort;
+    bool isGoodInputCombi{false};
+    if ( 0 != fFileName.size() &&  0 == fDirName.size() && 0 == fHost.size() && 0 == fPort ) {
+      isGoodInputCombi=true;  
+      // Create a Path object from given path string
+      filesys::path pathObj(fFileName);
+      if ( ! filesys::is_regular_file(pathObj) ) {
+         throw InitTaskError("Passed file name is no valid file");
+      }
+      fInputFileList.push_back(fFileName);
+      LOG(INFO) << "Filename: " << fFileName;
+    } else if ( 0 != fFileName.size() &&  0 != fDirName.size() && 0 == fHost.size() && 0 == fPort) {
+      isGoodInputCombi=true;
+      filesys::path pathObj = fDirName;
+      if ( ! filesys::is_directory(pathObj) ) {
+         throw InitTaskError("Passed directory name is no valid directory");
+      }
+      if (fFileName.find("*") == std::string::npos) {
+        // Normal file without wildcards
+        pathObj += fFileName;
+        if ( ! filesys::is_regular_file(pathObj) ) {
+           throw InitTaskError("Passed file name is no valid file");
+        }
+        fInputFileList.push_back(pathObj.string());
+        LOG(INFO) << "Filename: " << fInputFileList[0];
+      } else {
+        std::vector<filesys::path> v;
+        
+        // escape "." which have a special meaning in regex
+        // change "*" to ".*" to find any number
+        // e.g. tofget4_hd2018.*.tsa => tofget4_hd2018\..*\.tsa
+        boost::replace_all(fFileName, ".", "\\.");
+        boost::replace_all(fFileName, "*", ".*");
+
+        // create regex
+        const boost::regex my_filter(fFileName);
+
+        // loop over all files in input directory
+        for (auto&& x : filesys::directory_iterator(pathObj)) {
+           // Skip if not a file
+          if( !boost::filesystem::is_regular_file( x ) ) continue;
+
+          // Skip if no match
+          // x.path().leaf().string() means get from directory iterator the
+          // current entry as filesys::path, from this extract the leaf
+          // filename or directory name and convert it to a string to be
+          // used in the regex:match
+          boost::smatch what;
+          if( !boost::regex_match( x.path().leaf().string(), what, my_filter ) ) continue;
+
+          v.push_back(x.path()); 
+        }
+      
+        // sort the files which match the regex in increasing order
+        // (hopefully)
+        std::sort(v.begin(), v.end());  
+
+        for (auto&& x : v)
+           fInputFileList.push_back(x.string());
+
+        LOG(DEBUG) << "The following files will be used in this order.";
+        for (auto&& x : v)
+           LOG(DEBUG) << "    " << x;
+      }
+//      throw InitTaskError("Input is a directory");
+
+    } else if ( 0 == fFileName.size() &&  0 == fDirName.size() && 0 != fHost.size() && 0!= fPort) {
+      isGoodInputCombi=true;
+      LOG(INFO) << "Host: " << fHost;
+      LOG(INFO) << "Port: " << fPort;
+    } else {
+      isGoodInputCombi=false;
+    }
+
+    if (!isGoodInputCombi) {
+      throw InitTaskError("Wrong combination of inputs. Either file or wildcard file + directory or host + port are allowed combination.");
+    }
+
 
     LOG(INFO) << "MaxTimeslices: " << fMaxTimeslices;
 
@@ -89,23 +176,43 @@ try
       throw InitTaskError("Could not connect to publisher.");
     }
   } else {
-    LOG(INFO) << "Open the Flib input file " << fFileName;
-    // Check if the input file exist
-    FILE* inputFile = fopen(fFileName.c_str(), "r");
-    if ( ! inputFile )  {
-      throw InitTaskError("Input file doesn't exist.");
+    if( false == OpenNextFile() )
+    {
+      throw InitTaskError("Could not open the first input file in the list, Doing nothing!");
     }
-    fclose(inputFile);
-    fSource = new fles::TimesliceInputArchive(fFileName);
-    if ( !fSource) {
-      throw InitTaskError("Could not open input file.");
-    }
-
   }
+
   fTime = std::chrono::steady_clock::now();
 } catch (InitTaskError& e) {
  LOG(ERROR) << e.what();
  ChangeState(ERROR_FOUND);
+}
+
+bool CbmMQTsaSampler::OpenNextFile() 
+{ 
+  // First Close and delete existing source
+  if( NULL != fSource )
+    delete fSource;
+    
+  if (fInputFileList.size() > 0) {
+    fFileName = fInputFileList[0];
+    fInputFileList.erase(fInputFileList.begin());
+    LOG(INFO) << "Open the Flib input file " << fFileName;
+    filesys::path pathObj(fFileName);
+    if ( ! filesys::is_regular_file(pathObj) ) {
+      LOG(ERROR) << "Input file " << fFileName << " doesn't exist.";
+      return false;
+    }
+    fSource = new fles::TimesliceInputArchive(fFileName);
+    if ( !fSource) {
+      LOG(ERROR) << "Could not open input file.";
+      return false;
+    }
+  } else {
+    LOG(INFO) << "End of files list reached.";
+    return false;
+  } 
+  return true;
 }
 
 bool CbmMQTsaSampler::IsChannelNameAllowed(std::string channelName)
@@ -157,12 +264,20 @@ bool CbmMQTsaSampler::ConditionalRun()
       }
       return true;
     } else {
-      CalcRuntime();
-      return false;
+      if ( false == OpenNextFile() ) {
+        CalcRuntime();
+        return false;
+      } else {
+        return true;
+      }
     }
   } else {
-    CalcRuntime();
-    return false;
+    if ( false == OpenNextFile() ) {
+      CalcRuntime();
+      return false;
+    } else {
+      return true;
+    }
   }
 
 }
