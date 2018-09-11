@@ -40,8 +40,12 @@ class CbmMcbm2018TofPar : public FairParGenericSet
    inline Int_t GetNrOfFeesPerGdpb() { return fiNrOfFeesPerGdpb; }
    inline Int_t GetNrOfGet4PerFee() {return fiNrOfGet4PerFee;}
    inline Int_t GetNrOfChannelsPerGet4() {return fiNrOfChannelsPerGet4;}
-   inline Int_t GetNumberOfChannels() {return fiNrOfChannels;}
-   inline Int_t GetChannelToDetUIdMap(Int_t channel) {return fiChannelToDetUIdMap[channel];}
+
+   inline Int_t GetNrOfGbtx() {return fiNrOfGbtx;}
+   inline Int_t GetNrOfRpc(Int_t i) {return fiNrOfRpc[i];}
+   inline Int_t GetRpcType(Int_t i) {return fiRpcType[i];}
+   inline Int_t GetRpcSide(Int_t i) {return fiRpcSide[i];}
+   inline Int_t GetModuleId(Int_t i) {return fiModuleId[i];}
 
    inline Int_t    GetNbMsTot() { return fiNbMsTot;}
    inline Int_t    GetNbMsOverlap() { return fiNbMsOverlap;}
@@ -61,9 +65,12 @@ class CbmMcbm2018TofPar : public FairParGenericSet
    Int_t    fiNrOfGet4PerFee;  // Number of GET4 chips which are connected to one FEB
    Int_t    fiNrOfChannelsPerGet4;  // Number of channels per GET4
 
-   Int_t    fiNrOfChannels; // Total number of Channels
-   TArrayI  fiChannelToDetUIdMap;// Array which stores the corresponding UIDs for each channel
-
+   Int_t    fiNrOfGbtx;   // Total number of Gbtx links 
+   TArrayI  fiNrOfRpc;    // number of Rpcs connected to Gbtx link, i.e. 3 or 5
+   TArrayI  fiRpcType;    // type of Rpcs connected to Gbtx link
+   TArrayI  fiRpcSide;    // side of Rpcs connected to Gbtx link, i.e. 0 or 1
+   TArrayI  fiModuleId;   // Module Identifier connected to Gbtx link, has to match geometry
+ 
    Int_t    fiNbMsTot; // Total number of MS per link in TS
    Int_t    fiNbMsOverlap; // Number of overlap MS per TS
    Double_t fdSizeMsInNs; // Size of the MS in ns, needed for MS border detection

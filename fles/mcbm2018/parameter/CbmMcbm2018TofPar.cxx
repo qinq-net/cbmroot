@@ -22,8 +22,11 @@ CbmMcbm2018TofPar::CbmMcbm2018TofPar(const char* name,
     fiNrOfFeesPerGdpb(-1),
     fiNrOfGet4PerFee(-1),
     fiNrOfChannelsPerGet4(-1),
-    fiNrOfChannels(-1),
-    fiChannelToDetUIdMap(),
+    fiNrOfGbtx(-1),
+    fiNrOfRpc(),
+    fiRpcType(),
+    fiRpcSide(),
+    fiModuleId(),
     fiNbMsTot(0),
     fiNbMsOverlap(0),
     fdSizeMsInNs(0.0),
@@ -63,8 +66,11 @@ void CbmMcbm2018TofPar::putParams(FairParamList* l)
    l->add("NrOfFeesPerGdpb",     fiNrOfFeesPerGdpb);
    l->add("NrOfGet4PerFee",      fiNrOfGet4PerFee);
    l->add("NrOfChannelsPerGet4", fiNrOfChannelsPerGet4);
-   l->add("NrOfChannels",        fiNrOfChannels);
-   l->add("ChannelToDetUIdMap",  fiChannelToDetUIdMap);
+   l->add("NrOfGbtx",            fiNrOfGbtx);
+   l->add("NrOfRpcs",            fiNrOfRpc);
+   l->add("RpcType",             fiRpcType);
+   l->add("RpcSide",             fiRpcSide);
+   l->add("ModuleId",            fiModuleId);
    l->add("NbMsTot",             fiNbMsTot);
    l->add("NbMsOverlap",         fiNbMsOverlap);
    l->add("SizeMsInNs",          fdSizeMsInNs);
@@ -89,11 +95,19 @@ Bool_t CbmMcbm2018TofPar::getParams(FairParamList* l) {
    if ( ! l->fill("NrOfGet4PerFee", &fiNrOfGet4PerFee) ) return kFALSE;
    if ( ! l->fill("NrOfChannelsPerGet4", &fiNrOfChannelsPerGet4) ) return kFALSE;
 
-   if ( ! l->fill("NrOfChannels", &fiNrOfChannels) ) return kFALSE;
+   if ( ! l->fill("NrOfGbtx", &fiNrOfGbtx) ) return kFALSE;
 
-   fiChannelToDetUIdMap.Set(fiNrOfChannels);
+   fiNrOfRpc.Set(fiNrOfGbtx);
+   if ( ! l->fill("NrOfRpc", &fiNrOfRpc) ) return kFALSE;
 
-   if ( ! l->fill("ChannelToDetUIdMap", &fiChannelToDetUIdMap) ) return kFALSE;
+   fiRpcType.Set(fiNrOfGbtx);
+   if ( ! l->fill("RpcType", &fiRpcType) ) return kFALSE;
+
+   fiRpcSide.Set(fiNrOfGbtx);
+   if ( ! l->fill("RpcSide", &fiRpcSide) ) return kFALSE;
+
+   fiModuleId.Set(fiNrOfGbtx);
+   if ( ! l->fill("ModuleId", &fiModuleId) ) return kFALSE;
 
    if ( ! l->fill("NbMsTot",     &fiNbMsTot) ) return kFALSE;
    if ( ! l->fill("NbMsOverlap", &fiNbMsOverlap) ) return kFALSE;
