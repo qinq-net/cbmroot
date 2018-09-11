@@ -107,7 +107,7 @@ Double_t fStationZ0[4]={75,125,175,235};//,365};
 Int_t fNlayers[4]={3,3,3,3};//,3}; // Number of layers
 Int_t fDetType[4]={3,3,3,3};//,3}; // Detector type
 Double_t fLayersDz[4]={10,10,10,10};//,10}; 
-Double_t fSupportLz[4]={1.5,1.5,1.5,1.5};//,1.5}; 
+Double_t fSupportLz[4]={1.0,1.0,1.0,1.0};//,1.0};  Aluminum Support
 Double_t fDriftDz=0.0035; //35 micron copper Drift  
 Double_t fG10Dz = 0.3; // 3 mm G10
 Double_t fCoolLz=1.0;  // thickness of the cooling plate 
@@ -501,9 +501,9 @@ TGeoVolume * CreateLayers(int istn, int ily){
   TGeoCompositeShape* shSupport = new TGeoCompositeShape(supportShapeName,expression);
   
   TString  supportName1  = Form("muchstation%02ilayer%isupport",istn+1,ily+1);
-  TGeoMedium* coolMat = gGeoMan->GetMedium(supportmedium);
+  TGeoMedium* coolMatAl = gGeoMan->GetMedium(coolmedium);
 
-  TGeoVolume* voSupport1 = new TGeoVolume(supportName1,shSupport,coolMat);
+  TGeoVolume* voSupport1 = new TGeoVolume(supportName1,shSupport,coolMatAl);
   voSupport1->SetLineColor(kCyan);
   
   TGeoTranslation *support_trans1 = new TGeoTranslation("supportName1", 0,0,layerGlobalZ0);
@@ -608,6 +608,9 @@ for (Int_t iSide=0;iSide<2;iSide++){
       TGeoTranslation*trans2Gout=new TGeoTranslation("",pos[0],pos[1],posGout[2]);
       TGeoTranslation*transAl=new TGeoTranslation("",pos[0],pos[1],posAl[2]);
       
+
+cout<<"layerGlobalZ0: "<<layerGlobalZ0<<" Active Modules: "<<pos[2]<<" DriftIn: "<<posDin[2]<<" G10In: "<<posGin[2]<<" Driftout: "<<posDout[2]<<" G10out: "<<posGout[2]<<endl;
+
       // cout << "DE i: " << iModule << " x: " << pos[0] << " y: " << pos[1] << " z: " << pos[2] << " angle: " << angle <<" "<<istn<<" "<<ily<<endl;
       
       TGeoRotation *r2 = new TGeoRotation("r2");
@@ -634,12 +637,12 @@ for (Int_t iSide=0;iSide<2;iSide++){
       volayer->AddNode(vobG10, iMod, incline_modGout);  // G10 volume ------------
       
       volayer->AddNode(voActive, iMod, incline_mod); // add active volume 
-      // volayer->AddNode(voFrame, iMod, incline_mod);  // add spacer ------
+      volayer->AddNode(voFrame, iMod, incline_mod);  // add spacer ------
       
       volayer->AddNode(vofDrift, iMod, incline_modDin); //copper  Drift volume Inner Side
       volayer->AddNode(vofG10, iMod, incline_modGin);  //  G10 volume ------------
       
-      volayer->AddNode(voCool, iMod, incline_modAl);  // Al plate
+     // volayer->AddNode(voCool, iMod, incline_modAl);  // Al plate
       
      
       
