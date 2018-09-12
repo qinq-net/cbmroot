@@ -1,5 +1,5 @@
 
-void run_reco_geotest(Int_t nEvents = 25000)
+void run_reco_geotest(Int_t nEvents = 100)
 {
    TTree::SetMaxTreeSize(90000000000);
    TString script = TString(gSystem->Getenv("SCRIPT"));
@@ -7,18 +7,20 @@ void run_reco_geotest(Int_t nEvents = 25000)
    TString myName = "run_reco_geotest";
    TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-   TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100_v18a_ver3.C";
+   TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100.C";
 
    TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/geotest/";
    TString mcFile = outDir + "mc.00000.root";
    TString parFile = outDir + "param.00000.root";
+   TString digiFile = outDir + "digi.00000.root";
    TString recoFile = outDir + "reco.00000.root";
-   std::string resultDir = "results_geotest_v18a_ver3/";
+   std::string resultDir = "results_geotest_v18b_1e/";
 
    if (script == "yes") {
       mcFile = TString(gSystem->Getenv("MC_FILE"));
       recoFile = TString(gSystem->Getenv("RECO_FILE"));
       parFile = TString(gSystem->Getenv("PAR_FILE"));
+      digiFile = TString(gSystem->Getenv("DIGI_FILE"));
       resultDir = TString(gSystem->Getenv("RESULT_DIR"));
       geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
    }
@@ -33,14 +35,13 @@ void run_reco_geotest(Int_t nEvents = 25000)
 	std::cout << std::endl<< "-I- " << myName << ": Defining parameter files " << std::endl;
 	TList *parFileList = new TList();
 
-
 	TStopwatch timer;
 	timer.Start();
 	gDebug = 0;
 
-
 	FairRunAna *run = new FairRunAna();
-	FairFileSource* inputSource = new FairFileSource(mcFile);
+	FairFileSource* inputSource = new FairFileSource(digiFile);
+	inputSource->AddFriend(mcFile);
 	run->SetSource(inputSource);
 	run->SetOutputFile(recoFile);
 	run->SetGenerateRunInfo(kTRUE);
@@ -48,15 +49,9 @@ void run_reco_geotest(Int_t nEvents = 25000)
 	FairLogger::GetLogger()->SetLogScreenLevel("INFO");
 	FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
-
-
 	CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
 	mcManager->AddFile(mcFile);
 	run->AddTask(mcManager);
-
-	CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
-	richDigitizer->SetNoiseHitRate(0.);
-	run->AddTask(richDigitizer);
 
 	CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
 	run->AddTask(richHitProd);
@@ -74,8 +69,6 @@ void run_reco_geotest(Int_t nEvents = 25000)
 	CbmRichGeoTest* geoTest = new CbmRichGeoTest();
 	geoTest->SetOutputDir(resultDir);
 	run->AddTask(geoTest);
-
-
 
 	std::cout << std::endl << std::endl << "-I- " << myName << ": Set runtime DB" << std::endl;
 	FairRuntimeDb* rtdb = run->GetRuntimeDb();
@@ -111,7 +104,6 @@ void run_reco_geotest(Int_t nEvents = 25000)
 	std::cout << "Output file is " << mcFile << std::endl;
 	std::cout << "Parameter file is " << parFile << std::endl;
 	std::cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << std::endl;
-	std::cout << std::endl;
 	std::cout << " Test passed" << std::endl;
 	std::cout << " All ok " << std::endl;
 

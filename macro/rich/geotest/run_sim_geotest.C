@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 void run_sim_geotest(Int_t nEvents = 100)
 {
     TTree::SetMaxTreeSize(90000000000);
@@ -9,16 +7,12 @@ void run_sim_geotest(Int_t nEvents = 100)
     TString myName = "run_sim_geotest";  // this macro's name for screen output
     TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100_v18a_ver3.C";
+    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100.C";
 
     TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/geotest/";
-    TString parFile =  outDir + "param.00000.root";
+    TString parFile = outDir + "param.00000.root";
     TString mcFile = outDir + "mc.00000.root";
     TString geoFile = outDir + "geosim.00000.root";
-
-    remove(parFile.Data());
-    remove(mcFile.Data());
-    remove(geoFile.Data());
 
     if (script == "yes") {
         mcFile = TString(gSystem->Getenv("MC_FILE"));
@@ -26,6 +20,10 @@ void run_sim_geotest(Int_t nEvents = 100)
         geoFile = TString(gSystem->Getenv("GEOSIM_FILE"));
         geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
     }
+
+    remove(parFile.Data());
+    remove(mcFile.Data());
+    remove(geoFile.Data());
 
     // Target geometry
     TString  targetElement   = "Gold";
@@ -100,9 +98,7 @@ void run_sim_geotest(Int_t nEvents = 100)
     //  PrimaryGenerator
     std::cout << std::endl << "-I- " << myName << ": Registering event generators" << std::endl;
     FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
-    // --- Uniform distribution of event plane angle
     primGen->SetEventPlane(0., 2. * TMath::Pi());
-    // --- Get target parameters
     Double_t tX = 0.;
     Double_t tY = 0.;
     Double_t tZ = 0.;
@@ -115,7 +111,6 @@ void run_sim_geotest(Int_t nEvents = 100)
     primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
     primGen->SmearGausVertexXY(smearVertexXY);
     primGen->SmearVertexZ(smearVertexZ);
-
 
     FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 1);
     boxGen1->SetPtRange(0.,3.);
@@ -139,8 +134,6 @@ void run_sim_geotest(Int_t nEvents = 100)
     //run->SetStoreTraj(kTRUE);
     run->Init();
 
-
-
     // -----   Runtime database   ---------------------------------------------
     std::cout << std::endl << std::endl;
     std::cout << "-I- " << myName << ": Set runtime DB" << std::endl;
@@ -156,10 +149,8 @@ void run_sim_geotest(Int_t nEvents = 100)
     rtdb->saveOutput();
     rtdb->print();
 
-
     std::cout << std::endl << std::endl << "-I- " << myName << ": Starting run" << std::endl;
     run->Run(nEvents);
-
 
     run->CreateGeometryFile(geoFile);
 
@@ -171,27 +162,7 @@ void run_sim_geotest(Int_t nEvents = 100)
     std::cout << "Output file is "    << mcFile << std::endl;
     std::cout << "Parameter file is " << parFile << std::endl;
     std::cout << "Geometry file is "  << geoFile << std::endl;
-    std::cout << "Real time " << rtime << " s, CPU time " << ctime
-              << "s" << std::endl << std::endl;
-    // ------------------------------------------------------------------------
-
-
-    // -----   Resource monitoring   ------------------------------------------
-//    if ( Has_Fair_Monitor() ) {      // FairRoot Version >= 15.11
-//      // Extract the maximal used memory an add is as Dart measurement
-//      // This line is filtered by CTest and the value send to CDash
-//      FairSystemInfo sysInfo;
-//      Float_t maxMemory=sysInfo.GetMaxMemory();
-//      std::cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
-//      std::cout << maxMemory;
-//      std::cout << "</DartMeasurement>" << std::endl;
-//
-//      Float_t cpuUsage=ctime/rtime;
-//      std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
-//      std::cout << cpuUsage;
-//      std::cout << "</DartMeasurement>" << std::endl;
-//    }
-
+    std::cout << "Real time " << rtime << " s, CPU time " << ctime << "s" << std::endl << std::endl;
     std::cout << " Test passed" << std::endl;
     std::cout << " All ok " << std::endl;
 

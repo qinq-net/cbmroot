@@ -1,4 +1,4 @@
-void run_reco_urqmdtest(Int_t nEvents = 20)
+void run_reco_urqmdtest(Int_t nEvents = 5)
 {
     TTree::SetMaxTreeSize(90000000000);
     TString script = TString(gSystem->Getenv("SCRIPT"));
@@ -43,8 +43,8 @@ void run_reco_urqmdtest(Int_t nEvents = 20)
 
 
     FairRunAna *run = new FairRunAna();
-    FairFileSource* inputSource = new FairFileSource(mcFile);
-    inputSource->AddFriend(digiFile);
+    FairFileSource* inputSource = new FairFileSource(digiFile);
+    inputSource->AddFriend(mcFile);
     run->SetSource(inputSource);
     run->SetOutputFile(recoFile);
     run->SetGenerateRunInfo(kTRUE);
@@ -58,9 +58,6 @@ void run_reco_urqmdtest(Int_t nEvents = 20)
     run->AddTask(mcManager);
 
 
-//    CbmStsDigitize* stsDigi = new CbmStsDigitize();
-//    run->AddTask(stsDigi);
-
     CbmStsFindClusters* stsCluster = new CbmStsFindClusters();
     stsCluster->UseEventMode();
     run->AddTask(stsCluster);
@@ -68,10 +65,9 @@ void run_reco_urqmdtest(Int_t nEvents = 20)
     FairTask* stsHit = new CbmStsFindHitsEvents();
     run->AddTask(stsHit);
 
-
     CbmKF* kalman = new CbmKF();
     run->AddTask(kalman);
-    CbmL1* l1 = new CbmL1();
+    CbmL1* l1 = new CbmL1("L1", 0);
     TString stsGeoTag;
     if ( setup->GetGeoTag(kSts, stsGeoTag) ) {
         TString parFile = gSystem->Getenv("VMCWORKDIR");
@@ -82,19 +78,15 @@ void run_reco_urqmdtest(Int_t nEvents = 20)
     run->AddTask(l1);
 
     CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
-    FairTask* stsFindTracks = new CbmStsFindTracksEvents(stsTrackFinder, setup->IsActive(kMvd));
+    FairTask* stsFindTracks = new CbmStsFindTracksEvents(stsTrackFinder, false);
     run->AddTask(stsFindTracks);
 
 
     CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
-    finder->SetTrackingType(std::string("branch"));
+    finder->SetTrackingType("branch");
     finder->SetMergerType("nearest_hit");
     run->AddTask(finder);
 
-
-//    CbmRichDigitizer* richDigi  = new CbmRichDigitizer();
-//    richDigi->SetNoiseDigiRate(10.); // We do not need noise hits for UrqmdTest
-//    run->AddTask(richDigi);
 
     CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
     run->AddTask(richHitProd);

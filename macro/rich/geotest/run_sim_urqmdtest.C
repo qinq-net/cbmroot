@@ -1,6 +1,5 @@
-void run_sim_urqmdtest(Int_t nEvents = 20)
+void run_sim_urqmdtest(Int_t nEvents = 5)
 {
-
     TTree::SetMaxTreeSize(90000000000);
 
     TString script = TString(gSystem->Getenv("SCRIPT"));
@@ -57,7 +56,6 @@ void run_sim_urqmdtest(Int_t nEvents = 20)
     FairLogger::GetLogger()->SetLogScreenLevel("INFO");
     FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
-
     TString setupFunct = "do_setup()";
     std::cout << "-I- " << myName << ": Loading macro " << geoSetupFile << std::endl;
     gROOT->LoadMacro(geoSetupFile);
@@ -101,9 +99,7 @@ void run_sim_urqmdtest(Int_t nEvents = 20)
     //  PrimaryGenerator
     std::cout << std::endl << "-I- " << myName << ": Registering event generators" << std::endl;
     FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
-    // --- Uniform distribution of event plane angle
     primGen->SetEventPlane(0., 2. * TMath::Pi());
-    // --- Get target parameters
     Double_t tX = 0.;
     Double_t tY = 0.;
     Double_t tZ = 0.;
@@ -119,30 +115,12 @@ void run_sim_urqmdtest(Int_t nEvents = 20)
 
     CbmUnigenGenerator*  urqmdGen = new CbmUnigenGenerator(inFile);
     urqmdGen->SetEventPlane(0. , 360.);
-
-    FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 5);
-    boxGen1->SetPtRange(0.,3.);
-    boxGen1->SetPhiRange(0.,360.);
-    boxGen1->SetThetaRange(2.5,25.);
-    boxGen1->SetCosTheta();
-    boxGen1->Init();
-    primGen->AddGenerator(boxGen1);
-
-    FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, 5);
-    boxGen2->SetPtRange(0.,3.);
-    boxGen2->SetPhiRange(0.,360.);
-    boxGen2->SetThetaRange(2.5,25.);
-    boxGen2->SetCosTheta();
-    boxGen2->Init();
-    primGen->AddGenerator(boxGen2);
-
-
     primGen->AddGenerator(urqmdGen);
+
     run->SetGenerator(primGen);
     
     std::cout << std::endl << "-I- " << myName << ": Initialise run" << std::endl;
     run->Init();
-
 
     // -----   Runtime database   ---------------------------------------------
      std::cout << std::endl << std::endl;
