@@ -30,6 +30,9 @@
 #include "CbmRichDigiMapManager.h"
 #include "CbmRichDigi.h"
 #include "utils/CbmRichDraw.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCDataManager.h"
+#include "CbmMCEventList.h"
 
 #include "TH1D.h"
 #include "TH2D.h"
@@ -62,8 +65,9 @@ fRichHits(NULL),
 fRichRings(NULL),
 fRichDigis(NULL),
 fRichPoints(NULL),
-fMCTracks(NULL),
+fMcTracks(NULL),
 fRichRingMatches(NULL),
+fEventList(NULL),
 fCopFit(NULL),
 fTauFit(NULL),
 fHM(NULL),
@@ -101,23 +105,29 @@ InitStatus CbmRichGeoTest::Init()
     FairRootManager* ioman = FairRootManager::Instance();
     if (NULL == ioman) { Fatal("CbmRichGeoTest::Init","RootManager not instantised!"); }
     
+    CbmMCDataManager* mcManager = (CbmMCDataManager*)ioman->GetObject("MCDataManager");
+    if (mcManager == nullptr) LOG(FATAL) << "CbmRichGeoTest::Init() NULL MCDataManager." << FairLogger::endl;
+
+    fMcTracks = mcManager->InitBranch("MCTrack");
+    if ( NULL == fMcTracks) { LOG(FATAL) << "CbmRichGeoTest::Init No MCTrack!" << FairLogger::endl; }
+
+    fRichPoints = mcManager->InitBranch("RichPoint");
+    if ( NULL == fRichPoints) { LOG(FATAL) << "CbmRichGeoTest::Init No RichPoint!" << FairLogger::endl; }
+
     fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
-    if ( NULL == fRichHits) { Fatal("CbmRichGeoTest::Init","No RichHit array!"); }
+    if ( NULL == fRichHits) { LOG(FATAL) << "CbmRichGeoTest::Init No RichHit!" << FairLogger::endl; }
     
     fRichDigis = (TClonesArray*) ioman->GetObject("RichDigi");
-    if ( NULL== fRichDigis) { Fatal("CbmRichGeoTest::Init","No RichDigi array!"); }
+    if ( NULL== fRichDigis) { LOG(FATAL) << "CbmRichGeoTest::Init No RichDigi!" << FairLogger::endl; }
     
     fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-    if ( NULL == fRichRings) { Fatal("CbmRichGeoTest::Init","No RichRing array!"); }
-    
-    fRichPoints = (TClonesArray*) ioman->GetObject("RichPoint");
-    if ( NULL == fRichPoints) { Fatal("CbmRichGeoTest::Init","No RichPoint array!"); }
-    
-    fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-    if ( NULL == fMCTracks) { Fatal("CbmRichGeoTest::Init","No MCTrack array!"); }
+    if ( NULL == fRichRings) { LOG(FATAL) << "CbmRichGeoTest::Init No RichRing!" << FairLogger::endl; }
     
     fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
-    if ( NULL == fRichRingMatches) { Fatal("CbmRichGeoTest::Init","No RichRingMatch array!"); }
+    if ( NULL == fRichRingMatches) { LOG(FATAL) << "CbmRichGeoTest::Init No RichRingMatch!" << FairLogger::endl; }
+
+    fEventList = (CbmMCEventList*) ioman->GetObject("MCEventList.");
+    if (NULL == fEventList) {LOG(FATAL) << "CbmRichGeoTest::Init No MCEventList!" << FairLogger::endl;}
     
     fCopFit = new CbmRichRingFitterCOP();
     fTauFit = new CbmRichRingFitterEllipseTau();
@@ -132,9 +142,10 @@ void CbmRichGeoTest::Exec(
 {
     fEventNum++;
     cout << "CbmRichGeoTest, event No. " <<  fEventNum << endl;
-    FillMcHist();
+
+    ProcessMc();
     RingParameters();
-    HitsAndPoints();
+    ProcessHits();
 }
 
 void CbmRichGeoTest::InitHistograms()
@@ -157,6 +168,7 @@ void CbmRichGeoTest::InitHistograms()
     
     fHM->Create2<TH2D>("fhHitsXY", "fhHitsXY;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, nBinsY, yMin, yMax);
     fHM->Create2<TH2D>("fhPointsXY", "fhPointsXY;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, nBinsY, yMin, yMax);
+    fHM->Create2<TH2D>("fhPointsXYNoRotation", "fhPointsXYNoRotation;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, nBinsY, yMin, yMax);
     fHM->Create1<TH1D>("fhHitsZ", "fhHitsZ;Z [cm];Yield", 1000, 150, 250);
     fHM->Create1<TH1D>("fhPointsZ", "fhPointsZ;Z [cm];Yield", 100, 190, 250);
     
@@ -260,45 +272,64 @@ void CbmRichGeoTest::InitHistograms()
     fHM->Create2<TH2D>("fhdRVsY", "fhdRVsY;Abs(Y) [cm];dR [cm]", nBinsY1, yMin1, yMax1, 100, -1., 1.);
 }
 
-void CbmRichGeoTest::FillMcHist()
+void CbmRichGeoTest::ProcessMc()
 {
-    for (Int_t i = 0; i < fMCTracks->GetEntriesFast(); i++){
-        CbmMCTrack* mcTrack = (CbmMCTrack*)fMCTracks->At(i);
-        if (!mcTrack) continue;
-        Int_t motherId = mcTrack->GetMotherId();
-        Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
-        
-        if (pdg == 11 && motherId == -1){
-            fHM->H1("fhMcMomEl")->Fill(mcTrack->GetP());
-            fHM->H2("fhMcPtyEl")->Fill(mcTrack->GetRapidity(), mcTrack->GetPt());
+    Int_t nofEvents = fEventList->GetNofEvents();
+    for (Int_t iE = 0; iE < nofEvents; iE++) {
+        Int_t fileId = fEventList->GetFileIdByIndex(iE);
+        Int_t eventId = fEventList->GetEventIdByIndex(iE);
+
+        Int_t nofMcTracks = fMcTracks->Size(fileId, eventId);
+        for(Int_t iT = 0; iT < nofMcTracks; iT++){
+            const CbmMCTrack* mcTrack = static_cast<CbmMCTrack*>( fMcTracks->Get(fileId, eventId, iT) );
+            if (!mcTrack) continue;
+            Int_t motherId = mcTrack->GetMotherId();
+            Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
+
+            if (pdg == 11 && motherId == -1){
+                fHM->H1("fhMcMomEl")->Fill(mcTrack->GetP());
+                fHM->H2("fhMcPtyEl")->Fill(mcTrack->GetRapidity(), mcTrack->GetPt());
+            }
+
+            if (pdg == 211 && motherId == -1){
+                fHM->H1("fhMcMomPi")->Fill(mcTrack->GetP());
+                fHM->H2("fhMcPtyPi")->Fill(mcTrack->GetRapidity(), mcTrack->GetPt());
+            }
         }
-        
-        if (pdg == 211 && motherId == -1){
-            fHM->H1("fhMcMomPi")->Fill(mcTrack->GetP());
-            fHM->H2("fhMcPtyPi")->Fill(mcTrack->GetRapidity(), mcTrack->GetPt());
+
+        Int_t nofPoints = fRichPoints->Size(fileId, eventId);
+        for (Int_t iP = 0; iP < nofPoints; iP++){
+            const CbmRichPoint *point = static_cast<CbmRichPoint*>( fRichPoints->Get(fileId, eventId, iP) );
+            if ( point == NULL ) continue;
+            TVector3 inPos(point->GetX(), point->GetY(), point->GetZ());
+            TVector3 outPos;
+            CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
+            fHM->H2("fhPointsXYNoRotation")->Fill(point->GetX(), point->GetY());
+            fHM->H2("fhPointsXY")->Fill(outPos.X(), outPos.Y());
+            fHM->H1("fhPointsZ")->Fill(point->GetZ());
         }
     }
 }
 
 void CbmRichGeoTest::RingParameters()
 {
+    Int_t fileId = 0;
     Int_t nofRings = fRichRings->GetEntriesFast();
     for (Int_t iR = 0; iR < nofRings; iR++){
         CbmRichRing *ring = (CbmRichRing*) fRichRings->At(iR);
         if (NULL == ring) continue;
-        CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR);
+        const CbmTrackMatchNew* ringMatch = static_cast<CbmTrackMatchNew*>( fRichRingMatches->At(iR) );
         if (NULL == ringMatch) continue;
-        
+        Int_t mcEventId = ringMatch->GetMatchedLink().GetEntry();
         Int_t mcTrackId = ringMatch->GetMatchedLink().GetIndex();
-        if (mcTrackId < 0) continue;
-        CbmMCTrack* mcTrack = (CbmMCTrack*)fMCTracks->At(mcTrackId);
-        if (!mcTrack) continue;
+        const CbmMCTrack* mcTrack = static_cast<CbmMCTrack*>( fMcTracks->Get(fileId, mcEventId, mcTrackId) );
+        if (NULL == mcTrack) continue;
+
         Int_t motherId = mcTrack->GetMotherId();
         Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
         Double_t momentum = mcTrack->GetP();
         Double_t pt = mcTrack->GetPt();
         Double_t rapidity = mcTrack->GetRapidity();
-        
         
         if (ring->GetNofHits() >= fMinNofHits){
             if (pdg == 11 && motherId == -1){
@@ -314,13 +345,13 @@ void CbmRichGeoTest::RingParameters()
         if (pdg != 11 || motherId != -1) continue; // only primary electrons
         
         CbmRichRingLight ringPoint;
-        int nofRichPoints = fRichPoints->GetEntriesFast();
+        int nofRichPoints = fRichPoints->Size(fileId, mcEventId);
         for (int iPoint = 0; iPoint < nofRichPoints; iPoint++){
-            CbmRichPoint* richPoint = (CbmRichPoint*) fRichPoints->At(iPoint);
+            const CbmRichPoint* richPoint = static_cast<CbmRichPoint*>( fRichPoints->Get(fileId, mcEventId, iPoint) );
             if (NULL == richPoint) continue;
             Int_t trackId = richPoint->GetTrackID();
             if (trackId < 0) continue;
-            CbmMCTrack* mcTrackRich = (CbmMCTrack*)fMCTracks->At(trackId);
+            CbmMCTrack* mcTrackRich = static_cast<CbmMCTrack*>( fMcTracks->Get(fileId, mcEventId, trackId) );
             if (NULL == mcTrackRich) continue;
             int motherIdRich = mcTrackRich->GetMotherId();
             if (motherIdRich == mcTrackId){
@@ -491,25 +522,27 @@ void CbmRichGeoTest::FillMcVsHitFitCircle(
     fHM->H2("fhDiffRadius")->Fill(ring->GetNofHits(),ringMc->GetRadius() - ring->GetRadius());
 }
 
-void CbmRichGeoTest::HitsAndPoints()
+void CbmRichGeoTest::ProcessHits()
 {
+    int fileId = 0;
     Int_t nofHits = fRichHits->GetEntriesFast();
     for (Int_t iH = 0; iH < nofHits; iH++){
-        CbmRichHit *hit = static_cast<CbmRichHit*>(fRichHits->At(iH));
+        const CbmRichHit *hit = static_cast<CbmRichHit*>(fRichHits->At(iH));
         if ( hit == NULL ) continue;
         
         Int_t digiIndex = hit->GetRefId();
         if (digiIndex < 0) continue;
-        CbmRichDigi* digi = (CbmRichDigi*) fRichDigis->At(digiIndex);
+        const CbmRichDigi* digi = static_cast<CbmRichDigi*>(fRichDigis->At(digiIndex));
         if (NULL == digi) continue;
         CbmMatch* digiMatch = digi->GetMatch();
         
         vector<CbmLink> links = digiMatch->GetLinks();
         for (UInt_t i = 0; i < links.size(); i++) {
             Int_t pointId = links[i].GetIndex();
+            Int_t eventId = links[i].GetEntry();
             if (pointId < 0) continue; // noise hit
             
-            CbmRichPoint* pMCpt = (CbmRichPoint*) (fRichPoints->At(pointId));
+            const CbmRichPoint* pMCpt = static_cast<CbmRichPoint*>( fRichPoints->Get( fileId, eventId, pointId));
             if ( NULL == pMCpt ) continue;
             
             TVector3 inPos(pMCpt->GetX(), pMCpt->GetY(), pMCpt->GetZ());
@@ -522,18 +555,6 @@ void CbmRichGeoTest::HitsAndPoints()
         //fHM->H1("fhNofPhotonsPerHit")->Fill(hit->GetNPhotons());
         fHM->H2("fhHitsXY")->Fill(hit->GetX(), hit->GetY());
         fHM->H1("fhHitsZ")->Fill(hit->GetZ());
-    }
-    
-    Int_t nofPoints = fRichPoints->GetEntriesFast();
-    for (Int_t iP = 0; iP < nofPoints; iP++){
-        CbmRichPoint *point = (CbmRichPoint*) fRichPoints->At(iP);
-        if ( point == NULL ) continue;
-        TVector3 inPos(point->GetX(), point->GetY(), point->GetZ());
-        TVector3 outPos;
-        CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
-      //  fHM->H2("fhPointsXY")->Fill(inPos.X(), inPos.Y());
-        fHM->H2("fhPointsXY")->Fill(outPos.X(), outPos.Y());
-        fHM->H1("fhPointsZ")->Fill(point->GetZ());
     }
 }
 
@@ -637,6 +658,11 @@ void CbmRichGeoTest::DrawHist()
         CbmRichDraw::DrawPmtH2(fHM->H2("fhPointsXY"), c);
     }
     
+    {
+        TCanvas *c = fHM->CreateCanvas("richgeo_points_xy_no_rotation", "richgeo_points_xy_no_rotation", 1200, 1200);
+        CbmRichDraw::DrawPmtH2(fHM->H2("fhPointsXYNoRotation"), c);
+    }
+
     {
         fHM->CreateCanvas("richgeo_hits_z", "richgeo_hits_z", 800, 800);
         fHM->H1("fhHitsZ")->Scale(1./fHM->H1("fhHitsZ")->Integral());
@@ -761,16 +787,18 @@ void CbmRichGeoTest::DrawHist()
 		c->cd(2);
 		DrawH1(fhNofHitsCircleFitEff);
 		TLatex* circleFitEffTxt = new TLatex(15, 0.5, CalcEfficiency(fHM->H1("fhNofHitsCircleFit"), fHM->H1("fhNofHitsAll")).c_str());
+		cout << "Circle fit efficiency:" << circleFitEffTxt << "%" << endl;
 		circleFitEffTxt->Draw();
 		c->cd(3);
 		DrawH1(fhNofHitsEllipseFitEff);
 		TLatex* ellipseFitEffTxt = new TLatex(15, 0.5, CalcEfficiency(fHM->H1("fhNofHitsEllipseFit"), fHM->H1("fhNofHitsAll")).c_str());
+		cout << "Ellipse fit efficiency:" << ellipseFitEffTxt << "%" << endl;
 		ellipseFitEffTxt->Draw();
     }
     
     {
-		TCanvas *c = fHM->CreateCanvas("richgeo_acc_eff_el", "richgeo_acc_eff_el", 1200, 800);
-		c->Divide(3,2);
+		TCanvas *c = fHM->CreateCanvas("richgeo_acc_el", "richgeo_acc_el", 1500, 500);
+		c->Divide(3, 1);
 		c->cd(1);
 		DrawH1({(TH1D*)fHM->H1("fhMcMomEl"), (TH1D*)fHM->H1("fhAccMomEl")}, {"MC", "ACC"}, kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99, "hist");
 		c->cd(2);
@@ -783,7 +811,9 @@ void CbmRichGeoTest::DrawHist()
     TH2D* pyzEff = Cbm::DivideH2((TH2D*)fHM->H1("fhAccPtyEl")->Clone(), (TH2D*)fHM->H1("fhMcPtyEl")->Clone(), "", 100., "Geometrical acceptance [%]");
     {
 		fHM->CreateCanvas("richgeo_acc_eff_el_mom", "richgeo_acc_eff_el_mom", 800, 800);
-		DrawH1(pxEff);
+		string effEl = CalcEfficiency((TH1D*)fHM->H1("fhAccMomEl")->Clone(), (TH1D*)fHM->H1("fhMcMomEl")->Clone());
+		cout << "Geometrical acceptance electrons:" << effEl << "%"<< endl;
+		DrawH1({pxEff}, {"e^{#pm} ("+effEl+"%)"}, kLinear, kLinear, true, 0.6, 0.55, 0.88, 0.65);
     }
 
     {
@@ -792,8 +822,8 @@ void CbmRichGeoTest::DrawHist()
     }
     
     {
-		TCanvas *c = fHM->CreateCanvas("richgeo_acc_eff_pi", "richgeo_acc_eff_pi", 1200, 800);
-		c->Divide(3,2);
+		TCanvas *c = fHM->CreateCanvas("richgeo_acc_pi", "richgeo_acc_pi", 1500, 500);
+		c->Divide(3,1);
 		c->cd(1);
 		DrawH1({(TH1D*)fHM->H1("fhMcMomPi"), (TH1D*)fHM->H1("fhAccMomPi")}, {"MC", "ACC"}, kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99, "hist");
 		c->cd(2);
@@ -806,20 +836,15 @@ void CbmRichGeoTest::DrawHist()
 	TH2D* pyzPiEff = Cbm::DivideH2((TH2D*)fHM->H1("fhAccPtyPi")->Clone(), (TH2D*)fHM->H1("fhMcPtyPi")->Clone(), "", 100., "Geometrical acceptance [%]");
 	{
 		fHM->CreateCanvas("richgeo_acc_eff_pi_mom", "richgeo_acc_eff_pi_mom", 800, 800);
-		DrawH1(pxPiEff);
+		string effPi = CalcEfficiency((TH1D*)fHM->H1("fhAccMomPi")->Clone(), (TH1D*)fHM->H1("fhMcMomPi")->Clone());
+		cout << "Geometrical acceptance pions:" << effPi << "%" << endl;
+		DrawH1({pxPiEff}, {"#pi^{#pm} ("+effPi+"%)"}, kLinear, kLinear, true, 0.6, 0.55, 0.88, 0.65);
     }
 
     {
 		fHM->CreateCanvas("richgeo_acc_eff_pi_pty", "richgeo_acc_eff_pi_pty", 800, 800);
 		DrawH2(pyzPiEff);
 		pyzPiEff->GetZaxis()->SetRangeUser(0, 100);
-    }
-    
-    {
-		string effPi = CalcEfficiency((TH1D*)fHM->H1("fhAccMomPi")->Clone(), (TH1D*)fHM->H1("fhMcMomPi")->Clone());
-		string effEl = CalcEfficiency((TH1D*)fHM->H1("fhAccMomEl")->Clone(), (TH1D*)fHM->H1("fhMcMomEl")->Clone());
-		fHM->CreateCanvas("richgeo_acc_eff_el_pi_mom", "richgeo_acc_eff_el_pi_mom", 800, 800);
-		DrawH1({pxEff, pxPiEff}, {"e^{#pm} ("+effEl+"%)", "#pi^{#pm} ("+effPi+"%)"}, kLinear, kLinear, true, 0.7, 0.5, 0.87, 0.7);
     }
     
     {
@@ -949,7 +974,7 @@ void CbmRichGeoTest::DrawHist()
 void CbmRichGeoTest::DrawPmts()
 {
     fHM->Create3<TH3D>("fhPointsXYZ", "fhPointsXYZ;X [cm];Y [cm];Z [cm];Yield", 100, -50, 50, 100, -300, 300, 100, 100, 300);
-    fHM->Create3<TH3D>("fhHitsXYZ", "fhPointsXYZ;X [cm];Y [cm];Z [cm];Yield",100, -50, 50, 100, -300, 300, 100, 100, 300);
+    fHM->Create3<TH3D>("fhHitsXYZ", "fhHitsXYZ;X [cm];Y [cm];Z [cm];Yield",100, -50, 50, 100, -300, 300, 100, 100, 300);
     vector<Int_t> addr = CbmRichDigiMapManager::GetInstance().GetAddresses();
     
     {
@@ -1073,14 +1098,7 @@ string CbmRichGeoTest::CalcEfficiency(
     if (histAcc->GetEntries() == 0) { return "0"; }
     else {
         Double_t eff = 100. * Double_t(histRec->GetEntries()) / Double_t(histAcc->GetEntries());
-        cout << "Efficiency:" << eff << endl;
         return Cbm::NumberToString(eff, 2);
-        
-        /*  stringstream ss;
-         
-         ss.precision(4);
-         ss << eff;
-         return ss.str();*/
     }
 }
 

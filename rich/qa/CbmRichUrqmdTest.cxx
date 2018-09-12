@@ -24,6 +24,10 @@
 #include "CbmRichGeoManager.h"
 #include "CbmRichPoint.h"
 #include "utils/CbmRichDraw.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCEventList.h"
+#include "CbmMCDataManager.h"
+#include "CbmRichDigi.h"
 
 #include "CbmUtils.h"
 #include "CbmHistManager.h"
@@ -44,6 +48,7 @@ fRichHits(NULL),
 fRichRings(NULL),
 fRichPoints(NULL),
 fMcTracks(NULL),
+fEventList(NULL),
 fRichRingMatches(NULL),
 fRichProjections(NULL),
 fRichDigis(NULL),
@@ -63,30 +68,37 @@ InitStatus CbmRichUrqmdTest::Init()
     cout << "CbmRichUrqmdTest::Init"<<endl;
     FairRootManager* ioman = FairRootManager::Instance();
     if (NULL == ioman) { Fatal("CbmRichUrqmdTest::Init","RootManager not instantised!"); }
-    
+
+    CbmMCDataManager* mcManager = (CbmMCDataManager*)ioman->GetObject("MCDataManager");
+    if (mcManager == nullptr) LOG(FATAL) << "CbmRichUrqmdTest::Init() NULL MCDataManager." << FairLogger::endl;
+
+    fMcTracks = mcManager->InitBranch("MCTrack");
+    if ( NULL == fMcTracks) { LOG(FATAL) << "CbmRichUrqmdTest::Init No MCTrack!" << FairLogger::endl; }
+
+    fRichPoints = mcManager->InitBranch("RichPoint");
+    if ( NULL == fRichPoints) { LOG(FATAL) << "CbmRichUrqmdTest::Init No RichPoint!" << FairLogger::endl; }
+
+
     fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
-    if ( NULL == fRichHits) { Fatal("CbmRichUrqmdTest::Init","No RichHit array!"); }
-    
+    if ( NULL == fRichHits) {  LOG(FATAL) << "CbmRichUrqmdTest::Init No RichHit!" << FairLogger::endl; }
+
     fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-    if ( NULL == fRichRings) { Fatal("CbmRichUrqmdTest::Init","No RichRing array!"); }
-    
+    if ( NULL == fRichRings) {  LOG(FATAL) << "CbmRichUrqmdTest::Init No RichRing!" << FairLogger::endl; }
+
     fRichDigis = (TClonesArray*) ioman->GetObject("RichDigi");
-    if ( NULL == fRichDigis) { Fatal("CbmRichUrqmdTest::Init","No RichDigi array!"); }
-    
-    fRichPoints = (TClonesArray*) ioman->GetObject("RichPoint");
-    if ( NULL == fRichPoints) { Fatal("CbmRichUrqmdTest::Init","No RichPoint array!"); }
-    
-    fMcTracks = (TClonesArray*) ioman->GetObject("MCTrack");
-    if ( NULL == fMcTracks) { Fatal("CbmRichUrqmdTest::Init","No MCTrack array!"); }
-    
+    if ( NULL == fRichDigis) {  LOG(FATAL) << "CbmRichUrqmdTest::Init No RichDigi!" << FairLogger::endl; }
+
     fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
-    if ( NULL == fRichRingMatches) { Fatal("CbmRichUrqmdTest::Init","No RichRingMatch array!"); }
-    
+    if ( NULL == fRichRingMatches) {  LOG(FATAL) << "CbmRichUrqmdTest::Init No RichRingMatch!" << FairLogger::endl; }
+
     fRichProjections = (TClonesArray*) ioman->GetObject("RichProjection");
-    if ( NULL == fRichProjections) { Fatal("CbmRichUrqmdTest::Init","No fRichProjections array!"); }
-    
+    if ( NULL == fRichProjections) {  LOG(FATAL) << "CbmRichUrqmdTest::Init No fRichProjection !" << FairLogger::endl; }
+
+    fEventList = (CbmMCEventList*) ioman->GetObject("MCEventList.");
+    if (NULL == fEventList) {LOG(FATAL) << "CbmRichUrqmdTest::Init No MCEventList!" << FairLogger::endl;}
+
     InitHistograms();
-    
+
     return kSUCCESS;
 }
 
@@ -157,8 +169,15 @@ void CbmRichUrqmdTest::FillRichRingNofHits()
     for (Int_t iHit=0; iHit < nofRichHits; iHit++) {
         CbmRichHit* hit = static_cast<CbmRichHit*>(fRichHits->At(iHit));
         if (NULL == hit) continue;
-        
-        vector<Int_t> motherIds = CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(hit, fRichDigis, fRichPoints, fMcTracks);
+        Int_t digiIndex = hit->GetRefId();
+        if (digiIndex < 0) continue;
+        const CbmRichDigi* digi = static_cast<const CbmRichDigi*>(fRichDigis->At(digiIndex));
+        if (NULL == digi) continue;
+        CbmMatch* digiMatch = digi->GetMatch();
+        if (NULL == digiMatch) continue;
+        Int_t eventId = digiMatch->GetMatchedLink().GetEntry();
+
+        vector<pair<Int_t,Int_t> > motherIds = CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(hit, fRichDigis, fRichPoints, fMcTracks, eventId);
         for (UInt_t i = 0; i < motherIds.size(); i++) {
             fNofHitsInRingMap[motherIds[i]]++;
         }
@@ -167,21 +186,20 @@ void CbmRichUrqmdTest::FillRichRingNofHits()
 
 void CbmRichUrqmdTest::NofRings()
 {
+    Int_t fileId = 0;
     Int_t nofRings = fRichRings->GetEntriesFast();
     int nRings1hit = 0, nRings7hits = 0;
     int nRingsPrim1hit = 0, nRingsPrim7hits = 0;
     int nRingsTarget1hit = 0, nRingsTarget7hits = 0;
     for (Int_t iR = 0; iR < nofRings; iR++){
-        CbmRichRing *ring = (CbmRichRing*) fRichRings->At(iR);
+        const CbmRichRing *ring = static_cast<CbmRichRing*>( fRichRings->At(iR) );
         if (NULL == ring) continue;
-        // cout << "ring: nofHits=" << ring->GetNofHits() << endl;
-        CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR);
+        const CbmTrackMatchNew* ringMatch = static_cast<CbmTrackMatchNew*>( fRichRingMatches->At(iR) );
         if (NULL == ringMatch) continue;
-        // cout << "nofHits=" << ringMatch->GetNofHits() << endl;
-        // continue;
+
+        Int_t mcEventId = ringMatch->GetMatchedLink().GetEntry();
         Int_t mcTrackId = ringMatch->GetMatchedLink().GetIndex();
-        if (mcTrackId < 0) continue;
-        CbmMCTrack* mcTrack = (CbmMCTrack*)fMcTracks->At(mcTrackId);
+        const CbmMCTrack* mcTrack = static_cast<CbmMCTrack*>(fMcTracks->Get(fileId, mcEventId, mcTrackId));
         if (NULL == mcTrack) continue;
         Int_t motherId = mcTrack->GetMotherId();
         Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
@@ -205,7 +223,7 @@ void CbmRichUrqmdTest::NofRings()
         if (nofHits >= 1) {
             if (motherId != -1) {
                 int motherPdg;
-                CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
+                const CbmMCTrack* mother = static_cast<CbmMCTrack*>( fMcTracks->Get(fileId, mcEventId, motherId) );
                 if (NULL != mother) motherPdg = mother->GetPdgCode();
                 if (motherId != -1 && pdg == 11 && motherPdg != 22) fHM->H1("fh_secel_mom")->Fill(mom);
                 
@@ -244,90 +262,98 @@ void CbmRichUrqmdTest::NofHitsAndPoints()
         fHM->H2("fh_hitrate_xy")->Fill(hit->GetX(), hit->GetY());
     }
     
-    
-    int nofPoints = fRichPoints->GetEntriesFast();
-    for (int i = 0; i < nofPoints; i++) {
-        CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(i);
-        if (NULL == point) continue;
-        fHM->H1("fh_nof_points_per_event")->Fill(1);
-        
-        Int_t mcPhotonTrackId = point->GetTrackID();
-        if (mcPhotonTrackId < 0) continue;
-        CbmMCTrack* mcPhotonTrack = (CbmMCTrack*)fMcTracks->At(mcPhotonTrackId);
-        if (NULL == mcPhotonTrack) continue;
-        Int_t motherPhotonId = mcPhotonTrack->GetMotherId();
-        if (motherPhotonId < 0) continue;
-        CbmMCTrack* mcTrack = (CbmMCTrack*)fMcTracks->At(motherPhotonId);
-        if (NULL == mcTrack) continue;
-        Int_t motherId = mcTrack->GetMotherId();
+    Int_t nofEvents = fEventList->GetNofEvents();
+    for (Int_t iE = 0; iE < nofEvents; iE++) {
+        Int_t fileId = fEventList->GetFileIdByIndex(iE);
+        Int_t eventId = fEventList->GetEventIdByIndex(iE);
+        int nofPoints = fRichPoints->Size(fileId, eventId);
+        for (int i = 0; i < nofPoints; i++) {
+            const CbmRichPoint* point = static_cast<CbmRichPoint*>( fRichPoints->Get(fileId, eventId, i) );
+            if (NULL == point) continue;
+            fHM->H1("fh_nof_points_per_event")->Fill(1);
 
-        Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
-        TVector3 vert;
-        mcTrack->GetStartVertex(vert);
-        double dZ = vert.Z();
+            Int_t mcPhotonTrackId = point->GetTrackID();
+            if (mcPhotonTrackId < 0) continue;
+            const CbmMCTrack* mcPhotonTrack = static_cast<CbmMCTrack*>( fMcTracks->Get(fileId, eventId, mcPhotonTrackId) );
+            if (NULL == mcPhotonTrack) continue;
+            Int_t motherPhotonId = mcPhotonTrack->GetMotherId();
+            if (motherPhotonId < 0) continue;
+            const CbmMCTrack* mcTrack = static_cast<CbmMCTrack*>( fMcTracks->Get(fileId, eventId, motherPhotonId) );
+            if (NULL == mcTrack) continue;
+            Int_t motherId = mcTrack->GetMotherId();
 
-        if (motherId == -1 && pdg == 11) continue; // do not calculate embedded electrons
-        
-        if (motherId != -1) {
-            int motherPdg;
-            CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
-            if (NULL != mother) motherPdg = mother->GetPdgCode();
-            if (motherId != -1 && pdg == 11 && motherPdg != 22) fHM->H1("fh_nof_points_per_event")->Fill(2);
-            
-            if (motherId != -1 && pdg == 11 && motherPdg == 22){
-                if (dZ < 0.1){
-                    fHM->H1("fh_nof_points_per_event")->Fill(3);
-                } else {
-                    fHM->H1("fh_nof_points_per_event")->Fill(4);
+            Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
+            TVector3 vert;
+            mcTrack->GetStartVertex(vert);
+            double dZ = vert.Z();
+
+            if (motherId == -1 && pdg == 11) continue; // do not calculate embedded electrons
+
+            if (motherId != -1) {
+                int motherPdg;
+                const CbmMCTrack* mother = static_cast<CbmMCTrack*>( fMcTracks->Get(fileId, eventId, motherId) );
+                if (NULL != mother) motherPdg = mother->GetPdgCode();
+                if (motherId != -1 && pdg == 11 && motherPdg != 22) fHM->H1("fh_nof_points_per_event")->Fill(2);
+
+                if (motherId != -1 && pdg == 11 && motherPdg == 22){
+                    if (dZ < 0.1){
+                        fHM->H1("fh_nof_points_per_event")->Fill(3);
+                    } else {
+                        fHM->H1("fh_nof_points_per_event")->Fill(4);
+                    }
                 }
+
             }
-            
+            if (pdg == 211) fHM->H1("fh_nof_points_per_event")->Fill(5);
+            if (pdg == 321) fHM->H1("fh_nof_points_per_event")->Fill(6);
+            if (pdg == 13) fHM->H1("fh_nof_points_per_event")->Fill(7);
         }
-        if (pdg == 211) fHM->H1("fh_nof_points_per_event")->Fill(5);
-        if (pdg == 321) fHM->H1("fh_nof_points_per_event")->Fill(6);
-        if (pdg == 13) fHM->H1("fh_nof_points_per_event")->Fill(7);
     }
 }
 
 void CbmRichUrqmdTest::PmtXYSource()
 {
-    Int_t nofPoints = fRichPoints->GetEntries();
-    for (int i = 0; i < nofPoints; i++) {
-        CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(i);
-        if (NULL == point) continue;
-        
-        Int_t iMCTrack = point->GetTrackID();
-        CbmMCTrack* track = static_cast<CbmMCTrack*>(fMcTracks->At(iMCTrack));
-        if (NULL == track) continue;
-        
-        Int_t iMother = track->GetMotherId();
-        if (iMother == -1) continue;
-        
-        CbmMCTrack* track2 = static_cast<CbmMCTrack*>(fMcTracks->At(iMother));
-        if (NULL == track2) continue;
-        int pdg = TMath::Abs(track2->GetPdgCode());
-        int motherId = track2->GetMotherId();
-        TVector3 inPos (point->GetX(), point->GetY(), point->GetZ());
-        TVector3 outPos;
-        CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
-        
-        fHM->H2("fh_points_xy")->Fill(outPos.X(), outPos.Y());
-        if (motherId != -1) {
-            int motherPdg;
-            CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
-            if (NULL != mother) motherPdg = mother->GetPdgCode();
-            TVector3 vert;
-            track2->GetStartVertex(vert);
-            if (motherId != -1 && pdg == 11 && motherPdg == 22){
-                if (vert.Z() < 0.1){
-                    fHM->H2("fh_points_xy_gamma_target")->Fill(outPos.X(), outPos.Y());
-                } else {
-                    fHM->H2("fh_points_xy_gamma_nontarget")->Fill(outPos.X(), outPos.Y());
+    Int_t nofEvents = fEventList->GetNofEvents();
+    for (Int_t iE = 0; iE < nofEvents; iE++) {
+        Int_t fileId = fEventList->GetFileIdByIndex(iE);
+        Int_t eventId = fEventList->GetEventIdByIndex(iE);
+        int nofPoints = fRichPoints->Size(fileId, eventId);
+        for (int i = 0; i < nofPoints; i++) {
+            const CbmRichPoint* point = static_cast<CbmRichPoint*>( fRichPoints->Get(fileId, eventId, i) );
+            if (NULL == point) continue;
+
+            Int_t iMCTrack = point->GetTrackID();
+            const CbmMCTrack* track = static_cast<CbmMCTrack*>(fMcTracks->Get(fileId, eventId, iMCTrack));
+            if (NULL == track) continue;
+
+            Int_t iMother = track->GetMotherId();
+            if (iMother == -1) continue;
+
+            const CbmMCTrack* track2 = static_cast<CbmMCTrack*>(fMcTracks->Get(fileId, eventId, iMother));
+            if (NULL == track2) continue;
+            int pdg = TMath::Abs(track2->GetPdgCode());
+            int motherId = track2->GetMotherId();
+            TVector3 inPos (point->GetX(), point->GetY(), point->GetZ());
+            TVector3 outPos;
+            CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
+
+            fHM->H2("fh_points_xy")->Fill(outPos.X(), outPos.Y());
+            if (motherId != -1) {
+                int motherPdg;
+                const CbmMCTrack* mother = static_cast<CbmMCTrack*>( fMcTracks->Get(fileId, eventId, motherId) );
+                if (NULL != mother) motherPdg = mother->GetPdgCode();
+                TVector3 vert;
+                track2->GetStartVertex(vert);
+                if (motherId != -1 && pdg == 11 && motherPdg == 22){
+                    if (vert.Z() < 0.1){
+                        fHM->H2("fh_points_xy_gamma_target")->Fill(outPos.X(), outPos.Y());
+                    } else {
+                        fHM->H2("fh_points_xy_gamma_nontarget")->Fill(outPos.X(), outPos.Y());
+                    }
                 }
             }
+            if (pdg == 211) fHM->H2("fh_points_xy_pions")->Fill(outPos.X(), outPos.Y());
         }
-        if (pdg == 211) fHM->H2("fh_points_xy_pions")->Fill(outPos.X(), outPos.Y());
-        
     }
 }
 
@@ -347,22 +373,29 @@ void CbmRichUrqmdTest::NofProjections()
 
 void CbmRichUrqmdTest::Vertex()
 {
-    int nMcTracks = fMcTracks->GetEntries();
-    for (int i = 0; i < nMcTracks; i++){
-        //At least one hit in RICH
-        if (fNofHitsInRingMap[i] < 1) continue;
-        CbmMCTrack* mctrack = (CbmMCTrack*) fMcTracks->At(i);
-        TVector3 v;
-        mctrack->GetStartVertex(v);
-        fHM->H1("fh_vertex_z")->Fill(v.Z());
-        fHM->H2("fh_vertex_xy")->Fill(v.X(), v.Y());
-        if (v.Z() >= 100 && v.Z() <=180){
-            fHM->H2("fh_vertex_xy_z100_180")->Fill(v.X(), v.Y());
+    Int_t nofEvents = fEventList->GetNofEvents();
+    for (Int_t iE = 0; iE < nofEvents; iE++) {
+        Int_t fileId = fEventList->GetFileIdByIndex(iE);
+        Int_t eventId = fEventList->GetEventIdByIndex(iE);
+
+        int nMcTracks = fMcTracks->Size(fileId, eventId);
+        for (int i = 0; i < nMcTracks; i++){
+            //At least one hit in RICH
+            pair<Int_t, Int_t> val = std::make_pair(eventId, i);
+            if (fNofHitsInRingMap[val] < 1) continue;
+            const CbmMCTrack* mctrack = static_cast<CbmMCTrack*> (fMcTracks->Get(fileId, eventId, i));
+            TVector3 v;
+            mctrack->GetStartVertex(v);
+            fHM->H1("fh_vertex_z")->Fill(v.Z());
+            fHM->H2("fh_vertex_xy")->Fill(v.X(), v.Y());
+            if (v.Z() >= 100 && v.Z() <=180){
+                fHM->H2("fh_vertex_xy_z100_180")->Fill(v.X(), v.Y());
+            }
+            if (v.Z() >=180 && v.Z() <=370){
+                fHM->H2("fh_vertex_xy_z180_370")->Fill(v.X(), v.Y());
+            }
         }
-        if (v.Z() >=180 && v.Z() <=370){
-            fHM->H2("fh_vertex_xy_z180_370")->Fill(v.X(), v.Y());
-        }
-    } // nMcTracks
+    }
 }
 
 void CbmRichUrqmdTest::DrawHist()

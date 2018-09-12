@@ -27,6 +27,8 @@ class CbmRichRingLight;
 class TCanvas;
 class CbmHistManager;
 class TVector3;
+class CbmMCDataArray;
+class CbmMCEventList;
 
 #include <vector>
 #include <string>
@@ -109,7 +111,7 @@ private:
     /**
      * \brief Fill MC histogram for detector acceptance calculation.
      */
-    void FillMcHist();
+    void ProcessMc();
     
     /**
      * \brief Loop over all rings in array and fill ring parameters histograms.
@@ -163,7 +165,7 @@ private:
     /**
      * \brief Calculate residuals between hits and MC points and fill histograms.
      */
-    void HitsAndPoints();
+    void ProcessHits();
     
     /**
      * \brief Create histogram: RICH detector acceptance vs.
@@ -221,9 +223,10 @@ private:
     TClonesArray* fRichHits;
     TClonesArray* fRichRings;
     TClonesArray* fRichDigis;
-    TClonesArray* fRichPoints; 
-    TClonesArray* fMCTracks;
+    CbmMCDataArray* fRichPoints;
+    CbmMCDataArray* fMcTracks;
     TClonesArray* fRichRingMatches; 
+    CbmMCEventList* fEventList;
     
     // rings will be fitted on a fly
     CbmRichRingFitterCOP* fCopFit;

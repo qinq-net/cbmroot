@@ -18,12 +18,15 @@ using namespace std;
 
 class TClonesArray;
 class CbmRichHit;
+class CbmMCDataArray;
+class CbmMCEventList;
 
 class CbmRichRingFinderIdeal : public CbmRichRingFinder
 {
 private:
-    TClonesArray* fRichPoints; // CbmRichPoint array
-    TClonesArray* fMcTracks; // CbmMCTrackArray
+    CbmMCDataArray* fRichPoints;
+    CbmMCDataArray* fMcTracks;
+    CbmMCEventList* fEventList;
     TClonesArray* fRichDigis;
     
     
@@ -53,6 +56,13 @@ public:
     
 private:
     
+    /**
+     * \ brief Return evnetId from digiMatch corresponding to rich hit.
+     */
+    Int_t GetEventIdForRichHit(
+            const CbmRichHit* richHit);
+
+
     /**
      * \brief Copy constructor.
      */

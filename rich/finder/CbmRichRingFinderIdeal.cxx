@@ -18,6 +18,10 @@
 #include "CbmRichDigi.h"
 #include "CbmMatch.h"
 #include "CbmMatchRecoToMC.h"
+#include "FairLogger.h"
+#include "CbmMCEventList.h"
+#include "CbmMCDataManager.h"
+#include "CbmMCDataArray.h"
 
 #include "TClonesArray.h"
 
@@ -32,7 +36,8 @@ CbmRichRingFinderIdeal::CbmRichRingFinderIdeal()
  : CbmRichRingFinder(),
    fRichPoints(NULL),
    fMcTracks(NULL),
-   fRichDigis(NULL)
+   fRichDigis(NULL),
+   fEventList(NULL)
 {
     
 }
@@ -47,14 +52,21 @@ void CbmRichRingFinderIdeal::Init()
     FairRootManager* ioman = FairRootManager::Instance();
     if (NULL == ioman) {Fatal("CbmRichRingFinderIdeal::Init","RootManager is NULL!");}
     
-    fMcTracks  = (TClonesArray*) ioman->GetObject("MCTrack");
-    if (NULL == fMcTracks) {Fatal("CbmRichRingFinderIdeal::Init","No MCTrack array!");}
+    CbmMCDataManager* mcManager = (CbmMCDataManager*)ioman->GetObject("MCDataManager");
+    if (mcManager == nullptr) LOG(FATAL) << "CbmRichRingFinderIdeal::Init() NULL MCDataManager." << FairLogger::endl;
+
+    fMcTracks = mcManager->InitBranch("MCTrack");
+    if (NULL == fMcTracks) {LOG(FATAL) << "CbmRichRingFinderIdeal::Init No MCTrack!" << FairLogger::endl;}
+
+    fRichPoints = mcManager->InitBranch("RichPoint");
+    if (NULL == fRichPoints) {LOG(FATAL) << "CbmRichRingFinderIdeal::Init No RichPoint!" << FairLogger::endl;}
     
-    fRichPoints  = (TClonesArray*) ioman->GetObject("RichPoint");
-    if (NULL == fRichPoints) {Fatal("CbmRichRingFinderIdeal::Init","No RichPoint array!");}
-    
+
+    fEventList = (CbmMCEventList*) ioman->GetObject("MCEventList.");
+    if (NULL == fEventList) {LOG(FATAL) << "CbmRichRingFinderIdeal::Init No MCEventList!" << FairLogger::endl;}
+
     fRichDigis  = (TClonesArray*) ioman->GetObject("RichDigi");
-    if (NULL == fRichDigis) {Fatal("CbmRichRingFinderIdeal::Init","No RichDigi array!");}
+    if (NULL == fRichDigis) {LOG(FATAL) << "CbmRichRingFinderIdeal::Init No RichDigi!" << FairLogger::endl;}
 }
 
 Int_t CbmRichRingFinderIdeal::DoFind(
@@ -71,68 +83,74 @@ Int_t CbmRichRingFinderIdeal::DoFind(
         cout << "-E- CbmRichRingFinderIdeal::DoFind, Ring array missing!" << endl;
         return -1;
     }
-    
+
     // Create STL map from MCtrack index to number of valid RichHits
-    map<Int_t, Int_t> hitMap;
-    Int_t nRichHits = hitArray->GetEntriesFast();
-    for (Int_t iHit = 0; iHit < nRichHits; iHit++) {
-        CbmRichHit* pRhit = (CbmRichHit*) hitArray->At(iHit);
-        if ( NULL == pRhit ) continue;
-        vector<Int_t> motherIds = CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(pRhit, fRichDigis, fRichPoints, fMcTracks);
+    map<pair<Int_t, Int_t>, Int_t> hitMap;
+    Int_t nofRichHits = hitArray->GetEntriesFast();
+    for (Int_t iHit = 0; iHit < nofRichHits; iHit++) {
+        const CbmRichHit* richHit = static_cast<CbmRichHit*>( hitArray->At(iHit) );
+        if ( NULL == richHit ) continue;
+        Int_t eventId = GetEventIdForRichHit(richHit);
+
+        vector<pair<Int_t, Int_t>> motherIds = CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(richHit, fRichDigis, fRichPoints, fMcTracks, eventId);
         for (UInt_t i = 0; i < motherIds.size(); i++) {
             hitMap[motherIds[i]]++;
         }
-        //cout << "motherId=" << motherId << " " << hitMap[motherId] << endl;
     }
     
     // Create STL map from MCTrack index to RichRing index
-    map<Int_t, Int_t> ringMap;
-    
-    // Create RICHRings for MCTracks
-    Int_t nRings  = 0; // number of RichRings
-    Int_t nMCTracks = fMcTracks->GetEntriesFast();
-    for (Int_t iMCTrack = 0; iMCTrack < nMCTracks; iMCTrack++) {
-        CbmMCTrack* pMCtr = (CbmMCTrack*) fMcTracks->At(iMCTrack);
-        if ( NULL == pMCtr ) continue;
-        if (hitMap[iMCTrack] <= 0) continue;
-        new((*ringArray)[nRings]) CbmRichRing();
-        ringMap[iMCTrack] = nRings++;
-        //cout << "nRings=" << nRings << endl;
+    map<pair<Int_t, Int_t>, Int_t> ringMap;
+    Int_t nofRings  = 0;
+    Int_t nofEvents = fEventList->GetNofEvents();
+    for (Int_t iE = 0; iE < nofEvents; iE++) {
+        Int_t fileId = fEventList->GetFileIdByIndex(iE);
+        Int_t eventId = fEventList->GetEventIdByIndex(iE);
+
+        // Create RichRings for McTracks
+        Int_t nofMcTracks = fMcTracks->Size(fileId, eventId);
+        for (Int_t iT = 0; iT < nofMcTracks; iT++) {
+            const CbmMCTrack* mcTrack = static_cast<CbmMCTrack*>( fMcTracks->Get(fileId, eventId, iT) );
+            if ( NULL == mcTrack ) continue;
+            pair<Int_t, Int_t> val = std::make_pair(eventId, iT);
+            if (hitMap[val] <= 0) continue;
+            new((*ringArray)[nofRings]) CbmRichRing();
+            ringMap[val] = nofRings++;
+        }
     }
-    
+
     // Loop over RichHits. Get corresponding MCPoint and MCTrack index
-    for (Int_t iHit = 0; iHit < nRichHits; iHit++) {
-        CbmRichHit* pRhit = (CbmRichHit*) hitArray->At(iHit);
-        if ( NULL == pRhit ) continue;
+    for (Int_t iHit = 0; iHit < nofRichHits; iHit++) {
+        const CbmRichHit* richHit = static_cast<CbmRichHit*>( hitArray->At(iHit) );
+        if ( NULL == richHit ) continue;
+        Int_t eventId = GetEventIdForRichHit(richHit);
         
-        vector<Int_t> motherIds = CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(pRhit, fRichDigis, fRichPoints, fMcTracks);
+        vector<pair<Int_t, Int_t> > motherIds = CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(richHit, fRichDigis, fRichPoints, fMcTracks, eventId);
         
         for (UInt_t i = 0; i < motherIds.size(); i++) {
-            Int_t motherId = motherIds[i];
-            if (motherId < 0 || motherId > nMCTracks) continue;
+            if (ringMap.find(motherIds[i]) == ringMap.end()) continue;
+            Int_t ringIndex = ringMap[motherIds[i]];
+            CbmRichRing* ring = (CbmRichRing*) ringArray->At(ringIndex);
+            if ( NULL == ring ) continue;
             
-            if (ringMap.find(motherId) == ringMap.end()) continue;
-            
-            Int_t ringIndex = ringMap[motherId];
-            //cout << ringIndex << endl;
-            
-            CbmRichRing* pRing = (CbmRichRing*) ringArray->At(ringIndex);
-            if ( NULL == pRing ) continue;
-            
-            pRing->AddHit(iHit); // attach the hit to the ring
+            ring->AddHit(iHit); // attach the hit to the ring
         }
     }
     
-    cout << "-I- CbmRichRingFinderIdeal: all " << nMCTracks << ", rec. " << nRings << endl;
+    LOG(INFO) << "-I- CbmRichRingFinderIdeal nofRings:" << nofRings << FairLogger::endl;
     
-    return nRings;
+    return nofRings;
 }
 
 
-
-
-
-
-
-
+Int_t CbmRichRingFinderIdeal::GetEventIdForRichHit(const CbmRichHit* richHit)
+{
+    if (richHit == NULL) return -1;
+    Int_t digiIndex = richHit->GetRefId();
+    if (digiIndex < 0) return -1;
+    const CbmRichDigi* digi = static_cast<const CbmRichDigi*>(fRichDigis->At(digiIndex));
+    if (NULL == digi) return -1;
+    CbmMatch* digiMatch = digi->GetMatch();
+    if (NULL == digiMatch) return -1;
+    return digiMatch->GetMatchedLink().GetEntry();
+}
 

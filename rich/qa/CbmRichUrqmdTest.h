@@ -15,6 +15,8 @@ class TClonesArray;
 class CbmRichRing;
 class TCanvas;
 class CbmHistManager;
+class CbmMCDataArray;
+class CbmMCEventList;
 
 #include <vector>
 #include <map>
@@ -123,17 +125,18 @@ private:
     
     TClonesArray* fRichHits;
     TClonesArray* fRichRings;
-    TClonesArray* fRichPoints;
-    TClonesArray* fMcTracks;
+    CbmMCDataArray* fRichPoints;
+    CbmMCDataArray* fMcTracks;
     TClonesArray* fRichRingMatches;
     TClonesArray* fRichProjections;
     TClonesArray* fRichDigis;
+    CbmMCEventList* fEventList;
     
     Int_t fEventNum;
     Int_t fMinNofHits; // Min number of hits in ring for detector acceptance calculation.
     
     // Number of hits in the MC RICH ring
-    std::map<Int_t, Int_t> fNofHitsInRingMap;
+    std::map<pair<Int_t,Int_t>, Int_t> fNofHitsInRingMap;
     
     ClassDef(CbmRichUrqmdTest,1)
 };
