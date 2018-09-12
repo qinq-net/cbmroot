@@ -2,6 +2,12 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+
+Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -Weffc++ -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-ignored-qualifiers -Wno-overloaded-virtual")
+# Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Wno-padded -Wno-global-constructors")
+# Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast")
+
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/base 
 
@@ -127,6 +133,8 @@ OffLineInterface/CbmL1StsTrackFinder.h
 #OffLineInterface/CbmL1SttTrack.h
 # L1Algo/L1Algo.h
 )
+
+
 
 find_package(OpenMP)
 if (OPENMP_FOUND)

@@ -106,7 +106,7 @@ class CbmL1HitStore{
 class CbmTrdParSetDigi;
 class CbmTrdParModDigi;
 class CbmTofDigiPar;
-class CbmGeoMuchPar;
+
 
 
 class CbmL1 : public FairTask 
@@ -285,10 +285,7 @@ class CbmL1 : public FairTask
    TClonesArray* fTofHitDigiMatches; // CbmMatches array
    TClonesArray* fTofHits; // CbmMatches array
    CbmTofDigiPar         * fDigiPar;
-   
-   FairRuntimeDb *RunDB;
-   CbmGeoMuchPar *MuchPar;
-   TObjArray *Nodes;
+
    
      struct TH1FParameters
   {

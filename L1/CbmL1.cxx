@@ -47,7 +47,6 @@
 #include "TGeoBoolNode.h"
 #include "TGeoManager.h"
 
-#include "CbmGeoMuchPar.h"
 #include "CbmMuchGeoScheme.h"
 #include "CbmMuchStation.h"
 #include "CbmMuchModuleGem.h"
@@ -91,13 +90,14 @@ CbmL1 *CbmL1::fInstance = 0;
 
 CbmL1::CbmL1(): FairTask("L1"),
     algo(0), // for access to L1 Algorithm from L1::Instance
+fDigiFile(),
 vRTracks(), // reconstructed tracks
 vFileEvent(),
 vHitStore(),
 vMCPoints(),
 nMvdPoints(0),
 vMCPoints_in_Time_Slice(),
-NStation(0), NMvdStations(0), NStsStations(0), NMuchStations(0), // number of detector stations (all\sts\mvd)
+NStation(0), NMvdStations(0), NStsStations(0), NMuchStations(0), NTrdStations(0), NTOFStation(0),// number of detector stations (all\sts\mvd)
 fPerformance(0),
 fSTAPDataMode(0),
 fSTAPDataDir(""),
@@ -181,7 +181,7 @@ vHitStore(),
 vMCPoints(),
 nMvdPoints(0),
 vMCPoints_in_Time_Slice(),
-NStation(0), NMvdStations(0), NStsStations(0), NMuchStations(0), // number of detector stations (all\sts\mvd)
+NStation(0), NMvdStations(0), NStsStations(0), NMuchStations(0), NTrdStations(0), NTOFStation(0),// number of detector stations (all\sts\mvd)
 fPerformance(_fPerformance),
 fSTAPDataMode(fSTAPDataMode_),
 fSTAPDataDir(fSTAPDataDir_),
@@ -331,10 +331,7 @@ InitStatus CbmL1::Init()
   }
 
   histodir = gROOT->mkdir("L1");
-  
-  RunDB = Run->GetRuntimeDb();
-  MuchPar = reinterpret_cast<CbmGeoMuchPar*>(RunDB->findContainer("CbmGeoMuchPar"));
-  Nodes = MuchPar->GetStations();
+
   
   // turn on reconstruction in sub-detectors
   
@@ -1371,8 +1368,8 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
 
   
   if( fVerbose>1 ) cout<<"L1 Track finder..."<<endl;
-  //algo->CATrackFinder();
-  IdealTrackFinder();
+  algo->CATrackFinder();
+  //IdealTrackFinder();
      
   
   if( fVerbose>1 ) cout<<"L1 Track finder ok"<<endl;
