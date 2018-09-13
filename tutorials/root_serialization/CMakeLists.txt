@@ -1,0 +1,34 @@
+set(INCLUDE_DIRECTORIES
+  ${CBMROOT_SOURCE_DIR}/data
+  ${CBMROOT_SOURCE_DIR}/data/tof
+  ${CBMROOT_SOURCE_DIR}/base
+)
+
+Set(SYSTEM_INCLUDE_DIRECTORIES
+    ${SYSTEM_INCLUDE_DIRECTORIES}
+)
+
+include_directories(${INCLUDE_DIRECTORIES})
+include_directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
+
+set(LINK_DIRECTORIES
+  ${ROOT_LIBRARY_DIR}
+  ${FAIRROOT_LIBRARY_DIR}
+)
+
+link_directories(${LINK_DIRECTORIES})
+
+set(EXECUTABLE_OUTPUT_PATH
+"${EXECUTABLE_OUTPUT_PATH}/tutorials/root_serialization")
+
+set(EXE_NAME root_example1)
+set(SRCS example1.cxx)
+set(DEPENDENCIES
+  ${DEPENDENCIES}
+  CbmData
+  Base
+  Core
+  Tree
+  RIO
+)
+GENERATE_EXECUTABLE()
