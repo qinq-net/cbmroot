@@ -72,6 +72,7 @@ download_project(PROJ            DataTreeQA_source
 )
 
 ExternalProject_Add(DATATREEQA
+   DEPENDS DataTree
   BUILD_IN_SOURCE 0
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/DataTreeQA
   BUILD_BYPRODUCTS ${DATATREEQA_LIBRARY}
@@ -135,14 +136,14 @@ Install(FILES ${CMAKE_BINARY_DIR}/lib/${DATATREEQA_LIBNAME}
 #  INSTALL_COMMAND  ${CMAKE_COMMAND} --build . --target install
 #)
 
-add_library(UnigenQA SHARED IMPORTED)
-set_target_properties(UnigenQA PROPERTIES IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib)
-add_dependencies(UnigenQA UNIGENQA)
+#add_library(UnigenQA SHARED IMPORTED)
+#set_target_properties(UnigenQA PROPERTIES IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib)
+#add_dependencies(UnigenQA UNIGENQA)
 
-set(UnigenQA_LIB_DIR ${CMAKE_BINARY_DIR}/lib)
-set(UnigenQA_LIBRARIES UnigenQA)
-set(UnigenQA_INCLUDE_DIR "${CMAKE_BINARY_DIR}/include")
-set(UnigenQA_FOUND TRUE)
+#set(UnigenQA_LIB_DIR ${CMAKE_BINARY_DIR}/lib)
+#set(UnigenQA_LIBRARIES UnigenQA)
+#set(UnigenQA_INCLUDE_DIR "${CMAKE_BINARY_DIR}/include")
+#set(UnigenQA_FOUND TRUE)
 
 #Install(FILES ${CMAKE_BINARY_DIR}/lib/${UNIGENQA_LIBNAME}
 #              ${CMAKE_BINARY_DIR}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}UnigenQA.rootmap
