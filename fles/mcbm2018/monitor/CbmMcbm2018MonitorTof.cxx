@@ -129,6 +129,8 @@ CbmMcbm2018MonitorTof::CbmMcbm2018MonitorTof() :
     fvhFeetRateLong_gDPB(),
     fvhFeetErrorRateLong_gDPB(),
     fvhFeetErrorRatioLong_gDPB(),
+    fvhRemapTotSideA_gDPB(),
+    fvhRemapTotSideB_gDPB(),
     fvhTokenMsgType(),
     fvhTriggerRate(),
     fvhCmdDaqVsTrig(),
@@ -558,6 +560,20 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
              uGdpb);
          fvhFeetErrorRatioLong_gDPB.push_back( new TProfile(name.Data(), title.Data(), fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong) );
       } // for (UInt_t uFeet = 0; uFeet < fuNrOfFeetPerGdpb; uFeet++)
+      
+      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
+      name = Form("RemapTotSideA_gDPB_%02u", uGdpb);
+      title = Form("Raw TOT gDPB %02u remapped Side A; PADI channel; TOT [bin]", uGdpb);
+      fvhRemapTotSideA_gDPB.push_back(
+         new TH2F(name.Data(), title.Data(),
+            fuNrOfChannelsPerGdpb/2, 0, fuNrOfChannelsPerGdpb/2,
+            256, 0, 256 ) );
+      name = Form("RemapTotSideB_gDPB_%02u", uGdpb);
+      title = Form("Raw TOT gDPB %02u remapped Side B; PADI channel; TOT [bin]", uGdpb);
+      fvhRemapTotSideB_gDPB.push_back(
+         new TH2F(name.Data(), title.Data(),
+            fuNrOfChannelsPerGdpb/2, 0, fuNrOfChannelsPerGdpb/2,
+            256, 0, 256 ) );
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
       /// STAR Trigger decoding and monitoring
@@ -725,7 +741,11 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
          server->Register("/TofRaw", fvhRawTot_gDPB[ uTotPlot ] );
 
       for( UInt_t uTotPlot = 0; uTotPlot < fvhRemapTot_gDPB.size(); ++uTotPlot )
+      {
          server->Register("/TofRaw", fvhRemapTot_gDPB[ uTotPlot ] );
+         server->Register("/TofRaw", fvhRemapTotSideA_gDPB[ uTotPlot ] );
+         server->Register("/TofRaw", fvhRemapTotSideB_gDPB[ uTotPlot ] );
+	  }
 
       for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
       {
@@ -997,6 +1017,31 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       gPad->SetLogz();
 
       fvhRemapTot_gDPB[ uGdpb ]->Draw( "colz" );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   /**************************************************/
+
+   /** Create Side TOT Canvas(es) for STAR 2018 **/
+   cTotPnt = NULL;
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      cTotPnt = new TCanvas( Form("cTotRemapSides_g%02u", uGdpb),
+                             Form("Sides ch gDPB %02u TOT distributions", uGdpb),
+                             w, h);
+      cTotPnt->Divide( 1, 2 );
+
+      cTotPnt->cd( 1 );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
+
+      fvhRemapTotSideA_gDPB[ uGdpb ]->Draw( "colz" );
+
+      cTotPnt->cd( 2 );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
+      fvhRemapTotSideB_gDPB[ uGdpb ]->Draw( "colz" );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
    /**************************************************/
@@ -1547,6 +1592,18 @@ void CbmMcbm2018MonitorTof::FillHitInfo(gdpbv100::Message mess)
    /// Remapped for PADI to GET4
    fvhRemapChCount_gDPB[fuGdpbNr]->Fill( uRemappedChannelNr );
    fvhRemapTot_gDPB[ fuGdpbNr ]->Fill(  uRemappedChannelNr , uTot);
+   
+   switch( ( uRemappedChannelNr / fuNrOfChannelsPerFeet ) / kuNbFeeSide )
+   {
+      case 0: // Module 1 Side A
+         fvhRemapTotSideA_gDPB[ fuGdpbNr ]->Fill(  uRemappedChannelNr , uTot);
+      case 1: // Module 1 Side B
+         fvhRemapTotSideB_gDPB[ fuGdpbNr ]->Fill(  uRemappedChannelNr - 160 , uTot);
+      case 2: // Module 2 Side A
+         fvhRemapTotSideA_gDPB[ fuGdpbNr ]->Fill(  uRemappedChannelNr - 160 , uTot);
+      case 3: // Module 2 Side B
+         fvhRemapTotSideB_gDPB[ fuGdpbNr ]->Fill(  uRemappedChannelNr - 320, uTot);
+   } // switch( ( uRemappedChannelNr / fuNrOfChannelsPerFeet ) % kuNbFeeSide )
 
    // In Run rate evolution
    if (fdStartTime < 0)
@@ -2114,7 +2171,11 @@ void CbmMcbm2018MonitorTof::SaveAllHistos( TString sFileName )
       fvhRawTot_gDPB[ uTotPlot ]->Write();
 
    for( UInt_t uTotPlot = 0; uTotPlot < fvhRemapTot_gDPB.size(); ++uTotPlot )
+   {
       fvhRemapTot_gDPB[ uTotPlot ]->Write();
+      fvhRemapTotSideA_gDPB[ uTotPlot ]->Write();
+      fvhRemapTotSideB_gDPB[ uTotPlot ]->Write();
+   }
 
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
@@ -2234,7 +2295,11 @@ void CbmMcbm2018MonitorTof::ResetAllHistos()
       fvhRawTot_gDPB[ uTotPlot ]->Reset();
 
    for( UInt_t uTotPlot = 0; uTotPlot < fvhRemapTot_gDPB.size(); ++uTotPlot )
+   {
       fvhRemapTot_gDPB[ uTotPlot ]->Reset();
+      fvhRemapTotSideA_gDPB[ uTotPlot ]->Reset();
+      fvhRemapTotSideB_gDPB[ uTotPlot ]->Reset();
+   }
 
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {

@@ -194,6 +194,10 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       std::vector< TH1      * > fvhFeetErrorRateLong_gDPB;
       std::vector< TProfile * > fvhFeetErrorRatioLong_gDPB;
 
+      const UInt_t kuNbFeeSide = 5;
+      std::vector< TH2      * > fvhRemapTotSideA_gDPB;
+      std::vector< TH2      * > fvhRemapTotSideB_gDPB;
+      
       ///* STAR TRIGGER detection *///
       std::vector< TH1 *      > fvhTokenMsgType;
       std::vector< TH1 *      > fvhTriggerRate;
