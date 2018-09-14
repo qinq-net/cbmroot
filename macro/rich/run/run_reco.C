@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 20)
+void run_reco(Int_t nEvents = 5)
 {
     TTree::SetMaxTreeSize(90000000000);
     TString script = TString(gSystem->Getenv("SCRIPT"));
@@ -12,11 +12,13 @@ void run_reco(Int_t nEvents = 20)
     TString mcFile = outDir + "mc.00000.root";
     TString parFile = outDir + "param.00000.root";
     TString recoFile = outDir + "reco.00000.root";
+    TString digiFile = outDir + "digi.00000.root";
     std::string resultDir = "results_recoqa_newqa/";
 
     if (script == "yes") {
         mcFile = TString(gSystem->Getenv("MC_FILE"));
         recoFile = TString(gSystem->Getenv("RECO_FILE"));
+        digiFile = TString(gSystem->Getenv("DIGI_FILE"));
         parFile = TString(gSystem->Getenv("PAR_FILE"));
         resultDir = TString(gSystem->Getenv("LIT_RESULT_DIR"));
         geoSetupFile = srcDir + TString(gSystem->Getenv("GEO_SETUP_FILE"));
@@ -31,15 +33,22 @@ void run_reco(Int_t nEvents = 20)
 
     CbmSetup* setup = CbmSetup::Instance();
 
-    std::cout << std::endl<< "-I- " << myName << ": Defining parameter files " << std::endl;
+
+    std::cout << std::endl << "-I- " << myName << ": Defining parameter files " << std::endl;
     TList *parFileList = new TList();
     TString geoTag;
+
     // - TRD digitisation parameters
     if ( CbmSetup::Instance()->GetGeoTag(kTrd, geoTag) ) {
-        TObjString* trdFile = new TObjString(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
-        parFileList->Add(trdFile);
-        std::cout << "-I- " << myName << ": Using parameter file " << trdFile->GetString() << std::endl;
+        const Char_t *npar[4]={"asic", "digi", "gas", "gain"};
+        TObjString* trdParFile(NULL);
+        for(Int_t i(0); i<4; i++){
+            trdParFile = new TObjString(srcDir + "/parameters/trd/trd_" + geoTag + "."+npar[i]+".par");
+            parFileList->Add(trdParFile);
+            std::cout << "-I- " << myName << ": Using parameter file " << trdParFile->GetString() << std::endl;
+        }
     }
+
     // - TOF digitisation parameters
     if ( CbmSetup::Instance()->GetGeoTag(kTof, geoTag) ) {
         TObjString* tofFile = new TObjString(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
@@ -50,6 +59,7 @@ void run_reco(Int_t nEvents = 20)
         std::cout << "-I- " << myName << ": Using parameter file " << tofBdfFile->GetString() << std::endl;
     }
 
+
     TStopwatch timer;
     timer.Start();
     gDebug = 0;
@@ -57,6 +67,7 @@ void run_reco(Int_t nEvents = 20)
 
     FairRunAna *run = new FairRunAna();
     FairFileSource* inputSource = new FairFileSource(mcFile);
+    inputSource->AddFriend(digiFile);
     run->SetSource(inputSource);
     run->SetOutputFile(recoFile);
     run->SetGenerateRunInfo(kTRUE);
@@ -69,19 +80,8 @@ void run_reco(Int_t nEvents = 20)
     mcManager->AddFile(mcFile);
     run->AddTask(mcManager);
 
-
-    // Digitisers
-    std::cout << std::endl;
-    TString macroName = gSystem->Getenv("VMCWORKDIR");
-    macroName += "/macro/run/modules/digitize.C";
-    std::cout << "Loading macro " << macroName << std::endl;
-    gROOT->LoadMacro(macroName);
-    gROOT->ProcessLine("digitize()");
-
-
     // Reconstruction tasks
-    std::cout << std::endl;
-    macroName = srcDir + "/macro/run/modules/reconstruct.C";
+    TString macroName = srcDir + "/macro/run/modules/reconstruct.C";
     std::cout << "Loading macro " << macroName << std::endl;
     gROOT->LoadMacro(macroName);
     Bool_t recoSuccess = gROOT->ProcessLine("reconstruct()");
@@ -95,12 +95,12 @@ void run_reco(Int_t nEvents = 20)
     CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
     run->AddTask(matchRecoToMc);
 
-//    // RICH reco QA
-//    CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
-//    richRecoQa->SetOutputDir(resultDir);
-//    run->AddTask(richRecoQa);
+    //    // RICH reco QA
+    //    CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
+    //    richRecoQa->SetOutputDir(resultDir);
+    //    run->AddTask(richRecoQa);
 
-//    // Reconstruction Qa
+    //    // Reconstruction Qa
     CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
     trackingQa->SetMinNofPointsSts(4);
     trackingQa->SetUseConsecutivePointsInSts(true);
@@ -115,7 +115,7 @@ void run_reco(Int_t nEvents = 20)
     trackingQa->SetQuotaRich(0.6);
     trackingQa->SetOutputDir(resultDir);
     trackingQa->SetPRange(12, 0., 6.);
-   // trackingQa->SetTrdAnnCut(trdAnnCut);
+    // trackingQa->SetTrdAnnCut(trdAnnCut);
     std::vector<std::string> trackCat, richCat;
     trackCat.push_back("All");
     trackCat.push_back("Electron");
@@ -131,7 +131,7 @@ void run_reco(Int_t nEvents = 20)
     fitQa->SetMuchMinNofHits(10);
     fitQa->SetTrdMinNofHits(2);
     fitQa->SetOutputDir(resultDir);
-    run->AddTask(fitQa);
+    // run->AddTask(fitQa);
 
     CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
     clusteringQa->SetOutputDir(resultDir);
@@ -139,7 +139,7 @@ void run_reco(Int_t nEvents = 20)
 
     CbmLitTofQa* tofQa = new CbmLitTofQa();
     tofQa->SetOutputDir(std::string(resultDir));
-   // run->AddTask(tofQa);
+    // run->AddTask(tofQa);
 
 
     std::cout << std::endl << std::endl << "-I- " << myName << ": Set runtime DB" << std::endl;
@@ -162,8 +162,6 @@ void run_reco(Int_t nEvents = 20)
 
     std::cout << "-I- " << myName << ": Starting run" << std::endl;
     run->Run(0,nEvents);
-
-
 
     // Finish
     timer.Stop();

@@ -38,6 +38,7 @@ for Z in 0; do
 	export MC_FILE=${DIR}/mc.${Z}.root
 	export PAR_FILE=$DIR/param.${Z}.root
 	export RECO_FILE=$DIR/reco.${Z}.root
+	export DIGI_FILE=$DIR/digi.${Z}.root
 	export GEOSIM_FILE=$DIR/geosim.${Z}.root
 
     if [ ${Z} = "0" ] ; then
@@ -56,7 +57,6 @@ for Z in 0; do
   #. ./sim.sh
   
    xterm -hold -e ". ./sim.sh"&
-   # bsub -q batch -J mc.$Z.$XXXX.run -o $DIR/log/$XXXX.log -N sh ./sim.sh
    
 done
 export SCRIPT=no

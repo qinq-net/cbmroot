@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 20)
+void run_sim(Int_t nEvents = 5)
 {
 
     TTree::SetMaxTreeSize(90000000000);
