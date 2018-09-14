@@ -4,6 +4,8 @@ set(INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CBMROOT_SOURCE_DIR}/fles/cern2016/param
     ${CBMROOT_SOURCE_DIR}/fles/cern2016/unpacker
+    ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/parameter
+    ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/dataformat
     ${CBMROOT_SOURCE_DIR}/beamtime/base
     ${CBMROOT_SOURCE_DIR}/data
     ${CBMROOT_SOURCE_DIR}/data/tof
@@ -56,14 +58,16 @@ If(FAIRLOGGER_FOUND)
      )
 EndIf()
 
-set(EXE_NAME UnpackTofStar2018)
-set(SRCS CbmDeviceUnpackTofStar2018.cxx runUnpackTofStar2018.cxx)
+set(EXE_NAME UnpackTofMcbm2018)
+set(SRCS CbmDeviceUnpackTofMcbm2018.cxx runUnpackTofMcbm2018.cxx)
+
 set(DEPENDENCIES
   ${DEPENDENCIES}
   ${FAIR_LIBS}
   ${BOOST_LIBS}
   fles_ipc
   CbmFlibCern2016
+  CbmFlibMcbm2018
   CbmBase
   CbmData
   Core
