@@ -84,6 +84,7 @@ Int_t CbmRichRingFinderIdeal::DoFind(
         return -1;
     }
 
+
     // Create STL map from MCtrack index to number of valid RichHits
     map<pair<Int_t, Int_t>, Int_t> hitMap;
     Int_t nofRichHits = hitArray->GetEntriesFast();
@@ -91,7 +92,6 @@ Int_t CbmRichRingFinderIdeal::DoFind(
         const CbmRichHit* richHit = static_cast<CbmRichHit*>( hitArray->At(iHit) );
         if ( NULL == richHit ) continue;
         Int_t eventId = GetEventIdForRichHit(richHit);
-
         vector<pair<Int_t, Int_t>> motherIds = CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(richHit, fRichDigis, fRichPoints, fMcTracks, eventId);
         for (UInt_t i = 0; i < motherIds.size(); i++) {
             hitMap[motherIds[i]]++;

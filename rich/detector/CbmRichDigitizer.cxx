@@ -31,7 +31,6 @@ using namespace std;
 CbmRichDigitizer::CbmRichDigitizer()
  : CbmDigitize("RichDigitizer"),
    fEventNum(0),
-   fMode(CbmRichDigitizerModeEvents),
    fDetectorType(CbmRichPmtTypeCosy17NoWls),
    fRichPoints(NULL),
    fRichDigis(NULL),
@@ -68,10 +67,8 @@ InitStatus CbmRichDigitizer::Init()
    //FairTask* daq = FairRun::Instance()->GetTask("Daq");
    if ( ! fEventMode ) {
       LOG(INFO) << "CbmRichDigitizer uses TimeBased mode." << FairLogger::endl;
-      fMode = CbmRichDigitizerModeTimeBased;
    } else {
       LOG(INFO) << "CbmRichDigitizer uses Events mode." << FairLogger::endl;
-      fMode = CbmRichDigitizerModeEvents;
    }
 
    FairRootManager* manager = FairRootManager::Instance();
@@ -141,13 +138,14 @@ void CbmRichDigitizer::Exec(
 Int_t CbmRichDigitizer::ProcessMcEvent()
 {
    Int_t nofRichPoints = fRichPoints->GetEntries();
-   LOG(DEBUG) << fName << ": EventNum:" << fCurrentEvent << " InputNum:" << fCurrentInput << " EventTime:" << fCurrentEventTime
+   LOG(INFO) << fName << ": EventNum:" << fCurrentEvent << " InputNum:" << fCurrentInput << " EventTime:" << fCurrentEventTime
                  << " nofRichPoints:" << nofRichPoints << FairLogger::endl;
 
    for(Int_t j = 0; j < nofRichPoints; j++){
       CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(j);
       ProcessPoint(point, j, fCurrentEvent, fCurrentInput);
    }
+  // cout << "nofDigis:" << fRichDigis->GetEntries() << endl;
 
    AddNoiseDigis(fCurrentEvent, fCurrentInput);
 
@@ -298,10 +296,9 @@ void CbmRichDigitizer::AddDigi(Int_t address, Double_t time, const CbmLink& link
 {
     Bool_t wasFired = fFiredPixelsMap.count(address) > 0;
     Bool_t isDetected = true;
-    if (wasFired) {
+    if (!fEventMode && wasFired) {
         Double_t lastFiredTime = fFiredPixelsMap[address];
         Double_t dt = std::fabs(time - lastFiredTime);
-
         if (dt < fPixelDeadTime) {
             isDetected = false;
 //            LOG(DEBUG) << "CbmRichDigitizer::AddDigi pixel NOT registered: address:" << address << " cur-last=dT: "<< time << "-"

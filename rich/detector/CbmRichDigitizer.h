@@ -22,8 +22,6 @@ class CbmLink;
 
 using namespace std;
 
-enum CbmRichDigitizerModeEnum { CbmRichDigitizerModeEvents = 0, CbmRichDigitizerModeTimeBased = 1 };
-
 
 /**
 * \class CbmRichDigitizer
@@ -92,12 +90,6 @@ public:
     */
    //void SetSigmaMirror(Double_t sigMirror) {fSigmaMirror = sigMirror;}
 
-
-   /**
-    * \brief Set Rich digitizer mode (CbmRichDigitizerModeEnum).
-    */
-   void SetMode(CbmRichDigitizerModeEnum mode){ fMode = mode; }
-
    /**
     * \brief Set Time resolution.
     */
@@ -118,8 +110,6 @@ public:
 private:
 
    Int_t fEventNum;
-
-   CbmRichDigitizerModeEnum fMode;
 
    TClonesArray* fRichPoints; // RICH MC points
    TClonesArray* fRichDigis; // RICH digis (output array)
