@@ -1165,8 +1165,8 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 	for(Int_t i=0; i<fiReqDigiAddr.size(); i++)
 	  if(bDet[i][0]==kTRUE && bDet[i][1]==kTRUE ) {
 	    iDetMul++;
-	    if(iDetMul == fiReqMode) {bOut=kTRUE; break;}
 	  }
+	if(iDetMul >= fiReqMode) {bOut=kTRUE;}
       }
 
     }
