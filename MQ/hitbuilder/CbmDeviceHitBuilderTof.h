@@ -86,6 +86,7 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
 
    Bool_t ReInitContainers();
    void   CreateHistograms();
+   void   WriteHistograms();
 
    Bool_t   InitCalibParameter();
    Bool_t   BuildClusters();
@@ -173,6 +174,7 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
    std::vector< Int_t > fvDeadStrips; //[nbDet]
 
    // histograms
+   TH1* fhEvDetMul;
    std::vector< TH2* > fhRpcDigiCor;        //[nbDet]
    std::vector< TH1* > fhRpcCluMul;         //[nbDet]
    std::vector< TH1* > fhRpcCluRate;        //[nbDet]

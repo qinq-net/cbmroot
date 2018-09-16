@@ -122,6 +122,7 @@ CbmDeviceHitBuilderTof::CbmDeviceHitBuilderTof()
   , fvCPWalk()
   , fvLastHits()
   , fvDeadStrips()
+  , fhEvDetMul(NULL)
   , fhRpcDigiCor()
   , fhRpcCluMul()
   , fhRpcCluRate()
@@ -532,6 +533,7 @@ bool CbmDeviceHitBuilderTof::HandleData(FairMQParts& parts, int /*index*/)
      rootMgr->DeleteOldWriteoutBufferData();
      if((Int_t)fdEvent == fiMaxEvent)  { 
        rootMgr->Write();
+       WriteHistograms();
        fOutRootFile->Close();
        LOG(INFO) << "Stopping device after "<<fdEvent<<" events, closing root output file. ";
        FairMQStateMachine::ChangeState(STOP);
@@ -766,6 +768,10 @@ void    CbmDeviceHitBuilderTof::CreateHistograms()
 {
    TDirectory * oldir = gDirectory; // <= To prevent histos from being sucked in by the param file of the TRootManager!
    gROOT->cd(); // <= To prevent histos from being sucked in by the param file of the TRootManager !
+   // process event header info 
+     fhEvDetMul = new TH1F("hEvDetMul",
+			   "Detector multiplicity; Mul",
+			   20, 0, 20);
 
    // Sm related distributions 
    fhSmCluPosition.resize( fDigiBdfPar->GetNbSmTypes() );
@@ -1204,6 +1210,28 @@ void    CbmDeviceHitBuilderTof::CreateHistograms()
    return;
 
 }
+/************************************************************************************/
+void    CbmDeviceHitBuilderTof::WriteHistograms()
+{
+  TList* tHistoList(NULL);
+  tHistoList = gROOT->GetList();
+
+  TIter next(tHistoList);
+ // Write histogramms to the file
+  fOutRootFile->cd();
+  {
+    TH1 *h;
+    TObject* obj;
+    while( (obj= (TObject*)next()) ){
+      if(obj->InheritsFrom(TH1::Class())){
+         h = (TH1*)obj;
+	 //         cout << "Write histo " << h->GetTitle() << endl;
+         h->Write();
+      }
+    }
+  }
+}
+
 /************************************************************************************/
 Bool_t   CbmDeviceHitBuilderTof::BuildClusters()
 {
@@ -2680,6 +2708,8 @@ Bool_t   CbmDeviceHitBuilderTof::SendAll()
 
 Bool_t   CbmDeviceHitBuilderTof::FillHistos()
 {
+  fhEvDetMul->Fill((Double_t)fEventHeader[1]);
+
   Int_t iNbTofHits  = fTofHitsColl->GetEntries();
   CbmTofHit  *pHit;
   //gGeoManager->SetTopVolume( gGeoManager->FindVolumeFast("tof_v14a") );
