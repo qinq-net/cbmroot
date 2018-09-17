@@ -83,7 +83,7 @@ InitStatus CbmKFParticleFinderQA::Init()
 
     //check the mode
   fTimeSliceMode = 0;
-  if( ioman->GetObject("TimeSlice.") )
+  if( ioman->CheckBranch("Event") )
     fTimeSliceMode = 1;
   
   //MC Tracks
