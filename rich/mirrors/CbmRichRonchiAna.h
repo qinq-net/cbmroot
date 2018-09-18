@@ -38,6 +38,8 @@ private:
 	* \brief Assignment operator.
 	*/
 	CbmRichRonchiAna& operator=(const CbmRichRonchiAna&);
+
+	ClassDef(CbmRichRonchiAna,1)
 };
 
 #endif /* RICH_MIRRORS_CBMRICHRONCHIANA_H_ */
