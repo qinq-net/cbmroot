@@ -44,7 +44,7 @@ void CbmRichRonchiAna::Run()
  // TAILORING THE IMAGE TO SIZE OF MIRROR
      
      
-    int threshbright = 25;  // variable to determine threshold of average brightness for every pixel line; has to be adapted
+    int threshbright = 0;  // variable to determine threshold of average brightness for every pixel line; has to be adapted
     
     int startx = 0;     // counter in x direction to determine start point of image to tailor
     int endx   = 0;     // counter in x direction to determine end point of image to tailor
@@ -60,10 +60,10 @@ void CbmRichRonchiAna::Run()
         
         for (int x = 0; x < width; x++)
         {
-           totbright += data[x][y];
+           totbright += data[x][y];                 // sum up total brightness of line y
          }
-        avbright = totbright / width;
-        if ( avbright < threshbright ) {starty++;}
+        avbright = totbright / width;               // calculate average brightness of line y 
+        if ( avbright < threshbright ) {starty++;}  // if it is below threshold, 
         else {break;}
      }
       
@@ -111,8 +111,7 @@ void CbmRichRonchiAna::Run()
      
      int widthnew = width - (startx + endx);    // new width and length of tailored image; letting the...
      int heightnew = height - (starty + endy);  // ...counting start at [0][0] instead of [startx][starty]    
-     
-          
+               
      cout << "startx = " << startx << endl;
      cout << "endx = " << endx << endl;
      cout << "starty = " << starty << endl;
@@ -125,51 +124,46 @@ void CbmRichRonchiAna::Run()
   // EXTRACTING THE MAXIMA (H)
   
   
-    int hrangex = 1;       // variable to vary the number of pixels in x whose brightness will be summed up and averaged
     int hrangey = 8;       // range of pixels (in both directions) in y that will be scanned to locate a maximum; has to be adapted, depending on distance of imaged lines
-    
-    int   brightness[heightnew];  // ...
-    float avbright[heightnew];
-    int   imageh[widthnew][heightnew]; 
-    
-    
+    int brightness[heightnew];  // array that will be filled with the brightness values of column x and deleted after scanning each column
+    int imageh[widthnew][heightnew]; // array that represents the tailored image
+        
     for (unsigned int y = 0; y < heightnew; y++)    // initializing arrays
     {
         brightness[y] = 0;
-        avbright[y] = 0;
         for (unsigned int x = 0; x < widthnew; x++)
         {
          imageh[x][y] = 0;
          }
      }
               
-    for (int x = startx; x <= (widthnew+startx-hrangex); x += hrangex)    
+    for (int x = startx; x < (widthnew+startx); x++)    
     {
-        //int n = heightnew-hrangey-1;     // variable to flip the new image around the x axis. otherwise it is upside down to the origin
+        //int n = heightnew-hrangey-1;     // variable to flip the new image around the x axis. otherwise it is upside down to the origin image 'data'
         
-        for (int y = starty; y < (heightnew+starty); y++)     // giving every pixel in col. y a brightness value (resp. average brightness with the "av" right partners)
+        for (int y = starty; y < (heightnew+starty); y++)     // giving every pixel in column x the brightness value of the corresponding column of 'data'
         {
-           brightness[y-starty] += data[x][y];          // these both lines can be reduced to one, if averaging with neighbours in x... 
+           brightness[y-starty] = data[x][y];           
          }         
 
         for (int y = hrangey; y < (heightnew-hrangey); y++)
         {
             int max = 0;    // counter to detect maxima
-            for (int y1 = y-hrangey; y1 <= y+hrangey; y1++)
+            for (int y1 = y-hrangey; y1 <= y+hrangey; y1++) // FOR-loop to compare pixel y with the neighboured ones
             {
-                if (brightness[y] > brightness[y1]) {max++;};    
+                if (brightness[y] > brightness[y1]) {max++;};   // if it is greater than all neighbours, increase 'max' by ONE
              }
             
-            if (max == (2*hrangey))
+            if (max == (2*hrangey))    // if 'max' is twice the size of 'hrangey', it is a local maximum
             {               
-               imageh[x-startx][y] = 1;
+               imageh[x-startx][y] = 1; // in this case, fill this pixel with a ONE
                // hist->SetBinContent(x, y, image[x-startx][y]);
              }
              
              //n -= 2;            
          }
          
-         for (int y = 0; y < heightnew; y++)    // deleting all entries of the arrays 
+         for (int y = 0; y < heightnew; y++)    // deleting all entries of the array 
          {
             brightness[y] = 0;
           }                     
@@ -180,7 +174,7 @@ void CbmRichRonchiAna::Run()
   // DRAWING MEAN OF LINE DISTRIBUTION (H)
   
   
-  int windowmean = 7;      // half of approximate distribution of line pixels; defines the height of scanning window; has to be adapted according to image
+  int windowmean = 8;      // half of approximate distribution of line pixels; defines the height of scanning window; has to be adapted according to image
   int meanlength = 10;     // number of pixels to each side to calculate mean; defines width of scanning window
   int locy = 0;            // location of line pixel in y
   int counter = 0;         // counter for detected line pixels
@@ -188,9 +182,9 @@ void CbmRichRonchiAna::Run()
   
   for (int x = meanlength; x < widthnew-meanlength; x++)    // still to improve: start at ZERO (assure that not averaging with not existing pixel at x,y < 0) 
   {
-      for (int y = windowmean; y < heightnew-windowmean; y++)
+      for (int y = windowmean; y < heightnew-windowmean; y++)   // increase y until a line pixel is found
       {    
-          if (imageh[x][y] == 1)
+          if (imageh[x][y] == 1)    // if a line pixel is found, calculate the mean in y from the 'meanlength' pixels on each side by...
           {
                for (int x1 = (x-meanlength); x1 <= (x+meanlength); x1++)
                {
@@ -198,15 +192,15 @@ void CbmRichRonchiAna::Run()
                    {
                       if (imageh[x1][y1] == 1)
                       {
-                          locy += y1;
+                          locy += y1;   //... summing up all values in y, where there pixels are found and...
                           counter++; 
                        }
                     }
                 }
            
-               mean = locy/counter;
-               imageh[x][y] = 0;
-               imageh[x][(int) mean] = 1;
+               mean = locy/counter;     //... divide them by the number of found line pixels
+               imageh[x][y] = 0;        // delete this pixel... 
+               imageh[x][(int) mean] = 1;   //... and place it at the calculated mean value (which might be the old value)
                locy = 0;        // resetting variables
                counter = 0;
                hist->SetBinContent(x, (int) mean, imageh[x][(int) mean]);
@@ -220,8 +214,8 @@ void CbmRichRonchiAna::Run()
   // INTERPOLATING THE GAPS (H)
   
   
-  int winheight = 5;    // define the (half) height and (full) width of the scanning window
-  int winwidth = 80;     // 'winwidth' defines also maximum size of a gap, that will be interpolated
+  int winheight = 4;    // define the (half) height and (full) width of the scanning window
+  int winwidth = 80;    // 'winwidth' defines also maximum size of a gap, that will be interpolated
   
   int posxleft = 0;     // positions of the last and next filled pixel on both sides of a gap
   int posxright = 0;
@@ -247,24 +241,24 @@ void CbmRichRonchiAna::Run()
                   if (imageh[x+1][y1] == 1) {nogap++;}
                }
                
-              if (nogap == 0)     // if no pixel of the line in the next column (i.e. a gap)...
+              if (nogap == 0)     // if no pixel of the line in the next column is found (i.e. a gap) ...
               {
-                  gap++;
+                  gap++;          //... increase 'gap' by ONE and ...
                                     
-                  for (int x1 = x+2; x1 <= x+winwidth; x1++)        // ...find out the size of the gap by searching for the next pixel
-                  {
+                  for (int x1 = x+2; x1 <= x+winwidth; x1++)        //... find out the size of the gap by searching for the next pixel ...
+                  {                                                 //... in the next 'winwidth' columns
                       for (int y2 = y-winheight; y2 <= y+winheight; y2++)
                       {
-                          if (imageh[x1][y2] == 1) 
+                          if (imageh[x1][y2] == 1)  // if the next pixel is found ...
                           {
-                              nogap++;
-                              posxright = x1;
+                              nogap++;      //... 'nogap' will be increased (for the next if condition) and ...
+                              posxright = x1;   //... the position memorized
                               posyright = y2;
                            }
                        }  
                                       
                       if (nogap == 0) {gap++;}      // if no pixel is detected in this column, 'gap' increases by ONE
-                      else if (nogap == 1) {break;} // if a pixel is detected, calculate the slope between last and first new pixel
+                      else if (nogap == 1) {break;} // if a pixel is detected, leave this loop
                    }
                    
                    if (gap >= winwidth)     // if the gap is at least as large as window, it is too big to be interpolated (inform via stream on screen)
@@ -274,17 +268,17 @@ void CbmRichRonchiAna::Run()
                        break;  
                     }
                    
-                   slope = (posyright-posyleft)/(posxright-posxleft);
+                   slope = (posyright-posyleft)/(posxright-posxleft);   // calculate the slope of the gap
                    int mult = 1;    // defines the ...th pixel of the gap that will be filled 
                    
                    for (int x2 = x+1; x2 <= x+gap; x2++)      // filling up gaps by interpolating 
                    {
-                       imageh[x2][y+mult*((int) slope)]=5;
+                       imageh[x2][y+mult*((int) slope)]=2;
                        mult++;
                     }
                }    
                
-              else if (nogap == 1) 
+              else if (nogap == 1) // i.e. no gap, than reset variables
               {
                   nogap = 0;
                   posxleft = 0;
@@ -587,7 +581,7 @@ void CbmRichRonchiAna::Run()
     TCanvas* c = new TCanvas("c", "c", 1000, 1000);
     DrawH2(hist);
 
-  {
+  /*{
     TH1D* h1 = hist->ProjectionY("_py1", 100, 101);
     TH1D* h2 = hist->ProjectionY("_py2", 200, 201);
     TH1D* h3 = hist->ProjectionY("_py3", 300, 301);
@@ -605,7 +599,7 @@ void CbmRichRonchiAna::Run()
     
     //h2->Fit("gaus", "", "", 370, 450);
     
-    }   
+    }   */
     
     //return; 
 }    
