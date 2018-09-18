@@ -6,9 +6,12 @@
 #include <string>
 #include <vector>
 
+#include <cmath>
+
 using namespace std;
 
-class CbmRichRonchiAna : public TObject {
+class CbmRichRonchiAna : public TObject 
+{
 public:
     CbmRichRonchiAna();
     
@@ -16,11 +19,13 @@ public:
 
 	void Run();
 
-	void SetTiffFileName(const string& fileName) {fTiffFileName = fileName;}
+	void SetTiffFileNameV(const string& fileName) {fTiffFileNameV = fileName;}
+	void SetTiffFileNameH(const string& fileName) {fTiffFileNameH = fileName;}
 
 private:
 
-	string fTiffFileName;
+	string fTiffFileNameV;
+	string fTiffFileNameH;
 
 	vector<vector<int> > ReadTiffFile(const string& fileName);
 
@@ -36,3 +41,5 @@ private:
 };
 
 #endif /* RICH_MIRRORS_CBMRICHRONCHIANA_H_ */
+
+
