@@ -36,6 +36,8 @@ void CbmRichRonchiAna::Run()
 
     TH2D* hInit = new TH2D("hInit", "hInit;X [pixel];Y [pixel];Intensity", width, -.5, width - 0.5, height, -0.5, height - 0.5);
     TH2D* hPeak = new TH2D("hPeak", "hPeak;X [pixel];Y [pixel];Intensity", width, -.5, width - 0.5, height, -0.5, height - 0.5);
+    TH2D* hMean = new TH2D("hMean", "hMean;X [pixel];Y [pixel];Intensity", width, -.5, width - 0.5, height, -0.5, height - 0.5);
+    TH2D* hMeanY = new TH2D("hMeanY", "hMeanY;X [pixel];Y [pixel];Intensity", width, -.5, width - 0.5, height, -0.5, height - 0.5);
 
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++){
@@ -44,70 +46,149 @@ void CbmRichRonchiAna::Run()
     }
 
     // averaging
-    // probably one can implement weights
-    int halfAvWindow = 3;
-    int threshold = 20;
-    for (int x = 0; x < width; x++) {
+    int halfAvWindow = 4;
+    int threshold = 16;
+    int sum = halfAvWindow + 1;
+    
+    for (int i = 1; i <= halfAvWindow; i++) {   // calculating the sum of weights
+        sum += 2*i;
+    }
+    cout << "sum = " << sum << endl;
+    
+    for (int x = 0; x < width; x++) {   // areas with small average brightness will be deleted
         for (int y = 0 + halfAvWindow; y < height - halfAvWindow; y++){
             int total = 0;
+            int weight = 0;
             for (int iW = -halfAvWindow; iW <= halfAvWindow; iW++) {
-                total += data[x][y + iW];
+                if (iW < 0 ) weight = (halfAvWindow + 1 + iW);
+                else weight = (halfAvWindow + 1 - iW);               
+                total += data[x][y + iW] * weight;
             }
-            data[x][y] = total / (2 * halfAvWindow + 1);
-            if (data[x][y] <= threshold) data[x][y] = 0;
+            data[x][y] = total / sum;
+            if (data[x][y] <= threshold) data[x][y] = 0;    // deleting areas beyond mirror 
+            
+        }
+    }
+    
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++){
+            hMean->SetBinContent(x, y, data[x][y]);
         }
     }
 
-    //peak finder
-    int halfWindow = 6;
+    // peak finder
+    int halfWindow = 8;
+    int win = 1;
+    int threshBrightness = 251;
+               
     for (int x = 0; x < width; x++) {
+        cout << endl << endl << endl;
         for (int y = 0 + halfWindow; y < height - halfWindow; y++){
             int curData = data[x][y];
-            bool isPeak = (curData > data[x][y-1]) && (curData > data[x][y+1]);
+            bool isPeak = (curData >= data[x][y-1]) && (curData >= data[x][y+1]);
             if (!isPeak) continue;
 
             bool isBiggest = true;
             for (int iW = -halfWindow; iW <= halfWindow; iW++) {
                 if (iW == 0) continue;
-                if (curData <= data[x][y + iW]) {
+                if (data[x][y + iW] > curData) {  // I replaced ">=" by ">" 
                     isBiggest = false;
                     break;
                 }
             }
-            if (isBiggest) {
-                hPeak->SetBinContent(x, y, curData);
+            
+            int brightness = 0;     // to delete the overexposed areas
+            for (int i = -win; i <= win; i++) {
+                brightness += data[x][y+win];
             }
+            if (brightness/(2*win+1) > threshBrightness) data[x][y] = 0;
+            if (isBiggest) {
+                data[x][y] = curData;
+                hPeak->SetBinContent(x, y, data[x][y]);
+            }
+            else data[x][y] = 0;
+            //hPeak->SetBinContent(x, y, data[x][y]);
+            //cout << data[x][y] << "  ";             
         }
-    }
+    } 
+ 
+    
+    // calculating mean position in Y
+    
+    int meanHalfLength = 5;
+    int meanHalfHeight = 5;
+    
+    for (int x = meanHalfLength; x < width-meanHalfLength; x++) {
+        //cout << endl << "X = " << x << endl;
+        for (int y = meanHalfHeight; y < height-meanHalfHeight; y++) {
+            if (data[x][y] == 0) continue;
+            int curData = data[x][y];
+            int sumY = 0;
+            int divider = 0;
+            for (int x2 = -meanHalfLength; x2 <= meanHalfLength; x2++) {
+                for (int y2 = -meanHalfHeight; y2 <= meanHalfHeight; y2++) {
+                    if (data[x+x2][y+y2] > 0) {
+                        sumY += y+y2;
+                        divider++;
+                    }
+                }
+            }
+            cout << "divider = " << divider << endl;
+            data[x][y] = 0;
+            y=(int) sumY/divider;
+            data[x][y] = curData;
+            //cout << "sumY = "<< sumY << "; divider = " << divider << "; sumY/divider = " << sumY/divider << endl;
+            curData = 0;
+            sumY = 0;
+            hMeanY->SetBinContent(x, y, data[x][y]);
+            //y += meanHalfHeight;
+            
+        }
+    } 
 
     // Drawing
     {
         TCanvas* c = new TCanvas("c1", "c1", 1000, 1000);
         DrawH2(hInit);
     }
+    
+    {
+        TCanvas* c = new TCanvas("cMean", "cMean", 1000, 1000);
+        DrawH2(hMean);
+    }
+    
+    {
+        TCanvas* c = new TCanvas("cMeanY", "cMeanY", 1000, 1000);
+        DrawH2(hMeanY);
+    }
 
     {
         TH1D* h1 = hInit->ProjectionY("_py1", 100, 100);
         TH1D* h2 = hInit->ProjectionY("_py2", 200, 200);
         TH1D* h3 = hInit->ProjectionY("_py3", 300, 300);
-        TH1D* h4 = hInit->ProjectionY("_py4", 400, 400);
+        TH1D* h4 = hInit->ProjectionY("_py4", 500, 500);
 
         TH1D* hP1 = hPeak->ProjectionY("_pyP1", 100, 100);
         TH1D* hP2 = hPeak->ProjectionY("_pyP2", 200, 200);
         TH1D* hP3 = hPeak->ProjectionY("_pyP3", 300, 300);
         TH1D* hP4 = hPeak->ProjectionY("_pyP4", 400, 400);
+        
+        TH1D* hM1 = hMean->ProjectionY("_pyM1", 100, 100);
+        TH1D* hM2 = hMean->ProjectionY("_pyM2", 200, 200);
+        TH1D* hM3 = hMean->ProjectionY("_pyM3", 300, 300);
+        TH1D* hM4 = hMean->ProjectionY("_pyM4", 400, 400);
 
 
         TCanvas* c2 = new TCanvas("c2", "c2", 1000, 1000);
         c2->Divide(2,2);
         c2->cd(1);
-        DrawH1({h1,hP1}, {"Init", "Peak"});
+        DrawH1({h1,hM1,hP1}, {"Init", "Mean", "Peak"});
         c2->cd(2);
-        DrawH1({h2,hP2}, {"Init", "Peak"});
+        DrawH1({h2,hM2,hP2}, {"Init", "Mean", "Peak"});
         c2->cd(3);
-        DrawH1({h3,hP3}, {"Init", "Peak"});
+        DrawH1({h3,hM3,hP3}, {"Init", "Mean", "Peak"});
         c2->cd(4);
-        DrawH1({h4,hP4}, {"Init", "Peak"});
+        DrawH1({h4,hM4,hP4}, {"Init", "Mean", "Peak"});
     }
 
     {
