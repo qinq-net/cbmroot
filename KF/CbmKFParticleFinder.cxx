@@ -530,7 +530,7 @@ void CbmKFParticleFinder::SetSuperEventAnalysis()
   fTopoReconstructor->SetMixedEventAnalysis();
 }
 
-KFParticleFinder*  CbmKFParticleFinder::GetKFParticleFinder()          { return fTopoReconstructor->GetKFParticleFinder(); }
+KFParticleFinder*  CbmKFParticleFinder::GetKFParticleFinder()          { return fTopoReconstructor->GetKFParticleFinderPointer(); }
 void CbmKFParticleFinder::SetMaxDistanceBetweenParticlesCut(float cut) { GetKFParticleFinder()->SetMaxDistanceBetweenParticlesCut(cut); }
 void CbmKFParticleFinder::SetLCut(float cut)                           { GetKFParticleFinder()->SetLCut(cut); }
 void CbmKFParticleFinder::SetChiPrimaryCut2D(float cut)                { GetKFParticleFinder()->SetChiPrimaryCut2D(cut); }
