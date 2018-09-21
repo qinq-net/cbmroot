@@ -530,4 +530,27 @@ void CbmKFParticleFinder::SetSuperEventAnalysis()
   fTopoReconstructor->SetMixedEventAnalysis();
 }
 
+KFParticleFinder*  CbmKFParticleFinder::GetKFParticleFinder()          { return fTopoReconstructor->GetKFParticleFinder(); }
+void CbmKFParticleFinder::SetMaxDistanceBetweenParticlesCut(float cut) { GetKFParticleFinder()->SetMaxDistanceBetweenParticlesCut(cut); }
+void CbmKFParticleFinder::SetLCut(float cut)                           { GetKFParticleFinder()->SetLCut(cut); }
+void CbmKFParticleFinder::SetChiPrimaryCut2D(float cut)                { GetKFParticleFinder()->SetChiPrimaryCut2D(cut); }
+void CbmKFParticleFinder::SetChi2Cut2D(float cut)                      { GetKFParticleFinder()->SetChi2Cut2D(cut); }
+void CbmKFParticleFinder::SetLdLCut2D(float cut)                       { GetKFParticleFinder()->SetLdLCut2D(cut); }
+void CbmKFParticleFinder::SetLdLCutXiOmega(float cut)                  { GetKFParticleFinder()->SetLdLCutXiOmega(cut); }
+void CbmKFParticleFinder::SetChi2TopoCutXiOmega(float cut)             { GetKFParticleFinder()->SetChi2TopoCutXiOmega(cut); }
+void CbmKFParticleFinder::SetChi2CutXiOmega(float cut)                 { GetKFParticleFinder()->SetChi2CutXiOmega(cut); }
+void CbmKFParticleFinder::SetChi2TopoCutResonances(float cut)          { GetKFParticleFinder()->SetChi2TopoCutResonances(cut); }
+void CbmKFParticleFinder::SetChi2CutResonances(float cut)              { GetKFParticleFinder()->SetChi2CutResonances(cut); }
+void CbmKFParticleFinder::SetPtCutLMVM(float cut)                      { GetKFParticleFinder()->SetPtCutLMVM(cut); }
+void CbmKFParticleFinder::SetPCutLMVM(float cut)                       { GetKFParticleFinder()->SetPCutLMVM(cut); }
+void CbmKFParticleFinder::SetPtCutJPsi(float cut)                      { GetKFParticleFinder()->SetPtCutJPsi(cut); }
+void CbmKFParticleFinder::SetPtCutCharm(float cut)                     { GetKFParticleFinder()->SetPtCutCharm(cut); }
+void CbmKFParticleFinder::SetChiPrimaryCutCharm(float cut)             { GetKFParticleFinder()->SetChiPrimaryCutCharm(cut); }
+void CbmKFParticleFinder::SetLdLCutCharmManybodyDecays(float cut)      { GetKFParticleFinder()->SetLdLCutCharmManybodyDecays(cut); }
+void CbmKFParticleFinder::SetChi2TopoCutCharmManybodyDecays(float cut) { GetKFParticleFinder()->SetChi2TopoCutCharmManybodyDecays(cut); }
+void CbmKFParticleFinder::SetChi2CutCharmManybodyDecays(float cut)     { GetKFParticleFinder()->SetChi2CutCharmManybodyDecays(cut); }
+void CbmKFParticleFinder::SetLdLCutCharm2D(float cut)                  { GetKFParticleFinder()->SetLdLCutCharm2D(cut); }
+void CbmKFParticleFinder::SetChi2TopoCutCharm2D(float cut)             { GetKFParticleFinder()->SetChi2TopoCutCharm2D(cut); }
+void CbmKFParticleFinder::SetChi2CutCharm2D(float cut)                 { GetKFParticleFinder()->SetChi2CutCharm2D(cut); }
+
 ClassImp(CbmKFParticleFinder);

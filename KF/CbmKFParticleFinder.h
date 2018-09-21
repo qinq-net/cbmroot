@@ -14,6 +14,7 @@ class CbmKFParticleFinderPID;
 class KFParticleTopoReconstructor;
 class TClonesArray;
 class CbmVertex;
+class KFParticleFinder;
 class KFPTrackVector;
 
 struct KFFieldVector
@@ -47,6 +48,29 @@ class CbmKFParticleFinder : public FairTask {
     
   // Set SE analysis
   void SetSuperEventAnalysis();
+    
+  //KF Particle Finder cuts
+  void SetMaxDistanceBetweenParticlesCut(float cut);
+  void SetLCut(float cut);
+  void SetChiPrimaryCut2D(float cut);
+  void SetChi2Cut2D(float cut);
+  void SetLdLCut2D(float cut);
+  void SetLdLCutXiOmega(float cut);
+  void SetChi2TopoCutXiOmega(float cut);
+  void SetChi2CutXiOmega(float cut);
+  void SetChi2TopoCutResonances(float cut);
+  void SetChi2CutResonances(float cut);
+  void SetPtCutLMVM(float cut);
+  void SetPCutLMVM(float cut);
+  void SetPtCutJPsi(float cut);
+  void SetPtCutCharm(float cut);
+  void SetChiPrimaryCutCharm(float cut);
+  void SetLdLCutCharmManybodyDecays(float cut);
+  void SetChi2TopoCutCharmManybodyDecays(float cut);
+  void SetChi2CutCharmManybodyDecays(float cut);
+  void SetLdLCutCharm2D(float cut);
+  void SetChi2TopoCutCharm2D(float cut);
+  void SetChi2CutCharm2D(float cut);
   
  private:
   
@@ -58,7 +82,10 @@ class CbmKFParticleFinder : public FairTask {
 
   const CbmKFParticleFinder& operator = (const CbmKFParticleFinder&);
   CbmKFParticleFinder(const CbmKFParticleFinder&);
-   
+  
+  //direct access to the KF Particle Finder object
+  KFParticleFinder* GetKFParticleFinder();
+  
   //names of input branches
   TString fStsTrackBranchName;      //! Name of the input TCA with reco tracks
 
