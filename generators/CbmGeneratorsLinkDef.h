@@ -8,6 +8,7 @@
 #pragma link C++ class CbmEcalGenerator+;
 #pragma link C++ class CbmHsdLvmGenerator+;
 #pragma link C++ class CbmHsdGenerator+;
+#pragma link C++ class CbmPHSDGenerator;
 #pragma link C++ class CbmShieldGenerator+;
 #pragma link C++ class CbmIonGenerator+;
 #pragma link C++ class CbmCosmicGenerator;

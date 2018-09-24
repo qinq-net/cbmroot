@@ -38,6 +38,7 @@ CbmDirectPhotonGenerator.cxx
 CbmEcalGenerator.cxx
 CbmHsdLvmGenerator.cxx
 CbmHsdGenerator.cxx
+CbmPHSDGenerator.cxx
 CbmShieldGenerator.cxx
 CbmUnigenGenerator.cxx
 CbmIonGenerator.cxx
