@@ -78,8 +78,8 @@ export URQMD=yes
 # If "yes" PLUTO particles will be embedded
 export PLUTO=yes
 #Collision energy: set proper weight into analysis
-#export ENERGY=${collEnergy}
-export ENERGY=3.5gev #for agag analysis as long no multiplicities available
+export ENERGY=${collEnergy}
+#export ENERGY=3.5gev #for agag analysis as long no multiplicities available
 
 #Geometry setup macro
 export GEO_SETUP_FILE=${geoSetupMacroPath}
@@ -109,7 +109,7 @@ fi
 
 # run the root simulation
 #root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
-root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
+#root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
 root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
 root -b -l -q "${macro_dir}/run_analysis.C(${nevents})"
 

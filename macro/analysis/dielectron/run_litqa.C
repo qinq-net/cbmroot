@@ -102,9 +102,13 @@ void run_litqa(Int_t nEvents = 2)
     trackingQa->SetQuotaRich(0.6);
     trackingQa->SetOutputDir(resultDir);
     trackingQa->SetPRange(12, 0., 6.);
-    
+
+//auau    
     trackingQa->SetTrdAnnCut(0.85);
     trackingQa->SetRichAnnCut(-0.4);
+//agag
+    //trackingQa->SetTrdAnnCut(0.85);
+    //trackingQa->SetRichAnnCut(-0.4);
 
     std::vector<std::string> trackCat, richCat;
     trackCat.push_back("All");
