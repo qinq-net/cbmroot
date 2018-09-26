@@ -55,24 +55,24 @@ Link_Directories(
 Set(SRCS
    CbmMcbmUnpack.cxx
    CbmMcbm2018Source.cxx
-   
+
    dataformat/gDpbMessv100.cxx
 
-#   parameter/CbmMcbm2018StsPar.cxx
+   parameter/CbmMcbm2018StsPar.cxx
 #   parameter/CbmMcbm2018MuchPar.cxx
    parameter/CbmMcbm2018TofPar.cxx
    parameter/CbmMcbm2018ContFact.cxx
-   
+
 #   unpacker/CbmMcbm2018UnpackerT0.cxx
 #   unpacker/CbmMcbm2018UnpackerSts.cxx
 #   unpacker/CbmMcbm2018UnpackerMuch.cxx
 #   unpacker/CbmMcbm2018UnpackerTrd.cxx
    unpacker/CbmMcbm2018TofUnpacker.cxx
-   
+
    monitor/CbmMcbm2018MonitorMcbmSync.cxx
    monitor/CbmMcbm2018MonitorStsSync.cxx
 #   monitor/CbmMcbm2018MonitorStsPulser.cxx
-#   monitor/CbmMcbm2018MonitorSts.cxx
+   monitor/CbmMcbm2018MonitorSts.cxx
 #   monitor/CbmMcbm2018MonitorMuch.cxx
 #   monitor/CbmMcbm2018MonitorTrd.cxx
    monitor/CbmMcbm2018MonitorTof.cxx
