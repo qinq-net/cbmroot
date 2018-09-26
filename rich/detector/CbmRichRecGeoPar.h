@@ -145,7 +145,7 @@ public:
         for(it_type iterator = fPmtMap.begin(); iterator != fPmtMap.end(); iterator++) {
             cout << endl << "Geo path:" << iterator->first << endl;
             cout << "PMT position in (x,y,z) [cm]: " << iterator->second.fX << "  " << iterator->second.fY << "  " << iterator->second.fZ << endl;
-            // cout << "PMT plane position in (x,y,z) [cm]: " << iterator->second.fPlaneX << "  " << iterator->second.fPlaneY << "  " << iterator->second.fPlaneZ << endl;
+            cout << "PMT plane position in (x,y,z) [cm]: " << iterator->second.fPlaneX << "  " << iterator->second.fPlaneY << "  " << iterator->second.fPlaneZ << endl;
             cout << "PMT width and height [cm]: " << iterator->second.fWidth << "  " << iterator->second.fHeight << endl;
             cout << "PMT was rotated around x (theta) by " << iterator->second.fTheta*180./TMath::Pi() << " degrees" << endl;
             cout << "PMT was rotated around y (phi) by " << iterator->second.fPhi*180./TMath::Pi() << " degrees" << endl;

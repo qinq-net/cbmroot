@@ -117,17 +117,18 @@ void CbmRichGeoManager::InitPmtCyl()
 			//double c2 = TMath::Sqrt(curNodeRot[0]*curNodeRot[0] + curNodeRot[1]*curNodeRot[1]);
 			//double rotY = TMath::ATan2(-curNodeRot[2], c2); // around X
 
+            string nodePathStr = string(nodePath.Data()) + "/";
 
-            fGP->fPmtMap[string(nodePath.Data())].fTheta = rotX;
-            fGP->fPmtMap[string(nodePath.Data())].fPhi = rotY;
+            fGP->fPmtMap[nodePathStr].fTheta = rotX;
+            fGP->fPmtMap[nodePathStr].fPhi = rotY;
             const TGeoBBox* shape = (const TGeoBBox*)(curNode->GetVolume()->GetShape());
             
-            fGP->fPmtMap[string(nodePath.Data())].fWidth = 2. * shape->GetDX();
-            fGP->fPmtMap[string(nodePath.Data())].fHeight = 2. * shape->GetDY();
-            fGP->fPmtMap[string(nodePath.Data())].fZ = pmtZ;
-            fGP->fPmtMap[string(nodePath.Data())].fX = pmtX;
-            fGP->fPmtMap[string(nodePath.Data())].fY = pmtY;
-            
+            fGP->fPmtMap[nodePathStr].fWidth = 2. * shape->GetDX();
+            fGP->fPmtMap[nodePathStr].fHeight = 2. * shape->GetDY();
+            fGP->fPmtMap[nodePathStr].fZ = pmtZ;
+            fGP->fPmtMap[nodePathStr].fX = pmtX;
+            fGP->fPmtMap[nodePathStr].fY = pmtY;
+
             if (pmtX >=0 && pmtY >=0) {
                 xCoord.push_back(pmtX);
             }
@@ -170,8 +171,8 @@ void CbmRichGeoManager::InitPmtCyl()
             size_t foundIndex2 = nodePathStr.find("/", foundIndex1  + 1);
             if (foundIndex2 == string::npos) continue;
             
-            string mapKey = nodePathStr.substr(0, foundIndex2);
-            
+            string mapKey = nodePathStr.substr(0, foundIndex2) + "/";
+
             const TGeoMatrix* curMatrix = geoIterator.GetCurrentMatrix();
             const Double_t* curNodeTr = curMatrix->GetTranslation();
             
@@ -189,7 +190,7 @@ void CbmRichGeoManager::InitPmtCyl()
         it->second.fPlaneZ = mapPmtPlaneMinMax[it->first].GetMeanZ();
         
 //        cout << "name:" << it->first << " strip(x,y,z):" <<it->second.fX << "," << it->second.fY << "," << it->second.fZ <<
-//         " pmtPlane(z,y,z)" <<it->second.fPlaneX << "," << it->second.fPlaneY << "," << it->second.fPlaneZ << ", " <<
+//         " pmtPlane(x,y,z):" <<it->second.fPlaneX << "," << it->second.fPlaneY << "," << it->second.fPlaneZ << ", " <<
 //         "theta:" << it->second.fTheta << ", phi:" << it->second.fPhi << endl;
     }
     
@@ -203,6 +204,7 @@ void CbmRichGeoManager::InitPmtCyl()
         if (curNode->GetVolume()->GetName() == TString("camera_strip")) {
             
             geoIterator.GetPath(nodePath);
+            string nodePathStr = string(nodePath.Data()) + "/";
             const TGeoMatrix* curMatrix = geoIterator.GetCurrentMatrix();
             const Double_t* curNodeTr = curMatrix->GetTranslation();
 //            const Double_t* curNodeRot = curMatrix->GetRotationMatrix();
@@ -216,12 +218,12 @@ void CbmRichGeoManager::InitPmtCyl()
             
 
             double loc[3];
-            if (fGP->fPmtMap[string(nodePath.Data())].fPmtPositionIndexX == 1) {
+            if (fGP->fPmtMap[nodePathStr].fPmtPositionIndexX == 1) {
                 loc[0] = shape->GetDX() + shape->GetOrigin()[0];
                 loc[1] = shape->GetDY() + shape->GetOrigin()[1];
                 loc[2] = shape->GetDZ() + shape->GetOrigin()[2];
                 curMatrix->LocalToMaster(loc, master1);
-            } else if (fGP->fPmtMap[string(nodePath.Data())].fPmtPositionIndexX == 2) {
+            } else if (fGP->fPmtMap[nodePathStr].fPmtPositionIndexX == 2) {
                 loc[0] = -shape->GetDX() + shape->GetOrigin()[0];
                 loc[1] = shape->GetDY() + shape->GetOrigin()[1];
                 loc[2] = shape->GetDZ() + shape->GetOrigin()[2];
@@ -423,6 +425,8 @@ void CbmRichGeoManager::RotatePointCyl(
         gGeoManager->FindNode(inPos->X(), inPos->Y(), inPos->Z());
         string path(gGeoManager->GetPath());
         
+
+
         CbmRichRecGeoParPmt pmtPar = fGP->GetGeoRecPmtByBlockPathOrClosest(path, inPos);
         
         RotatePointImpl(inPos, outPos, -TMath::Abs(pmtPar.fPhi), TMath::Abs(pmtPar.fTheta), TMath::Abs(pmtPar.fX), TMath::Abs(pmtPar.fY), TMath::Abs(pmtPar.fZ));
