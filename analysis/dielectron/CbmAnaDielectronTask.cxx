@@ -167,6 +167,7 @@ void CbmAnaDielectronTask::CreateSourceTypesH2(
 
 CbmAnaDielectronTask::CbmAnaDielectronTask()
 : FairTask("CbmAnaDielectronTask"),
+fMCEventHeader(NULL),
 fMCTracks(NULL),
 fRichRings(NULL),
 fRichProj(NULL),
@@ -204,6 +205,8 @@ fRandom3(new TRandom3(0)),
 fCuts(),
 fHistoList(),
 fNofHitsInRingMap(),
+fh_nof_charged_particles(),
+fh_nof_charged_particles_acc(),
 fh_mc_signal_mom_angle(),
 fh_mc_mother_pdg(NULL),
 fh_acc_mother_pdg(NULL),
@@ -316,10 +319,17 @@ CbmAnaDielectronTask::~CbmAnaDielectronTask()
 void CbmAnaDielectronTask::InitHists()
 {
     fHistoList.clear();
-    
+
+
     //MC Pairs
     fh_mc_signal_mom_angle = new TH2D("fh_mc_signal_mom_angle", "fh_mc_signal_mom_angle; #sqrt{p_{e^{#pm}} p_{e^{#mp}}} [GeV/c]; #theta_{e^{+},e^{-}} [deg] ;Counter", 100, 0., 5., 1000, 0., 50.);
     fHistoList.push_back(fh_mc_signal_mom_angle);
+
+    //Number of Particles per Event
+    fh_nof_charged_particles = new TH1D("fh_nof_charged_particles", "fh_nof_charged_particles; nof charged particles; Yield", 500, 0., 500.);
+    fHistoList.push_back(fh_nof_charged_particles);
+    fh_nof_charged_particles_acc = new TH1D("fh_nof_charged_particles_acc", "fh_nof_charged_particles_acc; nof charged particles; Yield", 500, 0., 500);
+    fHistoList.push_back(fh_nof_charged_particles_acc);
     
     // Mother PDG
     fh_mc_mother_pdg = new TH1D("fh_mc_mother_pdg", "fh_mc_mother_pdg; Pdg code; Particles per event", 7000, -3500., 3500.);
@@ -534,7 +544,10 @@ InitStatus CbmAnaDielectronTask::Init()
     
     FairRootManager* ioman = FairRootManager::Instance();
     if (NULL == ioman) { Fatal("CbmAnaDielectronTask::Init","No FairRootManager!"); }
-    
+
+    fMCEventHeader = (FairMCEventHeader*) ioman->GetObject("MCEventHeader.");
+    if(NULL == fMCEventHeader) { Fatal("CbmAnaDielectronTask::Init","No MCEventHeader array!"); }
+
     fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
     if (NULL == fMCTracks) { Fatal("CbmAnaDielectronTask::Init","No MCTrack array!"); }
     
@@ -628,7 +641,16 @@ InitStatus CbmAnaDielectronTask::Init()
 void CbmAnaDielectronTask::Exec(Option_t*)
 {
     fh_event_number->Fill(0.5);
-    
+
+    Bool_t useMbias = false;                                                   // false for 40% central agag collisions (b<7.7fm)
+
+    Bool_t isCentralCollision = false;
+
+    if(!useMbias){
+	Double_t impactPar = fMCEventHeader->GetB();
+	if(impactPar <= 7.7) isCentralCollision = true;
+    }
+
     cout << "-I- CbmAnaDielectronTask, event number " << fh_event_number->GetEntries() << endl;
     cout << "fPionMisidLevel = " << fPionMisidLevel << endl;
     fCuts.Print();
@@ -639,21 +661,24 @@ void CbmAnaDielectronTask::Exec(Option_t*)
     } else {
         Fatal("CbmAnaDielectronTask::Exec","No PrimaryVertex array!");
     }
-    cout << "I'm here" << endl;
+//    cout << "I'm here" << endl;
    // CbmLitMCTrackCreator::Instance()->CreateReco();
     //
-    FillRichRingNofHits();
-    MCPairs();
-    RichPmtXY();
-    SingleParticleAcceptance();
-    PairMcAndAcceptance();
-    FillTopologyCandidates();
-    FillCandidates();
-    CalculateNofTopologyPairs(fh_nof_topology_pairs_gamma, "gamma");
-    CalculateNofTopologyPairs(fh_nof_topology_pairs_pi0, "pi0");
-    DifferenceSignalAndBg();
-    SignalAndBgReco();
-    FillElPiMomHist();
+    if(useMbias || (!useMbias && isCentralCollision)){
+        FillRichRingNofHits();
+	MCPairs();
+	RichPmtXY();
+	SingleParticleAcceptance();
+	PairMcAndAcceptance();
+	FillTopologyCandidates();
+	FillCandidates();
+	CalculateNofTopologyPairs(fh_nof_topology_pairs_gamma, "gamma");
+	CalculateNofTopologyPairs(fh_nof_topology_pairs_pi0, "pi0");
+	DifferenceSignalAndBg();
+	SignalAndBgReco();
+	FillElPiMomHist();
+	FillNofChargedParticlesPerEvent();
+    }
 }// Exec
 
 void CbmAnaDielectronTask::FillRichRingNofHits()
@@ -681,6 +706,7 @@ void CbmAnaDielectronTask::FillRichRingNofHits()
     }
 }
 
+
 void CbmAnaDielectronTask::MCPairs()
 {
     Int_t nMcTracks = fMCTracks->GetEntries();
@@ -693,7 +719,20 @@ void CbmAnaDielectronTask::MCPairs()
         Bool_t isMcSignalElectron = CbmLmvmUtils::IsMcSignalElectron(mctrack);
         Bool_t isMcGammaElectron = CbmLmvmUtils::IsMcGammaElectron(mctrack, fMCTracks);
         if (isMcSignalElectron) {
-            fh_source_mom[kSignal][kMc]->Fill(mom, fWeight);
+	    fh_source_mom[kSignal][kMc]->Fill(mom, fWeight);
+            for(Int_t iMc2 = 0; iMc2 < nMcTracks; iMc2++){
+                if(i == iMc2) continue;
+                CbmMCTrack* mctrack2 = (CbmMCTrack*) fMCTracks->At(iMc2);
+                Int_t motherIdMc2 = mctrack2->GetMotherId();
+                if (motherId == motherIdMc2 && CbmLmvmUtils::IsMcSignalElectron(mctrack2)) {
+                    CbmLmvmKinematicParams pKin = CbmLmvmKinematicParams::KinematicParamsWithMcTracks(mctrack,mctrack2);
+                    Double_t angle = pKin.fAngle;
+                    Double_t pMc = mctrack->GetP();
+                    Double_t pMc2 = mctrack2->GetP();
+                    Double_t sqrtPMc = TMath::Sqrt(pMc*pMc2);
+                    fh_mc_signal_mom_angle->Fill(sqrtPMc, angle);
+                }
+            }
             for(Int_t iMc2 = 0; iMc2 < nMcTracks; iMc2++){
                 if(i == iMc2) continue;
                 CbmMCTrack* mctrack2 = (CbmMCTrack*) fMCTracks->At(iMc2);
@@ -772,6 +811,30 @@ void CbmAnaDielectronTask::RichPmtXY()
         }
     }
 }
+
+void CbmAnaDielectronTask::FillNofChargedParticlesPerEvent(){
+    Int_t nofMcTracks = fMCTracks->GetEntries();
+    Int_t nofChargedUrqmdParticles = 0;
+    Int_t nofChargedUrqmdParticlesAcc = 0;
+    for(Int_t i = 0; i < nofMcTracks; i++){
+	CbmMCTrack* mcTrack = (CbmMCTrack*) fMCTracks->At(i);
+	Bool_t isMcTrackCharged = false;
+        if(mcTrack->GetCharge() != 0) isMcTrackCharged = true;
+	Bool_t isMcSignalElectron = CbmLmvmUtils::IsMcSignalElectron(mcTrack);
+	Bool_t isMcTrackAccepted = false;
+	if(mcTrack->GetNPoints(kSts) >= 4) isMcTrackAccepted = true;
+	Bool_t isPrimary = false;
+	Int_t motherId = mcTrack->GetMotherId();
+        if(motherId == -1) isPrimary = true;
+	if(!isMcSignalElectron && isMcTrackCharged && isPrimary) nofChargedUrqmdParticles++;
+        if(!isMcSignalElectron && isMcTrackCharged && isMcTrackAccepted && isPrimary) nofChargedUrqmdParticlesAcc++;
+    }
+    fh_nof_charged_particles->Fill(nofChargedUrqmdParticles);
+    fh_nof_charged_particles_acc->Fill(nofChargedUrqmdParticlesAcc);
+
+}
+
+
 
 
 Bool_t CbmAnaDielectronTask::IsMcTrackAccepted(
@@ -1670,8 +1733,8 @@ void CbmAnaDielectronTask::IsElectron(
         Bool_t trdEl = CbmLitGlobalElectronId::GetInstance().IsTrdElectron(globalTrackIndex, momentum);
         cand->fTrdAnn = CbmLitGlobalElectronId::GetInstance().GetTrdAnn(globalTrackIndex, momentum);
 
-        Bool_t tofEl = CbmLitGlobalElectronId::GetInstance().IsTofElectron(globalTrackIndex, momentum);
-        cout << "tof momentum: " << momentum << endl;
+	Bool_t tofEl = CbmLitGlobalElectronId::GetInstance().IsTofElectron(globalTrackIndex, momentum);
+        //cout << "tof momentum: " << momentum << endl;
         Bool_t momCut = (fCuts.fMomentumCut > 0.)?(momentum < fCuts.fMomentumCut):true;
         
         if (richEl && trdEl && tofEl && momCut) {
@@ -1721,25 +1784,26 @@ void CbmAnaDielectronTask::DifferenceSignalAndBg()
         if (fCandidates[i].fIsMcSignalElectron){
             fh_richann[kSignal]->Fill(fCandidates[i].fRichAnn, fWeight);
             fh_trdann[kSignal]->Fill(fCandidates[i].fTrdAnn, fWeight);
-            fh_tofm2[kSignal]->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2, fWeight);
-            cout << "Signal tofm2: " << fCandidates[i].fMass2 << ", fWeight: " << fWeight << endl;
+	    fh_tofm2[kSignal]->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2, fWeight);
+	    //cout << "tof m2: " << fCandidates[i].fMass2 << endl;
+            //cout << "Signal tofm2: " << fCandidates[i].fMass2 << ", fWeight: " << fWeight << endl;
         } else {
             fh_richann[kBg]->Fill(fCandidates[i].fRichAnn);
             fh_trdann[kBg]->Fill(fCandidates[i].fTrdAnn);
             fh_tofm2[kBg]->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
-            cout << "Bg tofm2: " << fCandidates[i].fMass2 << endl;
+            //cout << "Bg tofm2: " << fCandidates[i].fMass2 << endl;
         }
         if (fCandidates[i].fIsMcGammaElectron){
             fh_richann[kGamma]->Fill(fCandidates[i].fRichAnn);
             fh_trdann[kGamma]->Fill(fCandidates[i].fTrdAnn);
             fh_tofm2[kGamma]->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
-            cout << "Gamma tofm2: " << fCandidates[i].fMass2 << endl;
+            //cout << "Gamma tofm2: " << fCandidates[i].fMass2 << endl;
         }
         if (fCandidates[i].fIsMcPi0Electron){
             fh_richann[kPi0]->Fill(fCandidates[i].fRichAnn);
             fh_trdann[kPi0]->Fill(fCandidates[i].fTrdAnn);
             fh_tofm2[kPi0]->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
-            cout << "Pi0Elec tofm2: " << fCandidates[i].fMass2 << endl;
+            //cout << "Pi0Elec tofm2: " << fCandidates[i].fMass2 << endl;
         }
     } // loop over candidates
     
@@ -2022,7 +2086,9 @@ void CbmAnaDielectronTask::Finish()
 
 void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const string& particle)
 {
-    if (energy == "8gev" || energy == "10gev") {
+
+    // Au+Au centr old scaling factors
+   /* if (energy == "8gev" || energy == "10gev") {
         // weight rho0 = Multiplicity * Branching Ratio = 9 * 4.7e-5 for 10 AGeV beam energy
         if (particle == "rho0") this->SetWeight(9 * 4.7e-5);
         // weight omega = Multiplicity * Branching Ratio = 19 * 7.28e-5 for 10 AGeV beam energy
@@ -2034,8 +2100,24 @@ void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const
         // weight in medium rho. 0.5 is a scaling factor for 8AGev from 25AGeV
         if (particle == "inmed") this->SetWeight(0.5 * 4.45e-2);
         // weight qgp radiation  0.5 is a scaling factor for 8AGev from 25AGeV
-        if (particle == "qgp") this->SetWeight(0.5 * 1.15e-2);
-    } else if (energy == "25gev") {
+	if (particle == "qgp") this->SetWeight(0.5 * 1.15e-2);
+                                                                                                      //either old or new!!!
+    // Au+Au centr new scaling factors
+    }*/
+    if (energy == "8gev") {
+        // weight rho0 = Multiplicity * Branching Ratio = 9 * 4.7e-5 for 8 AGeV beam energy
+        if (particle == "rho0") this->SetWeight(0.012);
+        // weight omega = Multiplicity * Branching Ratio = 19 * 7.28e-5 for 8 AGeV beam energy
+        if (particle == "omegaepem" ) this->SetWeight(2.5*4.7e-5);
+        // weight omega = Multiplicity * Branching Ratio = 19 * 7.7e-4 for 8 AGeV beam energy
+        if (particle == "omegadalitz") this->SetWeight(2.5*7.28e-5);
+        // weight phi = Multipli0city * Branching Ratio = 0.12 * 2.97e-4 for 8 AGeV beam energy
+        if (particle == "phi") this->SetWeight(0.365*2.97e-4);
+        // weight in medium rho. 0.5 is a scaling factor for 8AGev from 25AGeV
+        if (particle == "inmed") this->SetWeight(0.5 * 4.45e-2);
+        // weight qgp radiation  0.5 is a scaling factor for 8AGev from 25AGeV
+	if (particle == "qgp") this->SetWeight(0.5 * 1.15e-2);
+    }  else if (energy == "25gev") {
         // weight rho0 = Multiplicity * Branching Ratio = 23 * 4.7e-5 for 25 AGeV beam energy
         if (particle == "rho0") this->SetWeight(23 * 4.7e-5);
         // weight omega = Multiplicity * Branching Ratio = 38 * 7.28e-5 for 25 AGeV beam energy
@@ -2048,7 +2130,7 @@ void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const
         if (particle == "inmed") this->SetWeight(4.45e-2);
         // weight qgp radiation
         if (particle == "qgp") this->SetWeight(1.15e-2);
-    } else if (energy == "3.5gev") {
+    } else if (energy == "3.5gev" ) {
         // weight rho0 = Multiplicity * Branching Ratio = 1.0 * 4.7e-5 for 25 AGeV beam energy
         if (particle == "rho0") this->SetWeight(1.0 * 4.7e-5);
         // weight omega = Multiplicity * Branching Ratio = 1.2 * 7.28e-5 for 25 AGeV beam energy
@@ -2056,21 +2138,32 @@ void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const
         // weight omega = Multiplicity * Branching Ratio = 1.2 * 5.9e-4 for 25 AGeV beam energy
         if (particle == "omegadalitz") this->SetWeight(1.2 * 7.7e-5);
         // weight phi = Multiplicity * Branching Ratio = 0.1 * 2.97e-4 for 25 AGeV beam energy
-        if (particle == "phi") this->SetWeight(0.1 * 2.97e-4);
+	if (particle == "phi") this->SetWeight(0.1 * 2.97e-4);
+
+    //Ag+Ag mbias!!
     } else if (energy == "4.5gev"){
         // weight omegadalitz = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
-        //if(particle = "omegadalitz") this->SetWeight();
+        if(particle == "omegadalitz") this->SetWeight(5.8*7.7e-6);
         // weight omegaepem = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
-        //if(particle = "omegaepem") this->SetWeight();
+        if(particle == "omegaepem") this->SetWeight(5.8*7.28e-7);
         // weight pi0 = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
-        //if(particle = "pi0") this->SetWeight();
+        if(particle == "phi") this->SetWeight(5.8*2.97e-7);
+	// weight inmed = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
+         if(particle == "inmed") this->SetWeight(8.2*10e-4);
+
+    //Ag+Ag 40%                                                                                             either mbias or 40%!!!
+/*    } else if (energy == "4.5gev"){
+        // weight omegadalitz = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
+        if(particle == "omegadalitz") this->SetWeight(1.2*7.7e-5);
+        // weight omegaepem = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
+        if(particle == "omegaepem") this->SetWeight(1.2*7.28e-6);
+        // weight pi0 = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
+        if(particle == "phi") this->SetWeight(1.2*2.97e-6);
         // weight inmed = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy 
-        //if(particle = "inmed") this->SetWeight();
-        // weight qgp = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
-        //if(particle = "qgp") this->SetWeight();
+        if(particle == "inmed") this->SetWeight(2.4*10e-3);
     } else {
         cout << "-ERROR- CbmAnaDielectronTask::SetEnergyAndParticle energy or particle is not correct, energy:"
                 << energy << " particle:" << particle << endl;
-    }
+*/    }
 }
 
