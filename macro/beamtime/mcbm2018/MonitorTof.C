@@ -41,7 +41,7 @@ void MonitorTof(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24bMode
   TObjString* tutDetDigiFileMuch = new TObjString(paramFileMuch);
   parFileList->Add(tutDetDigiFileMuch);
 */
-  TString paramFileTof = paramDir + "MapTofGbtx.par";
+  TString paramFileTof = paramDir + "mTofPar.par";
   TObjString* tutDetDigiFileTof = new TObjString(paramFileTof);
   parFileList->Add(tutDetDigiFileTof);
 
