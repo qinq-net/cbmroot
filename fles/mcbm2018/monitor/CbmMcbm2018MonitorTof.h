@@ -23,7 +23,7 @@
 #include <chrono>
 
 class CbmDigi;
-class CbmTofStar2018Par;
+class CbmMcbm2018TofPar;
 
 class TCanvas;
 class TH1;
@@ -83,16 +83,23 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       UInt_t   fuCurrNbGdpb;
 
       /** Settings from parameter file **/
-      CbmTofStar2018Par* fUnpackPar;      //!
+      CbmMcbm2018TofPar* fUnpackPar;      //!
       UInt_t fuNrOfGdpbs;           // Total number of GDPBs in the system
-      UInt_t fuNrOfFeetPerGdpb;     // Number of FEBs per GDPB
-      UInt_t fuNrOfGet4PerFeb;      // Number of GET4s per FEB
+      UInt_t fuNrOfFeePerGdpb;      // Number of FEBs per GDPB
+      UInt_t fuNrOfGet4PerFee;      // Number of GET4s per FEE
       UInt_t fuNrOfChannelsPerGet4; // Number of channels in each GET4
 
-      UInt_t fuNrOfChannelsPerFeet; // Number of channels in each FEET
+      UInt_t fuNrOfChannelsPerFee;  // Number of channels in each FEE
       UInt_t fuNrOfGet4;            // Total number of Get4 chips in the system
       UInt_t fuNrOfGet4PerGdpb;     // Number of GET4s per GDPB
       UInt_t fuNrOfChannelsPerGdpb; // Number of channels per GDPB
+      
+      UInt_t fuNrOfGbtx;
+      UInt_t fuNrOfModules;
+      std::vector< Int_t > fviNrOfRpc;
+      std::vector< Int_t > fviRpcType;
+      std::vector< Int_t > fviRpcSide;
+      std::vector< Int_t > fviModuleId;
 
       const UInt_t kuNbFeePerGbtx  = 5;
       const UInt_t kuNbGbtxPerGdpb = 6;
@@ -143,16 +150,16 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       std::vector< std::vector < gdpbv100::Message > > fvmEpSupprBuffer;
 
       /// Buffer for pulser channels
-      std::vector<  Double_t  > fdTsLastPulserHit; // [ fuFeetNr ]
+      std::vector<  Double_t  > fdTsLastPulserHit; // [ fuFeeNr ]
 
       /// Histograms and histogram control variables
          // Default value for nb bins in Pulser time difference histos
-      const UInt_t kuNbBinsDt    = 600;
+      const UInt_t kuNbBinsDt    = 2000;
       Double_t dMinDt;
       Double_t dMaxDt;
-         // Default number of FEET per channels histograms
-      UInt_t fuNbFeetPlot;
-      UInt_t fuNbFeetPlotsPerGdpb;
+         // Default number of FEE per channels histograms
+      UInt_t fuNbFeePlot;
+      UInt_t fuNbFeePlotsPerGdpb;
          // Evolution plots control
       Double_t fdStartTime; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
       Double_t fdStartTimeLong; /** Time of first valid hit (epoch available), used as reference for evolution plots**/
@@ -187,16 +194,16 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       std::vector< TH2      * > fvhRemapTot_gDPB;
       std::vector< TH1      * > fvhRemapChCount_gDPB;
       std::vector< TH2      * > fvhRemapChRate_gDPB;
-      std::vector< TH1      * > fvhFeetRate_gDPB;
-      std::vector< TH1      * > fvhFeetErrorRate_gDPB;
-      std::vector< TProfile * > fvhFeetErrorRatio_gDPB;
-      std::vector< TH1      * > fvhFeetRateLong_gDPB;
-      std::vector< TH1      * > fvhFeetErrorRateLong_gDPB;
-      std::vector< TProfile * > fvhFeetErrorRatioLong_gDPB;
+      std::vector< TH1      * > fvhFeeRate_gDPB;
+      std::vector< TH1      * > fvhFeeErrorRate_gDPB;
+      std::vector< TProfile * > fvhFeeErrorRatio_gDPB;
+      std::vector< TH1      * > fvhFeeRateLong_gDPB;
+      std::vector< TH1      * > fvhFeeErrorRateLong_gDPB;
+      std::vector< TProfile * > fvhFeeErrorRatioLong_gDPB;
 
       const UInt_t kuNbFeeSide = 5;
-      std::vector< TH2      * > fvhRemapTotSideA_gDPB;
-      std::vector< TH2      * > fvhRemapTotSideB_gDPB;
+      std::vector< TH2      * > fvhRemapTotSideA_mod;
+      std::vector< TH2      * > fvhRemapTotSideB_mod;
       
       ///* STAR TRIGGER detection *///
       std::vector< TH1 *      > fvhTokenMsgType;
@@ -207,7 +214,7 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       std::vector< TProfile * > fvhStarTrigStarTsEvo;
 
       ///* Pulser monitoring *///
-      const Double_t kdMaxDtPulserPs = 100e3;
+      const Double_t kdMaxDtPulserPs = 300e3;
       std::vector< std::vector< TH1 * > > fvhTimeDiffPulser;
       TH2 * fhTimeMeanPulser;
       TH2 * fhTimeRmsPulser;
