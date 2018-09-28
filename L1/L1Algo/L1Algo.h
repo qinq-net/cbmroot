@@ -633,6 +633,7 @@ class L1Algo{
   
   void FilterFirst( L1TrackPar &track,fvec &x, fvec &y, L1Station &st );
   void FilterFirst( L1TrackParFit &track, fvec &x, fvec &y, fvec& t,  L1Station &st);
+  void FilterFirst( L1TrackParFit &track, fvec &x, fvec &y, fvec& t, fvec& t_er,  L1Station &st);
   
   void FilterFirst( L1TrackParFit &track, fvec &x, fvec &y, fvec& t, fvec& t_er, L1Station &st, fvec &dx, fvec &dy, fvec &dxy  );
   void FilterFirstL( L1TrackParFit &track, fvec &x, fvec &y, fvec& t, fvec& t_er, L1Station &st, fvec &dx, fvec &dy, fvec &dxy  );

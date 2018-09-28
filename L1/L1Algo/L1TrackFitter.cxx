@@ -360,8 +360,8 @@ void L1Algo::L1KFTrackFitter()
 
   L1Station *sta = vStations;
   L1Station staFirst, staLast;
-  fvec x[MaxNStations], u[MaxNStations], v[MaxNStations], y[MaxNStations], time[MaxNStations], z[MaxNStations];
-  fvec x_first, y_first, time_first, x_last, y_last, time_last; 
+  fvec x[MaxNStations], u[MaxNStations], v[MaxNStations], y[MaxNStations], time[MaxNStations], timeEr[MaxNStations], z[MaxNStations];
+  fvec x_first, y_first, time_first, x_last, y_last, time_last, time_er_first, time_er_last; 
   fvec Sy[MaxNStations], w[MaxNStations];
   fvec y_temp, x_temp;
   fvec fz0, fz1, fz2, z_start, z_end;
@@ -408,6 +408,7 @@ void L1Algo::L1KFTrackFitter()
         x[ista][iVec]  = x_temp[iVec];
         y[ista][iVec]  = y_temp[iVec];
         time[ista][iVec] = hit.t_reco;
+        timeEr[ista][iVec] = hit.t_er;
         z[ista][iVec]  = (*vStsZPos)[hit.iz];
         sta[ista].fieldSlice.GetFieldValue( x[ista], y[ista], fB_temp );
         fB[ista].x[iVec] = fB_temp.x[iVec];
@@ -418,6 +419,7 @@ void L1Algo::L1KFTrackFitter()
           x_first[iVec] = x[ista][iVec];
           y_first[iVec] = y[ista][iVec];
           time_first[iVec] = time[ista][iVec];
+          time_er_first[iVec] = timeEr[ista][iVec];
           staFirst.XYInfo.C00[iVec] = sta[ista].XYInfo.C00[iVec];
           staFirst.XYInfo.C10[iVec] = sta[ista].XYInfo.C10[iVec];
           staFirst.XYInfo.C11[iVec] = sta[ista].XYInfo.C11[iVec];
@@ -427,6 +429,7 @@ void L1Algo::L1KFTrackFitter()
           x_last[iVec] = x[ista][iVec];
           y_last[iVec] = y[ista][iVec];
           time_last[iVec] = time[ista][iVec];
+          time_er_last[iVec] = timeEr[ista][iVec];
           staLast.XYInfo.C00[iVec] = sta[ista].XYInfo.C00[iVec];
           staLast.XYInfo.C10[iVec] = sta[ista].XYInfo.C10[iVec];
           staLast.XYInfo.C11[iVec] = sta[ista].XYInfo.C11[iVec];
@@ -468,7 +471,7 @@ void L1Algo::L1KFTrackFitter()
 
       FilterFirst( T, x_last, y_last, staLast );
       
-      FilterFirst( T1, x_last, y_last, time_last, staLast );
+      FilterFirst( T1, x_last, y_last, time_last, time_er_last, staLast );
       
 //       std::cout << "Filter first" << std::endl;
 //       T1.Compare(T);
@@ -546,7 +549,7 @@ void L1Algo::L1KFTrackFitter()
         L1Filter( T, sta[i].backInfo,  v[i], w1 );        
         T1.Filter( sta[i].backInfo,  v[i], w1 );
         
-        T1.Filter(time[i], fvec(2.6f), w1);
+        T1.Filter(time[i], timeEr[i], w1);
 //         std::cout << "Filter 2" << std::endl;
 //         T1.Compare(T);
         
@@ -642,7 +645,7 @@ void L1Algo::L1KFTrackFitter()
       
       FilterFirst( T, x_first, y_first, staFirst );
       
-      FilterFirst( T1, x_first, y_first, time_first, staFirst );
+      FilterFirst( T1, x_first, y_first, time_first, time_er_first, staFirst);
       
       // L1AddMaterial( T, sta[i].materialInfo, qp0 );
       qp0  = T.qp;
@@ -700,7 +703,7 @@ void L1Algo::L1KFTrackFitter()
         
         T1.Filter( sta[i].frontInfo, u[i], w1 );
         T1.Filter( sta[i].backInfo,  v[i], w1 );
-        T1.Filter(time[i], fvec(2.6f), w1);
+        T1.Filter(time[i], timeEr[i], w1);
         
         fB2 = fB1; 
         fz2 = fz1;
@@ -1536,6 +1539,26 @@ void L1Algo::FilterFirst( L1TrackParFit &track, fvec &x, fvec &y, fvec& t, fvec&
   track.NDF = -3.0;
   track.chi2 = ZERO;
 }
+
+void L1Algo::FilterFirst( L1TrackParFit &track, fvec &x, fvec &y, fvec& t, fvec& t_er, L1Station &st)
+{
+  // initialize covariance matrix
+//   track.C00= dx*dx;
+//   track.C10= dxy;      track.C11= dy*dy;
+  track.C00= st.XYInfo.C00;
+  track.C10= st.XYInfo.C10;      track.C11= st.XYInfo.C11;
+  track.C20= ZERO;         track.C21= ZERO;      track.C22= vINF;
+  track.C30= ZERO;         track.C31= ZERO;      track.C32= ZERO;    track.C33= vINF;
+  track.C40= ZERO;         track.C41= ZERO;      track.C42= ZERO;    track.C43= ZERO;     track.C44= ONE;
+  track.C50= ZERO;         track.C51= ZERO;      track.C52= ZERO;    track.C53= ZERO;     track.C54= ZERO;         track.C55= t_er*t_er;
+  
+  track.fx = x;
+  track.fy = y;
+  track.ft = t;
+  track.NDF = -3.0;
+  track.chi2 = ZERO;
+}
+
 
 void L1Algo::FilterFirstL( L1TrackParFit &track, fvec &x, fvec &y, fvec& t, fvec& t_er, L1Station &st, fvec &dx, fvec &dy, fvec &dxy )
 {

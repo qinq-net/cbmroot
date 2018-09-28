@@ -1170,7 +1170,7 @@ void CbmL1::TrackFitPerformance()
       h_fitL[1]->Fill( (it->TLast[1]-mc.y) *1.e4);
       h_fitL[2]->Fill((it->TLast[2]-mc.px/mc.pz)*1.e3);
       h_fitL[3]->Fill((it->TLast[3]-mc.py/mc.pz)*1.e3);
-      h_fitL[4]->Fill(fabs(1./it->T[4])/mc.p-1);
+      h_fitL[4]->Fill(fabs(1./it->TLast[4])/mc.p-1);
       if( finite(it->CLast[0]) && it->CLast[0]>0 ) h_fitL[5]->Fill( (it->TLast[0]-mc.x)/sqrt(it->CLast[0]));
       if( finite(it->CLast[2]) && it->CLast[2]>0 ) h_fitL[6]->Fill( (it->TLast[1]-mc.y)/sqrt(it->CLast[2]));
       if( finite(it->CLast[5]) && it->CLast[5]>0 ) h_fitL[7]->Fill( (it->TLast[2]-mc.px/mc.pz)/sqrt(it->CLast[5]));
@@ -1715,29 +1715,51 @@ void CbmL1::InputPerformance()
       if (h.Det!= 1) continue; // mvd hit
       const CbmStsHit *sh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(h.extIndex) );
 
-    CbmMatch* stsHitMatch = (CbmMatch*) listStsHitMatch->At(h.extIndex);
-    if(stsHitMatch -> GetNofLinks() == 0) continue;
     Float_t bestWeight = 0.f;
     Float_t totalWeight = 0.f;
     int iMCPoint = -1;
     CbmLink link;
-    
-    for(int iLink=0; iLink<stsHitMatch -> GetNofLinks(); iLink++)
-    {
-      totalWeight += stsHitMatch->GetLink(iLink).GetWeight();
-      if( stsHitMatch->GetLink(iLink).GetWeight() > bestWeight)
-      {
-        bestWeight = stsHitMatch->GetLink(iLink).GetWeight();
-        iMCPoint = stsHitMatch->GetLink(iLink).GetIndex();
-        link = stsHitMatch->GetLink(iLink);
-      }
-    }
-    if(bestWeight/totalWeight < 0.7|| iMCPoint < 0) continue;
+    CbmStsPoint* pt = 0;
 
-    CbmStsPoint* pt = (CbmStsPoint*) fStsPoints->Get(link.GetFile(),link.GetEntry(),link.GetIndex());
+        if(listStsClusterMatch){
+          const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(listStsClusterMatch->At(sh->GetFrontClusterId()));
+          const CbmMatch* backClusterMatch  = static_cast<const CbmMatch*>(listStsClusterMatch->At(sh->GetBackClusterId()));
+          CbmMatch stsHitMatch;
+
+          for(Int_t iFrontLink = 0; iFrontLink<frontClusterMatch->GetNofLinks(); iFrontLink++){
+            const CbmLink& frontLink = frontClusterMatch->GetLink(iFrontLink);
+
+            for(Int_t iBackLink = 0; iBackLink<backClusterMatch->GetNofLinks(); iBackLink++){
+              const CbmLink& backLink = backClusterMatch->GetLink(iBackLink);
+              if (frontLink == backLink){
+                stsHitMatch.AddLink(frontLink);
+                stsHitMatch.AddLink(backLink);
+              }
+            }
+          }
+
+          if( stsHitMatch.GetNofLinks()>0 ){
+            Float_t bestWeight = 0.f;
+            for(Int_t iLink=0; iLink < stsHitMatch.GetNofLinks(); iLink++){
+              if( stsHitMatch.GetLink(iLink).GetWeight() > bestWeight){
+                bestWeight = stsHitMatch.GetLink(iLink).GetWeight();
+                Int_t iFile  = stsHitMatch.GetLink(iLink).GetFile();
+                Int_t iEvent = stsHitMatch.GetLink(iLink).GetEntry() - 1;
+                if(!fTimesliceMode) //TODO Fix the event number in links
+                  iEvent+=1;
+                pt = (CbmStsPoint*) fStsPoints->Get(iFile,iEvent,stsHitMatch.GetLink(iLink).GetIndex());
+                
+                 }
+              }
+             }   
+             
+             if (pt==0) continue;
+
+
+    
     double mcTime = pt->GetTime();
     
-    if (fTimesliceMode) mcTime+= fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
+    //if (fTimesliceMode) mcTime+= fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
 
         // hit pulls and residuals
 
@@ -1766,6 +1788,11 @@ void CbmL1::InputPerformance()
       resXsts->Fill((hitPos.X() - mcPos.X())*10*1000);
       resYsts->Fill((hitPos.Y() - mcPos.Y())*10*1000);
       resTsts->Fill((sh->GetTime() - mcTime));
+      
+                   
+            
+          
+        }  
 
     }
   } // sts
