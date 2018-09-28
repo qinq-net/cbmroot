@@ -10,7 +10,7 @@
 // Data
 
 // CbmRoot
-#include "CbmCern2017UnpackParHodo.h"
+#include "CbmMcbm2018StsPar.h"
 #include "CbmHistManager.h"
 
 // FairRoot
@@ -46,14 +46,25 @@ CbmMcbm2018MonitorSts::CbmMcbm2018MonitorSts() :
    fuNbCoreMsPerTs(0),
    fuNbOverMsPerTs(0),
    fbIgnoreOverlapMs(kFALSE),
-   fUnpackParHodo(NULL),
+   fUnpackParSts(NULL),
+   fuNbModules(0),
+   fviModuleType(),
+   fviModAddress(),
    fuNrOfDpbs(0),
    fDpbIdIndexMap(),
-   fuNbElinksPerDpb(0),
-   fuNbStsXyters(0),
-   fuNbChanPerAsic(0),
+   fvbCrobActiveFlag(),
    fuNbFebs(0),
-   fvuElinkToAsic(),
+   fuNbStsXyters(0),
+   fviFebModuleIdx(),
+   fviFebModuleSide(),
+   fviFebType(),
+/*
+   fuNrOfDpbs(0),
+   fDpbIdIndexMap(),
+   fuNbStsXyters(0),
+   fUnpackParSts->GetNbChanPerAsic()(0),
+   fuNbFebs(0),
+*/
    fsHistoFileFullname( "data/SetupHistos.root" ),
    fbPrintMessages( kFALSE ),
    fPrintMessCtrl( stsxyter::MessagePrintMask::msg_print_Human ),
@@ -97,8 +108,7 @@ CbmMcbm2018MonitorSts::CbmMcbm2018MonitorSts() :
    fhStsSysMessType(NULL),
    fhStsMessTypePerDpb(NULL),
    fhStsSysMessTypePerDpb(NULL),
-   fhStsMessTypePerElink(NULL),
-   fhStsSysMessTypePerElink(NULL),
+/*
    fhStsChanCntRaw(),
    fhStsChanCntRawGood(),
    fhStsChanAdcRaw(),
@@ -111,30 +121,29 @@ CbmMcbm2018MonitorSts::CbmMcbm2018MonitorSts() :
    fhStsAsicMissEvtEvo(),
    fhStsChanHitRateEvoLong(),
    fhStsAsicRateEvoLong(),
+*/
    fhStsFebChanCntRaw(),
+   fhStsFebChanCntRawGood(),
    fhStsFebChanAdcRaw(),
    fhStsFebChanAdcRawProf(),
+   fhStsFebChanRawTs(),
+   fhStsFebChanMissEvt(),
+   fhStsFebChanMissEvtEvo(),
+   fhStsFebAsicMissEvtEvo(),
+   fhStsFebMissEvtEvo(),
    fhStsFebChanHitRateEvo(),
+   fhStsFebAsicHitRateEvo(),
    fhStsFebHitRateEvo(),
+   fhStsFebChanHitRateEvoLong(),
+   fhStsFebAsicHitRateEvoLong(),
+   fhStsFebHitRateEvoLong(),
    fhStsFebChanCoinc(),
+   fhStsModulePNCoincChan(),
+   fhStsModulePNCoincAdc(),
+   fhStsModuleCoincAdcChanP(),
+   fhStsModuleCoincAdcChanN(),
+   fhStsModuleCoincMap(),
    fcMsSizeAll(NULL)
-/*
-   fdStartTs( 0.0 ),
-   fvmLastHitAsic(),
-   fhStsTimeDiffPerAsic(),
-   fhStsTimeDiffPerAsicPair(),
-   fhStsTimeDiffClkPerAsicPair(),
-   fhStsTimeDiffEvoPerAsicPair(),
-   fhStsTimeDiffEvoPerAsicPairProf(),
-   fhStsRawTimeDiffEvoPerAsicPairProf(),
-   fhStsTsLsbMatchPerAsicPair(),
-   fhStsTsMsbMatchPerAsicPair(),
-   fhStsIntervalAsic(),
-   fhStsIntervalLongAsic(),
-   fvdLastTimeDiffValuesAsicPair(),
-   fvuLastTimeDiffSlotAsicPair(),
-   fvdMeanTimeDiffAsicPair()
-*/
 {
 }
 
@@ -158,7 +167,7 @@ void CbmMcbm2018MonitorSts::SetParContainers()
 {
    LOG(INFO) << "Setting parameter containers for " << GetName()
          << FairLogger::endl;
-   fUnpackParHodo = (CbmCern2017UnpackParHodo*)(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmCern2017UnpackParHodo"));
+   fUnpackParSts = (CbmMcbm2018StsPar*)(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmMcbm2018StsPar"));
 }
 
 
@@ -177,54 +186,120 @@ Bool_t CbmMcbm2018MonitorSts::ReInitContainers()
 {
    LOG(INFO) << "ReInit parameter containers for " << GetName()
          << FairLogger::endl;
+         
+   fuNbModules   = fUnpackParSts->GetNbOfModules();
+   LOG(INFO) << "Nr. of STS Modules:    " << fuNbModules
+             << FairLogger::endl;
+   
+   fviModuleType.resize( fuNbModules );
+   fviModAddress.resize( fuNbModules );
+   for( UInt_t uModIdx = 0; uModIdx < fuNbModules; ++uModIdx)
+   {
+      fviModuleType[ uModIdx ] = fUnpackParSts->GetModuleType( uModIdx );
+      fviModAddress[ uModIdx ] = fUnpackParSts->GetModuleAddress( uModIdx );
+      LOG(INFO) << "Module #" << std::setw(2) << uModIdx 
+                << " Type " << std::setw(4)  << fviModuleType[ uModIdx ]
+                << " Address 0x" << std::setw(8) << std::hex <<fviModAddress[ uModIdx ]
+                << std::dec
+                << FairLogger::endl;
+   } // for( UInt_t uModIdx = 0; uModIdx < fuNbModules; ++uModIdx)
+   
+   fuNrOfDpbs = fUnpackParSts->GetNrOfDpbs();
+   LOG(INFO) << "Nr. of STS DPBs:       " << fuNrOfDpbs
+             << FairLogger::endl;
 
-   fuNrOfDpbs       = fUnpackParHodo->GetNrOfDpbs();
-   fuNbElinksPerDpb = fUnpackParHodo->GetNbElinksPerDpb();
-   fuNbStsXyters    = fUnpackParHodo->GetNbStsXyters();
-   fuNbChanPerAsic  = fUnpackParHodo->GetNbChanPerAsic();
-   fuNbFebs         = fuNbStsXyters/kuNbAsicPerFeb;
+   fDpbIdIndexMap.clear();
+   for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
+   {
+      fDpbIdIndexMap[ fUnpackParSts->GetDpbId( uDpb )  ] = uDpb;
+      LOG(INFO) << "Eq. ID for DPB #" << std::setw(2) << uDpb << " = "
+                << std::setw(4) << std::hex << fUnpackParSts->GetDpbId( uDpb )
+                << std::dec
+                << " => " << fDpbIdIndexMap[ fUnpackParSts->GetDpbId( uDpb )  ]
+                << FairLogger::endl;
+   } // for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
+   
+   fuNbFebs      = fUnpackParSts->GetNrOfFebs();
+   LOG(INFO) << "Nr. of FEBs:           " << fuNbFebs
+             << FairLogger::endl;
+             
+   fuNbStsXyters = fUnpackParSts->GetNrOfAsics();
+   LOG(INFO) << "Nr. of StsXyter ASICs: " << fuNbStsXyters
+             << FairLogger::endl;
+   
+   fvbCrobActiveFlag.resize( fuNrOfDpbs );
+   fviFebModuleIdx.resize(   fuNrOfDpbs );
+   fviFebModuleSide.resize(  fuNrOfDpbs );
+   fviFebType.resize(        fuNrOfDpbs );
+   for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
+   {
+      fvbCrobActiveFlag[ uDpb ].resize( fUnpackParSts->GetNbCrobsPerDpb() );
+      fviFebModuleIdx[ uDpb ].resize(   fUnpackParSts->GetNbCrobsPerDpb() );
+      fviFebModuleSide[ uDpb ].resize(  fUnpackParSts->GetNbCrobsPerDpb() );
+      fviFebType[ uDpb ].resize(        fUnpackParSts->GetNbCrobsPerDpb() );
+      for( UInt_t uCrobIdx = 0; uCrobIdx < fUnpackParSts->GetNbCrobsPerDpb(); ++uCrobIdx )
+      {
+         fvbCrobActiveFlag[ uDpb ][ uCrobIdx ] = fUnpackParSts->IsCrobActive( uDpb, uCrobIdx );
+         
+         fviFebModuleIdx[ uDpb ][ uCrobIdx ].resize(   fUnpackParSts->GetNbFebsPerCrob() );
+         fviFebModuleSide[ uDpb ][ uCrobIdx ].resize(  fUnpackParSts->GetNbFebsPerCrob() );
+         fviFebType[ uDpb ][ uCrobIdx ].resize(        fUnpackParSts->GetNbFebsPerCrob(), -1 );
+         for( UInt_t uFebIdx = 0; uFebIdx < fUnpackParSts->GetNbFebsPerCrob(); ++ uFebIdx )
+         {
+            fviFebModuleIdx[ uDpb ][ uCrobIdx ][ uFebIdx ] = fUnpackParSts->GetFebModuleIdx( uDpb, uCrobIdx, uFebIdx );
+            fviFebModuleSide[ uDpb ][ uCrobIdx ][ uFebIdx ] = fUnpackParSts->GetFebModuleSide( uDpb, uCrobIdx, uFebIdx );
+            
+            if( 0 < fviFebModuleSide[ uDpb ][ uCrobIdx ][ uFebIdx ] &&
+                fviFebModuleIdx[ uDpb ][ uCrobIdx ][ uFebIdx ] < fuNbModules )
+            {
+               switch( fviModuleType[ fviFebModuleIdx[ uDpb ][ uCrobIdx ][ uFebIdx ] ] )
+               {
+                  case 0: // FEB-8-1 with ZIF connector on the right
+                  {
+                     // P side (0) has type A (0)
+                     // N side (1) has type B (1)
+                     fviFebType[ uDpb ][ uCrobIdx ][ uFebIdx ] = fUnpackParSts->GetFebModuleSide( uDpb, uCrobIdx, uFebIdx );
+                     break;
+                  } // case 0: // FEB-8-1 with ZIF connector on the right
+                  case 1: // FEB-8-1 with ZIF connector on the left
+                  {
+                     // P side (0) has type B (1)
+                     // N side (1) has type A (0)
+                     fviFebType[ uDpb ][ uCrobIdx ][ uFebIdx ] = !(fUnpackParSts->GetFebModuleSide( uDpb, uCrobIdx, uFebIdx ));
+                     break;
+                  } // case 1: // FEB-8-1 with ZIF connector on the left
+                  default:
+                     break;
+               } // switch( fviModuleType[ fviFebModuleIdx[ uDpb ][ uCrobIdx ][ uFebIdx ] ] )
+            } // FEB active and module index OK
+         } // for( UInt_t uFebIdx = 0; uFebIdx < fUnpackParSts->GetNbFebsPerCrob(); ++ uFebIdx )
+      } // for( UInt_t uCrobIdx = 0; uCrobIdx < fUnpackParSts->GetNbCrobsPerDpb(); ++uCrobIdx )
+   } // for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
+
+/*
+   fuNrOfDpbs       = fUnpackParSts->GetNrOfDpbs();
+   fuNbStsXyters    = fUnpackParSts->GetNbStsXyters();
+   fuNbFebs         = fuNbStsXyters/fUnpackParSts->GetNbAsicsPerFeb();
 
    LOG(INFO) << "Nr. of STS DPBs:       " << fuNrOfDpbs
              << FairLogger::endl;
 
    fDpbIdIndexMap.clear();
-   fvuElinkToAsic.resize( fuNrOfDpbs );
    for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
    {
-      fDpbIdIndexMap[ fUnpackParHodo->GetDpbId( uDpb )  ] = uDpb;
+      fDpbIdIndexMap[ fUnpackParSts->GetDpbId( uDpb )  ] = uDpb;
       LOG(INFO) << "Eq. ID for DPB #" << std::setw(2) << uDpb << " = "
-                << std::setw(4) << std::hex << fUnpackParHodo->GetDpbId( uDpb )
+                << std::setw(4) << std::hex << fUnpackParSts->GetDpbId( uDpb )
                 << std::dec
-                << " => " << fDpbIdIndexMap[ fUnpackParHodo->GetDpbId( uDpb )  ]
+                << " => " << fDpbIdIndexMap[ fUnpackParSts->GetDpbId( uDpb )  ]
                 << FairLogger::endl;
-
-      fvuElinkToAsic[uDpb].resize( fuNbElinksPerDpb );
-      for( UInt_t uElink = 0; uElink < fuNbElinksPerDpb; ++uElink )
-         fvuElinkToAsic[uDpb][uElink] = fUnpackParHodo->GetElinkToAsicIdx( uDpb * fuNbElinksPerDpb + uElink );
    } // for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
 
-   LOG(INFO) << "Nr. eLinks per DPB:    " << fuNbElinksPerDpb
-             << FairLogger::endl;
    LOG(INFO) << "Nr. of StsXyter ASICs: " << fuNbStsXyters
              << FairLogger::endl;
-   LOG(INFO) << "Nb. channels per ASIC: " << fuNbChanPerAsic
+   LOG(INFO) << "Nb. channels per ASIC: " << fUnpackParSts->GetNbChanPerAsic()
              << FairLogger::endl;
-
-   for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
-   {
-      LOG(INFO) << "ASIC ID for eLinks in DPB #" << std::setw(2) << uDpb << ": ";
-
-      for( UInt_t uElink = 0; uElink < fuNbElinksPerDpb; ++uElink )
-      {
-         if( 0 == uElink % 10 )
-            LOG(INFO) << FairLogger::endl
-                      << "------> ";
-
-         LOG(INFO) << std::setw( 5 ) << fvuElinkToAsic[uDpb][uElink] << " ";
-      } // for( UInt_t uElink = 0; uElink < fuNbElinksPerDpb; ++uElink )
-      LOG(INFO) << FairLogger::endl;
-   } // for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
-
+*/
    // Internal status initialization
    fvulCurrentTsMsb.resize( fuNrOfDpbs );
    fvuCurrentTsMsbCycle.resize( fuNrOfDpbs );
@@ -237,13 +312,6 @@ Bool_t CbmMcbm2018MonitorSts::ReInitContainers()
       fvuCurrentTsMsbCycle[uDpb] = 0;
       fvuInitialHeaderDone[ uDpb ] = kFALSE;
       fvuInitialTsMsbCycleHeader[uDpb] = 0;
-/*
-      fvuElinkLastTsHit[uDpb].resize( fuNbElinksPerDpb );
-      for( UInt_t uElink = 0; uElink < fuNbElinksPerDpb; ++uElink )
-      {
-         fvuElinkLastTsHit[uDpb][uElink]  = 0;
-      } // for( UInt_t uElink = 0; uElink < fuNbElinksPerDpb; ++uElink )
-*/
    } // for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
 
    fvulChanLastHitTime.resize( fuNbStsXyters );
@@ -253,34 +321,17 @@ Bool_t CbmMcbm2018MonitorSts::ReInitContainers()
    fvdChanLastHitTimeInMs.resize( fuNbStsXyters );
    fvusChanLastHitAdcInMs.resize( fuNbStsXyters );
    fvmAsicHitsInMs.resize( fuNbStsXyters );
-/*
-   fvmLastHitAsic.resize( fuNbStsXyters );
-   fhStsTimeDiffPerAsicPair.resize( fuNbStsXyters );
-   fhStsTimeDiffClkPerAsicPair.resize( fuNbStsXyters );
-   fhStsTimeDiffEvoPerAsicPair.resize( fuNbStsXyters );
-   fhStsTimeDiffEvoPerAsicPairProf.resize( fuNbStsXyters );
-   fhStsRawTimeDiffEvoPerAsicPairProf.resize( fuNbStsXyters );
-   fhStsTsLsbMatchPerAsicPair.resize( fuNbStsXyters );
-   fhStsTsMsbMatchPerAsicPair.resize( fuNbStsXyters );
-*/
+
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
-      fvulChanLastHitTime[ uXyterIdx ].resize( fuNbChanPerAsic );
-      fvdChanLastHitTime[ uXyterIdx ].resize( fuNbChanPerAsic );
-      fvuChanNbHitsInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
-      fvdChanLastHitTimeInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
-      fvusChanLastHitAdcInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
+      fvulChanLastHitTime[ uXyterIdx ].resize( fUnpackParSts->GetNbChanPerAsic() );
+      fvdChanLastHitTime[ uXyterIdx ].resize( fUnpackParSts->GetNbChanPerAsic() );
+      fvuChanNbHitsInMs[ uXyterIdx ].resize( fUnpackParSts->GetNbChanPerAsic() );
+      fvdChanLastHitTimeInMs[ uXyterIdx ].resize( fUnpackParSts->GetNbChanPerAsic() );
+      fvusChanLastHitAdcInMs[ uXyterIdx ].resize( fUnpackParSts->GetNbChanPerAsic() );
       fvmAsicHitsInMs[ uXyterIdx ].clear();
-/*
-      fhStsTimeDiffPerAsicPair[ uXyterIdx ].clear();
-      fhStsTimeDiffClkPerAsicPair[ uXyterIdx ].clear();
-      fhStsTimeDiffEvoPerAsicPair[ uXyterIdx ].clear();
-      fhStsTimeDiffEvoPerAsicPairProf[ uXyterIdx ].clear();
-      fhStsRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ].clear();
-      fhStsTsLsbMatchPerAsicPair[ uXyterIdx ].clear();
-      fhStsTsMsbMatchPerAsicPair[ uXyterIdx ].clear();
-*/
-      for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
+
+      for( UInt_t uChan = 0; uChan < fUnpackParSts->GetNbChanPerAsic(); ++uChan )
       {
          fvulChanLastHitTime[ uXyterIdx ][ uChan ] = 0;
          fvdChanLastHitTime[ uXyterIdx ][ uChan ] = -1.0;
@@ -294,14 +345,14 @@ Bool_t CbmMcbm2018MonitorSts::ReInitContainers()
             fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = -1.0;
             fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
          } // for( UInt_t uMsIdx = 0; uMsIdx < fuMaxNbMicroslices; ++uMsIdx )
-      } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
+      } // for( UInt_t uChan = 0; uChan < fUnpackParSts->GetNbChanPerAsic(); ++uChan )
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 
    LOG(INFO) << "CbmMcbm2018MonitorSts::ReInitContainers => Changed fvuChanNbHitsInMs size "
                 << fvuChanNbHitsInMs.size() << " VS " << fuNbStsXyters
                 << FairLogger::endl;
    LOG(INFO) << "CbmMcbm2018MonitorSts::ReInitContainers =>  Changed fvuChanNbHitsInMs size "
-                << fvuChanNbHitsInMs[ 0 ].size() << " VS " << fuNbChanPerAsic
+                << fvuChanNbHitsInMs[ 0 ].size() << " VS " << fUnpackParSts->GetNbChanPerAsic()
                 << FairLogger::endl;
    LOG(INFO) << "CbmMcbm2018MonitorSts::ReInitContainers =>  Changed fvuChanNbHitsInMs size "
                 << fvuChanNbHitsInMs[ 0 ][ 0 ].size() << " VS " << fuMaxNbMicroslices
@@ -374,10 +425,10 @@ void CbmMcbm2018MonitorSts::SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb )
       fvusChanLastHitAdcInMs.resize( fuNbStsXyters );
       for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
       {
-         fvuChanNbHitsInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
-         fvdChanLastHitTimeInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
-         fvusChanLastHitAdcInMs[ uXyterIdx ].resize( fuNbChanPerAsic );
-         for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
+         fvuChanNbHitsInMs[ uXyterIdx ].resize( fUnpackParSts->GetNbChanPerAsic() );
+         fvdChanLastHitTimeInMs[ uXyterIdx ].resize( fUnpackParSts->GetNbChanPerAsic() );
+         fvusChanLastHitAdcInMs[ uXyterIdx ].resize( fUnpackParSts->GetNbChanPerAsic() );
+         for( UInt_t uChan = 0; uChan < fUnpackParSts->GetNbChanPerAsic(); ++uChan )
          {
             fvuChanNbHitsInMs[ uXyterIdx ][ uChan ].resize( fuMaxNbMicroslices );
             fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ].resize( fuMaxNbMicroslices );
@@ -388,13 +439,13 @@ void CbmMcbm2018MonitorSts::SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb )
                fvdChanLastHitTimeInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = -1.0;
                fvusChanLastHitAdcInMs[ uXyterIdx ][ uChan ][ uMsIdx ] = 0;
             } // for( UInt_t uMsIdx = 0; uMsIdx < fuMaxNbMicroslices; ++uMsIdx )
-         } // for( UInt_t uChan = 0; uChan < fuNbChanPerAsic; ++uChan )
+         } // for( UInt_t uChan = 0; uChan < fUnpackParSts->GetNbChanPerAsic(); ++uChan )
       } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
       LOG(INFO) << "CbmMcbm2018MonitorSts::DoUnpack => Changed fvuChanNbHitsInMs size "
                    << fvuChanNbHitsInMs.size() << " VS " << fuNbStsXyters
                    << FairLogger::endl;
       LOG(INFO) << "CbmMcbm2018MonitorSts::DoUnpack =>  Changed fvuChanNbHitsInMs size "
-                   << fvuChanNbHitsInMs[ 0 ].size() << " VS " << fuNbChanPerAsic
+                   << fvuChanNbHitsInMs[ 0 ].size() << " VS " << fUnpackParSts->GetNbChanPerAsic()
                    << FairLogger::endl;
       LOG(INFO) << "CbmMcbm2018MonitorSts::DoUnpack =>  Changed fvuChanNbHitsInMs size "
                    << fvuChanNbHitsInMs[ 0 ][ 0 ].size() << " VS " << fuMaxNbMicroslices
@@ -465,31 +516,6 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
    hSysMessType->GetYaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
 */
 
-   sHistName = "hPulserMessageTypePerElink";
-   title = "Nb of message of each type for each eLink; eLink; Type";
-   fhStsMessTypePerElink = new TH2I(sHistName, title, fuNrOfDpbs * fuNbElinksPerDpb, 0, fuNrOfDpbs * fuNbElinksPerDpb, 5, 0., 5.);
-   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 1,       "Dummy");
-   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 2,         "Hit");
-   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 3,       "TsMsb");
-   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 4, "ReadDataAck");
-   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 5,         "Ack");
-/* *** Missing int + MessType OP!!!! ****
-   fhStsMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::Dummy,       "Dummy");
-   fhStsMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::Hit,         "Hit");
-   fhStsMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::TsMsb,       "TsMsb");
-   fhStsMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::ReadDataAck, "ReadDataAck");
-   fhStsMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::Ack,         "Ack");
-*/
-
-   sHistName = "hPulserSysMessTypePerElink";
-   title = "Nb of system message of each type for each eLink; eLink; System Type";
-   fhStsSysMessTypePerElink = new TH2I(sHistName, title, fuNrOfDpbs * fuNbElinksPerDpb, 0, fuNrOfDpbs * fuNbElinksPerDpb, 17, 0., 17.);
-/*
-   fhStsSysMessTypePerElink->GetYaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_START,       "DAQ START");
-   fhStsSysMessTypePerElink->GetYaxis()->SetBinLabel(1 + ngdpb::SYSMSG_DAQ_FINISH,      "DAQ FINISH");
-   fhStsSysMessTypePerElink->GetYaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
-*/
-
    // Number of rate bins =
    //      9 for the sub-unit decade
    //    + 9 for each unit of each decade * 10 for the subdecade range
@@ -534,57 +560,57 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
    Double_t dMinEdgeEvo = dMaxEdgeEvo * -1.0;
 
    UInt_t uNbBinDt     = static_cast<UInt_t>( (fdCoincMax - fdCoincMin )/stsxyter::kdClockCycleNs );
-
+   
+///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
+/*
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
       // Channel counts
       sHistName = Form( "hStsChanCntRaw_%03u", uXyterIdx );
       title = Form( "Hits Count per channel, StsXyter #%03u; Channel; Hits []", uXyterIdx );
       fhStsChanCntRaw.push_back( new TH1I(sHistName, title,
-                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+                                 fUnpackParSts->GetNbChanPerAsic(), -0.5, fUnpackParSts->GetNbChanPerAsic() - 0.5 ) );
 
       sHistName = Form( "hStsChanCntRawGood_%03u", uXyterIdx );
       title = Form( "Hits Count per channel in good MS, StsXyter #%03u; Channel; Hits []", uXyterIdx );
       fhStsChanCntRawGood.push_back( new TH1I(sHistName, title,
-                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+                                 fUnpackParSts->GetNbChanPerAsic(), -0.5, fUnpackParSts->GetNbChanPerAsic() - 0.5 ) );
 
       // Raw Adc Distribution
       sHistName = Form( "hStsChanAdcRaw_%03u", uXyterIdx );
       title = Form( "Raw Adc distribution per channel, StsXyter #%03u; Channel []; Adc []; Hits []", uXyterIdx );
       fhStsChanAdcRaw.push_back( new TH2I(sHistName, title,
-                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                 fUnpackParSts->GetNbChanPerAsic(), -0.5, fUnpackParSts->GetNbChanPerAsic() - 0.5,
                                  stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5 ) );
 
       // Raw Adc Distribution profile
       sHistName = Form( "hStsChanAdcRawProfc_%03u", uXyterIdx );
       title = Form( "Raw Adc prodile per channel, StsXyter #%03u; Channel []; Adc []", uXyterIdx );
       fhStsChanAdcRawProf.push_back( new TProfile(sHistName, title,
-                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+                                 fUnpackParSts->GetNbChanPerAsic(), -0.5, fUnpackParSts->GetNbChanPerAsic() - 0.5 ) );
 
       // Raw Ts Distribution
       sHistName = Form( "hStsChanRawTs_%03u", uXyterIdx );
       title = Form( "Raw Timestamp distribution per channel, StsXyter #%03u; Channel []; Ts []; Hits []", uXyterIdx );
       fhStsChanRawTs.push_back( new TH2I(sHistName, title,
-                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                 fUnpackParSts->GetNbChanPerAsic(), -0.5, fUnpackParSts->GetNbChanPerAsic() - 0.5,
                                  stsxyter::kuHitNbTsBins, -0.5, stsxyter::kuHitNbTsBins -0.5 ) );
 
       // Missed event flag
       sHistName = Form( "hStsChanMissEvt_%03u", uXyterIdx );
       title = Form( "Missed Event flags per channel, StsXyter #%03u; Channel []; Miss Evt []; Hits []", uXyterIdx );
       fhStsChanMissEvt.push_back( new TH2I(sHistName, title,
-                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
+                                 fUnpackParSts->GetNbChanPerAsic(), -0.5, fUnpackParSts->GetNbChanPerAsic() - 0.5,
                                  2, -0.5, 1.5 ) );
 
       // Missed event flag counts evolution
-
       sHistName = Form( "hStsChanMissEvtEvo_%03u", uXyterIdx );
       title = Form( "Missed Evt flags per second & channel in StsXyter #%03u; Time [s]; Channel []; Missed Evt flags []", uXyterIdx );
       fhStsChanMissEvtEvo.push_back( new TH2I( sHistName, title,
                                                 1800, 0, 1800,
-                                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+                                                fUnpackParSts->GetNbChanPerAsic(), -0.5, fUnpackParSts->GetNbChanPerAsic() - 0.5 ) );
 
       // Missed event flag counts evo per StsXyter
-
       sHistName = Form( "hStsAsicMissEvtEvo%03u", uXyterIdx );
       title = Form( "Missed Evt flags per second in StsXyter #%03u; Time [s]; Missed Evt flags []", uXyterIdx );
       fhStsAsicMissEvtEvo.push_back( new TH1I(sHistName, title, 1800, 0, 1800 ) );
@@ -594,7 +620,7 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       title = Form( "Hits per second & channel in StsXyter #%03u; Time [s]; Channel []; Hits []", uXyterIdx );
       fhStsChanHitRateEvo.push_back( new TH2I( sHistName, title,
                                                 1800, 0, 1800,
-                                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+                                                fUnpackParSts->GetNbChanPerAsic(), -0.5, fUnpackParSts->GetNbChanPerAsic() - 0.5 ) );
 
       // Hit rates evo per StsXyter
       sHistName = Form( "hStsAsicRateEvo_%03u", uXyterIdx );
@@ -606,140 +632,118 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       title = Form( "Hits per second & channel in StsXyter #%03u; Time [min]; Channel []; Hits []", uXyterIdx );
       fhStsChanHitRateEvoLong.push_back( new TH2D( sHistName, title,
                                                 fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5,
-                                                fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
+                                                fUnpackParSts->GetNbChanPerAsic(), -0.5, fUnpackParSts->GetNbChanPerAsic() - 0.5 ) );
 
       // Hit rates evo per StsXyter, 1 minute bins, 24h
       sHistName = Form( "hStsAsicRateEvoLong_%03u", uXyterIdx );
       title = Form( "Hits per second in StsXyter #%03u; Time [min]; Hits []", uXyterIdx );
       fhStsAsicRateEvoLong.push_back( new TH1D(sHistName, title,
                                                 fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5 ) );
-
-/*
-      /// Coincidences inside each detector ----------------------------///
-      sHistName = Form( "fhStsTimeDiffPerAsic_%03u", uXyterIdx );
-      title =  Form( "Time diff for pulser hits between ASIC %03u and other ASICs; tn - t%03u [ns]; ASIC n; Counts", uXyterIdx, uXyterIdx );
-      fhStsTimeDiffPerAsic.push_back( new TH2I( sHistName, title,
-                                                   uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo,
-                                                   fuNbStsXyters, -0.5, fuNbStsXyters - 0.5 )
-                                       );
-
-      for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-      {
-         if( uXyterIdxB == uXyterIdx )
-         {
-            sHistName = Form( "fhStsTimeDiffSameAsic_%03u", uXyterIdx );
-            title =  Form( "Time diff for consecutive hits in ASIC %03u; tn - t [ns]; Counts", uXyterIdx );
-         } // if( uXyterIdxB == uXyterIdx )
-            else
-            {
-               sHistName = Form( "fhStsTimeDiffPerAsicPair_%03u_%03u", uXyterIdx, uXyterIdxB );
-               title =  Form( "Time diff for pulser hits in ASIC %03u and %03u; tn - t [ns]; Counts", uXyterIdx, uXyterIdxB );
-            } // else of if( uXyterIdxB == uXyterIdx )
-         fhStsTimeDiffPerAsicPair[ uXyterIdx ].push_back( new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo ) );
-
-         if( uXyterIdxB == uXyterIdx )
-         {
-            sHistName = Form( "fhStsTimeDiffClkSameAsic_%03u", uXyterIdx );
-            title =  Form( "Time diff for consecutive hits in ASIC %03u; tn - t [Clk]; Counts", uXyterIdx );
-         } // if( uXyterIdxB == uXyterIdx )
-            else
-            {
-               sHistName = Form( "fhStsTimeDiffClkPerAsicPair_%03u_%03u", uXyterIdx, uXyterIdxB );
-               title =  Form( "Time diff for pulser hits in ASIC %03u and %03u; tn - t [Clk]; Counts", uXyterIdx, uXyterIdxB );
-            } // else of if( uXyterIdxB == uXyterIdx )
-         fhStsTimeDiffClkPerAsicPair[ uXyterIdx ].push_back( new TH1I(sHistName, title, 601, -300.5, 300.5 ) );
-
-         if( uXyterIdxB == uXyterIdx )
-         {
-            sHistName = Form( "fhStsTimeDiffEvoSameAsic_%03u", uXyterIdx );
-            title =  Form( "Time diff for consecutive hits in ASIC %03u; Time in run [s]; tn - t [ns]; Counts", uXyterIdx );
-         } // if( uXyterIdxB == uXyterIdx )
-            else
-            {
-               sHistName = Form( "fhStsTimeDiffEvoPerAsicPair_%03u_%03u", uXyterIdx, uXyterIdxB );
-               title =  Form( "Time diff for pulser hits in ASIC %03u and %03u; Time in run [s]; tn - t [ns]; Counts", uXyterIdx, uXyterIdxB );
-            } // else of if( uXyterIdxB == uXyterIdx )
-         fhStsTimeDiffEvoPerAsicPair[ uXyterIdx ].push_back( new TH2I(sHistName, title,
-                                                                3600, 0, 18000,
-                                                                200, -100 * stsxyter::kdClockCycleNs, 100 * stsxyter::kdClockCycleNs ) );
-
-         if( uXyterIdxB == uXyterIdx )
-         {
-            sHistName = Form( "fhStsTimeDiffEvoSameAsicProf_%03u", uXyterIdx );
-            title =  Form( "Time diff for consecutive hits in ASIC %03u; Time in run [s]; tn - t [ns]", uXyterIdx );
-         } // if( uXyterIdxB == uXyterIdx )
-            else
-            {
-               sHistName = Form( "fhStsTimeDiffEvoPerAsicPairProf_%03u_%03u", uXyterIdx, uXyterIdxB );
-               title =  Form( "Time diff for pulser hits in ASIC %03u and %03u; Time in run [s]; tn - t [ns]", uXyterIdx, uXyterIdxB );
-            } // else of if( uXyterIdxB == uXyterIdx )
-         fhStsTimeDiffEvoPerAsicPairProf[ uXyterIdx ].push_back( new TProfile(sHistName, title, 52000, 0, 52000 ) );
-
-         if( uXyterIdxB == uXyterIdx )
-         {
-            sHistName = Form( "fhStsRawTimeDiffEvoSameAsicProf_%03u", uXyterIdx );
-            title =  Form( "Time diff for consecutive hits in ASIC %03u; Time in run [s]; tn - t [ns]", uXyterIdx );
-         } // if( uXyterIdxB == uXyterIdx )
-            else
-            {
-               sHistName = Form( "fhStsRawTimeDiffEvoPerAsicPairProf_%03u_%03u", uXyterIdx, uXyterIdxB );
-               title =  Form( "Time diff for pulser hits in ASIC %03u and %03u; Time in run [s]; tn - t [ns]", uXyterIdx, uXyterIdxB );
-            } // else of if( uXyterIdxB == uXyterIdx )
-         fhStsRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ].push_back( new TProfile(sHistName, title, 10400, 0, 52000 ) );
-
-         sHistName = Form( "fhStsTsLsbMatchPerAsicPair_%03u_%03u", uXyterIdx, uXyterIdxB );
-         title =  Form( "TS LSB for pulser hits in ASIC %03u and %03u; TS LSB %03u [bin]; TS LSB %03u [bin]",
-                        uXyterIdx, uXyterIdxB, uXyterIdx, uXyterIdxB );
-         fhStsTsLsbMatchPerAsicPair[ uXyterIdx ].push_back( new TH2I(sHistName, title, 256, -0.5, 255.5, 256, -0.5, 255.5 ) );
-
-         sHistName = Form( "fhStsTsMsbMatchPerAsicPair_%03u_%03u", uXyterIdx, uXyterIdxB );
-         title =  Form( "TS MSB for pulser hits in ASIC %03u and %03u; TS MSB %03u [bin]; TS MSB %03u [bin]",
-                        uXyterIdx, uXyterIdxB, uXyterIdx, uXyterIdxB );
-         fhStsTsMsbMatchPerAsicPair[ uXyterIdx ].push_back( new TH2I(sHistName, title, 64, -0.5, 63.5, 64, -0.5, 63.5 ) );
-      } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-
-      sHistName = Form( "fhStsIntervalAsic_%03u", uXyterIdx );
-      title =  Form( "Time diff between consecutive hits in ASIC %03us; dt [ns];  Counts", uXyterIdx, uXyterIdx );
-      fhStsIntervalAsic.push_back( new TH1I( sHistName, title, 200, 0, 200 * stsxyter::kdClockCycleNs ) );
-
-      sHistName = Form( "fhStsIntervalLongAsic_%03u", uXyterIdx );
-      title =  Form( "Time diff between consecutive hits in ASIC %03us; dt [ns];  Counts", uXyterIdx, uXyterIdx );
-      fhStsIntervalLongAsic.push_back( new TH1I( sHistName, title, 1e5, 0, 1e6 * stsxyter::kdClockCycleNs ) );
-*/
-///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+*/
 
+///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
+   /// FEB-8 plots
+   /// All histos per FEB: with channels or ASIC as axis!!
    fhStsFebChanCoinc.resize( fuNbFebs );
    for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
    {
-      UInt_t uNbChanPerFeb = kuNbAsicPerFeb * fuNbChanPerAsic;
-      /// FEB-8 plots
+      /// Channel counts
       sHistName = Form( "hStsFebChanCntRaw_%03u", uFebIdx );
       title = Form( "Hits Count per channel, FEB #%03u; Channel; Hits []", uFebIdx );
       fhStsFebChanCntRaw.push_back( new TH1I(sHistName, title,
-                                  uNbChanPerFeb, -0.5, uNbChanPerFeb - 0.5 ) );
+                                  fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 ) );
 
+      sHistName = Form( "hStsFebChanCntRawGood_%03u", uFebIdx );
+      title = Form( "Hits Count per channel in good MS (SX2 bug flag off), FEB #%03u; Channel; Hits []", uFebIdx );
+      fhStsFebChanCntRawGood.push_back( new TH1I(sHistName, title,
+                                  fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 ) );
+
+      /// Raw Adc Distribution
       sHistName = Form( "hStsFebChanAdcRaw_%03u", uFebIdx );
       title = Form( "Raw Adc distribution per channel, FEB #%03u; Channel []; Adc []; Hits []", uFebIdx );
       fhStsFebChanAdcRaw.push_back( new TH2I(sHistName, title,
-                                 uNbChanPerFeb, -0.5, uNbChanPerFeb - 0.5,
+                                 fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5,
                                  stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5 ) );
 
+      /// Raw Adc Distribution profile
       sHistName = Form( "hStsFebChanAdcRawProfc_%03u", uFebIdx );
       title = Form( "Raw Adc prodile per channel, FEB #%03u; Channel []; Adc []", uFebIdx );
       fhStsFebChanAdcRawProf.push_back( new TProfile(sHistName, title,
-                                 uNbChanPerFeb, -0.5, uNbChanPerFeb - 0.5 ) );
+                                 fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 ) );
 
-      sHistName = Form( "hStsFebRateEvo_%03u", uFebIdx );
-      title = Form( "Hits per second in FEB #%03u; Time [s]; Hits []", uFebIdx );
-      fhStsFebHitRateEvo.push_back( new TH1I(sHistName, title, 1800, 0, 1800 ) );
+      /// Raw Ts Distribution
+      sHistName = Form( "hStsFebChanRawTs_%03u", uFebIdx );
+      title = Form( "Raw Timestamp distribution per channel, FEB #%03u; Channel []; Ts []; Hits []", uFebIdx );
+      fhStsFebChanRawTs.push_back( new TH2I(sHistName, title,
+                                 fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5,
+                                 stsxyter::kuHitNbTsBins, -0.5, stsxyter::kuHitNbTsBins -0.5 ) );
 
+      /// Missed event flag
+      sHistName = Form( "hStsFebChanMissEvt_%03u", uFebIdx );
+      title = Form( "Missed Event flags per channel, FEB #%03u; Channel []; Miss Evt []; Hits []", uFebIdx );
+      fhStsFebChanMissEvt.push_back( new TH2I(sHistName, title,
+                                             fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5,
+                                             2, -0.5, 1.5 ) );
+
+      /// Missed event flag counts evolution
+      sHistName = Form( "hStsFebChanMissEvtEvo_%03u", uFebIdx );
+      title = Form( "Missed Evt flags per second & channel in FEB #%03u; Time [s]; Channel []; Missed Evt flags []", uFebIdx );
+      fhStsFebChanMissEvtEvo.push_back( new TH2I( sHistName, title,
+                                                1800, 0, 1800,
+                                                fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 ) );
+
+      /// Missed event flag counts evolution
+      sHistName = Form( "hStsFebAsicMissEvtEvo_%03u", uFebIdx );
+      title = Form( "Missed Evt flags per second & StsXyter in FEB #%03u; Time [s]; Asic []; Missed Evt flags []", uFebIdx );
+      fhStsFebAsicMissEvtEvo.push_back( new TH2I( sHistName, title,
+                                                1800, 0, 1800,
+                                                fUnpackParSts->GetNbAsicsPerFeb(), -0.5, fUnpackParSts->GetNbAsicsPerFeb() - 0.5 ) );
+
+      /// Missed event flag counts evolution
+      sHistName = Form( "hStsFebMissEvtEvo_%03u", uFebIdx );
+      title = Form( "Missed Evt flags per second & channel in FEB #%03u; Time [s]; Missed Evt flags []", uFebIdx );
+      fhStsFebMissEvtEvo.push_back( new TH1I( sHistName, title, 1800, 0, 1800 ) );
+
+      /// Hit rates evo per channel
       sHistName = Form( "hStsFebChanRateEvo_%03u", uFebIdx );
       title = Form( "Hits per second & channel in FEB #%03u; Time [s]; Channel []; Hits []", uFebIdx );
       fhStsFebChanHitRateEvo.push_back( new TH2I( sHistName, title,
                                                 1800, 0, 1800,
-                                                uNbChanPerFeb, -0.5, uNbChanPerFeb - 0.5 ) );
+                                                fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 ) );
 
+      /// Hit rates evo per StsXyter
+      sHistName = Form( "hStsFebAsicRateEvo_%03u", uFebIdx );
+      title = Form( "Hits per second & StsXyter in FEB #%03u; Time [s]; Asic []; Hits []", uFebIdx );
+      fhStsFebAsicHitRateEvo.push_back( new TH2I( sHistName, title, 1800, 0, 1800,
+                                               fUnpackParSts->GetNbAsicsPerFeb(), -0.5, fUnpackParSts->GetNbAsicsPerFeb() - 0.5  ) );
+      
+      /// Hit rates evo per FEB
+      sHistName = Form( "hStsFebRateEvo_%03u", uFebIdx );
+      title = Form( "Hits per second in FEB #%03u; Time [s]; Hits []", uFebIdx );
+      fhStsFebHitRateEvo.push_back( new TH1I(sHistName, title, 1800, 0, 1800 ) );
+
+      /// Hit rates evo per channel, 1 minute bins, 24h
+      sHistName = Form( "hStsChanRateEvoLong_%03u", uFebIdx );
+      title = Form( "Hits per second & channel in FEB #%03u; Time [min]; Channel []; Hits []", uFebIdx );
+      fhStsFebChanHitRateEvoLong.push_back( new TH2D( sHistName, title,
+                                                fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5,
+                                                fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 ) );
+
+      /// Hit rates evo per channel, 1 minute bins, 24h
+      sHistName = Form( "hStsFebRateEvoLong_%03u", uFebIdx );
+      title = Form( "Hits per second & StsXyter in FEB #%03u; Time [min]; Asic []; Hits []", uFebIdx );
+      fhStsFebHitRateEvoLong.push_back( new TH2D( sHistName, title,
+                                                fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5,
+                                                fUnpackParSts->GetNbAsicsPerFeb(), -0.5, fUnpackParSts->GetNbAsicsPerFeb() - 0.5 ) );
+
+      /// Hit rates evo per FEB, 1 minute bins, 24h
+      sHistName = Form( "hStsFebRateEvoLong_%03u", uFebIdx );
+      title = Form( "Hits per second in FEB #%03u; Time [min]; Hits []", uFebIdx );
+      fhStsFebHitRateEvoLong.push_back( new TH1D(sHistName, title,
+                                                fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5 ) );
+                                             
+      /// Channels coincidences between FEBs
       fhStsFebChanCoinc[ uFebIdx ].resize( fuNbFebs, nullptr );
       for( UInt_t uFebIdxB = uFebIdx; uFebIdxB < fuNbFebs; ++uFebIdxB )
       {
@@ -747,35 +751,55 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
          title = Form( "Channel coincidences between FEB #%03u and  FEB #%03u; Channel FEB #%03u []; Channel FEB #%03u []; Coinc. []",
                         uFebIdx, uFebIdxB, uFebIdx, uFebIdxB );
          fhStsFebChanCoinc[ uFebIdx ][ uFebIdxB ] = new TH2I( sHistName, title,
-                                                uNbChanPerFeb, -0.5, uNbChanPerFeb - 0.5,
-                                                uNbChanPerFeb, -0.5, uNbChanPerFeb - 0.5 );
+                                                fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5,
+                                                fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 );
       } // for( UInt_t uFebIdxB = uFebIdx; uFebIdxB < fuNbFebs; ++uFebIdxB )
    } // for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
 
-/*
-   fvdLastTimeDiffValuesAsicPair.resize( fhStsTimeDiffPerAsicPair.size() );
-   fvuLastTimeDiffSlotAsicPair.resize( fhStsTimeDiffPerAsicPair.size() );
-   fvdMeanTimeDiffAsicPair.resize( fhStsTimeDiffPerAsicPair.size() );
-   for( UInt_t uAsicA = 0; uAsicA < fhStsTimeDiffPerAsicPair.size(); ++uAsicA )
+///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
+   /// Modules plots
+   Double_t dSensorMinX = - fUnpackParSts->GetSensorSzX() / 2.0;
+   Double_t dSensorMaxX =   fUnpackParSts->GetSensorSzX() / 2.0;
+   Double_t dSensorMinY = - fUnpackParSts->GetSensorSzY() / 2.0;
+   Double_t dSensorMaxY =   fUnpackParSts->GetSensorSzY() / 2.0;
+   for( UInt_t uModIdx = 0; uModIdx < fuNbModules; ++ uModIdx )
    {
-      fvdLastTimeDiffValuesAsicPair[uAsicA].resize( fhStsTimeDiffPerAsicPair[uAsicA].size() );
-      fvuLastTimeDiffSlotAsicPair[uAsicA].resize( fhStsTimeDiffPerAsicPair[uAsicA].size(), 0 );
-      fvdMeanTimeDiffAsicPair[uAsicA].resize( fhStsTimeDiffPerAsicPair[uAsicA].size(), 0.0 );
-   } // for( UInt_t uAsicA = 0; uAsicA < fhStsTimeDiffPerAsicPair.size(); ++uAsicA )
-*/
+      /// Chan VS chan map for PN coincidences
+      sHistName = Form( "hStsModulePNCoincChan_%03u", uModIdx );
+      title = Form( "P-N channel coincidences in module #%03u; Channel P []; Channel N []; Cnt []", uModIdx );
+      fhStsModulePNCoincChan.push_back( new TH2D( sHistName, title,
+                                                fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5,
+                                                fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 ) );
+                                                
+      /// Adc VS Adc map for PN channel coincidences
+      sHistName = Form( "hStsModulePNCoincAdc_%03u", uModIdx );
+      title = Form( "Adc values of P-N coincidences in module #%03u; ADC Channel P [bin]; ADC Channel N [bin]; Cnt []", uModIdx );
+      fhStsModulePNCoincAdc.push_back( new TH2D( sHistName, title,
+                                                 stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins - 0.5,
+                                                 stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins - 0.5 ) );
+      /// Adc VS P Channel for PN channel coincidences
+      sHistName = Form( "hStsModuleCoincAdcChanP_%03u", uModIdx );
+      title = Form( "Adc values of P chan in P-N coincidences in module #%03u; Channel P [bin]; ADC val. [bin]; Cnt []", uModIdx );
+      fhStsModuleCoincAdcChanP.push_back( new TH2D( sHistName, title,
+                                                 fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5,
+                                                 stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins - 0.5 ) );
+      /// Adc VS N Channel for PN channel coincidences
+      sHistName = Form( "hStsModuleCoincAdcChanN_%03u", uModIdx );
+      title = Form( "Adc values of N chan in P-N coincidences in module #%03u; Channel N [bin]; ADC val. [bin]; Cnt []", uModIdx );
+      fhStsModuleCoincAdcChanN.push_back( new TH2D( sHistName, title,
+                                                 fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5,
+                                                 stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins - 0.5 ) );
 
+      /// X-Y map for PN coincidences
+      sHistName = Form( "hStsModuleCoincMap_%03u", uModIdx );
+      title = Form( "X-Y map of P-N coincidences in module #%03u; Pos. X []; Pos. Y []; Cnt []", uModIdx );
+      fhStsModuleCoincMap.push_back( new TH2D( sHistName, title,
+                                                fUnpackParSts->GetSensorSzX(), dSensorMinX, dSensorMaxX,
+                                                fUnpackParSts->GetSensorSzY(), dSensorMinY, dSensorMaxY ) );
+   } // for( UInt_t uModIdx = 0; uModIdx < fuNbModules; ++ uModIdx )
+   
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
-/*
-   // Distribution of the TS_MSB per StsXyter
-   sHistName = "hPulserFebTsMsb";
-   title = "Raw Timestamp Msb distribution per StsXyter; Ts MSB []; StsXyter []; Hits []";
-   fhStsFebTsMsb = new TH2I( sHistName, title, stsxyter::kuTsMsbNbTsBins, -0.5,   stsxyter::kuTsMsbNbTsBins - 0.5,
-                                                fuNbStsXyters, -0.5, fuNbStsXyters - 0.5 );
-#ifdef USE_HTTP_SERVER
-   if( server ) server->Register("/StsRaw", fhStsFebTsMsb );
-#endif
-*/
    // Miscroslice properties histos
    for( Int_t component = 0; component < kiMaxNbFlibLinks; component ++ )
    {
@@ -792,8 +816,7 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       server->Register("/StsRaw", fhStsSysMessType );
       server->Register("/StsRaw", fhStsMessTypePerDpb );
       server->Register("/StsRaw", fhStsSysMessTypePerDpb );
-      server->Register("/StsRaw", fhStsMessTypePerElink );
-      server->Register("/StsRaw", fhStsSysMessTypePerElink );
+/*
       for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
       {
          server->Register("/StsRaw", fhStsChanCntRaw[ uXyterIdx ] );
@@ -808,44 +831,40 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
          server->Register("/StsRaw", fhStsAsicRateEvo[ uXyterIdx ] );
          server->Register("/StsRaw", fhStsChanHitRateEvoLong[ uXyterIdx ] );
          server->Register("/StsRaw", fhStsAsicRateEvoLong[ uXyterIdx ] );
-/*
-         server->Register("/DtAsic", fhStsTimeDiffPerAsic[ uXyterIdx ] );
-         for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-         {
-            if( uXyterIdxB == uXyterIdx )
-            {
-               server->Register("/DtChan", fhStsTimeDiffPerAsicPair[ uXyterIdx ][uXyterIdxB] );
-               server->Register("/DtChan", fhStsTimeDiffClkPerAsicPair[ uXyterIdx ][uXyterIdxB] );
-               server->Register("/DtChan", fhStsTimeDiffEvoPerAsicPair[ uXyterIdx ][uXyterIdxB] );
-               server->Register("/DtChan", fhStsTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB] );
-               server->Register("/DtChan", fhStsRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB] );
-            } // if( uXyterIdxB == uXyterIdx )
-               else
-               {
-                  server->Register("/DtAsicPair", fhStsTimeDiffPerAsicPair[ uXyterIdx ][uXyterIdxB] );
-                  server->Register("/DtAsicPair", fhStsTimeDiffClkPerAsicPair[ uXyterIdx ][uXyterIdxB] );
-                  server->Register("/DtAsicPair", fhStsTimeDiffEvoPerAsicPair[ uXyterIdx ][uXyterIdxB] );
-                  server->Register("/DtAsicPair", fhStsTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB] );
-                  server->Register("/DtAsicPair", fhStsRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB] );
-               } // else of if( uXyterIdxB == uXyterIdx )
-            server->Register("/TsMatch", fhStsTsLsbMatchPerAsicPair[ uXyterIdx ][uXyterIdxB] );
-            server->Register("/TsMatch", fhStsTsMsbMatchPerAsicPair[ uXyterIdx ][uXyterIdxB] );
-         } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-         server->Register("/DtPulses", fhStsIntervalAsic[ uXyterIdx ] );
-         server->Register("/DtPulses", fhStsIntervalLongAsic[ uXyterIdx ] );
-*/
+         
       } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+*/
       for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
       {
          server->Register("/StsFeb", fhStsFebChanCntRaw[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebChanCntRawGood[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebChanAdcRaw[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebChanAdcRawProf[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebChanRawTs[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebChanMissEvt[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebChanMissEvtEvo[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebAsicMissEvtEvo[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebMissEvtEvo[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebChanHitRateEvo[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebAsicHitRateEvo[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebHitRateEvo[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebChanHitRateEvoLong[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebAsicHitRateEvoLong[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebHitRateEvoLong[ uFebIdx ] );
          for( UInt_t uFebIdxB = uFebIdx; uFebIdxB < fuNbFebs; ++uFebIdxB )
             server->Register("/StsFeb", fhStsFebChanCoinc[ uFebIdx ][ uFebIdxB ] );
       } // for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
+      
+      for( UInt_t uModIdx = 0; uModIdx < fuNbModules; ++ uModIdx )
+      {
+         server->Register("/StsMod", fhStsModulePNCoincChan[ uModIdx ] );
+         server->Register("/StsMod", fhStsModulePNCoincAdc[ uModIdx ] );
+         server->Register("/StsMod", fhStsModuleCoincAdcChanP[ uModIdx ] );
+         server->Register("/StsMod", fhStsModuleCoincAdcChanN[ uModIdx ] );
+         server->Register("/StsMod", fhStsModuleCoincMap[ uModIdx ] );
+      } // for( UInt_t uModIdx = 0; uModIdx < fuNbModules; ++ uModIdx )
 
+   
       server->RegisterCommand("/Reset_All_Pulser", "bMcbm2018ResetSts=kTRUE");
       server->RegisterCommand("/Write_All_Pulser", "bMcbm2018WriteSts=kTRUE");
 
@@ -857,7 +876,7 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
    /** Create summary Canvases for CERN 2017 **/
    Double_t w = 10;
    Double_t h = 10;
-
+/*
       // Summary per StsXyter
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
@@ -882,183 +901,9 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
 //      gPad->SetLogy();
       fhStsChanAdcRawProf[ uXyterIdx ]->Draw();
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-
-//====================================================================//
-/*
-//====================================================================//
-   TCanvas* cDtPerAsic = new TCanvas( "cDtPerAsic",
-                                      "Time Differences per ASIC",
-                                    w, h);
-   cDtPerAsic->Divide( fuNbStsXyters / 2 + fuNbStsXyters % 2, 2 );
-
-   for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-   {
-      cDtPerAsic->cd(1 + uXyterIdx);
-      gPad->SetGridx();
-      gPad->SetGridy();
-      gPad->SetLogz();
-      fhStsTimeDiffPerAsic[ uXyterIdx ]->Draw( " colz" );
-   } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cDtInAsic = new TCanvas( "cDtInAsic",
-                                      "Time Differences in ASIC",
-                                    w, h);
-   cDtInAsic->Divide( fuNbStsXyters / 2 + fuNbStsXyters % 2, 2 );
-
-   for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-   {
-      cDtInAsic->cd(1 + uXyterIdx);
-      gPad->SetGridx();
-      gPad->SetLogy();
-//      gStyle->SetOptStat("emrou");
-      fhStsTimeDiffPerAsicPair[ uXyterIdx ][ uXyterIdx ]->Draw( "hist" );
-   } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cDtAsicPairs = new TCanvas( "cDtAsicPairs",
-                                      "Time Differences in ASIC",
-                                    w, h);
-   cDtAsicPairs->Divide( 2, 3 );
-   UInt_t uHistoIdx = 0;
-   for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters && uXyterIdx < 3; ++uXyterIdx )
-   {
-      for( UInt_t uXyterIdxB = uXyterIdx + 1; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-      {
-         cDtAsicPairs->cd( 1 + uHistoIdx );
-         gPad->SetGridx();
-         gPad->SetLogy();
-//         gStyle->SetOptStat("emrou");
-         fhStsTimeDiffPerAsicPair[ uXyterIdx ][uXyterIdxB]->Draw( "hist" );
-
-         uHistoIdx++;
-      } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-   } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cDtClkAsicPairs = new TCanvas( "cDtClkAsicPairs",
-                                      "Time Differences in ASIC",
-                                    w, h);
-   cDtClkAsicPairs->Divide( fuNbStsXyters - 1 );
-   for( UInt_t uXyterIdxB = 1; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-   {
-      cDtClkAsicPairs->cd( uXyterIdxB );
-      gPad->SetGridx();
-      gPad->SetLogy();
-//         gStyle->SetOptStat("emrou");
-      fhStsTimeDiffClkPerAsicPair[ 0 ][uXyterIdxB]->Draw( "hist" );
-   } // for( UInt_t uXyterIdxB = 1; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cDtAsicPairsEvo = new TCanvas( "cDtAsicPairsEvo",
-                                      "Time Differences Evo in ASIC",
-                                    w, h);
-   cDtAsicPairsEvo->Divide( 2, 3 );
-   uHistoIdx = 0;
-   for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters && uXyterIdx < 3; ++uXyterIdx )
-   {
-      for( UInt_t uXyterIdxB = uXyterIdx + 1; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-      {
-         cDtAsicPairsEvo->cd( 1 + uHistoIdx );
-         gPad->SetGridx();
-         gPad->SetGridy();
-         gPad->SetLogz();
-         fhStsTimeDiffEvoPerAsicPair[ uXyterIdx ][uXyterIdxB]->Draw( "colz" );
-
-         uHistoIdx++;
-      } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-   } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cDtAsicPairsEvoProf = new TCanvas( "cDtAsicPairsEvoProf",
-                                      "Time Differences Evo in ASIC",
-                                    w, h);
-   cDtAsicPairsEvoProf->Divide( 2, 3 );
-   uHistoIdx = 0;
-   for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters && uXyterIdx < 3; ++uXyterIdx )
-   {
-      for( UInt_t uXyterIdxB = uXyterIdx + 1; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-      {
-         cDtAsicPairsEvoProf->cd( 1 + uHistoIdx );
-         gPad->SetGridx();
-         gPad->SetGridy();
-         gPad->SetLogz();
-         fhStsTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB]->Draw( "hist e0" );
-
-         uHistoIdx++;
-      } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-   } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cDtAsicPairsEvoProfRaw = new TCanvas( "cDtAsicPairsEvoProfRaw",
-                                      "Time Differences Evo in ASIC",
-                                    w, h);
-   cDtAsicPairsEvoProfRaw->Divide( 2, 3 );
-   uHistoIdx = 0;
-   for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters && uXyterIdx < 3; ++uXyterIdx )
-   {
-      for( UInt_t uXyterIdxB = uXyterIdx + 1; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-      {
-         cDtAsicPairsEvoProfRaw->cd( 1 + uHistoIdx );
-         gPad->SetGridx();
-         gPad->SetGridy();
-         gPad->SetLogz();
-         fhStsRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB]->Draw( "hist e0" );
-
-         uHistoIdx++;
-      } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-   } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cTsLsbAsicPairs = new TCanvas( "cTsLsbAsicPairs",
-                                      "Time Differences in ASIC",
-                                    w, h);
-   cTsLsbAsicPairs->Divide( 2, 3 );
-   uHistoIdx = 0;
-   for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters && uXyterIdx < 3; ++uXyterIdx )
-   {
-      for( UInt_t uXyterIdxB = uXyterIdx + 1; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-      {
-         cTsLsbAsicPairs->cd( 1 +uHistoIdx );
-         gPad->SetGridx();
-         gPad->SetGridy();
-         gPad->SetLogz();
-         fhStsTsLsbMatchPerAsicPair[ uXyterIdx ][uXyterIdxB]->Draw( "colz" );
-
-         uHistoIdx++;
-      } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-   } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-//====================================================================//
-
-//====================================================================//
-   TCanvas* cTsMsbAsicPairs = new TCanvas( "cTsMsbAsicPairs",
-                                      "Time Differences in ASIC",
-                                    w, h);
-//   cDtAsicPairs->Divide( fuNbStsXyters / 3, 3 );
-   cTsMsbAsicPairs->Divide( 2, 3 );
-   uHistoIdx = 0;
-   for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters && uXyterIdx < 3; ++uXyterIdx )
-   {
-      for( UInt_t uXyterIdxB = uXyterIdx + 1; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-      {
-         cTsMsbAsicPairs->cd( 1 + uHistoIdx );
-         gPad->SetGridx();
-         gPad->SetGridy();
-         gPad->SetLogz();
-         fhStsTsMsbMatchPerAsicPair[ uXyterIdx ][uXyterIdxB]->Draw( "colz" );
-
-         uHistoIdx++;
-      } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-   } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-//====================================================================//
 */
+//====================================================================//
+
 //====================================================================//
   /** Recovers/Create Ms Size Canvase for CERN 2016 **/
   // Try to recover canvas in case it was created already by another monitor
@@ -1187,17 +1032,12 @@ Bool_t CbmMcbm2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                {
                   // Extract the eLink and Asic indices => Should GO IN the fill method now that obly hits are link/asic specific!
                   UShort_t usElinkIdx = mess.GetLinkIndex();
-                  if( fuNbElinksPerDpb <= usElinkIdx )
-                  {
-                     LOG(FATAL) << "CbmMcbm2018MonitorSts::DoUnpack => "
-                                << "eLink index out of bounds!"
-                                << usElinkIdx << " VS " << fuNbElinksPerDpb
-                                << FairLogger::endl;
-                  } // if( fuNbElinksPerDpb <= usElinkIdx )
-                  fhStsMessTypePerElink->Fill( fuCurrDpbIdx * fuNbElinksPerDpb + usElinkIdx,
-                                                  static_cast< uint16_t > (typeMess) );
-
-                  UInt_t   uAsicIdx   = fvuElinkToAsic[fuCurrDpbIdx][usElinkIdx];
+                  UInt_t   uCrobIdx   = usElinkIdx / fUnpackParSts->GetNbElinkPerCrob();
+                  UInt_t   uFebIdx    = usElinkIdx % fUnpackParSts->GetNbElinkPerCrob();
+                  UInt_t   uAsicIdx   = ( fuCurrDpbIdx * fUnpackParSts->GetNbCrobsPerDpb() + uCrobIdx
+                                        ) * fUnpackParSts->GetNbAsicsPerCrob()
+                                       + fUnpackParSts->ElinkIdxToAsicIdx( fviFebType[ fuCurrDpbIdx ][ uCrobIdx ][ uFebIdx ], 
+                                                                           uFebIdx );
 
                   FillHitInfo( mess, usElinkIdx, uAsicIdx, uMsIdx );
                   break;
@@ -1265,7 +1105,7 @@ Bool_t CbmMcbm2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
             UShort_t  usChanIdx = (*itA).GetChan();
             ULong64_t ulHitTs   = (*itA).GetTs();
             UShort_t  usHitAdc  = (*itA).GetAdc();
-            UShort_t  usFebIdx  = usAsicIdx / kuNbAsicPerFeb;
+            UShort_t  usFebIdx  = usAsicIdx / fUnpackParSts->GetNbAsicsPerFeb();
 
             Double_t dTimeSinceStartSec = (ulHitTs * stsxyter::kdClockCycleNs - fdStartTime)* 1e-9;
 
@@ -1337,7 +1177,7 @@ Bool_t CbmMcbm2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
             {
                UShort_t  usAsicIdxA  = (*itA).GetAsic();
                UShort_t  usChanIdxA  = (*itA).GetChan();
-               UInt_t    uChanInFebA = usChanIdxA + fuNbChanPerAsic * (usAsicIdxA % kuNbAsicPerFeb);
+               UInt_t    uChanInFebA = usChanIdxA + fUnpackParSts->GetNbChanPerAsic() * (usAsicIdxA % fUnpackParSts->GetNbAsicsPerFeb());
                ULong64_t ulHitTsA    = (*itA).GetTs();
                Double_t  dHitTsA     = ulHitTsA * stsxyter::kdClockCycleNs;
 
@@ -1347,7 +1187,7 @@ Bool_t CbmMcbm2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
                   {
                      UShort_t  usAsicIdxB  = (*itB).GetAsic();
                      UShort_t  usChanIdxB  = (*itB).GetChan();
-                     UInt_t    uChanInFebB = usChanIdxB + fuNbChanPerAsic * (usAsicIdxB % kuNbAsicPerFeb);
+                     UInt_t    uChanInFebB = usChanIdxB + fUnpackParSts->GetNbChanPerAsic() * (usAsicIdxB % fUnpackParSts->GetNbAsicsPerFeb());
                      ULong64_t ulHitTsB    = (*itB).GetTs();
                      Double_t  dHitTsB     = ulHitTsB * stsxyter::kdClockCycleNs;
                      Double_t dDtClk = static_cast< Double_t >( ulHitTsB ) - static_cast< Double_t >( ulHitTsA );
@@ -1413,17 +1253,21 @@ void CbmMcbm2018MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
    /// Cheat for the P side of mCBM Test module
    usChan = 127 - usChan;
 
+/*
    fhStsChanCntRaw[  uAsicIdx ]->Fill( usChan );
    fhStsChanAdcRaw[  uAsicIdx ]->Fill( usChan, usRawAdc );
    fhStsChanAdcRawProf[  uAsicIdx ]->Fill( usChan, usRawAdc );
    fhStsChanRawTs[   uAsicIdx ]->Fill( usChan, usRawTs );
    fhStsChanMissEvt[ uAsicIdx ]->Fill( usChan, mess.IsHitMissedEvts() );
-
-   UInt_t uFebIdx = uAsicIdx / kuNbAsicPerFeb;
-   UInt_t uChanInFeb = usChan + fuNbChanPerAsic * (uAsicIdx % kuNbAsicPerFeb);
+*/
+   UInt_t uFebIdx = uAsicIdx / fUnpackParSts->GetNbAsicsPerFeb();
+   UInt_t uChanInFeb = usChan + fUnpackParSts->GetNbChanPerAsic() * (uAsicIdx % fUnpackParSts->GetNbAsicsPerFeb());
+   
    fhStsFebChanCntRaw[  uFebIdx ]->Fill( uChanInFeb );
    fhStsFebChanAdcRaw[  uFebIdx ]->Fill( uChanInFeb, usRawAdc );
    fhStsFebChanAdcRawProf[  uFebIdx ]->Fill( uChanInFeb, usRawAdc );
+   fhStsFebChanRawTs[   uAsicIdx ]->Fill( usChan, usRawTs );
+   fhStsFebChanMissEvt[ uAsicIdx ]->Fill( usChan, mess.IsHitMissedEvts() );
 
    // Compute the Full time stamp
    Long64_t ulOldHitTime = fvulChanLastHitTime[ uAsicIdx ][ usChan ];
@@ -1508,16 +1352,18 @@ void CbmMcbm2018MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
    // Fill histos with time as X axis
    Double_t dTimeSinceStartSec = (fvdChanLastHitTime[ uAsicIdx ][ usChan ] - fdStartTime)* 1e-9;
    Double_t dTimeSinceStartMin = dTimeSinceStartSec / 60.0;
-   fhStsChanHitRateEvo[ uAsicIdx ]->Fill( dTimeSinceStartSec , usChan );
-   fhStsAsicRateEvo[ uAsicIdx ]->Fill(   dTimeSinceStartSec );
-   fhStsFebChanHitRateEvo[ uFebIdx ]->Fill( dTimeSinceStartSec , uChanInFeb );
-   fhStsFebHitRateEvo[ uFebIdx ]->Fill(   dTimeSinceStartSec );
-   fhStsChanHitRateEvoLong[ uAsicIdx ]->Fill( dTimeSinceStartMin, usChan, 1.0/60.0 );
-   fhStsAsicRateEvoLong[ uAsicIdx ]->Fill(   dTimeSinceStartMin, 1.0/60.0 );
+   
+   fhStsFebChanHitRateEvo[ uFebIdx ]->Fill( dTimeSinceStartSec, uChanInFeb );
+   fhStsFebAsicHitRateEvo[ uFebIdx ]->Fill( dTimeSinceStartSec, uAsicIdx );
+   fhStsFebHitRateEvo[ uFebIdx ]->Fill(     dTimeSinceStartSec );
+   fhStsFebChanHitRateEvoLong[ uFebIdx ]->Fill( dTimeSinceStartMin, uChanInFeb, 1.0/60.0 );
+   fhStsFebAsicHitRateEvoLong[ uFebIdx ]->Fill( dTimeSinceStartMin, uAsicIdx,   1.0/60.0 );
+   fhStsFebHitRateEvoLong[ uFebIdx ]->Fill(     dTimeSinceStartMin,             1.0/60.0 );
    if( mess.IsHitMissedEvts() )
    {
-      fhStsChanMissEvtEvo[ uAsicIdx ]->Fill( dTimeSinceStartSec , usChan );
-      fhStsAsicMissEvtEvo[ uAsicIdx ]->Fill( dTimeSinceStartSec );
+      fhStsFebChanMissEvtEvo[ uFebIdx ]->Fill( dTimeSinceStartSec, usChan );
+      fhStsFebAsicMissEvtEvo[ uFebIdx ]->Fill( dTimeSinceStartSec, uAsicIdx );
+      fhStsFebMissEvtEvo[ uFebIdx ]->Fill(     dTimeSinceStartSec );
    } // if( mess.IsHitMissedEvts() )
 /*
    if( kTRUE == fbLongHistoEnable )
@@ -1671,9 +1517,8 @@ void CbmMcbm2018MonitorSts::SaveAllHistos( TString sFileName )
    fhStsSysMessType->Write();
    fhStsMessTypePerDpb->Write();
    fhStsSysMessTypePerDpb->Write();
-   fhStsMessTypePerElink->Write();
-   fhStsSysMessTypePerElink->Write();
 
+/*
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
       fhStsChanCntRaw[ uXyterIdx ]->Write();
@@ -1687,42 +1532,16 @@ void CbmMcbm2018MonitorSts::SaveAllHistos( TString sFileName )
       fhStsAsicRateEvo[ uXyterIdx ]->Write();
       fhStsChanHitRateEvoLong[ uXyterIdx ]->Write();
       fhStsAsicRateEvoLong[ uXyterIdx ]->Write();
-/*
+
       if( kTRUE == fbLongHistoEnable )
       {
          fhFebRateEvoLong[ uXyterIdx ]->Write();
          fhFebChRateEvoLong[ uXyterIdx ]->Write();
       } // if( kTRUE == fbLongHistoEnable )
-*/
+
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-
-   gDirectory->cd("..");
-   /***************************/
-
-   /***************************/
-/*
-   gDirectory->mkdir("Sts_Pulser");
-   gDirectory->cd("Sts_Pulser");
-
-   for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-   {
-      fhStsTimeDiffPerAsic[ uXyterIdx ]->Write();
-      for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-      {
-         fhStsTimeDiffPerAsicPair[ uXyterIdx ][uXyterIdxB]->Write();
-         fhStsTimeDiffClkPerAsicPair[ uXyterIdx ][uXyterIdxB]->Write();
-         fhStsTimeDiffEvoPerAsicPair[ uXyterIdx ][uXyterIdxB]->Write();
-         fhStsTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB]->Write();
-         fhStsRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB]->Write();
-         fhStsTsLsbMatchPerAsicPair[ uXyterIdx ][uXyterIdxB]->Write();
-         fhStsTsMsbMatchPerAsicPair[ uXyterIdx ][uXyterIdxB]->Write();
-      } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-      fhStsIntervalAsic[ uXyterIdx ]->Write();
-      fhStsIntervalLongAsic[ uXyterIdx ]->Write();
-   } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
-
-   gDirectory->cd("..");
 */
+   gDirectory->cd("..");
    /***************************/
 
    /***************************/
@@ -1731,14 +1550,37 @@ void CbmMcbm2018MonitorSts::SaveAllHistos( TString sFileName )
    for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
    {
       fhStsFebChanCntRaw[ uFebIdx ]->Write();
+      fhStsFebChanCntRawGood[ uFebIdx ]->Write();
       fhStsFebChanAdcRaw[ uFebIdx ]->Write();
       fhStsFebChanAdcRawProf[ uFebIdx ]->Write();
+      fhStsFebChanRawTs[ uFebIdx ]->Write();
+      fhStsFebChanMissEvt[ uFebIdx ]->Write();
+      fhStsFebChanMissEvtEvo[ uFebIdx ]->Write();
+      fhStsFebAsicMissEvtEvo[ uFebIdx ]->Write();
+      fhStsFebMissEvtEvo[ uFebIdx ]->Write();
       fhStsFebChanHitRateEvo[ uFebIdx ]->Write();
+      fhStsFebAsicHitRateEvo[ uFebIdx ]->Write();
       fhStsFebHitRateEvo[ uFebIdx ]->Write();
+      fhStsFebChanHitRateEvoLong[ uFebIdx ]->Write();
+      fhStsFebAsicHitRateEvoLong[ uFebIdx ]->Write();
+      fhStsFebHitRateEvoLong[ uFebIdx ]->Write();
       for( UInt_t uFebIdxB = uFebIdx; uFebIdxB < fuNbFebs; ++uFebIdxB )
          fhStsFebChanCoinc[ uFebIdx ][ uFebIdxB ]->Write();
    } // for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
-
+   gDirectory->cd("..");
+   /***************************/
+   
+   /***************************/
+   gDirectory->mkdir("Sts_Module");
+   gDirectory->cd("Sts_Module");
+   for( UInt_t uModIdx = 0; uModIdx < fuNbModules; ++ uModIdx )
+   {
+      fhStsModulePNCoincChan[ uModIdx ]->Reset();
+      fhStsModulePNCoincAdc[ uModIdx ]->Reset();
+      fhStsModuleCoincAdcChanP[ uModIdx ]->Reset();
+      fhStsModuleCoincAdcChanN[ uModIdx ]->Reset();
+      fhStsModuleCoincMap[ uModIdx ]->Reset();
+   } // for( UInt_t uModIdx = 0; uModIdx < fuNbModules; ++ uModIdx )
    gDirectory->cd("..");
    /***************************/
 
@@ -1821,9 +1663,8 @@ void CbmMcbm2018MonitorSts::ResetAllHistos()
    fhStsSysMessType->Reset();
    fhStsMessTypePerDpb->Reset();
    fhStsSysMessTypePerDpb->Reset();
-   fhStsMessTypePerElink->Reset();
-   fhStsSysMessTypePerElink->Reset();
 
+/*
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
       fhStsChanCntRaw[ uXyterIdx ]->Reset();
@@ -1837,41 +1678,46 @@ void CbmMcbm2018MonitorSts::ResetAllHistos()
       fhStsAsicRateEvo[ uXyterIdx ]->Reset();
       fhStsChanHitRateEvoLong[ uXyterIdx ]->Reset();
       fhStsAsicRateEvoLong[ uXyterIdx ]->Reset();
-/*
+
       if( kTRUE == fbLongHistoEnable )
       {
          ftStartTimeUnix = std::chrono::steady_clock::now();
          fhFebRateEvoLong[ uXyterIdx ]->Reset();
          fhFebChRateEvoLong[ uXyterIdx ]->Reset();
       } // if( kTRUE == fbLongHistoEnable )
-*/
-/*
-      fhStsTimeDiffPerAsic[ uXyterIdx ]->Reset();
-      for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-      {
-         fhStsTimeDiffPerAsicPair[ uXyterIdx ][uXyterIdxB]->Reset();
-         fhStsTimeDiffClkPerAsicPair[ uXyterIdx ][uXyterIdxB]->Reset();
-         fhStsTimeDiffEvoPerAsicPair[ uXyterIdx ][uXyterIdxB]->Reset();
-         fhStsTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB]->Reset();
-         fhStsRawTimeDiffEvoPerAsicPairProf[ uXyterIdx ][uXyterIdxB]->Reset();
-         fhStsTsLsbMatchPerAsicPair[ uXyterIdx ][uXyterIdxB]->Reset();
-         fhStsTsMsbMatchPerAsicPair[ uXyterIdx ][uXyterIdxB]->Reset();
-      } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
-      fhStsIntervalAsic[ uXyterIdx ]->Reset();
-      fhStsIntervalLongAsic[ uXyterIdx ]->Reset();
-*/
+
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
+*/
 
    for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
    {
       fhStsFebChanCntRaw[ uFebIdx ]->Reset();
+      fhStsFebChanCntRawGood[ uFebIdx ]->Reset();
       fhStsFebChanAdcRaw[ uFebIdx ]->Reset();
       fhStsFebChanAdcRawProf[ uFebIdx ]->Reset();
+      fhStsFebChanRawTs[ uFebIdx ]->Reset();
+      fhStsFebChanMissEvt[ uFebIdx ]->Reset();
+      fhStsFebChanMissEvtEvo[ uFebIdx ]->Reset();
+      fhStsFebAsicMissEvtEvo[ uFebIdx ]->Reset();
+      fhStsFebMissEvtEvo[ uFebIdx ]->Reset();
       fhStsFebChanHitRateEvo[ uFebIdx ]->Reset();
+      fhStsFebAsicHitRateEvo[ uFebIdx ]->Reset();
       fhStsFebHitRateEvo[ uFebIdx ]->Reset();
+      fhStsFebChanHitRateEvoLong[ uFebIdx ]->Reset();
+      fhStsFebAsicHitRateEvoLong[ uFebIdx ]->Reset();
+      fhStsFebHitRateEvoLong[ uFebIdx ]->Reset();
       for( UInt_t uFebIdxB = uFebIdx; uFebIdxB < fuNbFebs; ++uFebIdxB )
          fhStsFebChanCoinc[ uFebIdx ][ uFebIdxB ]->Reset();
    } // for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
+   
+   for( UInt_t uModIdx = 0; uModIdx < fuNbModules; ++ uModIdx )
+   {
+      fhStsModulePNCoincChan[ uModIdx ]->Reset();
+      fhStsModulePNCoincAdc[ uModIdx ]->Reset();
+      fhStsModuleCoincAdcChanP[ uModIdx ]->Reset();
+      fhStsModuleCoincAdcChanN[ uModIdx ]->Reset();
+      fhStsModuleCoincMap[ uModIdx ]->Reset();
+   } // for( UInt_t uModIdx = 0; uModIdx < fuNbModules; ++ uModIdx )
 
    for( UInt_t uLinks = 0; uLinks < kiMaxNbFlibLinks; ++uLinks )
    {
