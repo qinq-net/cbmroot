@@ -42,6 +42,7 @@ class CbmMcbm2018TofPar : public FairParGenericSet
    inline Int_t GetNrOfChannelsPerGet4() {return fiNrOfChannelsPerGet4;}
 
    inline Int_t GetNrOfGbtx() {return fiNrOfGbtx;}
+   inline Int_t GetNrOfModules() {return fiNrOfModule;}
    inline Int_t GetNrOfRpc(Int_t i) {return fiNrOfRpc[i];}
    inline Int_t GetRpcType(Int_t i) {return fiRpcType[i];}
    inline Int_t GetRpcSide(Int_t i) {return fiRpcSide[i];}
@@ -66,6 +67,7 @@ class CbmMcbm2018TofPar : public FairParGenericSet
    Int_t    fiNrOfChannelsPerGet4;  // Number of channels per GET4
 
    Int_t    fiNrOfGbtx;   // Total number of Gbtx links 
+   Int_t    fiNrOfModule; // Total number of Modules 
    TArrayI  fiNrOfRpc;    // number of Rpcs connected to Gbtx link, i.e. 3 or 5
    TArrayI  fiRpcType;    // type of Rpcs connected to Gbtx link
    TArrayI  fiRpcSide;    // side of Rpcs connected to Gbtx link, i.e. 0 or 1

@@ -22,6 +22,7 @@ CbmMcbm2018TofPar::CbmMcbm2018TofPar(const char* name,
     fiNrOfFeesPerGdpb(-1),
     fiNrOfGet4PerFee(-1),
     fiNrOfChannelsPerGet4(-1),
+    fiNrOfModule( -1 ),
     fiNrOfGbtx(-1),
     fiNrOfRpc(),
     fiRpcType(),
@@ -67,6 +68,7 @@ void CbmMcbm2018TofPar::putParams(FairParamList* l)
    l->add("NrOfGet4PerFee",      fiNrOfGet4PerFee);
    l->add("NrOfChannelsPerGet4", fiNrOfChannelsPerGet4);
    l->add("NrOfGbtx",            fiNrOfGbtx);
+   l->add("NrOfModule",          fiNrOfModule);
    l->add("NrOfRpcs",            fiNrOfRpc);
    l->add("RpcType",             fiRpcType);
    l->add("RpcSide",             fiRpcSide);
@@ -96,6 +98,8 @@ Bool_t CbmMcbm2018TofPar::getParams(FairParamList* l) {
    if ( ! l->fill("NrOfChannelsPerGet4", &fiNrOfChannelsPerGet4) ) return kFALSE;
 
    if ( ! l->fill("NrOfGbtx", &fiNrOfGbtx) ) return kFALSE;
+   
+   if ( ! l->fill("NrOfModule", &fiNrOfModule) ) return kFALSE;
 
    fiNrOfRpc.Set(fiNrOfGbtx);
    if ( ! l->fill("NrOfRpc", &fiNrOfRpc) ) return kFALSE;

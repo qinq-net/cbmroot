@@ -9,6 +9,7 @@ NrOfFeesPerGdpb: Int_t 30
 NrOfGet4PerFee: Int_t 8
 NrOfChannelsPerGet4: Int_t 4
 NrOfGbtx: Int_t 12
+NrOfModule: Int_t 5
 NrOfRpc: Int_t \
   5  5  5  5  5  5  5  5  5  5  5  5
 RpcType: Int_t \
