@@ -9,6 +9,7 @@
 #include "FairParGenericSet.h"
 
 #include "TArrayI.h"
+#include "TArrayD.h"
 
 class FairParIo;
 class FairParamList;
@@ -38,7 +39,19 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    static constexpr UInt_t GetNbElinkPerCrob() { return kuNbElinksPerCrob; }
    static constexpr UInt_t GetNbFebsPerCrob()  { return kuNbFebsPerCrob; }
    static constexpr UInt_t GetNbAsicsPerFeb()  { return kuNbAsicsPerFeb; }
+   static constexpr UInt_t GetNbAsicsPerCrob() { return kuNbFebsPerCrob * kuNbAsicsPerFeb; }
    static constexpr UInt_t GetNbChanPerAsic()  { return kuNbChanPerAsic; }
+   static constexpr UInt_t GetNbChanPerFeb()   { return kuNbAsicsPerFeb * kuNbChanPerAsic; }
+   
+   static constexpr Double_t GetStereoAngle()    { return kdStereoAngle; }
+          const     Double_t GetStereoAngleTan() { return kdStereoAngleTan; }
+   static constexpr Double_t GetPitchMm()        { return kdPitchMm; }
+   static constexpr Double_t GetSensorSzX()      { return kdSensorsSzX; }
+   static constexpr Double_t GetSensorSzY()      { return kdSensorsSzY; }
+   static constexpr Double_t GetCenterStripP()   { return kiCenterStripP; }
+   static constexpr Double_t GetCenterStripN()   { return kiCenterStripN; }
+   static constexpr Double_t GetCenterPosX()     { return kdCenterPosX; }
+   static constexpr Double_t GetCenterPosY()     { return kdCenterPosY; }
 
    UInt_t ElinkIdxToAsicIdx( Bool_t bFebType, UInt_t uElink )
          { return kTRUE == bFebType ? ElinkIdxToAsicIdxFebB( uElink ) :
@@ -47,17 +60,25 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    UInt_t ElinkIdxToAsicIdxFebA( UInt_t uElink );
    UInt_t ElinkIdxToAsicIdxFebB( UInt_t uElink );
 
-   UInt_t GetNbOfModules()    { return fuNbModules; }
-   UInt_t GetModuleType( UInt_t uModuleIdx );
-   UInt_t GetModuleAddress( UInt_t uModuleIdx );
+   UInt_t   GetNbOfModules()    { return fuNbModules; }
+   Bool_t   CheckModuleIndex( UInt_t uModuleIdx );
+   UInt_t   GetModuleType( UInt_t uModuleIdx );
+   UInt_t   GetModuleAddress( UInt_t uModuleIdx );
+   Double_t GetModuleCenterPosX( UInt_t uModuleIdx );
+   Double_t GetModuleCenterPosY( UInt_t uModuleIdx );
 
    UInt_t GetNrOfDpbs()       { return fuNrOfDpbs; }
    UInt_t GetDpbId( UInt_t uDpbIdx );
+   UInt_t GetNrOfCrobs()      { return fuNrOfDpbs * kuNbCrobsPerDpb; }
+   UInt_t GetNrOfFebs()       { return GetNrOfCrobs() * kuNbFebsPerCrob; }
+   UInt_t GetNrOfAsics()      { return GetNrOfFebs()  * kuNbAsicsPerFeb; }
 
    Bool_t IsCrobActive( UInt_t uDpbIdx, UInt_t uCrobIdx );
    Int_t GetFebModuleIdx( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
    Int_t GetFebModuleSide( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
 
+   Bool_t ComputeModuleCoordinates( UInt_t uModuleIdx, Int_t iChanN, Int_t iChanP, Double_t & dPosX, Double_t & dPosY );
+   
  private:
 
    /// Constants
@@ -87,11 +108,23 @@ class CbmMcbm2018StsPar : public FairParGenericSet
             0x000D, 0x0003, 0x0006, 0x0005, 0x0001, 0x0007
 
          }; //! Map from eLink index to ASIC index within CROB ( 0 to kuNbFebsPerCrob * kuNbAsicPerFeb )
+      /// Modules properties (assumes 1 FEB per side!)
+   static constexpr Double_t kdStereoAngle  =    7.5;   // [Deg]
+   static const     Double_t kdStereoAngleTan;         // [] See cxx file for assignation
+   static constexpr Double_t kdPitchMm      =    0.058; // [mm]
+   static constexpr Double_t kdSensorsSzX   =   60;     // [mm], active is 59.570 mm (kiNbStrips*kdPitchMm)
+   static constexpr Double_t kdSensorsSzY   =   40;     // [mm], active is 39.703 mm
+   static constexpr Int_t    kiCenterStripP =  512;     // []
+   static constexpr Int_t    kiCenterStripN =  512;     // []
+   static constexpr Double_t kdCenterPosX   =    0.0;   // [mm] Top Center
+   static constexpr Double_t kdCenterPosY   =   39.703 / 2.0; // [mm] Top Center
 
    /// Variables
    UInt_t  fuNbModules;      // Total number of STS modules in the setup
    TArrayI fiModuleType;     // Type of each module: 0 for connectors on the right, 1 for connectors on the left
    TArrayI fiModAddress;     // STS address for the first strip of each module
+   TArrayD fdModCenterPosX;  // Offset of module center in X, in mm (Should be done by geometry for the unpacker!)
+   TArrayD fdModCenterPosY;  // Offset of module center in Y, in mm (Should be done by geometry for the unpacker!)
 
    UInt_t  fuNrOfDpbs;       // Total number of STS DPBs in system
    TArrayI fiDbpIdArray;     // Array to hold the unique IDs (equipment ID) for all STS DPBs

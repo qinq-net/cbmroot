@@ -11,8 +11,13 @@
 #include "FairLogger.h"
 
 #include "TString.h"
+#include "TMath.h"
 
 using namespace std;
+
+/// Constants assignation
+const Double_t CbmMcbm2018StsPar::kdStereoAngleTan = TMath::Tan( kdStereoAngle * TMath::DegToRad() );
+
 // -----   Standard constructor   ------------------------------------------
 CbmMcbm2018StsPar::CbmMcbm2018StsPar(const char* name,
                                      const char* title,
@@ -21,6 +26,8 @@ CbmMcbm2018StsPar::CbmMcbm2018StsPar(const char* name,
    fuNbModules( 0 ),
    fiModuleType(),
    fiModAddress(),
+   fdModCenterPosX(),
+   fdModCenterPosY(),
    fuNrOfDpbs( 0 ),
    fiDbpIdArray(),
    fiCrobActiveFlag(),
@@ -57,6 +64,8 @@ void CbmMcbm2018StsPar::putParams(FairParamList* l)
    l->add("NbModules",      fuNbModules );
    l->add("ModuleType",     fiModuleType);
    l->add("ModAddress",     fiModAddress );
+   l->add("ModCenterPosX",  fdModCenterPosX );
+   l->add("ModCenterPosY",  fdModCenterPosY );
    l->add("NrOfDpbs",       fuNrOfDpbs );
    l->add("DbpIdArray",     fiDbpIdArray );
    l->add("CrobActiveFlag", fiCrobActiveFlag);
@@ -73,10 +82,14 @@ Bool_t CbmMcbm2018StsPar::getParams(FairParamList* l) {
 
    if ( ! l->fill("NbModules", &fuNbModules ) ) return kFALSE;
 
-   fiModuleType.Set( fuNbModules );
-   fiModAddress.Set( fuNbModules );
-   if ( ! l->fill("ModuleType", &fiModuleType ) ) return kFALSE;
-   if ( ! l->fill("ModAddress", &fiModAddress ) ) return kFALSE;
+   fiModuleType.Set(    fuNbModules );
+   fiModAddress.Set(    fuNbModules );
+   fdModCenterPosX.Set( fuNbModules );
+   fdModCenterPosY.Set( fuNbModules );
+   if ( ! l->fill("ModuleType",    &fiModuleType ) ) return kFALSE;
+   if ( ! l->fill("ModAddress",    &fiModAddress ) ) return kFALSE;
+   if ( ! l->fill("ModCenterPosX", &fdModCenterPosX ) ) return kFALSE;
+   if ( ! l->fill("ModCenterPosY", &fdModCenterPosY ) ) return kFALSE;
 
    if ( ! l->fill("NrOfDpbs", &fuNrOfDpbs ) ) return kFALSE;
 
@@ -119,6 +132,17 @@ UInt_t CbmMcbm2018StsPar::ElinkIdxToAsicIdxFebB( UInt_t uElink )
       } // else of if( uElink < kuNbElinksPerCrob )
 }
 // -------------------------------------------------------------------------
+Bool_t CbmMcbm2018StsPar::CheckModuleIndex( UInt_t uModuleIdx )
+{
+   if( uModuleIdx < fuNbModules )
+      return kTRUE;
+      else
+      {
+         LOG(WARNING) << "CbmMcbm2018StsPar::CheckModuleIndex => Index out of bound!"
+                      << FairLogger::endl;
+         return kFALSE;
+      } // else of if( uModuleIdx < fuNbModules )
+}
 UInt_t CbmMcbm2018StsPar::GetModuleType( UInt_t uModuleIdx )
 {
    if( uModuleIdx < fuNbModules )
@@ -141,6 +165,30 @@ UInt_t CbmMcbm2018StsPar::GetModuleAddress( UInt_t uModuleIdx )
                       << "returning crazy value!"
                       << FairLogger::endl;
          return 0xFFFFFFFF;
+      } // else of if( uModuleIdx < fuNbModules )
+}
+Double_t CbmMcbm2018StsPar::GetModuleCenterPosX( UInt_t uModuleIdx )
+{
+   if( uModuleIdx < fuNbModules )
+      return fdModCenterPosX[ uModuleIdx ];
+      else
+      {
+         LOG(WARNING) << "CbmMcbm2018StsPar::GetModuleCenterPosX => Index out of bound, "
+                      << "returning crazy value!"
+                      << FairLogger::endl;
+         return 3.844e11; // Fly to the Moon!
+      } // else of if( uModuleIdx < fuNbModules )
+}
+Double_t CbmMcbm2018StsPar::GetModuleCenterPosY( UInt_t uModuleIdx )
+{
+   if( uModuleIdx < fuNbModules )
+      return fdModCenterPosY[ uModuleIdx ];
+      else
+      {
+         LOG(WARNING) << "CbmMcbm2018StsPar::GetModuleCenterPosY => Index out of bound, "
+                      << "returning crazy value!"
+                      << FairLogger::endl;
+         return 3.844e11; // Fly to the Moon!
       } // else of if( uModuleIdx < fuNbModules )
 }
 // -------------------------------------------------------------------------
@@ -251,6 +299,21 @@ Int_t CbmMcbm2018StsPar::GetFebModuleSide( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt
                       << FairLogger::endl;
          return -1;
       } // else of if( uDpbIdx < fuNrOfDpbs )
+}
+// -------------------------------------------------------------------------
+Bool_t CbmMcbm2018StsPar::ComputeModuleCoordinates( UInt_t uModuleIdx, Int_t iChanN, Int_t iChanP, Double_t & dPosX, Double_t & dPosY )
+{
+   if( kFALSE == CheckModuleIndex( uModuleIdx ) )
+      return kFALSE;
+      
+   dPosX = 0.0;
+   dPosY = 0.0;
+   
+   Int_t iCoordN = iChanN - kiCenterStripN;
+   Int_t iCoordP = iChanP - kiCenterStripP;
+
+   dPosX = fdModCenterPosX[ uModuleIdx ] + kdCenterPosX + kdPitchMm * iCoordN;
+   dPosY = fdModCenterPosY[ uModuleIdx ] + kdCenterPosY - kdPitchMm * ( iCoordN - iCoordP ) / kdStereoAngleTan;
 }
 
 ClassImp(CbmMcbm2018StsPar)
