@@ -2105,12 +2105,10 @@ void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const
     // Au+Au centr new scaling factors
     }*/
     if (energy == "8gev") {
-        // weight rho0 = Multiplicity * Branching Ratio = 9 * 4.7e-5 for 8 AGeV beam energy
-        if (particle == "rho0") this->SetWeight(0.012);
         // weight omega = Multiplicity * Branching Ratio = 19 * 7.28e-5 for 8 AGeV beam energy
-        if (particle == "omegaepem" ) this->SetWeight(2.5*4.7e-5);
+        if (particle == "omegaepem" ) this->SetWeight(2.5*7.28e-5);
         // weight omega = Multiplicity * Branching Ratio = 19 * 7.7e-4 for 8 AGeV beam energy
-        if (particle == "omegadalitz") this->SetWeight(2.5*7.28e-5);
+        if (particle == "omegadalitz") this->SetWeight(2.5*7.7e-4);
         // weight phi = Multipli0city * Branching Ratio = 0.12 * 2.97e-4 for 8 AGeV beam energy
         if (particle == "phi") this->SetWeight(0.365*2.97e-4);
         // weight in medium rho. 0.5 is a scaling factor for 8AGev from 25AGeV
@@ -2141,7 +2139,7 @@ void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const
 	if (particle == "phi") this->SetWeight(0.1 * 2.97e-4);
 
     //Ag+Ag mbias!!
-    } else if (energy == "4.5gev"){
+/*    } else if (energy == "4.5gev"){
         // weight omegadalitz = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
         if(particle == "omegadalitz") this->SetWeight(5.8*7.7e-6);
         // weight omegaepem = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
@@ -2150,9 +2148,9 @@ void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const
         if(particle == "phi") this->SetWeight(5.8*2.97e-7);
 	// weight inmed = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
          if(particle == "inmed") this->SetWeight(8.2*10e-4);
-
+*/
     //Ag+Ag 40%                                                                                             either mbias or 40%!!!
-/*    } else if (energy == "4.5gev"){
+    } else if (energy == "4.5gev"){
         // weight omegadalitz = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
         if(particle == "omegadalitz") this->SetWeight(1.2*7.7e-5);
         // weight omegaepem = Multiplicity * Branching Ratio =    for 4.5 AGeV beam energy
@@ -2164,6 +2162,6 @@ void CbmAnaDielectronTask::SetEnergyAndPlutoParticle(const string& energy, const
     } else {
         cout << "-ERROR- CbmAnaDielectronTask::SetEnergyAndParticle energy or particle is not correct, energy:"
                 << energy << " particle:" << particle << endl;
-*/    }
+    }
 }
 
