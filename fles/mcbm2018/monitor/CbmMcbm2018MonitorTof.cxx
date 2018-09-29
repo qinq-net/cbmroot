@@ -709,13 +709,13 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
          if( uFeeA < uFeeB )
          {
             UInt_t uGdpbA = uFeeA / ( fuNrOfFeePerGdpb );
-            UInt_t uFeeA = uFeeA - ( fuNrOfFeePerGdpb * uGdpbA );
+            UInt_t uFeeIdA = uFeeA - ( fuNrOfFeePerGdpb * uGdpbA );
             UInt_t uGdpbB = uFeeB / ( fuNrOfFeePerGdpb );
-            UInt_t uFeeB = uFeeB - ( fuNrOfFeePerGdpb * uGdpbB );
+            UInt_t uFeeIdB = uFeeB - ( fuNrOfFeePerGdpb * uGdpbB );
             fvhTimeDiffPulser[uFeeA][uFeeB] = new TH1I(
-               Form("hTimeDiffPulser_g%02u_f%1u_g%02u_f%1u", uGdpbA, uFeeA, uGdpbB, uFeeB),
+               Form("hTimeDiffPulser_g%02u_f%1u_g%02u_f%1u", uGdpbA, uFeeIdA, uGdpbB, uFeeIdB),
                Form("Time difference for pulser on gDPB %02u FEE %1u and gDPB %02u FEE %1u; DeltaT [ps]; Counts",
-                     uGdpbA, uFeeA, uGdpbB, uFeeB ),
+                     uGdpbA, uFeeIdA, uGdpbB, uFeeIdB ),
                uNbBinsDt, dMinDt, dMaxDt);
          } // if( uFeeA < uFeeB )
             else fvhTimeDiffPulser[uFeeA][uFeeB] = NULL;
