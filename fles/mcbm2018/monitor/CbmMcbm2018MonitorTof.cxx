@@ -248,34 +248,34 @@ Bool_t CbmMcbm2018MonitorTof::ReInitContainers()
 
    fuNrOfModules  =  fUnpackPar->GetNrOfModules();
    LOG(INFO) << "Nr. of GBTx: " << fuNrOfModules << FairLogger::endl;
-   
+
    fviRpcType.resize(  fuNrOfGbtx );
    fviModuleId.resize( fuNrOfGbtx );
    fviNrOfRpc.resize(  fuNrOfGbtx );
    fviRpcSide.resize(  fuNrOfGbtx );
-   for( UInt_t uGbtx = 0; uGbtx < fuNrOfGbtx; ++uGbtx) 
+   for( UInt_t uGbtx = 0; uGbtx < fuNrOfGbtx; ++uGbtx)
    {
-      fviNrOfRpc[ uGbtx ]  = fUnpackPar->GetNrOfRpc( uGbtx );   
-      fviRpcType[ uGbtx ]  = fUnpackPar->GetRpcType( uGbtx );   
-      fviRpcSide[ uGbtx ]  = fUnpackPar->GetRpcSide( uGbtx );   
-      fviModuleId[ uGbtx ] = fUnpackPar->GetModuleId( uGbtx );   
-   } // for( UInt_t uGbtx = 0; uGbtx < uNrOfGbtx; ++uGbtx) 
-   
+      fviNrOfRpc[ uGbtx ]  = fUnpackPar->GetNrOfRpc( uGbtx );
+      fviRpcType[ uGbtx ]  = fUnpackPar->GetRpcType( uGbtx );
+      fviRpcSide[ uGbtx ]  = fUnpackPar->GetRpcSide( uGbtx );
+      fviModuleId[ uGbtx ] = fUnpackPar->GetModuleId( uGbtx );
+   } // for( UInt_t uGbtx = 0; uGbtx < uNrOfGbtx; ++uGbtx)
+
    LOG(INFO) << "Nr. of RPCs per GBTx: ";
    for( UInt_t uGbtx = 0; uGbtx < fuNrOfGbtx; ++uGbtx)
       LOG(INFO) << Form(" %2d", fviNrOfRpc[ uGbtx ] );
    LOG(INFO) << FairLogger::endl;
-   
+
    LOG(INFO) << "RPC type per GBTx:    ";
    for( UInt_t uGbtx = 0; uGbtx < fuNrOfGbtx; ++uGbtx)
       LOG(INFO) << Form(" %2d", fviRpcType[ uGbtx ] );
    LOG(INFO) << FairLogger::endl;
-   
+
    LOG(INFO) << "RPC side per GBTx:    ";
    for( UInt_t uGbtx = 0; uGbtx < fuNrOfGbtx; ++uGbtx)
       LOG(INFO) << Form(" %2d", fviRpcSide[ uGbtx ] );
    LOG(INFO) << FairLogger::endl;
-   
+
    LOG(INFO) << "Module ID per GBTx:   ";
    for( UInt_t uGbtx = 0; uGbtx < fuNrOfGbtx; ++uGbtx)
       LOG(INFO) << Form(" %2d", fviModuleId[ uGbtx ] );
@@ -589,20 +589,6 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
              uGdpb);
          fvhFeeErrorRatioLong_gDPB.push_back( new TProfile(name.Data(), title.Data(), fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong) );
       } // for (UInt_t uFee = 0; uFee < fuNrOfFeePerGdpb; uFee++)
-      
-      /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
-      name = Form("RemapTotSideA_gDPB_%02u", uGdpb);
-      title = Form("Raw TOT gDPB %02u remapped Side A; PADI channel; TOT [bin]", uGdpb);
-      fvhRemapTotSideA_mod.push_back(
-         new TH2F(name.Data(), title.Data(),
-            fuNrOfChannelsPerGdpb/2, 0, fuNrOfChannelsPerGdpb/2,
-            256, 0, 256 ) );
-      name = Form("RemapTotSideB_gDPB_%02u", uGdpb);
-      title = Form("Raw TOT gDPB %02u remapped Side B; PADI channel; TOT [bin]", uGdpb);
-      fvhRemapTotSideB_mod.push_back(
-         new TH2F(name.Data(), title.Data(),
-            fuNrOfChannelsPerGdpb/2, 0, fuNrOfChannelsPerGdpb/2,
-            256, 0, 256 ) );
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
       /// STAR Trigger decoding and monitoring
@@ -679,7 +665,7 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       title = Form( "STAR TS in STAR triger tokens for gDPB %02u; Time in Run [s] ; STAR TS;", uGdpb);
       fvhStarTrigStarTsEvo.push_back( new TProfile(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize ) );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
-   
+
    /*******************************************************************/
    /// Module TOT map
    for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
@@ -789,7 +775,7 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
 
       for( UInt_t uTotPlot = 0; uTotPlot < fvhRemapTot_gDPB.size(); ++uTotPlot )
          server->Register("/TofRaw", fvhRemapTot_gDPB[ uTotPlot ] );
-      
+
       for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
       {
          server->Register("/TofRaw", fvhRemapTotSideA_mod[ uMod ] );
@@ -1641,7 +1627,7 @@ void CbmMcbm2018MonitorTof::FillHitInfo(gdpbv100::Message mess)
    /// Remapped for PADI to GET4
    fvhRemapChCount_gDPB[fuGdpbNr]->Fill( uRemappedChannelNr );
    fvhRemapTot_gDPB[ fuGdpbNr ]->Fill(  uRemappedChannelNr , uTot);
-   
+
    if( uGbtxNrInSys < fuNrOfGbtx )
    {
       UInt_t uOffset = uGbtxNrInSys * kuNbFeeSide * fuNrOfChannelsPerFee;
@@ -2235,7 +2221,7 @@ void CbmMcbm2018MonitorTof::SaveAllHistos( TString sFileName )
 
    for( UInt_t uTotPlot = 0; uTotPlot < fvhRemapTot_gDPB.size(); ++uTotPlot )
       fvhRemapTot_gDPB[ uTotPlot ]->Write();
-      
+
    for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
    {
       fvhRemapTotSideA_mod[ uMod ]->Write();
@@ -2361,7 +2347,7 @@ void CbmMcbm2018MonitorTof::ResetAllHistos()
 
    for( UInt_t uTotPlot = 0; uTotPlot < fvhRemapTot_gDPB.size(); ++uTotPlot )
       fvhRemapTot_gDPB[ uTotPlot ]->Reset();
-   
+
    for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
    {
       fvhRemapTotSideA_mod[ uMod ]->Reset();
