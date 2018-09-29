@@ -104,6 +104,11 @@ Bool_t CbmMcbm2018StsPar::getParams(FairParamList* l) {
    if ( ! l->fill("fiFebModuleIdx", &fiFebModuleIdx ) ) return kFALSE;
    if ( ! l->fill("fiFebModuleSide", &fiFebModuleSide ) ) return kFALSE;
 
+   LOG(INFO) << "CbmMcbm2018StsPar::getParams => Values " << FairLogger::endl
+                << fuNbModules << FairLogger::endl
+                << fuNrOfDpbs << FairLogger::endl
+                << FairLogger::endl;
+
   return kTRUE;
 }
 // -------------------------------------------------------------------------
@@ -305,10 +310,10 @@ Bool_t CbmMcbm2018StsPar::ComputeModuleCoordinates( UInt_t uModuleIdx, Int_t iCh
 {
    if( kFALSE == CheckModuleIndex( uModuleIdx ) )
       return kFALSE;
-      
+
    dPosX = 0.0;
    dPosY = 0.0;
-   
+
    Int_t iCoordN = iChanN - kiCenterStripN;
    Int_t iCoordP = iChanP - kiCenterStripP;
 

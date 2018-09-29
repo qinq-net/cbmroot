@@ -8,6 +8,7 @@
 
 #include "CbmMcbm2018ContFact.h"
 
+#include "CbmMcbm2018StsPar.h"
 #include "CbmMcbm2018TofPar.h"
 
 #include "FairRuntimeDb.h"
@@ -28,12 +29,19 @@ void CbmMcbm2018ContFact::setAllContainers() {
   /** Creates the Container objects with all accepted contexts and adds them to
    *  the list of containers for the fles test library.*/
 
-    FairContainer* p= new FairContainer("CbmMcbm2018TofPar",
+    FairContainer* pSts= new FairContainer("CbmMcbm2018StsPar",
+                                          "STS at MCBM 2018 Unpack Parameters",
+                                          "TestDefaultContext");
+    pSts->addContext("TestNonDefaultContext");
+
+    containers->Add(pSts);
+
+    FairContainer* pTof= new FairContainer("CbmMcbm2018TofPar",
                                           "TOF at MCBM 2018 Unpack Parameters",
                                           "TestDefaultContext");
-    p->addContext("TestNonDefaultContext");
+    pTof->addContext("TestNonDefaultContext");
 
-    containers->Add(p);
+    containers->Add(pTof);
 }
 
 FairParSet* CbmMcbm2018ContFact::createContainer(FairContainer* c) {
@@ -42,9 +50,14 @@ FairParSet* CbmMcbm2018ContFact::createContainer(FairContainer* c) {
    * of this container, the name is concatinated with the context. */
   const char* name=c->GetName();
   FairParSet* p=0;
-  if (strcmp(name,"CbmMcbm2018TofPar")==0) {
+
+  if (strcmp(name,"CbmMcbm2018StsPar")==0) {
+      p = new CbmMcbm2018StsPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
+  }
+  else if (strcmp(name,"CbmMcbm2018TofPar")==0) {
       p = new CbmMcbm2018TofPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
   }
+
   return p;
 }
 
