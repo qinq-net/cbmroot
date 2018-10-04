@@ -42,7 +42,7 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    static constexpr UInt_t GetNbAsicsPerCrob() { return kuNbFebsPerCrob * kuNbAsicsPerFeb; }
    static constexpr UInt_t GetNbChanPerAsic()  { return kuNbChanPerAsic; }
    static constexpr UInt_t GetNbChanPerFeb()   { return kuNbAsicsPerFeb * kuNbChanPerAsic; }
-   
+
    static constexpr Double_t GetStereoAngle()    { return kdStereoAngle; }
           const     Double_t GetStereoAngleTan() { return kdStereoAngleTan; }
    static constexpr Double_t GetPitchMm()        { return kdPitchMm; }
@@ -53,6 +53,7 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    static constexpr Double_t GetCenterPosX()     { return kdCenterPosX; }
    static constexpr Double_t GetCenterPosY()     { return kdCenterPosY; }
 
+   Int_t  ElinkIdxToFebIdx( UInt_t uElink );
    UInt_t ElinkIdxToAsicIdx( Bool_t bFebType, UInt_t uElink )
          { return kTRUE == bFebType ? ElinkIdxToAsicIdxFebB( uElink ) :
                                       ElinkIdxToAsicIdxFebA( uElink );
@@ -78,7 +79,7 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    Int_t GetFebModuleSide( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
 
    Bool_t ComputeModuleCoordinates( UInt_t uModuleIdx, Int_t iChanN, Int_t iChanP, Double_t & dPosX, Double_t & dPosY );
-   
+
  private:
 
    /// Constants
@@ -106,8 +107,17 @@ class CbmMcbm2018StsPar : public FairParGenericSet
             0x0011, 0x0010, 0x001B, 0x0012, 0x000F, 0x000B,
             0x0009, 0x000E, 0x000C, 0x0004, 0x0002, 0x0000,
             0x000D, 0x0003, 0x0006, 0x0005, 0x0001, 0x0007
-
          }; //! Map from eLink index to ASIC index within CROB ( 0 to kuNbFebsPerCrob * kuNbAsicPerFeb )
+//   static constexpr UInt_t  kuCrobMapElinkFebIdx[ kuNbElinksPerCrob ] = {
+   const Int_t  kiCrobMapElinkFebIdx[ kuNbElinksPerCrob ] = {
+            4,  4,  4,  4,  4,  3,  3,  3,
+            4,  4, -1, -1,  4,  3,  2,  2,
+            3,  3,  3,  1,  2,  2,  1,  2,
+            2,  2,  3,  2,  1,  1,  1,  1,
+            1,  0,  0,  0,  1,  0,  0,  0,
+            0,  0
+         }; //! Map from eLink index to ASIC index within CROB ( 0 to kuNbFebsPerCrob * kuNbAsicPerFeb )
+
       /// Modules properties (assumes 1 FEB per side!)
    static constexpr Double_t kdStereoAngle  =    7.5;   // [Deg]
    static const     Double_t kdStereoAngleTan;         // [] See cxx file for assignation

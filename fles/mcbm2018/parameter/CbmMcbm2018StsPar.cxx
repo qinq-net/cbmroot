@@ -101,8 +101,8 @@ Bool_t CbmMcbm2018StsPar::getParams(FairParamList* l) {
 
    fiFebModuleIdx.Set( fuNrOfDpbs * kuNbCrobsPerDpb * kuNbFebsPerCrob );
    fiFebModuleSide.Set( fuNrOfDpbs * kuNbCrobsPerDpb * kuNbFebsPerCrob );
-   if ( ! l->fill("fiFebModuleIdx", &fiFebModuleIdx ) ) return kFALSE;
-   if ( ! l->fill("fiFebModuleSide", &fiFebModuleSide ) ) return kFALSE;
+   if ( ! l->fill("FebModuleIdx",  &fiFebModuleIdx ) ) return kFALSE;
+   if ( ! l->fill("FebModuleSide", &fiFebModuleSide ) ) return kFALSE;
 
    LOG(INFO) << "CbmMcbm2018StsPar::getParams => Values " << FairLogger::endl
                 << fuNbModules << FairLogger::endl
@@ -110,6 +110,19 @@ Bool_t CbmMcbm2018StsPar::getParams(FairParamList* l) {
                 << FairLogger::endl;
 
   return kTRUE;
+}
+// -------------------------------------------------------------------------
+Int_t CbmMcbm2018StsPar::ElinkIdxToFebIdx( UInt_t uElink )
+{
+   if( uElink < kuNbElinksPerCrob )
+      return kiCrobMapElinkFebIdx[ uElink ];
+      else
+      {
+         LOG(WARNING) << "CbmMcbm2018StsPar::ElinkIdxToFebIdx => Index out of bound, "
+                      << "returning crazy value!"
+                      << FairLogger::endl;
+         return -1;
+      } // else of if( uElink < kuNbElinksPerCrob )
 }
 // -------------------------------------------------------------------------
 UInt_t CbmMcbm2018StsPar::ElinkIdxToAsicIdxFebA( UInt_t uElink )
@@ -249,8 +262,6 @@ Int_t CbmMcbm2018StsPar::GetFebModuleIdx( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_
                             << FairLogger::endl;
                return -1;
             } // else of if( uCrobIdx < kuNbCrobsPerDpb )
-
-         return 0 < fiCrobActiveFlag[ uDpbIdx * kuNbCrobsPerDpb + uCrobIdx ] ? kTRUE : kFALSE;
       } // if( uCrobIdx < kuNbCrobsPerDpb )
          else
          {
@@ -286,8 +297,6 @@ Int_t CbmMcbm2018StsPar::GetFebModuleSide( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt
                             << FairLogger::endl;
                return -1;
             } // else of if( uCrobIdx < kuNbCrobsPerDpb )
-
-         return 0 < fiCrobActiveFlag[ uDpbIdx * kuNbCrobsPerDpb + uCrobIdx ] ? kTRUE : kFALSE;
       } // if( uCrobIdx < kuNbCrobsPerDpb )
          else
          {

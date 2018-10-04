@@ -94,7 +94,7 @@ private:
    std::vector< std::vector< std::vector< Int_t > > > fviFebModuleIdx;   //! Idx of the STS module for each FEB, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ], -1 if inactive
    std::vector< std::vector< std::vector< Int_t > > > fviFebModuleSide;  //! STS module side for each FEB, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ], 0 = P, 1 = N, -1 if inactive
    std::vector< std::vector< std::vector< Int_t > > > fviFebType;  //! FEB type, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ], 0 = A, 1 = B, -1 if inactive
-   
+
    // Constants
    static const Int_t    kiMaxNbFlibLinks = 16;
    static const UInt_t   kuBytesPerMessage = 4;
@@ -193,8 +193,9 @@ private:
    std::vector<TH2*>      fhStsFebChanHitRateEvoLong;
    std::vector<TH2*>      fhStsFebAsicHitRateEvoLong;
    std::vector<TH1*>      fhStsFebHitRateEvoLong;
+   std::vector< std::vector<TH1*> > fhStsFebChanDtCoinc;
    std::vector< std::vector<TH2*> > fhStsFebChanCoinc;
-   
+
       /// Plots per module
    std::vector< TH2* > fhStsModulePNCoincChan;
    std::vector< TH2* > fhStsModulePNCoincAdc;
