@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 5)
+void run_sim(Int_t nEvents = 2)
 {
 
     TTree::SetMaxTreeSize(90000000000);
@@ -8,7 +8,7 @@ void run_sim(Int_t nEvents = 5)
     TString myName = "run_sim";  // this macro's name for screen output
     TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
 
-    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100.C";
+    TString geoSetupFile = srcDir + "/macro/rich/geosetup/rich_setup_sis100_18b.C";
 
     TString urqmdFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/8gev/centr/urqmd.auau.8gev.centr.00001.root";
     TString outDir = "/Users/slebedev/Development/cbm/data/sim/rich/reco/";

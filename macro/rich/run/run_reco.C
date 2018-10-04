@@ -96,9 +96,9 @@ void run_reco(Int_t nEvents = 5)
     run->AddTask(matchRecoToMc);
 
     //    // RICH reco QA
-    //    CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
-    //    richRecoQa->SetOutputDir(resultDir);
-    //    run->AddTask(richRecoQa);
+    CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
+    richRecoQa->SetOutputDir(resultDir);
+    run->AddTask(richRecoQa);
 
     //    // Reconstruction Qa
     CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();

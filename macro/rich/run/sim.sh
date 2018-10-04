@@ -4,6 +4,6 @@ cd $MY_BUILD_DIR
 cd -
 
 root -b -q "./run_sim.C($NEVENTS)"
-root -b -l "./run_digi.C($NEVENTS)"
+root -b -l -q "./run_digi.C($NEVENTS)"
 root -b -l "./run_reco.C($NEVENTS)"
 
