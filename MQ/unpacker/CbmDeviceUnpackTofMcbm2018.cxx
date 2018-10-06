@@ -46,6 +46,7 @@ CbmDeviceUnpackTofMcbm2018::CbmDeviceUnpackTofMcbm2018()
   , fNumTint(0)
   , fEventHeader()
   , fiReqMode(0)
+  , fiReqTint(0)
   , fiReqDigiAddr()
     //  , fAllowedChannels()
     //  , fChannelsToSend()
@@ -161,10 +162,11 @@ try
     for(int i=0; i<3; i++) fEventHeader[i]=0;
 
     fiReqMode = fConfig->GetValue<uint64_t>("ReqMode");
+    fiReqTint = fConfig->GetValue<uint64_t>("ReqTint");
     Int_t iReqDet=1;
     Int_t iNReq=0;
     
-    while(iReqDet>0 && iNReq<25){
+    while(iReqDet>0 && iNReq<36){   // FIXME, setup parameter hardwired!
       iReqDet = fConfig->GetValue<uint64_t>(Form("ReqDet%d",iNReq++));
       AddReqDigiAddr(iReqDet);
     } 
@@ -1104,7 +1106,7 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
   // 1 (finish), empty buffer without checking  
   // Steering variables
   double TSLENGTH    = 1.E6;
-  double fdMaxDeltaT = 100.; // in ns
+  double fdMaxDeltaT = (double) fiReqTint; // in ns
 
   LOG(DEBUG) << " Buffer size " << fBuffer->GetSize() 
 	     << ", DeltaT " << (fBuffer->GetTimeLast()-fBuffer->GetTimeFirst())/1.E9 << " s";

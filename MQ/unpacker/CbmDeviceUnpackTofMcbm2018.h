@@ -49,6 +49,7 @@ class CbmDeviceUnpackTofMcbm2018: public FairMQDevice
     uint64_t fNumTint;
     std::vector<int> fEventHeader;
     uint64_t fiReqMode;
+    uint64_t fiReqTint;
     std::vector< Int_t >  fiReqDigiAddr;
  
     std::vector<std::string> fAllowedChannels
