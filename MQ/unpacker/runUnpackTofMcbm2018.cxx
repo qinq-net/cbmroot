@@ -11,7 +11,7 @@ void addCustomOptions(bpo::options_description& options)
 {
   options.add_options() ("ReqMode", bpo::value<uint64_t>()->default_value(0), "Time intervall selector");
    
- int iNDet=25;
+ int iNDet=30;
   for (int i=0; i<iNDet; i++)
     options.add_options() (Form("ReqDet%d",i), bpo::value<uint64_t>()->default_value(0),Form("ReqDet%d",i));
   /*
