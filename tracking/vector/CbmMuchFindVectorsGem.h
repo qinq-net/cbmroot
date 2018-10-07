@@ -21,6 +21,7 @@
 
 class CbmMuchPixelHit;
 class CbmMuchTrack;
+class CbmMCDataArray;
 class TClonesArray;
 
 class CbmMuchFindVectorsGem : public FairTask
@@ -48,6 +49,9 @@ public:
   /** Accessors **/
   Int_t GetNofTracks()           { return fNofTracks; };
   Int_t GetNofStat() const       { return fgkStat; }
+
+  // Return info about absorbers
+  Int_t GetAbsorbers(Double_t zabs[9][2], Double_t *x0abs);
   
  private:
   // Some constants
@@ -58,12 +62,13 @@ public:
  private:
   CbmMuchGeoScheme* fGeoScheme;                 // Geometry scheme
   TClonesArray* fTrackArray;                    // Output array of CbmMuchVectors
+  TClonesArray* fVecPool;                       // Transient array of CbmMuchVectors (instead of heap)
   Int_t fNofTracks;                             // Number of tracks created
   TClonesArray* fHits;                          // Input array of CbmMuchHit
   TClonesArray* fClusters;                      // Input array of CbmMuchCluster
-  TClonesArray* fPoints;                        // Input array of CbmMuchPoint
   TClonesArray* fDigiMatches;                   // Input array of CbmMatch
   TClonesArray* fTrdVectors;                    // Input array of CbmMuchTrack
+  CbmMCDataArray* fPoints;                      // Input array of CbmMuchPoint
   Int_t fStatFirst;                             // First straw station No.
   std::multimap<Int_t,Int_t> fHitPl[fgkStat][fgkPlanes]; // hit indices on planes vs tube No
   std::multimap<Double_t,Int_t> fHitX[fgkStat][fgkPlanes]; // hit indices on planes vs X-coord.
@@ -92,15 +97,15 @@ public:
   void GetHits();
   Bool_t SelectHitId(const CbmMuchPixelHit *hit);
   Int_t GetDowns(Int_t ista, std::vector<std::pair<Double_t,Double_t> >& vecDowns);
-  void MakeVectors();
+  void MakeVectors(Int_t ista);
   Int_t GetTrdVectors(std::vector<std::pair<Double_t,Double_t> >& vecDowns);
   void ProcessPlane(Int_t ista, Int_t lay2, Int_t patt, Int_t flag);
   void AddVector(Int_t ista, Int_t patt, Double_t chi2, Double_t *pars); 
   void SetTrackId(CbmMuchTrack *vec);
   void FindLine(Int_t patt, Double_t *pars);
   Double_t FindChi2(Int_t ista, Int_t patt, Double_t *pars);
-  void CheckParams();
-  void RemoveClones();
+  void CheckParams(Int_t ista);
+  void RemoveClones(Int_t ista);
   void StoreVectors();
   Int_t CountBits(Int_t x); 
   void Refit(Int_t patt, Double_t &chi2, Double_t *pars, TMatrixDSym &cov);

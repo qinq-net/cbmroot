@@ -19,6 +19,7 @@
 #include <vector>
 
 class CbmMuchTrack;
+class CbmMCDataArray;
 
 class CbmTrdToTofVector : public FairTask
 {
@@ -54,7 +55,8 @@ public:
   Int_t fNofTracks;                               // Number of tracks created
   TClonesArray* fHits;                            // Input array of CbmTofHit
   TClonesArray* fHitMatches;                      // Input array of CbmMatch
-  TClonesArray* fPoints;                          // Input array of CbmTofPoint
+  //TClonesArray* fPoints;                          // Input array of CbmTofPoint
+  CbmMCDataArray* fPoints;                        // Input array of CbmTofPoint
   TClonesArray* fDigis;                           // Input array of CbmDigi
   TClonesArray* fDigiMatches;                     // Input array of CbmMatch
   TClonesArray* fTrdTracks;                       // Input array of 

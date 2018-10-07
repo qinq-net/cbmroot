@@ -24,6 +24,7 @@
 class CbmMuchTrack;
 //class TClonesArray;
 //class CbmTrdDigiPar;
+class CbmMCDataArray;
 
 class CbmTrdFindVectors : public FairTask
 {
@@ -114,8 +115,9 @@ public:
   Int_t fNofTracks;                               // Number of tracks created
   TClonesArray* fHits;                            // Input array of CbmTrdHit
   TClonesArray* fClusters;                        // Input array of CbmTrdCluster
-  TClonesArray* fPoints;                          // Input array of CbmTrdPoint
   TClonesArray* fDigiMatches;                     // Input array of 
+  //TClonesArray* fPoints;                          // Input array of CbmTrdPoint
+  CbmMCDataArray* fPoints;                        // Input array of CbmTrdPoint
   Double_t fXy[fgkPlanes][5];                     // hit float data
   Double_t fXyi[fgkPlanes][3];                    // hit int data
   Double_t fDz[fgkPlanes];                        // geometrical constants (Z-distances from layer 0)

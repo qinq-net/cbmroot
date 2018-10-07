@@ -5,6 +5,7 @@
 #include "CbmMuchMergeVectors.h"
 #include "CbmMuchDigiMatch.h"
 #include "CbmMuchFindHitsStraws.h"
+#include "CbmMuchFindVectorsGem.h"
 #include "CbmMuchModule.h"
 #include "CbmMuchPoint.h"
 #include "CbmMuchStation.h"
@@ -28,6 +29,7 @@
 #include <TMatrixD.h>
 #include <TMatrixFLazy.h>
 #include <TVectorD.h>
+#include <TROOT.h>
 
 #include <iostream>
 
@@ -59,6 +61,7 @@ CbmMuchMergeVectors::CbmMuchMergeVectors()
 {
   for (Int_t i = 0; i < 9; ++i) fCutChi2[i] = 40;
   fCutChi2[0] *= 2;
+  //fCutChi2[fgkStat-2] *= 2;
 }
 // -------------------------------------------------------------------------
 
@@ -130,35 +133,14 @@ InitStatus CbmMuchMergeVectors::Init()
   }
   //cout << endl;
 
-  // Get absorbers
-  Double_t dzAbs[9] = {0}, zAbs[9] = {0}, radlAbs[9] = {0}, xyzl[3] = {0}, xyzg[3] = {0};
-  Int_t nAbs = 0;
-  TGeoVolume *vol = 0x0;
-  for (Int_t i = 1; i < 10; ++i) {
-    //TString abso = "muchabsorber0";
-    TString abso = "absblock";
-    abso += i;
-    vol = gGeoManager->GetVolume(abso);
-    if (vol == 0x0) break;
-    TString path = "/cave_1/much_0/";
-    path += "absorber_1/";
-    path += abso;
-    path += "_";
-    path += i;
-    path += "/absorber_";
-    path += i;
-    gGeoManager->cd(path);
-    gGeoManager->LocalToMaster(xyzl,xyzg);
-    zAbs[nAbs] = xyzg[2]; 
-    dzAbs[nAbs] = ((TGeoBBox*) vol->GetShape())->GetDZ();
-    //radlAbs[nAbs] = vol->GetMaterial()->GetRadLen();
-    radlAbs[nAbs] = gGeoManager->GetCurrentVolume()->GetMaterial()->GetRadLen();
-    fZabs0[nAbs][0] = zAbs[nAbs] - dzAbs[nAbs];
-    fZabs0[nAbs][1] = zAbs[nAbs] + dzAbs[nAbs];
-    fX0abs[nAbs] = radlAbs[nAbs];
-    ++nAbs;
-  }
-      
+  // Get absorbers from GEM vector finder
+  FairTask *vecFinder = FairRun::Instance()->GetTask("VectorFinder");
+  vecFinder->GetListOfTasks()->ls();
+  CbmMuchFindVectorsGem *gemFinder = (CbmMuchFindVectorsGem*) vecFinder->GetListOfTasks()->FindObject("MuchFindVectorsGem");
+  if (gemFinder == NULL) Fatal("Init", "CbmMuchFindVectorsGem not run!");
+
+  Int_t nAbs = gemFinder->GetAbsorbers(fZabs0, fX0abs);
+  
   cout << " \n !!! MUCH Absorbers: " << nAbs << "\n Zbeg, Zend, X0:";
   for (Int_t j = 0; j < nAbs; ++j) cout << " " << std::setprecision(4) << fZabs0[j][0] << ", " << fZabs0[j][1] << ", " << fX0abs[j] << ";";
   cout << endl << endl;
@@ -222,7 +204,7 @@ void CbmMuchMergeVectors::Finish()
   fTrackArray->Clear();
 
   for (map<Int_t,TMatrixDSym*>::iterator it = fMatr.begin(); it != fMatr.end(); ++it)
-  delete it->second;
+    delete it->second;
 }
 // -------------------------------------------------------------------------
 
@@ -257,7 +239,7 @@ void CbmMuchMergeVectors::GetVectors()
   // Get STS tracks and extrapolate them to the first absorber face
   if (fTracksSts == NULL) return;
   Int_t nSts = fTracksSts->GetEntriesFast(), ista = 0;
-  FairTrackParam param;
+  FairTrackParam param, parRear;
   Double_t pMin = 0.25;
   //Double_t pMin = 0.7; //AZ
 
@@ -268,8 +250,10 @@ void CbmMuchMergeVectors::GetVectors()
     //if (ppp < pMin + 0.1) continue; // too low momentum
     if (ppp < pMin + 0.05) continue; // too low momentum
     CbmKFTrack kfTrack = CbmKFTrack(*tr, 0);
-    if (kfTrack.Extrapolate(fZabs0[ista][0])) continue; // extrapolation error
+    if (kfTrack.Extrapolate(fZabs0[ista][0])) continue; // extrapolation error to absorber front face
     kfTrack.GetTrackParam(param);
+    if (kfTrack.Extrapolate(fZabs0[ista][1])) continue; // extrapolation error to absorber rear face
+    kfTrack.GetTrackParam(parRear);
     Double_t r2 = param.GetX() * param.GetX() + param.GetY() * param.GetY();
     if (TMath::Sqrt(r2) > fRmax[0]) continue; // outside outer acceptance
     // Take into account track angle
@@ -282,6 +266,8 @@ void CbmMuchMergeVectors::GetVectors()
     vec->SetParamFirst(&param);
     vec->SetPreviousTrackId(i); // store STS track index
     vec->SetUniqueID(9); // station "No. 9"
+    parRear.SetQp(TMath::Abs(parRear.GetQp()));
+    vec->SetParamLast(&parRear);
     //CbmTrackMatch *trMatch = (CbmTrackMatch*) fTrStsMatch->UncheckedAt(i);
     //vec->SetFlag(trMatch->GetMCTrackId());
     if (fTrStsMatch) {
@@ -301,12 +287,22 @@ void CbmMuchMergeVectors::GetVectors()
   for (it = fVectors[ista].begin(); it != fVectors[ista].end(); ++it) {
     CbmMuchTrack *tr = it->second;
     FairTrackParam parFirst = *tr->GetParamFirst();
+    FairTrackParam parLast = *tr->GetParamLast();
+    parFirst = parLast;
+    TMatrixFSym cov(5);
+    parFirst.CovMatrix(cov);
+    /*
     Double_t zbeg = parFirst.GetZ();
     Double_t dz = fZabs0[0][1] - zbeg;
     // Propagate params
-    parFirst.SetX(parFirst.GetX() + dz * parFirst.GetTx());
-    parFirst.SetY(parFirst.GetY() + dz * parFirst.GetTy());
-    parFirst.SetZ(parFirst.GetZ() + dz);
+    //parFirst.SetX(parFirst.GetX() + dz * parFirst.GetTx());
+    //parFirst.SetY(parFirst.GetY() + dz * parFirst.GetTy());
+    //parFirst.SetZ(parFirst.GetZ() + dz);
+    parFirst.SetX(parLast.GetX());
+    parFirst.SetY(parLast.GetY());
+    parFirst.SetZ(parLast.GetZ());
+    parFirst.SetTx(parLast.GetTx());
+    parFirst.SetTy(parLast.GetTy());
     TMatrixFSym cov(5);
     parFirst.CovMatrix(cov);
     cov(4,4) = 1.0;
@@ -315,6 +311,7 @@ void CbmMuchMergeVectors::GetVectors()
     TMatrixF cf(cov,TMatrixF::kMult,ff);
     TMatrixF fcf(ff,TMatrixF::kTransposeMult,cf);
     cov.SetMatrixArray(fcf.GetMatrixArray());
+    */
     PassAbsorber(0, fZabs0[0], fX0abs[0], parFirst, cov, 1);
     parFirst.SetCovMatrix(cov); 
     //tr->SetParamLast(&parFirst);
@@ -372,16 +369,19 @@ void CbmMuchMergeVectors::MatchVectors()
   // Match vectors (CbmMuchTracks) from 2 stations going upstream -
   // remove vectors without matching
 
-  const Double_t window = 7.0; //10.0; //
+  const Double_t window0 = 7.0; //10.0; //
   TMatrixF matr = TMatrixF(5,5);
   TMatrixF unit(TMatrixF::kUnit,matr);
   map<Int_t,CbmMuchTrack*>::iterator it, it1;
   multimap<Double_t,pair<Int_t,CbmMuchTrack*> > xMap[2];
-  multimap<Double_t,pair<Int_t,CbmMuchTrack*> >::iterator mit, mit1;
+  multimap<Double_t,pair<Int_t,CbmMuchTrack*> >::iterator mit, mit1, mitb, mite;
   map<CbmMuchTrack*,Int_t> matchOK[2];
   TMatrixFSym cov(5);
 
-  for (Int_t iabs = 2; iabs >= 0; --iabs) { // last absorber has been checked already 
+  //AZ for (Int_t iabs = 2; iabs >= 0; --iabs) { // last absorber has been checked already 
+  for (Int_t iabs = 3; iabs >= 0; --iabs) { // last absorber has been checked already 
+    Double_t window = window0;
+    if (iabs == fgkStat - 2) window = window0 * 2.0;
     //Int_t ibeg = fTrackArray->GetEntriesFast();
     xMap[0].clear();
     xMap[1].clear();
@@ -435,12 +435,12 @@ void CbmMuchMergeVectors::MatchVectors()
       TMatrixF p1(5, 1, pars1);
       TMatrixF wp1(w1, TMatrixF::kTransposeMult, p1);
       Double_t x0 = parOk.GetX(), y0 = parOk.GetY();
+      mitb = xMap[1].lower_bound(x0-window); // lower X-window edge
+      mite = xMap[1].upper_bound(x0+window); // upper X-window edge
       
-      for (mit1 = xMap[1].begin(); mit1 != xMap[1].end(); ++mit1) {
+      for (mit1 = mitb; mit1 != mite; ++mit1) {
 	CbmMuchTrack *tr2 = mit1->second.second;
 	FairTrackParam par2 = *tr2->GetParamLast();
-	if (par2.GetX() - x0 < -window) continue;
-	if (par2.GetX() - x0 > window) break;
 	if (par2.GetY() - y0 < -window) continue;
 	if (par2.GetY() - y0 > window) continue;
 	TMatrixFSym w2(5);
@@ -487,6 +487,7 @@ void CbmMuchMergeVectors::MatchVectors()
       for (it = fVectors[ista].begin(); it != fVectors[ista].end(); ++it) {
 	CbmMuchTrack *tr = it->second;
 	if (matchOK[ist][tr] > 0) continue;
+	if (ista == 0) delete tr;
 	fVectors[ista].erase(it);
       }
       cout << " MergeVectors: vectors after matching in station " << ista << ": " << fVectors[ista].size() << endl;
@@ -500,7 +501,7 @@ void CbmMuchMergeVectors::MergeVectors()
 {
   // Match vectors (CbmMuchTracks) from 2 stations
 
-  const Double_t window = 5.0; //10.0; //
+  const Double_t window0 = 5.0; //10.0; //
   TMatrixF matr = TMatrixF(5,5);
   TMatrixF unit(TMatrixF::kUnit,matr);
   map<Int_t,CbmMuchTrack*>::iterator it, it1;
@@ -567,7 +568,9 @@ void CbmMuchMergeVectors::MergeVectors()
     Int_t ista0 = iabs - 1 + 1, ista1 = iabs + 1; 
     //if (iabs == 1 && ista0 == 1) --ista0; // !!! take extrapolated STS tracks - skip first station
     map<Int_t,CbmMuchTrack*> mapMerged;
-
+    Double_t window = window0;
+    if (iabs == 3) window *= 2;
+    
     for (mit = xMap[0].begin(); mit != xMap[0].end(); ++mit) {
       //Int_t imerged0 = (fVectors[ista0].begin()->first < 0) ? 1: 0;
       //if (iabs && !imerged0) break; //!!! no track merging occured for previous absorber
@@ -642,13 +645,14 @@ void CbmMuchMergeVectors::MergeVectors()
     RemoveClones(ibeg, -1, mapMerged);
     //if (iabs == 3) RemoveClones(ibeg, -1, mapMerged); // !!! remove clones
     //else RemoveClones(ibeg, 1, mapMerged); // !!! do not remove clones
-
+    if (mapMerged.size() == 0) break; // no merging with STS tracks !!!
+    
     // Add merged tracks
     for (it = mapMerged.begin(); it != mapMerged.end(); ++it) {
       fVectors[ista1][it->first] = it->second;
     }
     
-  } // for (Int_t iabs = 3; iabs > 0;
+  } // for (Int_t iabs = 0; iabs <= 3;
 }
 // -------------------------------------------------------------------------
 
@@ -718,11 +722,12 @@ void CbmMuchMergeVectors::PassAbsorber(Int_t ist, Double_t *zabs, Double_t x0, F
   //covMS *= (angle * angle / x0);
   covMS *= (angle * angle * dxx0);
   cov += covMS;
-
+  if (pFlag == 0) return; // no momentum update
+  
   // Momentum update due to energy loss
   Double_t pLoss[6] = {0.25, 0.25, 0.25, 0.37, 0, 0};
   Double_t ppp = 1. / parFirst.GetQp();
-  ppp -= (pLoss[ist/2] * TMath::Sqrt(aaa));
+  ppp -= (pLoss[ist/2] * TMath::Sqrt(aaa)); // ppp is always non-negative
   parFirst.SetQp(1./ppp);
 }
 // -------------------------------------------------------------------------
@@ -828,8 +833,8 @@ void CbmMuchMergeVectors::RemoveClones(Int_t ibeg, Int_t iabs, map<Int_t,CbmMuch
 	      if (clones == 0) ++clones;
 	      vec->SetPreviousTrackId(clones);
 	    }
-	    gLogger->Info(MESSAGE_ORIGIN, "CbmMuchMergeVectors:RemoveClones: qual1 %f, qual2 %f, trID1 %i, trID2 %i", 
-			  it->first,it1->first,tr1->GetFlag(),tr2->GetFlag());
+	    gLogger->Info(MESSAGE_ORIGIN, "CbmMuchMergeVectors:RemoveClones: qual1 %f, qual2 %f, trID1 %i, trID2 %i, ista %i, p1 %f, p2 %f", 
+			  it->first,it1->first,tr1->GetFlag(),tr2->GetFlag(),iv1,1/tr1->GetParamFirst()->GetQp(),1/tr2->GetParamFirst()->GetQp());
 	    fTrackArray->RemoveAt(it1->second);
 	    over = kTRUE;
 	    break;

@@ -108,12 +108,14 @@ void CbmMuchToTrdVectors::GetMuchVectors()
   Int_t nMuch = fMuchTracks->GetEntriesFast();
   fXmap.clear();
   
+  /*
   if (fZ0 < 0) {
     // Get TRD first layer position
     CbmMuchTrack *tr = (CbmMuchTrack*) fTrdTracks->UncheckedAt(0);
     fZ0 = tr->GetParamFirst()->GetZ();
   }
-    
+  */
+  
   TMatrixF matr = TMatrixF(5,5);
   TMatrixF unit(TMatrixF::kUnit,matr);
 
@@ -122,8 +124,14 @@ void CbmMuchToTrdVectors::GetMuchVectors()
     Int_t nvecTr = tr->GetNofHits();
     if (nvecTr < nMinSeg) continue; // track is too short
 
+    if (fZ0 < 0) {
+      // Get MUCH first layer position of the last station
+      fZ0 = tr->GetParamFirst()->GetZ();
+    }
+
     // Propagate to TRD
     FairTrackParam parFirst = *tr->GetParamFirst();
+    /*
     Double_t zbeg = parFirst.GetZ();
     Double_t dz = fZ0 - zbeg;
     // Propagate params
@@ -145,6 +153,7 @@ void CbmMuchToTrdVectors::GetMuchVectors()
     //cout << " Cov1: " << dz << " " << cov(0,0) << " " << cov(1,1) << endl;
     cov.Invert(); // weight matrix
     parFirst.SetCovMatrix(cov); 
+    */
     tr->SetParamLast(&parFirst);
     fXmap.insert(pair<Double_t,Int_t>(parFirst.GetX(),itr));
   }
@@ -156,22 +165,54 @@ void CbmMuchToTrdVectors::MergeVectors()
 {
   // Merge MUCH and TRD tracks
 
-  const Double_t window = 25.0, chi2max = 24;
+  //const Double_t window = 25.0, chi2max = 24;
+  const Double_t window = 35.0, chi2max = 24;
   multimap<Double_t,Int_t>::iterator mit, mitb, mite;
   FairTrackParam parOk;
   
+  TMatrixF matr = TMatrixF(5,5);
+  TMatrixF unit(TMatrixF::kUnit,matr);
+
   Int_t nTrd = fTrdTracks->GetEntriesFast();
 
   for (Int_t itr = 0; itr < nTrd; ++itr) {
     CbmMuchTrack *tr = (CbmMuchTrack*) fTrdTracks->UncheckedAt(itr);
-    const FairTrackParam *par1 = tr->GetParamFirst();
-    Double_t xv = par1->GetX();
-    Double_t yv = par1->GetY();
+    //const FairTrackParam *par1 = tr->GetParamFirst();
+    FairTrackParam par1 = *tr->GetParamFirst();
+    // AZ
+    Double_t zbeg = par1.GetZ();
+    Double_t dz = fZ0 - zbeg;
+    // Propagate params
+    par1.SetX(par1.GetX() + dz * par1.GetTx());
+    par1.SetY(par1.GetY() + dz * par1.GetTy());
+    par1.SetZ(par1.GetZ() + dz);
+    TMatrixFSym cov(5);
+    par1.CovMatrix(cov);
+    cov(4,4) = 1.0;
+    //cov.Print();
+    TMatrixF ff = unit;
+    //ff.Print();
+    //ff(0,2) = ff(1,3) = dz;
+    ff(2,0) = ff(3,1) = dz;
+    //cout << " Cov: " << dz << " " << cov(0,0) << " " << cov(1,1) << endl;
+    TMatrixF cf(cov,TMatrixF::kMult,ff);
+    TMatrixF fcf(ff,TMatrixF::kTransposeMult,cf);
+    cov.SetMatrixArray(fcf.GetMatrixArray());
+    //cout << " Cov1: " << dz << " " << cov(0,0) << " " << cov(1,1) << endl;
+    cov.Invert(); // weight matrix
+    par1.SetCovMatrix(cov); 
+    //AZ
+    //Double_t xv = par1->GetX();
+    //Double_t yv = par1->GetY();
+    Double_t xv = par1.GetX();
+    Double_t yv = par1.GetY();
     mitb = fXmap.lower_bound(xv-window); // lower X-window edge
     mite = fXmap.upper_bound(xv+window); // upper X-window edge
     TMatrixFSym w1(5);
-    par1->CovMatrix(w1);
-    Float_t pars1[5] = {(Float_t)par1->GetX(), (Float_t)par1->GetY(), (Float_t)par1->GetTx(), (Float_t)par1->GetTy(), 1.0};
+    //par1->CovMatrix(w1);
+    //Float_t pars1[5] = {(Float_t)par1->GetX(), (Float_t)par1->GetY(), (Float_t)par1->GetTx(), (Float_t)par1->GetTy(), 1.0};
+    par1.CovMatrix(w1);
+    Float_t pars1[5] = {(Float_t)par1.GetX(), (Float_t)par1.GetY(), (Float_t)par1.GetTx(), (Float_t)par1.GetTy(), 1.0};
     TMatrixF p1(5, 1, pars1);
     TMatrixF wp1(w1, TMatrixF::kTransposeMult, p1);
     //Double_t x0 = parOk.GetX(), y0 = parOk.GetY();

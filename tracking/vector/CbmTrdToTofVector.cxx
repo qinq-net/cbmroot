@@ -11,6 +11,8 @@
 #include "CbmTofHit.h"
 #include "CbmTofPoint.h"
 #include "CbmMuchTrack.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCDataManager.h"
 
 #include "FairRootManager.h"
 
@@ -70,7 +72,11 @@ InitStatus CbmTrdToTofVector::Init()
   //} 
   fHits = static_cast<TClonesArray*> (ioman->GetObject("TofHit"));
   fHitMatches = static_cast<TClonesArray*> (ioman->GetObject("TofDigiMatch"));
-  fPoints = static_cast<TClonesArray*> (ioman->GetObject("TofPoint"));
+  //fPoints = static_cast<TClonesArray*> (ioman->GetObject("TofPoint"));
+  CbmMCDataManager* mcManager = (CbmMCDataManager*) ioman->GetObject("MCDataManager");  
+  if ( NULL == mcManager )
+    LOG(FATAL) << GetName() << ": No CbmMCDataManager!" << FairLogger::endl;
+  fPoints = mcManager->InitBranch("TofPoint");
   fDigis = static_cast<TClonesArray*> (ioman->GetObject("TofDigi"));
   fDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("TofDigiMatchPoints"));
   fTrdTracks = static_cast<TClonesArray*> (ioman->GetObject("TrdVector"));
@@ -170,12 +176,14 @@ void CbmTrdToTofVector::GetHits()
     for (Int_t il = 0; il < nlinks; ++il) {
       const CbmLink link = match->GetLink(il);
       CbmTofDigi *digi = (CbmTofDigi*) fDigis->UncheckedAt(link.GetIndex());
-      CbmMatch *digiM = (CbmMatch*) fDigiMatches->UncheckedAt(link.GetIndex());
+      //AZ CbmMatch *digiM = (CbmMatch*) fDigiMatches->UncheckedAt(link.GetIndex());
+      CbmMatch *digiM = digi->GetMatch();
       Int_t npoints = digiM->GetNofLinks();
     
       for (Int_t ip = 0; ip < npoints; ++ip) {
 	const CbmLink link1 = digiM->GetLink(ip);
-	CbmTofPoint *point = (CbmTofPoint*) fPoints->UncheckedAt(link1.GetIndex());
+	//CbmTofPoint *point = (CbmTofPoint*) fPoints->UncheckedAt(link1.GetIndex());
+	CbmTofPoint* point = (CbmTofPoint*) fPoints->Get(link1.GetFile(),link1.GetEntry(),link1.GetIndex());
 	fHitIds[i].insert(point->GetTrackID());
 	if (fHitTime.find(i) == fHitTime.end()) fHitTime[i] = point->GetTime();
 	else fHitTime[i] = TMath::Min (point->GetTime(),fHitTime[i]);
@@ -228,7 +236,8 @@ void CbmTrdToTofVector::MatchTofToTrd()
 {
   // Match TOF hits to TRD vectors
 
-  const Double_t window = 30.0;
+  //const Double_t window = 30.0;
+  const Double_t window = 50.0;
   multimap<Double_t,Int_t>::iterator mitb, mite, mit1;
   multimap<Double_t,pair<Int_t,Int_t> > rads;
   map<pair<Int_t,Int_t>,pair<Double_t,Double_t> > dtdl;
@@ -425,7 +434,7 @@ void CbmTrdToTofVector::RemoveClones()
       fVectors.erase(fVectors.begin()+iv); 
     }
   }
-  cout << " Vectors after clones removed: " << nvec << " " << fVectors.size() << endl;
+  cout << " CbmTrdToTofVector:: Vectors after clones removed: " << nvec << " " << fVectors.size() << endl;
 
 }
 // -------------------------------------------------------------------------

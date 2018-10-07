@@ -11,6 +11,7 @@
 #include "CbmTrdFindVectors.h"
 #include "CbmTrdToTofVector.h"
 #include "CbmMuchToTrdVectors.h"
+//#include "CbmMuchToTofVectors.h"
 
 #include <iostream>
 
@@ -52,13 +53,20 @@ InitStatus CbmVectorFinder::Init()
     Add(muchVecGem);
     FairTask *muchMerge = new CbmMuchMergeVectors();
     Add(muchMerge);
+    if (CbmSetup::Instance()->IsActive(kTrd)) {
+      // MUCH-to-TRD merging
+      FairTask *muchTrd = new CbmMuchToTrdVectors();
+      Add(muchTrd);
+    }    
+    /*
+    if (CbmSetup::Instance()->IsActive(kTof)) {
+      // MUCH-to-TOF merging
+      FairTask *muchTof = new CbmMuchToTofVectors();
+      Add(muchTof);
+    }
+    */
   }
 
-  if (CbmSetup::Instance()->IsActive(kTrd)) {
-    // MUCH-to-TRD merging
-    FairTask *muchTrd = new CbmMuchToTrdVectors();
-    Add(muchTrd);
-  }    
 }
 // -------------------------------------------------------------------------
 

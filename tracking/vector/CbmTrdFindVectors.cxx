@@ -13,6 +13,8 @@
 #include "CbmTrdHit.h"
 #include "CbmTrdPoint.h"
 #include "CbmMuchTrack.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCDataManager.h"
 
 //#include "FairRunAna.h"
 //#include "FairRuntimeDb.h"
@@ -69,7 +71,11 @@ InitStatus CbmTrdFindVectors::Init()
   //} 
   fHits = static_cast<TClonesArray*> (ioman->GetObject("TrdHit"));
   fClusters = static_cast<TClonesArray*> (ioman->GetObject("TrdCluster"));
-  fPoints = static_cast<TClonesArray*> (ioman->GetObject("TrdPoint"));
+  //fPoints = static_cast<TClonesArray*> (ioman->GetObject("TrdPoint"));
+  CbmMCDataManager* mcManager = (CbmMCDataManager*) ioman->GetObject("MCDataManager");  
+  if ( NULL == mcManager )
+    LOG(FATAL) << GetName() << ": No CbmMCDataManager!" << FairLogger::endl;
+  fPoints = mcManager->InitBranch("TrdPoint");
   fDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("TrdDigiMatch"));
 
   TString tag;
@@ -681,8 +687,9 @@ void CbmTrdFindVectors::SetTrackId(CbmMuchTrack *vec)
       Int_t np = digiM->GetNofLinks();
 
       for (Int_t ip = 0; ip < np; ++ip) {
-	//CbmMuchPoint* point = (CbmMuchPoint*) fPoints->UncheckedAt(digiM->GetLink(0).GetIndex());
-	CbmTrdPoint* point = (CbmTrdPoint*) fPoints->UncheckedAt(digiM->GetLink(ip).GetIndex());
+	CbmLink link = digiM->GetLink(ip);
+	//CbmTrdPoint* point = (CbmTrdPoint*) fPoints->UncheckedAt(digiM->GetLink(ip).GetIndex());
+	CbmTrdPoint* point = (CbmTrdPoint*) fPoints->Get(link.GetFile(),link.GetEntry(),link.GetIndex());
 	id = point->GetTrackID();
 	//if (np > 1) cout << ip << " " << id << endl;
 	if (ids.find(id) == ids.end()) ids.insert(pair<Int_t,Int_t>(id,1));

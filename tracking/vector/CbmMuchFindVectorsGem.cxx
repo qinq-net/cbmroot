@@ -12,6 +12,8 @@
 #include "CbmMuchStation.h"
 #include "CbmMuchPixelHit.h"
 #include "CbmMuchTrack.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCDataManager.h"
 #include "CbmSetup.h"
 
 #include "FairEventHeader.h"
@@ -42,6 +44,7 @@ using std::endl;
 CbmMuchFindVectorsGem::CbmMuchFindVectorsGem()
   : FairTask("MuchFindVectorsGem"),
     fGeoScheme(CbmMuchGeoScheme::Instance()),
+    fVecPool(NULL),
     fTrackArray(NULL),
     fNofTracks(0),
     fHits(NULL),
@@ -54,7 +57,7 @@ CbmMuchFindVectorsGem::CbmMuchFindVectorsGem()
 {
   for (Int_t i = 0; i < 9; ++i) fCutChi2[i] = 12; // chi2/ndf = 6 for 3 hits
   //for (Int_t i = 0; i < 9; ++i) fCutChi2[i] = 20; 
-  fCutChi2[0] *= 2;
+  //AZ fCutChi2[0] *= 2;
 }
 // -------------------------------------------------------------------------
 
@@ -62,10 +65,8 @@ CbmMuchFindVectorsGem::CbmMuchFindVectorsGem()
 CbmMuchFindVectorsGem::~CbmMuchFindVectorsGem()
 {
   fTrackArray->Delete();
-  for (Int_t i = 0; i < fgkStat; ++i) {
-    Int_t nVecs = fVectors[i].size();
-    for (Int_t j = 0; j < nVecs; ++j) delete fVectors[i][j];
-  }
+  fVecPool->Delete();
+
   for (map<Int_t,TDecompLU*>::iterator it = fLus.begin(); it != fLus.end(); ++it)
     delete it->second;
 }
@@ -88,6 +89,7 @@ InitStatus CbmMuchFindVectorsGem::Init()
     // MuchVector already exists (from CbmMuchFindVector task)
     //Fatal("Init", "CbmMuchFindVectors should go after !!!");
   }
+  fVecPool = new TClonesArray("CbmMuchTrack",1000);
 
   /*
   CbmMuchFindHitsStraws *hitFinder = (CbmMuchFindHitsStraws*) 
@@ -98,10 +100,14 @@ InitStatus CbmMuchFindVectorsGem::Init()
 
   fHits = static_cast<TClonesArray*> (ioman->GetObject("MuchPixelHit"));
   fClusters = static_cast<TClonesArray*> (ioman->GetObject("MuchCluster"));
-  fPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
   fDigiMatches = static_cast<TClonesArray*> (ioman->GetObject("MuchDigiMatch"));
   fTrdVectors = static_cast<TClonesArray*> (ioman->GetObject("TrdVector"));
-
+  CbmMCDataManager* mcManager = (CbmMCDataManager*) ioman->GetObject("MCDataManager");  
+  if ( NULL == mcManager )
+    LOG(FATAL) << GetName() << ": No CbmMCDataManager!" << FairLogger::endl;
+  //fPoints = static_cast<TClonesArray*> (ioman->GetObject("MuchPoint"));
+  fPoints = mcManager->InitBranch("MuchPoint");
+  
   // Find first GEM station and get some geo constants
   Int_t nSt = fGeoScheme->GetNStations();
   for (Int_t i = 0; i < nSt; ++i) {
@@ -142,30 +148,77 @@ InitStatus CbmMuchFindVectorsGem::Init()
   //cout << endl;
 
   // Get absorbers
+  TString tag, fileName;
+  CbmSetup::Instance()->GetGeoTag(kMuch, tag);
+  //CbmSetup::Instance()->GetGeoFileName(kMuch, fileName);
+  cout << " ******* MUCH tag ******** " << tag << endl;
+  tag.Prepend("much_");
+
   Double_t dzAbs[9] = {0}, zAbs[9] = {0}, radlAbs[9] = {0}, xyzl[3] = {0}, xyzg[3] = {0};
   Int_t nAbs = 0;
-  TGeoVolume *vol = 0x0;
-  for (Int_t i = 1; i < 10; ++i) {
-    TString abso = "muchabsorber0";
-    abso += i;
-    vol = gGeoManager->GetVolume(abso);
-    if (vol == 0x0) break;
-    TString path = "/cave_1/much_0/";
-    path += abso;
-    path += "_0";
-    gGeoManager->cd(path);
-    gGeoManager->LocalToMaster(xyzl,xyzg);
-    zAbs[nAbs] = xyzg[2]; 
-    cout << vol->GetName() << " " << vol->GetShape()->GetName() << " " << ((TGeoBBox*)vol->GetShape())->GetDZ() << endl;
-    //dzAbs[nAbs] = ((TGeoCone*) vol->GetShape())->GetDz();
-    dzAbs[nAbs] = ((TGeoBBox*) vol->GetShape())->GetDZ();
-    radlAbs[nAbs] = vol->GetMaterial()->GetRadLen();
-    fZabs0[nAbs][0] = zAbs[nAbs] - dzAbs[nAbs];
-    fZabs0[nAbs][1] = zAbs[nAbs] + dzAbs[nAbs];
-    fX0abs[nAbs] = radlAbs[nAbs];
-    ++nAbs;
+  TGeoVolume *vol = NULL;
+  TGeoNode* much = NULL;
+
+  // Go to MUCH 
+  gGeoManager->CdTop();
+  TGeoNode* cave = gGeoManager->GetCurrentNode();
+  for (Int_t iNode = 0; iNode < cave->GetNdaughters(); iNode++) {
+    TGeoNode* node = cave->GetDaughter(iNode);
+    TString name = node->GetName();
+    if ( name.Contains("much") ) {
+      much = node;
+      gGeoManager->CdDown(iNode);
+      break;
+    }
   }
-      
+
+  TGeoVolume *muchV = gGeoManager->GetVolume(tag);
+  Int_t ndaught = muchV->GetNdaughters();
+
+  // Loop over daughters
+  for (Int_t i = 0; i < ndaught; ++i) {
+    vol = muchV->GetNode(i)->GetVolume();
+    if (!(TString(vol->GetName()).Contains("absorber"))) continue;
+    gGeoManager->CdDown(i);
+    nAbs = vol->GetNdaughters();
+    //cout << " aaaaa " << nAbs << endl;
+
+    for (Int_t iabs = 0; iabs < nAbs; ++iabs) {
+      TGeoVolume *block = vol->GetNode(iabs)->GetVolume();
+      gGeoManager->CdDown(iabs);
+      TGeoVolume *abso = block->GetNode(0)->GetVolume();
+      gGeoManager->CdDown(0);
+      //cout << gGeoManager->GetPath() << endl;
+      gGeoManager->LocalToMaster(xyzl,xyzg);
+      zAbs[iabs] = xyzg[2]; 
+      //cout << abso->GetName() << " " << abso->GetShape()->GetName() << " "
+      //   << ((TGeoBBox*)abso->GetShape())->GetDZ() << " " << xyzg[2] << endl;
+      dzAbs[iabs] = ((TGeoBBox*) abso->GetShape())->GetDZ();
+      radlAbs[iabs] = abso->GetMaterial()->GetRadLen();
+      fZabs0[iabs][0] = zAbs[iabs] - dzAbs[iabs];
+      fZabs0[iabs][1] = zAbs[iabs] + dzAbs[iabs];
+      fX0abs[iabs] = radlAbs[iabs];
+      gGeoManager->CdUp();
+      gGeoManager->CdUp();
+    }
+  }
+
+  // Combine 2 first absorbers into 1
+  for (Int_t i = 1; i < nAbs; ++i) {
+    if (i == 1) fZabs0[i-1][1] = fZabs0[i][1];
+    else {
+      fZabs0[i-1][0] = fZabs0[i][0];
+      fZabs0[i-1][1] = fZabs0[i][1];
+      fX0abs[i-1] = fX0abs[i];
+    }
+  }
+  --nAbs;
+  fX0abs[nAbs] = 1.e9; // flag 
+  
+  cout << " \n !!! MUCH Absorbers: " << nAbs << "\n Zbeg, Zend, X0:";
+  for (Int_t j = 0; j < nAbs; ++j) cout << " " << std::setprecision(4) << fZabs0[j][0] << ", " << fZabs0[j][1] << ", " << fX0abs[j] << ";";
+  cout << endl << endl;
+  
   // Station dependent errors
   //Double_t errs[9] = {0.4, 0.6, 1.2, 1.7, 0};
   Double_t errs[9] = {0.6, 0.8, 1.2, 1.7, 0};
@@ -201,14 +254,12 @@ void CbmMuchFindVectorsGem::Exec(
 {
 
   //fTrackArray->Delete();
-  FairTask *vecFinder = (FairTask*) FairRun::Instance()->GetTask("MuchFindVectors");
-  if (vecFinder == NULL) fTrackArray->Delete();
-
+  fVecPool->Delete();
+  FairTask *strawHitFinder = FairRun::Instance()->GetTask("CbmMuchFindHitsStraws");
+  if (strawHitFinder == NULL) fTrackArray->Delete();
+  
   for (Int_t i = 0; i < fgkStat; ++i) {
-    Int_t nVecs = fVectors[i].size();
-    for (Int_t j = 0; j < nVecs; ++j) delete fVectors[i][j];
     fVectors[i].clear();
-    //fVectorsHigh[i].clear();
     fSecVec[i].clear();
   }
 
@@ -217,18 +268,20 @@ void CbmMuchFindVectorsGem::Exec(
   // Get hits
   GetHits();
 
-  // Build vectors
-  MakeVectors();
+  for (Int_t ista = fgkStat - 1; ista >= 0; --ista) {
+    // Build vectors
+    MakeVectors(ista);
 
-  // Remove vectors with wrong orientation
-  // (using empirical cuts for omega muons at 8 GeV) 
-  CheckParams();
+    // Remove vectors with wrong orientation
+    // (using empirical cuts for omega muons at 8 GeV) 
+    CheckParams(ista);
 
-  // Match vectors from 2 stations
-  //MatchVectors();
+    // Match vectors from 2 stations
+    //MatchVectors();
 
-  // Remove clones
-  RemoveClones();
+    // Remove clones
+    RemoveClones(ista);
+  }
 
   // Store vectors
   StoreVectors();
@@ -239,11 +292,9 @@ void CbmMuchFindVectorsGem::Exec(
 // -----   Public method Finish   ------------------------------------------
 void CbmMuchFindVectorsGem::Finish()
 {
-  fTrackArray->Clear();
-  for (Int_t i = 0; i < fgkStat; ++i) {
-    Int_t nVecs = fVectors[i].size();
-    for (Int_t j = 0; j < nVecs; ++j) delete fVectors[i][j];
-  }
+  fTrackArray->Delete();
+  fVecPool->Delete();
+
   for (map<Int_t,TDecompLU*>::iterator it = fLus.begin(); it != fLus.end(); ++it)
     delete it->second;
 }
@@ -270,8 +321,9 @@ void CbmMuchFindVectorsGem::ComputeMatrix()
 
     // Check if the pattern is valid: all doublets are active 
     nDouble = 0;
-    for (Int_t j = 0; j < fgkPlanes; j += 2) if (ipat & (3 << j)) ++nDouble; else break;
-    if (nDouble < fgkPlanes / 2) continue;
+    //AZ for (Int_t j = 0; j < fgkPlanes; j += 2) if (ipat & (3 << j)) ++nDouble; else break;
+    for (Int_t j = 0; j < fgkPlanes; j += 2) if (ipat & (3 << j)) ++nDouble;
+    if (nDouble < fgkPlanes / 2 - 1) continue; // allow 2-hit vectors
     ++nTot;
 
     for (Int_t j = 0; j < fgkPlanes; ++j) onoff[j] = (ipat & (1 << j));
@@ -385,7 +437,11 @@ Bool_t CbmMuchFindVectorsGem::SelectHitId(const CbmMuchPixelHit *hit)
       CbmMuchDigiMatch* digiM = (CbmMuchDigiMatch*) fDigiMatches->UncheckedAt(hit->GetRefId());
       Int_t np = digiM->GetNofLinks();
       for (Int_t ip = 0; ip < np; ++ip) {
-	CbmMuchPoint* point = (CbmMuchPoint*) fPoints->UncheckedAt(digiM->GetLink(ip).GetIndex());
+	//CbmMuchPoint* point = (CbmMuchPoint*) fPoints->UncheckedAt(digiM->GetLink(ip).GetIndex());
+	CbmLink link = digiM->GetLink(ip);
+	//CbmMuchPoint* point = (CbmMuchPoint*)
+	//fPoints->Get(0,digiM->GetLink(ip).GetEntry(),digiM->GetLink(ip).GetIndex());
+	CbmMuchPoint* point = (CbmMuchPoint*) fPoints->Get(0,link.GetEntry(),link.GetIndex());
 	id = point->GetTrackID();
 	if (id == idSel[i]) return kTRUE;
       }
@@ -422,17 +478,18 @@ Int_t CbmMuchFindVectorsGem::GetDowns(Int_t ista, vector<pair<Double_t,Double_t>
 // -------------------------------------------------------------------------
 
 // -----   Private method MakeVectors   ------------------------------------
-void CbmMuchFindVectorsGem::MakeVectors()
+void CbmMuchFindVectorsGem::MakeVectors(Int_t ista0)
 {
   // Make vectors for stations - either all or using windows defined
   // by vectors from the next (downstream) station
  
   const Double_t window0 = 5.0; //7.0; //10.0;
-
+  //const Double_t window0 = 7.5; //10.0;
+  Int_t nvec = 0;
+  
   //for (Int_t ista = 0; ista < fgkStat; ++ista) {
-  for (Int_t ista = fgkStat-1; ista >= 0; --ista) {
-    Int_t nvec = fVectors[ista].size();
-    for (Int_t j = 0; j < nvec; ++j) delete fVectors[ista][j];
+  //for (Int_t ista = fgkStat-1; ista >= 0; --ista) {
+  for (Int_t ista = ista0; ista >= ista0; --ista) {
     fVectors[ista].clear();
     CbmMuchPixelHit *hit = NULL;
 
@@ -445,7 +502,8 @@ void CbmMuchFindVectorsGem::MakeVectors()
     //nvec = GetDowns(ista, vecDowns);
     multimap<Double_t,Int_t>::iterator mit, mitb, mite, mit1;
     Double_t window = window0;
-
+    //if (ista == 0) window /= 1.5;
+    
     //if (ista == fgkStat - 1) { // no constraints for st. 4
     if (ista >= fgkStat - 2) { // no constraints for st. 3 and 4
       // All-GEM configuration
@@ -455,26 +513,41 @@ void CbmMuchFindVectorsGem::MakeVectors()
 	nvec = GetTrdVectors(vecDowns);
       } else {
 	// No TRD present
-	nvec = 1;
+	nvec = 2; // account for missing last layer
+	vecDowns.push_back(pair<Double_t,Double_t>(0.0,0.0));
 	vecDowns.push_back(pair<Double_t,Double_t>(0.0,0.0));
 	window = 999.0;
       }
     } else nvec = GetDowns(ista, vecDowns);
-      
+    Int_t indsta0 = 1 + ista * fgkPlanes;
+    
     for (Int_t iv = 0; iv < nvec; ++iv) {
+      if (ista > 1 && iv == 1) --lay2; // take last but one layer
       Double_t xv = vecDowns[iv].first, yv = vecDowns[iv].second;
       mitb = fHitX[ista][lay2].lower_bound(xv-window); // lower X-window edge
       mite = fHitX[ista][lay2].upper_bound(xv+window); // upper X-window edge
+      /*
+      if (mitb == mite && ista > 1) { 
+	// If no hit in the last layer of the last or last but one stations - take last but one layer
+	--lay2;
+	mitb = fHitX[ista][lay2].lower_bound(xv-window); // lower X-window edge
+	mite = fHitX[ista][lay2].upper_bound(xv+window); // upper X-window edge
+      }
+      */
       mit1 = mite;
       Int_t inWin = 0;
+      Double_t ywin1 = yv - window, ywin2 = yv + window;
       
       for (mit = mitb; mit != mite; ++mit) {
-	if (mit1 != mite) fHitX[ista][lay2].erase(mit1); // remove processed hit	
-	mit1 = mite;
+	if (mit1 != mite) {
+	  fHitX[ista][lay2].erase(mit1); // remove processed hit	
+	  mit1 = mite;
+	}
 	Int_t indx = mit->second;
 	hit = (CbmMuchPixelHit*) fHits->UncheckedAt(indx);
-	if (hit->GetY() < yv-window || hit->GetY() > yv+window) continue;
-	Int_t lay = hit->GetPlaneId() - 1 - ista * fgkPlanes;
+	if (hit->GetY() < ywin1 || hit->GetY() > ywin2) continue;
+	//Int_t lay = hit->GetPlaneId() - 1 - ista * fgkPlanes;
+	Int_t lay = hit->GetPlaneId() - indsta0;
 	fXy[lay][0] = hit->GetX();
 	fXy[lay][1] = hit->GetY();
 	//fXy[lay][2] = hit->GetDx();
@@ -493,21 +566,22 @@ void CbmMuchFindVectorsGem::MakeVectors()
 	inWin = 1;
       }
 
-      //if (inWin == 0 && ista == fgkStat - 2) {
-      if (0) {
+      if (inWin == 0 && ista == 1) {
+      //if (0) {
 	// No hits inside window - increase window size and repeat (for one station only)
-	window = window0 * 3.0;
+	window = window0 * 1.5;
 	mitb = fHitX[ista][lay2].lower_bound(xv-window); // lower X-window edge
 	mite = fHitX[ista][lay2].upper_bound(xv+window); // upper X-window edge
 	mit1 = mite;
       
 	for (mit = mitb; mit != mite; ++mit) {
-	  if (mit1 != mite) fHitX[ista][lay2].erase(mit1); // remove processed hit	
+	  //AZ if (mit1 != mite) fHitX[ista][lay2].erase(mit1); // remove processed hit	
+	  if (mit1 != mite) { fHitX[ista][lay2].erase(mit1); break; } // remove processed hit	
 	  mit1 = mite;
 	  Int_t indx = mit->second;
 	  hit = (CbmMuchPixelHit*) fHits->UncheckedAt(indx);
 	  if (hit->GetY() < yv-window || hit->GetY() > yv+window) continue;
-	  Int_t lay = hit->GetPlaneId() - 1 - ista * fgkPlanes;
+	  Int_t lay = hit->GetPlaneId() - indsta0;
 	  fXy[lay][0] = hit->GetX();
 	  fXy[lay][1] = hit->GetY();
 	  //fXy[lay][2] = hit->GetDx();
@@ -559,7 +633,10 @@ void CbmMuchFindVectorsGem::ProcessPlane(Int_t ista, Int_t lay2, Int_t patt, Int
 
   //const Double_t cut[2] = {0.8, 0.8}; // !!! empirical !!!
   //const Double_t cut[2] = {0.5, 0.5}; // !!! empirical !!!
-  const Double_t cut[2][2] = {{0.5, 0.5},{0.6,0.6}}; // !!! empirical !!!
+  //AZ const Double_t cut[2][2] = {{0.5, 0.5},{0.6,0.6}}; // !!! empirical !!!
+  //const Double_t cut[2][2] = {{0.5,0.6}, {0.5,0.6}}; // !!! empirical !!!
+  //const Double_t cut[2][2] = {{0.45,0.55}, {0.45,0.55}}; // !!! empirical !!!
+  const Double_t cut[2][2] = {{0.4,0.5}, {0.4,0.5}}; // !!! empirical !!!
 
   Double_t pars[4] = {0.0};
   Int_t nhits = fHitPl[ista][lay2].size();
@@ -567,6 +644,7 @@ void CbmMuchFindVectorsGem::ProcessPlane(Int_t ista, Int_t lay2, Int_t patt, Int
   Int_t sec0 = (patt & (1 << lay2*2+3)) ? fXyi[lay2*2+3][0] : fXyi[lay2*2+2][0];
   multimap<Int_t,Int_t>::iterator it;
   pair<multimap<Int_t,Int_t>::iterator,multimap<Int_t,Int_t>::iterator> ret;
+  Int_t indsta0 = 1 + ista * fgkPlanes;
   
   for (Int_t dsec = -1; dsec < 2; ++dsec) {
     Int_t isec = sec0 + dsec;
@@ -578,7 +656,8 @@ void CbmMuchFindVectorsGem::ProcessPlane(Int_t ista, Int_t lay2, Int_t patt, Int
       Int_t indx = it->second, sector = it->first;
 
       CbmMuchPixelHit *hit = (CbmMuchPixelHit*) fHits->UncheckedAt(indx);
-      Int_t lay = hit->GetPlaneId() - 1 - ista * fgkPlanes;
+      //Int_t lay = hit->GetPlaneId() - 1 - ista * fgkPlanes;
+      Int_t lay = hit->GetPlaneId() - indsta0;
       fXy[lay][0] = hit->GetX();
       fXy[lay][1] = hit->GetY();
       //fXy[lay][2] = hit->GetDx();
@@ -588,16 +667,15 @@ void CbmMuchFindVectorsGem::ProcessPlane(Int_t ista, Int_t lay2, Int_t patt, Int
       fXy[lay][4] = hit->GetZ();
 
       // Check slopes
-      //Int_t lay0 = 1; - ??? strange
-      //if (patt % 2) lay0 = 0; - ??? strange
-      Int_t lay0 = fgkPlanes - 1;
-      if (!(patt & (1 << lay0))) --lay0;;
+      //AZ Int_t lay0 = fgkPlanes - 1;
+      //AZ if (!(patt & (1 << lay0))) --lay0;;
+      Int_t lay0 = TString::Itoa(patt,2).Length() - 1;
       Double_t dx = fXy[lay][0] - fXy[lay0][0];
       Double_t dz = fXy[lay][4] - fXy[lay0][4];
-      Double_t dTx = TMath::Abs(dx/dz) - TMath::Abs(fXy[lay][0]/fXy[lay][4]);
+      Double_t dTx = TMath::Abs(dx/dz - fXy[lay][0]/fXy[lay][4]);
       if (TMath::Abs(dTx) > cut[0][TMath::Min(ista,1)]) continue;
       Double_t dy = fXy[lay][1] - fXy[lay0][1];
-      Double_t dTy = TMath::Abs(dy/dz) - TMath::Abs(fXy[lay][1]/fXy[lay][4]);
+      Double_t dTy = TMath::Abs(dy/dz - fXy[lay][1]/fXy[lay][4]);
       if (TMath::Abs(dTy) > cut[1][TMath::Min(ista,1)]) continue;
 
       fXyi[lay][0] = sector;
@@ -644,7 +722,9 @@ void CbmMuchFindVectorsGem::AddVector(Int_t ista, Int_t patt, Double_t chi2, Dou
   cov.ResizeTo(5,5);
   cov(4,4) = 1.0;
 
-  CbmMuchTrack *track = new CbmMuchTrack();
+  Int_t npool = fVecPool->GetEntriesFast();
+  //CbmMuchTrack *track = new ((*fVecPool)[npool]) CbmMuchTrack();
+  CbmMuchTrack *track = (CbmMuchTrack*)fVecPool->ConstructedAt(npool);
   track->SetChiSq(chi2);
   FairTrackParam par(pars[0], pars[1], fZ0[ista], pars[2], pars[3], 0.0, cov);
   track->SetParamFirst(&par);
@@ -682,7 +762,11 @@ void CbmMuchFindVectorsGem::SetTrackId(CbmMuchTrack *vec)
       Int_t np = digiM->GetNofLinks();
       for (Int_t ip = 0; ip < np; ++ip) {
 	//CbmMuchPoint* point = (CbmMuchPoint*) fPoints->UncheckedAt(digiM->GetLink(0).GetIndex());
-	CbmMuchPoint* point = (CbmMuchPoint*) fPoints->UncheckedAt(digiM->GetLink(ip).GetIndex());
+	//cout << nhits << " " << ih << " " << j << " " << nDigis << " " << ip << " " << np << " " << fPoints->GetEntriesFast() << " " << fHits->GetEntriesFast() << endl;
+	CbmLink link = digiM->GetLink(ip);
+	//cout << nhits << " " << ih << " " << j << " " << nDigis << " " << ip << " " << np << " " << fPoints->Size(link.GetFile(),link.GetEntry()) << " " << fHits->GetEntriesFast() << endl;
+	//CbmMuchPoint* point = (CbmMuchPoint*) fPoints->UncheckedAt(digiM->GetLink(ip).GetIndex());
+	CbmMuchPoint* point = (CbmMuchPoint*) fPoints->Get(0,link.GetEntry(),link.GetIndex());
 	id = point->GetTrackID();
 	//if (np > 1) cout << ip << " " << id << endl;
 	if (ids.find(id) == ids.end()) ids.insert(pair<Int_t,Int_t>(id,1));
@@ -756,14 +840,16 @@ Double_t CbmMuchFindVectorsGem::FindChi2(Int_t ista, Int_t patt, Double_t *pars)
 // -------------------------------------------------------------------------
 
 // -----   Private method CheckParams   ------------------------------------
-void CbmMuchFindVectorsGem::CheckParams()
+void CbmMuchFindVectorsGem::CheckParams(Int_t ista0)
 {
   // Remove vectors with wrong orientation
   // using empirical cuts for omega muons at 8 Gev
 
-  const Double_t cut[2] = {0.6, 0.6}; // !!! empirical !!!
+  //AZ const Double_t cut[2] = {0.6, 0.6}; // !!! empirical !!!
+  const Double_t cut[2] = {0.7, 0.7}; // !!! empirical !!!
 
-  for (Int_t ista = 0; ista < fgkStat; ++ista) {
+  //AZ for (Int_t ista = 0; ista < fgkStat; ++ista) {
+  for (Int_t ista = ista0; ista <= ista0; ++ista) {
     Int_t nvec = fVectors[ista].size();
 
     for (Int_t iv = 0; iv < nvec; ++iv) {
@@ -779,10 +865,8 @@ void CbmMuchFindVectorsGem::CheckParams()
 
     for (Int_t iv = nvec-1; iv >= 0; --iv) {
       CbmMuchTrack *vec = fVectors[ista][iv];
-      if (vec->GetChiSq() < 0) {
-	delete fVectors[ista][iv]; 
+      if (vec->GetChiSq() < 0) 
 	fVectors[ista].erase(fVectors[ista].begin()+iv); 
-      }
     }
     cout << " Vectors after parameter check in station " << ista << ": " << nvec << " " << fVectors[ista].size() << endl;
 
@@ -879,7 +963,7 @@ void CbmMuchFindVectorsGem::ProcessSingleHigh(Int_t ista, Int_t plane, Int_t pat
 // -------------------------------------------------------------------------
 
 // -----   Private method RemoveClones   -----------------------------------
-void CbmMuchFindVectorsGem::RemoveClones()
+void CbmMuchFindVectorsGem::RemoveClones(Int_t ista0)
 {
   // Remove clone vectors (having at least 1 the same hit)
  
@@ -888,7 +972,8 @@ void CbmMuchFindVectorsGem::RemoveClones()
   pair<multimap<Int_t,CbmMuchTrack*>::iterator,multimap<Int_t,CbmMuchTrack*>::iterator> ret;
   multimap<Int_t,CbmMuchTrack*>::iterator itsec;
 
-  for (Int_t ista = 0; ista < fgkStat; ++ista) {
+  //AZ for (Int_t ista = 0; ista < fgkStat; ++ista) {
+  for (Int_t ista = ista0; ista <= ista0; ++ista) {
     // Process according to sector number of the first hit in vector
     Int_t nvec = fVectors[ista].size();
 
@@ -952,10 +1037,8 @@ void CbmMuchFindVectorsGem::RemoveClones()
 
     for (Int_t iv = nvec-1; iv >= 0; --iv) {
       CbmMuchTrack *vec = fVectors[ista][iv];
-      if (vec->GetChiSq() < 0) {
-	delete fVectors[ista][iv]; 
+      if (vec->GetChiSq() < 0) 
 	fVectors[ista].erase(fVectors[ista].begin()+iv); 
-      }
     }
     cout << " Vectors after clones removed: " << nvec << " " << fVectors[ista].size() << endl;
 
@@ -972,7 +1055,7 @@ void CbmMuchFindVectorsGem::StoreVectors()
   Int_t nHitsTot = fHits->GetEntriesFast();
 
   for (Int_t ist = 0; ist < fgkStat; ++ist) {
-    set<Int_t> usedHits;
+    //set<Int_t> usedHits;
     Int_t nvec = fVectors[ist].size();
 
     for (Int_t iv = 0; iv < nvec; ++iv) {
@@ -1218,6 +1301,24 @@ void CbmMuchFindVectorsGem::MatchVectors()
   cout << " Vectors after matching: " << fVectors[0].size() << " " << fVectors[1].size() << endl;
 
 }
+// -------------------------------------------------------------------------
+
+// ------   Public method GetAbsorbers   -----------------------------------
+Int_t CbmMuchFindVectorsGem::GetAbsorbers(Double_t zabs[9][2], Double_t *x0abs)
+{
+  // Get information about absorbers
+
+  Int_t nabs = 0;
+
+  while (fX0abs[nabs] < 1.e+8) {
+    zabs[nabs][0] = fZabs0[nabs][0]; 
+    zabs[nabs][1] = fZabs0[nabs][1]; 
+    x0abs[nabs] = fX0abs[nabs]; 
+    ++nabs;
+  }
+  return nabs;
+}
+
 // -------------------------------------------------------------------------
 
 ClassImp(CbmMuchFindVectorsGem);
