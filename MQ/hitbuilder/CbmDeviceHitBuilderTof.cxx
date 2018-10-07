@@ -213,9 +213,12 @@ CbmDeviceHitBuilderTof::~CbmDeviceHitBuilderTof()
 {
   if (NULL !=fOutRootFile )
   { 
+    LOG(INFO) << "Close root file " << fOutRootFile->GetName();
     fOutRootFile->cd();
     rootMgr->LastFill();
-    rootMgr->Write();
+    //rootMgr->Write();
+    //WriteHistograms();
+    fOutRootFile->Write();
     fOutRootFile->Close();
   }
 }
@@ -2727,16 +2730,18 @@ Bool_t   CbmDeviceHitBuilderTof::FillHistos()
     Int_t iBeamAddRefMul=0;
 
     if(0<iNSel){ // check software triggers
-
+      
       LOG(DEBUG) <<"FillHistos() for "<<iNSel<<" triggers"
 		 <<", Dut "<<fDutId<<fDutSm<<fDutRpc<<Form(", 0x%08x",fDutAddr) 
 		 <<", Sel "<<fSelId<<fSelSm<<fSelRpc<<Form(", 0x%08x",fSelAddr)
 		 <<", Sel2 "<<fSel2Id<<fSel2Sm<<fSel2Rpc<<Form(", 0x%08x",fSel2Addr) 
 	;
+      /*
       LOG(DEBUG) <<"FillHistos: Muls: "
 		 <<fviClusterMul[fDutId][fDutSm][fDutRpc]
 		 <<", "<<fviClusterMul[fSelId][fSelSm][fSelRpc]
 	;
+      */
       // monitor multiplicities 
       Int_t iNbDet=fDigiBdfPar->GetNbDet();
       for(Int_t iDetIndx=0; iDetIndx<iNbDet; iDetIndx++){

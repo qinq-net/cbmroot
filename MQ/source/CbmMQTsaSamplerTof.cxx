@@ -218,8 +218,9 @@ bool CbmMQTsaSamplerTof::OpenNextFile()
 
 bool CbmMQTsaSamplerTof::IsChannelNameAllowed(std::string channelName)
 {
-
+  LOG(INFO) << "Number of allowed channels: " << fAllowedChannels.size();
   for(auto const &entry : fAllowedChannels) {
+    LOG(INFO) << "Inspect " << entry;
     std::size_t pos1 = channelName.find(entry);
     if (pos1!=std::string::npos) {
       const vector<std::string>::const_iterator pos =
@@ -235,6 +236,23 @@ bool CbmMQTsaSamplerTof::IsChannelNameAllowed(std::string channelName)
   }
   LOG(INFO) << "Channel name " << channelName
             << " not found in list of allowed channel names.";
+  LOG(ERROR) << "Stop device.";
+  return false;
+}
+
+bool CbmMQTsaSamplerTof::IsChannelUp(std::string channelName)
+{
+  for(auto const &entry : fChannels) {
+    LOG(INFO) << "Inspect " << entry.first;
+    std::size_t pos1 = channelName.find(entry.first);
+    if (pos1!=std::string::npos) {
+      LOG(INFO) << "Channel name " << channelName
+		<< " found in list of defined channel names ";
+      return true;
+    }
+  }
+  LOG(INFO) << "Channel name " << channelName
+            << " not found in list of defined channel names.";
   LOG(ERROR) << "Stop device.";
   return false;
 }
@@ -328,16 +346,21 @@ bool CbmMQTsaSamplerTof::ConditionalRun()
   //if(!SendTs()) return false;
       return true;
     } else {
+      LOG(INFO) << " Number of requested time slices reached, exiting ";
       if ( false == OpenNextFile() ) {
         CalcRuntime();
+	SendSysCmdStop();
         return false;
       } else {
-        return true;
+        CalcRuntime();
+	SendSysCmdStop();
+        return false;
       }
     }
   } else {
     if ( false == OpenNextFile() ) {
       CalcRuntime();
+      SendSysCmdStop();
       return false;
     } else {
       return true;
@@ -546,3 +569,15 @@ bool CbmMQTsaSamplerTof::CheckTimeslice(const fles::Timeslice& ts)
 
   return true;
 }
+
+void CbmMQTsaSamplerTof::SendSysCmdStop()
+{
+  if(IsChannelUp("syscmd")){
+    LOG(INFO) << "stop consumers";
+    FairMQMessagePtr pub(NewSimpleMessage("STOP"));
+    if (Send(pub, "sys-pub") < 0) {
+      LOG(ERROR) << "Sending STOP message failed";
+    }
+  }
+}
+

@@ -55,11 +55,13 @@ class CbmMQTsaSamplerTof : public FairMQDevice
     bool SendData(const fles::StorableTimeslice& component);
     void CalcRuntime();
     bool IsChannelNameAllowed(std::string);
+    bool IsChannelUp(std::string);
     bool CreateAndSendComponent(const fles::Timeslice&, int);
     bool SendData(const fles::StorableTimeslice&, int);
     bool CreateAndCombineComponents(const fles::Timeslice&, int);
     bool AppendData(const fles::StorableTimeslice&, int);
     bool SendTs();
+    void SendSysCmdStop();
 
     fles::TimesliceSource* fSource; //!
     std::chrono::steady_clock::time_point fTime;
@@ -77,9 +79,8 @@ class CbmMQTsaSamplerTof : public FairMQDevice
     //       error prone. Find a better solution
 
     std::vector<std::string> fAllowedChannels
-          = {"stscomponent","trdcomponent","tofcomponent"};
+      = {"stscomponent","trdcomponent","tofcomponent","syscmd","syscmdin"};
     std::vector<int> fSysId = {16, 64, 96};
-
 
     std::vector<int> fComponentsToSend = {0, 0, 0};
     std::vector<std::vector<std::string>> fChannelsToSend = { {},{},{} };

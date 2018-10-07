@@ -143,7 +143,7 @@ try
     // properly connected. For the time beeing this is done with a
     // nameing convention. It is not avoided that someone sends other
     // data on this channel.
-  //logger::SetLogLevel("INFO");
+    //logger::SetLogLevel("INFO");
 
     int noChannel = fChannels.size();
     LOG(INFO) << "Number of defined channels: " << noChannel;
@@ -166,12 +166,15 @@ try
     Int_t iReqDet=1;
     Int_t iNReq=0;
     
-    while(iReqDet>0 && iNReq<36){   // FIXME, setup parameter hardwired!
+    while(iNReq<36){   // FIXME, setup parameter hardwired!
       iReqDet = fConfig->GetValue<uint64_t>(Form("ReqDet%d",iNReq++));
+      if (iReqDet == 0) break;
       AddReqDigiAddr(iReqDet);
     } 
       
-    LOG(INFO)<<"ReqMode "<<fiReqMode<<" with "<<fiReqDigiAddr.size()<<" detectors ";
+    LOG(INFO)<<"ReqMode "<<fiReqMode
+	     <<" in " << fiReqTint << " ns "
+	     <<" with "<<fiReqDigiAddr.size()<<" detectors ";
 } catch (InitTaskError& e) {
  LOG(ERROR) << e.what();
  ChangeState(ERROR_FOUND);
@@ -180,6 +183,7 @@ try
 bool CbmDeviceUnpackTofMcbm2018::IsChannelNameAllowed(std::string channelName)
 {
   for(auto const &entry : fAllowedChannels) {
+    LOG(INFO) << "Inspect " << entry;
     std::size_t pos1 = channelName.find(entry);
     if (pos1!=std::string::npos) {
       const vector<std::string>::const_iterator pos =
@@ -741,6 +745,7 @@ Bool_t CbmDeviceUnpackTofMcbm2018::DoUnpack(const fles::Timeslice& ts, size_t co
 }
 
 static Int_t iErrorMess=0;
+static Int_t iWarnMess=0;
 
 
 void CbmDeviceUnpackTofMcbm2018::FillHitInfo( gdpbv100::Message mess )
@@ -756,13 +761,13 @@ void CbmDeviceUnpackTofMcbm2018::FillHitInfo( gdpbv100::Message mess )
       ulCurEpochGdpbGet4 --;
       else ulCurEpochGdpbGet4 = gdpbv100::kuEpochCounterSz; // Catch epoch cycle!
 
-   UInt_t uChannelNr = fuGet4Id * fuNrOfChannelsPerGet4 + uChannel;
+   UInt_t uChannelNr      = fuGet4Id * fuNrOfChannelsPerGet4 + uChannel;
    UInt_t uChannelNrInFee = (fuGet4Id % fuNrOfGet4PerFee) * fuNrOfChannelsPerGet4 + uChannel;
-   UInt_t uFeeNr   = (fuGet4Id / fuNrOfGet4PerFee);
-   UInt_t uFeeNrInSys = fuGdpbNr * fuNrOfFeePerGdpb + uFeeNr;
-   UInt_t uGbtxNr      = (uFeeNr / kuNbFeePerGbtx);
-   UInt_t uFeeInGbtx  = (uFeeNr % kuNbFeePerGbtx);
-   UInt_t uGbtxNrInSys = fuGdpbNr * kuNbGbtxPerGdpb + uGbtxNr;
+   UInt_t uFeeNr          = (fuGet4Id / fuNrOfGet4PerFee);
+   UInt_t uFeeNrInSys     = fuGdpbNr * fuNrOfFeePerGdpb + uFeeNr;
+   UInt_t uGbtxNr         = (uFeeNr / kuNbFeePerGbtx);
+   UInt_t uFeeInGbtx      = (uFeeNr % kuNbFeePerGbtx);
+   UInt_t uGbtxNrInSys    = fuGdpbNr * kuNbGbtxPerGdpb + uGbtxNr;
    UInt_t uRemappedChannelNr = fuGdpbNr * fuNrOfChannelsPerGdpb + 
                                uFeeNr * fuNrOfChannelsPerFee 
                              + fvuGet4ToPadi[ uChannelNrInFee ];
@@ -790,7 +795,7 @@ void CbmDeviceUnpackTofMcbm2018::FillHitInfo( gdpbv100::Message mess )
 	if(iErrorMess++ < 10000)
 	{
 	  LOG(ERROR) << "Invalid mapping index " << uRemappedChannelNr
-		     << " VS " << fviRpcChUId.size()
+		     << " vs " << fviRpcChUId.size()
 		     << ", from GdpbNr " << fuGdpbNr
 		     << ", Get4 " << fuGet4Id
 		     << ", Ch " << uChannel
@@ -809,9 +814,23 @@ void CbmDeviceUnpackTofMcbm2018::FillHitInfo( gdpbv100::Message mess )
 
       // UInt_t uChanUId = fUnpackPar->GetChannelToDetUIdMap( uRemappedChannelNr );
       UInt_t uChanUId =  fviRpcChUId[ uRemappedChannelNr ];
-      if( 0 == uChanUId )
-         return;   // Hit not mapped to digi
-
+      if( 0 == uChanUId ) {
+	if(iWarnMess++ < 10000)
+	{
+	  LOG(WARN) << "Invalid ChanUId for " << uRemappedChannelNr
+		    << ", GdpbNr " << fuGdpbNr
+		    << ", Get4 "   << fuGet4Id
+		    << ", Ch "     << uChannel
+		    << ", ChNr "   << uChannelNr
+		    << ", ChNrIF " << uChannelNrInFee
+		    << ", FiS "    << uFeeNrInSys
+                  ; 
+	} else {
+	  LOG(WARN) << "Fix your mapping problem!";
+	  FairMQStateMachine::ChangeState(PAUSE);
+	}   
+	return;   // Hit not mapped to digi
+      }
       if( (uChanUId & DetMask) != 0x00005006 )  dHitTime += fdTShiftRef;
       fdLastDigiTime = dHitTime;
 
@@ -1136,7 +1155,7 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 
     std::vector<CbmTofDigiExp*> vdigi;
     Int_t nDigi=0;
-    const Int_t AddrMask=0x0001FFFF;
+    const Int_t AddrMask=0x000FFFFF;
     Bool_t bOut=kFALSE;
 
     while(digi) { // build digi array
@@ -1150,7 +1169,7 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 	}
       //if(bOut) LOG(INFO)<<Form("Found 0x%08x, Req 0x%08x ", digi->GetAddress(), fiReqDigiAddr);
       digi = (CbmTofDigiExp*)fBuffer->GetNextData(dTEnd);
-    }
+    } // end while
 
     LOG(DEBUG) << nDigi << " digis associated to dTEnd = " <<dTEnd<<":";
     //for(UInt_t iDigi=0; iDigi<nDigi; iDigi++) LOG(DEBUG)<<Form(" 0x%08x",vdigi[iDigi]->GetAddress());
@@ -1326,7 +1345,7 @@ bool CbmDeviceUnpackTofMcbm2018::SendDigis( std::vector<CbmTofDigiExp*> vdigi, i
 	    << vTofDigi.data() << ", "<<&vTofDigi; 
   */
   fNumTint++;
-  //  if(fNumTint==10) FairMQStateMachine::ChangeState(PAUSE); //sleep(10000); // Stop for debugging ... 
+  //if(fNumTint==100) FairMQStateMachine::ChangeState(PAUSE); //sleep(10000); // Stop for debugging ... 
   /*
   LOG(INFO) << "Send message " << fNumTint << " with a size of "
             << msg->GetSize();
