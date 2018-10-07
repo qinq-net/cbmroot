@@ -13,5 +13,6 @@
 #pragma link C++ class  CbmMuchMergeVectors+;
 //#pragma link C++ class  CbmMuchMergeVectorsQA+;
 #pragma link C++ class  CbmMuchToTrdVectors+;
+#pragma link C++ class  CbmMuchToTofVectors+;
 
 #endif

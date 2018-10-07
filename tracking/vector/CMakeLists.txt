@@ -58,6 +58,7 @@ CbmMuchFindVectorsGem.cxx
 CbmMuchMergeVectors.cxx
 #CbmMuchMergeVectorsQA.cxx
 CbmMuchToTrdVectors.cxx
+CbmMuchToTofVectors.cxx
 )
 
 #AZ - debug
