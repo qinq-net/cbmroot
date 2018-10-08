@@ -229,8 +229,10 @@ bool CbmMQTsaSamplerTof::IsChannelNameAllowed(std::string channelName)
       LOG(INFO) << "Found " << entry << " in " << channelName;
       LOG(INFO) << "Channel name " << channelName
               << " found in list of allowed channel names at position " << idx;
-      fComponentsToSend[idx]++;
-      fChannelsToSend[idx].push_back(channelName);
+      if(idx<3) {  //FIXME, hardwired constant!!!
+	fComponentsToSend[idx]++;
+	fChannelsToSend[idx].push_back(channelName);
+      }
       return true;
     }
   }
@@ -573,11 +575,23 @@ bool CbmMQTsaSamplerTof::CheckTimeslice(const fles::Timeslice& ts)
 void CbmMQTsaSamplerTof::SendSysCmdStop()
 {
   if(IsChannelUp("syscmd")){
-    LOG(INFO) << "stop consumers";
+    LOG(INFO) << "stop subscribers in 10 sec";
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+
     FairMQMessagePtr pub(NewSimpleMessage("STOP"));
-    if (Send(pub, "sys-pub") < 0) {
+    if (Send(pub, "syscmd") < 0) {
       LOG(ERROR) << "Sending STOP message failed";
     }
+
+    LOG(INFO) << "task reset subscribers in 1 sec";
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    FairMQMessagePtr task_reset(NewSimpleMessage("TASK_RESET"));
+
+    if (Send(task_reset, "syscmd") < 0) {
+      LOG(ERROR) << "Sending Task_Reset  message failed";
+    }
+
   }
+  //  FairMQStateMachine::ChangeState(STOP);
 }
 

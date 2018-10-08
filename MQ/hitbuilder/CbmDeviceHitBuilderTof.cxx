@@ -52,6 +52,8 @@
 
 #include <string>
 #include <iomanip>
+#include <thread> // this_thread::sleep_for
+#include <chrono>
 
 #include <stdexcept>
 struct InitTaskError : std::runtime_error { using std::runtime_error::runtime_error; };
@@ -211,16 +213,7 @@ CbmDeviceHitBuilderTof::CbmDeviceHitBuilderTof()
 
 CbmDeviceHitBuilderTof::~CbmDeviceHitBuilderTof()
 {
-  if (NULL !=fOutRootFile )
-  { 
-    LOG(INFO) << "Close root file " << fOutRootFile->GetName();
-    fOutRootFile->cd();
-    rootMgr->LastFill();
-    //rootMgr->Write();
-    //WriteHistograms();
-    fOutRootFile->Write();
-    fOutRootFile->Close();
-  }
+
 }
 
 void CbmDeviceHitBuilderTof::InitTask()
@@ -239,7 +232,8 @@ try
     for(auto const &entry : fChannels) {
       LOG(INFO) << "Channel name: " << entry.first;
       if (!IsChannelNameAllowed(entry.first)) throw InitTaskError("Channel name does not match.");
-      OnData(entry.first, &CbmDeviceHitBuilderTof::HandleData);
+      if(entry.first!="syscmd") OnData(entry.first, &CbmDeviceHitBuilderTof::HandleData);
+      else                      OnData(entry.first, &CbmDeviceHitBuilderTof::HandleMessage);
     }
     InitWorkspace();
     InitContainers();
@@ -404,7 +398,7 @@ Bool_t CbmDeviceHitBuilderTof::InitContainers()
 	    iGeoVersion = fGeoHandler->Init(isSimulation);
 	    if( k14a > iGeoVersion ) {
 	      LOG(ERROR)<<"Incompatible geometry !!!"; 
-	      FairMQStateMachine::ChangeState(STOP);
+	      ChangeState(STOP);
 	    }
 	    fTofId = new CbmTofDetectorId_v14a();
 	    gGeoManager->Export("HitBuilder.geo.root");
@@ -426,7 +420,7 @@ Bool_t CbmDeviceHitBuilderTof::InitContainers()
   
   CreateHistograms();
 
-  if (!InitCalibParameter())  FairMQStateMachine::ChangeState(PAUSE); // for debugging 
+  if (!InitCalibParameter()) ChangeState(PAUSE); // for debugging 
     
   fDutAddr =CbmTofAddress::GetUniqueAddress(fDutSm,fDutRpc,0,0,fDutId);
   fSelAddr =CbmTofAddress::GetUniqueAddress(fSelSm,fSelRpc,0,0,fSelId);
@@ -539,7 +533,7 @@ bool CbmDeviceHitBuilderTof::HandleData(FairMQParts& parts, int /*index*/)
        WriteHistograms();
        fOutRootFile->Close();
        LOG(INFO) << "Stopping device after "<<fdEvent<<" events, closing root output file. ";
-       FairMQStateMachine::ChangeState(STOP);
+       ChangeState(STOP);
      } 
   }  
   if(!FillHistos())      return kTRUE;   // event not selected for histogramming, skip sending it 
@@ -547,6 +541,43 @@ bool CbmDeviceHitBuilderTof::HandleData(FairMQParts& parts, int /*index*/)
   if(!SendAll())         return kFALSE;
   
   return kTRUE;
+}
+
+/************************************************************************************/
+
+bool CbmDeviceHitBuilderTof::HandleMessage(FairMQMessagePtr& msg, int /*index*/)
+{
+  const char *cmd = (char *)(msg->GetData());
+  const char cmda[4]={*cmd};
+  LOG(INFO) << "Handle message " << cmd <<", " << cmd[0];
+  LOG(INFO) << "Current State: " <<  FairMQStateMachine::GetCurrentStateName();
+
+  // only one implemented so far "Stop"
+  if (NULL !=fOutRootFile )
+  { 
+    LOG(INFO) << "Close root file " << fOutRootFile->GetName();
+    fOutRootFile->cd();
+    rootMgr->LastFill();
+    rootMgr->Write();
+    WriteHistograms();
+    fOutRootFile->Write();
+    fOutRootFile->Close();
+  }
+
+  if( strcmp(cmda,"STOP") ) {
+    LOG(INFO) << "STOP";
+    ChangeState(internal_READY);
+    LOG(INFO) << "Current State: " <<  FairMQStateMachine::GetCurrentStateName();
+    ChangeState(internal_DEVICE_READY);
+    LOG(INFO) << "Current State: " <<  FairMQStateMachine::GetCurrentStateName();
+    ChangeState(internal_IDLE);
+    LOG(INFO) << "Current State: " <<  FairMQStateMachine::GetCurrentStateName();
+    ChangeState(END);
+    LOG(INFO) << "Current State: " <<  FairMQStateMachine::GetCurrentStateName();
+  } 
+
+  return true;
+
 }
 
 /************************************************************************************/
@@ -628,7 +659,7 @@ Bool_t   CbmDeviceHitBuilderTof::InitCalibParameter()
     fCalParFile = new TFile(fCalParFileName,"");
     if(NULL == fCalParFile) {
       LOG(ERROR) << "InitCalibParameter: " << "file " << fCalParFileName << " does not exist!";
-      FairMQStateMachine::ChangeState(STOP);
+      ChangeState(STOP);
     }
     /*
     gDirectory->Print();
@@ -1690,7 +1721,7 @@ Bool_t   CbmDeviceHitBuilderTof::BuildHits()
 		  if(NULL == fNode)  {// Transformation matrix not available !!!??? - Check
 		    LOG(ERROR)<<Form("Node at (%6.1f,%6.1f,%6.1f) : %p",
 				     fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode);
-		    FairMQStateMachine::ChangeState(STOP);
+		    ChangeState(STOP);
 		  }
 
 		  CbmTofDigiExp * xDigiA = fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0];
@@ -2348,7 +2379,7 @@ Bool_t CbmDeviceHitBuilderTof::AddNextChan(Int_t iSmType, Int_t iSm, Int_t iRpc,
   if(NULL == cNode)  {// Transformation matrix not available !!!??? - Check
     LOG(ERROR)<<Form("Node at (%6.1f,%6.1f,%6.1f) : %p",
 		     fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),cNode);
-    FairMQStateMachine::ChangeState(STOP);
+    ChangeState(STOP);
   }
 
   /*TGeoHMatrix* cMatrix = */gGeoManager->GetCurrentMatrix();
@@ -2494,7 +2525,7 @@ Bool_t  CbmDeviceHitBuilderTof::LoadGeometry()
       if(NULL == fNode)  {// Transformation matrix not available !!!??? - Check
 	LOG(ERROR)<<Form("Node at (%6.1f,%6.1f,%6.1f) : %p",
 			 fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode);
-	FairMQStateMachine::ChangeState(STOP);
+	ChangeState(STOP);
       }
       if(icell==0) {
         TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();

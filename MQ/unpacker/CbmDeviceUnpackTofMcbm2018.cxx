@@ -150,6 +150,10 @@ try
     for(auto const &entry : fChannels) {
       LOG(INFO) << "Channel name: " << entry.first;
       if (!IsChannelNameAllowed(entry.first)) throw InitTaskError("Channel name does not match.");
+      if(entry.first == "syscmd") {
+	OnData(entry.first, &CbmDeviceUnpackTofMcbm2018::HandleMessage);
+	continue;
+      }
       //if(entry.first != "tofdigis") OnData(entry.first, &CbmDeviceUnpackTofMcbm2018::HandleData);
       if(entry.first != "tofdigis") OnData(entry.first, &CbmDeviceUnpackTofMcbm2018::HandleParts);
       else {
@@ -564,6 +568,28 @@ bool CbmDeviceUnpackTofMcbm2018::HandleParts(FairMQParts& parts, int /*index*/)
   if(fNumMessages%10000 == 0) LOG(INFO)<<"Processed "<<fNumMessages<<" time slices";
 
   return true;
+}
+
+bool CbmDeviceUnpackTofMcbm2018::HandleMessage(FairMQMessagePtr& msg, int /*index*/)
+{
+  const char *cmd = (char *)(msg->GetData());
+  const char cmda[4]={*cmd};
+  LOG(INFO) << "Handle message " << cmd <<", " << cmd[0];
+  LOG(INFO) << "Current State: " <<  FairMQStateMachine::GetCurrentStateName();
+
+  // only one implemented so far "Stop"
+
+  if( strcmp(cmda,"STOP") ) {
+    LOG(INFO) << "STOP";
+    ChangeState(internal_READY);
+    LOG(INFO) << "Current State: " <<  FairMQStateMachine::GetCurrentStateName();
+    ChangeState(internal_DEVICE_READY);
+    LOG(INFO) << "Current State: " <<  FairMQStateMachine::GetCurrentStateName();
+    ChangeState(internal_IDLE);
+    LOG(INFO) << "Current State: " <<  FairMQStateMachine::GetCurrentStateName();
+    ChangeState(END);
+    LOG(INFO) << "Current State: " <<  FairMQStateMachine::GetCurrentStateName();
+  } 
 }
 
 Bool_t CbmDeviceUnpackTofMcbm2018::DoUnpack(const fles::Timeslice& ts, size_t component)
@@ -1259,7 +1285,7 @@ bool CbmDeviceUnpackTofMcbm2018::SendDigis( std::vector<CbmTofDigiExp*> vdigi, i
                                   NDigi*sizeof(CbmTofDigiExp), // size
 				  [](void* , void* object){ delete static_cast<CbmTofDigiExp*>(object); }
                                   )); // object that manages the data
-  /*
+
   // transfer of TofDigi array, ... works 
   CbmTofDigiExp aTofDigi[NDigi];
   //  const Int_t iNDigiOut=100;
@@ -1312,6 +1338,7 @@ bool CbmDeviceUnpackTofMcbm2018::SendDigis( std::vector<CbmTofDigiExp*> vdigi, i
   for (int iData=0; iData<msg->GetSize()/NBytes; iData++) {
     LOG(INFO) << Form(" ind %d, poi %p, data: 0x%08x",iData,pData,*pData++);
   }
+  */
   /*
     auto msg = NewMessageFor("my_channel", 0,
                          static_cast<void*>(vTofDigi.data()),

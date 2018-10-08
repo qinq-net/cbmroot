@@ -41,6 +41,7 @@ class CbmDeviceUnpackTofMcbm2018: public FairMQDevice
     virtual void InitTask();
     bool HandleData(FairMQMessagePtr&, int);
     bool HandleParts(FairMQParts&, int);
+    bool HandleMessage(FairMQMessagePtr&, int);
     virtual void BuildTint(int);
     virtual bool SendDigis(std::vector<CbmTofDigiExp*>, int);
 
@@ -53,7 +54,7 @@ class CbmDeviceUnpackTofMcbm2018: public FairMQDevice
     std::vector< Int_t >  fiReqDigiAddr;
  
     std::vector<std::string> fAllowedChannels
-      = {"tofcomponent","parameters","tofdigis"};
+      = {"tofcomponent","parameters","tofdigis","syscmd"};
     std::vector<std::vector<std::string>> fChannelsToSend = { {},{},{} };
 
    size_t   fuMsAcceptsPercent; /** Reject Ms with index inside TS above this, assumes 100 MS per TS **/

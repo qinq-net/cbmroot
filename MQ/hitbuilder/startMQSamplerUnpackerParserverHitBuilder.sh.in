@@ -11,7 +11,7 @@ fi
 _reqmod=3 
 _reqtint=100 
 _batch=1
-_iUnp=24
+_iUnp=1
 
 _dirname=@VMCWORKDIR@/macro/beamtime/mcbm2018/input/$_runname/
 _filename=$_runname_*.tsa
@@ -32,16 +32,38 @@ rm -v nohup.out
 rm -v *log
 rm all_*
 
+PARAMETERSERVER="parmq-server"
+echo pkill $PARAMETERSERVER
+pkill $PARAMETERSERVER
+sleep 1
+PARAMETERSERVER+=" --id parmq-server"
+PARAMETERSERVER+=" --channel-name parameters"
+PARAMETERSERVER+=" --channel-config name=parameters,type=rep,method=bind,transport=zeromq,address=tcp://127.0.0.1:5005"
+#PARAMETERSERVER+=" --first-input-name $_paramfile"
+PARAMETERSERVER+=" --first-input-name $_mapfile;$_digiparfile;$_digibdffile"
+PARAMETERSERVER+=" --first-input-type ASCII"
+PARAMETERSERVER+=" --second-input-name $_geofile"
+PARAMETERSERVER+=" --second-input-type ROOT"
+PARAMETERSERVER+=" --verbosity INFO"
+if  [[ $_batch = 1 ]]; then 
+PARAMETERSERVER+=" --control static"
+PARAMETERSERVER+=" --log-to-file ParServ.out"
+nohup @CMAKE_BINARY_DIR@/bin/MQ/parmq/$PARAMETERSERVER &
+else
+xterm -geometry 80x23+0+340 -hold -e @CMAKE_BINARY_DIR@/bin/MQ/parmq/$PARAMETERSERVER &
+#xterm -geometry 80x23+500+0 -hold -e @FAIRROOTPATH@/bin/$PARAMETERSERVER &
+fi
+
 SAMPLER="TsaSamplerTof"
 SAMPLER+=" --id sampler1"
-SAMPLER+=" --max-timeslices -1"
-#SAMPLER+=" --max-timeslices 100"
+#SAMPLER+=" --max-timeslices -1"
+SAMPLER+=" --max-timeslices 1000"
 #SAMPLER+=" --flib-port 10"
 SAMPLER+=" --dirname $_dirname"
 SAMPLER+=" --filename $_filename"
 #SAMPLER+=" --flib-host myHost"
 SAMPLER+=" --channel-config name=tofcomponent,type=push,method=bind,transport=zeromq,address=tcp://*:5655"
-#SAMPLER+=" --channel-config name=syscmd,type=pub,method=bind,transport=zeromq,address=tcp://*:5666"
+SAMPLER+=" --channel-config name=syscmd,type=pub,method=bind,transport=zeromq,address=tcp://*:5666"
 #SAMPLER+=" --transport shmem"
 #SAMPLER+=" --transport zeromq"
 #SAMPLER+=" --transport nanomsg"
@@ -50,7 +72,7 @@ SAMPLER+=" --verbosity INFO"
 #SAMPLER+=" --verbosity DEBUG"
 if  [[ $_batch = 1 ]]; then 
 SAMPLER+=" --log-to-file Sampl.out"
-SAMPLER+=" --control non-interactive"
+SAMPLER+=" --control static"
 nohup  @CMAKE_BINARY_DIR@/bin/MQ/source/$SAMPLER & 
 else 
 xterm -geometry 80x23+0+0 -hold -e @CMAKE_BINARY_DIR@/bin/MQ/source/$SAMPLER &
@@ -63,6 +85,7 @@ UNPACKER+=" --id unpack$_iUnp"
 UNPACKER+=" --channel-config name=tofcomponent,type=pull,method=connect,transport=zeromq,address=tcp://127.0.0.1:5655"
 UNPACKER+=" --channel-config name=parameters,type=req,method=connect,transport=zeromq,address=tcp://127.0.0.1:5005"
 UNPACKER+=" --channel-config name=tofdigis,type=push,method=connect,transport=shmem,address=tcp://127.0.0.1:5656"
+UNPACKER+=" --channel-config name=syscmd,type=sub,method=connect,transport=zeromq,address=tcp://127.0.0.1:5666"
 #UNPACKER+=" --transport shmem"
 #UNPACKER+=" --verbosity DEBUG"
 UNPACKER+=" --verbosity  INFO"
@@ -87,7 +110,7 @@ UNPACKER+=" --ReqDet15 131126"
 UNPACKER+=" --ReqDet16 131142"
 UNPACKER+=" --ReqDet17 131158"
 if  [[ $_batch = 1 ]]; then 
-UNPACKER+=" --control non-interactive"
+UNPACKER+=" --control static"
 UNPACKER+=" --log-to-file Unp.out"
 nohup @CMAKE_BINARY_DIR@/bin/MQ/unpacker/$UNPACKER &
 else 
@@ -97,42 +120,24 @@ fi
 (( _iUnp -= 1 ))
 done 
 
-PARAMETERSERVER="parmq-server"
-PARAMETERSERVER+=" --id parmq-server"
-PARAMETERSERVER+=" --channel-name parameters"
-PARAMETERSERVER+=" --channel-config name=parameters,type=rep,method=bind,transport=zeromq,address=tcp://127.0.0.1:5005"
-#PARAMETERSERVER+=" --first-input-name $_paramfile"
-PARAMETERSERVER+=" --first-input-name $_mapfile;$_digiparfile;$_digibdffile"
-PARAMETERSERVER+=" --first-input-type ASCII"
-PARAMETERSERVER+=" --second-input-name $_geofile"
-PARAMETERSERVER+=" --second-input-type ROOT"
-PARAMETERSERVER+=" --verbosity INFO"
-if  [[ $_batch = 1 ]]; then 
-PARAMETERSERVER+=" --control non-interactive"
-PARAMETERSERVER+=" --log-to-file ParServ.out"
-nohup @CMAKE_BINARY_DIR@/bin/MQ/parmq/$PARAMETERSERVER &
-else
-xterm -geometry 80x23+0+340 -hold -e @CMAKE_BINARY_DIR@/bin/MQ/parmq/$PARAMETERSERVER &
-#xterm -geometry 80x23+500+0 -hold -e @FAIRROOTPATH@/bin/$PARAMETERSERVER &
-fi
-
 HITBUILDER="HitBuilderTof"
 HITBUILDER+=" --id hitbuilder1"
 HITBUILDER+=" --channel-config name=tofdigis,type=pull,method=bind,transport=shmem,address=tcp://*:5656"
 HITBUILDER+=" --channel-config name=parameters,type=req,method=connect,transport=zeromq,address=tcp://127.0.0.1:5005"
+HITBUILDER+=" --channel-config name=syscmd,type=sub,method=connect,transport=zeromq,address=tcp://127.0.0.1:5666"
 #HITBUILDER+=" --channel-config name=tofhits,type=push,method=bind,transport=shmem,address=tcp://127.0.0.1:5557"
 #HITBUILDER+=" --channel-config name=tofcalib,type=push,method=bind,transport=shmem,address=tcp://127.0.0.1:5558"
 #HITBUILDER+=" --transport shmem"
 #HITBUILDER+=" --verbosity DEBUG"
-HITBUILDER+=" --verbosity INFO"
+#HITBUILDER+=" --verbosity INFO"
 #HITBUILDER+=" --verbosity WARN"
 HITBUILDER+=" --OutRootFile $_digifile"
-HITBUILDER+=" --MaxEvent 10000"
+#HITBUILDER+=" --MaxEvent 10000"
 HITBUILDER+=" --RunId 1538835959"
 #HITBUILDER+=" --RunId 1536669562"
 #HITBUILDER+=" --RunId 1537898701"
 if  [[ $_batch = 1 ]]; then 
-HITBUILDER+=" --control non-interactive"
+HITBUILDER+=" --control static"
 HITBUILDER+=" --log-to-file HitBuild.out"
 nohup  @CMAKE_BINARY_DIR@/bin/MQ/hitbuilder/$HITBUILDER &
 else

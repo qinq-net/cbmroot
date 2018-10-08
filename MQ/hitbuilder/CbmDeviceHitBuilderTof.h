@@ -64,6 +64,7 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
     virtual void InitTask();
     //bool HandleData(FairMQMessagePtr&, int);
     bool HandleData(FairMQParts&, int);
+    bool HandleMessage(FairMQMessagePtr&, int);
 
     virtual void fit_ybox(const char *hname);                      // Fit
     virtual void fit_ybox(TH1 *h, Double_t dy);                    // Fit
@@ -100,7 +101,7 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
    Bool_t   SendAll();
 
    uint64_t fNumMessages;
-   std::vector<std::string> fAllowedChannels = {"tofcomponent","parameters","tofdigis","tofhits","tofcalib"};
+   std::vector<std::string> fAllowedChannels = {"tofcomponent","parameters","tofdigis","tofhits","syscmd"};
    CbmTofDigiExp* fDigi;
 
    TGeoManager  * fGeoMan;
