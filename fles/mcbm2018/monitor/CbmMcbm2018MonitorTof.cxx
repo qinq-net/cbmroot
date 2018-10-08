@@ -1328,7 +1328,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
 ////////////////////////////////////////////////////////////////////////
 //                   FINAL SOLUTION                                   //
 ////////////////////////////////////////////////////////////////////////
-/*
+
       // Get the gDPB ID from the MS header
       fuGdpbId = fiEquipmentId;
 
@@ -1345,7 +1345,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
          continue;
       } // if( it == fGdpbIdIndexMap.end() )
          else fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
-*/
+
 ////////////////////////////////////////////////////////////////////////
 //                   FINAL SOLUTION                                   //
 ////////////////////////////////////////////////////////////////////////
@@ -1367,6 +1367,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
 ////////////////////////////////////////////////////////////////////////
 //                   TEMP SOLUTION                                    //
 ////////////////////////////////////////////////////////////////////////
+/*
          fuGdpbId = mess.getGdpbGenGdpbId();
 
          /// Check if this gDPB ID was declared in parameter file and stop there if not
@@ -1382,6 +1383,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
             continue;
          } // if( it == fGdpbIdIndexMap.end() )
             else fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
+*/
 ////////////////////////////////////////////////////////////////////////
 //                   TEMP SOLUTION                                    //
 ////////////////////////////////////////////////////////////////////////
