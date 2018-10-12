@@ -38,6 +38,7 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    static constexpr UInt_t GetNbCrobsPerDpb()  { return kuNbCrobsPerDpb; }
    static constexpr UInt_t GetNbElinkPerCrob() { return kuNbElinksPerCrob; }
    static constexpr UInt_t GetNbFebsPerCrob()  { return kuNbFebsPerCrob; }
+   static constexpr UInt_t GetNbFebsPerDpb()   { return kuNbCrobsPerDpb * kuNbFebsPerCrob; }
    static constexpr UInt_t GetNbAsicsPerFeb()  { return kuNbAsicsPerFeb; }
    static constexpr UInt_t GetNbAsicsPerCrob() { return kuNbFebsPerCrob * kuNbAsicsPerFeb; }
    static constexpr UInt_t GetNbChanPerAsic()  { return kuNbChanPerAsic; }
@@ -77,6 +78,11 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    Bool_t IsCrobActive( UInt_t uDpbIdx, UInt_t uCrobIdx );
    Int_t GetFebModuleIdx( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
    Int_t GetFebModuleSide( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
+   Double_t GetFebAdcGain( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
+   Double_t GetFebAdcOffset( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
+   Double_t GetFebAdcBase( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
+   Double_t GetFebAdcThrGain( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
+   Int_t    GetFebAdcThrOffs( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
 
    Bool_t ComputeModuleCoordinates( UInt_t uModuleIdx, Int_t iChanN, Int_t iChanP, Double_t & dPosX, Double_t & dPosY );
 
@@ -89,10 +95,21 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    static const UInt_t  kuNbAsicsPerFeb   =   8; // Number of ASICs connected in each FEB
    static const UInt_t  kuNbChanPerAsic   = 128; // Number of channels in each ASIC
 //   static constexpr UInt_t  kuCrobMapElinkFebA[ kuNbElinksPerCrob ] = {
+/* *** Inverted ?!?
    const UInt_t  kuCrobMapElinkFebA[ kuNbElinksPerCrob ] = {
             0x0026, 0x0024, 0x0022, 0x0027, 0x0025, 0x001F,
             0x001D, 0x001B, 0x0023, 0x0020, 0xFFFF, 0xFFFF,
             0x0021, 0x0019, 0x0017, 0x0015, 0x001E, 0x001C,
+            0x0018, 0x0009, 0x0016, 0x0014, 0x000B, 0x0012,
+            0x0010, 0x0011, 0x001A, 0x0013, 0x000E, 0x000A,
+            0x0008, 0x000F, 0x000D, 0x0005, 0x0003, 0x0001,
+            0x000C, 0x0002, 0x0007, 0x0004, 0x0000, 0x0006
+         }; //! Map from eLink index to ASIC index within CROB ( 0 to kuNbFebsPerCrob * kuNbAsicPerFeb )
+*/
+   const UInt_t  kuCrobMapElinkFebA[ kuNbElinksPerCrob ] = {
+            0x0021, 0x0023, 0x0025, 0x0020, 0x0022, 0x001F,
+            0x001D, 0x001B, 0x0024, 0x0027, 0xFFFF, 0xFFFF,
+            0x0026, 0x0019, 0x0017, 0x0015, 0x001E, 0x001C,
             0x0018, 0x0009, 0x0016, 0x0014, 0x000B, 0x0012,
             0x0010, 0x0011, 0x001A, 0x0013, 0x000E, 0x000A,
             0x0008, 0x000F, 0x000D, 0x0005, 0x0003, 0x0001,
@@ -141,6 +158,10 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    TArrayI fiCrobActiveFlag; // Array to hold the active flag for all CROBs, [ NbDpb * kuNbCrobPerDpb ]
    TArrayI fiFebModuleIdx;   // Index of the STS module for each FEB, [ NbDpb * kuNbCrobPerDpb * kuNbFebsPerCrob ], -1 if inactive
    TArrayI fiFebModuleSide;  // STS module side for each FEB, [ NbDpb * kuNbCrobPerDpb * kuNbFebsPerCrob ], 0 = P, 1 = N, -1 if inactive
+   TArrayD fdFebAdcGain;     // ADC Gain in e-/ADC bin for each FEB, [ NbDpb * kuNbCrobPerDpb * kuNbFebsPerCrob ]
+   TArrayD fdFebAdcBase;     // Base at Cal. Thr. in e- for each FEB, [ NbDpb * kuNbCrobPerDpb * kuNbFebsPerCrob ]
+   TArrayD fdFebAdcThrGain;  // Thr. step in e-/Thr. Unit for each FEB, [ NbDpb * kuNbCrobPerDpb * kuNbFebsPerCrob ]
+   TArrayI fiFebAdcThrOffs;  // Thr. offset in Units vs Cal. Thr. for each FEB, [ NbDpb * kuNbCrobPerDpb * kuNbFebsPerCrob ]
 
   ClassDef(CbmMcbm2018StsPar,1);
 };

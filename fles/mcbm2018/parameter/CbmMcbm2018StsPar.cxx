@@ -32,7 +32,11 @@ CbmMcbm2018StsPar::CbmMcbm2018StsPar(const char* name,
    fiDbpIdArray(),
    fiCrobActiveFlag(),
    fiFebModuleIdx(),
-   fiFebModuleSide()
+   fiFebModuleSide(),
+   fdFebAdcGain(),
+   fdFebAdcBase(),
+   fdFebAdcThrGain(),
+   fiFebAdcThrOffs()
 {
   detName="Sts";
 }
@@ -72,6 +76,10 @@ void CbmMcbm2018StsPar::putParams(FairParamList* l)
 
    l->add("FebModuleIdx",   fiFebModuleIdx);
    l->add("FebModuleSide",  fiFebModuleSide);
+   l->add("FebAdcGain",     fdFebAdcGain);
+   l->add("FebAdcBase",     fdFebAdcBase);
+   l->add("FebAdcThrGain",  fdFebAdcThrGain);
+   l->add("FebAdcThrOffs",  fiFebAdcThrOffs);
 }
 
 // -------------------------------------------------------------------------
@@ -101,8 +109,16 @@ Bool_t CbmMcbm2018StsPar::getParams(FairParamList* l) {
 
    fiFebModuleIdx.Set( fuNrOfDpbs * kuNbCrobsPerDpb * kuNbFebsPerCrob );
    fiFebModuleSide.Set( fuNrOfDpbs * kuNbCrobsPerDpb * kuNbFebsPerCrob );
+   fdFebAdcGain.Set( fuNrOfDpbs * kuNbCrobsPerDpb * kuNbFebsPerCrob );
+   fdFebAdcBase.Set( fuNrOfDpbs * kuNbCrobsPerDpb * kuNbFebsPerCrob );
+   fdFebAdcThrGain.Set( fuNrOfDpbs * kuNbCrobsPerDpb * kuNbFebsPerCrob );
+   fiFebAdcThrOffs.Set( fuNrOfDpbs * kuNbCrobsPerDpb * kuNbFebsPerCrob );
    if ( ! l->fill("FebModuleIdx",  &fiFebModuleIdx ) ) return kFALSE;
    if ( ! l->fill("FebModuleSide", &fiFebModuleSide ) ) return kFALSE;
+   if ( ! l->fill("FebAdcGain",    &fdFebAdcGain ) ) return kFALSE;
+   if ( ! l->fill("FebAdcBase",    &fdFebAdcBase ) ) return kFALSE;
+   if ( ! l->fill("FebAdcThrGain", &fdFebAdcThrGain ) ) return kFALSE;
+   if ( ! l->fill("FebAdcThrOffs", &fiFebAdcThrOffs ) ) return kFALSE;
 
    LOG(INFO) << "CbmMcbm2018StsPar::getParams => Values " << FairLogger::endl
                 << fuNbModules << FairLogger::endl
@@ -312,6 +328,181 @@ Int_t CbmMcbm2018StsPar::GetFebModuleSide( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt
                       << "returning default inactive!"
                       << FairLogger::endl;
          return -1;
+      } // else of if( uDpbIdx < fuNrOfDpbs )
+}
+Double_t CbmMcbm2018StsPar::GetFebAdcGain( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx )
+{
+   if( uDpbIdx < fuNrOfDpbs )
+   {
+      if( uCrobIdx < kuNbCrobsPerDpb )
+      {
+         if( uFebIdx < kuNbFebsPerCrob )
+         {
+            UInt_t uIdx = ( uDpbIdx * kuNbCrobsPerDpb + uCrobIdx ) * kuNbFebsPerCrob + uFebIdx;
+            return fdFebAdcGain[ uIdx ];
+         } // if( uFebIdx < kuNbFebsPerCrob )
+            else
+            {
+               LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcGain => Feb Index out of bound, "
+                            << "returning default value!"
+                            << FairLogger::endl;
+               return 0.0;
+            } // else of if( uCrobIdx < kuNbCrobsPerDpb )
+      } // if( uCrobIdx < kuNbCrobsPerDpb )
+         else
+         {
+            LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcGain => Crob Index out of bound, "
+                         << "returning default value!"
+                         << FairLogger::endl;
+            return 0.0;
+         } // else of if( uCrobIdx < kuNbCrobsPerDpb )
+   } // if( uDpbIdx < fuNrOfDpbs )
+      else
+      {
+         LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcGain => Dpb Index out of bound, "
+                      << "returning default value!"
+                      << FairLogger::endl;
+         return 0.0;
+      } // else of if( uDpbIdx < fuNrOfDpbs )
+}
+Double_t CbmMcbm2018StsPar::GetFebAdcOffset( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx )
+{
+   if( uDpbIdx < fuNrOfDpbs )
+   {
+      if( uCrobIdx < kuNbCrobsPerDpb )
+      {
+         if( uFebIdx < kuNbFebsPerCrob )
+         {
+            UInt_t uIdx = ( uDpbIdx * kuNbCrobsPerDpb + uCrobIdx ) * kuNbFebsPerCrob + uFebIdx;
+            return (fdFebAdcBase[ uIdx ] + fdFebAdcThrGain[ uIdx ] * fiFebAdcThrOffs[ uIdx ]);
+         } // if( uFebIdx < kuNbFebsPerCrob )
+            else
+            {
+               LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcOffset => Feb Index out of bound, "
+                            << "returning default value!"
+                            << FairLogger::endl;
+               return 0.0;
+            } // else of if( uCrobIdx < kuNbCrobsPerDpb )
+      } // if( uCrobIdx < kuNbCrobsPerDpb )
+         else
+         {
+            LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcOffset => Crob Index out of bound, "
+                         << "returning default value!"
+                         << FairLogger::endl;
+            return 0.0;
+         } // else of if( uCrobIdx < kuNbCrobsPerDpb )
+   } // if( uDpbIdx < fuNrOfDpbs )
+      else
+      {
+         LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcOffset => Dpb Index out of bound, "
+                      << "returning default value!"
+                      << FairLogger::endl;
+         return 0.0;
+      } // else of if( uDpbIdx < fuNrOfDpbs )
+}
+Double_t CbmMcbm2018StsPar::GetFebAdcBase( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx )
+{
+   if( uDpbIdx < fuNrOfDpbs )
+   {
+      if( uCrobIdx < kuNbCrobsPerDpb )
+      {
+         if( uFebIdx < kuNbFebsPerCrob )
+         {
+            UInt_t uIdx = ( uDpbIdx * kuNbCrobsPerDpb + uCrobIdx ) * kuNbFebsPerCrob + uFebIdx;
+            return fdFebAdcBase[ uIdx ];
+         } // if( uFebIdx < kuNbFebsPerCrob )
+            else
+            {
+               LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcBase => Feb Index out of bound, "
+                            << "returning default value!"
+                            << FairLogger::endl;
+               return 0.0;
+            } // else of if( uCrobIdx < kuNbCrobsPerDpb )
+      } // if( uCrobIdx < kuNbCrobsPerDpb )
+         else
+         {
+            LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcBase => Crob Index out of bound, "
+                         << "returning default value!"
+                         << FairLogger::endl;
+            return 0.0;
+         } // else of if( uCrobIdx < kuNbCrobsPerDpb )
+   } // if( uDpbIdx < fuNrOfDpbs )
+      else
+      {
+         LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcBase => Dpb Index out of bound, "
+                      << "returning default value!"
+                      << FairLogger::endl;
+         return 0.0;
+      } // else of if( uDpbIdx < fuNrOfDpbs )
+}
+Double_t CbmMcbm2018StsPar::GetFebAdcThrGain( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx )
+{
+   if( uDpbIdx < fuNrOfDpbs )
+   {
+      if( uCrobIdx < kuNbCrobsPerDpb )
+      {
+         if( uFebIdx < kuNbFebsPerCrob )
+         {
+            UInt_t uIdx = ( uDpbIdx * kuNbCrobsPerDpb + uCrobIdx ) * kuNbFebsPerCrob + uFebIdx;
+            return fdFebAdcThrGain[ uIdx ];
+         } // if( uFebIdx < kuNbFebsPerCrob )
+            else
+            {
+               LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcThrGain => Feb Index out of bound, "
+                            << "returning default value!"
+                            << FairLogger::endl;
+               return 0.0;
+            } // else of if( uCrobIdx < kuNbCrobsPerDpb )
+      } // if( uCrobIdx < kuNbCrobsPerDpb )
+         else
+         {
+            LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcThrGain => Crob Index out of bound, "
+                         << "returning default value!"
+                         << FairLogger::endl;
+            return 0.0;
+         } // else of if( uCrobIdx < kuNbCrobsPerDpb )
+   } // if( uDpbIdx < fuNrOfDpbs )
+      else
+      {
+         LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcThrGain => Dpb Index out of bound, "
+                      << "returning default value!"
+                      << FairLogger::endl;
+         return 0.0;
+      } // else of if( uDpbIdx < fuNrOfDpbs )
+}
+Int_t CbmMcbm2018StsPar::GetFebAdcThrOffs( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx )
+{
+   if( uDpbIdx < fuNrOfDpbs )
+   {
+      if( uCrobIdx < kuNbCrobsPerDpb )
+      {
+         if( uFebIdx < kuNbFebsPerCrob )
+         {
+            UInt_t uIdx = ( uDpbIdx * kuNbCrobsPerDpb + uCrobIdx ) * kuNbFebsPerCrob + uFebIdx;
+            return fiFebAdcThrOffs[ uIdx ];
+         } // if( uFebIdx < kuNbFebsPerCrob )
+            else
+            {
+               LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcThrOffs => Feb Index out of bound, "
+                            << "returning default value!"
+                            << FairLogger::endl;
+               return 0;
+            } // else of if( uCrobIdx < kuNbCrobsPerDpb )
+      } // if( uCrobIdx < kuNbCrobsPerDpb )
+         else
+         {
+            LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcThrOffs => Crob Index out of bound, "
+                         << "returning default value!"
+                         << FairLogger::endl;
+            return 0;
+         } // else of if( uCrobIdx < kuNbCrobsPerDpb )
+   } // if( uDpbIdx < fuNrOfDpbs )
+      else
+      {
+         LOG(WARNING) << "CbmMcbm2018StsPar::GetFebAdcThrOffs => Dpb Index out of bound, "
+                      << "returning default value!"
+                      << FairLogger::endl;
+         return 0;
       } // else of if( uDpbIdx < fuNrOfDpbs )
 }
 // -------------------------------------------------------------------------
