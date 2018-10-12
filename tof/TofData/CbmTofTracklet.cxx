@@ -24,6 +24,9 @@ CbmTofTracklet::CbmTofTracklet() :
    fTime(0.),
    fTt(0.),
    fT0(0.),
+   fT0Err(0.),
+   fTtErr(0.),
+   fT0TtCov(0.),
    fChiSq(0.),
    fNDF(0),
    fTrackPar(),
@@ -43,6 +46,9 @@ CbmTofTracklet::CbmTofTracklet( const CbmTofTracklet &t) :
    fTime(t.fTime),
    fTt(t.fTt),
    fT0(t.fT0),
+   fT0Err(t.fT0Err),
+   fTtErr(t.fTtErr),
+   fT0TtCov(t.fT0TtCov),
    fChiSq(t.fChiSq),
    fNDF(t.fNDF),
    fTrackPar(CbmTofTrackletParam(t.fTrackPar)),
@@ -183,9 +189,7 @@ Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R=0
   dT0 /= nValidHits;
   fT0=dT0;
   */
-  //
-  // follow tutorial solveLinear.C to solve the linear equation t=t0+tt*R
-  //
+
   Double_t aR[fTofHit.size()];
   Double_t at[fTofHit.size()];
   Double_t ae[fTofHit.size()];
@@ -202,10 +206,15 @@ Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R=0
       aR[nValidHits]=dDist1+dSign*Dist3D(&fhit[iHit],&fhit[iHit1]);
       at[nValidHits]=fhit[iHit].GetTime();
       ae[nValidHits]=0.1;                         // const timing error, FIXME
+      //ae[nValidHits]=fhit[iHit].GetTimeError();
       nValidHits++;
     } else iHit0=iHit;
   }
 
+  /*
+  //
+  // follow tutorial solveLinear.C to solve the linear equation t=t0+tt*R
+  //
   TVectorD R; R.Use(nValidHits,aR);
   TVectorD t; t.Use(nValidHits,at);
   TVectorD e; e.Use(nValidHits,ae);
@@ -231,12 +240,43 @@ Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R=0
 
   fT0=c_svd[0];
   fTt=c_svd[1];
+  */
+
+  //
+  // Using analyctical Solution of Chi2-Fit to solve the linear equation t=t0+tt*R
+  // Converted into Matrix Form, Matrices calcualted and only resulting formula are implemented
+  // J.Brandt
+  //
+  Double_t RRsum=0;            //  Values will follow this procedure:
+  Double_t Rsum=0;             //  $Rsum=\sum_{i}^{nValidHits}\frac{R_i}{e_i^2}$
+  Double_t tsum=0;             //  where e_i will always be the error on the t measurement 
+  Double_t esum=0;             //  RR=R^2 in numerator, e denotes 1 in numerator , Rt= R*t in numerator
+  Double_t Rtsum=0;            //
+  Double_t sig_weight=0;       //  ae^2
+  Double_t yoffset=at[0]-10;      //  T0 time offset to scale times to ns regime and not 10^10ns
+  for (Int_t i=0; i<nValidHits;i++) {
+    at[i]-=yoffset;            //  substract offset
+    sig_weight=(ae[i]*ae[i]);
+    Rsum+=(aR[i]/sig_weight);
+    tsum+=(at[i]/sig_weight);
+    RRsum+=(aR[i]*aR[i]/sig_weight);
+    Rtsum+=(aR[i]*at[i]/sig_weight);
+    esum+=(1/sig_weight);
+  }
+   Double_t det_cov_mat=esum*RRsum-Rsum*Rsum;  // Determinant of inverted Covariance Matrix -> 1/det is common Faktor of Cavariance Matrix
+  fT0=(RRsum*tsum-Rsum*Rtsum)/det_cov_mat;    // Best Guess for time at origin
+  fTt=(-Rsum*tsum+esum*Rtsum)/det_cov_mat;    // Best guess for inverted velocity
+  fT0Err=TMath::Sqrt(RRsum/det_cov_mat);      // sqrt of (0,0) in Covariance matrix -> error on fT0
+  fTtErr=TMath::Sqrt(esum/det_cov_mat);       // sqrt of (1,1) in Covariance Matrix -> error on fTt
+  fT0TtCov=-Rsum/det_cov_mat;                 // (0,1)=(1,0) in Covariance Matrix -> cov(fT0,fTt)
+
+  fT0+=yoffset;                               // Adding yoffset again
 
   if (iHit0>-1) fhit[iHit0].SetTime(fT0);
   
-  LOG(DEBUG)<< Form("Trkl size %u,  validHits %d, Tt = %6.4f T0 = %6.2f",
-              (UInt_t)fTofHit.size(),nValidHits,fTt,fT0)<<FairLogger::endl;  
-  
+  LOG(DEBUG)<< Form("Trkl size %u,  validHits %d, Tt = %6.4f TtErr = %2.4f T0 = %6.2f T0Err = %2.2f T0TtCov = %6.4f",
+		    (UInt_t)fTofHit.size(),nValidHits,fTt,fTtErr,fT0,fT0Err,fT0TtCov)<<FairLogger::endl;
+
   return fT0;
 }
 
@@ -384,8 +424,8 @@ void CbmTofTracklet::PrintInfo(){
   LOG(INFO) << Form("TrklInfo: Nhits %d, Tt %6.3f, stations: ",GetNofHits(),GetTt());
   LOG(INFO) << FairLogger::endl;
   for (Int_t iH=0; iH<GetNofHits(); iH++){
-    LOG(INFO) << Form("  Hit %2d: Ind %5d, det 0x%08x, addr 0x%08x, chi %6.1f",
-		      iH, fTofHit[iH], fTofDet[iH], fhit[iH].GetAddress(), fMatChi[iH])
+    LOG(INFO) << Form("  Hit %2d: Ind %5d, det 0x%08x, addr 0x%08x, chi %6.3f, ae[]= %6.4f",
+		      iH, fTofHit[iH], fTofDet[iH], fhit[iH].GetAddress(), fMatChi[iH], fhit[iH].GetTimeError())
 	      <<FairLogger::endl; 
   }
 }

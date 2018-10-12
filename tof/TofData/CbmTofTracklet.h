@@ -49,8 +49,11 @@ class CbmTofTracklet : public TObject {
 
 	Double_t GetT0() const {return fT0; }
 	Double_t GetTt() const {return fTt; }
+        Double_t GetT0Err() const {return fT0Err; }
+        Double_t GetTtErr() const {return fTtErr; }
+        Double_t GetT0TtCov() const {return fT0TtCov; }
 	Double_t GetTheta() const {return 
-	         TMath::ATan(fTrackPar.GetTy()); }
+	         TMath::ATan(TMath::Sqrt(TMath::Power(fTrackPar.GetTy(),2)+TMath::Power(fTrackPar.GetTx(),2))); }
 	Double_t GetPhi()   const {return 
 	         TMath::ATan(fTrackPar.GetTy()/fTrackPar.GetTx()); }
 	Int_t    GetStationHitIndex(Int_t iSm) const {
@@ -199,6 +202,9 @@ class CbmTofTracklet : public TObject {
 	inline void SetTime(Double_t val)  { fTime=val; }
 	inline void SetTt(Double_t val)    { fTt=val; }
 	inline void SetT0(Double_t val)    { fT0=val; }
+	inline void SetT0Err(Double_t val)    { fT0Err=val; }
+	inline void SetTtErr(Double_t val)    { fTtErr=val; }
+	inline void SetT0TtCov(Double_t val)    { fT0TtCov=val; }
 
 	inline void SetChiSq(Double_t chiSq) { fChiSq = chiSq; }
 	inline void SetNDF(Int_t ndf) { fNDF = ndf; }
@@ -218,6 +224,9 @@ class CbmTofTracklet : public TObject {
 	Double_t          fTime;         //! Reference time of reference hit
 	Double_t          fTt;           //! slope dT/dr
 	Double_t          fT0;           //! Time at origin
+        Double_t          fT0Err;        //! Error on Time at origin
+        Double_t          fTtErr;        //! Error on slope dT/dr
+        Double_t          fT0TtCov;      //! Covariance od fT0 and fTt
 	Double_t          fChiSq;        //! Chi2 of fit 
 	Int_t             fNDF;          //! # of degrees of freedom  
 	CbmTofTrackletParam fTrackPar;   //!  Track parameters at z of TofHit
