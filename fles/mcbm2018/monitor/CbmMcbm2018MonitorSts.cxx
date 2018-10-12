@@ -58,6 +58,8 @@ CbmMcbm2018MonitorSts::CbmMcbm2018MonitorSts() :
    fviFebModuleIdx(),
    fviFebModuleSide(),
    fviFebType(),
+   fviFebAdcGain(),
+   fviFebAdcOffs(),
 /*
    fuNrOfDpbs(0),
    fDpbIdIndexMap(),
@@ -68,6 +70,7 @@ CbmMcbm2018MonitorSts::CbmMcbm2018MonitorSts() :
    fsHistoFileFullname( "data/SetupHistos.root" ),
    fbPrintMessages( kFALSE ),
    fPrintMessCtrl( stsxyter::MessagePrintMask::msg_print_Human ),
+   fbEnableCoincidenceMaps( kFALSE ),
    fulCurrentTsIdx( 0 ),
    fulCurrentMsIdx( 0 ),
    fmMsgCounter(),
@@ -95,6 +98,10 @@ CbmMcbm2018MonitorSts::CbmMcbm2018MonitorSts() :
    fvmAsicHitsInMs(),
    fvmFebHitsInMs(),
    fuMaxNbMicroslices(100),
+   fiTimeIntervalRateUpdate( 10 ),
+   fviFebTimeSecLastRateUpdate(),
+   fviFebCountsSinceLastRateUpdate(),
+   fvdFebChanCountsSinceLastRateUpdate(),
    fbLongHistoEnable( kFALSE ),
    fuLongHistoNbSeconds( 0 ),
    fuLongHistoBinSizeSec( 0 ),
@@ -126,12 +133,15 @@ CbmMcbm2018MonitorSts::CbmMcbm2018MonitorSts() :
    fhStsFebChanCntRawGood(),
    fhStsFebChanAdcRaw(),
    fhStsFebChanAdcRawProf(),
+   fhStsFebChanAdcCal(),
+   fhStsFebChanAdcCalProf(),
    fhStsFebChanRawTs(),
    fhStsFebChanMissEvt(),
    fhStsFebChanMissEvtEvo(),
    fhStsFebAsicMissEvtEvo(),
    fhStsFebMissEvtEvo(),
    fhStsFebChanHitRateEvo(),
+   fhStsFebChanHitRateProf(),
    fhStsFebAsicHitRateEvo(),
    fhStsFebHitRateEvo(),
    fhStsFebChanHitRateEvoLong(),
@@ -232,12 +242,16 @@ Bool_t CbmMcbm2018MonitorSts::ReInitContainers()
    fviFebModuleIdx.resize(   fuNrOfDpbs );
    fviFebModuleSide.resize(  fuNrOfDpbs );
    fviFebType.resize(        fuNrOfDpbs );
+   fviFebAdcGain.resize(     fuNrOfDpbs );
+   fviFebAdcOffs.resize(     fuNrOfDpbs );
    for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
    {
       fvbCrobActiveFlag[ uDpb ].resize( fUnpackParSts->GetNbCrobsPerDpb() );
       fviFebModuleIdx[ uDpb ].resize(   fUnpackParSts->GetNbCrobsPerDpb() );
       fviFebModuleSide[ uDpb ].resize(  fUnpackParSts->GetNbCrobsPerDpb() );
       fviFebType[ uDpb ].resize(        fUnpackParSts->GetNbCrobsPerDpb() );
+      fviFebAdcGain[ uDpb ].resize(        fUnpackParSts->GetNbCrobsPerDpb() );
+      fviFebAdcOffs[ uDpb ].resize(        fUnpackParSts->GetNbCrobsPerDpb() );
       for( UInt_t uCrobIdx = 0; uCrobIdx < fUnpackParSts->GetNbCrobsPerDpb(); ++uCrobIdx )
       {
          fvbCrobActiveFlag[ uDpb ][ uCrobIdx ] = fUnpackParSts->IsCrobActive( uDpb, uCrobIdx );
@@ -245,10 +259,14 @@ Bool_t CbmMcbm2018MonitorSts::ReInitContainers()
          fviFebModuleIdx[ uDpb ][ uCrobIdx ].resize(   fUnpackParSts->GetNbFebsPerCrob() );
          fviFebModuleSide[ uDpb ][ uCrobIdx ].resize(  fUnpackParSts->GetNbFebsPerCrob() );
          fviFebType[ uDpb ][ uCrobIdx ].resize(        fUnpackParSts->GetNbFebsPerCrob(), -1 );
+         fviFebAdcGain[ uDpb ][ uCrobIdx ].resize(     fUnpackParSts->GetNbFebsPerCrob(), 0.0 );
+         fviFebAdcOffs[ uDpb ][ uCrobIdx ].resize(     fUnpackParSts->GetNbFebsPerCrob(), 0.0 );
          for( UInt_t uFebIdx = 0; uFebIdx < fUnpackParSts->GetNbFebsPerCrob(); ++ uFebIdx )
          {
             fviFebModuleIdx[ uDpb ][ uCrobIdx ][ uFebIdx ]  = fUnpackParSts->GetFebModuleIdx( uDpb, uCrobIdx, uFebIdx );
             fviFebModuleSide[ uDpb ][ uCrobIdx ][ uFebIdx ] = fUnpackParSts->GetFebModuleSide( uDpb, uCrobIdx, uFebIdx );
+            fviFebAdcGain[ uDpb ][ uCrobIdx ][ uFebIdx ]    = fUnpackParSts->GetFebAdcGain( uDpb, uCrobIdx, uFebIdx );
+            fviFebAdcOffs[ uDpb ][ uCrobIdx ][ uFebIdx ]    = fUnpackParSts->GetFebAdcOffset( uDpb, uCrobIdx, uFebIdx );
 
             if( 0 <= fviFebModuleSide[ uDpb ][ uCrobIdx ][ uFebIdx ] &&
                 fviFebModuleIdx[ uDpb ][ uCrobIdx ][ uFebIdx ] < fuNbModules )
@@ -389,8 +407,14 @@ Bool_t CbmMcbm2018MonitorSts::ReInitContainers()
                 << FairLogger::endl;
 
    fvmFebHitsInMs.resize( fuNbFebs );
+   fviFebTimeSecLastRateUpdate.resize( fuNbFebs, -1 );
+   fviFebCountsSinceLastRateUpdate.resize( fuNbFebs, -1 );
+   fvdFebChanCountsSinceLastRateUpdate.resize( fuNbFebs );
    for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
+   {
       fvmFebHitsInMs[ uFebIdx ].clear();
+      fvdFebChanCountsSinceLastRateUpdate[ uFebIdx ].resize( fUnpackParSts->GetNbChanPerFeb(), 0.0 );
+   } // for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
 
    return kTRUE;
 }
@@ -703,6 +727,19 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       fhStsFebChanAdcRawProf.push_back( new TProfile(sHistName, title,
                                  fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 ) );
 
+      /// Cal Adc Distribution
+      sHistName = Form( "hStsFebChanAdcCal_%03u", uFebIdx );
+      title = Form( "Cal. Adc distribution per channel, FEB #%03u; Channel []; Adc [e-]; Hits []", uFebIdx );
+      fhStsFebChanAdcCal.push_back( new TH2I(sHistName, title,
+                                 fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5,
+                                  50, 0., 100000. ) );
+
+      /// Cal Adc Distribution profile
+      sHistName = Form( "hStsFebChanAdcCalProfc_%03u", uFebIdx );
+      title = Form( "Cal. Adc prodile per channel, FEB #%03u; Channel []; Adc [e-]", uFebIdx );
+      fhStsFebChanAdcCalProf.push_back( new TProfile(sHistName, title,
+                                 fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 ) );
+
       /// Raw Ts Distribution
       sHistName = Form( "hStsFebChanRawTs_%03u", uFebIdx );
       title = Form( "Raw Timestamp distribution per channel, FEB #%03u; Channel []; Ts []; Hits []", uFebIdx );
@@ -741,6 +778,12 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       title = Form( "Hits per second & channel in FEB #%03u; Time [s]; Channel []; Hits []", uFebIdx );
       fhStsFebChanHitRateEvo.push_back( new TH2I( sHistName, title,
                                                 1800, 0, 1800,
+                                                fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 ) );
+
+      /// Hit rates profile per channel
+      sHistName = Form( "hStsFebChanRateProf_%03u", uFebIdx );
+      title = Form( "Hits per second for each channel in FEB #%03u; Channel []; Hits/s []", uFebIdx );
+      fhStsFebChanHitRateProf.push_back( new TProfile( sHistName, title,
                                                 fUnpackParSts->GetNbChanPerFeb(), -0.5, fUnpackParSts->GetNbChanPerFeb() - 0.5 ) );
 
       /// Hit rates evo per StsXyter
@@ -877,12 +920,15 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
          server->Register("/StsFeb", fhStsFebChanCntRawGood[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebChanAdcRaw[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebChanAdcRawProf[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebChanAdcCal[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebChanAdcCalProf[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebChanRawTs[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebChanMissEvt[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebChanMissEvtEvo[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebAsicMissEvtEvo[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebMissEvtEvo[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebChanHitRateEvo[ uFebIdx ] );
+         server->Register("/StsFeb", fhStsFebChanHitRateProf[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebAsicHitRateEvo[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebHitRateEvo[ uFebIdx ] );
          server->Register("/StsFeb", fhStsFebChanHitRateEvoLong[ uFebIdx ] );
@@ -923,7 +969,7 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       TCanvas* cStsSumm = new TCanvas( Form("cStsSum_%03u", uFebIdx ),
                                        Form("Summary plots for FEB %03u", uFebIdx ),
                                        w, h);
-      cStsSumm->Divide( 2, 2 );
+      cStsSumm->Divide( 2, 3 );
 
       cStsSumm->cd(1);
       gPad->SetGridx();
@@ -934,20 +980,32 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       cStsSumm->cd(2);
       gPad->SetGridx();
       gPad->SetGridy();
-      gPad->SetLogz();
-      fhStsFebChanAdcRaw[ uFebIdx ]->Draw( "colz" );
+      gPad->SetLogy();
+      fhStsFebChanHitRateProf[ uFebIdx ]->Draw( "e0" );
 
       cStsSumm->cd(3);
       gPad->SetGridx();
       gPad->SetGridy();
       gPad->SetLogz();
-      fhStsFebChanHitRateEvo[ uFebIdx ]->Draw( "colz" );
+      fhStsFebChanAdcRaw[ uFebIdx ]->Draw( "colz" );
 
       cStsSumm->cd(4);
       gPad->SetGridx();
       gPad->SetGridy();
 //      gPad->SetLogy();
       fhStsFebChanAdcRawProf[ uFebIdx ]->Draw();
+
+      cStsSumm->cd(5);
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogz();
+      fhStsFebChanAdcCal[ uFebIdx ]->Draw( "colz" );
+
+      cStsSumm->cd(6);
+      gPad->SetGridx();
+      gPad->SetGridy();
+//      gPad->SetLogy();
+      fhStsFebChanAdcCalProf[ uFebIdx ]->Draw();
    } // for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
 
 //====================================================================//
@@ -1019,6 +1077,48 @@ Bool_t CbmMcbm2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
             fhMsSz[ uMsComp ]->Fill( uSize );
             fhMsSzTime[ uMsComp ]->Fill( dMsTime - fdStartTimeMsSz, uSize);
          } // if( uMsComp < kiMaxNbFlibLinks )
+
+         /// Plots in [X/s] update
+         if( static_cast<Int_t>( fvdMsTime[ uMsCompIdx ] ) < static_cast<Int_t>( dMsTime )  )
+         {
+            /// "new second"
+            UInt_t uFebIdxOffset = fUnpackParSts->GetNbFebsPerDpb() * fuCurrDpbIdx;
+            for( UInt_t uFebIdx = 0; uFebIdx < fUnpackParSts->GetNbFebsPerDpb(); ++uFebIdx )
+            {
+               UInt_t uFebIdxInSyst = uFebIdxOffset + uFebIdx;
+
+               /// Ignore first interval is not clue how late the data taking was started
+               if( 0 == fviFebTimeSecLastRateUpdate[uFebIdxInSyst] )
+               {
+                  fviFebTimeSecLastRateUpdate[uFebIdxInSyst] = static_cast<Int_t>( dMsTime );
+                  fviFebCountsSinceLastRateUpdate[uFebIdxInSyst] = 0;
+                  for( UInt_t uChan = 0; uChan < fUnpackParSts->GetNbChanPerFeb(); ++uChan )
+                     fvdFebChanCountsSinceLastRateUpdate[uFebIdxInSyst][uChan] = 0.0;
+                  continue;
+               } // if( 0 == fviFebTimeSecLastRateUpdate[uFebIdxInSyst] )
+
+               Int_t iTimeInt = static_cast<Int_t>( dMsTime ) - fviFebTimeSecLastRateUpdate[uFebIdxInSyst];
+               if( fiTimeIntervalRateUpdate <= iTimeInt )
+               {
+                  /// Jump empty FEBs without looping over channels
+                  if( 0 == fviFebCountsSinceLastRateUpdate[uFebIdxInSyst] )
+                  {
+                     fviFebTimeSecLastRateUpdate[uFebIdxInSyst] = dMsTime;
+                     continue;
+                  } // if( 0 == fviFebCountsSinceLastRateUpdate[uFebIdxInSyst] )
+
+                  for( UInt_t uChan = 0; uChan < fUnpackParSts->GetNbChanPerFeb(); ++uChan )
+                  {
+                     fhStsFebChanHitRateProf[uFebIdxInSyst]->Fill( uChan,
+                                                             fvdFebChanCountsSinceLastRateUpdate[uFebIdxInSyst][uChan] / iTimeInt );
+                     fvdFebChanCountsSinceLastRateUpdate[uFebIdxInSyst][uChan] = 0.0;
+                  } // for( UInt_t uChan = 0; uChan < fUnpackParSts->GetNbChanPerFeb(); ++uChan )
+
+                  fviFebTimeSecLastRateUpdate[uFebIdxInSyst] = dMsTime;
+                  fviFebCountsSinceLastRateUpdate[uFebIdxInSyst] = 0;
+               } // if( fiTimeIntervalRateUpdate <= iTimeInt )
+            } // for( UInt_t uFebIdx = 0; uFebIdx < fUnpackParSts->GetNbFebsPerDpb(); ++uFebIdx )
+         } // if( static_cast<Int_t>( fvdMsTime[ uMsCompIdx ] ) < static_cast<Int_t>( dMsTime )  )
 
          // Store MS time for coincidence plots
          fvdMsTime[ uMsCompIdx ] = dMsTime;
@@ -1225,90 +1325,93 @@ Bool_t CbmMcbm2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
 
          for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
          {
-            for( itA  = fvmFebHitsInMs[ uFebIdx ].begin(); itA != fvmFebHitsInMs[ uFebIdx ].end(); ++itA )
+            if( kTRUE == fbEnableCoincidenceMaps )
             {
-               UShort_t  usAsicIdxA  = (*itA).GetAsic();
-               UShort_t  usChanIdxA  = (*itA).GetChan();
-               UInt_t    uChanInFebA = usChanIdxA + fUnpackParSts->GetNbChanPerAsic() * (usAsicIdxA % fUnpackParSts->GetNbAsicsPerFeb());
-               ULong64_t ulHitTsA    = (*itA).GetTs();
-               Double_t  dHitTsA     = ulHitTsA * stsxyter::kdClockCycleNs;
-
-               for( UInt_t uFebIdxB  = uFebIdx; uFebIdxB < fuNbFebs; ++uFebIdxB )
+               for( itA  = fvmFebHitsInMs[ uFebIdx ].begin(); itA != fvmFebHitsInMs[ uFebIdx ].end(); ++itA )
                {
-                  for( itB  = fvmFebHitsInMs[ uFebIdxB ].begin(); itB != fvmFebHitsInMs[ uFebIdxB ].end(); ++itB )
+                  UShort_t  usAsicIdxA  = (*itA).GetAsic();
+                  UShort_t  usChanIdxA  = (*itA).GetChan();
+                  UInt_t    uChanInFebA = usChanIdxA + fUnpackParSts->GetNbChanPerAsic() * (usAsicIdxA % fUnpackParSts->GetNbAsicsPerFeb());
+                  ULong64_t ulHitTsA    = (*itA).GetTs();
+                  Double_t  dHitTsA     = ulHitTsA * stsxyter::kdClockCycleNs;
+
+                  for( UInt_t uFebIdxB  = uFebIdx; uFebIdxB < fuNbFebs; ++uFebIdxB )
                   {
-                     UShort_t  usAsicIdxB  = (*itB).GetAsic();
-                     UShort_t  usChanIdxB  = (*itB).GetChan();
-                     UInt_t    uChanInFebB = usChanIdxB + fUnpackParSts->GetNbChanPerAsic() * (usAsicIdxB % fUnpackParSts->GetNbAsicsPerFeb());
-
-                     if( uFebIdx == uFebIdxB && uChanInFebA == uChanInFebB )
-                        continue;
-
-                     ULong64_t ulHitTsB    = (*itB).GetTs();
-                     Double_t  dHitTsB     = ulHitTsB * stsxyter::kdClockCycleNs;
-                     Double_t dDtClk = static_cast< Double_t >( ulHitTsB ) - static_cast< Double_t >( ulHitTsA );
-                     Double_t dDt    = dDtClk * stsxyter::kdClockCycleNs;
-
-                     fhStsFebChanDtCoinc[ uFebIdx ][ uFebIdxB ]->Fill( dDt );
-
-                     /// Check if we have a channel coincidence
-                     if( -1.0 * kdFebChanCoincidenceLimit < dDt )
+                     for( itB  = fvmFebHitsInMs[ uFebIdxB ].begin(); itB != fvmFebHitsInMs[ uFebIdxB ].end(); ++itB )
                      {
-                        /// If out of coincidence, later hits will also be out => break the HitB loop
-                        if( kdFebChanCoincidenceLimit < dDt )
-                           break;
+                        UShort_t  usAsicIdxB  = (*itB).GetAsic();
+                        UShort_t  usChanIdxB  = (*itB).GetChan();
+                        UInt_t    uChanInFebB = usChanIdxB + fUnpackParSts->GetNbChanPerAsic() * (usAsicIdxB % fUnpackParSts->GetNbAsicsPerFeb());
 
-                        fhStsFebChanCoinc[ uFebIdx ][ uFebIdxB ]->Fill( uChanInFebA, uChanInFebB );
+                        if( uFebIdx == uFebIdxB && uChanInFebA == uChanInFebB )
+                           continue;
 
-                        /// Module P-N coincidences
-                        UInt_t uFebA     =   uFebIdx  % fUnpackParSts->GetNbFebsPerCrob();
-                        UInt_t uCrobIdxA = ( uFebIdx  / fUnpackParSts->GetNbFebsPerCrob() ) % fUnpackParSts->GetNbCrobsPerDpb();
-                        UInt_t uDpbIdxA  = ( uFebIdx  / fUnpackParSts->GetNbFebsPerCrob() ) / fUnpackParSts->GetNbCrobsPerDpb();
+                        ULong64_t ulHitTsB    = (*itB).GetTs();
+                        Double_t  dHitTsB     = ulHitTsB * stsxyter::kdClockCycleNs;
+                        Double_t dDtClk = static_cast< Double_t >( ulHitTsB ) - static_cast< Double_t >( ulHitTsA );
+                        Double_t dDt    = dDtClk * stsxyter::kdClockCycleNs;
 
-                        UInt_t uFebB     =   uFebIdxB % fUnpackParSts->GetNbFebsPerCrob();
-                        UInt_t uCrobIdxB = ( uFebIdxB / fUnpackParSts->GetNbFebsPerCrob() ) % fUnpackParSts->GetNbCrobsPerDpb();
-                        UInt_t uDpbIdxB  = ( uFebIdxB / fUnpackParSts->GetNbFebsPerCrob() ) / fUnpackParSts->GetNbCrobsPerDpb();
+                        fhStsFebChanDtCoinc[ uFebIdx ][ uFebIdxB ]->Fill( dDt );
 
-                        if( fviFebModuleIdx[ uDpbIdxA ][ uCrobIdxB ][ uFebA ] == fviFebModuleIdx[ uDpbIdxA ][ uCrobIdxB ][ uFebA ] &&
-                            fviFebModuleSide[ uDpbIdxA ][ uCrobIdxB ][ uFebA ] != fviFebModuleSide[ uDpbIdxA ][ uCrobIdxB ][ uFebA ] )
+                        /// Check if we have a channel coincidence
+                        if( -1.0 * kdFebChanCoincidenceLimit < dDt )
                         {
+                           /// If out of coincidence, later hits will also be out => break the HitB loop
+                           if( kdFebChanCoincidenceLimit < dDt )
+                              break;
 
-                           UInt_t uModIdx = fviFebModuleIdx[ uDpbIdxA ][ uCrobIdxB ][ uFebA ];
-                           UShort_t  usAdcA  = (*itA).GetAdc();
-                           UShort_t  usAdcB  = (*itB).GetAdc();
-                           Double_t dPosX = 0.0;
-                           Double_t dPosY = 0.0;
+                           fhStsFebChanCoinc[ uFebIdx ][ uFebIdxB ]->Fill( uChanInFebA, uChanInFebB );
 
-                           if( 0 == fviFebModuleSide[ uDpbIdxA ][ uCrobIdxB ][ uFebA ] )
+                           /// Module P-N coincidences
+                           UInt_t uFebA     =   uFebIdx  % fUnpackParSts->GetNbFebsPerCrob();
+                           UInt_t uCrobIdxA = ( uFebIdx  / fUnpackParSts->GetNbFebsPerCrob() ) % fUnpackParSts->GetNbCrobsPerDpb();
+                           UInt_t uDpbIdxA  = ( uFebIdx  / fUnpackParSts->GetNbFebsPerCrob() ) / fUnpackParSts->GetNbCrobsPerDpb();
+
+                           UInt_t uFebB     =   uFebIdxB % fUnpackParSts->GetNbFebsPerCrob();
+                           UInt_t uCrobIdxB = ( uFebIdxB / fUnpackParSts->GetNbFebsPerCrob() ) % fUnpackParSts->GetNbCrobsPerDpb();
+                           UInt_t uDpbIdxB  = ( uFebIdxB / fUnpackParSts->GetNbFebsPerCrob() ) / fUnpackParSts->GetNbCrobsPerDpb();
+
+                           if( fviFebModuleIdx[ uDpbIdxA ][ uCrobIdxB ][ uFebA ] == fviFebModuleIdx[ uDpbIdxA ][ uCrobIdxB ][ uFebA ] &&
+                               fviFebModuleSide[ uDpbIdxA ][ uCrobIdxB ][ uFebA ] != fviFebModuleSide[ uDpbIdxA ][ uCrobIdxB ][ uFebA ] )
                            {
-                              /// Compute coincidence coordinates (no cluster )
-                              fUnpackParSts->ComputeModuleCoordinates( uModIdx, uChanInFebB, uChanInFebA, dPosX, dPosY );
 
-                              /// Fill Chan and ADC histos
-                              fhStsModulePNCoincChan[ uModIdx ]->Fill(   uChanInFebA, uChanInFebB );
-                              fhStsModulePNCoincAdc[ uModIdx ]->Fill(    usAdcA,      usAdcB );
-                              fhStsModuleCoincAdcChanP[ uModIdx ]->Fill( uChanInFebA, usAdcA );
-                              fhStsModuleCoincAdcChanN[ uModIdx ]->Fill( uChanInFebB, usAdcB );
-                           } // if( 0 == fviFebModuleSide[ uFebIdx ] )
-                              else
+                              UInt_t uModIdx = fviFebModuleIdx[ uDpbIdxA ][ uCrobIdxB ][ uFebA ];
+                              UShort_t  usAdcA  = (*itA).GetAdc();
+                              UShort_t  usAdcB  = (*itB).GetAdc();
+                              Double_t dPosX = 0.0;
+                              Double_t dPosY = 0.0;
+
+                              if( 0 == fviFebModuleSide[ uDpbIdxA ][ uCrobIdxB ][ uFebA ] )
                               {
                                  /// Compute coincidence coordinates (no cluster )
-                                 fUnpackParSts->ComputeModuleCoordinates( uModIdx, uChanInFebA, uChanInFebB, dPosX, dPosY );
+                                 fUnpackParSts->ComputeModuleCoordinates( uModIdx, uChanInFebB, uChanInFebA, dPosX, dPosY );
 
                                  /// Fill Chan and ADC histos
-                                 fhStsModulePNCoincChan[ uModIdx ]->Fill(   uChanInFebB, uChanInFebA );
-                                 fhStsModulePNCoincAdc[ uModIdx ]->Fill(    usAdcB,      usAdcA );
-                                 fhStsModuleCoincAdcChanP[ uModIdx ]->Fill( uChanInFebB, usAdcB );
-                                 fhStsModuleCoincAdcChanN[ uModIdx ]->Fill( uChanInFebA, usAdcA );
-                              } // else of if( 0 == fviFebModuleSide[ uFebIdx ] )
+                                 fhStsModulePNCoincChan[ uModIdx ]->Fill(   uChanInFebA, uChanInFebB );
+                                 fhStsModulePNCoincAdc[ uModIdx ]->Fill(    usAdcA,      usAdcB );
+                                 fhStsModuleCoincAdcChanP[ uModIdx ]->Fill( uChanInFebA, usAdcA );
+                                 fhStsModuleCoincAdcChanN[ uModIdx ]->Fill( uChanInFebB, usAdcB );
+                              } // if( 0 == fviFebModuleSide[ uFebIdx ] )
+                                 else
+                                 {
+                                    /// Compute coincidence coordinates (no cluster )
+                                    fUnpackParSts->ComputeModuleCoordinates( uModIdx, uChanInFebA, uChanInFebB, dPosX, dPosY );
 
-                           /// Fill position histos
-                           fhStsModuleCoincMap[ uModIdx ]->Fill( dPosX, dPosY );
-                        } // if same module and opposite sides
-                     } // if( -1.0 * kdFebChanCoincidenceLimit < dDt )
-                  } // for( itB  = fvmFebHitsInMs[ uFebIdxB ].begin(); itB != fvmFebHitsInMs[ uFebIdxB ].end(); ++itB )
-               } // for( UInt_t uFebIdxB = uFebIdx; uFebIdxB < fuNbFebs; ++uFebIdxB )
-            } // for( itA  = fvmFebHitsInMs[ uFebIdx ].begin(); itA != fvmFebHitsInMs[ uFebIdx ].end(); ++itA )
+                                    /// Fill Chan and ADC histos
+                                    fhStsModulePNCoincChan[ uModIdx ]->Fill(   uChanInFebB, uChanInFebA );
+                                    fhStsModulePNCoincAdc[ uModIdx ]->Fill(    usAdcB,      usAdcA );
+                                    fhStsModuleCoincAdcChanP[ uModIdx ]->Fill( uChanInFebB, usAdcB );
+                                    fhStsModuleCoincAdcChanN[ uModIdx ]->Fill( uChanInFebA, usAdcA );
+                                 } // else of if( 0 == fviFebModuleSide[ uFebIdx ] )
+
+                              /// Fill position histos
+                              fhStsModuleCoincMap[ uModIdx ]->Fill( dPosX, dPosY );
+                           } // if same module and opposite sides
+                        } // if( -1.0 * kdFebChanCoincidenceLimit < dDt )
+                     } // for( itB  = fvmFebHitsInMs[ uFebIdxB ].begin(); itB != fvmFebHitsInMs[ uFebIdxB ].end(); ++itB )
+                  } // for( UInt_t uFebIdxB = uFebIdx; uFebIdxB < fuNbFebs; ++uFebIdxB )
+               } // for( itA  = fvmFebHitsInMs[ uFebIdx ].begin(); itA != fvmFebHitsInMs[ uFebIdx ].end(); ++itA )
+            } // if( kTRUE == fbEnableCoincidenceMaps )
 
             /// Data in vector are not needed anymore as all possible matches are already checked
             fvmFebHitsInMs[ uFebIdx ].clear();
@@ -1370,9 +1473,14 @@ void CbmMcbm2018MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
    UInt_t uAsicInFeb = uAsicIdx % fUnpackParSts->GetNbAsicsPerFeb();
    UInt_t uChanInFeb = usChan + fUnpackParSts->GetNbChanPerAsic() * (uAsicIdx % fUnpackParSts->GetNbAsicsPerFeb());
 
+   Double_t dCalAdc = fviFebAdcOffs[ fuCurrDpbIdx ][ uCrobIdx ][ uFebIdx ]
+                     + usRawAdc * fviFebAdcGain[ fuCurrDpbIdx ][ uCrobIdx ][ uFebIdx ];
+
    fhStsFebChanCntRaw[  uFebIdx ]->Fill( uChanInFeb );
    fhStsFebChanAdcRaw[  uFebIdx ]->Fill( uChanInFeb, usRawAdc );
    fhStsFebChanAdcRawProf[  uFebIdx ]->Fill( uChanInFeb, usRawAdc );
+   fhStsFebChanAdcCal[  uFebIdx ]->Fill(     uChanInFeb, dCalAdc );
+   fhStsFebChanAdcCalProf[  uFebIdx ]->Fill( uChanInFeb, dCalAdc );
    fhStsFebChanRawTs[   uFebIdx ]->Fill( usChan, usRawTs );
    fhStsFebChanMissEvt[ uFebIdx ]->Fill( usChan, mess.IsHitMissedEvts() );
 
@@ -1460,6 +1568,9 @@ void CbmMcbm2018MonitorSts::FillHitInfo( stsxyter::Message mess, const UShort_t 
    // Fill histos with time as X axis
    Double_t dTimeSinceStartSec = (fvdChanLastHitTime[ uAsicIdx ][ usChan ] - fdStartTime)* 1e-9;
    Double_t dTimeSinceStartMin = dTimeSinceStartSec / 60.0;
+
+   fviFebCountsSinceLastRateUpdate[uFebIdx]++;
+   fvdFebChanCountsSinceLastRateUpdate[uFebIdx][uChanInFeb] += 1;
 
    fhStsFebChanHitRateEvo[ uFebIdx ]->Fill( dTimeSinceStartSec, uChanInFeb );
    fhStsFebAsicHitRateEvo[ uFebIdx ]->Fill( dTimeSinceStartSec, uAsicInFeb );
@@ -1661,12 +1772,15 @@ void CbmMcbm2018MonitorSts::SaveAllHistos( TString sFileName )
       fhStsFebChanCntRawGood[ uFebIdx ]->Write();
       fhStsFebChanAdcRaw[ uFebIdx ]->Write();
       fhStsFebChanAdcRawProf[ uFebIdx ]->Write();
+      fhStsFebChanAdcCal[ uFebIdx ]->Write();
+      fhStsFebChanAdcCalProf[ uFebIdx ]->Write();
       fhStsFebChanRawTs[ uFebIdx ]->Write();
       fhStsFebChanMissEvt[ uFebIdx ]->Write();
       fhStsFebChanMissEvtEvo[ uFebIdx ]->Write();
       fhStsFebAsicMissEvtEvo[ uFebIdx ]->Write();
       fhStsFebMissEvtEvo[ uFebIdx ]->Write();
       fhStsFebChanHitRateEvo[ uFebIdx ]->Write();
+      fhStsFebChanHitRateProf[ uFebIdx ]->Write();
       fhStsFebAsicHitRateEvo[ uFebIdx ]->Write();
       fhStsFebHitRateEvo[ uFebIdx ]->Write();
       fhStsFebChanHitRateEvoLong[ uFebIdx ]->Write();
@@ -1806,12 +1920,15 @@ void CbmMcbm2018MonitorSts::ResetAllHistos()
       fhStsFebChanCntRawGood[ uFebIdx ]->Reset();
       fhStsFebChanAdcRaw[ uFebIdx ]->Reset();
       fhStsFebChanAdcRawProf[ uFebIdx ]->Reset();
+      fhStsFebChanAdcCal[ uFebIdx ]->Reset();
+      fhStsFebChanAdcCalProf[ uFebIdx ]->Reset();
       fhStsFebChanRawTs[ uFebIdx ]->Reset();
       fhStsFebChanMissEvt[ uFebIdx ]->Reset();
       fhStsFebChanMissEvtEvo[ uFebIdx ]->Reset();
       fhStsFebAsicMissEvtEvo[ uFebIdx ]->Reset();
       fhStsFebMissEvtEvo[ uFebIdx ]->Reset();
       fhStsFebChanHitRateEvo[ uFebIdx ]->Reset();
+      fhStsFebChanHitRateProf[ uFebIdx ]->Reset();
       fhStsFebAsicHitRateEvo[ uFebIdx ]->Reset();
       fhStsFebHitRateEvo[ uFebIdx ]->Reset();
       fhStsFebChanHitRateEvoLong[ uFebIdx ]->Reset();

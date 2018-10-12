@@ -72,6 +72,7 @@ public:
                                                            stsxyter::MessagePrintMask::msg_print_Human )
                         { fbPrintMessages = bPrintMessOn; fPrintMessCtrl = ctrl; }
    void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
+   void SetEnableCoincidenceMaps( Bool_t bEnableCoincidenceMapsOn = kTRUE ) { fbEnableCoincidenceMaps = bEnableCoincidenceMapsOn; }
    void SetCoincidenceBorder( Double_t dCenterPos, Double_t dBorderVal );
 
 private:
@@ -94,6 +95,8 @@ private:
    std::vector< std::vector< std::vector< Int_t > > > fviFebModuleIdx;   //! Idx of the STS module for each FEB, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ], -1 if inactive
    std::vector< std::vector< std::vector< Int_t > > > fviFebModuleSide;  //! STS module side for each FEB, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ], 0 = P, 1 = N, -1 if inactive
    std::vector< std::vector< std::vector< Int_t > > > fviFebType;  //! FEB type, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ], 0 = A, 1 = B, -1 if inactive
+   std::vector< std::vector< std::vector< Double_t > > > fviFebAdcGain;  //! ADC gain in e-/b, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ]
+   std::vector< std::vector< std::vector< Double_t > > > fviFebAdcOffs;  //! ADC offset in e-, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ]
 
    // Constants
    static const Int_t    kiMaxNbFlibLinks = 16;
@@ -105,6 +108,7 @@ private:
       /// Task configuration values
    Bool_t                fbPrintMessages;
    stsxyter::MessagePrintMask fPrintMessCtrl;
+   Bool_t                fbEnableCoincidenceMaps;
       /// TS/MS info
    ULong64_t             fulCurrentTsIdx;
    ULong64_t             fulCurrentMsIdx;
@@ -141,6 +145,11 @@ private:
    std::vector< std::vector< stsxyter::FinalHit > > fvmFebHitsInMs; //! All hits (time in bins, ADC in bins, asic, channel) in last TS, per FEB, sorted with "<" operator
       /// Coincidence histos
    UInt_t fuMaxNbMicroslices;
+      /// Mean Rate per channel plots
+   Int_t                                  fiTimeIntervalRateUpdate;
+   std::vector< Int_t >                   fviFebTimeSecLastRateUpdate;
+   std::vector< Int_t >                   fviFebCountsSinceLastRateUpdate;
+   std::vector< std::vector< Double_t > > fvdFebChanCountsSinceLastRateUpdate;
       /// Rate evolution histos
    Bool_t fbLongHistoEnable;
    UInt_t fuLongHistoNbSeconds;
@@ -182,12 +191,15 @@ private:
    std::vector<TH1 *>     fhStsFebChanCntRawGood;
    std::vector<TH2 *>     fhStsFebChanAdcRaw;
    std::vector<TProfile*> fhStsFebChanAdcRawProf;
+   std::vector<TH2 *>     fhStsFebChanAdcCal;
+   std::vector<TProfile*> fhStsFebChanAdcCalProf;
    std::vector<TH2*>      fhStsFebChanRawTs;
    std::vector<TH2*>      fhStsFebChanMissEvt;
    std::vector<TH2*>      fhStsFebChanMissEvtEvo;
    std::vector<TH2*>      fhStsFebAsicMissEvtEvo;
    std::vector<TH1*>      fhStsFebMissEvtEvo;
    std::vector<TH2*>      fhStsFebChanHitRateEvo;
+   std::vector<TProfile*> fhStsFebChanHitRateProf;
    std::vector<TH2*>      fhStsFebAsicHitRateEvo;
    std::vector<TH1*>      fhStsFebHitRateEvo;
    std::vector<TH2*>      fhStsFebChanHitRateEvoLong;
