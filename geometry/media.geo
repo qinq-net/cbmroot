@@ -1,31 +1,4 @@
-//  $Id: media.geo,v 1.10 2006/09/12 07:27:58 kresan Exp $
-
-//  History of cvs commits:
-//  $Log: media.geo,v $
-//  Revision 1.10  2006/09/12 07:27:58  kresan
-//  media file for new TOF geometry
-//
-//  Revision 1.9  2006/06/21 13:56:09  hoehne
-//  set RICHglass (Rich mirror material) sensitive
-//
-//  Revision 1.8  2006/04/16 11:55:26  sgorboun
-//  MUon CHambers added to repository
-//
-//  Revision 1.7  2006/02/08 14:02:54  hoehne
-//  refractive index of CsI set to 1.0003 (appr. N2) to avoid total internal reflection in photodetector
-//
-//  Revision 1.6  2006/02/03 12:42:44  hoehne
-//  CO2 added as radiator gas
-//
-//  Revision 1.5  2005/11/30 16:04:08  hoehne
-//  RICHglass not sensitive anymore
-//
-//  Revision 1.2  2005/07/12 12:54:48  kharlov
-//  New sensitive RICH gas added
-//
-//
-
-//----------------------------------------------------------
+//  Media used for CBM geometries
 
 
 // -----   Vacuum   ----------------------------------------------------------
@@ -87,7 +60,12 @@ PsdScint           2  12.011  1.008  6.   1.  1.032  0.9225687  0.0774313
 // --- Plastic (Fibres), passive, same as for scintillator			       
 PsdFibre           2  12.011  1.008  6.   1.  1.032  0.9225687  0.0774313
                    0  0  20.  0.001
-                   0		       
+                   0	
+
+// —— Borated polyethylene for PSD shielding
+PsdPolyethylene    3  12.01   1.01   10.81  6.  1.  5.  1.12  0.825  0.14  0.035
+                   0  1  20.  0.001
+                   0       
 // ---------------------------------------------------------------------------
 
                    
