@@ -327,11 +327,11 @@ void CbmMvdDigitizer::Reset() {
 
 // -----   Reset output arrays   -------------------------------------------
 void CbmMvdDigitizer::ResetArrays() {
-  fDigis->Delete();
-  fDigiMatch->Delete();
-  fMcPileUp->Delete();
-  fTmpMatch->Delete();
-  fTmpDigi->Delete();
+  if ( fDigis) fDigis->Delete();
+  if ( fDigiMatch) fDigiMatch->Delete();
+  if ( fMcPileUp) fMcPileUp->Delete();
+  if ( fTmpMatch) fTmpMatch->Delete();
+  if ( fTmpDigi) fTmpDigi->Delete();
   fDigiVect.clear();
   fMatchVect.clear();
 }
