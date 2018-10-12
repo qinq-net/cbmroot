@@ -56,6 +56,7 @@ void MonitorSts(TString inFile = "",
 //  monitorSts->SetMsOverlap( 1 );
 //  monitorSts->SetLongDurationLimits( 3600, 10 );
   monitorSts->SetLongDurationLimits( 7200, 60 );
+//  monitorSts->SetEnableCoincidenceMaps();
   monitorSts->SetCoincidenceBorder(   0.0,  200 );
 
   // --- Source task
