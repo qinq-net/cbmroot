@@ -194,7 +194,7 @@ Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R=0
   Double_t at[fTofHit.size()];
   Double_t ae[fTofHit.size()];
   for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
-    if( fTofDet[iHit]>0) {                        // exclude faked hits
+    if( fTofDet[iHit]>=0) {                        // exclude faked hits
       if(nValidHits==0){
 	iHit1=iHit;
 	//dDist1=fhit[iHit1].GetR();
@@ -284,9 +284,10 @@ Double_t CbmTofTracklet::UpdateTt(){
   Double_t dTt=0.;
   Int_t iNt=0;
   for (UInt_t iHL=0; iHL<fhit.size()-1; iHL++){
-      if( fTofDet[iHL]>0 )                         // exclude faked hits 
-      for (UInt_t iHH=iHL+1; iHH<fhit.size(); iHH++){
-      if( fTofDet[iHH]>0) {                        // exclude faked hits 	      
+    //if( fTofDet[iHL]>0 )                         // exclude faked hits 
+    for (UInt_t iHH=iHL+1; iHH<fhit.size(); iHH++){
+      //if( fTofDet[iHH]>0)   // exclude faked hits 
+      {                      	      
 	dTt+=(fhit[iHH].GetTime()-fhit[iHL].GetTime())/(fhit[iHH].GetR()-fhit[iHL].GetR());
 	iNt++;
       }
@@ -307,7 +308,7 @@ Double_t CbmTofTracklet::GetTdif(Int_t iDetId, CbmTofHit* pHit){
   Double_t dTt=0.;
   Int_t iNt=0;
   
-  if(0){
+  if(0) {
     for (UInt_t iHL=0; iHL<fhit.size()-1; iHL++){
      if (iDetId == fTofDet[iHL] || 0 == fTofDet[iHL]) continue;           // exclude faked hits 
      for (UInt_t iHH=iHL+1; iHH<fhit.size(); iHH++){
