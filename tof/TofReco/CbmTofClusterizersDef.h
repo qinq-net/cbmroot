@@ -41,9 +41,9 @@ const Int_t ModMask = 0x0000FFFF;
 Int_t iNevtBuild=0; // Should be class member!
 Int_t iMsgCnt=100;  // Should be class member!
 */
-const Int_t nbClWalkBinX=100;
+const Int_t nbClWalkBinX=50;   // was 100 (11.10.2018)
 const Int_t nbClWalkBinY=41;   // choose odd number to have central bin symmetric around 0
-const Double_t WalkNHmin=25.;  // minimal number of hits in bin for walk correction
+const Double_t WalkNHmin=10.;  // minimal number of hits in bin for walk correction
 const Int_t iNWalkSmooth=1;    // Smoothing level for walk histos
 /*
 Double_t TOTMax=5.E4; // Should be class member!

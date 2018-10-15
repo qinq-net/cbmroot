@@ -1,6 +1,7 @@
 // -------------------------------------------------------------------------
-// -----                   CbmTrdFindTracks source file                -----
-// -----                  Created 25/04/15  by N. Herrmann             -----// -----                  initially following  CbmTrdFindTracks        -----
+// -----                  CbmTofFindTracks source file                -----
+// -----                  Created 25/04/15  by N. Herrmann             -----
+// -----                  initially following  CbmTrdFindTracks        -----
 // -------------------------------------------------------------------------
 
 #include "CbmTofAddress.h"    // in cbmdata/tof
@@ -48,7 +49,7 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-const Int_t DetMask = 4194303; // check for consistency with geometry
+const Int_t DetMask = 0x3FFFFF; // check for consistency with geometry
 
 ClassImp(CbmTofFindTracks);
 
@@ -147,7 +148,7 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     fhDeltaTt_Smt(NULL),
     fhTOff_HMul2(NULL),
     fiCorMode(0),
-    fiBeamCounter(0),
+    fiBeamCounter(-1),
     fiStationMaxHMul(1000),
     fTtTarg(30.),
     fVTXNorm(0.),
@@ -397,7 +398,7 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
 	CbmTofCell* fChannelInfo   = fDigiPar->GetCell(iUniqueId);
 	if(NULL != fChannelInfo) {
           Double_t dVal=1.; // FIXME numeric constant in code, default for cosmic 
-	  if (fiBeamCounter !=0) 
+	  if (fiBeamCounter !=-1) 
 	     dVal = fChannelInfo->GetZ() * fTtTarg ; //  use calibration target value
 	  fhPullT_Smt_Off->SetBinContent(iDet+1,dVal);
 	  LOG(INFO)<<Form("Initialize det 0x%08x at %d with TOff %6.2f",
@@ -1100,7 +1101,7 @@ void CbmTofFindTracks::CreateHistograms(){
   if(fT0MAX == 0) fT0MAX = DT0MAX;
   fhPullT_Smt = new TH2F( Form("hPullT_Smt"),
 			  Form("Tracklet ResiT vs RpcInd ; RpcInd ; #DeltaT (ns)"),
-			  nSmt, 0, nSmt, 5001, -fT0MAX, fT0MAX);
+			  nSmt, 0, nSmt, 501, -fT0MAX, fT0MAX);
   Double_t DX0MAX=5.;
   fhPullX_Smt = new TH2F( Form("hPullX_Smt"),
 			  Form("Tracklet ResiX vs RpcInd ; RpcInd ; #DeltaX (cm)"),
@@ -1116,7 +1117,7 @@ void CbmTofFindTracks::CreateHistograms(){
 
   fhTOff_Smt = new TH2F( Form("hTOff_Smt"),
 			 Form("Tracklet TOff; RpcInd ; TOff (ns)"),
-			 nSmt, 0, nSmt, 5001, -fT0MAX, fT0MAX);
+			 nSmt, 0, nSmt, 501, -fT0MAX, fT0MAX);
   fhTOff_HMul2 = new TH2F( Form("hTOff_HMul2"),
 			 Form("Tracklet TOff(HMul2); RpcInd ; TOff (ns)"),
 			 nSmt, 0, nSmt, 500, -fT0MAX, fT0MAX);
@@ -1249,7 +1250,7 @@ void CbmTofFindTracks::FillHistograms(){
   for (Int_t iHit=0; iHit<fTofHitArray->GetEntries(); iHit++){ // loop over Hits 
     CbmTofHit* pHit = (CbmTofHit*) fTofHitArray->At( iHit );	
     Int_t iAddr   = ( pHit->GetAddress() & DetMask );
-    if( fiBeamCounter != 0 )
+    if( fiBeamCounter != -1 )
     { if (iAddr == fiBeamCounter) 
       if (pHit->GetTime()<RefMinTime) {
 	pRefHit=pHit;
@@ -1262,7 +1263,7 @@ void CbmTofFindTracks::FillHistograms(){
       }
     }
   }
-  if(fiBeamCounter != 0 && NULL == pRefHit) return;
+  if(fiBeamCounter != -1 && NULL == pRefHit) return;
 
   std::vector<Int_t> HMul;
   HMul.resize(fNTofStations+1);

@@ -267,6 +267,12 @@ InitStatus CbmTofCosmicClusterizer::Init()
     fSel2Addr=CbmTofAddress::GetUniqueAddress(fSel2Sm,0,0,0,fSel2Id);
     iIndexDut=fDigiBdfPar->GetDetInd(fDutAddr);
 
+    LOG(INFO) <<"Init() completed for "<<iNSel<<" triggers"
+               <<", Dut "<<fDutId<<", "<<fDutSm<<", "<<fDutRpc<<Form(", 0x%08x",fDutAddr) 
+	       <<", Sel "<<fSelId<<", "<<fSelSm<<", "<<fSelRpc<<Form(", 0x%08x",fSelAddr)
+	       <<", Sel2 "<<fSel2Id<<", "<<fSel2Sm<<", "<<fSel2Rpc<<Form(", 0x%08x",fSel2Addr) 
+               <<FairLogger::endl;
+
    return kSUCCESS;
 }
 
@@ -1466,11 +1472,6 @@ Bool_t   CbmTofCosmicClusterizer::FillHistos()
 
   if(0<iNSel){                  // check software triggers
 
-    LOG(DEBUG) <<"CbmTofCosmicClusterizer::FillHistos() for "<<iNSel<<" triggers"
-               <<", Dut "<<fDutId<<", "<<fDutSm<<", "<<fDutRpc<<Form(", 0x%08x",fDutAddr) 
-	       <<", Sel "<<fSelId<<", "<<fSelSm<<", "<<fSelRpc<<Form(", 0x%08x",fSelAddr)
-	       <<", Sel2 "<<fSel2Id<<", "<<fSel2Sm<<", "<<fSel2Rpc<<Form(", 0x%08x",fSel2Addr) 
-               <<FairLogger::endl;
     LOG(DEBUG) <<"CbmTofCosmicClusterizer::FillHistos: Muls: "
                      <<fviClusterMul[fDutId][fDutSm][fDutRpc]
                <<", "<<fviClusterMul[fSelId][fSelSm][fSelRpc]
@@ -2482,13 +2483,13 @@ Bool_t   CbmTofCosmicClusterizer::WriteHistos()
             h2tmp1=fhRpcCluAvWalk[iDetIndx];
            }	  }
           if(NULL == h2tmp0){
-            LOG(DEBUG)<<Form("WriteHistos: Walk histo not available for SmT %d, Sm %d, Rpc %d, Ch %d",iSmType,iSm,iRpc,iCh)
+            LOG(INFO)<<Form("WriteHistos: Walk histo not available for SmT %d, Sm %d, Rpc %d, Ch %d",iSmType,iSm,iRpc,iCh)
                      <<FairLogger::endl;
             continue;
           }
           Int_t iNEntries=h2tmp0->GetEntries();
-          if(iCh==0)  // condition to print message only once
-          LOG(DEBUG)<<Form(" Update Walk correction for SmT %d, Sm %d, Rpc %d, Ch %d, Sel%d: Entries %d",
+          //if(iCh==0)  // condition to print message only once
+          LOG(INFO)<<Form(" Update Walk correction for SmT %d, Sm %d, Rpc %d, Ch %d, Sel%d: Entries %d",
                           iSmType,iSm,iRpc,iCh,fCalSel,iNEntries)
                      <<FairLogger::endl;
 
@@ -2525,7 +2526,7 @@ Bool_t   CbmTofCosmicClusterizer::WriteHistos()
                fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]+=dWcor; //-dWMean0;
                fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]+=dWcor; //-dWMean1;
 
-	       if(iCh==10 && iSmType==9 && iSm==1 && h1tmp0->GetBinContent(iWx+1)>WalkNHmin)
+	       if(iCh==10 && iSmType==0 && iSm==1 && h1tmp0->GetBinContent(iWx+1)>WalkNHmin)
 		 LOG(DEBUG) <<"Update Walk Sm = "<<iSm<<"("<<iNbRpc<<"), Rpc "<< iRpc <<", Bin "<< iWx << ", "
 		       <<h1tmp0->GetBinContent(iWx+1)<<" cts: "
                        <<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]<<" + "
@@ -2544,7 +2545,19 @@ Bool_t   CbmTofCosmicClusterizer::WriteHistos()
 	       Double_t dWcor1 = ((TProfile *)htmp1)->GetBinContent(iWx+1)-dWMean1;
 	       //Double_t dWcor = 0.5*(dWcor0 + dWcor1);
                fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]+=dWcor0; 
-               fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]+=dWcor1; 
+               fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]+=dWcor1;
+
+	       if(iCh==10 && iSmType==0 && h1tmp0->GetBinContent(iWx+1)>WalkNHmin)
+		 LOG(INFO) <<"Update Walk Sm = "<<iSm<<"("<<iNbRpc<<"), Rpc "<< iRpc <<", Bin "<< iWx << ", "
+		       <<h1tmp0->GetBinContent(iWx+1)<<" cts: "
+                       <<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]<<" + "
+		       <<((TProfile *)htmp0)->GetBinContent(iWx+1) << " - " << dWMean0
+		       <<" -> "<<dWcor0 - dWMean0
+		       <<", S1: "
+                       <<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]<<" + "
+		       <<((TProfile *)htmp1)->GetBinContent(iWx+1) << " - " << dWMean1
+		       <<" -> "<<dWcor1 - dWMean1 
+                       <<FairLogger::endl; 
 	     }
              break;
 

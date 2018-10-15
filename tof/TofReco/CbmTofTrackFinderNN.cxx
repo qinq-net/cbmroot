@@ -47,7 +47,7 @@ using std::map;
 using std::cout;
 using std::endl;
    
-const Int_t DetMask = 4194303; // check for consistency with geometry
+const Int_t DetMask = 0x3FFFFF; // check for consistency with geometry
 
 CbmTofTrackFinderNN::CbmTofTrackFinderNN() :
   fHits(NULL),
@@ -141,7 +141,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
   fOutTracks = fTofTracks; //new TClonesArray("CbmTofTracklet");
   //fTracks = new TClonesArray("CbmTofTracklet");
   //if (0 == fFindTracks->GetStationType(0)){ // Generate Pseudo TofHit at origin
-  if (0 == fFindTracks->GetAddrOfStation(0)) {  // generate new track seed
+  if (0) { //  == fFindTracks->GetAddrOfStation(0)) {  // generate new track seed, disabled
     fFindTracks->SetStation(0,0,0,0);
     const Int_t iDetId = CbmTofAddress::GetUniqueAddress(0,0,0,0,0);
     const TVector3 hitPos(0.,0.,0.);
@@ -279,7 +279,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	    //Double_t dR  = pHit1->GetR() - pHit->GetR();
 	    Double_t dR  = pTrk->Dist3D(pHit1,pHit);
 	    Double_t dTt = fFindTracks->GetTtTarg(); // assume calibration target value 
-	    if( 0 == iSmType) {
+	    if( 0 ) { //== iSmType) {  // disabled
 	      Double_t T0Fake = pHit->GetTime();
 	      Double_t w=fvTrkVec[iHit].size();
 	      T0Fake=(T0Fake*(w-1.)+(pHit1->GetTime() - dTt * dR))/w;
@@ -435,14 +435,17 @@ Int_t CbmTofTrackFinderNN::DoFind(
       }    // loop over tracklets end 
 
       while(iNCand>0) {  // at least one matching hit - trk pair found
-	LOG(DEBUG) << Form("%d hit match candidates to %d TofTracklets",iNCand,fTracks.size())<<FairLogger::endl;
-	for (Int_t iM=0; iM<iNCand; iM++) {
-	  CbmTofTracklet* pTrk = (CbmTofTracklet *)pTrkInd[iM];
-	  LOG(DEBUG1) << "\t" << Form("Hit %d, Trk %p  with chi2 %f (%f)", iHitInd[iM],  pTrkInd[iM], dChi2[iM], pTrk->GetMatChi2(fFindTracks->GetAddrOfStation(iDet)))<<FairLogger::endl;
-	}
-        PrintStatus((char*)"starting NCand");
 	CbmTofTracklet* pTrk = pTrkInd[0];
 	if(NULL == pTrk) continue;
+
+	LOG(DEBUG) << Form("%d hit match candidates to %d TofTracklets",iNCand,fTracks.size())<<FairLogger::endl;
+	for (Int_t iM=0; iM<iNCand; iM++) {
+	  pTrk = (CbmTofTracklet *)pTrkInd[iM];
+	  if(NULL == pTrk) break;
+	  //	  LOG(DEBUG1) << "\t" << Form("Hit %d, Trk %p  with chi2 %f (%f)", iHitInd[iM],  pTrkInd[iM], dChi2[iM], pTrk->GetMatChi2(fFindTracks->GetAddrOfStation(iDet)))<<FairLogger::endl;
+	}
+        PrintStatus((char*)"starting NCand");
+
 	// check if pTrk still active
 	Int_t iTr=0;
 	for(; iTr<fTracks.size(); iTr++){
@@ -743,7 +746,7 @@ void  CbmTofTrackFinderNN::UpdateTrackList( CbmTofTracklet* pTrk)
     if(iAddr == fFindTracks->GetBeamCounter()) continue;  // keep all tracklets from common beam reference counter
 
     Int_t iSmType = CbmTofAddress::GetSmType( iAddr );
-    if(iSmType==0) continue;                              // keep all tracklets with common target faked hit
+    //if(iSmType==0) continue;                          // keep all tracklets with common target faked hit
 
     if(NTrks == 0) LOG(FATAL)<<"UpdateTrackList NTrks=0 for event "<< fFindTracks->GetEventNumber()<<", pTrk "
 			     <<pTrk<<", iHit "<<iHit<<FairLogger::endl;
