@@ -53,6 +53,7 @@ Set(SRCS
   unpacker/CbmCosy2018MonitorSetupGood.cxx
   unpacker/CbmCosy2018MonitorEfficiency.cxx
   unpacker/CbmCosy2018MonitorPulser.cxx
+  unpacker/CbmCosy2018MonitorScan.cxx
 )
 
 #Set(NO_DICT_SRCS

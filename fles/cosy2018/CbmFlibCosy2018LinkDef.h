@@ -11,5 +11,6 @@
 #pragma link C++ class CbmCosy2018MonitorSetupGood;
 #pragma link C++ class CbmCosy2018MonitorEfficiency;
 #pragma link C++ class CbmCosy2018MonitorPulser;
+#pragma link C++ class CbmCosy2018MonitorScan;
 
 #endif
