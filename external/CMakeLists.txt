@@ -1,36 +1,36 @@
 # Build all libraries which come from external sources like other subversion or git repositories
 
-include(DownloadProject)
-download_project(PROJ            cppzmq
-                 GIT_REPOSITORY  "https://github.com/zeromq/cppzmq/"
-                 GIT_TAG         "05a0256d0eeea8063690fde6a156e14b70ed2280"
-                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/cppzmq
-)
+download_project_if_needed(PROJECT         cppzmq
+                           GIT_REPOSITORY  "https://github.com/zeromq/cppzmq/"
+                           GIT_TAG         "05a0256d0eeea8063690fde6a156e14b70ed2280"
+                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/cppzmq
+                           TEST_FILE       zmq.hpp
+                          )
+download_project_if_needed(PROJECT         flib_dpb_20
+                           GIT_REPOSITORY  "https://cbmgsi.githost.io/garcia_AT_iri.uni-frankfurt.de/flib_dpb_20.git"
+                           GIT_TAG         "ce30a7530204f860c433753ec0db9b649795bf94"
+                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/flib_dpb_20
+                           TEST_FILE       CMakeLists.txt
+                          )
 
-download_project(PROJ            flib_dpb_20
-                 GIT_REPOSITORY  "https://cbmgsi.githost.io/garcia_AT_iri.uni-frankfurt.de/flib_dpb_20.git"
-                 GIT_TAG         "ce30a7530204f860c433753ec0db9b649795bf94"
-                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/flib_dpb_20
-)
-
-set(Vc_VERSION "1.3.2")
+set(Vc_VERSION 58d7cc670f0c4dd198524c57ef28cc1bc1c8707d) # Hash for tag 1.3.2, Need hash for tests 
 set(Vc_SRC_URL "https://github.com/VcDevel/Vc")
-
-download_project(PROJ            vc_source
-                 GIT_REPOSITORY  ${Vc_SRC_URL}
-                 GIT_TAG         ${Vc_VERSION}
-                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Vc
-)
+download_project_if_needed(PROJECT         vc_source
+                           GIT_REPOSITORY  ${Vc_SRC_URL}
+                           GIT_TAG         ${Vc_VERSION}
+                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Vc
+                           TEST_FILE       CMakeLists.txt
+                          )
 
 set(KFPARTICLE_SRC_URL "https://cbmgsi.githost.io/m.zyzak/KFParticle.git")
 set(KFPARTICLE_DESTDIR "${CMAKE_BINARY_DIR}/external/KFPARTICLE-prefix")
 
-download_project(PROJ            kfparticle_source
-                 GIT_REPOSITORY  ${KFPARTICLE_SRC_URL}
-                 GIT_TAG         "master"
-                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/KFParticle
-)
-
+download_project_if_needed(PROJECT         kfparticle_source
+                           GIT_REPOSITORY  ${KFPARTICLE_SRC_URL}
+                           GIT_TAG         "cb833940b8013db0efd11fd1958063330b50b108"
+                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/KFParticle
+                           TEST_FILE       CMakeLists.txt
+                          )
 
 Set(IPC_INCLUDE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ipc/ipc/lib/fles_ipc PARENT_SCOPE)
 

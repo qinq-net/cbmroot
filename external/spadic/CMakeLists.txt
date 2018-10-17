@@ -2,11 +2,12 @@
 # The code is external in github as defined in the svn:extrenals.
 # Add some extra compile warnings 
 
-download_project(PROJ            spadic
-                 GIT_REPOSITORY  "https://github.com/spadic/spadic10-software"
-                 GIT_TAG         "286875d1f543a169e29388d9673d2738f337de18"
-                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/spadic
-)
+download_project_if_needed(PROJECT spadic
+                           GIT_REPOSITORY https://github.com/spadic/spadic10-software
+                           GIT_TAG 286875d1f543a169e29388d9673d2738f337de18
+                           SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spadic
+                           TEST_FILE setup.py
+                          )
 
 Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/external/spadic/spadic/lib/message

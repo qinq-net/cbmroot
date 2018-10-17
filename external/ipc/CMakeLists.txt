@@ -3,12 +3,12 @@
 # This library provides the interface to the FLIB board or to files in tca
 # format written by the FLIB
 
-include(DownloadProject)
-download_project(PROJ            fles_ipc
-                 GIT_REPOSITORY  "https://github.com/cbm-fles/flesnet"
-                 GIT_TAG         "21d9038ff9c97188499b6225da6971b42336e349"
-                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/ipc
-)
+download_project_if_needed(PROJECT            fles_ipc
+                           GIT_REPOSITORY  "https://github.com/cbm-fles/flesnet"
+                           GIT_TAG         "21d9038ff9c97188499b6225da6971b42336e349"
+                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/ipc
+                           TEST_FILE       CMakeLists.txt
+                           )
 
 file(COPY Timeslice.hpp DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/ipc/lib/fles_ipc)
 
