@@ -1,15 +1,16 @@
-include(DownloadProject)
 
-set(DATATREE_VERSION "1.4")
+set(DATATREE_VERSION b25b3e5a5dbc0348c45fb0f505871c0e6b7ff3be) # hash is tag 1.4. Needed for test
+
 set(DATATREE_SRC_URL "https://cbmgsi.githost.io/pwg-c2f/DataTree.git")
 set(DATATREE_DESTDIR "${CMAKE_BINARY_DIR}/analysis/flow/DATATREE-prefix")
 set(DATATREE_LIBNAME "${CMAKE_SHARED_LIBRARY_PREFIX}DataTree${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
-download_project(PROJ            DataTree_source
-                 GIT_REPOSITORY  ${DATATREE_SRC_URL}
-                 GIT_TAG         ${DATATREE_VERSION}
-                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/DataTree
-)
+download_project_if_needed(PROJECT         DataTree_source
+                           GIT_REPOSITORY  ${DATATREE_SRC_URL}
+                           GIT_TAG         ${DATATREE_VERSION}
+                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/DataTree
+                           TEST_FILE       CMakeLists.txt
+                          )
 
 ExternalProject_Add(DATATREE
   BUILD_IN_SOURCE 0
@@ -46,30 +47,32 @@ Install(FILES ${CMAKE_BINARY_DIR}/lib/${DATATREE_LIBNAME}
        )
 
 
-set(DATATREECBMINTERFACE_VERSION "1.0")
+set(DATATREECBMINTERFACE_VERSION 513eb5388d3a3b9bb4f43b0531f34d2b0479e878)  # hash is tag 1.0. Needed for test
 set(DATATREECBMINTERFACE_SRC_URL "https://cbmgsi.githost.io/pwg-c2f/DataTreeCbmInterface.git")
 set(DATATREECBMINTERFACE_DESTDIR "${CMAKE_BINARY_DIR}/analysis/flow/DATATREECBMINTERFACE-prefix")
 set(DATATREECBMINTERFACE_LIBNAME "${CMAKE_SHARED_LIBRARY_PREFIX}DataTreeCbmInterface${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
-download_project(PROJ            DataTreeCbmInterface_source
-                 GIT_REPOSITORY  ${DATATREECBMINTERFACE_SRC_URL}
-                 GIT_TAG         ${DATATREECBMINTERFACE_VERSION}
-                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/DataTreeCbmInterface
-)
+download_project_if_needed(PROJECT         DataTreeCbmInterface_source
+                           GIT_REPOSITORY  ${DATATREECBMINTERFACE_SRC_URL}
+                           GIT_TAG         ${DATATREECBMINTERFACE_VERSION}
+                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/DataTreeCbmInterface
+                           TEST_FILE       CMakeLists.txt
+                          )
 
 add_subdirectory (DataTreeCbmInterface)
 
-set(DATATREEQA_VERSION "1.0")
+set(DATATREEQA_VERSION d349cb7faf33e46674eab449454b2c185dd86685) # hash is tag 1.0. Needed for test
 set(DATATREEQA_SRC_URL "https://cbmgsi.githost.io/pwg-c2f/DataTreeQA.git")
 set(DATATREEQA_DESTDIR "${CMAKE_BINARY_DIR}/analysis/flow/DATATREEQA-prefix")
 set(DATATREEQA_LIBNAME "${CMAKE_SHARED_LIBRARY_PREFIX}DataTreeQA${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 
-download_project(PROJ            DataTreeQA_source
-                 GIT_REPOSITORY  ${DATATREEQA_SRC_URL}
-                 GIT_TAG         ${DATATREEQA_VERSION}
-                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/DataTreeQA
-)
+download_project_if_needed(PROJECT         DataTreeQA_source
+                           GIT_REPOSITORY  ${DATATREEQA_SRC_URL}
+                           GIT_TAG         ${DATATREEQA_VERSION}
+                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/DataTreeQA
+                           TEST_FILE       CMakeLists.txt
+                          )
 
 ExternalProject_Add(DATATREEQA
    DEPENDS DataTree
