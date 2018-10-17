@@ -1035,7 +1035,7 @@ void CbmTofFindTracks::CreateHistograms(){
   
   fhTrackingTimeNhits  =  new TH2F(  Form("hTrackingTimeNhits"),
 			       Form("Tracking Time; NHits; #Deltat (s)"),
-			       100, 0, 200, 50, 0, 0.05);
+			       100, 0, 200, 50, 0, 0.1);
 
   fhTrklMulNhits =  new TH2F(  Form("hTrklMulNhits"),
 			       Form("Tracklet Multiplicity; NHits; NTracklet"),
@@ -1485,7 +1485,7 @@ void CbmTofFindTracks::FillHistograms(){
 		 Int_t iH1  = pTrk1->GetStationHitIndex(fMapStationRpcId[iSt1]); // Station Hit index
 		 if(iH1<0) { // find geo element for the missing Station iSt
 		   Int_t iSmType1 = fMapStationRpcId[iSt1];
-		   if (iSmType1 < 1) continue;
+		   //if (iSmType1 < 1) continue;
 		   fhTrklDT0StMis2->Fill(Double_t(iSt*10+iSt1),pTrk->GetFitT(0.)-pTrk1->GetFitT(0.));
 		 }
 	       }
@@ -1503,7 +1503,7 @@ void CbmTofFindTracks::FillHistograms(){
   fhTrklMulNhits->Fill(fTofHitArray->GetEntries(),iTMul);
   fhTrackingTimeNhits->Fill(fTofHitArray->GetEntries(),fdTrackingTime);
 
-  if (5<fNTofStations) if (HMul[6]>2) { // temporary  
+  if (5<fNTofStations) if (HMul[6]>1) { // temporary  
     //if (HMul[fNTofStations]>0) 
     //LOG(INFO)<<"Found "<<HMul[fNTofStations]<<" max length tracklets in event "<<fiEvent
     LOG(INFO)<<"Found "<<HMul[6]<<" max length tracklets in event "<<fiEvent

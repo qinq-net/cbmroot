@@ -196,7 +196,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
       Double_t hitpos_local[3]={3*0.};
       Double_t dSizey=1.;
 
-      if(iSmType>0) { // prevent geometry inspection for FAKE hits 
+      if(1) { // iSmType>0) { // prevent geometry inspection for FAKE hits 
       if(NULL == fChannelInfo){
 	LOG(FATAL) <<"<D> CbmTofTrackFinderNN::DoFind0: Invalid Channel Pointer for ChId "
 		   << Form(" 0x%08x ",iChId)<<", Ch "<<iCh
@@ -247,14 +247,16 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	    gGeoManager->MasterToLocal(hitpos1, hitpos1_local);
 	    dSizey1=fChannelInfo1->GetSizey();
 	  }
-	  Double_t dDT = 0.;
-	  if(iSmType>0) dDT = pHit1->GetTime()- pHit->GetTime();
+	  Double_t dDT = pHit1->GetTime() - pHit->GetTime();
 	  //if(dDT<0.) continue;  // request forward propagation in time  
 
 	  Double_t dLz =  pHit1->GetZ()   - pHit->GetZ();
 	  Double_t dTx = (pHit1->GetX()   - pHit->GetX())/dLz;
 	  Double_t dTy = (pHit1->GetY()   - pHit->GetY())/dLz;
-
+	  Double_t dDist = TMath::Sqrt( TMath::Power((pHit->GetX()-pHit1->GetX()),2)
+				      + TMath::Power((pHit->GetY()-pHit1->GetY()),2)
+				      + TMath::Power((pHit->GetZ()-pHit1->GetZ()),2)
+					); 
 	  LOG(DEBUG1) << Form("<I> TofTracklet %d, Hits %d, %d, add = 0x%08x,0x%08x - DT %6.2f, Tx %6.2f Ty %6.2f Tt %6.2f pos %6.2f %6.2f %6.2f ",
 			      fiNtrks,iHit,iHit1,pHit->GetAddress(),pHit1->GetAddress(), dDT, dTx, dTy, dDT/dLz, hitpos1_local[0],hitpos1_local[1],hitpos1_local[2] )
 	   	      <<FairLogger::endl; 
@@ -263,8 +265,8 @@ Int_t CbmTofTrackFinderNN::DoFind(
   	   	      <<FairLogger::endl; 
 
 	  if(    TMath::Abs(hitpos1_local[1])<dSizey1*fPosYMaxScal)
-	  if(    TMath::Abs(dDT/dLz)<fMaxTofTimeDifference && TMath::Abs(dTx)<fTxLIM 
-	     &&  TMath::Abs(dTy-fTyMean)<fTyLIM)
+	    if(  TMath::Abs(dDT/dLz)<fMaxTofTimeDifference && TMath::Abs(dDT/dDist)>0.025 
+	      && TMath::Abs(dTx)<fTxLIM &&  TMath::Abs(dTy-fTyMean)<fTyLIM)
 	  {
 	    CbmTofTracklet* pTrk = new CbmTofTracklet();
 	    fTracks.push_back(pTrk);
@@ -656,8 +658,7 @@ void  CbmTofTrackFinderNN::TrklSeed(Int_t iHit)
 	  gGeoManager->MasterToLocal(hitpos1, hitpos1_local);
 	  dSizey1=fChannelInfo1->GetSizey();
 	}
-	Double_t dDT = 0.;
-	if(iSmType1>0) dDT = pHit->GetTime()- pHit1->GetTime();
+	Double_t dDT = dDT = pHit->GetTime()- pHit1->GetTime();
 	Double_t dLz = pHit->GetZ()   - pHit1->GetZ();
 	Double_t dTx = (pHit->GetX() - pHit1->GetX())/dLz;
 	Double_t dTy = (pHit->GetY() - pHit1->GetY())/dLz;
@@ -686,7 +687,7 @@ void  CbmTofTrackFinderNN::TrklSeed(Int_t iHit)
           pTrk->SetTime(pHit->GetTime());       // define reference time from 2. plane   
 	  Double_t dR  = pHit->GetR() - pHit1->GetR();
 	  Double_t dTt = 1./30. ; // assume speed of light:  1 / 30 cm/ns
-	  if( 0 == iSmType) pHit1->SetTime(pHit->GetTime() - dTt * dR);
+	  // if( 0 == iSmType) pHit1->SetTime(pHit->GetTime() - dTt * dR);
 	  dTt = (pHit->GetTime() - pHit1->GetTime())/dR;
 	  pTrk->SetTt(dTt); 
 	  pTrk->UpdateT0();
