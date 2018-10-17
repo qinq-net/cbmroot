@@ -172,19 +172,23 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
         "external/ipc_legacy"
         "fles/ctrl"
         "external/flib_dpb"
+        "external/flib_dpb_20"
         "external/spadic"
         "fles/tsclient"
         "fles/softdpb"
         "fles/reader.*old-style cast"
         "L1/vectors/P4_F32vec4.h"
         "Dict.cxx"
-        
+
         # -- warnings from structures for HADAQ memory casting
         "struct hadaq::HadTu"
         "struct hadaq::HadTuId"
         
         # -- warnings from structures for MBS/LMD memory casting
         "struct mbs::Header"
+
+        # -- warnings from my test machine demac006
+        "warning: text-based stub file"
   )
 
 # -----------------------------------------------------------
