@@ -86,7 +86,7 @@ public:
   Double_t  GetCharge()  const;
   /** \brief Charge getter for FASP
    * \param[out] tilt on returns contain the charge measured on tilted pads
-   * \param[out] dt on returns contain the time difference wrt tilted pads
+   * \param[out] dt on returns contain the time difference wrt tilted pads [ASIC clocks]
    * \return charge measured on rectangular coupled pads
    */
   Double_t  GetCharge(Double_t &tilt, Int_t &dt)  const;
@@ -139,7 +139,7 @@ public:
   /** \brief Set digi pile-up (FASP only)*/
   void      SetPileUp(Bool_t set=kTRUE)     { if(GetType()==kFASP) SetFlag(kFlag2, set); }
   /** \brief Set global digi time (ns)*/
-  void      SetTime(Double_t t)             { fTime=ULong64_t(t/fgClk[GetType()]);}
+  void      SetTime(Double_t t);
   /** \brief Set global digi time (clk)*/
   void      SetTimeDAQ(ULong64_t t)         { fTime=t;}
   /** \brief Set time offset of rectangular to tilt pads for FASP (clk)*/

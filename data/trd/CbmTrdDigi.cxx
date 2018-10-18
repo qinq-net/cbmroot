@@ -3,6 +3,8 @@
 
 #include <FairLogger.h>
 
+#include <TMath.h>
+
 #include <sstream>
 #include <iomanip>
 using std::endl;
@@ -219,8 +221,15 @@ void CbmTrdDigi::SetFlag(const Int_t iflag, Bool_t set)
 }
 
 //__________________________________________________________________________________________
+void CbmTrdDigi::SetTime(Double_t t)             
+{ 
+  fTime=ULong64_t(TMath::Ceil(t/fgClk[GetType()]));
+}
+
+//__________________________________________________________________________________________
 void CbmTrdDigi::SetTimeOffset(Char_t t)
 { 
+  if(GetType()!=kFASP) return;
   fCharge <<= 8; fCharge >>= 8;
   fCharge |= t<<24;
 }
@@ -228,7 +237,6 @@ void CbmTrdDigi::SetTimeOffset(Char_t t)
 //__________________________________________________________________________________________
 void CbmTrdDigi::SetTriggerType(const Int_t ttype)
 {
-  if(GetType()==kFASP) return;
   if(ttype<0||ttype>=kNTrg) return;
   fAddress|=(ttype<<fgkTrgOffset);
 }
@@ -239,10 +247,13 @@ string CbmTrdDigi::ToString() const
   stringstream ss;
   ss << "CbmTrdDigi("<<(GetType()==kFASP?"T)":"R)")<<" | moduleAddress=" << GetAddressModule() <<" | layer=" << Layer() <<" | moduleId=" << Module() <<" | pad=" << GetAddressChannel() << " | time[ns]=" <<std::fixed<< std::setprecision(1)<< GetTime();
   if(GetType()==kFASP) {
-    Int_t dt; Double_t t, r = GetCharge(t, dt);
+    Int_t trg(GetTriggerType()), dt; Double_t t, r = GetCharge(t, dt);
+    Bool_t ttrg(trg&1), rtrg((trg&2)>>1);
     ss<<" | pu="<<(IsPileUp()?"y":"n")
       <<" | mask="<<(IsMasked()?"y":"n")
-      <<" |charge="<<std::fixed<<std::setw(6)<<std::setprecision(1)<<t<<"/"<<r<<"["<<dt<<"]";
+      <<" |charge="<<std::fixed<<std::setw(6)<<std::setprecision(1)<<
+        t<<(!ttrg&&t>0?'*':' ')<<"/"<<
+        r<<(!rtrg&&r>0?'*':' ')<<"["<<dt<<"]";
   } else {
     ss<< " | charge=" << GetCharge()
       << " TriggerType=" << GetTriggerType()
