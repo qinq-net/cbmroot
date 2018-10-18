@@ -34,14 +34,16 @@ namespace stsxyter {
       Hit,
       TsMsb,
       Epoch,
+      Status,
       Empty
    };
       /// Non-hit Message sub-types
    enum class MessSubType : uint16_t
    {
-      TsMsb = 0,
-      Epoch = 1,
-      Empty = 3
+      TsMsb  = 0,
+      Epoch  = 1,
+      Status = 2,
+      Empty  = 3
    };
       /// Printout control
    enum class MessagePrintMask : uint16_t
@@ -68,6 +70,12 @@ namespace stsxyter {
    static const uint16_t kusPosTsMsbVal   =  0;
          // Epoch
    static const uint16_t kusPosEpochVal   =  0;
+         // Status
+   static const uint16_t kusPosStatLinkId = 20;
+   static const uint16_t kusPosStatSxTs   = 14;
+   static const uint16_t kusPosStatStatus = 10;
+   static const uint16_t kusPosStatDpbTs  =  1;
+   static const uint16_t kusPosStatCpFlag =  0;
 
       /// Fields length (bits)
    static const uint16_t kusLenNotHitFlag =  1;
@@ -85,6 +93,12 @@ namespace stsxyter {
    static const uint16_t kusLenTsMsbVal   = 22;
          // Epoch
    static const uint16_t kusLenEpochVal   = 29;
+         // Status
+   static const uint16_t kusLenStatLinkId =  9;
+   static const uint16_t kusLenStatSxTs   =  6;
+   static const uint16_t kusLenStatStatus =  4;
+   static const uint16_t kusLenStatDpbTs  =  9;
+   static const uint16_t kusLenStatCpFlag =  1;
 
       /// Fields Info
    static const MessField kFieldLinkIndex(  kusPosLinkIndex,  kusLenLinkIndex );
@@ -102,6 +116,12 @@ namespace stsxyter {
    static const MessField kFieldTsMsbVal  ( kusPosTsMsbVal,   kusLenTsMsbVal );
          // Epoch message
    static const MessField kFieldEpochVal  ( kusPosEpochVal,   kusLenEpochVal );
+         // Status
+   static const MessField kFieldStatLinkId( kusPosStatLinkId, kusLenStatLinkId );
+   static const MessField kFieldStatSxTs  ( kusPosStatSxTs,   kusLenStatSxTs );
+   static const MessField kFieldStatStatus( kusPosStatStatus, kusLenStatStatus );
+   static const MessField kFieldStatDpbTs ( kusPosStatDpbTs,  kusLenStatDpbTs );
+   static const MessField kFieldStatCpFlag( kusPosStatCpFlag, kusLenStatCpFlag );
 
       /// Status/properties constants
    static const uint32_t  kuHitNbAdcBins   = ( 0 < kusLenHitAdc ?    1 << kusLenHitAdc : 0 );
@@ -186,9 +206,10 @@ namespace stsxyter {
          //! Returns the message type, see enum MessType
          inline MessType GetMessType() const { return !GetFlag( kFieldNotHitFlag ) ? ( 0 == GetHitAdc() ? MessType::Dummy :
                                                                                                           MessType::Hit ) :
-                                                                                     ( MessSubType::TsMsb == GetSubType() ? MessType::TsMsb :
-                                                                                     ( MessSubType::Epoch == GetSubType() ? MessType::Epoch :
-                                                                                                                            MessType::Empty ) ) ; }
+                                                                                     ( MessSubType::TsMsb  == GetSubType() ? MessType::TsMsb :
+                                                                                     ( MessSubType::Epoch  == GetSubType() ? MessType::Epoch :
+                                                                                     ( MessSubType::Status == GetSubType() ? MessType::Status :
+                                                                                                                             MessType::Empty ) ) ) ; }
 
          // ------------------------ Hit message fields -------------------------------
          //! For Hit data: Returns StsXYTER channel number (7 bit field)
@@ -239,12 +260,43 @@ namespace stsxyter {
          //! For TS MSB data: Sets the TS MSB (22 bit field)
          inline void SetTsMsbVal( uint32_t uVal ) { SetField( kFieldTsMsbVal, uVal ); }
 
-         // ------------------------ Epoch message fields ----------------------------
+         // ------------------------ Epoch message fields -----------------------------
          //! For Epoch data: Returns the Epoch (29 bit field)
          inline uint32_t GetEpochVal() const { return GetField( kFieldEpochVal ); }
 
          //! For Epoch data: Sets the Epoch (29 bit field)
          inline void SetEpochVal( uint32_t uVal ) { SetField( kFieldEpochVal, uVal ); }
+
+         // ------------------------ Status message fields ----------------------------
+         //! For Status data: Returns the Link Inedx (9 bit field)
+         inline uint16_t GetStatusLink()   const { return GetField( kFieldStatLinkId ); }
+
+         //! For Status data: Returns the SMX TS from ACK frame (6 bit field)
+         inline uint16_t GetStatusSxTs()   const { return GetField( kFieldStatSxTs ); }
+
+         //! For Status data: Returns the Status field from ACK frame (4 bit field)
+         inline uint16_t GetStatusStatus() const { return GetField( kFieldStatStatus ); }
+
+         //! For Status data: Returns the DPB TS when frame received (9 bit field)
+         inline uint16_t GetStatusDpbTs()  const { return GetField( kFieldStatDpbTs ); }
+
+         //! For Status data: Returns the CP flag from ACK frame (1 bit field)
+         inline bool     IsCpFlagOn()      const { return GetField( kFieldStatCpFlag ); }
+
+         //! For Status data: Sets the Status (9 bit field)
+         inline void SetStatusLink( uint16_t usVal )   { SetField( kFieldStatLinkId, usVal ); }
+
+         //! For Status data: Sets the Status (6 bit field)
+         inline void SetStatusSxTs( uint16_t usVal )   { SetField( kFieldStatSxTs,   usVal ); }
+
+         //! For Status data: Sets the Status (4 bit field)
+         inline void SetStatusStatus( uint16_t usVal ) { SetField( kFieldStatStatus, usVal ); }
+
+         //! For Status data: Sets the Status (9 bit field)
+         inline void SetStatusDpbTs( uint16_t usVal )  { SetField( kFieldStatDpbTs,  usVal ); }
+
+         //! For Status data: Sets the Status (1 bit field)
+         inline void SetCpFlag( bool bVal )            { SetField( kFieldStatCpFlag, bVal ); }
 
          // ------------------------ General OP ---------------------------------------
          bool PrintMess( std::ostream& os, MessagePrintMask ctrl = MessagePrintMask::msg_print_Human ) const;

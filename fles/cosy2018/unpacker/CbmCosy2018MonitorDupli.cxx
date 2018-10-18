@@ -281,6 +281,8 @@ CbmCosy2018MonitorDupli::CbmCosy2018MonitorDupli() :
    fhPulseChanCountEvo(),
    fhHodoChanHitRateEvoZoom(NULL),
    fuNbTsMsbSinceLastHit(0),
+   fhStsRawAdc(),
+   fhStsRawAdcCombine(NULL),
    fuNbHitsLastTsMsb(0)
 {
 }
@@ -1289,6 +1291,19 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
+
+     if(uXyterIdx == 2)
+       {
+  	 for( UInt_t uChannelIdx = 0; uChannelIdx < fuNbChanPerAsic; ++uChannelIdx )
+	   {
+	     // Channel RawAdc
+	     sHistName = Form( "hStsRawAdc_%03u", uChannelIdx );
+	     title = Form( "Hits Adc per channel, StsXyter #%03u; Channel; Hits []", uChannelIdx );
+	     fhStsRawAdc.push_back( new TH1I(sHistName, title,
+					     stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5 ) );
+	   }
+       }
+     
       sHistName = Form( "fhAsicDuplicDtLastHits%02u", uXyterIdx);
       title =  "Time diff Between duplicated hit and previous hits; tDupli - tPrevN [bins]; Nth Previous hit [N]";
       fhAsicDuplicDtLastHits.push_back( new TH2I( sHistName, title,
@@ -1380,6 +1395,11 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
                                         2, -0.5,  1.5 ) );
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
+
+   sHistName = "hStsRawAdcCombine";
+   title = "ADC histogram combined";
+   fhStsRawAdcCombine = new TH1I(sHistName, title, stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5);
+
    sHistName = "fhAsicDuplicTsEvoAsic0Chan01";
    title =  "TS of duplicated hits vs time in run for ASIC 0 chan 1; time in run [s]; TS + TS_MSB [bins]";
    fhAsicDuplicTsEvoAsic0Chan01 = new TH2I( sHistName, title,
@@ -1538,8 +1558,17 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
       server->Register("/HodoRaw", fhHodoSysMessTypePerDpb );
       server->Register("/HodoRaw", fhHodoMessTypePerElink );
       server->Register("/HodoRaw", fhHodoSysMessTypePerElink );
+      server->Register("/HodoRaw", fhStsRawAdcCombine );
       for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
       {
+
+	if(uXyterIdx == 2)
+	  {
+	    for( UInt_t uChannelIdx = 0; uChannelIdx < fuNbChanPerAsic; ++uChannelIdx )
+	      {
+		if( server ) server->Register("/HodoRaw", fhStsRawAdc[ uChannelIdx ] );
+	      }
+	  }
          server->Register("/HodoRaw", fhHodoChanCntRaw[ uXyterIdx ] );
          server->Register("/HodoRaw", fhHodoChanAdcRaw[ uXyterIdx ] );
          server->Register("/HodoRaw", fhHodoChanAdcRawProf[ uXyterIdx ] );
@@ -1739,10 +1768,27 @@ void CbmCosy2018MonitorDupli::CreateHistograms()
    /** Create summary Canvases for CERN 2017 **/
    Double_t w = 10;
    Double_t h = 10;
+   Double_t w1 = 10;
+   Double_t h1 = 10;
 
       // Summary per StsXyter
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
+
+     // Summary per StsXyter
+     if(fuNbStsXyters == 2)
+       {
+  	 for( UInt_t uChannelIdx = 0; uChannelIdx < fuNbChanPerAsic; ++uChannelIdx )
+	   {
+	     TCanvas* cStsSumm1 = new TCanvas( Form("cStsSum1_%03u", uChannelIdx ),
+					       Form("Summary plots for StsXyter %03u", uChannelIdx ),
+					       w1, h1);
+	     fhStsRawAdc[ uChannelIdx ]->Draw();
+	     
+	   }
+       }
+     
+     
       TCanvas* cStsSumm = new TCanvas( Form("cStsSum_%03u", uXyterIdx ),
                                        Form("Summary plots for StsXyter %03u", uXyterIdx ),
                                        w, h);
@@ -3092,6 +3138,9 @@ void CbmCosy2018MonitorDupli::FillHitInfo( stsxyter::Message mess, const UShort_
 //   UShort_t usFullTs = mess.GetHitTimeFull();
    UShort_t usTsOver = mess.GetHitTimeOver();
    UShort_t usRawTs  = mess.GetHitTime();
+   // ajit
+   if(uAsicIdx == 2)fhStsRawAdc[ usChan ]->Fill( usRawAdc );
+   if(uAsicIdx == 2) fhStsRawAdcCombine->Fill(usRawAdc);
 
    fhHodoChanCntRaw[  uAsicIdx ]->Fill( usChan );
    fhHodoChanAdcRaw[  uAsicIdx ]->Fill( usChan, usRawAdc );
@@ -3515,9 +3564,18 @@ void CbmCosy2018MonitorDupli::SaveAllHistos( TString sFileName )
    fhHodoSysMessTypePerDpb->Write();
    fhHodoMessTypePerElink->Write();
    fhHodoSysMessTypePerElink->Write();
-
+   fhStsRawAdcCombine->Write();
+   
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
+         if(uXyterIdx == 2)
+    {
+      for( UInt_t uChannelIdx = 0; uChannelIdx < fuNbChanPerAsic; ++uChannelIdx )
+      {
+      fhStsRawAdc[ uChannelIdx ]->Write();
+      }
+    }
+
       fhHodoChanCntRaw[ uXyterIdx ]->Write();
       fhHodoChanAdcRaw[ uXyterIdx ]->Write();
       fhHodoChanAdcRawProf[ uXyterIdx ]->Write();
@@ -3751,9 +3809,18 @@ void CbmCosy2018MonitorDupli::ResetAllHistos()
    fhHodoSysMessTypePerDpb->Reset();
    fhHodoMessTypePerElink->Reset();
    fhHodoSysMessTypePerElink->Reset();
-
+   fhStsRawAdcCombine->Reset();
+   
    for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
    {
+     if(uXyterIdx == 2)
+    {
+      for( UInt_t uChannelIdx = 0; uChannelIdx < fuNbChanPerAsic; ++uChannelIdx )
+      {
+      fhStsRawAdc[ uChannelIdx ]->Reset();
+      }
+    }
+
       fhHodoChanCntRaw[ uXyterIdx ]->Reset();
       fhHodoChanAdcRaw[ uXyterIdx ]->Reset();
       fhHodoChanAdcRawProf[ uXyterIdx ]->Reset();

@@ -160,6 +160,11 @@ private:
    TH2* fhHodoMessTypePerElink;
    TH2* fhHodoSysMessTypePerElink;
 
+   TH1* fhStsRawAdcCombine;   // ajit
+
+   std::vector<TH1*> fhStsRawAdc; // ajit
+   
+   
    std::vector<TH1 *> fhHodoChanCntRaw;
    std::vector<TH2 *> fhHodoChanAdcRaw;
    std::vector<TProfile*> fhHodoChanAdcRawProf;

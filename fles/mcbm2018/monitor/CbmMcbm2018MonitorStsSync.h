@@ -160,6 +160,8 @@ private:
 */
    TH2* fhPulserMessTypePerElink;
    TH2* fhPulserSysMessTypePerElink;
+   TH2* fhPulserStatusMessType;
+   TH2* fhPulserMsStatusFieldType;
 
    std::vector<TH1 *> fhPulserChanCntRaw;
    std::vector<TH1 *> fhPulserChanCntRawGood;
@@ -189,6 +191,8 @@ private:
    std::vector< std::vector<TProfile *> > fhPulserRawTimeDiffEvoPerAsicPairProf;
    std::vector< std::vector<TH2 *> > fhPulserTsLsbMatchPerAsicPair;
    std::vector< std::vector<TH2 *> > fhPulserTsMsbMatchPerAsicPair;
+   std::vector< std::vector<TProfile *> > fhPulserTsLsbDiffEvoPerAsicPairProf;
+   std::vector< std::vector<TProfile *> > fhPulserTsMsbDiffEvoPerAsicPairProf;
    std::vector<TH1 *>                fhPulserIntervalAsic;
    std::vector<TH1 *>                fhPulserIntervalLongAsic;
 

@@ -86,7 +86,7 @@ void DupliMonitor(TString inFile = "",
   } // if( "" != inFile )
       else
       {
-         source->SetHostName( "cbmin003");
+         source->SetHostName( "localhost");
          source->SetPortNumber( 5556 );
       }
 

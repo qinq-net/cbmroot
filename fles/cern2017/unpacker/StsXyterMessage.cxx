@@ -26,6 +26,8 @@ MessSubType Message::GetSubType() const
          return MessSubType::TsMsb;
       case static_cast< uint16_t>( MessSubType::Epoch ):
          return MessSubType::Epoch;
+      case static_cast< uint16_t>( MessSubType::Status ):
+         return MessSubType::Status;
       default:
          return MessSubType::Empty;
    } // switch( static_cast< uint16_t>( GetField( kFieldSubtype ) ) )
@@ -62,27 +64,50 @@ bool     Message::PrintMess(std::ostream& os, MessagePrintMask ctrl ) const
          os.fill( cPrev );
    } // if( ctrl & msg_print_Hex )
 
-   /// Print Link index
-   os << " Lnk: " << std::setw( 3 ) << GetLinkIndex();
-
    if( bPrintHuman )
    {
       switch( GetMessType() )
       {
+         case MessType::Dummy :
+         {
+            os << " Dummy Hit ";
+            break;
+         } // case MessType::TsMsb
          case MessType::Hit :
          {
-            std::cout << " Ch: "      << std::setw(3) << GetHitChannel()
-                      << " Adc: "     << std::setw(2) << GetHitAdc()
-                      << " Ts Full: " << std::setw(4) << GetHitTimeFull()
-                      << " Ts Over: " << std::hex     << GetHitTimeOver() << std::dec
-                      << " Ts: "      << std::setw(3) << GetHitTime()
-                      << " Missed? "  << IsHitMissedEvts();
+            os << " Hit => "
+               << " Lnk: "     << std::setw( 3 ) << GetLinkIndex()
+               << " Ch: "      << std::setw( 3 ) << GetHitChannel()
+               << " Adc: "     << std::setw( 2 ) << GetHitAdc()
+               << " Ts Full: " << std::setw( 4 ) << GetHitTimeFull()
+               << " Ts Over: " << std::hex       << GetHitTimeOver() << std::dec
+               << " Ts: "      << std::setw( 3 ) << GetHitTime()
+               << " Missed? "  << IsHitMissedEvts();
             break;
          } // case MessType::Hit
          case MessType::TsMsb :
          {
-            std::cout << " TS_MSB: " << std::setw(2) <<  GetTsMsbVal()
-                      << " (Over= " << std::hex     << (GetTsMsbVal()) << std::dec << ")";
+            os << " TS_MSB => " << std::setw( 12 ) <<  GetTsMsbVal();
+            break;
+         } // case MessType::TsMsb
+         case MessType::Epoch :
+         {
+            os << " Epoch => " << std::setw( 12 ) <<  GetEpochVal();
+            break;
+         } // case MessType::TsMsb
+         case MessType::Status :
+         {
+            os << " Status => "
+               << " Lnk: "     << std::setw( 2 ) <<  GetStatusLink()
+               << " Smx TS: "  << std::setw( 2 ) <<  GetStatusSxTs()
+               << " Status: 0x"<< std::setw( 4 ) << std::hex <<  GetStatusStatus() << std::dec
+               << " Dpb TS: "  << std::setw( 3 ) <<  GetStatusDpbTs()
+               << " CP flag: " << IsCpFlagOn();
+            break;
+         } // case MessType::TsMsb
+         case MessType::Empty :
+         {
+            os << " Empty ";
             break;
          } // case MessType::TsMsb
          default:
@@ -95,6 +120,10 @@ bool     Message::PrintMess(std::ostream& os, MessagePrintMask ctrl ) const
    {
       switch( GetMessType() )
       {
+         case MessType::Dummy :
+         {
+            break;
+         } // case MessType::Dummy
          case MessType::Hit :
          {
             break;
@@ -103,6 +132,18 @@ bool     Message::PrintMess(std::ostream& os, MessagePrintMask ctrl ) const
          {
             break;
          } // case MessType::TsMsb
+         case MessType::Epoch :
+         {
+            break;
+         } // case MessType::Epoch
+         case MessType::Status :
+         {
+            break;
+         } // case MessType::Status
+         case MessType::Empty :
+         {
+            break;
+         } // case MessType::Empty
          default:
          {
          } // default
@@ -113,6 +154,10 @@ bool     Message::PrintMess(std::ostream& os, MessagePrintMask ctrl ) const
    {
       switch( GetMessType() )
       {
+         case MessType::Dummy :
+         {
+            break;
+         } // case MessType::Dummy
          case MessType::Hit :
          {
             break;
@@ -121,6 +166,18 @@ bool     Message::PrintMess(std::ostream& os, MessagePrintMask ctrl ) const
          {
             break;
          } // case MessType::TsMsb
+         case MessType::Epoch :
+         {
+            break;
+         } // case MessType::Epoch
+         case MessType::Status :
+         {
+            break;
+         } // case MessType::Status
+         case MessType::Empty :
+         {
+            break;
+         } // case MessType::Empty
          default:
          {
          } // default
