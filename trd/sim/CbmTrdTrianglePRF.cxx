@@ -162,8 +162,8 @@ void CbmTrdTrianglePRF::GetCurrentPad(Int_t &col, Int_t &row, Int_t &u) const
  */
 
   Int_t bin(fBinx*fN+fBiny);
-  col=TMath::Nint(fX[bin]/fW)+2;
-  row=TMath::Nint(fY[bin]/fH)+1;
+  col=TMath::Nint(fX[bin]/fW)+NC;
+  row=TMath::Nint(fY[bin]/fH)+NR;
   u=fUp[bin];
 }
 
