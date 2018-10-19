@@ -39,20 +39,20 @@ void create_psdgeo_with_hole()
 {
     
     // -----   Steering variables   ---------------------------------------------
-    const Double_t psdX       = 11.;    // x position of PSD in cave
-    const Double_t psdY       = 0.;     // y position of PSD in cave
+    const Double_t psdX       = 10.47;    // x position of PSD in cave (volume center)
+    const Double_t psdY       = 0.;     // y position of PSD in cave (volume center)
     const Double_t psdZ       = 800.;   // z position of PSD in cave (front side)
-    const Double_t psdRotY    = atan2(psdX, psdZ)*180./3.14159 ;     // Rotation of PSD around y axis [degrees]
+    const Double_t psdRotY    = atan2 (psdX, psdZ) * TMath::RadToDeg ();     // Rotation of PSD around y axis [degrees]
     const Double_t bigModuleSize = 20.;    // Module size [cm]
     const Double_t holeSize = 20.;      // diagonal size of the square shaped hole 
     
     const Int_t nModulesX  = 8;      // Number of modules in a row (x direction)
     const Int_t nModulesY  = 6;      // Number of modules in a row (x direction)
     const Int_t nLayers    = 60;     // Number of sections in a module (z direction)
-
-    const char* geoTag = "44mod_hole20cm_xshift11cm";  // Geometry tag
-
     const Double_t shieldWidth = 16.;
+
+    TString geoTag = Form ("44mod_hole%icm_xshift%5.2fcm", (int) holeSize, psdX);  // Geometry tag
+
     // --------------------------------------------------------------------------
     
     // ---- Number of modules per row/column must be uneven ---------------------
@@ -77,6 +77,8 @@ void create_psdgeo_with_hole()
     infoFile << "PSD translation in cave: (" << psdX << ", " << psdY << ", "
     << psdZ << ") cm" << endl;
     infoFile << "PSD rotation around y axis: " << psdRotY << " degrees"
+    << endl;
+    infoFile << "Diagonal size of the square shaped hole in PSD center: " << holeSize << " cm"
     << endl << endl;
     // --------------------------------------------------------------------------
     
