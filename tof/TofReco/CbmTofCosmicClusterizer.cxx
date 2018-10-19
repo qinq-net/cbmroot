@@ -126,6 +126,8 @@ CbmTofCosmicClusterizer::CbmTofCosmicClusterizer(const char *name, Int_t verbose
    fhRpcCluMul(),
    fhRpcCluRate(),
    fhRpcCluPosition(),
+   fhRpcCluPositionEvol(),
+   fhRpcCluTimeEvol(),      
    fhRpcCluDelPos(),
    fhRpcCluDelMatPos(),
    fhRpcCluTOff(),
@@ -1019,6 +1021,8 @@ Bool_t   CbmTofCosmicClusterizer::CreateHistos()
    fhRpcCluMul.resize( iNbDet  );
    fhRpcCluRate.resize( iNbDet  );
    fhRpcCluPosition.resize( iNbDet  );
+   fhRpcCluPositionEvol.resize( iNbDet  );
+   fhRpcCluTimeEvol.resize( iNbDet  );
    fhRpcCluDelPos.resize( iNbDet  );
    fhRpcCluDelMatPos.resize( iNbDet  );
    fhRpcCluTOff.resize( iNbDet  );
@@ -1112,6 +1116,16 @@ Bool_t   CbmTofCosmicClusterizer::CreateHistos()
           Form("Clu position of Rpc #%03d in Sm %03d of type %d; Strip []; ypos [cm]", iRpcId, iSmId, iSmType ),
             fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
             99, -YDMAX,YDMAX); 
+
+       fhRpcCluPositionEvol[iDetIndx] =  new TProfile( 
+          Form("cl_SmT%01d_sm%03d_rpc%03d_PosEvol", iSmType, iSmId, iRpcId ),
+          Form("Clu position of Rpc #%03d in Sm %03d of type %d; Analysis Time [s]; ypos [cm]", iRpcId, iSmId, iSmType ),
+            1000,0.,1.E5,-100.,100.); 
+
+       fhRpcCluTimeEvol[iDetIndx] =  new TProfile( 
+          Form("cl_SmT%01d_sm%03d_rpc%03d_TimeEvol", iSmType, iSmId, iRpcId ),
+          Form("Clu position of Rpc #%03d in Sm %03d of type %d; Analysis Time [s]; dT [ns]", iRpcId, iSmId, iSmType ),
+            1000,0.,1.E5,-10.,10.); 
 
        fhRpcCluDelPos[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_DelPos", iSmType, iSmId, iRpcId ),
@@ -1831,6 +1845,10 @@ Bool_t   CbmTofCosmicClusterizer::FillHistos()
    fhRpcCluPosition[iDetIndx]->Fill((Double_t)iCh,hitpos_local[1]); //pHit->GetY()-fChannelInfo->GetY());
    fhSmCluPosition[iSmType]->Fill((Double_t)(iSm*iNbRpc+iRpc),hitpos_local[1]);
 
+   Double_t dTimeAna=(pHit->GetTime() - StartAnalysisTime)/1.E9;
+   fhRpcCluTimeEvol[iDetIndx]->Fill(dTimeAna,pHit->GetTime()-dTRef);
+   fhRpcCluPositionEvol[iDetIndx]->Fill(dTimeAna,hitpos_local[1]);
+
    for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]) {
      fhTRpcCluPosition[iDetIndx][iSel]->Fill((Double_t)iCh,hitpos_local[1]);  //pHit->GetY()-fChannelInfo->GetY());
      fhTSmCluPosition[iSmType][iSel]->Fill((Double_t)(iSm*iNbRpc+iRpc),hitpos_local[1]);
@@ -1841,7 +1859,7 @@ Bool_t   CbmTofCosmicClusterizer::FillHistos()
                 <<fTofDigiMatchColl->GetEntries()
                 <<FairLogger::endl;
 
-     if(iHitInd>fTofDigiMatchColl->GetEntries()){
+     if(iHitInd>fTofDigiMatchColl->GetEntries()) {
        LOG(ERROR)<<" Inconsistent DigiMatches for Hitind "
                  <<iHitInd<<", TClonesArraySize: "<<fTofDigiMatchColl->GetEntries()
                 <<FairLogger::endl;

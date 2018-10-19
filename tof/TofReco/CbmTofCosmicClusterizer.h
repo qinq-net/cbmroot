@@ -279,6 +279,8 @@ class CbmTofCosmicClusterizer : public FairTask
       std::vector< TH1* > fhRpcCluMul;         //[nbDet]
       std::vector< TH1* > fhRpcCluRate;        //[nbDet]
       std::vector< TH2* > fhRpcCluPosition;    //[nbDet]
+      std::vector< TProfile* > fhRpcCluPositionEvol;//[nbDet]
+      std::vector< TProfile* > fhRpcCluTimeEvol;    //[nbDet]
       std::vector< TH2* > fhRpcCluDelPos;      //[nbDet]
       std::vector< TH2* > fhRpcCluDelMatPos;   //[nbDet]
       std::vector< TH2* > fhRpcCluTOff;        //[nbDet] 
