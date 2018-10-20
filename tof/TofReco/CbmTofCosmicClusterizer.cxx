@@ -1124,7 +1124,7 @@ Bool_t   CbmTofCosmicClusterizer::CreateHistos()
 
        fhRpcCluTimeEvol[iDetIndx] =  new TProfile( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_TimeEvol", iSmType, iSmId, iRpcId ),
-          Form("Clu position of Rpc #%03d in Sm %03d of type %d; Analysis Time [s]; dT [ns]", iRpcId, iSmId, iSmType ),
+          Form("Clu time of Rpc #%03d in Sm %03d of type %d; Analysis Time [s]; dT [ns]", iRpcId, iSmId, iSmType ),
             1000,0.,1.E5,-10.,10.); 
 
        fhRpcCluDelPos[iDetIndx] =  new TH2F( 
