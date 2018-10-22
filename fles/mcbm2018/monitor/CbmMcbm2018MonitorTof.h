@@ -13,7 +13,7 @@
 //#include "CbmTofStarData.h"
 //#include "CbmTofStarData2018.h"
 
-#include "CbmTSUnpack.h"
+#include "CbmMcbmUnpack.h"
 
 #include "TClonesArray.h"
 #include "Rtypes.h"
@@ -29,8 +29,9 @@ class TCanvas;
 class TH1;
 class TH2;
 class TProfile;
+class TProfile2D;
 
-class CbmMcbm2018MonitorTof: public CbmTSUnpack {
+class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
    public:
 
       CbmMcbm2018MonitorTof();
@@ -57,12 +58,17 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       void SetMsLimitLevel(size_t uAcceptBoundaryPct = 100) { fuMsAcceptsPercent = uAcceptBoundaryPct; }
       size_t GetMsLimitLevel() { return fuMsAcceptsPercent; }
 
+      virtual void AddMsComponentToList( size_t component, UShort_t usDetectorId );
+      virtual void SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb );
       void SetMsOverlap(size_t uOverlapMsNb = 1) { fuOverlapMsNb = uOverlapMsNb; }
       size_t GetMsOverlap() { return fuOverlapMsNb; }
 
       inline void SetFitZoomWidthPs( Double_t inZoomWidth = 1000.0 ) { fdFitZoomWidthPs = inZoomWidth; }
       inline void SetHistoryHistoSize( UInt_t inHistorySizeSec = 1800 ) { fuHistoryHistoSize = inHistorySizeSec; }
       inline void SetHistoryHistoSizeLong( UInt_t inHistorySizeMin = 1800 ) { fuHistoryHistoSizeLong = inHistorySizeMin; }
+
+      inline void EnablePulserMode( Bool_t bEnaFlag = kTRUE ) { fbPulserModeEnable = bEnaFlag; }
+      inline void EnableCoincidenceMaps( Bool_t bEnaFlag = kTRUE ) { fbCoincMapsEnable = bEnaFlag; }
 
       void SaveAllHistos( TString sFileName = "" );
       void ResetAllHistos();
@@ -72,7 +78,13 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       void UpdateZoomedFit();
 
    private:
+      /// FLES containers
+      std::vector< size_t >    fvMsComponentsList; //!
+      size_t                   fuNbCoreMsPerTs; //!
+      size_t                   fuNbOverMsPerTs; //!
+      Bool_t                   fbIgnoreOverlapMs; //! /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
 
+      /// OLD, to be cleaned out !!!!!
       size_t   fuMsAcceptsPercent; /** Reject Ms with index inside TS above this, assumes 100 MS per TS **/
       size_t   fuTotalMsNb;        /** Total nb of MS per link in timeslice **/
       size_t   fuOverlapMsNb;      /** Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
@@ -93,7 +105,7 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       UInt_t fuNrOfGet4;            // Total number of Get4 chips in the system
       UInt_t fuNrOfGet4PerGdpb;     // Number of GET4s per GDPB
       UInt_t fuNrOfChannelsPerGdpb; // Number of channels per GDPB
-      
+
       UInt_t fuNrOfGbtx;
       UInt_t fuNrOfModules;
       std::vector< Int_t > fviNrOfRpc;
@@ -109,6 +121,8 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       UInt_t fuRawDataPrintMsgIdx;
       Bool_t fbPrintAllHitsEnable;
       Bool_t fbPrintAllEpochsEnable;
+      Bool_t fbPulserModeEnable;
+      Bool_t fbCoincMapsEnable;
 
       /** Running indices **/
       uint64_t fulCurrentTsIndex;  // Idx of the current TS
@@ -150,7 +164,12 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       std::vector< std::vector < gdpbv100::Message > > fvmEpSupprBuffer;
 
       /// Buffer for pulser channels
-      std::vector<  Double_t  > fdTsLastPulserHit; // [ fuFeeNr ]
+      std::vector< UInt_t >   fvuFeeNbHitsLastMs; //! [ fuFeeNr ]
+      std::vector< Double_t > fdTsLastPulserHit;  //! [ fuFeeNr ]
+
+      /// Buffers for coincidence maps
+      std::vector< std::vector< UInt_t > >   fvuCoincNbHitsLastMs; //! [ fuNrOfGdpbs ][ fuNrOfChannelsPerGdpb ]
+      std::vector< std::vector< Double_t > > fvdCoincTsLastHit;  //! [ fuNrOfGdpbs ][ fuNrOfChannelsPerGdpb ]
 
       /// Histograms and histogram control variables
          // Default value for nb bins in Pulser time difference histos
@@ -173,6 +192,7 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       TCanvas* fcMsSizeAll;
       std::vector< TH1      * > fvhMsSzPerLink;
       std::vector< TProfile * > fvhMsSzTimePerLink;
+
          // Messages types and flags
       TH1* fhMessType;
       TH1* fhSysMessType;
@@ -204,7 +224,7 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       const UInt_t kuNbFeeSide = 5;
       std::vector< TH2      * > fvhRemapTotSideA_mod;
       std::vector< TH2      * > fvhRemapTotSideB_mod;
-      
+
       ///* STAR TRIGGER detection *///
       std::vector< TH1 *      > fvhTokenMsgType;
       std::vector< TH1 *      > fvhTriggerRate;
@@ -222,6 +242,10 @@ class CbmMcbm2018MonitorTof: public CbmTSUnpack {
       TH2 * fhTimeResFitPuls;
       std::vector< TProfile * >fvhPulserTimeDiffEvoGbtxGbtx;
       std::vector< std::vector< TProfile * > > fvvhPulserTimeDiffEvoGdpbGdpb;
+
+      ///* Coincidence maps *///
+      std::vector< TH2 * >        fvhCoincMapAllChanGdpb;
+      std::vector< TProfile2D * > fvhCoincMeanAllChanGdpb;
 
       void CreateHistograms();
 

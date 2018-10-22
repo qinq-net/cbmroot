@@ -10,13 +10,14 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void MonitorTof(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24bModeOn = kFALSE,
-                     Bool_t bMergedEpochsOn = kFALSE, TString sHostname = "localhost" )
+void MonitorTof(TString inFile = "", TString sHostname = "localhost",
+                 Int_t iStartFile = -1, Int_t iStopFile = -1,
+                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080  )
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
-  TString inDir  = srcDir + "/input/";
-  if( "" != inFile )
-   inFile = inDir + inFile;
+//  TString inDir  = srcDir + "/input/";
+//  if( "" != inFile )
+//   inFile = inDir + inFile;
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
@@ -73,11 +74,24 @@ void MonitorTof(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24bMode
   test_monitor_tof->SetHistoryHistoSize( 600. );
   test_monitor_tof->SetRawDataPrintMsgNb( 100 );
 */
+  test_monitor_tof->EnablePulserMode();
+  test_monitor_tof->EnableCoincidenceMaps();
 
   // --- Source task
-  CbmFlibCern2016Source* source = new CbmFlibCern2016Source();
+  CbmMcbm2018Source* source = new CbmMcbm2018Source();
   if( "" != inFile )
-      source->SetFileName(inFile);
+  {
+      if( 0 <= iStartFile && iStartFile < iStopFile )
+      {
+         for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
+         {
+            TString sFilePath = Form( "%s_%04u.tsa", inFile.Data(), iFileIdx );
+            source->AddFile( sFilePath  );
+            std::cout << "Added " << sFilePath <<std::endl;
+         } // for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
+      } // if( 0 < iStartFile && 0 < iStopFile )
+         else source->SetFileName(inFile);
+  } // if( "" != inFile )
       else
       {
          source->SetHostName( sHostname );
@@ -97,7 +111,7 @@ void MonitorTof(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24bMode
   run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
   run->SetEventHeader(event);
-  run->ActivateHttpServer(100); // refresh each 100 events
+  run->ActivateHttpServer( iServerRefreshRate, iServerHttpPort ); // refresh each 100 events
   run->SetAutoFinish(kFALSE);
 
   // -----   Runtime database   ---------------------------------------------
@@ -120,6 +134,8 @@ void MonitorTof(TString inFile = "", Bool_t bGet4v2Mode = kTRUE, Bool_t b24bMode
   timer.Stop();
 
   std::cout << "Processed " << std::dec << source->GetTsCount() << " timeslices" << std::endl;
+
+  run->Finish();
 
   // --- End-of-run info
   Double_t rtime = timer.RealTime();
