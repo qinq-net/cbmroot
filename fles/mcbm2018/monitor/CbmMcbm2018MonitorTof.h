@@ -196,6 +196,8 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
          // Messages types and flags
       TH1* fhMessType;
       TH1* fhSysMessType;
+      TH2* fhGdpbMessType;
+      TH2* fhGdpbSysMessType;
       TH2* fhGet4MessType;
       TH2* fhGet4ChanScm;
       TH2* fhGet4ChanErrors;

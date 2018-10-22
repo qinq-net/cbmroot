@@ -118,6 +118,8 @@ CbmMcbm2018MonitorTof::CbmMcbm2018MonitorTof() :
     fvhMsSzTimePerLink(12, NULL),
     fhMessType(NULL),
     fhSysMessType(NULL),
+    fhGdpbMessType(NULL),
+    fhGdpbSysMessType(NULL),
     fhGet4MessType(NULL),
     fhGet4ChanScm(NULL),
     fhGet4ChanErrors(NULL),
@@ -473,12 +475,15 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    name = "hMessageType";
    title = "Nb of message for each type; Type";
    // Test Big Data readout with plotting
-   fhMessType = new TH1I(name, title, 1 + gdpbv100::MSG_STAR_TRI_A, 0., 1 + gdpbv100::MSG_STAR_TRI_A);
+   fhMessType = new TH1I(name, title, 1 + gdpbv100::MSG_STAR_TRI_D, 0., 1 + gdpbv100::MSG_STAR_TRI_D);
    fhMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_HIT,        "HIT");
    fhMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_EPOCH,      "EPOCH");
    fhMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_SLOWC,      "SLOWC");
    fhMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_SYST,       "SYST");
-   fhMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_A, "MSG_STAR_TRI");
+   fhMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_A, "TRI_A");
+   fhMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_B, "TRI_B");
+   fhMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_C, "TRI_C");
+   fhMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_D, "TRI_D");
 
    /*******************************************************************/
    name = "hSysMessType";
@@ -490,15 +495,41 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR,     "SYNC ERROR");
 
    /*******************************************************************/
+   name = "hGdpbMessageType";
+   title = "Nb of message for each type per Gdpb; Type; Gdpb Idx []";
+   // Test Big Data readout with plotting
+   fhGdpbMessType = new TH2I(name, title, 1 + gdpbv100::MSG_STAR_TRI_D, 0., 1 + gdpbv100::MSG_STAR_TRI_D,
+                                          fuNrOfGdpbs, -0.5, fuNrOfGdpbs - 0.5 );
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_HIT,        "HIT");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_EPOCH,      "EPOCH");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_SLOWC,      "SLOWC");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_SYST,       "SYST");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_A, "TRI_A");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_B, "TRI_B");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_C, "TRI_C");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_D, "TRI_D");
+
+   /*******************************************************************/
+   name = "hGdpbSysMessType";
+   title = "Nb of system message for each type per Gdpb; System Type; Gdpb Idx []";
+   fhGdpbSysMessType = new TH2I(name, title, 1 + gdpbv100::SYS_SYNC_ERROR, 0., 1 + gdpbv100::SYS_SYNC_ERROR,
+                                          fuNrOfGdpbs, -0.5, fuNrOfGdpbs - 0.5 );
+   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR,     "GET4 ERROR");
+   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN,     "UNKW GET4 MSG");
+   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_SYNC_MISS, "SYS_GET4_SYNC_MISS");
+   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR,     "SYNC ERROR");
+
+
+   /*******************************************************************/
    name = "hGet4MessType";
    title = "Nb of message for each type per GET4; GET4 chip # ; Type";
-   fhGet4MessType = new TH2I(name, title, fuNrOfGet4, 0., fuNrOfGet4, 6, 0., 6.);
+   fhGet4MessType = new TH2I(name, title, fuNrOfGet4, 0., fuNrOfGet4, 4, 0., 4.);
    fhGet4MessType->GetYaxis()->SetBinLabel( 1, "DATA 32b");
    fhGet4MessType->GetYaxis()->SetBinLabel( 2, "EPOCH");
    fhGet4MessType->GetYaxis()->SetBinLabel( 3, "S.C. M");
    fhGet4MessType->GetYaxis()->SetBinLabel( 4, "ERROR");
-   fhGet4MessType->GetYaxis()->SetBinLabel( 5, "DATA 24b");
-   fhGet4MessType->GetYaxis()->SetBinLabel( 6, "STAR Trigger");
+//   fhGet4MessType->GetYaxis()->SetBinLabel( 5, "DATA 24b");
+//   fhGet4MessType->GetYaxis()->SetBinLabel( 6, "STAR Trigger");
 
    /*******************************************************************/
    name = "hGet4ChanScm";
@@ -857,6 +888,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    {
       server->Register("/TofRaw", fhMessType );
       server->Register("/TofRaw", fhSysMessType );
+      server->Register("/TofRaw", fhGdpbMessType );
+      server->Register("/TofRaw", fhGdpbSysMessType );
       server->Register("/TofRaw", fhGet4MessType );
       server->Register("/TofRaw", fhGet4ChanScm );
       server->Register("/TofRaw", fhGet4ChanErrors );
@@ -1480,6 +1513,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
             messageType = mess.getMessageType();
             fviMsgCounter[messageType]++;
             fhMessType->Fill(messageType);
+            fhGdpbMessType->Fill(messageType, fuGdpbNr );
 
    ///         fuGet4Id = mess.getGdpbGenChipId();
             fuGet4Id = ConvertElinkToGet4( mess.getGdpbGenChipId() );
@@ -1525,7 +1559,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                      if( kTRUE == fbPrintAllEpochsEnable )
                      {
                         LOG(INFO) << "Epoch: " << Form("0x%08x ", fuGdpbId)
-                                  << ", " << std::setw(2) << fuGet4Nr
+                                  << ", Merg"
                                   << ", Link " << std::setw(1) << mess.getGdpbEpLinkId()
                                   << ", epoch " << std::setw(8) << mess.getGdpbEpEpochNb()
                                   << ", Sync " << std::setw(1) << mess.getGdpbEpSync()
@@ -1539,6 +1573,19 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                   {
                      fhGet4MessType->Fill(fuGet4Nr, 1);
                      FillEpochInfo(mess);
+
+                     if( kTRUE == fbPrintAllEpochsEnable )
+                     {
+                        LOG(INFO) << "Epoch: " << Form("0x%08x ", fuGdpbId)
+                                  << ", " << std::setw(4) << fuGet4Nr
+                                  << ", Link " << std::setw(1) << mess.getGdpbEpLinkId()
+                                  << ", epoch " << std::setw(8) << mess.getGdpbEpEpochNb()
+                                  << ", Sync " << std::setw(1) << mess.getGdpbEpSync()
+                                  << ", Data loss " << std::setw(1) << mess.getGdpbEpDataLoss()
+                                  << ", Epoch loss " << std::setw(1) << mess.getGdpbEpEpochLoss()
+                                  << ", Epoch miss " << std::setw(1) << mess.getGdpbEpMissmatch()
+                                  << FairLogger::endl;
+                     } // if( kTRUE == fbPrintAllEpochsEnable )
                   } // if single chip epoch message
                   break;
                } // case gdpbv100::MSG_EPOCH:
@@ -1551,6 +1598,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                case gdpbv100::MSG_SYST:
                {
                   fhSysMessType->Fill(mess.getGdpbSysSubType());
+                  fhGdpbSysMessType->Fill(mess.getGdpbSysSubType(), fuGdpbNr );
                   if( gdpbv100::SYS_GET4_ERROR == mess.getGdpbSysSubType() )
                   {
                      fhGet4MessType->Fill(fuGet4Nr, 3);
@@ -1646,7 +1694,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                case gdpbv100::MSG_STAR_TRI_B:
                case gdpbv100::MSG_STAR_TRI_C:
                case gdpbv100::MSG_STAR_TRI_D:
-                  fhGet4MessType->Fill(fuGet4Nr, 5);
+//                  fhGet4MessType->Fill(fuGet4Nr, 5);
                   FillStarTrigInfo(mess);
                   break;
                default:
@@ -2429,6 +2477,8 @@ void CbmMcbm2018MonitorTof::SaveAllHistos( TString sFileName )
 
    fhMessType->Write();
    fhSysMessType->Write();
+   fhGdpbMessType->Write();
+   fhGdpbSysMessType->Write();
    fhGet4MessType->Write();
    fhGet4ChanScm->Write();
    fhGet4ChanErrors->Write();
@@ -2573,6 +2623,8 @@ void CbmMcbm2018MonitorTof::ResetAllHistos()
 
    fhMessType->Reset();
    fhSysMessType->Reset();
+   fhGdpbMessType->Reset();
+   fhGdpbSysMessType->Reset();
    fhGet4MessType->Reset();
    fhGet4ChanScm->Reset();
    fhGet4ChanErrors->Reset();
