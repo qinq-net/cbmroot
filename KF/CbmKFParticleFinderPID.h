@@ -39,10 +39,13 @@ class CbmKFParticleFinderPID : public FairTask {
   virtual void Finish();
   
   void SetPIDMode(int mode) { fPIDMode = mode; }
-  void SetSIS100() { fSisMode = 0; }
-  void SetSIS300() { fSisMode = 1; }
+  void UseNoPID()           { fPIDMode = 0; }
+  void UseMCPID()           { fPIDMode = 1; }
+  void UseDetectorPID()     { fPIDMode = 2; }
+  void SetSIS100()          { fSisMode = 0; }
+  void SetSIS300()          { fSisMode = 1; }
   
-  void DoNotUseTRD() { fTrdPIDMode = 0; }
+  void DoNotUseTRD()  { fTrdPIDMode = 0; }
   void UseTRDWknPID() { fTrdPIDMode = 1; }
   void UseTRDANNPID() { fTrdPIDMode = 2; }
   
@@ -52,7 +55,12 @@ class CbmKFParticleFinderPID : public FairTask {
   
   void DoNotUseMuch() { fMuchMode = 0; }
   void UseMuch() { fMuchMode = 1; }
- 
+
+  void UseSTSdEdX()      { fUseSTSdEdX = kTRUE; }
+  void DoNotUseSTSdEdX() { fUseSTSdEdX = kFALSE; }
+  void UseTRDdEdX()      { fUseTRDdEdX = kTRUE; }
+  void DoNotUseTRDdEdX() { fUseTRDdEdX = kFALSE; }
+  
   //setters for MuCh cuts
   void SetNMinStsHitsForMuon( int cut ) { fMuchCutsInt[0] = cut; }
   void SetNMinMuchHitsForLMVM( int cut ) { fMuchCutsInt[1] = cut; }
@@ -71,32 +79,42 @@ class CbmKFParticleFinderPID : public FairTask {
   void SetRecoPID();
   
   //names of input branches
-  TString fStsTrackBranchName;      //! Name of the input TCA with reco tracks
-  TString fGlobalTrackBranchName;      //! Name of the input TCA with gloabal tracks
-  TString fTofBranchName;      //! Name of the input TCA with tof hits
-  TString fMCTracksBranchName;      //! Name of the input TCA with MC tracks
-  TString fTrackMatchBranchName;      //! Name of the input TCA with track match
+  TString fStsTrackBranchName;
+  TString fGlobalTrackBranchName;
+  TString fStsHitBranchName;
+  TString fStsClusterBranchName;
+  TString fStsDigiBranchName;
+  TString fTofBranchName;
+  TString fMCTracksBranchName;
+  TString fTrackMatchBranchName;
   TString fTrdBranchName;
+  TString fTrdHitBranchName;
   TString fRichBranchName;
   TString fMuchTrackBranchName;
 
   //input branches
   TClonesArray *fTrackArray; //input reco tracks
   TClonesArray *fGlobalTrackArray; //input reco tracks
+  TClonesArray *fStsHitArray;
+  TClonesArray *fStsClusterArray;
+  TClonesArray *fStsDigiArray;
   TClonesArray *fTofHitArray; //input reco tracks
   TClonesArray *fMCTrackArray; //mc tracks
   TClonesArray *fTrackMatchArray; //track match
   TClonesArray *fTrdTrackArray;
+  TClonesArray *fTrdHitArray;
   TClonesArray *fRichRingArray;
   TClonesArray *fMuchTrackArray;//input much tracks
   CbmMCDataArray* fMCTracks;
   
   //PID variables
-  Int_t fPIDMode;
-  Int_t fSisMode;
-  Int_t fTrdPIDMode;
-  Int_t fRichPIDMode;
-  Int_t fMuchMode;
+  Int_t  fPIDMode;
+  Int_t  fSisMode;
+  Int_t  fTrdPIDMode;
+  Int_t  fRichPIDMode;
+  Int_t  fMuchMode;
+  Bool_t fUseSTSdEdX;
+  Bool_t fUseTRDdEdX;
   
   bool fTimeSliceMode;
   

@@ -4,11 +4,15 @@
 // Cbm Headers ----------------------
 #include "CbmKFParticleFinderPID.h"
 #include "CbmStsTrack.h"
+#include "CbmStsHit.h"
+#include "CbmStsCluster.h"
+#include "CbmStsDigi.h"
 #include "CbmMCTrack.h"
 #include "CbmTrackMatchNew.h"
 #include "CbmTofHit.h"
 #include "CbmGlobalTrack.h"
 #include "CbmTrdTrack.h"
+#include "CbmTrdHit.h"
 #include "CbmRichRing.h"
 #include "CbmMuchTrack.h"
 
@@ -22,15 +26,29 @@
 
 //c++ and std headers
 #include <iostream>
+#include <vector>
+using std::vector;
+
+double vecMedian(const vector<double>& vec)
+{
+  double median = 0.;
+  vector<double> vecCopy = vec;
+  sort(vecCopy.begin(), vecCopy.end());
+  int size = vecCopy.size();
+  if (size  % 2 == 0) median = (vecCopy[size / 2 - 1] + vecCopy[size / 2]) / 2;
+  else  median = vecCopy[size / 2];
+  return median;
+}
 
 CbmKFParticleFinderPID::CbmKFParticleFinderPID(const char* name, Int_t iVerbose):
-  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fGlobalTrackBranchName("GlobalTrack"), 
-  fTofBranchName("TofHit"), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fTrdBranchName ("TrdTrack"), fRichBranchName ("RichRing"),
-  fMuchTrackBranchName("MuchTrack"),
-  fTrackArray(0), fGlobalTrackArray(0), fTofHitArray(0), fMCTrackArray(0), fTrackMatchArray(0), fTrdTrackArray(0), fRichRingArray(0),
-  fMuchTrackArray(0), fMCTracks(0),
+  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fGlobalTrackBranchName("GlobalTrack"),
+  fStsHitBranchName("StsHit"), fStsClusterBranchName("StsCluster"), fStsDigiBranchName("StsDigi"),
+  fTofBranchName("TofHit"), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fTrdBranchName ("TrdTrack"), 
+  fTrdHitBranchName("TrdHit"), fRichBranchName ("RichRing"), fMuchTrackBranchName("MuchTrack"),
+  fTrackArray(0), fGlobalTrackArray(0), fStsHitArray(0), fStsClusterArray(0), fStsDigiArray(0), fTofHitArray(0), fMCTrackArray(0), fTrackMatchArray(0),
+  fTrdTrackArray(0), fTrdHitArray(0), fRichRingArray(0), fMuchTrackArray(0), fMCTracks(0),
   fPIDMode(0), fSisMode(1), fTrdPIDMode(0), fRichPIDMode(0),
-  fMuchMode(0), fTimeSliceMode(0),
+  fMuchMode(0), fUseSTSdEdX(kFALSE), fUseTRDdEdX(kFALSE), fTimeSliceMode(0),
   fPID(0)
 {
   //MuCh cuts
@@ -137,6 +155,30 @@ InitStatus CbmKFParticleFinderPID::Init()
       return kERROR;
     }
   
+    // Get STS hit
+    fStsHitArray=(TClonesArray*) ioman->GetObject(fStsHitBranchName);
+    if(fStsHitArray==0)
+    {
+      Error("CbmKFParticleFinderPID::Init","STS hit array not found!");
+      return kERROR;
+    }
+  
+    // Get sts clusters
+    fStsClusterArray=(TClonesArray*) ioman->GetObject(fStsClusterBranchName);
+    if(fStsClusterArray==0)
+    {
+      Error("CbmKFParticleFinderPID::Init","STS cluster array not found!");
+      return kERROR;
+    }
+  
+    // Get sts digis
+    fStsDigiArray=(TClonesArray*) ioman->GetObject(fStsDigiBranchName);
+    if(fStsDigiArray==0)
+    {
+      Error("CbmKFParticleFinderPID::Init","STS digi array not found!");
+      return kERROR;
+    }
+    
     // Get ToF hits
     fTofHitArray=(TClonesArray*) ioman->GetObject(fTofBranchName);
     if(fTofHitArray==0)
@@ -153,6 +195,12 @@ InitStatus CbmKFParticleFinderPID::Init()
         Error("CbmKFParticleFinderPID::Init","TRD track-array not found!");
         //return kERROR;
       }
+    }
+    
+    fTrdHitArray = (TClonesArray*) ioman->GetObject(fTrdHitBranchName);
+    if(fTrdHitArray==0)
+    {
+      Error("CbmKFParticleFinderPID::Init","TRD hit array not found!");
     }
     
     if(fRichPIDMode>0)
@@ -313,12 +361,14 @@ void CbmKFParticleFinderPID::SetRecoPID()
 
     
     CbmStsTrack* cbmStsTrack = (CbmStsTrack*) fTrackArray->At(stsTrackIndex);
-    
+
     const FairTrackParam *stsPar = cbmStsTrack->GetParamFirst(); 
     TVector3 mom;
     stsPar->Momentum(mom);
 
     Double_t p = mom.Mag();
+    Double_t pt = mom.Perp();
+    Double_t pz = sqrt(p*p - pt*pt);
     Int_t q = stsPar->GetQp() > 0 ? 1 : -1;
     
     if (fRichPIDMode == 1)
@@ -402,7 +452,76 @@ void CbmKFParticleFinderPID::SetRecoPID()
         }
       }
     }
+    
+    // dEdX in TRD
+    double dEdXTRD = 1e6; // in case if TRD is not used
+    if(fTrdTrackArray)
+    {
+      Int_t trdIndex = globalTrack->GetTrdTrackIndex();
+      if (trdIndex > -1)
+      {
+        CbmTrdTrack* trdTrack = (CbmTrdTrack*)fTrdTrackArray->At(trdIndex);
+        if (trdTrack)
+        {
+          Double_t eloss = 0.;
+          for (Int_t iTRD=0; iTRD < trdTrack->GetNofHits(); iTRD++)
+          {
+            Int_t TRDindex = trdTrack->GetHitIndex(iTRD);
+            CbmTrdHit* trdHit = (CbmTrdHit*) fTrdHitArray->At(TRDindex);
+            eloss += trdHit->GetELoss();
+          }
+          if(trdTrack->GetNofHits()>0.) dEdXTRD = 1e6 * pz/p * eloss / trdTrack->GetNofHits();
+        }
+      }
+    }
 
+    //STS dE/dX
+    vector<double> dEdxAllveto;
+    int nClustersWveto = cbmStsTrack->GetNofStsHits() + cbmStsTrack->GetNofStsHits();//assume all clusters with veto
+    double dr = 1.;
+    for (int iHit = 0; iHit < cbmStsTrack->GetNofStsHits(); ++iHit)
+    {
+      bool frontVeto = kFALSE, backVeto = kFALSE;
+      CbmStsHit * stsHit = (CbmStsHit*) fStsHitArray -> At(cbmStsTrack->GetStsHitIndex(iHit));
+
+      double x, y, z, xNext, yNext, zNext;
+      x = stsHit -> GetX();
+      y = stsHit -> GetY();
+      z = stsHit -> GetZ();
+
+      if (iHit != cbmStsTrack->GetNofStsHits()-1)
+      {
+        CbmStsHit * stsHitNext = (CbmStsHit*) fStsHitArray -> At(cbmStsTrack->GetStsHitIndex(iHit + 1));
+        xNext = stsHitNext -> GetX();
+        yNext = stsHitNext -> GetY();
+        zNext = stsHitNext -> GetZ();
+        dr = sqrt((xNext - x)*(xNext - x) + (yNext - y)*(yNext - y) + (zNext - z)*(zNext - z)) / (zNext - z);// if *300um, you get real reconstructed dr
+      } // else dr stay previous
+
+      CbmStsCluster * frontCluster = (CbmStsCluster*) fStsClusterArray -> At(stsHit -> GetFrontClusterId());
+      CbmStsCluster * backCluster  = (CbmStsCluster*) fStsClusterArray -> At(stsHit -> GetBackClusterId());
+
+      if (!frontCluster || !backCluster) {
+          std::cout << "CbmKFParticleFinderPID: no front or back cluster" << std::endl;
+          continue;
+      }
+
+      //check if at least one digi in a cluster has overflow --- charge is registered in the last ADC channel #31
+      for (int iDigi = 0; iDigi < frontCluster -> GetNofDigis(); ++iDigi)
+        if (31 == ((CbmStsDigi*) fStsDigiArray -> At(frontCluster -> GetDigi(iDigi))) -> GetCharge()) frontVeto = kTRUE;
+      for (int iDigi = 0; iDigi < backCluster -> GetNofDigis(); ++iDigi)
+        if (31 == ((CbmStsDigi*) fStsDigiArray -> At(backCluster -> GetDigi(iDigi))) -> GetCharge()) backVeto = kTRUE;
+
+      if (!frontVeto) dEdxAllveto.push_back((frontCluster -> GetCharge()) / dr);
+      if (!backVeto)  dEdxAllveto.push_back((backCluster -> GetCharge()) / dr);
+
+      if (0 == frontVeto) nClustersWveto --;
+      if (0 == backVeto)  nClustersWveto --;
+    }
+    float dEdXSTS = 1.e6;
+    if (dEdxAllveto.size() != 0) dEdXSTS = vecMedian(dEdxAllveto);
+    
+    
     int isMuon = 0;
     if(fMuchTrackArray && fMuchMode > 0)
     {
@@ -487,6 +606,13 @@ void CbmKFParticleFinderPID::SetRecoPID()
 
         if(dm2min > 2) iPdg=-1;
 
+        Double_t dEdXTRDthresholdProton = 10.;
+        if (iPdg == 6)
+        {
+          if( fUseTRDdEdX && (dEdXTRD < dEdXTRDthresholdProton) )  iPdg = 0;
+          if( fUseSTSdEdX && (dEdXSTS < 7.5e4) ) iPdg = 0;
+        }
+        
         if(iPdg > -1)
           fPID[stsTrackIndex] = q*PdgHypo[iPdg];
       }
