@@ -255,25 +255,25 @@ void DataTreeCbmInterface::ReadMC()
 void DataTreeCbmInterface::ReadTracks()
 {
     std::cout << "ReadTracks" << std::endl;
-    DataTreeTrackParams Params;
     
-    CbmStsTrack* track{nullptr};
-    CbmTrackMatchNew* match{nullptr};
-		Int_t mcTrackID{-1};
-    CbmMCTrack* mctrack{nullptr};
-    DataTreeTrack* DTTrack {nullptr};
-    DataTreeTrack* DTVertexTrack {nullptr};
-
     const Float_t mass = 0.14; // pion mass assumption to write TLorentzVector
     
-    const FairTrackParam *trackParam{nullptr};
-    TVector3 momRec;
-    TLorentzVector mom;
-    
     const Int_t nSTStracks = flistSTSRECOtrack->GetEntries();
+    
+    int nMCtracks = fDTEvent->GetNMCTracks ();
 
     for (Int_t i=0; i<nSTStracks; ++i)
     {
+        CbmStsTrack* track{nullptr};
+        CbmTrackMatchNew* match{nullptr};
+        Int_t mcTrackID{-999};
+        CbmMCTrack* mctrack{nullptr};
+        DataTreeTrack* DTTrack {nullptr};
+        DataTreeTrack* DTVertexTrack {nullptr}; 
+        const FairTrackParam *trackParam{nullptr};
+        DataTreeTrackParams Params;
+        TVector3 momRec;
+        TLorentzVector mom;
 //         std::cout << "i = " << i << std::endl;
         track = (CbmStsTrack*) flistSTSRECOtrack->At(i);
         
@@ -314,7 +314,7 @@ void DataTreeCbmInterface::ReadTracks()
         std::vector<double> covMatrixValuesT(25, 0.);
         
 //         if (i==0)
-            std::cout << "V: before " << momRec.X() << std::endl;
+//            std::cout << "V: before " << momRec.X() << std::endl;
         
         Params.SetParameters(trackParametersValuesT);
         Params.SetCovMatrix(covMatrixValuesT);
@@ -370,7 +370,7 @@ void DataTreeCbmInterface::ReadTracks()
         
         
 //         if (i==0)
-        std::cout << "V: after 1  " << momRec.X() << std::endl;
+//        std::cout << "V: after 1  " << momRec.X() << std::endl;
         //std::cout << "V: after 2  " << kftrack.GetTrack()[2] << std::endl;
         
         mom.SetXYZM(momRec.X(), momRec.Y(), momRec.Z(), mass);
@@ -408,8 +408,16 @@ void DataTreeCbmInterface::ReadTracks()
         if (match->GetNofLinks() > 0)
         {
             mcTrackID = match->GetMatchedLink().GetIndex();
-            if (mcTrackID >= 0)
-							fDTEvent->AddTrackMatch(DTVertexTrack, fDTEvent -> GetMCTrack(mcTrackID)); 
+            if (mcTrackID >= 0 && mcTrackID < nMCtracks)
+            {
+                fDTEvent->AddTrackMatch(DTVertexTrack, fDTEvent -> GetMCTrack(mcTrackID));
+            }
+//            else
+//            {
+//                cout << "Reco id = " << i;
+//                cout << "\tMC id = " << mcTrackID;
+//                cout << "\tnMCtracks = " << nMCtracks << endl;
+//            }
 				}
     }
 
@@ -528,7 +536,7 @@ void DataTreeCbmInterface::ReadTOF()
 //--------------------------------------------------------------------------------------------------
 void DataTreeCbmInterface::ReadV0(const int UseMCpid )
 {
-    cout << "DataTreeCbmInterface::ReadV0" << endl;
+//    cout << "DataTreeCbmInterface::ReadV0" << endl;
 
     const KFParticleTopoReconstructor* topo_rec;
     if (UseMCpid)  topo_rec = fFinderMC->GetTopoReconstructor();
@@ -537,7 +545,7 @@ void DataTreeCbmInterface::ReadV0(const int UseMCpid )
     if (!topo_rec) cout << "DataTreeCbmInterface::ReadV0: ERROR: no KFParticleTopoReconstructor!" << endl;
     TLorentzVector mom;
     
-    cout << "DataTreeCbmInterface::ReadV0    1" << endl;
+//    cout << "DataTreeCbmInterface::ReadV0    1" << endl;
     
     const int ConstNV0Types = fDTEvent -> GetNV0Types();
     
