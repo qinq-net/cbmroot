@@ -5,52 +5,54 @@
 #ifndef CBM_UNIGEN_GENERATOR
 #define CBM_UNIGEN_GENERATOR
 
-#include "TString.h"
 #include "FairGenerator.h"
+#include "TString.h"
+#include <map>
 
 class TFile;
 class TTree;
 class UEvent;
 class FairPrimaryGenerator;
-
+class FairIon;
 
 class CbmUnigenGenerator : public FairGenerator {
 
 private:
-    Int_t         fEvents;           //! Current event number
-    TFile        *fInputFile;        //! Input file
-    TString       fFileName;         //! Input file Name
-    TTree        *fInTree;           //! Input tree
-    UEvent       *fEvent;            //! Input event
-    Bool_t        fCM;               //! CM flag
-    Double_t      fBetaCM;           //! CM velocity
-    Double_t      fGammaCM;          //! CM gamma factor
+  Int_t fEvents;     //! Current event number
+  TFile *fInputFile; //! Input file
+  TString fFileName; //! Input file Name
+  TTree *fInTree;    //! Input tree
+  UEvent *fEvent;    //! Input event
+  Bool_t fCM;        //! CM flag
+  Double_t fBetaCM;  //! CM velocity
+  Double_t fGammaCM; //! CM gamma factor
 
-    Double32_t fPhiMin, fPhiMax;          // Limits of event plane angle
-    Bool_t     fEventPlaneSet;            // Flag whether event plane angle is used
+  Double32_t fPhiMin, fPhiMax; // Limits of event plane angle
+  Bool_t fEventPlaneSet;       // Flag whether event plane angle is used
+  std::map<TString, FairIon *> fIonMap; // !
 
-    void CloseInput();
+  void CloseInput();
+  Int_t RegisterIons();
 
-    CbmUnigenGenerator(const CbmUnigenGenerator&);
-    CbmUnigenGenerator& operator=(const CbmUnigenGenerator&);
+  CbmUnigenGenerator(const CbmUnigenGenerator &);
+  CbmUnigenGenerator &operator=(const CbmUnigenGenerator &);
 
 public:
-    CbmUnigenGenerator();
-    CbmUnigenGenerator(TString fileName);
-    virtual ~CbmUnigenGenerator();
+  CbmUnigenGenerator();
+  CbmUnigenGenerator(TString fileName);
+  virtual ~CbmUnigenGenerator();
 
-  /** Public method SetEventPlane 
+  /** Public method SetEventPlane
    **@param phiMin   Lower limit for event plane angle [rad]
    **@param phiMax   Upper limit for event plane angle [rad]
    **If set, an event plane angle will be generated with flat
-   **distrtibution between phiMin and phiMax. 
+   **distrtibution between phiMin and phiMax.
    **/
   void SetEventPlane(Double_t phiMin, Double_t phiMax);
 
-    virtual Bool_t ReadEvent(FairPrimaryGenerator* primGen);
+  virtual Bool_t ReadEvent(FairPrimaryGenerator *primGen);
 
-    ClassDef(CbmUnigenGenerator,2);
+  ClassDef(CbmUnigenGenerator, 3);
 };
-
 
 #endif
