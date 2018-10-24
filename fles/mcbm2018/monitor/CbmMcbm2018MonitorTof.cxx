@@ -118,12 +118,18 @@ CbmMcbm2018MonitorTof::CbmMcbm2018MonitorTof() :
     fvhMsSzTimePerLink(12, NULL),
     fhMessType(NULL),
     fhSysMessType(NULL),
-    fhGdpbMessType(NULL),
-    fhGdpbSysMessType(NULL),
     fhGet4MessType(NULL),
     fhGet4ChanScm(NULL),
     fhGet4ChanErrors(NULL),
     fhGet4EpochFlags(NULL),
+    fhGdpbMessType(NULL),
+    fhGdpbSysMessType(NULL),
+    fhGdpbEpochFlags(NULL),
+    fhGdpbEpochSyncEvo(NULL),
+    fhGdpbEpochMissEvo(NULL),
+    fvhGdpbGet4MessType(),
+    fvhGdpbGet4ChanScm(),
+    fvhGdpbGet4ChanErrors(),
     fhScmScalerCounters(NULL),
     fhScmDeadtimeCounters(NULL),
     fhScmSeuCounters(NULL),
@@ -495,32 +501,6 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR,     "SYNC ERROR");
 
    /*******************************************************************/
-   name = "hGdpbMessageType";
-   title = "Nb of message for each type per Gdpb; Type; Gdpb Idx []";
-   // Test Big Data readout with plotting
-   fhGdpbMessType = new TH2I(name, title, 1 + gdpbv100::MSG_STAR_TRI_D, 0., 1 + gdpbv100::MSG_STAR_TRI_D,
-                                          fuNrOfGdpbs, -0.5, fuNrOfGdpbs - 0.5 );
-   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_HIT,        "HIT");
-   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_EPOCH,      "EPOCH");
-   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_SLOWC,      "SLOWC");
-   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_SYST,       "SYST");
-   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_A, "TRI_A");
-   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_B, "TRI_B");
-   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_C, "TRI_C");
-   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_D, "TRI_D");
-
-   /*******************************************************************/
-   name = "hGdpbSysMessType";
-   title = "Nb of system message for each type per Gdpb; System Type; Gdpb Idx []";
-   fhGdpbSysMessType = new TH2I(name, title, 1 + gdpbv100::SYS_SYNC_ERROR, 0., 1 + gdpbv100::SYS_SYNC_ERROR,
-                                          fuNrOfGdpbs, -0.5, fuNrOfGdpbs - 0.5 );
-   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR,     "GET4 ERROR");
-   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN,     "UNKW GET4 MSG");
-   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_SYNC_MISS, "SYS_GET4_SYNC_MISS");
-   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR,     "SYNC ERROR");
-
-
-   /*******************************************************************/
    name = "hGet4MessType";
    title = "Nb of message for each type per GET4; GET4 chip # ; Type";
    fhGet4MessType = new TH2I(name, title, fuNrOfGet4, 0., fuNrOfGet4, 4, 0., 4.);
@@ -581,6 +561,52 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    fhGet4EpochFlags->GetYaxis()->SetBinLabel(4, "MISSMAT");
 
    /*******************************************************************/
+   name = "hGdpbMessageType";
+   title = "Nb of message for each type per Gdpb; Type; Gdpb Idx []";
+   // Test Big Data readout with plotting
+   fhGdpbMessType = new TH2I(name, title, 1 + gdpbv100::MSG_STAR_TRI_D, 0., 1 + gdpbv100::MSG_STAR_TRI_D,
+                                          fuNrOfGdpbs, -0.5, fuNrOfGdpbs - 0.5 );
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_HIT,        "HIT");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_EPOCH,      "EPOCH");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_SLOWC,      "SLOWC");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_SYST,       "SYST");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_A, "TRI_A");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_B, "TRI_B");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_C, "TRI_C");
+   fhGdpbMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::MSG_STAR_TRI_D, "TRI_D");
+
+   /*******************************************************************/
+   name = "hGdpbSysMessType";
+   title = "Nb of system message for each type per Gdpb; System Type; Gdpb Idx []";
+   fhGdpbSysMessType = new TH2I(name, title, 1 + gdpbv100::SYS_SYNC_ERROR, 0., 1 + gdpbv100::SYS_SYNC_ERROR,
+                                          fuNrOfGdpbs, -0.5, fuNrOfGdpbs - 0.5 );
+   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR,     "GET4 ERROR");
+   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN,     "UNKW GET4 MSG");
+   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_SYNC_MISS, "SYS_GET4_SYNC_MISS");
+   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR,     "SYNC ERROR");
+
+   /*******************************************************************/
+   name = "hGdpbEpochFlags";
+   title = "Epoch flags per gDPB; gDPB # ; Type";
+   fhGdpbEpochFlags = new TH2I(name, title, fuNrOfGdpbs, 0., fuNrOfGdpbs, 4, 0., 4.);
+   fhGdpbEpochFlags->GetYaxis()->SetBinLabel(1, "SYNC");
+   fhGdpbEpochFlags->GetYaxis()->SetBinLabel(2, "Ep LOSS");
+   fhGdpbEpochFlags->GetYaxis()->SetBinLabel(3, "Da LOSS");
+   fhGdpbEpochFlags->GetYaxis()->SetBinLabel(4, "MISSMAT");
+
+   /*******************************************************************/
+   name = Form("hGdpbEpochSyncEvo");
+   title = Form( "Epoch SYNC per second and gDPB; Time[s];  gDPB #; SYNC Nb" );
+   fhGdpbEpochSyncEvo = new TH2D(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize,
+                                                            fuNrOfGdpbs, 0., fuNrOfGdpbs);
+
+   /*******************************************************************/
+   name = Form("hGdpbEpochMissEvo");
+   title = Form( "Epoch Missmatch per second and gDPB; Time[s];  gDPB #; Missmatch Nb" );
+   fhGdpbEpochMissEvo = new TH2D(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize,
+                                                            fuNrOfGdpbs, 0., fuNrOfGdpbs);
+
+   /*******************************************************************/
       // Slow control messages analysis
    name = "hScmScalerCounters";
    title = "Content of Scaler counter SC messages; Scaler counter [hit]; Channel []";
@@ -605,6 +631,56 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    /*******************************************************************/
   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
   {
+
+      /*******************************************************************/
+      name = Form("hGdpbGet4MessType_%02u", uGdpb);
+      title = Form("Nb of message for each type per GET4 in gDPB %02u; GET4 chip # ; Type", uGdpb);
+      fvhGdpbGet4MessType.push_back( new TH2I(name, title, fuNrOfGet4PerGdpb, 0., fuNrOfGet4PerGdpb, 4, 0., 4.) );
+      fvhGdpbGet4MessType[ uGdpb ]->GetYaxis()->SetBinLabel( 1, "DATA 32b");
+      fvhGdpbGet4MessType[ uGdpb ]->GetYaxis()->SetBinLabel( 2, "EPOCH");
+      fvhGdpbGet4MessType[ uGdpb ]->GetYaxis()->SetBinLabel( 3, "S.C. M");
+      fvhGdpbGet4MessType[ uGdpb ]->GetYaxis()->SetBinLabel( 4, "ERROR");
+
+      /*******************************************************************/
+      name = Form("hGdpbGet4ChanScm_%02u", uGdpb);
+      title = Form("SC messages per GET4 channel in gDPB %02u; GET4 channel # ; SC type", uGdpb);
+      fvhGdpbGet4ChanScm.push_back( new TH2I(name, title,
+            2 * fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb,
+            5, 0., 5.) );
+      fvhGdpbGet4ChanScm[ uGdpb ]->GetYaxis()->SetBinLabel( 1, "Hit Scal" );
+      fvhGdpbGet4ChanScm[ uGdpb ]->GetYaxis()->SetBinLabel( 2, "Deadtime" );
+      fvhGdpbGet4ChanScm[ uGdpb ]->GetYaxis()->SetBinLabel( 3, "SPI" );
+      fvhGdpbGet4ChanScm[ uGdpb ]->GetYaxis()->SetBinLabel( 4, "SEU Scal" );
+      fvhGdpbGet4ChanScm[ uGdpb ]->GetYaxis()->SetBinLabel( 5, "START" );
+
+      /*******************************************************************/
+      name = Form("hGdpbGet4ChanErrors_%02u", uGdpb);
+      title = Form("Error messages per GET4 channel in gDPB %02u; GET4 channel # ; Error", uGdpb);
+      fvhGdpbGet4ChanErrors.push_back( new TH2I(name, title,
+               fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb,
+               21, 0., 21.) );
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 1, "0x00: Readout Init    ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 2, "0x01: Sync            ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 3, "0x02: Epoch count sync");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 4, "0x03: Epoch           ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 5, "0x04: FIFO Write      ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 6, "0x05: Lost event      ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 7, "0x06: Channel state   ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 8, "0x07: Token Ring state");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 9, "0x08: Token           ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(10, "0x09: Error Readout   ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(11, "0x0a: SPI             ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(12, "0x0b: DLL Lock error  "); // <- From GET4 v1.2
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(13, "0x0c: DLL Reset invoc."); // <- From GET4 v1.2
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(14, "0x11: Overwrite       ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(15, "0x12: ToT out of range");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(16, "0x13: Event Discarded ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(17, "0x14: Add. Rising edge"); // <- From GET4 v1.3
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(18, "0x15: Unpaired Falling"); // <- From GET4 v1.3
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(19, "0x16: Sequence error  "); // <- From GET4 v1.3
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(20, "0x7f: Unknown         ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(21, "Corrupt/unsuprtd error");
+
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
       name = Form("RawFt_gDPB_%02u", uGdpb);
       title = Form("Raw FineTime gDPB %02u Plot 0; channel; FineTime [bin]", uGdpb);
@@ -888,12 +964,17 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    {
       server->Register("/TofRaw", fhMessType );
       server->Register("/TofRaw", fhSysMessType );
-      server->Register("/TofRaw", fhGdpbMessType );
-      server->Register("/TofRaw", fhGdpbSysMessType );
       server->Register("/TofRaw", fhGet4MessType );
       server->Register("/TofRaw", fhGet4ChanScm );
       server->Register("/TofRaw", fhGet4ChanErrors );
       server->Register("/TofRaw", fhGet4EpochFlags );
+
+      server->Register("/TofRaw", fhGdpbMessType );
+      server->Register("/TofRaw", fhGdpbSysMessType );
+      server->Register("/TofRaw", fhGdpbEpochFlags );
+      server->Register("/TofRaw", fhGdpbEpochSyncEvo );
+      server->Register("/TofRaw", fhGdpbEpochMissEvo );
+
       server->Register("/TofRaw", fhScmScalerCounters );
       server->Register("/TofRaw", fhScmDeadtimeCounters );
       server->Register("/TofRaw", fhScmSeuCounters );
@@ -913,6 +994,9 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
 
       for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
       {
+         server->Register("/TofRaw", fvhGdpbGet4MessType[ uGdpb ] );
+         server->Register("/TofRaw", fvhGdpbGet4ChanScm[ uGdpb ] );
+         server->Register("/TofRaw", fvhGdpbGet4ChanErrors[ uGdpb ] );
          server->Register("/TofRaw", fvhRawFt_gDPB[ uGdpb ] );
          server->Register("/TofRaw", fvhChCount_gDPB[ uGdpb ] );
          server->Register("/TofRates", fvhChannelRate_gDPB[ uGdpb ] );
@@ -1015,6 +1099,52 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
 
    cSummary->cd(6);
    fhGet4ChanScm->Draw("colz");
+   /*****************************/
+
+   /** Create summary Canvases with plots VS Gdpb **/
+   TCanvas* cSummaryGdpb = new TCanvas("cSummaryGdpb", "gDPB Monitoring Summary", w, h);
+   cSummaryGdpb->Divide(2, 3);
+
+   cSummaryGdpb->cd(1);
+   gPad->SetLogz();
+   fhGdpbMessType->Draw("colz");
+
+   cSummaryGdpb->cd(3);
+   gPad->SetLogz();
+   fhGdpbSysMessType->Draw("colz");
+
+   cSummaryGdpb->cd(5);
+   gPad->SetLogz();
+   fhGdpbEpochFlags->Draw("text colz");
+
+   cSummaryGdpb->cd(4);
+   fhGdpbEpochSyncEvo->Draw("colz");
+
+   cSummaryGdpb->cd(6);
+   gPad->SetLogz();
+   fhGdpbEpochMissEvo->Draw("colz");
+   /*****************************/
+
+   /** Create summary Canvases with plots VS GET4 or channel per gDPB **/
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      TCanvas* cSumGdpbGet4 = new TCanvas( Form("cSumGdpbGet4_g%02u", uGdpb),
+                                           Form("Summary per GET4 or channel for gDPB %02u", uGdpb),
+                                           w, h);
+      cSumGdpbGet4->Divide( 2, 2 );
+
+      cSumGdpbGet4->cd(1);
+      gPad->SetLogz();
+      fvhGdpbGet4MessType[uGdpb]->Draw( "colz" );
+
+      cSumGdpbGet4->cd(2);
+      gPad->SetLogz();
+      fvhGdpbGet4ChanScm[uGdpb]->Draw( "colz" );
+
+      cSumGdpbGet4->cd(3);
+      gPad->SetLogz();
+      fvhGdpbGet4ChanErrors[uGdpb]->Draw( "colz" );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    /*****************************/
 
    /** Create FEE rates Canvas for STAR 2018 **/
@@ -1531,12 +1661,14 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                {
                   if( mess.getGdpbHitIs24b() )
                   {
-                     fhGet4MessType->Fill(fuGet4Nr, 4 );
+                     fhGet4MessType->Fill( fuGet4Nr, 4 );
+                     fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 4 );
                      PrintGenInfo(mess);
                   } // if( getGdpbHitIs24b() )
                      else
                      {
-                        fhGet4MessType->Fill(fuGet4Nr, 0 );
+                        fhGet4MessType->Fill( fuGet4Nr, 0 );
+                        fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 0 );
                         fvmEpSupprBuffer[fuGet4Nr].push_back( mess );
                      } // else of if( getGdpbHitIs24b() )
                   break;
@@ -1545,6 +1677,24 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                {
                   if( gdpbv100::kuChipIdMergedEpoch == fuGet4Id )
                   {
+                     if (1 == mess.getGdpbEpSync())
+                     {
+                        fhGdpbEpochFlags->Fill( fuGdpbNr, 0 );
+                        fhGdpbEpochSyncEvo->Fill( (1e-9) * fdMsIndex - fdStartTimeMsSz, fuGdpbNr );
+                     } // if (1 == mess.getGdpbEpSync())
+
+                     if (1 == mess.getGdpbEpDataLoss())
+                        fhGdpbEpochFlags->Fill( fuGdpbNr, 1 );
+
+                     if (1 == mess.getGdpbEpEpochLoss())
+                        fhGdpbEpochFlags->Fill( fuGdpbNr, 2 );
+
+                     if (1 == mess.getGdpbEpMissmatch())
+                     {
+                        fhGdpbEpochFlags->Fill( fuGdpbNr, 3 );
+                        fhGdpbEpochMissEvo->Fill( (1e-9) * fdMsIndex - fdStartTimeMsSz, fuGdpbNr );
+                     } // if (1 == mess.getGdpbEpMissmatch())
+
                      for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGet4Index ++ )
                      {
                         fuGet4Id = uGet4Index;
@@ -1552,7 +1702,8 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                         gdpbv100::Message tmpMess(mess);
                         tmpMess.setGdpbGenChipId( uGet4Index );
 
-                        fhGet4MessType->Fill(fuGet4Nr, 1);
+                        fhGet4MessType->Fill( fuGet4Nr, 1);
+                        fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 1 );
                         FillEpochInfo(tmpMess);
                      } // for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGetIndex ++ )
 
@@ -1571,7 +1722,8 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                   } // if this epoch message is a merged one valid for all chips
                   else
                   {
-                     fhGet4MessType->Fill(fuGet4Nr, 1);
+                     fhGet4MessType->Fill( fuGet4Nr, 1);
+                     fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 1 );
                      FillEpochInfo(mess);
 
                      if( kTRUE == fbPrintAllEpochsEnable )
@@ -1591,7 +1743,8 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                } // case gdpbv100::MSG_EPOCH:
                case gdpbv100::MSG_SLOWC:
                {
-                  fhGet4MessType->Fill(fuGet4Nr, 2);
+                  fhGet4MessType->Fill( fuGet4Nr, 2);
+                  fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 2 );
                   PrintSlcInfo(mess);
                   break;
                } // case gdpbv100::MSG_SLOWC:
@@ -1601,7 +1754,8 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                   fhGdpbSysMessType->Fill(mess.getGdpbSysSubType(), fuGdpbNr );
                   if( gdpbv100::SYS_GET4_ERROR == mess.getGdpbSysSubType() )
                   {
-                     fhGet4MessType->Fill(fuGet4Nr, 3);
+                     fhGet4MessType->Fill( fuGet4Nr, 3);
+                     fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 3 );
 
                      UInt_t uFeeNr   = (fuGet4Id / fuNrOfGet4PerFee);
                      if (0 <= fdStartTime)
@@ -1619,71 +1773,93 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                            1e-9 / 60.0 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTimeLong), 1, 1 / 60.0);
                      } // if (0 <= fdStartTime)
 
+                     Int_t dGdpbChId =  fuGet4Id * fuNrOfChannelsPerGet4 + mess.getGdpbSysErrChanId();
                      Int_t dFullChId =  fuGet4Nr * fuNrOfChannelsPerGet4 + mess.getGdpbSysErrChanId();
                      switch( mess.getGdpbSysErrData() )
                      {
                         case gdpbv100::GET4_V2X_ERR_READ_INIT:
                            fhGet4ChanErrors->Fill(dFullChId, 0);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 0 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_SYNC:
                            fhGet4ChanErrors->Fill(dFullChId, 1);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 1 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_EP_CNT_SYNC:
                            fhGet4ChanErrors->Fill(dFullChId, 2);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 2 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_EP:
                            fhGet4ChanErrors->Fill(dFullChId, 3);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 3 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_FIFO_WRITE:
                            fhGet4ChanErrors->Fill(dFullChId, 4);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 4 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_LOST_EVT:
                            fhGet4ChanErrors->Fill(dFullChId, 5);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 5 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_CHAN_STATE:
                            fhGet4ChanErrors->Fill(dFullChId, 6);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 6 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_TOK_RING_ST:
                            fhGet4ChanErrors->Fill(dFullChId, 7);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 7 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_TOKEN:
                            fhGet4ChanErrors->Fill(dFullChId, 8);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 8 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_READOUT_ERR:
                            fhGet4ChanErrors->Fill(dFullChId, 9);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 9 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_SPI:
                            fhGet4ChanErrors->Fill(dFullChId, 10);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 10 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_DLL_LOCK:
                            fhGet4ChanErrors->Fill(dFullChId, 11);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 11 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_DLL_RESET:
                            fhGet4ChanErrors->Fill(dFullChId, 12);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 12 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_TOT_OVERWRT:
                            fhGet4ChanErrors->Fill(dFullChId, 13);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 13 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_TOT_RANGE:
                            fhGet4ChanErrors->Fill(dFullChId, 14);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 14 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_EVT_DISCARD:
                            fhGet4ChanErrors->Fill(dFullChId, 15);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 15 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_ADD_RIS_EDG:
                            fhGet4ChanErrors->Fill(dFullChId, 16);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 16 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_UNPAIR_FALL:
                            fhGet4ChanErrors->Fill(dFullChId, 17);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 17 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_SEQUENCE_ER:
                            fhGet4ChanErrors->Fill(dFullChId, 18);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 18 );
                            break;
                         case gdpbv100::GET4_V2X_ERR_UNKNOWN:
                            fhGet4ChanErrors->Fill(dFullChId, 19);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 19 );
                            break;
                         default: // Corrupt error or not yet supported error
                            fhGet4ChanErrors->Fill(dFullChId, 20);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 20 );
                            break;
                      } // Switch( mess.getGdpbSysErrData() )
                   } // if( gdpbv100::SYSMSG_GET4_EVENT == mess.getGdpbSysSubType() )
@@ -2080,6 +2256,7 @@ void CbmMcbm2018MonitorTof::PrintSlcInfo(gdpbv100::Message mess)
       UInt_t uEdge = mess.getGdpbSlcEdge();
       UInt_t uData = mess.getGdpbSlcData();
       UInt_t uType = mess.getGdpbSlcType();
+      Double_t dGdpbChId =  fuGet4Id * fuNrOfChannelsPerGet4 + mess.getGdpbSlcChan() + 0.5 * mess.getGdpbSlcEdge();
       Double_t dFullChId =  fuGet4Nr * fuNrOfChannelsPerGet4 + mess.getGdpbSlcChan() + 0.5 * mess.getGdpbSlcEdge();
       Double_t dMessTime = static_cast< Double_t>( fulCurrentEpochTime ) * 1.e-9;
 
@@ -2088,12 +2265,14 @@ void CbmMcbm2018MonitorTof::PrintSlcInfo(gdpbv100::Message mess)
          case 0: // Scaler counter
          {
             fhGet4ChanScm->Fill(dFullChId, uType );
+            fvhGdpbGet4ChanScm[ fuGdpbNr ]->Fill( dGdpbChId, uType );
             fhScmScalerCounters->Fill( uData, dFullChId);
             break;
          }
          case 1: // Deadtime counter
          {
             fhGet4ChanScm->Fill(dFullChId, uType );
+            fvhGdpbGet4ChanScm[ fuGdpbNr ]->Fill( dGdpbChId, uType );
             fhScmDeadtimeCounters->Fill( uData, dFullChId);
             break;
          }
@@ -2116,6 +2295,7 @@ void CbmMcbm2018MonitorTof::PrintSlcInfo(gdpbv100::Message mess)
                        << FairLogger::endl;
 */
             fhGet4ChanScm->Fill(dFullChId, uType );
+            fvhGdpbGet4ChanScm[ fuGdpbNr ]->Fill( dGdpbChId, uType );
             break;
          }
          case 3: // Start message or SEU counter
@@ -2141,6 +2321,7 @@ void CbmMcbm2018MonitorTof::PrintSlcInfo(gdpbv100::Message mess)
                     << FairLogger::endl;
 */
                fhGet4ChanScm->Fill(dFullChId, uType + 1);
+               fvhGdpbGet4ChanScm[ fuGdpbNr ]->Fill( dGdpbChId, uType + 1 );
             } // if( 0 == mess.getGdpbSlcChan() && 0 == mess.getGdpbSlcEdge() )
             else if( 0 == mess.getGdpbSlcChan() && 1 == mess.getGdpbSlcEdge() ) // SEU counter message
             {
@@ -2160,6 +2341,7 @@ void CbmMcbm2018MonitorTof::PrintSlcInfo(gdpbv100::Message mess)
                  << FairLogger::endl;
 */
                fhGet4ChanScm->Fill(dFullChId, uType );
+               fvhGdpbGet4ChanScm[ fuGdpbNr ]->Fill( dGdpbChId, uType );
                fhScmSeuCounters->Fill( uData, dFullChId);
                fhScmSeuCountersEvo->Fill( dMessTime - fdStartTime* 1.e-9, uData, dFullChId);
              } // else if( 0 == mess.getGdpbSlcChan() && 1 == mess.getGdpbSlcEdge() )
@@ -2477,12 +2659,17 @@ void CbmMcbm2018MonitorTof::SaveAllHistos( TString sFileName )
 
    fhMessType->Write();
    fhSysMessType->Write();
-   fhGdpbMessType->Write();
-   fhGdpbSysMessType->Write();
    fhGet4MessType->Write();
    fhGet4ChanScm->Write();
    fhGet4ChanErrors->Write();
    fhGet4EpochFlags->Write();
+
+   fhGdpbMessType->Write();
+   fhGdpbSysMessType->Write();
+   fhGdpbEpochFlags->Write();
+   fhGdpbEpochSyncEvo->Write();
+   fhGdpbEpochMissEvo->Write();
+
    fhScmScalerCounters->Write();
    fhScmDeadtimeCounters->Write();
    fhScmSeuCounters->Write();
@@ -2502,6 +2689,9 @@ void CbmMcbm2018MonitorTof::SaveAllHistos( TString sFileName )
 
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
+      fvhGdpbGet4MessType[ uGdpb ]->Write();
+      fvhGdpbGet4ChanScm[ uGdpb ]->Write();
+      fvhGdpbGet4ChanErrors[ uGdpb ]->Write();
       fvhRawFt_gDPB[ uGdpb ]->Write();
       fvhChCount_gDPB[ uGdpb ]->Write();
       fvhChannelRate_gDPB[ uGdpb ]->Write();
@@ -2623,12 +2813,17 @@ void CbmMcbm2018MonitorTof::ResetAllHistos()
 
    fhMessType->Reset();
    fhSysMessType->Reset();
-   fhGdpbMessType->Reset();
-   fhGdpbSysMessType->Reset();
    fhGet4MessType->Reset();
    fhGet4ChanScm->Reset();
    fhGet4ChanErrors->Reset();
    fhGet4EpochFlags->Reset();
+
+   fhGdpbMessType->Reset();
+   fhGdpbSysMessType->Reset();
+   fhGdpbEpochFlags->Reset();
+   fhGdpbEpochSyncEvo->Reset();
+   fhGdpbEpochMissEvo->Reset();
+
    fhScmScalerCounters->Reset();
    fhScmDeadtimeCounters->Reset();
    fhScmSeuCounters->Reset();
@@ -2648,6 +2843,9 @@ void CbmMcbm2018MonitorTof::ResetAllHistos()
 
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
+      fvhGdpbGet4MessType[ uGdpb ]->Reset();
+      fvhGdpbGet4ChanScm[ uGdpb ]->Reset();
+      fvhGdpbGet4ChanErrors[ uGdpb ]->Reset();
       fvhRawFt_gDPB[ uGdpb ]->Reset();
       fvhChCount_gDPB[ uGdpb ]->Reset();
       fvhChannelRate_gDPB[ uGdpb ]->Reset();

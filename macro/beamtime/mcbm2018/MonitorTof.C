@@ -74,6 +74,7 @@ void MonitorTof(TString inFile = "", TString sHostname = "localhost",
   test_monitor_tof->SetHistoryHistoSize( 600. );
   test_monitor_tof->SetRawDataPrintMsgNb( 100 );
 */
+  test_monitor_tof->SetIgnoreMsOverlap();
   test_monitor_tof->EnablePulserMode();
   test_monitor_tof->EnableCoincidenceMaps();
 

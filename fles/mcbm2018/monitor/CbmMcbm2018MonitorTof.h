@@ -60,6 +60,7 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
 
       virtual void AddMsComponentToList( size_t component, UShort_t usDetectorId );
       virtual void SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb );
+      void SetIgnoreMsOverlap( Bool_t bEnaFlag = kTRUE ) { fbIgnoreOverlapMs = bEnaFlag; }
       void SetMsOverlap(size_t uOverlapMsNb = 1) { fuOverlapMsNb = uOverlapMsNb; }
       size_t GetMsOverlap() { return fuOverlapMsNb; }
 
@@ -194,14 +195,24 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
       std::vector< TProfile * > fvhMsSzTimePerLink;
 
          // Messages types and flags
+            /// In System
       TH1* fhMessType;
       TH1* fhSysMessType;
-      TH2* fhGdpbMessType;
-      TH2* fhGdpbSysMessType;
+            /// Per GET4 in system
       TH2* fhGet4MessType;
       TH2* fhGet4ChanScm;
       TH2* fhGet4ChanErrors;
       TH2* fhGet4EpochFlags;
+            /// Per Gdpb
+      TH2* fhGdpbMessType;
+      TH2* fhGdpbSysMessType;
+      TH2* fhGdpbEpochFlags;
+      TH2* fhGdpbEpochSyncEvo;
+      TH2* fhGdpbEpochMissEvo;
+            /// Per GET4 in gDPB
+      std::vector< TH2* > fvhGdpbGet4MessType;
+      std::vector< TH2* > fvhGdpbGet4ChanScm;
+      std::vector< TH2* > fvhGdpbGet4ChanErrors;
          // Slow control messages
       TH2* fhScmScalerCounters;
       TH2* fhScmDeadtimeCounters;
