@@ -35,14 +35,12 @@ using namespace std;
 // ---> Beam pipe material name
 TString  pipeMediumName = "carbon"; // "aluminium" "beryllium" "carbon"
 Double_t dPipeThickness = 0.5; // mm  
-Int_t energy = 12;
-TString Energy = "12";
 // ----------------------------------------------------------------------------
 
 
 // -------------   Other global variables   -----------------------------------
 TString Version = "v18_v2";
-TString Variation = Version + ".AuAu" + Energy + "AGeV"; //sup
+TString Variation = Version + ".AuAu"; //sup
 // ---> Macros name to info file
 TString macrosname = "create_bpipe_geometry_" + Variation + ".C";
 // ---> Geometry file name (output)
@@ -66,15 +64,9 @@ void create_bpipe_geometry_v18_v2( Bool_t bMuch = kTRUE, Bool_t bTrd = kTRUE,
                                     Bool_t bTof  = kTRUE, Bool_t bEnd = kTRUE, 
                                     Bool_t bWin  = kTRUE )
 {  
-  Double_t pipeRotationAngle[15];
-  pipeRotationAngle[2] = 1.8;
-  pipeRotationAngle[4] = 1.2;
-  pipeRotationAngle[6] = 0.8;
-  pipeRotationAngle[8] = 1.;
-  pipeRotationAngle[10] = 0.7;
-  pipeRotationAngle[12] = 0.6;
+  Double_t pipeRotationAngle = atan2(10.47,1000.)*TMath::RadToDeg();
 
-  Double_t pipeXshift1 = -370.*TMath::Tan(pipeRotationAngle[energy]*TMath::DegToRad());
+  Double_t pipeXshift1 = -370.*TMath::Tan(pipeRotationAngle*TMath::DegToRad());
   Double_t pipeXshift2 = pipeXshift1 + 5;
   Double_t pipeXshift3 = 5;
 
@@ -130,7 +122,7 @@ void create_bpipe_geometry_v18_v2( Bool_t bMuch = kTRUE, Bool_t bTrd = kTRUE,
 /*************************************************************/
   TString pipeNameTrd = "pipe5 - TRD-ToF section";
   const Int_t nSectsTrd = 2;
-  Double_t dZposTrd[nSectsTrd] = { 3700.,  9000. }; // mm
+  Double_t dZposTrd[nSectsTrd] = { 3700.,  8000. }; // mm
   Double_t dRoutTrd[nSectsTrd] = { 95., 95. }; // mm
   Double_t dRinTrd[ nSectsTrd]; for(Int_t i=0; i<nSectsTrd; i++) { dRinTrd[i] = dRoutTrd[i] - dPipeThickness; }
   
@@ -156,7 +148,7 @@ void create_bpipe_geometry_v18_v2( Bool_t bMuch = kTRUE, Bool_t bTrd = kTRUE,
 /*************************************************************/
   TString pipeNamePsd = "pipe7 - PSD section";
   const Int_t nSectsPsd = 2;
-  Double_t dZposPsd[nSectsPsd] = { 9000 + 0.2, 19000. }; // mm
+  Double_t dZposPsd[nSectsPsd] = { 8000 + 0.2, 19000. }; // mm
   Double_t dRoutPsd[nSectsPsd] = { 95., 95. }; // mm
   Double_t dRinPsd[ nSectsPsd]; for(Int_t i=0; i<nSectsPsd; i++) { dRinPsd[i] = dRoutPsd[i] - dPipeThickness; }
   
@@ -200,7 +192,8 @@ void create_bpipe_geometry_v18_v2( Bool_t bMuch = kTRUE, Bool_t bTrd = kTRUE,
    infoFile << " MuCh/RICH section of the beam pipe with conical shape have " << endl;
    infoFile << " half opening angle 2.5deg. TRD-ToF section is composed of cylinder " << endl;
    infoFile << " with R95mm, PSD section with R95mm " << endl;
-   infoFile << " and with 5 cm shift in XZ plane relativ to the beam direction" << endl << endl;
+   infoFile << " and with 5 cm shift in XZ plane relative to the beam direction" << endl << endl;
+   infoFile << " Detailed information find at https://cbm-wiki.gsi.de/foswiki/pub/PWG/C2F/BeamPipe/20180530_Internal_Note_beam_pipe-AS.pdf" << endl << endl;
   infoFile << "Material:  " << pipeMediumName << endl;
   infoFile << "Thickness: 0.5 mm" << endl << endl;
   // --------------------------------------------------------------------------
@@ -291,7 +284,7 @@ void create_bpipe_geometry_v18_v2( Bool_t bMuch = kTRUE, Bool_t bTrd = kTRUE,
      pipe->AddNodeOverlap(pipeVacMuch, 0);
       
      TGeoRotation* pipe_rot = new TGeoRotation();
-     pipe_rot->RotateY(pipeRotationAngle[energy]);
+     pipe_rot->RotateY(pipeRotationAngle);
      
      TGeoTranslation* pipe_trans1= new TGeoTranslation("pipe_trans1", pipeXshift1, 0., 0);
      TGeoCombiTrans* combi_trans1 = new TGeoCombiTrans(*pipe_trans1, *pipe_rot);
