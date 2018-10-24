@@ -5,6 +5,8 @@
 
 #include "CbmTofHit.h"
 
+#include "TVector3.h"
+
 #include <sstream>
 using std::stringstream;
 using std::string;
