@@ -24,7 +24,7 @@ class CbmMuchReadoutBuffer : public CbmReadoutBuffer<CbmMuchSignal> {
 
 	public:
 		// Default constructor
-		CbmMuchReadoutBuffer(){};
+		CbmMuchReadoutBuffer() : fCounter{0} {};
 	  // ---------------------------------------------------------------------
 
 
@@ -42,7 +42,7 @@ class CbmMuchReadoutBuffer : public CbmReadoutBuffer<CbmMuchSignal> {
 		 **/
 		//Vikas Todo:- Create similar  for the CbmMuchReadoutBuffe
 		CbmMuchReadoutBuffer(TString branchName, TString folderName, Bool_t persistence = kTRUE) 
-				:CbmReadoutBuffer(branchName,folderName,persistence) { }
+				:CbmReadoutBuffer(branchName,folderName,persistence), fCounter{0} { }
 
                 CbmMuchReadoutBuffer(const CbmMuchReadoutBuffer&) = delete;
                 CbmMuchReadoutBuffer& operator=(const CbmMuchReadoutBuffer&) = delete;
@@ -73,6 +73,7 @@ class CbmMuchReadoutBuffer : public CbmReadoutBuffer<CbmMuchSignal> {
 	    /** Pointer to singleton instance **/
  		static CbmMuchReadoutBuffer* fgInstance;
 
+                Int_t fCounter;
 
 
 
