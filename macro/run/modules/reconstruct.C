@@ -127,6 +127,12 @@ Bool_t reconstruct(Bool_t useMC = kFALSE)
   }
   // -------------------------------------------------------------------------
 
+  // ----- PSD reconstruction ------------------------------------------
+  if ( setup->IsActive(kPsd) ) {
+    CbmPsdHitProducer* psdHit = new CbmPsdHitProducer();
+    run->AddTask(psdHit);
+    std::cout << "-I- : Added task CbmPsdHitProducer" << std::endl;
+  }
 
   // -----   Track finding in (MVD+) STS    -----------------------------------------
   CbmKF* kalman = new CbmKF();
