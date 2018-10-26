@@ -6,9 +6,10 @@
 // defined in macro/run/modules/reconstruct.C
 //
 // The following naming conventions are assumed:
-// Raw data file: [dataset].event.raw.root
+// Raw data file:  [dataset].event.raw.root
+// Transport file: [dataset].tra.root
 // Parameter file: [dataset].par.root
-// Output file: [datasxet].rec.root
+// Output file:    [dataset].rec.root
 //
 // V. Friese   10/06/2018
 //
@@ -18,7 +19,8 @@
 void run_reco_event(
     Int_t nEvents = 2,
     TString dataset = "test",
-    TString setup = "sis100_electron"
+    TString setup = "sis100_electron",
+    Bool_t useMC = kFALSE
 )
 {
 
@@ -39,6 +41,7 @@ void run_reco_event(
 
   // -----   In- and output file names   ------------------------------------
   TString rawFile = dataset + ".event.raw.root";
+  TString traFile = dataset + ".tra.root";
   TString parFile = dataset + ".par.root";
   TString outFile = dataset + ".rec.root";
   // ------------------------------------------------------------------------
@@ -47,8 +50,13 @@ void run_reco_event(
   // -----   Remove old CTest runtime dependency file  ----------------------
   TString dataDir  = gSystem->DirName(dataset);
   TString dataName = gSystem->BaseName(dataset);
-  TString depFile = Remove_CTest_Dependency_File(dataDir, "run_reco_event",
-                                                 dataName);
+  TString depFile;
+  if ( useMC ) depFile = Remove_CTest_Dependency_File(dataDir,
+                                                      "run_reco_event_mc",
+                                                      dataName);
+  else depFile = Remove_CTest_Dependency_File(dataDir,
+                                             "run_reco_event",
+                                             dataName);
   // ------------------------------------------------------------------------
 
 
@@ -118,12 +126,21 @@ void run_reco_event(
   // -----   FairRunAna   ---------------------------------------------------
   FairRunAna *run = new FairRunAna();
   FairFileSource* inputSource = new FairFileSource(rawFile);
+  if ( useMC ) inputSource->AddFriend(traFile);
   run->SetSource(inputSource);
   run->SetOutputFile(outFile);
   run->SetGenerateRunInfo(kTRUE);
-  run->SetGenerateRunInfo(kTRUE);
   Bool_t hasFairMonitor = Has_Fair_Monitor();
   if (hasFairMonitor) FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
+  // ------------------------------------------------------------------------
+
+
+  // -----   MCDataManager (legacy mode)  -----------------------------------
+  if ( useMC ) {
+    CbmMCDataManager* mcManager = new CbmMCDataManager("MCDataManager", 1);
+    mcManager->AddFile(traFile);
+    run->AddTask(mcManager);
+  }
   // ------------------------------------------------------------------------
 
 
@@ -138,7 +155,8 @@ void run_reco_event(
   TString macroName = srcDir + "/macro/run/modules/reconstruct.C";
   std::cout << "Loading macro " << macroName << std::endl;
   gROOT->LoadMacro(macroName);
-  Bool_t recoSuccess = gROOT->ProcessLine("reconstruct()");
+  TString command = ( useMC ? "reconstruct(kTRUE)" : "reconstruct()" );
+  Bool_t recoSuccess = gROOT->ProcessLine(command.Data());
   if ( ! recoSuccess ) {
   	std::cerr << "-E-" << myName << ": error in executing " << macroName
   			<< std::endl;
@@ -168,11 +186,11 @@ void run_reco_event(
   std::cout << std::endl;
   std::cout << "-I- " << myName << ": Initialise run" << std::endl;
   run->Init();
-  // ------------------------------------------------------------------------
-
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
   rtdb->print();
+  // ------------------------------------------------------------------------
+
 
   // -----   Start run   ----------------------------------------------------
   std::cout << std::endl << std::endl;
@@ -182,6 +200,7 @@ void run_reco_event(
 
 
   // -----   Finish   -------------------------------------------------------
+  if (hasFairMonitor) FairMonitor::GetMonitor()->Print();
   timer.Stop();
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
@@ -195,6 +214,7 @@ void run_reco_event(
   std::cout << " Test passed" << std::endl;
   std::cout << " All ok " << std::endl;
   // ------------------------------------------------------------------------
+
 
   // -----   Resource monitoring   ------------------------------------------
   if ( Has_Fair_Monitor() ) {      // FairRoot Version >= 15.11
@@ -213,7 +233,10 @@ void run_reco_event(
   }
   // ------------------------------------------------------------------------
 
-  // Function needed for CTest runtime dependency
+
+  // -----   Function needed for CTest runtime dependency   -----------------
   Generate_CTest_Dependency_File(depFile);
   RemoveGeoManager();
+  // ------------------------------------------------------------------------
+
 }

@@ -94,7 +94,7 @@ Bool_t reconstruct(Bool_t useMC = kFALSE)
 //		run->AddTask(strawFindHits);
 
   }
-
+  // ------------------------------------------------------------------------
 
 
   // -----   Local reconstruction in TRD   ----------------------------------
@@ -127,18 +127,29 @@ Bool_t reconstruct(Bool_t useMC = kFALSE)
   }
   // -------------------------------------------------------------------------
 
-  // ----- PSD reconstruction ------------------------------------------
+
+  // -----   Local reconstruction in PSD reconstruction   --------------------
   if ( setup->IsActive(kPsd) ) {
     CbmPsdHitProducer* psdHit = new CbmPsdHitProducer();
     run->AddTask(psdHit);
     std::cout << "-I- : Added task CbmPsdHitProducer" << std::endl;
   }
+  // -------------------------------------------------------------------------
 
-  // -----   Track finding in (MVD+) STS    -----------------------------------------
+
+  // -----  Hit matching (required for L1 tracking with MC input)  -----------
+  if ( useMC) {
+    CbmMatchRecoToMC* match1 = new CbmMatchRecoToMC();
+    run->AddTask(match1);
+  }
+  // -------------------------------------------------------------------------
+
+
+  // -----   Track finding in (MVD+) STS    ----------------------------------
   CbmKF* kalman = new CbmKF();
   run->AddTask(kalman);
   CbmL1* l1 = nullptr;
-  if ( useMC ) l1 = new CbmL1("L1", 0, 1);
+  if ( useMC ) l1 = new CbmL1("L1", 1, 3);
   else l1 = new CbmL1("L1", 0);
   // --- Material budget file names
   TString mvdGeoTag;
@@ -164,12 +175,14 @@ Bool_t reconstruct(Bool_t useMC = kFALSE)
   std::cout << "-I- : Added task " << stsFindTracks->GetName() << std::endl;
   // -------------------------------------------------------------------------
 
+
   // -----   Primary vertex finding   ---------------------------------------
   CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
   CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
   run->AddTask(findVertex);
   std::cout << "-I- : Added task " << findVertex->GetName() << std::endl;
   // -------------------------------------------------------------------------
+
 
   // ---   Global track finding   --------------------------------------------
   CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
@@ -178,8 +191,6 @@ Bool_t reconstruct(Bool_t useMC = kFALSE)
   run->AddTask(finder);
   std::cout << "-I- : Added task " << finder->GetName() << std::endl;
   // -------------------------------------------------------------------------
-
-
 
 
   // -----   RICH reconstruction   ------------------------------------------
@@ -206,6 +217,15 @@ Bool_t reconstruct(Bool_t useMC = kFALSE)
 
   }
   // ------------------------------------------------------------------------
+
+
+  // -----   Track matching  -----------------------------------------------
+  if ( useMC) {
+    CbmMatchRecoToMC* match2 = new CbmMatchRecoToMC();
+    if ( setup->IsActive(kMvd) ) match2->SetIncludeMvdHitsInStsTrack(1);
+    run->AddTask(match2);
+  }
+  // -------------------------------------------------------------------------
 
   return kTRUE;
 }
