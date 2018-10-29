@@ -256,6 +256,7 @@ InitStatus CbmStsFindClusters::Init()
   // --- Otherwise, the parameters are read from the parameter container,
   // --- and the module paramters are created before creating the modules
   if ( fSetup->GetDigiParameters() ) {
+    LOG(INFO) << GetName() << ": setup contains digi parameters" << FairLogger::endl;
     CreateModules();
   } else {
     InitSettings();
@@ -514,36 +515,39 @@ void CbmStsFindClusters::SetModuleParameters()
     Double_t tDead  = 800.;
     Double_t noise = 1000.;
     Double_t zeroNoiseRate = 3.9789e-3;
+    Double_t fracDeadChannels = 0.;
 
 	// --- Control output of parameters
 	LOG(INFO) << GetName() << ": Digitisation parameters :"
 			      << FairLogger::endl;
-	LOG(INFO) << "\t Dynamic range   " << dynRange
+	LOG(INFO) << "\t Dynamic range         " << dynRange
 	          << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t Threshold       " << threshold
+	LOG(INFO) << "\t Threshold             " << threshold
 	          << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t ADC channels    " << nAdc
+	LOG(INFO) << "\t ADC channels          " << nAdc
 	          << FairLogger::endl;
-	LOG(INFO) << "\t Time resolution " << tResol
+	LOG(INFO) << "\t Time resolution       " << tResol
 	          << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t Dead time       " << tDead
+	LOG(INFO) << "\t Dead time             " << tDead
 	          << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t ENC             " << noise
+	LOG(INFO) << "\t ENC                   " << noise
 	    << " e" << FairLogger::endl;
-    LOG(INFO) << "\t Zero noise rate " << zeroNoiseRate
+    LOG(INFO) << "\t Zero noise rate       " << zeroNoiseRate
         << " e" << FairLogger::endl;
+    LOG(INFO) << "\t Dead channel fraction " << fracDeadChannels
+        << FairLogger::endl;
 
 	// --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {
-		fSetup->GetModule(iModule)->SetParameters(2048,
-		                                          dynRange,
+		fSetup->GetModule(iModule)->SetParameters(dynRange,
 		                                          threshold,
 		                                          nAdc,
 		                                          tResol,
 		                                          tDead,
 		                                          noise,
-		                                          zeroNoiseRate);
+		                                          zeroNoiseRate,
+		                                          fracDeadChannels);
 	}
 	LOG(INFO) << GetName() << ": Set parameters for " << nModules
 			      << " modules " << FairLogger::endl;
