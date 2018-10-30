@@ -125,8 +125,11 @@ void CbmRichUrqmdTest::InitHistograms()
     
     fHM->Create1<TH1D>("fh_vertex_z", "fh_vertex_z;z [cm];Number of vertices per event", 350, -1., 350);
     fHM->Create2<TH2D>("fh_vertex_xy", "fh_vertex_xy;x [cm];y [cm];Number of vertices per event", 100, -200., 200., 100, -200., 200.);
+    fHM->Create2<TH2D>("fh_vertex_zy", "fh_vertex_zy;z [cm];y [cm];Number of vertices per event", 350, -1., 350, 100, -200., 200.);
+    fHM->Create2<TH2D>("fh_vertex_zx", "fh_vertex_zx;z [cm];x [cm];Number of vertices per event", 350, -1., 350, 100, -200., 200.);
     fHM->Create2<TH2D>("fh_vertex_xy_z100_180", "fh_vertex_xy_z100_180;x [cm];y [cm];Number of vertices per event", 100, -200., 200., 100, -200., 200.);
     fHM->Create2<TH2D>("fh_vertex_xy_z180_370", "fh_vertex_xy_z180_370;x [cm];y [cm];Number of vertices per event", 100, -200., 200., 100, -200., 200.);
+    fHM->Create2<TH2D>("fh_vertex_xy_z180_230", "fh_vertex_xy_z180_230;x [cm];y [cm];Number of vertices per event", 100, -200., 200., 100, -200., 200.);
     
     fHM->Create1<TH1D>("fh_nof_rings_1hit", "fh_nof_rings_1hit;Number of detected particles/event;Yield", 250, -.5, 249.5);
     fHM->Create1<TH1D>("fh_nof_rings_7hits", "fh_nof_rings_7hits;Number of detected particles/event;Yield", 250, -.5, 249.5 );
@@ -388,12 +391,18 @@ void CbmRichUrqmdTest::Vertex()
             mctrack->GetStartVertex(v);
             fHM->H1("fh_vertex_z")->Fill(v.Z());
             fHM->H2("fh_vertex_xy")->Fill(v.X(), v.Y());
+            fHM->H2("fh_vertex_zy")->Fill(v.Z(), v.Y());
+            fHM->H2("fh_vertex_zx")->Fill(v.Z(), v.X());
             if (v.Z() >= 100 && v.Z() <=180){
                 fHM->H2("fh_vertex_xy_z100_180")->Fill(v.X(), v.Y());
             }
             if (v.Z() >=180 && v.Z() <=370){
                 fHM->H2("fh_vertex_xy_z180_370")->Fill(v.X(), v.Y());
             }
+            if (v.Z() >=180 && v.Z() <=230){
+                fHM->H2("fh_vertex_xy_z180_230")->Fill(v.X(), v.Y());
+            }
+
         }
     }
 }
@@ -413,10 +422,18 @@ void CbmRichUrqmdTest::DrawHist()
     
     {
         fHM->H2("fh_vertex_xy")->Scale(1./fEventNum);
-        fHM->CreateCanvas("rich_urqmd_vertex_xy", "rich_urqmd_vertex_xy", 800, 800);
-        DrawH2(fHM->H2("fh_vertex_xy"));
+        fHM->H2("fh_vertex_zy")->Scale(1./fEventNum);
+        fHM->H2("fh_vertex_zx")->Scale(1./fEventNum);
+        TCanvas *c = fHM->CreateCanvas("rich_urqmd_vertex_xyz", "rich_urqmd_vertex_xyz", 1500, 500);
+        c->Divide(3, 1);
+        c->cd(1);
+        DrawH2(fHM->H2("fh_vertex_xy"), kLinear, kLinear, kLog);
+        c->cd(2);
+        DrawH2(fHM->H2("fh_vertex_zy"), kLinear, kLinear, kLog);
+        c->cd(3);
+        DrawH2(fHM->H2("fh_vertex_zx"), kLinear, kLinear, kLog);
     }
-    
+
     {
         fHM->H2("fh_vertex_xy_z100_180")->Scale(1./fEventNum);
         fHM->CreateCanvas("rich_urqmd_vertex_xy_z100_180", "rich_urqmd_vertex_xy_z100_180", 800, 800);
@@ -429,6 +446,12 @@ void CbmRichUrqmdTest::DrawHist()
         DrawH2(fHM->H2("fh_vertex_xy_z180_370"));
     }
     
+    {
+        fHM->H2("fh_vertex_xy_z180_230")->Scale(1./fEventNum);
+        fHM->CreateCanvas("rich_urqmd_vertex_xy_z180_230", "rich_urqmd_vertex_xy_z180_230", 800, 800);
+        DrawH2(fHM->H2("fh_vertex_xy_z180_230"));
+    }
+
     {
         fHM->H1("fh_nof_points_per_event")->Scale(1./fEventNum);
         fHM->CreateCanvas("rich_urqmd_nof_points_per_event", "rich_urqmd_nof_points_per_event", 800, 800);

@@ -308,15 +308,15 @@ void CbmRichRecoTbQa::RingRecoEfficiency()
         for (Int_t j = 0; j < nofMcTracks; j++) {
             const CbmMCTrack* track = static_cast<CbmMCTrack*>( fMCTracks->Get(fileId, iEv, j) );
             pair<Int_t, Int_t> val = std::make_pair(iEv, j);
-            Int_t nofRichHits = nofHitsInRing[val];
+            Int_t nofRichHitsInRing = nofHitsInRing[val];
             Double_t mom = track->GetP();
-            if (nofRichHits >= 7 && IsMcPrimaryElectron(track)) {
+            if (nofRichHitsInRing >= 7 && IsMcPrimaryElectron(track)) {
                 fHM->H1("fhMomElAcc")->Fill(mom);
-                fHM->H1("fhNofHitsElAcc")->Fill(nofRichHits);
+                fHM->H1("fhNofHitsElAcc")->Fill(nofRichHitsInRing);
                 fHM->H1("fhEventMultElAcc")->Fill(nofPrimMcTracks);
-                if (nofRichHits >= 15) {
+                if (nofRichHitsInRing >= 15) {
                     fHM->H1("fhMomRefElAcc")->Fill(mom);
-                    fHM->H1("fhNofHitsRefElAcc")->Fill(nofRichHits);
+                    fHM->H1("fhNofHitsRefElAcc")->Fill(nofRichHitsInRing);
                 }
             }
 
@@ -331,17 +331,17 @@ void CbmRichRecoTbQa::RingRecoEfficiency()
         const CbmMCTrack* track = static_cast<CbmMCTrack*>( fMCTracks->Get(fileId, richRingMatch->GetMatchedLink().GetEntry(), richRingMatch->GetMatchedLink().GetIndex()) );
         Int_t nofPrimMcTracks = GetNofPrimaryMcTracks(richRingMatch->GetMatchedLink().GetEntry());
         pair<Int_t, Int_t> val = std::make_pair(richRingMatch->GetMatchedLink().GetEntry(), richRingMatch->GetMatchedLink().GetIndex());
-        Int_t nofRichHits = nofHitsInRing[val];
+        Int_t nofRichHitsInRing = nofHitsInRing[val];
         Double_t mom = track->GetP();
         Bool_t isClone = (std::find(fRecRings.begin(), fRecRings.end(), val) != fRecRings.end());
-        if (nofRichHits >= 7 && isRichOk && IsMcPrimaryElectron(track) && !isClone) {
+        if (nofRichHitsInRing >= 7 && isRichOk && IsMcPrimaryElectron(track) && !isClone) {
             fHM->H1("fhMomElRec")->Fill(mom);
-            fHM->H1("fhNofHitsElRec")->Fill(nofRichHits);
+            fHM->H1("fhNofHitsElRec")->Fill(nofRichHitsInRing);
             fHM->H1("fhEventMultElRec")->Fill(nofPrimMcTracks);
             fRecRings.push_back(val);
-            if (nofRichHits >= 15) {
+            if (nofRichHitsInRing >= 15) {
                 fHM->H1("fhMomRefElRec")->Fill(mom);
-                fHM->H1("fhNofHitsRefElRec")->Fill(nofRichHits);
+                fHM->H1("fhNofHitsRefElRec")->Fill(nofRichHitsInRing);
             }
         }
     }
