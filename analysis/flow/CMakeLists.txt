@@ -48,7 +48,7 @@ Install(FILES ${CMAKE_BINARY_DIR}/lib/${DATATREE_LIBNAME}
 
 add_subdirectory (DataTreeCbmInterface)
 
-set(DATATREEQA_VERSION 297c8c85a4ddaca8eb12f3b675d1a325bffc6697) # hash is tag 1.0. Needed for test
+set(DATATREEQA_VERSION 63dff41c794999b72b0b8351715830569b8d0821) # hash is tag 1.0. Needed for test
 set(DATATREEQA_SRC_URL "https://cbmgsi.githost.io/pwg-c2f/DataTreeQA.git")
 set(DATATREEQA_DESTDIR "${CMAKE_BINARY_DIR}/analysis/flow/DATATREEQA-prefix")
 set(DATATREEQA_LIBNAME "${CMAKE_SHARED_LIBRARY_PREFIX}DataTreeQA${CMAKE_SHARED_LIBRARY_SUFFIX}")
