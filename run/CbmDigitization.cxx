@@ -331,6 +331,9 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
     } //? active and digitizer instance present
   } //# digitizers
 
+  // --- In event-by-event mode: also empty events (time-slices) are stored
+  if ( fDaq->IsEventMode() ) StoreAllTimeSlices();
+
   // --- Register DAQ
   run->AddTask(fDaq);
 
