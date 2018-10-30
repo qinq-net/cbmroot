@@ -71,7 +71,7 @@ Double_t CbmStsPhysics::DiffusionWidth(Double_t z, Double_t d,
 	// --- Check parameters. A tolerance of 0.1 micrometer on the sensor borders
     // --- is used to avoid crashes due to rounding errors.
     if ( z < 0. && z > -0.00001 ) z = 0.;
-    if ( z > d  && z < d - 0.00001 ) z = d;
+    if ( z > d  && z < d + 0.00001 ) z = d;
 	if ( z < 0. || z > d ) {
 		LOG(ERROR) << "StsPhysics: z coordinate " << z
 				       << " not inside sensor (d = " << d << ")"
