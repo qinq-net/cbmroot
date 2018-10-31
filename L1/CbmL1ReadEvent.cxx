@@ -396,6 +396,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
         th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
         th.u_back  = th.x* st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];
       }
+      th.Det = 0;
       th.iMC=-1;
       int iMC = -1;
 //   int iMCTr = -1;

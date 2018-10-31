@@ -1798,7 +1798,7 @@ void CbmL1::InputPerformance()
   } // sts
   
   
-    if( listMvdHits && listMvdHitMatches){
+  if( listMvdHits && listMvdHitMatches){
     Int_t nEnt = listMvdHits->GetEntries();
     for (int j=0; j < nEnt; j++ ){
 
@@ -1856,8 +1856,8 @@ void CbmL1::InputPerformance()
   
 
   
-      if( fMuchPixelHits && listMuchHitMatches){
-   for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
+  if( fMuchPixelHits && listMuchHitMatches){
+    for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
       const CbmL1StsHit &h = vStsHits[iH];
 
       if (h.Det!= 2) continue; // mvd hit
@@ -1927,8 +1927,8 @@ void CbmL1::InputPerformance()
 
   
   
-      if( listTrdHits && fTrdHitMatches){
-   for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
+  if( listTrdHits && fTrdHitMatches){
+    for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
       const CbmL1StsHit &h = vStsHits[iH];
 
       if (h.Det!= 3) continue; // mvd hit
@@ -1996,8 +1996,8 @@ void CbmL1::InputPerformance()
   } // much
   
   
-        if( fTofHits && fTofHitDigiMatches){
-   for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
+  if( fTofHits && fTofHitDigiMatches){
+    for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
       const CbmL1StsHit &h = vStsHits[iH];
 
       if (h.Det!= 4) continue; // mvd hit
@@ -2060,65 +2060,6 @@ void CbmL1::InputPerformance()
       resTtof->Fill((sh->GetTime() - mcTime));
     }
   } // much
-  
-
-
-  if( listMvdHits && listMvdHitMatches){
-    Int_t nEnt = listMvdHits->GetEntries();
-    for (int j=0; j < nEnt; j++ ){
-
-      CbmMvdHit *sh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
-      CbmMatch *hm = L1_DYNAMIC_CAST<CbmMatch*>( listMvdHitMatches->At(j) );
-
-      int iMC = -1;
-//       float mcWeight = -1.f;
-//       for(int iDigiLink=0; iDigiLink<hm->GetNofLinks(); iDigiLink++)
-//       {
-//         if( hm->GetLink(iDigiLink).GetWeight() > mcWeight)
-//         {
-//           mcWeight = hm->GetLink(iDigiLink).GetWeight();
-//           iMC = hm->GetLink(iDigiLink).GetIndex();
-//         }
-//       }
-      if( hm->GetNofLinks() > 0 )
-        iMC = hm->GetLink(0).GetIndex();
-
-
-      if( iMC < 0 ) continue;
-        // hit pulls and residuals
-
-
-      TVector3 hitPos, mcPos, hitErr;
-      sh->Position(hitPos);
-      sh->PositionError(hitErr);
-
-      CbmMvdPoint *pt = 0;
-      nMC = listMvdPts->GetEntriesFast();
-
-      if( iMC >= 0 && iMC < nMC) pt = L1_DYNAMIC_CAST<CbmMvdPoint*>( listMvdPts->At(iMC) );
-
-      if ( !pt ){
-//         cout << " No MC points! " << "iMC=" << iMC << endl;
-        continue;
-      }
-
-      mcPos.SetX( ( pt->GetX() + pt->GetXOut() )/2. );
-      mcPos.SetY( ( pt->GetY() + pt->GetYOut() )/2. );
-      mcPos.SetZ( hitPos.Z() );
-
-//       if (hitErr.X() != 0) pullX->Fill( (hitPos.X() - mcPos.X()) / hitErr.X() ); // standard errors
-//       if (hitErr.Y() != 0) pullY->Fill( (hitPos.Y() - mcPos.Y()) / hitErr.Y() );
-//       if (hitErr.X() != 0) pullX->Fill( (hitPos.X() - mcPos.X()) / sh->GetDx() ); // qa errors
-//       if (hitErr.Y() != 0) pullY->Fill( (hitPos.Y() - mcPos.Y()) / sh->GetDy() );
-      if (hitErr.X() != 0) pullXmvd->Fill( (hitPos.X() - mcPos.X()) / sqrt(algo->vStations[0].XYInfo.C00[0]) );  // errors used in TF
-      if (hitErr.Y() != 0) pullYmvd->Fill( (hitPos.Y() - mcPos.Y()) / sqrt(algo->vStations[0].XYInfo.C11[0]) );
-
-      resXmvd->Fill((hitPos.X() - mcPos.X())*10*1000);
-      resYmvd->Fill((hitPos.Y() - mcPos.Y())*10*1000);
-    }
-  } // mvd
-
-
 
 //  for (it = stripFToNHitMap.begin(); it != stripFToNHitMap.end(); it++){
 //    nStripFHits->Fill(it->second);
