@@ -1631,12 +1631,11 @@ Bool_t   CbmTofCosmicClusterizer::FillHistos()
 	 TotSum /= (0.5 * digiMatch->GetNofLinks());
 	 if( TotSum > fhRpcCluTot[iIndexDut]->GetYaxis()->GetXmax()) continue;  // ignore too large clusters
 
-          fTRefHits=1;
-	  if(pHit->GetTime() < dTRef)  
-          {
-	    dTRef = pHit->GetTime();
-	    pRef=pHit;
-          }
+	 fTRefHits=1;
+	 if(pHit->GetTime() < dTRef){
+	   dTRef = pHit->GetTime();
+	   pRef=pHit;
+	 }
          iSel2Mul++;
      }
    }
@@ -1846,7 +1845,7 @@ Bool_t   CbmTofCosmicClusterizer::FillHistos()
    fhSmCluPosition[iSmType]->Fill((Double_t)(iSm*iNbRpc+iRpc),hitpos_local[1]);
 
    Double_t dTimeAna=(pHit->GetTime() - StartAnalysisTime)/1.E9;
-   fhRpcCluTimeEvol[iDetIndx]->Fill(dTimeAna,pHit->GetTime()-dTRef);
+   if(pHit != pRef) fhRpcCluTimeEvol[iDetIndx]->Fill(dTimeAna,pHit->GetTime()-dTRef);
    fhRpcCluPositionEvol[iDetIndx]->Fill(dTimeAna,hitpos_local[1]);
 
    for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]) {
