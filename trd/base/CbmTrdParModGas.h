@@ -3,7 +3,7 @@
 
 #include "CbmTrdParMod.h"
 #include <TString.h>
-
+#define NSHELLS 3 // no of atomic shells to be considered in the PE effect
 class TH2F;
 class TDirectory;
 
@@ -19,13 +19,37 @@ public:
   CbmTrdParModGas(const char* title = "TRD gas properties definition");
   virtual ~CbmTrdParModGas();
   
-  Int_t     GetDetType()      const {return TESTBIT(fConfig, kDetType);}
   Double_t  GetCO2()          const {return fPercentCO2;}
+  Int_t     GetDetType()      const {return TESTBIT(fConfig, kDetType);}
+  Double_t  GetDriftTime(Double_t y0, Double_t z0) const;
+  void      GetElectricPotential(Int_t &ua, Int_t &ud) const { ua=fUa; ud = fUd;}
+  /** \brief Get binding energy for the working gas
+   * \param[in] shell shell id in capitals e.g. K, L, M ... \sa GetPEshell()
+   * \param[in] main switch between main and escape peak [main=true]
+   */
+  Float_t   GetBindingEnergy(const Char_t shell='K', Bool_t main=kTRUE) const;  
+  /** \brief Convert Energy debposit in keV to pad-plane charge taking into account the gas gain
+   * \param[in] ekev Energy deposit in keV
+   * \return charge at FASP input in fC
+   */
+  Float_t   GetCharge(Float_t ekev) const;
   TString   GetFileName()     const {return fFileNamePID;}
   Double_t  GetNobleGas()     const {return 1.-fPercentCO2;}
   Int_t     GetNobleGasType() const {return TESTBIT(fConfig, kNobleGasType)?2:1;}
+  /** \brief Get branching ration for radiative process on the
+   * \param[in] shell shell id in capitals e.g. K, L, M ... \sa GetPEshell()
+   */
+  Float_t   GetNonIonizingBR(const Char_t shell='K') const;
+  /** \brief Get first atomic shell which can be excited by PE effect
+   * \param[in] Ex energy of the incident X [keV]
+   * \return atomic shell name
+   */
+  Char_t    GetPEshell(Float_t Ex) const;
   Int_t     GetPidType()      const {return TESTBIT(fConfig, kPID);}
-  void      GetElectricPotential(Int_t &ua, Int_t &ud) const { ua=fUa; ud = fUd;}
+  /** \brief Get atomic shell index
+   * \param[in] shell shell name
+   */
+  Int_t     GetShellId(const Char_t shell) const;
   UShort_t  GetUanode()       const {return fUa;}
   UShort_t  GetUdrift()       const {return fUd;}
   /**
@@ -68,6 +92,10 @@ private:
   TH2F*     fDriftMap;      ///< drift time map for one amplification cell
   TString   fFileNamePID;   ///< filename for PID database
   
+  static Float_t  fgkBindingEnergy[2][NSHELLS]; ///< binding energy in keV for first atomic shells of Ar and Xe 
+  static Float_t  fgkBR[2][NSHELLS-1];  ///< branching ratio for non-ionizing decay of Ar and Xe 
+  static Float_t  fgkGGainUaPar[2][2];  ///< gas gaian parametrization on Ua for Ar and Xe on Buch detector
+  static Float_t  fgkE0;                ///< min energy [ADC ch] which can be measured 
   ClassDef(CbmTrdParModGas, 1)  // Definition of gas parameters for one TRD module
 };
 
