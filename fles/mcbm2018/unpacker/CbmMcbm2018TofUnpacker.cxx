@@ -328,20 +328,20 @@ Bool_t CbmMcbm2018TofUnpacker::ReInitContainers()
    fviNrOfRpc.resize(uNrOfGbtx);
    fviRpcSide.resize(uNrOfGbtx);
    /*
-   for (Int_t iGbtx = 0; iGbtx < uNrOfGbtx; ++iGbtx) 
+   for (Int_t iGbtx = 0; iGbtx < uNrOfGbtx; ++iGbtx)
    {
-     fviNrOfRpc[ iGbtx ]  = kiNrOfRpc[ iGbtx ];   
-     fviRpcType[ iGbtx ]  = kiRpcType[ iGbtx ];   
-     fviModuleId[ iGbtx ] = kiModuleId[ iGbtx ];   
-     fviRpcSide[ iGbtx ]  = kiRpcSide[ iGbtx ];   
+     fviNrOfRpc[ iGbtx ]  = kiNrOfRpc[ iGbtx ];
+     fviRpcType[ iGbtx ]  = kiRpcType[ iGbtx ];
+     fviModuleId[ iGbtx ] = kiModuleId[ iGbtx ];
+     fviRpcSide[ iGbtx ]  = kiRpcSide[ iGbtx ];
    }
    */
-   for (Int_t iGbtx = 0; iGbtx < uNrOfGbtx; ++iGbtx) 
+   for (Int_t iGbtx = 0; iGbtx < uNrOfGbtx; ++iGbtx)
    {
-     fviNrOfRpc[ iGbtx ]  = fUnpackPar->GetNrOfRpc( iGbtx );   
-     fviRpcType[ iGbtx ]  = fUnpackPar->GetRpcType( iGbtx );   
-     fviRpcSide[ iGbtx ]  = fUnpackPar->GetRpcSide( iGbtx );   
-     fviModuleId[ iGbtx ] = fUnpackPar->GetModuleId( iGbtx );   
+     fviNrOfRpc[ iGbtx ]  = fUnpackPar->GetNrOfRpc( iGbtx );
+     fviRpcType[ iGbtx ]  = fUnpackPar->GetRpcType( iGbtx );
+     fviRpcSide[ iGbtx ]  = fUnpackPar->GetRpcSide( iGbtx );
+     fviModuleId[ iGbtx ] = fUnpackPar->GetModuleId( iGbtx );
    }
 
    UInt_t uNrOfChannels = fuNrOfGet4 * fuNrOfChannelsPerGet4;
@@ -350,12 +350,12 @@ Bool_t CbmMcbm2018TofUnpacker::ReInitContainers()
 
    CbmTofDetectorId* fTofId = new CbmTofDetectorId_v14a();
    fviRpcChUId.resize(uNrOfChannels);
-   UInt_t iCh= 0; 
+   UInt_t iCh= 0;
    for(Int_t iGbtx= 0; iGbtx < uNrOfGbtx; iGbtx++)  {
      for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; iRpc++)  {
        for(Int_t iStr= 0; iStr < 32; iStr++)  {
 	 Int_t iStrMap = iStr;
-	 if( fviRpcSide[iGbtx] == 1) iStrMap=31-iStr; 
+	 if( fviRpcSide[iGbtx] == 1) iStrMap=31-iStr;
 	 fviRpcChUId[iCh]=CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
 							  iRpc,iStrMap,
 							  fviRpcSide[iGbtx],
@@ -537,7 +537,7 @@ Bool_t CbmMcbm2018TofUnpacker::DoUnpack(const fles::Timeslice& ts, size_t compon
              ( gdpbv100::kuChipIdMergedEpoch != fuGet4Id ) )
 	   {
             LOG(WARNING) << "Message with Get4 ID too high: " << fuGet4Id
-                         << " VS " << fuNrOfGet4PerGdpb << " set in parameters, message ignored" 
+                         << " VS " << fuNrOfGet4PerGdpb << " set in parameters, message ignored"
 			 << FairLogger::endl;
 	    continue;
 	   }
@@ -594,7 +594,7 @@ Bool_t CbmMcbm2018TofUnpacker::DoUnpack(const fles::Timeslice& ts, size_t compon
             case gdpbv100::MSG_STAR_TRI_D:
                FillStarTrigInfo(mess);
                break;
-    
+
             default:
             {
                if(100 > iMess++)
@@ -638,8 +638,8 @@ void CbmMcbm2018TofUnpacker::FillHitInfo( gdpbv100::Message mess )
    UInt_t uGbtxNr      = (uFeetNr / kuNbFeePerGbtx);
    UInt_t uFeetInGbtx  = (uFeetNr % kuNbFeePerGbtx);
    UInt_t uGbtxNrInSys = fuGdpbNr * kuNbGbtxPerGdpb + uGbtxNr;
-   UInt_t uRemappedChannelNr = fuGdpbNr * fuNrOfChannelsPerGdpb + 
-                               uFeetNr * fuNrOfChannelsPerFeet 
+   UInt_t uRemappedChannelNr = fuGdpbNr * fuNrOfChannelsPerGdpb +
+                               uFeetNr * fuNrOfChannelsPerFeet
                              + fvuGet4ToPadi[ uChannelNrInFeet ];
    //   UInt_t uRemappedChannelNr = uFeetNr * fuNrOfChannelsPerFeet + uChannelNrInFeet;
     if( fuGdpbNr==2)
@@ -673,7 +673,7 @@ void CbmMcbm2018TofUnpacker::FillHitInfo( gdpbv100::Message mess )
 		     << ", FiS " << uFeetNrInSys
 		     << FairLogger::endl;
 	  return;
-        } else 
+        } else
 	  LOG(FATAL) << "Max number of error messages reached "
 		     << FairLogger::endl;
 
@@ -729,7 +729,7 @@ void CbmMcbm2018TofUnpacker::FillEpochInfo( gdpbv100::Message mess )
    Int_t iBufferSize = fvmEpSupprBuffer[ fuGet4Nr ].size();
    if( 0 < iBufferSize )
    {
-     LOG(DEBUG) << "Now processing "<<iBufferSize<<" stored messages for get4 " 
+     LOG(DEBUG) << "Now processing "<<iBufferSize<<" stored messages for get4 "
                 << fuGet4Nr << " with epoch number "
                 << (fvulCurrentEpoch[ fuGet4Nr ] - 1) << FairLogger::endl;
 
@@ -821,7 +821,7 @@ void CbmMcbm2018TofUnpacker::PrintSysInfo(gdpbv100::Message mess)
                             << std::dec << " -- GET4 V1 Error Event "
                             << FairLogger::endl;
          break;
-  
+
       } // case gdpbv100::SYSMSG_GET4_EVENT
       case gdpbv100::SYS_GDPB_UNKWN:
       {
@@ -832,11 +832,11 @@ void CbmMcbm2018TofUnpacker::PrintSysInfo(gdpbv100::Message mess)
                     << FairLogger::endl;
          break;
       } // case gdpbv100::SYS_GDPB_UNKWN:
-      case gdpbv100::SYS_SYNC_ERROR:
+      case gdpbv100::SYS_PATTERN:
       {
-         LOG(DEBUG) << "Closy synchronization error" << FairLogger::endl;
+         LOG(DEBUG) << "Pattern message" << FairLogger::endl;
          break;
-      } // case gdpbv100::SYS_SYNC_ERROR:
+      } // case gdpbv100::SYS_PATTERN:
    } // switch( getGdpbSysSubType() )
 
 }

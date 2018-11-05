@@ -36,8 +36,14 @@ namespace gdpbv100 {
    const double   kdEpochInNs   = kdEpochInPs / 1000.0;
 
    // Epoch counter size in epoch
-   const uint32_t kuEpochCounterSz = 0x7FFFFFFF;
-   const double   kdEpochCycleInS  = static_cast<double>(kuEpochCounterSz) * (kdEpochInNs/1e9);
+   const uint32_t kuEpochCounterSz  = 0x7FFFFFFF;
+   // Epoch counter size in bin
+   const uint64_t kulEpochCycleBins = static_cast<uint64_t>(kuEpochCounterSz)* kuEpochInBins;
+   // Epoch counter size in s
+   const double   kdEpochCycleInS   = static_cast<double>(kuEpochCounterSz) * (kdEpochInNs/1e9);
+
+   // Epoch Cycle MS start message size in bits
+   const uint64_t kulEpochCycleFieldSz = 0x1FFFFF; // 21 bits
 
    const uint32_t kuChipIdMergedEpoch = 255; // 0xFF
 
@@ -57,8 +63,15 @@ namespace gdpbv100 {
    enum SysMessageTypes {
       SYS_GET4_ERROR = 0,     // GET4 error event
       SYS_GDPB_UNKWN = 1,     // Raw data from gDPB in case of unknown message type from GET4
-      SYS_GET4_SYNC_MISS = 2, // Added when at least when GET4 is missing the SYNC flag when it is expected
-      SYS_SYNC_ERROR     = 3  // added to data stream when the closy-sync-strobe does not match the gDPB 160MHz timestamp counter
+      SYS_GET4_SYNC_MISS = 2, // Added when GET4 is missing the SYNC flag when it is expected
+//      SYS_SYNC_ERROR     = 3  // added to data stream when the closy-sync-strobe does not match the gDPB 160MHz timestamp counter
+      SYS_PATTERN   = 3  // added to data stream when one of the ASIC patterns (missmatch, enable, resync) changed
+   };
+
+   enum PattMessageTypes {
+      PATT_MISSMATCH = 0,     // Missmatch pattern, 1 bit per ASIC
+      PATT_ENABLE    = 1,     // Enable pattern, 1 bit per ASIC
+      PATT_RESYNC    = 2      // Resync request pattern, 1 bit per ASIC
    };
 
    enum MessagePrintMask {
@@ -216,6 +229,10 @@ namespace gdpbv100 {
          inline uint16_t getGdpbSysErrData()     const { return getField(  4,  7); }
          // ---------- Get4 gDPB unknown msg type access methods -------------------
          inline uint32_t getGdpbSysUnkwData()    const { return getField(  4, 32); }
+         // ---------- ASIC Pattern messages access methods ------------------------
+         inline uint16_t getGdpbSysPattType()    const { return getField( 46,  2 ); }
+         inline uint16_t getGdpbSysPattIndex()   const { return getField( 40,  4 ); }
+         inline uint32_t getGdpbSysPattPattern() const { return getField(  4, 32 ); }
 
          // ---------- STAR Trigger messages access methods ------------------------
          inline uint16_t getStarTrigMsgIndex() const { return getField(      0,  2 ); }

@@ -174,7 +174,7 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
       snprintf(buf, sizeof(buf), "BE= %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X LE= %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X ",
                arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], arr[6], arr[7],
                arr[7], arr[6], arr[5], arr[4], arr[3], arr[2], arr[1], arr[0] );
-               
+
       if( msg_print_Cout == outType)
          std::cout << buf;
       else if( msg_print_File == outType )
@@ -191,7 +191,7 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
          case MSG_EPOCH:
             snprintf(buf, sizeof(buf),
                   "Msg:%u ", getMessageType());
-                  
+
             if( msg_print_Cout == outType)
                std::cout << buf;
             else if( msg_print_File == outType )
@@ -201,7 +201,7 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
                   "EPOCH @%17.11f Get4:%2d Epoche2:%10u 0x%08x StampTime:%2d Sync:%x Dataloss:%x Epochloss:%x Epochmissmatch:%x",
                         timeInSec, getGdpbGenChipId(), getGdpbEpEpochNb(), getGdpbEpEpochNb(),
                         getGdpbEpSync(), getGdpbEpDataLoss(), getGdpbEpEpochLoss(), getGdpbEpMissmatch());
-                        
+
             if( msg_print_Cout == outType)
                std::cout << buf << std::endl;
             else if( msg_print_File == outType )
@@ -210,7 +210,7 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
          case MSG_HIT:
             snprintf(buf, sizeof(buf),
                   "Msg:%u ", getMessageType());
-                  
+
             if( msg_print_Cout == outType)
                std::cout << buf;
             else if( msg_print_File == outType )
@@ -228,7 +228,7 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
                      "Get4 24b @%17.11f Get4:%2d Chn:%3d Dll:%1d Ts:%7d",
                      timeInSec, getGdpbGenChipId(), getGdpbHitChanId(), getGdpbHit32DllLck(), getGdpbHitFullTs() );
                } // else of if( getGdpbHitIs24b() )
-                     
+
             if( msg_print_Cout == outType)
                std::cout << buf << std::endl;
             else if( msg_print_File == outType )
@@ -245,7 +245,7 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
 
    if (kind & msg_print_Prefix) {
       snprintf(buf, sizeof(buf), "Msg:%2u ", getMessageType() );
-      
+
       if( msg_print_Cout == outType)
          std::cout << buf;
       else if( msg_print_File == outType )
@@ -259,13 +259,13 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
          {
             if( getGdpbHitIs24b() )
             {
-               snprintf(buf, sizeof(buf), "Get4 24 bits, Chip:0x%02x Chn:%1x Edge:%1x Ts:0x%03x Ft:0x%02x CRC8:0x%02x",
+               snprintf(buf, sizeof(buf), "Get4 24 bits, Chip:0x%04x Chn:%1x Edge:%1x Ts:0x%03x Ft:0x%02x CRC8:0x%02x",
                      getGdpbGenChipId(), getGdpbHitChanId(), getGdpbHit24Edge(), getGdpbHitFullTs() );
             } // if( getGdpbHitIs24b() )
                else
                {
                   snprintf(buf, sizeof(buf),
-                    "Get4 32 bits, Chip:0x%02x Channel %1d Ts:0x%03x Ft:0x%02x Tot:0x%02x  Dll %1d",
+                    "Get4 32 bits, Chip:0x%04x Channel %1d Ts:0x%03x Ft:0x%02x Tot:0x%02x  Dll %1d",
                     getGdpbGenChipId(), getGdpbHitChanId(), getGdpbHitCoarse(),
                     getGdpbHitFineTs(), getGdpbHit32Tot(), getGdpbHit32DllLck() );
                } // else of if( getGdpbHitIs24b() )
@@ -273,7 +273,7 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
          } // case MSG_HIT:
          case MSG_EPOCH:
          {
-            snprintf(buf, sizeof(buf), "Get4:0x%02x Link: %1u Epoch:0x%08x Sync:%x Dataloss:%x Epochloss:%x Epochmissmatch:%x",
+            snprintf(buf, sizeof(buf), "Get4:0x%04x Link: %1u Epoch:0x%08x Sync:%x Dataloss:%x Epochloss:%x Epochmissmatch:%x",
                      getGdpbGenChipId(), getGdpbEpLinkId(), getGdpbEpEpochNb(), getGdpbEpSync(),
                      getGdpbEpDataLoss(), getGdpbEpEpochLoss(), getGdpbEpMissmatch());
             break;
@@ -282,7 +282,7 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
          {
             // GET4 slow control message, new "true" ROC support
             snprintf(buf, sizeof(buf),
-               "Get4 Slow control, chip %02d => Chan:%01d Edge:%01d Type:%01x Data:0x%06x",
+               "Get4 Slow control, chip %03d => Chan:%01d Edge:%01d Type:%01x Data:0x%06x",
                getGdpbGenChipId(), 0x0, 0x0, 0x0, getGdpbSlcData() );
             break;
          } // case MSG_SLOWC:
@@ -296,15 +296,19 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
                case SYS_GET4_ERROR:
                {
                  snprintf(sysbuf, sizeof(sysbuf),
-                   "Get4:0x%02x Ch:0x%01x Edge:%01x Unused:%06x ErrCode:0x%02x - GET4 V1 Error Event",
+                   "Get4:0x%04x Ch:0x%01x Edge:%01x Unused:%06x ErrCode:0x%02x - GET4 V1 Error Event",
                    getGdpbGenChipId(), getGdpbSysErrChanId(), getGdpbSysErrEdge(), getGdpbSysErrUnused(), getGdpbSysErrData());
                   break;
                } //
                case SYS_GDPB_UNKWN:
                   snprintf(sysbuf, sizeof(sysbuf), "Unknown GET4 message, data: 0x%08x", getGdpbSysUnkwData());
                   break;
-               case SYS_SYNC_ERROR:
-                  snprintf(sysbuf, sizeof(sysbuf), "Closy synchronization error");
+               case SYS_GET4_SYNC_MISS:
+                  snprintf(sysbuf, sizeof(sysbuf), "GET4 SYNC synchronization error");
+                  break;
+               case SYS_PATTERN:
+                  snprintf(sysbuf, sizeof(sysbuf), "Pattern message => Type %d, Index %2d, Pattern 0x%08X",
+                             getGdpbSysPattType(), getGdpbSysPattIndex(), getGdpbSysPattPattern() );
                   break;
                default:
                   snprintf(sysbuf, sizeof(sysbuf), "unknown system message type %u", getGdpbSysSubType());

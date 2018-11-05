@@ -1161,11 +1161,11 @@ void CbmMcbm2018MonitorMcbmSync::CreateTofHistograms()
    /*******************************************************************/
    sHistName = "hSysMessType";
    title = "Nb of system message for each type; System Type";
-   fhTofSysMessType = new TH1I(sHistName, title, 1 + gdpbv100::SYS_SYNC_ERROR, 0., 1 + gdpbv100::SYS_SYNC_ERROR);
+   fhTofSysMessType = new TH1I(sHistName, title, 1 + gdpbv100::SYS_PATTERN, 0., 1 + gdpbv100::SYS_PATTERN);
    fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR,     "GET4 ERROR");
    fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN,     "UNKW GET4 MSG");
    fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_SYNC_MISS, "SYS_GET4_SYNC_MISS");
-   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR,     "SYNC ERROR");
+   fhTofSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_PATTERN,     "Pattern");
 
    /*******************************************************************/
    sHistName = "hGet4MessType";
@@ -2926,11 +2926,11 @@ void CbmMcbm2018MonitorMcbmSync::FillTofSysInfo(gdpbv100::Message mess)
          LOG(DEBUG) << "GET4 synchronization pulse missing" << FairLogger::endl;
          break;
       } // case gdpbv100::SYS_GET4_SYNC_MISS:
-      case gdpbv100::SYS_SYNC_ERROR:
+      case gdpbv100::SYS_PATTERN:
       {
-         LOG(DEBUG) << "Closy synchronization error" << FairLogger::endl;
+         LOG(DEBUG) << "Pattern Message" << FairLogger::endl;
          break;
-      } // case gdpbv100::SYS_SYNC_ERROR:
+      } // case gdpbv100::SYS_PATTERN:
    } // switch( getGdpbSysSubType() )
 }
 

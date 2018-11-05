@@ -494,11 +494,11 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    /*******************************************************************/
    name = "hSysMessType";
    title = "Nb of system message for each type; System Type";
-   fhSysMessType = new TH1I(name, title, 1 + gdpbv100::SYS_SYNC_ERROR, 0., 1 + gdpbv100::SYS_SYNC_ERROR);
+   fhSysMessType = new TH1I(name, title, 1 + gdpbv100::SYS_PATTERN, 0., 1 + gdpbv100::SYS_PATTERN);
    fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR,     "GET4 ERROR");
    fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN,     "UNKW GET4 MSG");
    fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_SYNC_MISS, "SYS_GET4_SYNC_MISS");
-   fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR,     "SYNC ERROR");
+   fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_PATTERN,     "SYS_PATTERN");
 
    /*******************************************************************/
    name = "hGet4MessType";
@@ -578,12 +578,12 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    /*******************************************************************/
    name = "hGdpbSysMessType";
    title = "Nb of system message for each type per Gdpb; System Type; Gdpb Idx []";
-   fhGdpbSysMessType = new TH2I(name, title, 1 + gdpbv100::SYS_SYNC_ERROR, 0., 1 + gdpbv100::SYS_SYNC_ERROR,
+   fhGdpbSysMessType = new TH2I(name, title, 1 + gdpbv100::SYS_PATTERN, 0., 1 + gdpbv100::SYS_PATTERN,
                                           fuNrOfGdpbs, -0.5, fuNrOfGdpbs - 0.5 );
    fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR,     "GET4 ERROR");
    fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN,     "UNKW GET4 MSG");
    fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_SYNC_MISS, "SYS_GET4_SYNC_MISS");
-   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_SYNC_ERROR,     "SYNC ERROR");
+   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_PATTERN,     "SYS_PATTERN");
 
    /*******************************************************************/
    name = "hGdpbEpochFlags";
@@ -2417,19 +2417,19 @@ void CbmMcbm2018MonitorTof::PrintSysInfo(gdpbv100::Message mess)
       } // case gdpbv100::SYS_GDPB_UNKWN:
       case gdpbv100::SYS_GET4_SYNC_MISS:
       {
-         LOG(DEBUG) << "GET$ synchronization pulse missing" << FairLogger::endl;
+         LOG(DEBUG) << "GET4 synchronization pulse missing" << FairLogger::endl;
          break;
       } // case gdpbv100::SYS_GET4_SYNC_MISS:
-      case gdpbv100::SYS_SYNC_ERROR:
+      case gdpbv100::SYS_PATTERN:
       {
-         LOG(DEBUG) << "gDPB synchronization pulse error" << FairLogger::endl;
+         LOG(DEBUG) << "ASIC pattern for missmatch, disable or resync" << FairLogger::endl;
          break;
-      } // case gdpbv100::SYS_SYNC_ERROR:
+      } // case gdpbv100::SYS_PATTERN:
       default:
       {
          LOG(DEBUG) << "Crazy system message, subtype " << mess.getGdpbSysSubType() << FairLogger::endl;
          break;
-      } // case gdpbv100::SYS_SYNC_ERROR:
+      } // default
 
    } // switch( getGdpbSysSubType() )
 }
