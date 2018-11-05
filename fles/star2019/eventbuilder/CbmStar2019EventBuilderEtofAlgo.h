@@ -23,6 +23,7 @@ class TCanvas;
 class TH1;
 class TH2;
 class TProfile;
+class THttpServer;
 
 #ifdef STAR_SUBEVT_BUILDER
    /*
@@ -37,18 +38,21 @@ class TProfile;
 class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
 {
    public:
-      CbmTofStarEventBuilderAlgo2019();
+      CbmTofStarEventBuilderAlgo2019( THttpServer* server = nullptr );
       ~CbmTofStarEventBuilderAlgo2019();
 
       Bool_t InitStsParameters();
       Bool_t CreateHistograms();
-      Bool_t ProcessStsMs( const fles::Timeslice& ts, size_t uMsComp, UInt_t uMsIdx );
+      Bool_t ProcessMs( const fles::Timeslice& ts, size_t uMsComp, UInt_t uMsIdx );
       Bool_t BuildEvents();
 
    private:
+      /// Constants
+      constexpr uint32_t kuBytesPerMessage = 8;
+
       /// Control flags
       Bool_t fbMonitorMode;
-      
+
       /// FLES containers
       std::vector< size_t > fvMsComponentsList; //!
       size_t                fuNbCoreMsPerTs; //!
@@ -76,8 +80,8 @@ class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
 
       const UInt_t kuNbFeePerGbtx  = 5; /// TODO => In parameter!
       const UInt_t kuNbGbtxPerGdpb = 6; /// TODO => In parameter!
-      
-      /// Running indices 
+
+      /// Running indices
       uint64_t fulCurrentTsIndex;  // Idx of the current TS
       size_t   fuCurrentMs; // Idx of the current MS in TS (0 to fuTotalMsNb)
       Double_t fdMsIndex;   // Time in ns of current MS from its index
@@ -87,12 +91,24 @@ class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
       UInt_t   fuGet4Nr;    // running number (0 to fuNrOfGet4) of the Get4 chip in the system for current message
       Int_t    fiEquipmentId;
 
+      /// Current time references for each GDPB and GET4: epoch marker, epoch cycle, full epoch [fuNrOfGdpbs][fuNrOfGet4PerGdpb]
+      std::vector< < ULong64_t > fvvulCurrentEpoch; //!
+      std::vector< < ULong64_t > fvvulCurrentEpochCycle; //! Epoch cycle from the Ms Start message and Epoch counter flip
+      std::vector< < ULong64_t > fvvulCurrentEpochFull; //! Epoch + Epoch Cycle
+
       /// Buffers
-      std::vector< gdpbv100::Message >     fvBufferMessages;        //! [sector]
-      std::vector< gdpbv100::Message >     fvBufferMessagesOverlap; //! [sector]
+      std::vector< gdpbv100::FullMessage > fvBufferMessages;        //! [sector]
+      std::vector< gdpbv100::FullMessage > fvBufferMessagesOverlap; //! [sector]
       std::vector< CbmTofStarTrigger2019 > fvBufferTriggers;        //! [sector]
       std::vector< CbmTofStarTrigger2019 > fvBufferTriggersOverlap; //! [sector]
-      
+
+      void ProcessEpochCycle( uint64_t ulCycleData );
+      void ProcessHit( gdpbv100::Message mess );
+      void ProcessEpoch( gdpbv100::Message mess );
+      void ProcessSlCtrl( gdpbv100::Message mess );
+      void ProcessSysMess( gdpbv100::Message mess );
+      void ProcessPattern( gdpbv100::Message mess );
+
       CbmTofStarEventBuilderAlgo2019(const CbmTofStarEventBuilderAlgo2019&);
       CbmTofStarEventBuilderAlgo2019 operator=(const CbmTofStarEventBuilderAlgo2019&);
 

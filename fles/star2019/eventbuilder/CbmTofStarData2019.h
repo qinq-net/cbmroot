@@ -94,6 +94,9 @@ class CbmTofStarSubevent2019
       inline void SetEndBorderEventFlag(  Bool_t bFlagState = kTRUE ){
                         bFlagState ? (fulEventStatusFlags |= kulFlagEndBorderEvt) :
                                      (fulEventStatusFlags &= ~(kulFlagEndBorderEvt) ); }
+      inline void SetIncompleteEventFlag(  Bool_t bFlagState = kTRUE ){
+                        bFlagState ? (fulEventStatusFlags |= kulFlagIncompleteEvt) :
+                                     (fulEventStatusFlags &= ~(kulFlagIncompleteEvt) ); }
 //#ifndef __CINT__
       inline void AddMsg( gdpb::FullMessage & msgIn){ fvMsgBuffer.push_back( msgIn ); }
 //#endif
@@ -106,6 +109,7 @@ class CbmTofStarSubevent2019
       inline Bool_t            GetEmptyEventFlag()       const { return 0 < (fulEventStatusFlags & kulFlagEmptyEvt); }
       inline Bool_t            GetStartBorderEventFlag() const { return 0 < (fulEventStatusFlags & kulFlagStartBorderEvt); }
       inline Bool_t            GetEndBorderEventFlag()   const { return 0 < (fulEventStatusFlags & kulFlagEndBorderEvt); }
+      inline Bool_t            GetIncompleteEventFlag()  const { return 0 < (fulEventStatusFlags & kulFlagIncompleteEvt); }
       inline Int_t             GetEventSize()            const { return fuEventSizeBytes; }
 //#ifndef __CINT__
       inline gdpb::Message     GetMsg( UInt_t uMsgIdx ) const;
@@ -134,11 +138,12 @@ class CbmTofStarSubevent2019
 //#ifndef __CINT__
       static const uint32_t         kuMaxOutputSize       =     131072; // 2^17
       static const uint32_t         kuMaxNbMsgs           =       8190; // 4 * 64b in header => floor( (2^17 / 8 ) - 4) / 2
-      static const uint64_t         kulFlagBadEvt         =   0x1 << 0;
-      static const uint64_t         kulFlagOverlapEvt     =   0x1 << 1;
-      static const uint64_t         kulFlagEmptyEvt       =   0x1 << 2;
-      static const uint64_t         kulFlagStartBorderEvt =   0x1 << 3;
-      static const uint64_t         kulFlagEndBorderEvt   =   0x1 << 4;
+      static const uint64_t         kulFlagBadEvt         =   0x1 << 0; //! General flag for bad event
+      static const uint64_t         kulFlagOverlapEvt     =   0x1 << 1; //! Event in overlap with the previous event
+      static const uint64_t         kulFlagEmptyEvt       =   0x1 << 2; //! Empty event
+      static const uint64_t         kulFlagStartBorderEvt =   0x1 << 3; //! Event containing data from previous overlap MS
+      static const uint64_t         kulFlagEndBorderEvt   =   0x1 << 4; //! Event containing data from following overlap MS
+      static const uint64_t         kulFlagIncompleteEvt  =   0x1 << 5; //! Incomplete event: at least one gDPB missed the trigger signal
       static const uint64_t         kulSourceIdOffset     =         16;
       static const uint64_t         kulSourceIdMask       =     0xFFFF;
       static const uint64_t         kulEventSizeOffset    =         32;
