@@ -4,6 +4,7 @@
 #include "CbmTrdPoint.h"
 #include "CbmTrdDigi.h"
 #include "CbmTrdDigitizer.h"
+#include "CbmTrdFASP.h"
 #include "CbmTrdParSetAsic.h"
 #include "CbmTrdParFasp.h"
 #include "CbmTrdParModGas.h"
@@ -14,7 +15,9 @@
 
 #include "CbmMatch.h"
 #include "CbmDaqBuffer.h"
+#include "CbmTimeSlice.h"
 
+#include <FairRootManager.h>
 #include <FairLogger.h>
 
 #include <TMath.h>
@@ -39,6 +42,9 @@ CbmTrdModuleSimT::CbmTrdModuleSimT(Int_t mod, Int_t ly, Int_t rot,
                   Double_t dx, Double_t dy, Double_t dz, Bool_t FASP)
   : CbmTrdModuleSim(mod, ly, rot, x, y, z, dx, dy, dz)
   ,fTriangleBinning(NULL)
+  ,fFASP(NULL)
+  ,fTimeSlice(NULL)
+  ,fTimeOld(0)
 {
   SetNameTitle("CbmTrdModuleSimT", Form("Simulator for traingular read-out geometry Module %d", mod));
   SetAsic(FASP);
@@ -48,6 +54,7 @@ CbmTrdModuleSimT::CbmTrdModuleSimT(Int_t mod, Int_t ly, Int_t rot,
 CbmTrdModuleSimT::~CbmTrdModuleSimT()
 {
   if(fTriangleBinning) delete fTriangleBinning;
+  if(fFASP) delete fFASP;
 }
 
 //_________________________________________________________________________________
@@ -76,10 +83,10 @@ Bool_t CbmTrdModuleSimT::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
   gGeoManager->MasterToLocal(gin,  lin);
   gGeoManager->MasterToLocal(gout, lout);
   SetPositionMC(lout);
-  if(VERBOSE) printf("  LocalPos : in[%7.4f %7.4f %7.4f] out[%7.4f %7.4f %7.4f]\n", lin[0], lin[1], lin[2], lout[0], lout[1], lout[2]);
+  if(VERBOSE) printf("  ModPos : in[%7.4f %7.4f %7.4f] out[%7.4f %7.4f %7.4f]\n", lin[0], lin[1], lin[2], lout[0], lout[1], lout[2]);
   
   // General processing on the MC point
-  Double_t  ELoss(0.), ELossTR(0.),
+  Double_t  ELossTR(0.),
             ELossdEdX(point->GetEnergyLoss());
   if (fRadiator && TR){
 //    nofElectrons++;
@@ -91,9 +98,10 @@ Bool_t CbmTrdModuleSimT::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
       ELossTR = fRadiator->GetTR(mom);
     }
   }
-  ELoss = ELossTR + ELossdEdX;
-  //if (ELoss > fMinimumChargeTH)  nofPointsAboveThreshold++;
-  
+  //ELossTR=5.895; // 55Fe, Ka (89%)
+  //ELossTR=6.492; // 55Fe, Kb (11%)
+  //ELossdEdX = gRandom->Gaus(ELossdEdX, );
+
   // compute track length in the gas volume
   Double_t trackLength(0.), txy(0.);
   for (Int_t i = 0; i < 3; i++) {
@@ -101,16 +109,16 @@ Bool_t CbmTrdModuleSimT::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
     if(i==2) txy = trackLength;
     trackLength += dd[i] * dd[i];
   }
-  if(trackLength) trackLength = TMath::Sqrt(trackLength);
+  if(trackLength>0.) trackLength = TMath::Sqrt(trackLength);
   else{
     LOG(WARNING) << GetName() << "::MakeDigi: NULL track length for"
-    " dEdx("<<std::setprecision(5)<<ELoss*1e6<<") keV " << FairLogger::endl;
+    " dEdx("<<std::setprecision(5)<<ELossdEdX*1e6<<") keV " << FairLogger::endl;
     return kFALSE;
   }
-  if(txy) txy = TMath::Sqrt(txy);
+  if(txy>0.) txy = TMath::Sqrt(txy);
   else{
     LOG(WARNING) << GetName() << "::MakeDigi: NULL xy track length projection for"
-    " dEdx("<<std::setprecision(5)<<ELoss*1e6<<") keV " << FairLogger::endl;
+    " dEdx("<<std::setprecision(5)<<ELossdEdX*1e6<<") keV " << FairLogger::endl;
     return kFALSE;
   }
   // compute yz direction
@@ -128,8 +136,8 @@ Bool_t CbmTrdModuleSimT::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
   Double_t dw(fDigiPar->GetAnodeWireSpacing());
   Int_t ncls=TMath::Nint(TMath::Abs(aout[1]-ain[1])/dw+1.);
   if(VERBOSE) {
-    printf("  WireHit : %d\n", ncls);
-    printf("  AnodePos: win[%7.4f / %7.4f] wout[%7.4f / %7.4f]\n", ain[1], lin[1], aout[1], lout[1]);
+    printf("  WireHit(s): %d\n", ncls);
+    printf("  AnodePos  : win[%7.4f / %7.4f] wout[%7.4f / %7.4f]\n", ain[1], lin[1], aout[1], lout[1]);
   }
   
   // calculate track segmentation on the amplification cells distribution
@@ -156,7 +164,7 @@ Bool_t CbmTrdModuleSimT::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
   Double_t pos[3]={ain[0], ain[1], ain[2]},
            ldx(0.), ldy(0.),
            dxy(0.), e(0.), etr(0.),
-           tdrift, y0=lin[1]-ain[1], z0=lin[2];
+           tdrift, x0=lin[0], y0=lin[1]-ain[1], z0=lin[2];
   for(Int_t icl(0); icl<ncls; icl++){
     if(!icl){ldx=dx[0]; ldy=dy[0];}  
     else if(icl==ncls-1){ldx=dx[1]; ldy=dy[1];}  
@@ -166,23 +174,22 @@ Bool_t CbmTrdModuleSimT::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
     if(dxy<=0){
       LOG(ERROR) << GetName()<<"::MakeDigi: NULL projected track length in cluster "<<icl
         <<" for track length[cm] ("<<std::setprecision(5)<<ldx<<", "<<std::setprecision(2)<<ldy<<")."
-        " dEdx("<<std::setprecision(5)<<ELoss*1e6<<") keV " << FairLogger::endl;
+        " dEdx("<<std::setprecision(5)<<ELossdEdX*1e6<<") keV " << FairLogger::endl;
       continue;
     }
     dxy=TMath::Sqrt(dxy);
     if(VERBOSE) printf("    %d ldx[%7.4f] ldy[%7.4f] xy[%7.4f] frac=%7.2f%%\n", icl, ldx, ldy, dxy, 1.e2*dxy/txy);
 
     Double_t  dEdx(dxy/txy),
-              dEdxTR(dxy/txy),
-              cELoss(ELoss*dEdx),         // continuos energy deposit 
-              cELossTR(ELossTR*dEdxTR);   // TODO decay distribution of energy 
-    e+=cELoss; etr+=cELossTR;
+              cELoss(ELossdEdX*dEdx);         // continuos energy deposit 
+    e+=cELoss;
 
     if(VERBOSE) printf("      y0[%7.4f] z0[%7.4f] y1[%7.4f] z1[%7.4f]\n", y0, z0, y0+ldy*sgny, z0+dzdy*ldy*sgny);     
     tdrift = fChmbPar->ScanDriftTime(y0, z0, dzdy, ldy*sgny); y0+=ldy*sgny; z0+=dzdy*ldy*sgny;
     pos[0]+=0.5*ldx*sgnx; 
     if(VERBOSE) printf("      time_hit[ns]=%10.2f time_drift[ns]=%6.2f\n", time+point->GetTime(), tdrift);
-    ScanPadPlane(pos, ldx, 1e6*cELoss, 1e6*cELossTR, time+point->GetTime()+tdrift);
+    cELoss = fChmbPar->GetCharge(1e6*cELoss); // convert Edep [keV] to collected charge [fC]
+    ScanPadPlane(pos, ldx, cELoss, time+point->GetTime()+tdrift);
     pos[0]+=0.5*ldx*sgnx; 
     pos[1]+=dw*sgny;
   }
@@ -190,20 +197,48 @@ Bool_t CbmTrdModuleSimT::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
     LOG(WARNING) << GetName() <<"::MakeDigi: Along wire coordinate error : x_sim="
       <<std::setprecision(5)<<lout[0]<<" x_calc="<<std::setprecision(5)<<pos[0] << FairLogger::endl;
   }
-  if(TMath::Abs(ELoss-e)>1.e-3){
+  if(TMath::Abs(ELossdEdX-e)>1.e-3){
     LOG(WARNING) << GetName() <<"::MakeDigi: dEdx partition to anode wires error : E[keV] = "
-      <<std::setprecision(5)<<ELoss*1e6<<" Sum(Ei)[keV]="<<std::setprecision(5)<<e*1e6 << FairLogger::endl;
+      <<std::setprecision(5)<<ELossdEdX*1e6<<" Sum(Ei)[keV]="<<std::setprecision(5)<<e*1e6 << FairLogger::endl;
   }
-  if(etr>ELossTR){
-    LOG(WARNING) << GetName() <<"::MakeDigi: TR energy partition to anode wires error : Etr[keV] = "
-      <<std::setprecision(5)<<ELossTR*1e6<<" Sum(Ei)[keV]="<<std::setprecision(5)<<etr*1e6 << FairLogger::endl;
-  }
+  
+  // simulate TR
+  Double_t lambda(0.3), diffx(0.1);
+  Double_t dist=gRandom->Exp(lambda);
+  if(VERBOSE) printf("    %d PE effect @ %7.4fcm trackLength=%7.4fcm\n", ncls, dist, trackLength);
+  if(dist>trackLength) return kTRUE;
+  
+  // propgate to PE position
+  lin[0]+=dd[0]*dist/trackLength; lin[1]+=dd[1]*dist/trackLength; lin[2]+=dd[2]*dist/trackLength;     
+  // get anode wire for the PE point
+  memcpy(ain, lin, 3*sizeof(Double_t));
+  fDigiPar->ProjectPositionToNextAnodeWire(ain);
 
+  y0 = lin[1]-ain[1];
+  tdrift = fChmbPar->GetDriftTime(y0, ain[2]);
+  Char_t peShell = fChmbPar->GetPEshell(ELossTR);
+  if(peShell){
+    // compute loss by non-ionizing effects
+      // 1. escape peak
+    if(gRandom->Uniform()<fChmbPar->GetNonIonizingBR(peShell)){ 
+      ELossTR -= fChmbPar->GetBindingEnergy(peShell, 0);
+      if(VERBOSE) printf("      yM[%7.4f] zM[%7.4f] -> yA[%7.4f] y0[%7.4f] tDrift[ns]=%3d PE=%c EscPeak Edep=%5.3f [keV]\n", lin[1], lin[2], ain[1], y0, Int_t(tdrift), peShell, ELossTR);
+      // 2. main peak
+    } else {
+      ELossTR -= 2*fChmbPar->GetBindingEnergy(peShell, 1);
+      if(VERBOSE) printf("      yM[%7.4f] zM[%7.4f] -> yA[%7.4f] y0[%7.4f] tDrift[ns]=%3d PE=%c MainPeak Edep=%5.3f [keV]\n", lin[1], lin[2], ain[1], y0, Int_t(tdrift), peShell, ELossTR);
+    }
+  } else if(VERBOSE) printf("      yM[%7.4f] zM[%7.4f] -> yA[%7.4f] y0[%7.4f] tDrift[ns]=%3d PE=%c\n", lin[1], lin[2], ain[1], y0, Int_t(tdrift), peShell);
+  //ELossTR = gRandom->Gaus(ELossTR, ); // account for gain uncertainty
+  ELossTR = fChmbPar->GetCharge(ELossTR); // convert Edep [keV] to collected charge [fC]
+  
+  ScanPadPlane(ain, tdrift*diffx, ELossTR, time+point->GetTime()+tdrift);
+  
   return kTRUE;
 }
 
 //_________________________________________________________________________________
-Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double_t ELoss, Double_t ELossTR, Double_t toff) 
+Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double_t ELoss, Double_t toff) 
 {
 /**  
   The hit is expressed in local chamber coordinates, localized as follows:
@@ -214,7 +249,7 @@ Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double
   
   The class CbmTrdTrianglePRF is used to navigate the pad plane outward from the hit position until a threshold wrt to center is reached. The pad-row cross clusters are considered. Finally all digits are registered via AddDigi() function. 
 */
-  if(VERBOSE) printf("        WirePlane : xy[%7.4f %7.4f] D[%7.4f] E[keV]=%7.4f time[ns]=%10.2f\n", point[0], point[1], DX, ELoss, toff);
+  if(VERBOSE) printf("        WirePlane : xy[%7.4f %7.4f] D[%7.4f] S[fC]=%7.4f time[ns]=%10.2f\n", point[0], point[1], DX, ELoss, toff);
 
   Int_t sec(-1), col(-1), row(-1);
   fDigiPar->GetPadInfo(point, sec, col, row);
@@ -243,7 +278,7 @@ Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double
   
   // set minimum threshold for all channels [keV]
   // TODO should be stored/computed in CbmTrdModule via triangular/FASP digi param
-  Double_t epsilon=1.e-4;
+  //Double_t epsilon=1.e-4;
 
   // local storage for digits on a maximum area of 5x3 columns for up[1]/down[0] pads
   const Int_t nc=2*CbmTrdTrianglePRF::NC+1;
@@ -254,7 +289,7 @@ Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double
   // look right
   do{
     // check if there is any contribution on this bin column
-    if(fTriangleBinning->GetChargeFraction()<=epsilon) break;
+    //if(fTriangleBinning->GetChargeFraction()<=epsilon) break;
     
     // look up
     do{
@@ -267,12 +302,12 @@ Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double
       }
       //fTriangleBinning->GetCurrentBin(bx, by);
       //printf("      {ru} bin[%2d %2d] c[%d] r[%d] u[%2d] PRF[%f]\n", bx, by, colOff, rowOff, up, prf);
-      if(up) array[colOff][rowOff][(up>0?1:0)] += prf;
+      if(up) array[colOff][rowOff][(up>0?0:1)] += prf;
       else{ 
         array[colOff][rowOff][0] += 0.5*prf;
         array[colOff][rowOff][1] += 0.5*prf;
       }
-    } while(fTriangleBinning->NextBinY() && prf>=epsilon);
+    } while(fTriangleBinning->NextBinY()/* && prf>=epsilon*/);
     fTriangleBinning->GoToOriginY();
       //printf("\n");
     
@@ -290,12 +325,12 @@ Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double
       }
       //fTriangleBinning->GetCurrentBin(bx, by);
       //printf("      {rd} bin[%2d %2d] c[%d] r[%d] u[%2d] PRF[%f]\n", bx, by, colOff, rowOff, up, prf);
-      if(up) array[colOff][rowOff][(up>0?1:0)] += prf;
+      if(up) array[colOff][rowOff][(up>0?0:1)] += prf;
       else{ 
         array[colOff][rowOff][0] += 0.5*prf;
         array[colOff][rowOff][1] += 0.5*prf;
       }
-    } while(fTriangleBinning->PrevBinY() && prf>=epsilon);
+    } while(fTriangleBinning->PrevBinY()/* && prf>=epsilon*/);
     fTriangleBinning->GoToOriginY();
       //printf("\n");
     
@@ -307,7 +342,7 @@ Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double
     // look left
     do{
       // check if there is any contribution on this bin column
-      if(fTriangleBinning->GetChargeFraction()<=epsilon) break;
+      //if(fTriangleBinning->GetChargeFraction()<=epsilon) break;
 
       // look up
       do{
@@ -320,12 +355,12 @@ Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double
         }
         //fTriangleBinning->GetCurrentBin(bx, by);
         //printf("      {lu} bin[%2d %2d] c[%d] r[%d] u[%2d] PRF[%f]\n", bx, by, colOff, rowOff, up, prf);
-        if(up) array[colOff][rowOff][(up>0?1:0)] += prf;
+        if(up) array[colOff][rowOff][(up>0?0:1)] += prf;
         else{ 
           array[colOff][rowOff][0] += 0.5*prf;
           array[colOff][rowOff][1] += 0.5*prf;
         }
-      } while(fTriangleBinning->NextBinY() && prf>=epsilon);
+      } while(fTriangleBinning->NextBinY()/* && prf>=epsilon*/);
       fTriangleBinning->GoToOriginY();
 
       // skip bin @ y0 which was calculated before
@@ -342,12 +377,12 @@ Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double
         }
         //fTriangleBinning->GetCurrentBin(bx, by);
         //printf("      {ld} bin[%2d %2d] c[%d] r[%d] u[%2d] PRF[%f]\n", bx, by, colOff, rowOff, up, prf);
-        if(up) array[colOff][rowOff][(up>0?1:0)] += prf;
+        if(up) array[colOff][rowOff][(up>0?0:1)] += prf;
         else{ 
           array[colOff][rowOff][0] += 0.5*prf;
           array[colOff][rowOff][1] += 0.5*prf;
         }
-      } while(fTriangleBinning->PrevBinY() && prf>=epsilon);
+      } while(fTriangleBinning->PrevBinY()/* && prf>=epsilon*/);
       fTriangleBinning->GoToOriginY();
       //printf("\n");
       
@@ -356,10 +391,10 @@ Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double
   fTriangleBinning->GoToOriginX();
       //printf("\n");
   if(VERBOSE) {
-    printf("        "); for(Int_t ic(0); ic<5; ic++) printf("%7d[u/d]  ", ic); printf("\n");
+    printf("        "); for(Int_t ic(0); ic<nc; ic++) printf("%7d[u/d]  ", ic); printf("\n");
     for(Int_t ir(nr); ir--; ){
       printf("      r[%d] ", ir);
-      for(Int_t ic(0); ic<nc; ic++) printf("%6.4f/%6.4f ", array[ic][ir][1], array[ic][ir][0]);
+      for(Int_t ic(0); ic<nc; ic++) printf("%6.4f/%6.4f ", array[ic][ir][0], array[ic][ir][1]);
       printf("\n");
     }
   }
@@ -371,23 +406,27 @@ Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double
   const Float_t ECalib[]={-528./380., 1./380.};
   Double_t Emeasure(0.);
   for(Int_t ir(nr); ir--; ){
-    for(Int_t ic(0); ic<nc; ic++){
+    for(Int_t ic(nc); (--ic)>=0; ){
       for(Int_t iup(0); iup<2; iup++){
-        if(array[ic][ir][iup]<=epsilon) continue;
+        //if(array[ic][ir][iup]<=epsilon) continue;
         array[ic][ir][iup]*=ELoss/fTriangleBinning->Norm();
         Emeasure+=array[ic][ir][iup];
-        array[ic][ir][iup] = (array[ic][ir][iup]-ECalib[0])*380.;
+        // conversion from keV -> fC
+        //array[ic][ir][iup] = (array[ic][ir][iup]-ECalib[0])*380.;
       }
-      if(ic>0) array[ic-1][ir][0]+=array[ic][ir][1];  // add top pad to previous tilt pair
-      array[ic][ir][1] += array[ic][ir][0];           // add bottom pad to current rect pair
+//       if(ic>0) array[ic-1][ir][0]+=array[ic][ir][1];  // add top pad to previous tilt pair
+//       array[ic][ir][1] += array[ic][ir][0];           // add bottom pad to current rect pair
+
+      if(ic<nc-1) array[ic+1][ir][0] += array[ic][ir][1];  // add bottom pad to next tilt pair
+      array[ic][ir][1] += array[ic][ir][0];           // add top pad to current rect pair
     }
   }
   if(VERBOSE) {
-    printf("      E_sim[keV]=%6.4f E_digi[keV]=%6.4f\n", ELoss, Emeasure);
-    printf("        "); for(Int_t ic(0); ic<5; ic++) printf("%7d[R/T]  ", ic); printf("\n");
+    printf("      Sth[fC]=%6.4f Sdigi[fC]=%6.4f\n", ELoss, Emeasure);
+    printf("        "); for(Int_t ic(0); ic<nc; ic++) printf("%7d[T/R]  ", ic); printf("\n");
     for(Int_t ir(nr); ir--; ){
       printf("      r[%d] ", ir);
-      for(Int_t ic(0); ic<nc; ic++) printf("%6.1f/%6.1f ", array[ic][ir][1], array[ic][ir][0]);
+      for(Int_t ic(0); ic<nc; ic++) printf("%6.2f/%6.2f ", array[ic][ir][0], array[ic][ir][1]);
       printf("\n");
     }
   }
@@ -406,76 +445,36 @@ Bool_t CbmTrdModuleSimT::ScanPadPlane(const Double_t* point, Double_t DX, Double
       // check if there are data available
       Double_t dch[2]={0.}; Bool_t kCOL(kFALSE);
       for(Int_t iup(0); iup<2; iup++){
-        if(array[ic][ir][iup]<=epsilon) continue; 
-        dch[iup]=array[ic][ir][iup];
+        if(array[ic][ir][iup]<0.1) continue; 
+        dch[iup]=TMath::Nint(array[ic][ir][iup]*10.);
         kCOL = kTRUE;
       }
       if(!kCOL) continue;
 
-      // compute column address
-      //Int_t srow, isec=fDigiPar->GetSectorRow(wrow, srow);
-      //printf("AB : ly(%d) modId(%d) sec[%d] row[%d] col[%d]\n", fLayerId, CbmTrdAddress::GetModuleId(fModAddress), isec, srow, wcol);
-      address = GetPadAddress(wrow, wcol);//CbmTrdAddress::GetAddress(fLayerId, CbmTrdAddress::GetModuleId(fModAddress), isec, srow, wcol);
+      // compute global column address
+      address = GetPadAddress(wrow, wcol);//CbmTrdAddress::GetAddress(fLayerId, 
       
-      // choose time based simulation or ebye
-      if(!kTRUE/*fStream*/){
-//         AddDigi(fMCPointId, address,dch[0], dch[0] * ELossTR/ELoss, fEventTime +toff, 0);
-//         AddDigi(fMCPointId, address,dch[1], dch[1] * ELossTR/ELoss, fEventTime +toff, 1);
-        if(VERBOSE){
-          //std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it = fBuffer.find(address);
-          //cout<<(it->second.first)->ToString();
-        }
-      } else {
-        AddDigi(address, &dch[0], toff, ELossTR/ELoss);
-      }
+      // add physics (E[keV], t[ns], Etr[keV])
+      AddDigi(address, &dch[0], toff);//, ELossTR/ELoss);
     }
   }
   return kTRUE;
 }
 
 //_______________________________________________________________________________________________
-void CbmTrdModuleSimT::AddDigi(Int_t address, Double_t *charge, Double_t time, Double_t fTR)
+void CbmTrdModuleSimT::AddDigi(Int_t address, Double_t *charge, Double_t time/*, Double_t fTR*/)
 {
 /**
  * Adding triangular digits to time slice buffer
  */
   
-  // get ASIC channel calibration
-  const CbmTrdParFaspChannel *chFasp[2]={NULL};
-  Int_t asicAddress=fAsicPar->GetAsicAddress(address<<1);
-  if(asicAddress<0){
-    LOG(WARNING) << GetName() << "::AddDigi: FASP Calibration for ro_ch " << address << " in module " << fModAddress <<" missing." << FairLogger::endl;
-  } else {
-    LOG(DEBUG) << GetName() << "::AddDigi: Found FASP "<< asicAddress <<" for ro_ch " << address << " in module " << fModAddress<< FairLogger::endl;
-    CbmTrdParFasp *fasp  = (CbmTrdParFasp*)fAsicPar->GetAsicPar(asicAddress);
-    //fasp->Print();
-    chFasp[0] = fasp->GetChannel(address, 0);
-    chFasp[1] = fasp->GetChannel(address, 1);
-  }
-  
-  Float_t fChargeRef(chFasp[1]?chFasp[1]->GetMinDelaySignal():2586);   // reference value in ADC @ minimum delay fFASPpileUpTime 300ns
-  Float_t fdt(chFasp[1]?chFasp[1]->GetMinDelayParam():4.181e-6);      // factor of parabolic dependence dt=fdt*(s-s0)^2 to calculate trigger delay
-  Int_t fFASPpileUpTime(chFasp[1]?chFasp[1]->GetPileUpTime():300); // pile-up time 300ns @ fChargeRef
-  //chFasp[1]->Print();
-  Double_t weighting = charge[0]+charge[1];
-  
-  if (CbmTrdDigitizer::UseWeightedDist()) {
-    TVector3 padPos, padPosErr;
-    fDigiPar->GetPadPosition(address, padPos, padPosErr);
-    Double_t distance = sqrt(pow(fXYZ[0] - padPos[0],2) + pow(fXYZ[1] - padPos[1],2));
-    weighting = 1. / distance;
-  }
   
   // make digi
   CbmTrdDigi* digi(NULL), *sdigi(NULL); CbmMatch* digiMatch(NULL);  
-  // compute time delay based on CADENCE simulation
-  Float_t tDelay=(0.5*(charge[0]+charge[1])-fChargeRef);
-  tDelay*=tDelay; tDelay*=fdt;
-  if(VERBOSE) printf("          DigiTime[ns] = %10.2f Sgn[%10.2f] Form[%3d] Delay[%6.2f]\n", time+fFASPpileUpTime+tDelay, time, fFASPpileUpTime, tDelay);
-  digi= new CbmTrdDigi(address, charge[0], charge[1], ULong64_t((time+fFASPpileUpTime+tDelay)/CbmTrdDigi::Clk(CbmTrdDigi::kFASP)));
+  digi= new CbmTrdDigi(address, charge[0], charge[1], ULong64_t(TMath::Ceil(time)));
   digi->SetAddressModule(fModAddress); // may not be needed in the future
-  //printf("CbmTrdModuleSimT::AddDigi(%d)=%d\n", address, fModAddress);
   digiMatch = new CbmMatch();
+  Double_t weighting=1;
   digiMatch->AddLink(CbmLink(weighting, fPointId, fEventId, fInputId));
   digi->SetMatch(digiMatch);
 
@@ -511,18 +510,39 @@ Int_t CbmTrdModuleSimT::FlushBuffer(ULong64_t time)
  * are produced by 2 particle close by. Also take into account FASP dead time and mark such digits correspondingly
  */  
 
-  if(VERBOSE) printf("CbmTrdModuleSimT::FlushBuffer(%lu)\n", time);
+  if(!fFASP){ // Build & configure FASP simulator 
+    fFASP = new CbmTrdFASP(1000);
+    fFASP->SetNeighbourTrigger(1); 
+    fFASP->SetLGminLength(31);
+  }  
+  if(!fTimeSlice){
+    FairRootManager* ioman = FairRootManager::Instance(); 
+    fTimeSlice = (CbmTimeSlice*)ioman->GetObject("TimeSlice.");
+  }
+  Bool_t closeTS(kFALSE);
+  if(fTimeSlice) closeTS = (fTimeOld - fTimeSlice->GetEndTime() - 1000)>0.;
+  fTimeOld = time;
+  
+  CbmDaqBuffer* daqBuffer = CbmDaqBuffer::Instance();  
+
+  if(VERBOSE) printf("CbmTrdModuleSimT::FlushBuffer(%lu) FASP start[%lu] end[%lu] closeTS[%c]\n", time, fFASP->GetStartTime(), fFASP->GetEndTime(), (closeTS?'y':'n'));    
+
+  // ask FASP simulator if there is enough time elapsed from the last running of the simulator
+  if(time>0 && !fFASP->Go(time) && !closeTS) return 0;
+  // configure FASP simulator time range for special cases
+  if(closeTS) fFASP->SetProcTime(TMath::Nint(fTimeSlice->GetEndTime()));
+  
   if(VERBOSE) DumpBuffer();
   Double_t dt(0.);
 
-  Int_t n(0), n1(0); 
-  CbmTrdDigi *digi(NULL), *sdigi(NULL);
-  CbmMatch *digiMatch(NULL), *sdigiMatch(NULL);
+  Int_t n1(0), rowOld(-1), asicId, asicOld(-1); 
+  CbmTrdDigi *digi(NULL); CbmMatch *digiMatch(NULL);
   CbmTrdParFasp *fasp(NULL); const CbmTrdParFaspChannel *chFasp[2]={NULL};
 
   // write from saved buffer
   Int_t address(0), localAddress(0), ndigi(0), n2(0);
-  for(std::map<Int_t, std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>>::iterator it = fBuffer.begin(); it!=fBuffer.end(); it++){
+  std::map<Int_t, std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>>::iterator it = fBuffer.begin();
+  for(; it!=fBuffer.end(); it++){
     localAddress = it->first;
     ndigi   = fBuffer[localAddress].size();
     if(!ndigi){
@@ -530,15 +550,7 @@ Int_t CbmTrdModuleSimT::FlushBuffer(ULong64_t time)
       continue;
     }
     // compute CBM address
-    Int_t col, row = GetPadRowCol(localAddress, col),
-          srow, sec = fDigiPar->GetSector(row, srow);
-    address = CbmTrdAddress::GetAddress(fLayerId, CbmTrdAddress::GetModuleAddress(fModAddress), sec, srow, col);
-    // check if there is any digit which might be saved to buffer
-    std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>::iterator iv = fBuffer[localAddress].begin();
-    digi = iv->first;
-    Float_t fFASPdeadTime = 300+14*CbmTrdDigi::Clk(CbmTrdDigi::kFASP);
-    if(VERBOSE) printf("  col[%3d] row[%2d] ndigi[%d] start_time[%10.2f] write_time[%10.2f]\n", col, row, ndigi, digi->GetTime(), TMath::Max(Double_t(0.), Double_t(time-fFASPdeadTime)));
-    if(time>0 && digi->GetTime()>time-fFASPdeadTime) continue;
+    Int_t col, row = GetPadRowCol(localAddress, col);
 
     // get ASIC channel calibration
     Int_t asicAddress=fAsicPar->GetAsicAddress(localAddress<<1);
@@ -552,66 +564,75 @@ Int_t CbmTrdModuleSimT::FlushBuffer(ULong64_t time)
       chFasp[1] = fasp->GetChannel(localAddress, 1);
     }
 
-    Int_t fFASPpileUpTime = (chFasp[0]?chFasp[0]->GetPileUpTime():300); // pile-up time 300ns @ max amplitude
-    fFASPdeadTime = fFASPpileUpTime + 
-                            CbmTrdDigi::Clk(CbmTrdDigi::kFASP)*(chFasp[0]?chFasp[0]->GetFlatTop():14);  // deadtime 14 clocks @ 80MHz
-    
-    n2+=ndigi; Int_t idx(0);
+    if(rowOld<0){ // first row
+      rowOld=row;
+      //printf("PROCESS FIRST ROW %d\n", row);
+    }
+    asicId=row*9+col/8;
+    if(asicOld<0){ // first row
+      asicOld=asicId;
+      //printf("PROCESS FIRST ASIC %d\n", asicId);
+    }
+    if(row != rowOld || asicId!=asicOld){ // next row
+      //printf("PROCESS ASIC[%3d] ROW[%2d]\n", asicId, row);
+      rowOld=row;
+      asicOld=asicId;
+    }
+    fFASP->PhysToRaw(&(it->second), col, row);
+  }
+  if(fFASP) fFASP->Clear("draw"); // clear buffer
+  
+  if(VERBOSE){
+    cout<<"\nFINALIZED DIGITS : \n"; DumpBuffer();
+  }
+ 
+  //save digitisation results  
+  Int_t n(0), nDigiLeft(0);
+  Double_t timeMin(-1), timeMax(0);  
+  ULong64_t newStartTime(0);
+  it = fBuffer.begin();
+  std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>::iterator iv;
+  while(it!=fBuffer.end()){
+    localAddress = it->first;
+    if(!fBuffer[localAddress].size()) continue;
+
+    Int_t col(-1), row(-1), srow, sec;
+    iv = fBuffer[localAddress].begin();
     while(iv != fBuffer[localAddress].end()){
       digi = iv->first; digiMatch = iv->second;
-      //printf("check %d of %d [%p]\n", idx++, ndigi, (void*)digi);
-      // skip digits which might further interact
-      if(time>0 && digi->GetTime()>time-fFASPdeadTime) break;
-      if(VERBOSE) cout<<"    Prompt digi: "<<digi->ToString();
-
-      // look to later events
-      std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>::iterator jv = iv+1;
-      while(jv != fBuffer[localAddress].end()){
-        sdigi = jv->first;
-        // skip digits which might further interact
-        if(time>0 && sdigi->GetTime()>time) break;
-
-        dt=sdigi->GetTime() - digi->GetTime();        
-        if(dt<0){
-          LOG(ERROR) << GetName() << "::FlushBuffer : Time inversion in buffered digits. Need investigations by expert." << FairLogger::endl;
-          break;
-          iv++; continue;
-        } 
-        //printf("check dt[%f] ...\n", dt);  
-        sdigiMatch = jv->second;
-        if(dt<fFASPpileUpTime) { 
-          digi->SetTimeDAQ(sdigi->GetTimeDAQ());
-          digi->AddCharge(sdigi, (1.-dt/fFASPpileUpTime));
-          // TODO take care of TR charge
-          digi->SetPileUp();
-          for(Int_t il(0); il<sdigiMatch->GetNofLinks(); il++) digiMatch->AddLink(sdigiMatch->GetLink(il));
-          
-          // clean vector element
-          jv = fBuffer[localAddress].erase(jv);
-          if(VERBOSE) cout<<"    Pile-up: dt["<< fixed << setprecision(5) <<dt<<"] with "<<sdigi->ToString();
-          // clean digits allocation
-          delete sdigi; 
-        } else if(dt<fFASPdeadTime) {
-          // clean vector element
-          jv = fBuffer[localAddress].erase(jv);
-
-          sdigi->SetMasked();
-          if(VERBOSE) cout<<"    Deadtime: dt["<< setw(5)<<dt<<"]. "<<"WriteMasked: "<<sdigi->ToString();        
-          // digits allocation clearing is taken care by the CbmDaqBuffer
-          //CbmDaqBuffer::Instance()->InsertData(sdigi);
-          fDigiMap[address] = make_pair(sdigi, sdigiMatch);
-        } else break;
-      } 
-      if(VERBOSE) cout<<"    WriteBuffer: "<<digi->ToString();
-      //daqBuffer->InsertData(digi);
-      fDigiMap[address] = make_pair(digi, digiMatch);
+      if(!digi->IsMasked()){ // no more digi processed
+        if(newStartTime==0 || digi->GetTimeDAQ() < newStartTime) newStartTime = digi->GetTimeDAQ();
+        break;  
+      }
+      if(digi->IsFlagged(0)){     // phys digi didn't produce CS/FT TODO process digiMatch
+        delete digi; //delete digiMatch;
+        iv=fBuffer[localAddress].erase(iv); // remove from saved buffer
+        continue;
+      }
+    
+      if(col<0){
+        row = GetPadRowCol(localAddress, col);
+        sec = fDigiPar->GetSector(row, srow);
+        address = CbmTrdAddress::GetAddress(fLayerId, CbmTrdAddress::GetModuleAddress(fModAddress), sec, srow, col);
+      }
+      if(timeMin<0 || digi->GetTime()<timeMin) timeMin = digi->GetTime();
+      if(digi->GetTime()>timeMax) timeMax = digi->GetTime();
+      daqBuffer->InsertData(digi); n++;
+      //fDigiMap[address] = make_pair(digi, digiMatch); n++;
       iv=fBuffer[localAddress].erase(iv); // remove from saved buffer
     }
     // clear address if there are no more digits available
-    //if(!fBuffer[address].size()) it = fBuffer.erase(it);
+    if(fBuffer[localAddress].size()){ 
+      nDigiLeft += fBuffer[localAddress].size();
+      //printf("%d left-overs @ %d\n", fBuffer[localAddress].size(), localAddress);
+      it++;
+    } else it = fBuffer.erase(it);
   }
-//   LOG(INFO) << "TRDdigitizerPRF::FlushLocalBuffer : digits " << n1 << "(local)/"<< n-n1 << "(late) @ "<<time<<"ns Ev["<< fEventNr<<"]. Hold digits "<<fDigiMap.size()<<"(local)/"<<n2<<"(late)."<<FairLogger::endl; 
-  if(VERBOSE) DumpBuffer();
+  if(VERBOSE) printf("CbmTrdModuleSimT::FlushBuffer : write %d digis from %luns to %luns. Digits still in buffer %d\n", n, TMath::Nint(timeMin),TMath::Nint(timeMax), nDigiLeft);
+  fFASP->SetStartTime(newStartTime); fFASP->SetProcTime();
+  
+  //iteratively process all digi at the end of run
+  if(time==0 && nDigiLeft) n+=FlushBuffer();
   return n;
 }
 
@@ -621,7 +642,11 @@ void CbmTrdModuleSimT::DumpBuffer() const
   for(std::map<Int_t, std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>>::const_iterator it = fBuffer.begin(); it!=fBuffer.end(); it++){
     if(!it->second.size()) continue;    
     printf("address[%10d] n[%2d]\n", it->first, (Int_t)it->second.size());
-    for(std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>::const_iterator iv = it->second.begin(); iv != it->second.end(); iv++)  cout<<"\t"<<iv->first->ToString();
+    for(std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>::const_iterator iv = it->second.cbegin(); iv != it->second.cend(); iv++){
+      if(iv->first->IsFlagged(0)) continue;
+      //cout<<"\t"<<(iv->first->IsFlagged(0)?'P':'D')<<" "<<iv->first<<" "<<iv->first->ToString();
+      cout<<"\t"<<iv->first->ToString();
+    }
   }  
 }
 

@@ -3,6 +3,8 @@
 
 #include "CbmTrdModuleSim.h"
 
+class CbmTimeSlice;
+class CbmTrdFASP;
 class CbmTrdTrianglePRF;
 class CbmTrdParSetAsic;
 /**
@@ -22,7 +24,7 @@ public:
    * \param time current event time or 0 for all
    * \author A.Bercuci <abercuci@niham.nipne.ro>
    **/
-  Int_t  FlushBuffer(ULong64_t time);
+  Int_t  FlushBuffer(ULong64_t time=0);
 
   /**
    * \brief Steer building of digits for triangular pad geometry
@@ -46,12 +48,11 @@ private:
    * \brief Build digits for the triangular pad geometry
    * \param point Position of hit on the anode wire in c.s.
    * \param dx    Track projection length on the closest anode wire [cm]
-   * \param ELoss Fraction of energy due to ionisation [keV]
-   * \param ELossTR Fraction of energy due to TR. [keV]
+   * \param E     Energy loss from either ionization or X [keV]
    * \sa CbmTrdTriangle CbmTrdRadiator AddDigi()
    * \author A.Bercuci <abercuci@niham.nipne.ro>
    **/
-  Bool_t ScanPadPlane(const Double_t* point, Double_t dx, Double_t ELoss, Double_t ELossTR, Double_t tdrift);
+  Bool_t ScanPadPlane(const Double_t* point, Double_t dx, Double_t E, Double_t tdrift);
   /**
    * \brief Adding triangular digits to time slice buffer
    * \param pointId The TRD hit in global coordinates beeing processed
@@ -62,14 +63,17 @@ private:
    * \sa FlushBuffer()
    * \author A.Bercuci <abercuci@niham.nipne.ro>
    **/
-  void    AddDigi(Int_t address, Double_t *charge, Double_t time, Double_t fTR=0.);
+  void    AddDigi(Int_t address, Double_t *charge, Double_t time);
   /**
    * \brief Print current buffer content
    * \author A.Bercuci <abercuci@niham.nipne.ro>
    **/
   void   DumpBuffer() const;
 
-  CbmTrdTrianglePRF  *fTriangleBinning;    ///< Integration of PRF on triangular pad-plane geometry
+  CbmTrdTrianglePRF*  fTriangleBinning;   ///< Integration of PRF on triangular pad-plane geometry
+  CbmTrdFASP*         fFASP;              ///< FASP simulator
+  CbmTimeSlice*       fTimeSlice;         ///< link to CBM time slice
+  ULong64_t           fTimeOld;           ///< time [ns] of the last event processed (check CbmDaq)
   
   ClassDef(CbmTrdModuleSimT, 1)
 };
