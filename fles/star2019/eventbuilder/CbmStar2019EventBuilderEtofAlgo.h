@@ -91,20 +91,25 @@ class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
       UInt_t   fuGet4Nr;    // running number (0 to fuNrOfGet4) of the Get4 chip in the system for current message
       Int_t    fiEquipmentId;
 
-      /// Current time references for each GDPB and GET4: epoch marker, epoch cycle, full epoch [fuNrOfGdpbs][fuNrOfGet4PerGdpb]
+      /// Current time references for each GDPB: merged epoch marker, epoch cycle, full epoch [fuNrOfGdpbs]
       std::vector< < ULong64_t > fvvulCurrentEpoch; //!
       std::vector< < ULong64_t > fvvulCurrentEpochCycle; //! Epoch cycle from the Ms Start message and Epoch counter flip
       std::vector< < ULong64_t > fvvulCurrentEpochFull; //! Epoch + Epoch Cycle
 
       /// Buffers
+      std::vector< gdpbv100::Message >     fvmEpSupprBuffer;        //! [sector]
       std::vector< gdpbv100::FullMessage > fvBufferMessages;        //! [sector]
       std::vector< gdpbv100::FullMessage > fvBufferMessagesOverlap; //! [sector]
       std::vector< CbmTofStarTrigger2019 > fvBufferTriggers;        //! [sector]
       std::vector< CbmTofStarTrigger2019 > fvBufferTriggersOverlap; //! [sector]
 
       void ProcessEpochCycle( uint64_t ulCycleData );
-      void ProcessHit( gdpbv100::Message mess );
       void ProcessEpoch( gdpbv100::Message mess );
+      void ProcessStarTrigger( gdpbv100::Message mess );
+      
+      void ProcessEpSupprBuffer( uint32_t uGdpbNr );
+      
+      void ProcessHit( gdpbv100::Message mess );
       void ProcessSlCtrl( gdpbv100::Message mess );
       void ProcessSysMess( gdpbv100::Message mess );
       void ProcessPattern( gdpbv100::Message mess );

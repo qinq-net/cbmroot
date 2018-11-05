@@ -103,10 +103,7 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
       // and fill the corresponding histogram
       messageType = mess.getMessageType();
       fviMsgCounter[messageType]++;
-      fhMessType->Fill(messageType);
-      fhGdpbMessType->Fill(messageType, fuGdpbNr );
 
-///         fuGet4Id = mess.getGdpbGenChipId();
       fuGet4Id = ConvertElinkToGet4( mess.getGdpbGenChipId() );
       fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
 
@@ -122,19 +119,12 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
          {
             if( mess.getGdpbHitIs24b() )
             {
-/*** TODO: Histogram support
-               fhGet4MessType->Fill( fuGet4Nr, 4 );
-               fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 4 );
-               PrintGenInfo(mess);
-***/
+               LOG(FATAL) << "This event builder does not support 24b hit message!!!."
+                          << FairLogger::endl;
             } // if( getGdpbHitIs24b() )
                else
                {
-/*** TODO: Histogram support
-                  fhGet4MessType->Fill( fuGet4Nr, 0 );
-                  fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 0 );
-***/
-                  fvmEpSupprBuffer[fuGet4Nr].push_back( mess );
+                  fvmEpSupprBuffer[fuGdpbNr].push_back( mess );
                } // else of if( getGdpbHitIs24b() )
             break;
          } // case gdpbv100::MSG_HIT:
@@ -142,39 +132,7 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
          {
             if( gdpbv100::kuChipIdMergedEpoch == fuGet4Id )
             {
-/*** TODO: Histogram support
-               if (1 == mess.getGdpbEpSync())
-               {
-                  fhGdpbEpochFlags->Fill( fuGdpbNr, 0 );
-                  fhGdpbEpochSyncEvo->Fill( (1e-9) * fdMsIndex - fdStartTimeMsSz, fuGdpbNr );
-               } // if (1 == mess.getGdpbEpSync())
-
-               if (1 == mess.getGdpbEpDataLoss())
-                  fhGdpbEpochFlags->Fill( fuGdpbNr, 1 );
-
-               if (1 == mess.getGdpbEpEpochLoss())
-                  fhGdpbEpochFlags->Fill( fuGdpbNr, 2 );
-
-               if (1 == mess.getGdpbEpMissmatch())
-               {
-                  fhGdpbEpochFlags->Fill( fuGdpbNr, 3 );
-                  fhGdpbEpochMissEvo->Fill( (1e-9) * fdMsIndex - fdStartTimeMsSz, fuGdpbNr );
-               } // if (1 == mess.getGdpbEpMissmatch())
-***/
-
-               for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGet4Index ++ )
-               {
-                  fuGet4Id = uGet4Index;
-                  fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
-                  gdpbv100::Message tmpMess(mess);
-                  tmpMess.setGdpbGenChipId( uGet4Index );
-
-/*** TODO: Histogram support
-                  fhGet4MessType->Fill( fuGet4Nr, 1);
-                  fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 1 );
-***/
-                  FillEpochInfo(tmpMess);
-               } // for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGetIndex ++ )
+               ProcessEpoch(mess);
 
                if( kTRUE == fbPrintAllEpochsEnable )
                {
@@ -189,168 +147,28 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
                             << FairLogger::endl;
                } // if( kTRUE == fbPrintAllEpochsEnable )
             } // if this epoch message is a merged one valid for all chips
-            else
-            {
-               fhGet4MessType->Fill( fuGet4Nr, 1);
-               fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 1 );
-***/
-               FillEpochInfo(mess);
-
-               if( kTRUE == fbPrintAllEpochsEnable )
+               else
                {
-                  LOG(INFO) << "Epoch: " << Form("0x%08x ", fuGdpbId)
-                            << ", " << std::setw(4) << fuGet4Nr
-                            << ", Link " << std::setw(1) << mess.getGdpbEpLinkId()
-                            << ", epoch " << std::setw(8) << mess.getGdpbEpEpochNb()
-                            << ", Sync " << std::setw(1) << mess.getGdpbEpSync()
-                            << ", Data loss " << std::setw(1) << mess.getGdpbEpDataLoss()
-                            << ", Epoch loss " << std::setw(1) << mess.getGdpbEpEpochLoss()
-                            << ", Epoch miss " << std::setw(1) << mess.getGdpbEpMissmatch()
-                            << FairLogger::endl;
-               } // if( kTRUE == fbPrintAllEpochsEnable )
-            } // if single chip epoch message
+                  LOG(FATAL) << "This event builder does not support unmerged epoch messages!!!."
+                             << FairLogger::endl;
+               } // if single chip epoch message
             break;
          } // case gdpbv100::MSG_EPOCH:
          case gdpbv100::MSG_SLOWC:
          {
-            fhGet4MessType->Fill( fuGet4Nr, 2);
-            fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 2 );
-***/
-            PrintSlcInfo(mess);
+            fvmEpSupprBuffer[fuGdpbNr].push_back( mess );
             break;
          } // case gdpbv100::MSG_SLOWC:
          case gdpbv100::MSG_SYST:
          {
-/*** TODO: Histogram support
-            fhSysMessType->Fill(mess.getGdpbSysSubType());
-            fhGdpbSysMessType->Fill(mess.getGdpbSysSubType(), fuGdpbNr );
-            if( gdpbv100::SYS_GET4_ERROR == mess.getGdpbSysSubType() )
-            {
-               fhGet4MessType->Fill( fuGet4Nr, 3);
-               fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 3 );
-
-               UInt_t uFeeNr   = (fuGet4Id / fuNrOfGet4PerFee);
-               if (0 <= fdStartTime)
-               {
-                  fvhFeeErrorRate_gDPB[(fuGdpbNr * fuNrOfFeePerGdpb) + uFeeNr]->Fill(
-                     1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime));
-                  fvhFeeErrorRatio_gDPB[(fuGdpbNr * fuNrOfFeePerGdpb) + uFeeNr]->Fill(
-                     1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime), 1, 1 );
-               } // if (0 <= fdStartTime)
-               if (0 <= fdStartTimeLong)
-               {
-                  fvhFeeErrorRateLong_gDPB[(fuGdpbNr * fuNrOfFeePerGdpb) + uFeeNr]->Fill(
-                     1e-9 / 60.0 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTimeLong), 1 / 60.0);
-                  fvhFeeErrorRatioLong_gDPB[(fuGdpbNr * fuNrOfFeePerGdpb) + uFeeNr]->Fill(
-                     1e-9 / 60.0 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTimeLong), 1, 1 / 60.0);
-               } // if (0 <= fdStartTime)
-
-               Int_t dGdpbChId =  fuGet4Id * fuNrOfChannelsPerGet4 + mess.getGdpbSysErrChanId();
-               Int_t dFullChId =  fuGet4Nr * fuNrOfChannelsPerGet4 + mess.getGdpbSysErrChanId();
-               switch( mess.getGdpbSysErrData() )
-               {
-                  case gdpbv100::GET4_V2X_ERR_READ_INIT:
-                     fhGet4ChanErrors->Fill(dFullChId, 0);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 0 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_SYNC:
-                     fhGet4ChanErrors->Fill(dFullChId, 1);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 1 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_EP_CNT_SYNC:
-                     fhGet4ChanErrors->Fill(dFullChId, 2);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 2 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_EP:
-                     fhGet4ChanErrors->Fill(dFullChId, 3);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 3 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_FIFO_WRITE:
-                     fhGet4ChanErrors->Fill(dFullChId, 4);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 4 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_LOST_EVT:
-                     fhGet4ChanErrors->Fill(dFullChId, 5);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 5 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_CHAN_STATE:
-                     fhGet4ChanErrors->Fill(dFullChId, 6);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 6 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_TOK_RING_ST:
-                     fhGet4ChanErrors->Fill(dFullChId, 7);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 7 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_TOKEN:
-                     fhGet4ChanErrors->Fill(dFullChId, 8);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 8 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_READOUT_ERR:
-                     fhGet4ChanErrors->Fill(dFullChId, 9);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 9 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_SPI:
-                     fhGet4ChanErrors->Fill(dFullChId, 10);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 10 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_DLL_LOCK:
-                     fhGet4ChanErrors->Fill(dFullChId, 11);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 11 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_DLL_RESET:
-                     fhGet4ChanErrors->Fill(dFullChId, 12);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 12 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_TOT_OVERWRT:
-                     fhGet4ChanErrors->Fill(dFullChId, 13);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 13 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_TOT_RANGE:
-                     fhGet4ChanErrors->Fill(dFullChId, 14);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 14 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_EVT_DISCARD:
-                     fhGet4ChanErrors->Fill(dFullChId, 15);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 15 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_ADD_RIS_EDG:
-                     fhGet4ChanErrors->Fill(dFullChId, 16);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 16 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_UNPAIR_FALL:
-                     fhGet4ChanErrors->Fill(dFullChId, 17);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 17 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_SEQUENCE_ER:
-                     fhGet4ChanErrors->Fill(dFullChId, 18);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 18 );
-                     break;
-                  case gdpbv100::GET4_V2X_ERR_UNKNOWN:
-                     fhGet4ChanErrors->Fill(dFullChId, 19);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 19 );
-                     break;
-                  default: // Corrupt error or not yet supported error
-                     fhGet4ChanErrors->Fill(dFullChId, 20);
-                     fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 20 );
-                     break;
-               } // Switch( mess.getGdpbSysErrData() )
-            } // if( gdpbv100::SYSMSG_GET4_EVENT == mess.getGdpbSysSubType() )
-***/
-            if( gdpbv100::SYS_PATTERN == mess.getGdpbSysSubType() )
-            {
-/*** TODO: Histogram support
-               fhGdpbSysMessPattType->Fill(mess.getGdpbSysPattType(), fuGdpbNr );
-***/
-               FillPattInfo( mess );
-            } // if( gdpbv100::SYS_PATTERN == mess.getGdpbSysSubType() )
-            PrintSysInfo(mess);
+            fvmEpSupprBuffer[fuGdpbNr].push_back( mess );
             break;
          } // case gdpbv100::MSG_SYST:
          case gdpbv100::MSG_STAR_TRI_A:
          case gdpbv100::MSG_STAR_TRI_B:
          case gdpbv100::MSG_STAR_TRI_C:
          case gdpbv100::MSG_STAR_TRI_D:
-            FillStarTrigInfo(mess);
+            ProcessStarTrigger( mess );
             break;
          default:
             LOG(ERROR) << "Message type " << std::hex
@@ -376,10 +194,6 @@ void CbmTofStarEventBuilderAlgo2019::ProcessEpochCycle( uint64_t ulCycleData )
       fuRawDataPrintMsgIdx ++;
    } // if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
 
-   for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGet4Index ++ )
-   {
-      fuGet4Id = uGet4Index;
-      fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
 /*
       if( !( ulEpochCycleVal == fvulCurrentEpochCycle[fuGet4Nr] ||
              ulEpochCycleVal == fvulCurrentEpochCycle[fuGet4Nr] + 1 ) )
@@ -388,11 +202,100 @@ void CbmTofStarEventBuilderAlgo2019::ProcessEpochCycle( uint64_t ulCycleData )
                     << Form( " Current cycle 0x%09X New cycle 0x%09X", fvulCurrentEpochCycle[fuGet4Nr], ulEpochCycleVal )
                     << FairLogger::endl;
 */
-      fvulCurrentEpochCycle[fuGet4Nr] = ulEpochCycleVal;
-   } // for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGet4Index ++ )
+   fvulCurrentEpochCycle[fuGdpbNr] = ulEpochCycleVal;
+   
    return;
 }
 
+void CbmTofStarEventBuilderAlgo2019::ProcessEpoch( gdpbv100::Message mess )
+{
+   ULong64_t ulEpochNr = mess.getGdpbEpEpochNb();
+
+   if( fvulCurrentEpoch[ fuGdpbNr ] < ulEpochNr )
+      fvulCurrentEpochCycle[ fuGdpbNr ]++;
+
+   fvulCurrentEpoch[ fuGdpbNr ] = ulEpochNr;
+   fvulCurrentEpochFull[ fuGdpbNr ] = ulEpochNr + gdpbv100::kulEpochCycleBins * fvulCurrentEpochCycle[ fuGdpbNr ];
+
+   fulCurrentEpochTime = mess.getMsgFullTime(ulEpochNr);
+
+   /// Re-align the epoch number of the message in case it will be used later:
+   /// We received the epoch after the data instead of the one before!
+   if( 0 < ulEpochNr )
+      mess.setGdpbEpEpochNb( ulEpochNr - 1 );
+      else mess.setGdpbEpEpochNb( gdpbv100::kuEpochCounterSz );
+
+   /// Process the corresponding messages buffer
+   ProcessEpSupprBuffer( fuGdpbNr );
+}
+
+void CbmTofStarEventBuilderAlgo2019::ProcessEpSupprBuffer( uint32_t uGdpbNr )
+{
+   Int_t iBufferSize = fvmEpSupprBuffer[ fuGdpbNr ].size();
+
+   if( 0 == iBufferSize )
+      return;
+
+   LOG(DEBUG) << "Now processing stored messages for for gDPB " << fuGdpbNr << " with epoch number "
+              << (fvulCurrentEpoch[fuGdpbNr] - 1) << FairLogger::endl;
+
+   /// Data are sorted between epochs, not inside => Epoch level ordering
+   /// Sorting at lower bin precision level
+   std::stable_sort( fvmEpSupprBuffer[ fuGdpbNr ].begin(), fvmEpSupprBuffer[ fuGdpbNr ].begin() );
+   
+   for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+   {
+      
+      messageType = fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getMessageType();
+
+      fuGet4Id = ConvertElinkToGet4( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbGenChipId() );
+      fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
+      
+      switch (messageType)
+      {
+         case gdpbv100::MSG_HIT:
+         {
+            if( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbHitIs24b() )
+            {
+               LOG(FATAL) << "This event builder does not support 24b hit message!!!."
+                          << FairLogger::endl;
+            } // if( getGdpbHitIs24b() )
+               else
+               {
+                  ProcessHit( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ] );
+               } // else of if( getGdpbHitIs24b() )
+            break;
+         } // case gdpbv100::MSG_HIT:
+         case gdpbv100::MSG_SLOWC:
+         {
+            ProcessSlCtrl( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ] );
+            break;
+         } // case gdpbv100::MSG_SLOWC:
+         case gdpbv100::MSG_SYST:
+         {
+            if( gdpbv100::SYS_PATTERN == fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbSysSubType() )
+            {
+               ProcessPattern( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ] );
+            } // if( gdpbv100::SYS_PATTERN == fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbSysSubType() )
+               else ProcessSysMess( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ] );
+            break;
+         } // case gdpbv100::MSG_SYST:
+         case gdpbv100::MSG_STAR_TRI_A:
+         case gdpbv100::MSG_STAR_TRI_B:
+         case gdpbv100::MSG_STAR_TRI_C:
+         case gdpbv100::MSG_STAR_TRI_D:
+            FillStarTrigInfo( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ] );
+            break;
+         default:
+            LOG(ERROR) << "Message type " << std::hex
+                       << std::setw(2) << static_cast<uint16_t>(messageType)
+                       << " not included in Get4 unpacker."
+                       << FairLogger::endl;
+      } // switch( mess.getMessageType() )
+   } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
+   
+   fvmEpSupprBuffer[ fuGdpbNr ].clear();
+}
 
 void CbmTofStarEventBuilderAlgo2019::ProcessHit( gdpbv100::Message mess )
 {
@@ -448,82 +351,10 @@ void CbmTofStarEventBuilderAlgo2019::ProcessHit( gdpbv100::Message mess )
    if( fuCurrentMs < fuCoreMs )
       fvBufferMessages[fuGdpbNr].push_back( fullMess );
       else fvBufferMessagesOverlap[fuGdpbNr].push_back( fullMess );
-
-/*** TODO: Histogram support
-      /// Histograms filling
-         /// In Run rate evolution
-      if (fdStartTime < 0)
-         fdStartTime = dHitTime;
-      if (fdStartTimeLong < 0)
-         fdStartTimeLong = dHitTime;
-         /// Reset the evolution Histogram and the start time when we reach the end of the range
-      if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
-      {
-         ResetEvolutionHistograms();
-         fdStartTime = dHitTime;
-      } // if( fuHistoryHistoSize < 1e-9 * (dHitTime - fdStartTime) )
-          /// Reset the long evolution Histogram and the start time when we reach the end of the range
-      if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) / 60.0 )
-      {
-         ResetLongEvolutionHistograms();
-         fdStartTimeLong = dHitTime;
-      } // if( fuHistoryHistoSizeLong < 1e-9 * (dHitTime - fdStartTimeLong) / 60.0 )
-***/
-
-}
-
-void CbmTofStarEventBuilderAlgo2019::ProcessEpoch( gdpbv100::Message mess )
-{
-   ULong64_t ulEpochNr = mess.getGdpbEpEpochNb();
-
-   if( fvulCurrentEpoch[ fuGdpbNr ][ fuGet4Id ] < ulEpochNr )
-      fvulCurrentEpochCycle[ fuGdpbNr ][ fuGet4Id ]++;
-
-   fvulCurrentEpoch[ fuGdpbNr ][ fuGet4Id ] = ulEpochNr;
-   fvulCurrentEpochFull[ fuGdpbNr ][ fuGet4Id ] = ulEpochNr + gdpbv100::kulEpochCycleBins * fvulCurrentEpochCycle[ fuGdpbNr ][ fuGet4Id ];
-
-   fulCurrentEpochTime = mess.getMsgFullTime(ulEpochNr);
-
-   /// Re-align the epoch number of the message in case it will be used later:
-   /// We received the epoch after the data instead of the one before!
-   if( 0 < ulEpochNr )
-      mess.setGdpbEpEpochNb( ulEpochNr - 1 );
-      else mess.setGdpbEpEpochNb( gdpbv100::kuEpochCounterSz );
-
-   Int_t iBufferSize = fvmEpSupprBuffer[ fuGdpbNr ][ fuGet4Id ].size();
-   if( 0 < iBufferSize )
-   {
-      LOG(DEBUG) << "Now processing stored messages for for get4 " << fuGet4Nr << " with epoch number "
-                 << (fvulCurrentEpoch[fuGet4Nr] - 1) << FairLogger::endl;
-
-      /// Data are sorted between epochs, not inside => Epoch level ordering
-      /// Sorting at lower bin precision level
-      std::stable_sort( fvmEpSupprBuffer[ fuGdpbNr ][ fuGet4Id ].begin(), fvmEpSupprBuffer[ fuGdpbNr ][ fuGet4Id ].begin() );
-
-      for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
-      {
-         ProcessHit( fvmEpSupprBuffer[ fuGdpbNr ][ fuGet4Id ][ iMsgIdx ] );
-      } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
-
-      fvmEpSupprBuffer[ fuGdpbNr ][ fuGet4Id ].clear();
-   } // if( 0 < fvmEpSupprBuffer[fuGet4Nr] )
-
-/*** TODO: Histogram support
-   if (1 == mess.getGdpbEpSync())
-      fhGet4EpochFlags->Fill(fuGet4Nr, 0);
-   if (1 == mess.getGdpbEpDataLoss())
-      fhGet4EpochFlags->Fill(fuGet4Nr, 1);
-   if (1 == mess.getGdpbEpEpochLoss())
-      fhGet4EpochFlags->Fill(fuGet4Nr, 2);
-   if (1 == mess.getGdpbEpMissmatch())
-      fhGet4EpochFlags->Fill(fuGet4Nr, 3);
-***/
 }
 
 void CbmTofStarEventBuilderAlgo2019::ProcessSlCtrl( gdpbv100::Message mess )
 {
-/*** TODO: Use epoch suppression buffer to go in the right epoch!!! ***/
-
    /// Store the full message in the proper buffer
    gdpb::FullMessage fullMess( mess, ulCurEpochGdpbGet4 );
    if( fuCurrentMs < fuCoreMs )
@@ -533,9 +364,6 @@ void CbmTofStarEventBuilderAlgo2019::ProcessSlCtrl( gdpbv100::Message mess )
 
 void CbmTofStarEventBuilderAlgo2019::ProcessSysMess( gdpbv100::Message mess )
 {
-/*** TODO: Use epoch suppression buffer to go in the right epoch!!! ***/
-   /// TODO FIXME: Add the error messages to the buffer for inclusion in the STAR event
-   ///             NEEDS the proper "<" operator in FullMessage or Message to allow time sorting
    gdpb::FullMessage fullMess( mess, ulCurEpochGdpbGet4 );
    if( fuCurrentMs < fuCoreMs )
       fvBufferMessages[fuGdpbNr].push_back( fullMess );
@@ -615,44 +443,33 @@ void CbmTofStarEventBuilderAlgo2019::ProcessPattern( gdpbv100::Message mess )
    uint16_t usIndex  = mess.getGdpbSysPattIndex();
    uint32_t uPattern = mess.getGdpbSysPattPattern();
 
-/*** TODO: Histogram support
    switch( usType )
    {
       case gdpbv100::PATT_MISSMATCH:
       {
          LOG(INFO) << Form( "Missmatch pattern message => Type %d, Index %2d, Pattern 0x%08X", usType, usIndex, uPattern )
                    << FairLogger::endl;
-         for( UInt_t uBit = 0; uBit < 32; ++uBit )
-            if( ( uPattern >> uBit ) & 0x1 )
-            {
-               fhPatternMissmatch->Fill( 32 * usIndex + uBit, fuGdpbNr );
-               fvhGdpbPatternMissmatchEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, 32 * usIndex + uBit );
-            } // if( ( uPattern >> uBit ) & 0x1 )
 
          break;
       } // case gdpbv100::PATT_MISSMATCH:
       case gdpbv100::PATT_ENABLE:
       {
+         LOG(DEBUG2) << Form( "Enable pattern message => Type %d, Index %2d, Pattern 0x%08X", usType, usIndex, uPattern )
+                   << FairLogger::endl;
+/*
          for( UInt_t uBit = 0; uBit < 32; ++uBit )
             if( ( uPattern >> uBit ) & 0x1 )
             {
                fhPatternEnable->Fill( 32 * usIndex + uBit, fuGdpbNr );
                fvhGdpbPatternEnableEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, 32 * usIndex + uBit );
             } // if( ( uPattern >> uBit ) & 0x1 )
-
+*/
          break;
       } // case gdpbv100::PATT_ENABLE:
       case gdpbv100::PATT_RESYNC:
       {
          LOG(INFO) << Form( "RESYNC pattern message => Type %d, Index %2d, Pattern 0x%08X", usType, usIndex, uPattern )
                    << FairLogger::endl;
-
-         for( UInt_t uBit = 0; uBit < 32; ++uBit )
-            if( ( uPattern >> uBit ) & 0x1 )
-            {
-               fhPatternResync->Fill( 32 * usIndex + uBit, fuGdpbNr );
-               fvhGdpbPatternResyncEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, 32 * usIndex + uBit );
-            } // if( ( uPattern >> uBit ) & 0x1 )
 
          break;
       } // case gdpbv100::PATT_RESYNC:
@@ -662,7 +479,6 @@ void CbmTofStarEventBuilderAlgo2019::ProcessPattern( gdpbv100::Message mess )
          break;
       } // default
    } // switch( usType )
-***/
 
    return;
 }
