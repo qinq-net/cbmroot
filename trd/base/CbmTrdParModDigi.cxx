@@ -137,7 +137,7 @@ void  CbmTrdParModDigi::Print(Option_t *opt) const
 /** 
   Dump formated parameters for this module
 */
-  printf(" CbmTrdParModDigi @ %5d ly[%d] idLy[%d] rotation[%3ddeg] rows[%2d] cols[%3d]\n",
+  printf(" CbmTrdParModDigi @ %5d ly[%d] idLy[%3d] rotation[%3ddeg] rows[%2d] cols[%3d]\n",
          fModuleId, CbmTrdAddress::GetLayerId(fModuleId), CbmTrdAddress::GetModuleId(fModuleId), fOrientation*90,
          GetNofRows(), GetNofColumns());
   if(strcmp(opt, "all")!=0) return;
@@ -170,7 +170,7 @@ void CbmTrdParModDigi::ProjectPositionToNextAnodeWire(Double_t* local_point) con
 
     Double_t ypos = local_point[1];
 
-    LOG(DEBUG2) << "local y before projection: " << std::setprecision(5) << local_point[1] << " mm" << FairLogger::endl;
+    LOG(DEBUG2) << "local y before projection: " << std::setprecision(5) << local_point[1] << " cm" << FairLogger::endl;
 
     // make sure, local_point[1] is not negative (due to module center coordinate)
     // therefore transform to local corner first and then back at the end of operation
@@ -183,7 +183,7 @@ void CbmTrdParModDigi::ProjectPositionToNextAnodeWire(Double_t* local_point) con
 
     local_point[1] -= fSizeY;   // transform back to module center coordinates
 
-    LOG(DEBUG2) << "local y after projection: " << std::setprecision(5) << local_point[1] << " mm" << FairLogger::endl;
+    LOG(DEBUG2) << "local y after  projection: " << std::setprecision(5) << local_point[1] << " cm" << FairLogger::endl;
 
     // check, if we have left the anode wire grid
     if ( fabs(local_point[1]) > fSizeY - fAnodeWireOffset )
