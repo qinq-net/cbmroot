@@ -23,6 +23,7 @@
 #pragma link C++ class  CbmTrdParAsic+;
 #pragma link C++ class  CbmTrdParSpadic+;
 #pragma link C++ class  CbmTrdSPADIC+;
+#pragma link C++ class  CbmTrdFASP+;
 #pragma link C++ class  CbmTrdParFasp+;
 #pragma link C++ class  CbmTrdParFaspChannel+;
 #pragma link C++ class  CbmTrdParModGas+;

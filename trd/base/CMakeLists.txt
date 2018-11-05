@@ -45,6 +45,7 @@ CbmTrdParMod.cxx
 CbmTrdParAsic.cxx 
 CbmTrdParSpadic.cxx 
 CbmTrdSPADIC.cxx 
+CbmTrdFASP.cxx 
 CbmTrdParFasp.cxx 
 CbmTrdParModDigi.cxx 
 CbmTrdParModGas.cxx 
