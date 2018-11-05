@@ -132,7 +132,6 @@ void CbmTrdDigitizer::Exec(Option_t*)
 //  fDigis->Delete();
 //  fDigiMatches->Delete();
 
-
   // start timer
   TStopwatch timer; timer.Start();
 
@@ -185,13 +184,13 @@ void CbmTrdDigitizer::Exec(Option_t*)
   for(map<Int_t, CbmTrdModuleSim*>::iterator imod = fModuleMap.begin(); imod != fModuleMap.end(); imod++) {
     // in streaming mode flush buffers only up to a certain point in time wrt to current event time (allow for event pile-ups)
     //printf("Processing data for module %d\n", imod->first);
-    if(IsTimeBased()) imod->second->FlushBuffer(fCurrentEventTime);  
+    if(IsTimeBased()) nDigis += imod->second->FlushBuffer(fCurrentEventTime);  
     // in event-by-event mode flush all buffers     
     else imod->second->FlushBuffer();                               
     imod->second->GetCounters(n0, n1, n2);
     nofElectrons+=n0; nofLatticeHits+=n1; nofPointsAboveThreshold+=n2;
     std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>> *digis = imod->second->GetDigiMap();
-    //printf("  Digits %d\n", digis->size());    
+    //printf("  Digits[%d] %d\n", imod->first, digis->size());    
     for (std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it = digis->begin() ; it != digis->end(); it++) {
       (it->second.first)->SetMatch(it->second.second);
       SendDigi(it->second.first); 
@@ -228,24 +227,32 @@ void CbmTrdDigitizer::Exec(Option_t*)
 //________________________________________________________________________________________
 void CbmTrdDigitizer::FlushBuffers()
 {
+  LOG(INFO) << GetName() << ": Processing analogue buffers"<< FairLogger::endl;
+  Int_t nDigis(0);
   for(map<Int_t, CbmTrdModuleSim*>::iterator imod = fModuleMap.begin(); imod != fModuleMap.end(); imod++) {
-    imod->second->FlushBuffer();                               
+    nDigis += imod->second->FlushBuffer();                               
     std::map<Int_t, std::pair<CbmTrdDigi*, CbmMatch*>> *digis = imod->second->GetDigiMap();
     for (std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it = digis->begin() ; it != digis->end(); it++) {
       (it->second.first)->SetMatch(it->second.second);
       SendDigi(it->second.first); 
-      //nDigis++;
+      nDigis++;
     } //# modules
     digis->clear();
   } //# digis
-  
+  LOG(INFO) << GetName() << ": " << nDigis
+        << ( nDigis == 1 ? " digi " :  " digis " )
+        << "created and sent to DAQ "<< FairLogger::endl;
 }
 
 //________________________________________________________________________________________
 void CbmTrdDigitizer::Finish()
 {
-  // flush buffers in streaming mode
+  // flush buffers in streaming mode    
+  LOG(INFO) << "=====================================" << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Finish run" << FairLogger::endl;
   if(IsTimeBased()) FlushBuffers(); 
+  LOG(INFO) << GetName() << ": Run summary " << FairLogger::endl;
+  LOG(INFO) << "=====================================" << FairLogger::endl;
 }
 
 //________________________________________________________________________________________
