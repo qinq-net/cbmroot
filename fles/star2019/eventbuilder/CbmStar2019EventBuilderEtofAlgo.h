@@ -43,6 +43,7 @@ class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
 
       Bool_t InitStsParameters();
       Bool_t CreateHistograms();
+      Bool_t ProcessTs( const fles::Timeslice& ts );
       Bool_t ProcessMs( const fles::Timeslice& ts, size_t uMsComp, UInt_t uMsIdx );
       Bool_t BuildEvents();
 
@@ -51,7 +52,9 @@ class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
       constexpr uint32_t kuBytesPerMessage = 8;
 
       /// Control flags
-      Bool_t fbMonitorMode;
+      Bool_t fbMonitorMode; //! Switch ON the filling of a minimal set of histograms
+      Bool_t fbSandboxMode; //! Switch OFF the emission of data toward the STAR DAQ
+      Bool_t fbPulserMode;  //! Build events for Pulser generated
 
       /// FLES containers
       std::vector< size_t > fvMsComponentsList; //!
@@ -83,6 +86,7 @@ class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
 
       /// Running indices
       uint64_t fulCurrentTsIndex;  // Idx of the current TS
+      Double_t fdTsStartTime;  // Time in ns of current TS from the index of the first MS first component
       size_t   fuCurrentMs; // Idx of the current MS in TS (0 to fuTotalMsNb)
       Double_t fdMsIndex;   // Time in ns of current MS from its index
       UInt_t   fuGdpbId;    // Id (hex number) of the GDPB for current message
@@ -99,20 +103,48 @@ class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
       /// Buffers
       std::vector< gdpbv100::Message >     fvmEpSupprBuffer;        //! [sector]
       std::vector< gdpbv100::FullMessage > fvBufferMessages;        //! [sector]
-      std::vector< gdpbv100::FullMessage > fvBufferMessagesOverlap; //! [sector]
+//      std::vector< gdpbv100::FullMessage > fvBufferMessagesOverlap; //! [sector] ==> Try to shift the conditions to buffer filling!
       std::vector< CbmTofStarTrigger2019 > fvBufferTriggers;        //! [sector]
-      std::vector< CbmTofStarTrigger2019 > fvBufferTriggersOverlap; //! [sector]
+//      std::vector< CbmTofStarTrigger2019 > fvBufferTriggersOverlap; //! [sector] ==> Try to shift the conditions to buffer filling!
+
+      /// STAR TRIGGER detection
+      std::vector< ULong64_t > fulGdpbTsMsb;          //! [sector]
+      std::vector< ULong64_t > fulGdpbTsLsb;          //! [sector]
+      std::vector< ULong64_t > fulStarTsMsb;          //! [sector]
+      std::vector< ULong64_t > fulStarTsMid;          //! [sector]
+      std::vector< ULong64_t > fulGdpbTsFullLast;     //! [sector]
+      std::vector< ULong64_t > fulStarTsFullLast;     //! [sector]
+      std::vector< UInt_t    > fuStarTokenLast;       //! [sector]
+      std::vector< UInt_t    > fuStarDaqCmdLast;      //! [sector]
+      std::vector< UInt_t    > fuStarTrigCmdLast;     //! [sector]
+      std::vector< ULong64_t > fulGdpbTsFullLastCore; //! [sector]
+      std::vector< ULong64_t > fulStarTsFullLastCore; //! [sector]
+      std::vector< UInt_t    > fuStarTokenLastCore;   //! [sector]
+      std::vector< UInt_t    > fuStarDaqCmdLastCore;  //! [sector]
+      std::vector< UInt_t    > fuStarTrigCmdLastCore; //! [sector]
+
+      /// Buffer insertion limits
+      std::vector< Double_t > fdMessCandidateTimeStart; //! [sector]
+      std::vector< Double_t > fdMessCandidateTimeStop;  //! [sector]
+      std::vector< Double_t > fdTrigCandidateTimeStart; //! [sector]
+      std::vector< Double_t > fdTrigCandidateTimeStop;  //! [sector]
+
+      /// Event window limits
+      Double_t                 fdAllowedTriggersSpread;
+      std::vector< Double_t >  fdStarTriggerDeadtime;   //! [sector]
+      std::vector< Double_t >  fdStarTriggerDelay;      //! [sector]
+      std::vector< Double_t >  fdStarTriggerWinSize;    //! [sector]
 
       void ProcessEpochCycle( uint64_t ulCycleData );
       void ProcessEpoch( gdpbv100::Message mess );
       void ProcessStarTrigger( gdpbv100::Message mess );
-      
+
       void ProcessEpSupprBuffer( uint32_t uGdpbNr );
-      
-      void ProcessHit( gdpbv100::Message mess );
-      void ProcessSlCtrl( gdpbv100::Message mess );
-      void ProcessSysMess( gdpbv100::Message mess );
-      void ProcessPattern( gdpbv100::Message mess );
+
+      void ProcessHit( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 );
+      void ProcessSlCtrl( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 );
+      void ProcessSysMess( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 );
+      void ProcessPattern( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 );
 
       CbmTofStarEventBuilderAlgo2019(const CbmTofStarEventBuilderAlgo2019&);
       CbmTofStarEventBuilderAlgo2019 operator=(const CbmTofStarEventBuilderAlgo2019&);
