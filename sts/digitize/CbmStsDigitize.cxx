@@ -436,6 +436,15 @@ InitStatus CbmStsDigitize::Init() {
   fDigiPar->SetProcesses(fEnergyLossModel, fUseLorentzShift, fUseDiffusion,
                          fUseCrossTalk, fGenerateNoise);
 
+  fDigiPar->SetModuleParameters(fModuleDynRange, fModuleThreshold, fModuleNofAdc,
+                                fModuleTresol, fModuleTdead, fModuleNoise,
+                                fModuleZeroNoiseRate, fModuleFracDeadChan);
+
+  fDigiPar->SetSensorConditions(fSensorVdep, fSensorVbias, fSensorTemperature,
+                                fSensorCcoupling, fSensorCinterstrip);
+
+  fDigiPar->SetStripPitch(fSensorPitch);
+
   // --- Screen output of settings
   LOG(INFO) << GetName() << ": " << fDigiPar->ToString() << FairLogger::endl;
 

@@ -502,55 +502,51 @@ Int_t CbmStsFindClusters::ReadLegacyEvent() {
 void CbmStsFindClusters::SetModuleParameters()
 {
 
-    assert( fDigiPar );
+  assert( fDigiPar );
 
-    // TODO: Here, the default parameters are hard-coded. This can only be
-    // a temporary solution, since consistency with those used in
-    // digitisation is not assured. Have to find a way to pass this
-    // information through parameter handling.
-    Double_t dynRange = 75000.;
-    Double_t threshold = 3000.;
-    Int_t nAdc = 32;
-    Double_t tResol = 5.;
-    Double_t tDead  = 800.;
-    Double_t noise = 1000.;
-    Double_t zeroNoiseRate = 3.9789e-3;
-    Double_t fracDeadChannels = 0.;
+  Double_t dynRange = fDigiPar->GetDynRange(); //75000.;
+  Double_t threshold = fDigiPar->GetThreshold(); //3000.;
+  Int_t nAdc = fDigiPar->GetNofAdc(); //32;
+  Double_t tResol = fDigiPar->GetTimeResolution(); //5.;
+  Double_t tDead  = fDigiPar->GetDeadTime(); //800.;
+  Double_t noise = fDigiPar->GetNoise(); //1000.;
+  Double_t zeroNoiseRate = fDigiPar->GetZeroNoiseRate(); //3.9789e-3;
+  Double_t fracDeadChannels = fDigiPar->GetDeadChannelFrac(); // 0.;
 
-	// --- Control output of parameters
-	LOG(INFO) << GetName() << ": Digitisation parameters :"
-			      << FairLogger::endl;
-	LOG(INFO) << "\t Dynamic range         " << dynRange
-	          << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t Threshold             " << threshold
-	          << " e"<< FairLogger::endl;
-	LOG(INFO) << "\t ADC channels          " << nAdc
-	          << FairLogger::endl;
-	LOG(INFO) << "\t Time resolution       " << tResol
-	          << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t Dead time             " << tDead
-	          << " ns" << FairLogger::endl;
-	LOG(INFO) << "\t ENC                   " << noise
-	    << " e" << FairLogger::endl;
+  // --- Control output of parameters
+  LOG(INFO) << GetName() << ": Digitisation parameters :"
+            << FairLogger::endl;
+  LOG(INFO) << "\t Dynamic range         " << dynRange
+            << " e"<< FairLogger::endl;
+  LOG(INFO) << "\t Threshold             " << threshold
+            << " e"<< FairLogger::endl;
+  LOG(INFO) << "\t ADC channels          " << nAdc
+            << FairLogger::endl;
+  LOG(INFO) << "\t Time resolution       " << tResol
+            << " ns" << FairLogger::endl;
+  LOG(INFO) << "\t Dead time             " << tDead
+            << " ns" << FairLogger::endl;
+  LOG(INFO) << "\t ENC                   " << noise
+      << " e" << FairLogger::endl;
     LOG(INFO) << "\t Zero noise rate       " << zeroNoiseRate
         << " e" << FairLogger::endl;
     LOG(INFO) << "\t Dead channel fraction " << fracDeadChannels
         << FairLogger::endl;
 
-	// --- Set parameters for all modules
-	Int_t nModules = fSetup->GetNofModules();
-	for (Int_t iModule = 0; iModule < nModules; iModule++) {
-		fSetup->GetModule(iModule)->SetParameters(dynRange,
-		                                          threshold,
-		                                          nAdc,
-		                                          tResol,
-		                                          tDead,
-		                                          noise,
-		                                          zeroNoiseRate,
-		                                          fracDeadChannels);
-	}
-	LOG(INFO) << GetName() << ": Set parameters for " << nModules
-			      << " modules " << FairLogger::endl;
+  // --- Set parameters for all modules
+  Int_t nModules = fSetup->GetNofModules();
+  for (Int_t iModule = 0; iModule < nModules; iModule++) {
+    fSetup->GetModule(iModule)->SetParameters(dynRange,
+                                              threshold,
+                                              nAdc,
+                                              tResol,
+                                              tDead,
+                                              noise,
+                                              zeroNoiseRate,
+                                              fracDeadChannels);
+  }
+  LOG(INFO) << GetName() << ": Set parameters for " << nModules
+            << " modules " << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
