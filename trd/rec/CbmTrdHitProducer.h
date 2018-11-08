@@ -9,6 +9,7 @@ class CbmTrdParSetAsic;
 class CbmTrdParSetGas;
 class CbmTrdParSetDigi;
 class CbmTrdParSetGain;
+class CbmTrdParSetGeo;
 class CbmTrdModuleRec;
 class CbmTrdCluster;
 class CbmTrdHitProducer : public FairTask
@@ -57,6 +58,7 @@ private:
   CbmTrdParSetGas*  fGasPar;    ///< parameter list for HV status
   CbmTrdParSetDigi* fDigiPar;   ///< parameter list for read-out geometry
   CbmTrdParSetGain* fGainPar;   ///< parameter list for keV->ADC gain conversion
+  CbmTrdParSetGeo*  fGeoPar;    ///< parameter list for modules geometry
 
   ClassDef(CbmTrdHitProducer, 1);
 };

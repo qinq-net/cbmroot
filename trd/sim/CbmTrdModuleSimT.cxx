@@ -37,16 +37,14 @@ using std::pair;
 using namespace std;
 
 //_________________________________________________________________________________
-CbmTrdModuleSimT::CbmTrdModuleSimT(Int_t mod, Int_t ly, Int_t rot, 
-                  Double_t x, Double_t y, Double_t z, 
-                  Double_t dx, Double_t dy, Double_t dz, Bool_t FASP)
-  : CbmTrdModuleSim(mod, ly, rot, x, y, z, dx, dy, dz)
+CbmTrdModuleSimT::CbmTrdModuleSimT(Int_t mod, Int_t ly, Int_t rot, Bool_t FASP)
+  : CbmTrdModuleSim(mod, ly, rot)
   ,fTriangleBinning(NULL)
   ,fFASP(NULL)
   ,fTimeSlice(NULL)
   ,fTimeOld(0)
 {
-  SetNameTitle("CbmTrdModuleSimT", Form("Simulator for traingular read-out geometry Module %d", mod));
+  SetNameTitle(Form("TrdSimT%d", mod), "Simulator for triangular read-out.");
   SetAsic(FASP);
 }
 
@@ -663,96 +661,96 @@ void CbmTrdModuleSimT::SetAsicPar(CbmTrdParSetAsic *p)
   fAsicPar = p;//new CbmTrdParSetAsic();
   //fAsicPar->Print();
   return;
-  if(!fDigiPar){
-    LOG(WARNING) << GetName() << "::SetAsicPar : No Digi params for module "<< fModAddress <<". Try calling first CbmTrdModSim::SetDigiPar to get FASP position right."<< FairLogger::endl;
-    return;
-  }
-
-  CbmTrdParAsic *asic(NULL);
-  
-  Int_t iFebGroup = 0;
-  Int_t gRow[3] = {  1, 2, 4 };  // re-ordering on the feb -> same mapping for normal and super
-  Int_t gCol[3] = {  8, 8, 4 };  // re-ordering on the feb -> same mapping for normal and super
-  Double_t xAsic = 0;  // x position of Asic
-  Double_t yAsic = 0;  // y position of Asic
-
-  Int_t rowId(0), isecId(0), irowId(0), iAsic(0);
-  for (Int_t s = 0, rg(0); s < fDigiPar->GetNofSectors(); s++) {    
-    for (Int_t r = 0; r < fDigiPar->GetNofRowsInSector(s); r++, rg++){ 
-      for (Int_t c = 0; c < fDigiPar->GetNofColumnsInSector(s); c++){ 
-        // ultimate density 6 rows,  5 pads
-        // super    density 4 rows,  8 pads
-        // normal   density 2 rows, 16 pads
-        if ((rowId % gRow[iFebGroup]) == 0){
-          if ((c % gCol[iFebGroup]) == 0){
-            xAsic =     c + gCol[iFebGroup] / 2.;
-            yAsic =     r + gRow[iFebGroup] / 2.;
-
-            Double_t local_point[3];
-            Double_t padsizex = fDigiPar->GetPadSizeX(s);
-            Double_t padsizey = fDigiPar->GetPadSizeY(s);
-
-            // calculate position in sector coordinate system
-            // with the origin in the lower left corner (looking upstream)
-            local_point[0] = ((Int_t)(xAsic + 0.5) * padsizex);
-            local_point[1] = ((Int_t)(yAsic + 0.5) * padsizey);
-            
-            // calculate position in module coordinate system
-            // with the origin in the lower left corner (looking upstream)
-            local_point[0] += fDigiPar->GetSectorBeginX(s);
-            local_point[1] += fDigiPar->GetSectorBeginY(s);
-            if (local_point[0] > 2*fDx)     LOG(ERROR) << GetName() << "::SetAsicPar: asic position x=" << local_point[0] << " is out of bounds [0," << 2*fDx<< "]!" << FairLogger::endl;
-            if (local_point[1] > 2*fDy)     LOG(ERROR) << GetName() << "::SetAsicPar: asic position y=" << local_point[1] << " is out of bounds [0," << 2*fDy<< "]!" << FairLogger::endl;
-
-            // local_point[i] must be >= 0 at this point      Double_t local_point[3];
-            Int_t address=GetAsicAddress(iAsic);
-            if(!(asic = fAsicPar->GetAsicPar(address))){
-              LOG(WARNING) << GetName() << "::SetAsicPar : Couldn't find ASIC @ "<<local_point[0] - fDx<<", "<< local_point[1] - fDy<<" address "<<address<< FairLogger::endl;
-              asic = new CbmTrdParFasp(address, iFebGroup, local_point[0] - fDx, local_point[1] - fDy);
-              fAsicPar->SetAsicPar(address, asic);
-            } else {
-              //LOG(INFO) << GetName() << "::SetAsicPar : Found ASIC @ address "<<address<< FairLogger::endl;
-              asic->SetPosition(local_point[0] - fDx, local_point[1] - fDy);
-              asic->SetFebGrouping(iFebGroup);
-            }
-            
-            // read-out channel to FASP channel mapping TODO more realistically
-            for (Int_t ir = rowId; ir < rowId + gRow[iFebGroup]; ir++) {
-              for (Int_t ic = c; ic < c + gCol[iFebGroup]; ic++) {
-                if (ir >= fDigiPar->GetNofRows() )     LOG(ERROR) <<  GetName() << "::SetAsicPar: ir " << ir << " is out of bounds!" << FairLogger::endl;
-                if (ic >= fDigiPar->GetNofColumns() )  LOG(ERROR) <<  GetName() << "::SetAsicPar: ic " << ic << " is out of bounds!" << FairLogger::endl;
-                //isecId = fDigiPar->GetSector((Int_t)ir, irowId);
-                asic->SetChannelAddress(GetPadAddress(rg, ic));
-                  //CbmTrdAddress::GetAddress(CbmTrdAddress::GetLayerId(fModAddress), CbmTrdAddress::GetModuleId(fModAddress), isecId, irowId, ic));
-                if (false)
-                  printf("               M:%10i(%4i) s: %i  irowId: %4i  ic: %4i r: %4i c: %4i   address:%10i\n",fModAddress,
-                    CbmTrdAddress::GetModuleId(fModAddress),
-                    isecId, irowId, ic, r, c,
-                    CbmTrdAddress::GetAddress(fLayerId, fModAddress, isecId, irowId, ic));
-              } 
-            } 
-            iAsic++;  // next Asic
-          }
-        }
-      }
-      rowId++;
-    }
-  }
-  
-  // Self Test 
-//   for (Int_t s = 0; s < fDigiPar->GetNofSectors(); s++){
-//     const Int_t nRow = fDigiPar->GetNofRowsInSector(s);
-//     const Int_t nCol = fDigiPar->GetNofColumnsInSector(s);
-  for (Int_t r = 0; r < GetNrows(); r++){
-    for (Int_t c = 0; c < GetNcols(); c++){
-      Int_t channelAddress = GetPadAddress(r,c);
-      //CbmTrdAddress::GetAddress(CbmTrdAddress::GetLayerId(fModAddress),CbmTrdAddress::GetModuleId(fModAddress), s, r, c);
-      if (fAsicPar->GetAsicAddress(channelAddress) == -1)
-        LOG(ERROR) <<  GetName() << "::SetAsicPar: Channel address:" << channelAddress << " is not or multiple initialized in module " << fModAddress << "(ID:" << CbmTrdAddress::GetModuleId(fModAddress) << ")" << "(r:" << r << ", c:" << c << ")" << FairLogger::endl;
-    }
-  }
-//  }
-  //fAsicPar->Print();
+//   if(!fDigiPar){
+//     LOG(WARNING) << GetName() << "::SetAsicPar : No Digi params for module "<< fModAddress <<". Try calling first CbmTrdModSim::SetDigiPar to get FASP position right."<< FairLogger::endl;
+//     return;
+//   }
+// 
+//   CbmTrdParAsic *asic(NULL);
+//   
+//   Int_t iFebGroup = 0;
+//   Int_t gRow[3] = {  1, 2, 4 };  // re-ordering on the feb -> same mapping for normal and super
+//   Int_t gCol[3] = {  8, 8, 4 };  // re-ordering on the feb -> same mapping for normal and super
+//   Double_t xAsic = 0;  // x position of Asic
+//   Double_t yAsic = 0;  // y position of Asic
+// 
+//   Int_t rowId(0), isecId(0), irowId(0), iAsic(0);
+//   for (Int_t s = 0, rg(0); s < fDigiPar->GetNofSectors(); s++) {    
+//     for (Int_t r = 0; r < fDigiPar->GetNofRowsInSector(s); r++, rg++){ 
+//       for (Int_t c = 0; c < fDigiPar->GetNofColumnsInSector(s); c++){ 
+//         // ultimate density 6 rows,  5 pads
+//         // super    density 4 rows,  8 pads
+//         // normal   density 2 rows, 16 pads
+//         if ((rowId % gRow[iFebGroup]) == 0){
+//           if ((c % gCol[iFebGroup]) == 0){
+//             xAsic =     c + gCol[iFebGroup] / 2.;
+//             yAsic =     r + gRow[iFebGroup] / 2.;
+// 
+//             Double_t local_point[3];
+//             Double_t padsizex = fDigiPar->GetPadSizeX(s);
+//             Double_t padsizey = fDigiPar->GetPadSizeY(s);
+// 
+//             // calculate position in sector coordinate system
+//             // with the origin in the lower left corner (looking upstream)
+//             local_point[0] = ((Int_t)(xAsic + 0.5) * padsizex);
+//             local_point[1] = ((Int_t)(yAsic + 0.5) * padsizey);
+//             
+//             // calculate position in module coordinate system
+//             // with the origin in the lower left corner (looking upstream)
+//             local_point[0] += fDigiPar->GetSectorBeginX(s);
+//             local_point[1] += fDigiPar->GetSectorBeginY(s);
+//             if (local_point[0] > 2*fDx)     LOG(ERROR) << GetName() << "::SetAsicPar: asic position x=" << local_point[0] << " is out of bounds [0," << 2*fDx<< "]!" << FairLogger::endl;
+//             if (local_point[1] > 2*fDy)     LOG(ERROR) << GetName() << "::SetAsicPar: asic position y=" << local_point[1] << " is out of bounds [0," << 2*fDy<< "]!" << FairLogger::endl;
+// 
+//             // local_point[i] must be >= 0 at this point      Double_t local_point[3];
+//             Int_t address=GetAsicAddress(iAsic);
+//             if(!(asic = fAsicPar->GetAsicPar(address))){
+//               LOG(WARNING) << GetName() << "::SetAsicPar : Couldn't find ASIC @ "<<local_point[0] - fDx<<", "<< local_point[1] - fDy<<" address "<<address<< FairLogger::endl;
+//               asic = new CbmTrdParFasp(address, iFebGroup, local_point[0] - fDx, local_point[1] - fDy);
+//               fAsicPar->SetAsicPar(address, asic);
+//             } else {
+//               //LOG(INFO) << GetName() << "::SetAsicPar : Found ASIC @ address "<<address<< FairLogger::endl;
+//               asic->SetPosition(local_point[0] - fDx, local_point[1] - fDy);
+//               asic->SetFebGrouping(iFebGroup);
+//             }
+//             
+//             // read-out channel to FASP channel mapping TODO more realistically
+//             for (Int_t ir = rowId; ir < rowId + gRow[iFebGroup]; ir++) {
+//               for (Int_t ic = c; ic < c + gCol[iFebGroup]; ic++) {
+//                 if (ir >= fDigiPar->GetNofRows() )     LOG(ERROR) <<  GetName() << "::SetAsicPar: ir " << ir << " is out of bounds!" << FairLogger::endl;
+//                 if (ic >= fDigiPar->GetNofColumns() )  LOG(ERROR) <<  GetName() << "::SetAsicPar: ic " << ic << " is out of bounds!" << FairLogger::endl;
+//                 //isecId = fDigiPar->GetSector((Int_t)ir, irowId);
+//                 asic->SetChannelAddress(GetPadAddress(rg, ic));
+//                   //CbmTrdAddress::GetAddress(CbmTrdAddress::GetLayerId(fModAddress), CbmTrdAddress::GetModuleId(fModAddress), isecId, irowId, ic));
+//                 if (false)
+//                   printf("               M:%10i(%4i) s: %i  irowId: %4i  ic: %4i r: %4i c: %4i   address:%10i\n",fModAddress,
+//                     CbmTrdAddress::GetModuleId(fModAddress),
+//                     isecId, irowId, ic, r, c,
+//                     CbmTrdAddress::GetAddress(fLayerId, fModAddress, isecId, irowId, ic));
+//               } 
+//             } 
+//             iAsic++;  // next Asic
+//           }
+//         }
+//       }
+//       rowId++;
+//     }
+//   }
+//   
+//   // Self Test 
+// //   for (Int_t s = 0; s < fDigiPar->GetNofSectors(); s++){
+// //     const Int_t nRow = fDigiPar->GetNofRowsInSector(s);
+// //     const Int_t nCol = fDigiPar->GetNofColumnsInSector(s);
+//   for (Int_t r = 0; r < GetNrows(); r++){
+//     for (Int_t c = 0; c < GetNcols(); c++){
+//       Int_t channelAddress = GetPadAddress(r,c);
+//       //CbmTrdAddress::GetAddress(CbmTrdAddress::GetLayerId(fModAddress),CbmTrdAddress::GetModuleId(fModAddress), s, r, c);
+//       if (fAsicPar->GetAsicAddress(channelAddress) == -1)
+//         LOG(ERROR) <<  GetName() << "::SetAsicPar: Channel address:" << channelAddress << " is not or multiple initialized in module " << fModAddress << "(ID:" << CbmTrdAddress::GetModuleId(fModAddress) << ")" << "(r:" << r << ", c:" << c << ")" << FairLogger::endl;
+//     }
+//   }
+// //  }
+//   //fAsicPar->Print();
 }
 
 ClassImp(CbmTrdModuleSimT)

@@ -26,7 +26,7 @@ class CbmTrdRadiator;
 class CbmTrdDigi;
 class CbmMatch;
 
-class CbmTrdGeoHandler;
+//class CbmTrdGeoHandler;
 class CbmTrdModuleSim;
 
 class CbmTrdDigitizer : public CbmDigitize
@@ -129,7 +129,7 @@ private:
   CbmTrdParSetGeo*  fGeoPar;    ///< parameter list for geometry definitions
   CbmTrdRadiator*   fRadiator;  ///< parametrization of radiator TR yield
   
-  CbmTrdGeoHandler *fGeoHandler;///< helper to decript geoManager path into proper module type
+  //CbmTrdGeoHandler *fGeoHandler;///< helper to decript geoManager path into proper module type
   std::map<Int_t, CbmTrdModuleSim*> fModuleMap; ///< list of modules being processed
   
   // Temporary storage for digis.

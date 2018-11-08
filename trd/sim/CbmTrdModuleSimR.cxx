@@ -39,10 +39,8 @@ using std::fabs;
 using std::pair;
 
 //_________________________________________________________________________________
-CbmTrdModuleSimR::CbmTrdModuleSimR(Int_t mod, Int_t ly, Int_t rot, 
-                  Double_t x, Double_t y, Double_t z, 
-                  Double_t dx, Double_t dy, Double_t dz)
-  : CbmTrdModuleSim(mod, ly, rot, x, y, z, dx, dy, dz),
+CbmTrdModuleSimR::CbmTrdModuleSimR(Int_t mod, Int_t ly, Int_t rot)
+  : CbmTrdModuleSim(mod, ly, rot),
    fSigma_noise_keV(0.1),
    fNoise(NULL),
    fMinimumChargeTH(.5e-06),
@@ -62,6 +60,7 @@ CbmTrdModuleSimR::CbmTrdModuleSimR(Int_t mod, Int_t ly, Int_t rot,
    fTimeBuffer()
 {
   if (fSigma_noise_keV > 0.0) fNoise = new TRandom3();
+  SetNameTitle(Form("TrdSimR%d", mod), "Simulator for rectangular read-out.");
 }
 
 //_______________________________________________________________________________
@@ -443,7 +442,7 @@ void CbmTrdModuleSimR::SetAsicPar(CbmTrdParSetAsic *p)
             local_point[1] += fDigiPar->GetSectorBeginY(s);
 
             // local_point[i] must be >= 0 at this point      Double_t local_point[3];
-
+            Double_t fDx(GetDx()), fDy(GetDy());
             asic = new CbmTrdParSpadic(iAsic, iFebGroup, local_point[0] - fDx, local_point[1] - fDy);
             fAsicPar->SetAsicPar(iAsic, asic);
             if (local_point[0] > 2*fDx){

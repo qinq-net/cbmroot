@@ -131,7 +131,7 @@ Char_t CbmTrdParModGas::GetPEshell(Float_t Ex) const
     if(Ex<fgkBindingEnergy[gasId][ishell]) continue;
     return shellName[ishell];
   }  
-  LOG(WARNING) << GetName() <<"::GetPEshell: Ex[keV] "<<Ex<<"less than highes atomic shell binding energy : "<<fgkBindingEnergy[gasId][NSHELLS-1]<<" for gas "<<(gasId?"Ar":"Xe") << FairLogger::endl;
+  LOG(DEBUG) << GetName() <<"::GetPEshell: Ex[keV] "<<Ex<<" less than highes atomic shell binding energy : "<<fgkBindingEnergy[gasId][NSHELLS-1]<<" for gas "<<(gasId?"Ar":"Xe") << FairLogger::endl;
   return 0;
 }
 

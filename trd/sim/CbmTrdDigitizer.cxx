@@ -66,7 +66,7 @@ CbmTrdDigitizer::CbmTrdDigitizer(CbmTrdRadiator* radiator)
   ,fGainPar(NULL)
   ,fGeoPar(NULL)
   ,fRadiator(radiator)
-  ,fGeoHandler(new CbmTrdGeoHandler())
+//  ,fGeoHandler(new CbmTrdGeoHandler())
   ,fModuleMap()
   ,fDigiMap()
 {
@@ -79,7 +79,7 @@ CbmTrdDigitizer::~CbmTrdDigitizer()
   delete fDigis;
   fDigiMatches->Clear("C");
   delete fDigiMatches;
-  delete fGeoHandler;
+  //delete fGeoHandler;
 
   for(map<Int_t, CbmTrdModuleSim*>::iterator imod=fModuleMap.begin(); imod!=fModuleMap.end(); imod++) delete imod->second;
   fModuleMap.clear();
@@ -92,7 +92,7 @@ void CbmTrdDigitizer::SetParContainers()
   fGasPar = static_cast<CbmTrdParSetGas*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGas"));
   fDigiPar = static_cast<CbmTrdParSetDigi*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetDigi"));
   fGainPar = static_cast<CbmTrdParSetGain*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGain"));
- fGeoPar = static_cast<CbmTrdParSetGeo*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGeo"));
+  fGeoPar = new CbmTrdParSetGeo(); //fGeoPar->Print();
 }
 
 //________________________________________________________________________________________
@@ -273,44 +273,34 @@ CbmTrdModuleSim* CbmTrdDigitizer::AddModule(Int_t detId)
  * is then stored in a CbmTrdModule object for each of the TRD modules.
  **/ 
 
-  TGeoNode* gas = gGeoManager->GetCurrentNode();
-  TGeoVolume *gmodule = (TGeoVolume*)gas->GetMotherVolume();
-  Bool_t tripad=kFALSE;
-  if(TString(gmodule->GetName()).BeginsWith("moduleBu")) tripad=kTRUE;
-  
   const char *path=gGeoManager->GetPath();
-  Int_t moduleAddress = fGeoHandler->GetModuleAddress(path),
-        orientation   = fGeoHandler->GetModuleOrientation(path),
+  CbmTrdGeoHandler geoHandler;
+  Int_t moduleAddress = geoHandler.GetModuleAddress(path),
+        moduleType    = geoHandler.GetModuleType(path),
+        orientation   = geoHandler.GetModuleOrientation(path),
         lyId          = CbmTrdAddress::GetLayerId(detId);
   if(moduleAddress != detId){
     LOG(ERROR) << "CbmTrdDigitizer::AddModule: MC module ID " << detId << " does not match geometry definition "<< moduleAddress << ". Module init failed!" << FairLogger::endl;
     return NULL;
   }
-        
-  Double_t  sizeX = fGeoHandler->GetSizeX(path),
-            sizeY = fGeoHandler->GetSizeY(path),
-            sizeZ = fGeoHandler->GetSizeZ(path);
-  Double_t  x = fGeoHandler->GetX(path),
-            y = fGeoHandler->GetY(path),
-            z = fGeoHandler->GetZ(path);
-  Int_t moduleType = fGeoHandler->GetModuleType(path);
-  // special care for Bucharest module type with triangular pads
-  if(moduleType<=0) moduleType=9;
-  
-  LOG(DEBUG) << GetName() << "::AddModule("<<path<<" "<< (tripad?'T':'R')<<
-    ") type["<< moduleType <<
+  LOG(DEBUG) << GetName() << "::AddModule("<<path<<" "<< (moduleType<=0?'T':'R')<<
     "] mod[" << moduleAddress <<
     "] ly["  << lyId <<
     "] det[" << detId <<"]"<<FairLogger::endl;
   CbmTrdModuleSim *module(NULL);
-  if(tripad){
-    module = fModuleMap[moduleAddress] = new CbmTrdModuleSimT(moduleAddress, lyId, orientation, x, y, z,
-         sizeX, sizeY, sizeZ, UseFASP());
+  if(moduleType<=0){
+    module = fModuleMap[moduleAddress] = new CbmTrdModuleSimT(moduleAddress, lyId, orientation, UseFASP());
   } else {
-    module = fModuleMap[moduleAddress] = new CbmTrdModuleSimR(moduleAddress, lyId, orientation, x, y, z,
-         sizeX, sizeY, sizeZ);  
+    module = fModuleMap[moduleAddress] = new CbmTrdModuleSimR(moduleAddress, lyId, orientation);  
   }
   
+  // try to load Geometry parameters for module
+  const CbmTrdParModGeo *pGeo(NULL);
+  if(!fGeoPar || !(pGeo = (const CbmTrdParModGeo *)fGeoPar->GetModulePar(detId))){
+    LOG(DEBUG) << GetName() << "::AddModule : No Geo params for module @ "<< path <<". Using default."<< FairLogger::endl;
+    module->SetGeoPar(new CbmTrdParModGeo(Form("TRD_%d", detId), path));
+  } else module->SetGeoPar(pGeo);
+
   // try to load read-out parameters for module
   const CbmTrdParModDigi *pDigi(NULL);
   if(!fDigiPar || !(pDigi = (const CbmTrdParModDigi *)fDigiPar->GetModulePar(detId))){
@@ -329,13 +319,6 @@ CbmTrdModuleSim* CbmTrdDigitizer::AddModule(Int_t detId)
   if(!fGasPar || !(pChmb = (const CbmTrdParModGas *)fGasPar->GetModulePar(detId))){
     LOG(DEBUG) << GetName() << "::AddModule : No Gas params for module @ "<< path <<". Using default."<< FairLogger::endl;
   } else module->SetChmbPar(pChmb);
-
-  // try to load Geometry parameters for module
-  const CbmTrdParModGeo *pGeo(NULL);
-  if(!fGeoPar || !(pGeo = (const CbmTrdParModGeo *)fGeoPar->GetModulePar(detId))){
-    LOG(DEBUG) << GetName() << "::AddModule : No Geo params for module @ "<< path <<". Using default."<< FairLogger::endl;
-    module->SetGeoPar(new CbmTrdParModGeo(Form("TRDmodule%03d"), path));
-  } else module->SetGeoPar(pGeo);
 
   // try to load Gain parameters for module
   const CbmTrdParModGain *pGain(NULL);

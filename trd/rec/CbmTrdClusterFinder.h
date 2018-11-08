@@ -7,13 +7,14 @@
 #include <vector>
 #include <set>
 
+class CbmTrdCluster;
 class CbmTrdDigi;
 class CbmTrdParSetAsic;
 class CbmTrdParSetGas;
+class CbmTrdParSetGeo;
 class CbmTrdParSetDigi;
 class CbmTrdParSetGain;
 class CbmTrdModuleRec;
-class CbmTrdGeoHandler;
 class TClonesArray;
 class TGeoPhysicalNode;
 
@@ -35,6 +36,8 @@ class TGeoPhysicalNode;
  **/
 class CbmTrdClusterFinder : public FairTask
 {
+  friend class CbmTrdModuleRecR;
+  friend class CbmTrdModuleRecT;
 public:
   enum CbmTrdRecDef{
     kTime           = 0,    ///< select Time based/Event by event reconstruction
@@ -77,19 +80,23 @@ public:
 
   
   static void       SetDumpClusters(Bool_t set=kTRUE) { set?SETBIT(fgConfig, kDumpClusters):CLRBIT(fgConfig, kDumpClusters);}
-  static void       SetRowMerger(Bool_t set=kTRUE) { set?SETBIT(fgConfig, kRowMerger):CLRBIT(fgConfig, kRowMerger);}
-  static void       SetMultiHit(Bool_t set=kTRUE) { set?SETBIT(fgConfig, kMultiHit):CLRBIT(fgConfig, kMultiHit);}
+  static void       SetRowMerger(Bool_t set=kTRUE)    { set?SETBIT(fgConfig, kRowMerger):CLRBIT(fgConfig, kRowMerger);}
+  static void       SetMultiHit(Bool_t set=kTRUE)     { set?SETBIT(fgConfig, kMultiHit):CLRBIT(fgConfig, kMultiHit);}
   static void       SetNeighbourEnable(Bool_t col=kTRUE, Bool_t row=kFALSE) 
                       { col?SETBIT(fgConfig, kNeighbourCol):CLRBIT(fgConfig, kNeighbourCol);
                         row?SETBIT(fgConfig, kNeighbourRow):CLRBIT(fgConfig, kNeighbourRow);}
   static void       SetMinimumChargeTH(Float_t th)    { fgMinimumChargeTH = th;}
+  static void       SetTimeBased(Bool_t set=kTRUE)    { set?SETBIT(fgConfig, kTime):CLRBIT(fgConfig, kTime);}
+protected:
+  /** \brief Save one finished cluster to the output*/
+  Bool_t            AddCluster(CbmTrdCluster* c);
 
 private:
   CbmTrdClusterFinder(const CbmTrdClusterFinder&);
   CbmTrdClusterFinder& operator=(const CbmTrdClusterFinder&);
 
   Int_t             AddClusters(TClonesArray* clusters, Bool_t moveOwner=kTRUE);
-  CbmTrdModuleRec*  AddModule(Int_t address, TGeoPhysicalNode* node);
+  CbmTrdModuleRec*  AddModule(CbmTrdDigi *d);
   
   static Int_t      fgConfig;         ///< Configuration map for the clusterizer. See CbmTrdRecDef for details
   static Float_t    fgMinimumChargeTH;  ///<
@@ -97,10 +104,6 @@ private:
 
   TClonesArray*     fDigis;       /** Input array of CbmTrdDigi **/
   TClonesArray*     fClusters;    /** Output array of CbmTrdCluster **/
-
-  
-  CbmTrdGeoHandler* fGeoHandler; //!
-
   
   std::map<Int_t, std::set<Int_t> > fDigiMap;//! /** sector digis **/
   std::map<Int_t, std::set<Int_t> > fModuleMap;//! /** sector id per module **/
@@ -121,6 +124,7 @@ private:
   CbmTrdParSetGas*  fGasPar;    ///< parameter list for HV status
   CbmTrdParSetDigi* fDigiPar;   ///< parameter list for read-out geometry
   CbmTrdParSetGain* fGainPar;   ///< parameter list for keV->ADC gain conversion
+  CbmTrdParSetGeo*  fGeoPar;    ///< parameter list for modules geometry
 
   ClassDef(CbmTrdClusterFinder,1);
   

@@ -19,12 +19,16 @@ public:
   /** \brief Default constructor.*/
   CbmTrdModuleAbstract();
   /** \brief Constructor with placement */
-  CbmTrdModuleAbstract(Int_t mod, Int_t ly, Int_t rot, 
-                  Double_t x, Double_t y, Double_t z, 
-                  Double_t dx, Double_t dy, Double_t dz);
+  CbmTrdModuleAbstract(Int_t mod, Int_t ly, Int_t rot);
   
   virtual ~CbmTrdModuleAbstract();
 
+  /** \brief Shortcut getter size x/2 [cm] */
+  virtual Double_t  GetDx() const                       { return fGeoPar?fGeoPar->GetDX():0.;}
+  /** \brief Shortcut getter size y/2 [cm] */
+  virtual Double_t  GetDy() const                       { return fGeoPar?fGeoPar->GetDY():0.;}
+  /** \brief Shortcut getter size z/2 [cm] */
+  virtual Double_t  GetDz() const                       { return fGeoPar?fGeoPar->GetDZ():0.;}
   /** \brief Shortcut getter ASICs number module wise */
   virtual Int_t   GetNasics() const                     { return fAsicPar?fAsicPar->GetNofAsics():0; }
   /** \brief Shortcut getter column size */
@@ -49,23 +53,17 @@ public:
    */
   virtual inline Int_t GetPadRowCol(Int_t address, Int_t &c) const;
   virtual const Char_t* GetPath() const                 { return fGeoPar?fGeoPar->GetTitle():"";}
+  virtual void    LocalToMaster(Double_t in[3], Double_t out[3]);
   virtual void    SetAsicPar(CbmTrdParSetAsic *p=NULL)  { fAsicPar = p; }
   virtual void    SetChmbPar(const CbmTrdParModGas *p)  { fChmbPar = p; }
   virtual void    SetDigiPar(const CbmTrdParModDigi *p) { fDigiPar = p; }
   virtual void    SetGainPar(const CbmTrdParModGain *p) { fGainPar = p; }
   virtual void    SetGeoPar(const CbmTrdParModGeo *p)   { fGeoPar = p; }
 protected:
-  // geometrical definitions
-  UShort_t        fModAddress;    ///< unique identifier for current module
+  // geometrical definitions imported from CbmTrdGeoHandler 
+  UShort_t        fModAddress;  ///< unique identifier for current module
   Char_t          fLayerId;     ///< layer identifier
   UChar_t         fRotation;    ///< rotation angle for current module
-
-  Float_t         fX;           ///< position of module along x
-  Float_t         fY;           ///< position of module along y
-  Float_t         fZ;           ///< position of module along z
-  Float_t         fDx;          ///< size of module along x
-  Float_t         fDy;          ///< size of module along y
-  Float_t         fDz;          ///< size of module along z
   
   // calibration objects
   const CbmTrdParModDigi  *fDigiPar;    ///< read-out description of module

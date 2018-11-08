@@ -12,7 +12,7 @@ CbmTrdParMod::CbmTrdParMod(const char* name, const char* title)
 //___________________________________________________________________
 CbmTrdParMod::~CbmTrdParMod()
 {
-  LOG(DEBUG) << GetName() << "::delete[%s]"<< GetTitle() << FairLogger::endl;
+  LOG(DEBUG) << GetName() << "::delete["<< GetTitle() <<"]"<< FairLogger::endl;
 }
 
 ClassImp(CbmTrdParMod)

@@ -12,9 +12,11 @@ public:
              const char* title="Trd Geometry Parameters",
              const char* context="TestDefaultContext");
   virtual ~CbmTrdParSetGeo(void);
+  /** \brief Fill map with full geometrical description for each detector to be distributed to all processing modules
+   */
+  Bool_t  Init();
+  virtual void          Print(Option_t *opt="") const;
 
-  void    putParams(FairParamList*);
-  Bool_t  getParams(FairParamList*);
 private:
 
   ClassDef(CbmTrdParSetGeo,1)

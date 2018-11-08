@@ -14,9 +14,7 @@ class CbmTrdParSetAsic;
 class CbmTrdModuleSimT : public CbmTrdModuleSim
 {
 public:
-  CbmTrdModuleSimT(Int_t mod, Int_t ly, Int_t rot, 
-                  Double_t x, Double_t y, Double_t z, 
-                  Double_t dx, Double_t dy, Double_t dz, Bool_t FASP=kTRUE);
+  CbmTrdModuleSimT(Int_t mod, Int_t ly, Int_t rot, Bool_t FASP=kTRUE);
   virtual ~CbmTrdModuleSimT();
   
   /**

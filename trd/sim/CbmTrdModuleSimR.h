@@ -11,9 +11,7 @@ class CbmTrdParSetAsic;
 class CbmTrdModuleSimR : public CbmTrdModuleSim
 {
 public:
-  CbmTrdModuleSimR(Int_t mod, Int_t ly, Int_t rot, 
-                  Double_t x, Double_t y, Double_t z, 
-                  Double_t dx, Double_t dy, Double_t dz);
+  CbmTrdModuleSimR(Int_t mod, Int_t ly, Int_t rot);
   virtual ~CbmTrdModuleSimR() {;}
   void      GetCounters(Int_t &nEl, Int_t &nLattice, Int_t &nOverThr) const 
               {nEl=nofElectrons; nLattice=nofLatticeHits; nOverThr=nofPointsAboveThreshold;}

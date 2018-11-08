@@ -10,6 +10,7 @@
 #include "CbmTrdParSetAsic.h"
 #include "CbmTrdParSetGas.h"
 #include "CbmTrdParSetGain.h"
+#include "CbmTrdParSetGeo.h"
 #include "CbmTrdParAsic.h"
 #include "CbmTrdParModGas.h"
 #include "CbmTrdParModGain.h"
@@ -38,14 +39,16 @@ CbmTrdHitProducer::CbmTrdHitProducer()
   ,fGasPar(NULL)
   ,fDigiPar(NULL)
   ,fGainPar(NULL)
+  ,fGeoPar(NULL)
 {
 }
 
 //____________________________________________________________________________________
 CbmTrdHitProducer::~CbmTrdHitProducer()
 {
-    fHits->Clear();
-    delete fHits;
+  fHits->Clear();
+  delete fHits;
+  if(fGeoPar) delete fGeoPar;  
 }
 
 //____________________________________________________________________________________
@@ -72,9 +75,9 @@ CbmTrdModuleRec* CbmTrdHitProducer::AddModule(Int_t address, TGeoPhysicalNode* n
 
   CbmTrdModuleRec *module(NULL);
   if(tripad){
-    module = fModules[address] = new CbmTrdModuleRecT(address, node);//, layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ, UseFASP());
+    module = fModules[address] = new CbmTrdModuleRecT(address);
   } else {
-    module = fModules[address] = new CbmTrdModuleRecR(address, node);// layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ);  
+    module = fModules[address] = new CbmTrdModuleRecR(address);
   }
 
   // try to load read-out parameters for module
@@ -173,7 +176,7 @@ void CbmTrdHitProducer::Exec(Option_t*)
     // get digi for current cluster
     for (Int_t iDigi = 0; iDigi < cluster->GetNofDigis(); iDigi++) {
       const CbmTrdDigi* digi = static_cast<const CbmTrdDigi*>(fDigis->At(cluster->GetDigi(iDigi)));
-      if (digi->GetCharge() <= 0) continue;
+      if (digi->GetType()==CbmTrdDigi::kSPADIC && digi->GetCharge() <= 0) continue;
       digis.push_back(digi);
     }
     
@@ -216,6 +219,7 @@ void CbmTrdHitProducer::SetParContainers()
   fGasPar = static_cast<CbmTrdParSetGas*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGas"));
   fDigiPar = static_cast<CbmTrdParSetDigi*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetDigi"));
   fGainPar = static_cast<CbmTrdParSetGain*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGain"));
+  fGeoPar = new CbmTrdParSetGeo();
 }
 
 

@@ -4,6 +4,7 @@
 #include "CbmTrdParModDigi.h"
 #include "CbmTrdParSetAsic.h"
 #include "CbmTrdParSetGas.h"
+#include "CbmTrdParSetGeo.h"
 #include "CbmTrdParSetGain.h"
 #include "CbmTrdParAsic.h"
 #include "CbmTrdParModGas.h"
@@ -24,7 +25,7 @@
 #include <TClonesArray.h>
 #include <TArray.h>
 #include <TBits.h>
-#include "TGeoPhysicalNode.h"
+#include <TGeoPhysicalNode.h>
 // #include "TCanvas.h"
 // #include "TImage.h"
 
@@ -43,7 +44,6 @@ CbmTrdClusterFinder::CbmTrdClusterFinder()
   :FairTask("TrdClusterFinder",1),
    fDigis(NULL),
    fClusters(NULL),
-   fGeoHandler(new CbmTrdGeoHandler()),
    fDigiMap(),
    fModuleMap(),
    fNeighbours(),
@@ -59,6 +59,7 @@ CbmTrdClusterFinder::CbmTrdClusterFinder()
   ,fGasPar(NULL)
   ,fDigiPar(NULL)
   ,fGainPar(NULL)
+  ,fGeoPar(NULL)
 
 {
 }
@@ -80,24 +81,36 @@ CbmTrdClusterFinder::~CbmTrdClusterFinder()
   if(fDigiPar){
     delete fDigiPar;
   }
+  if(fGeoPar){
+    delete fGeoPar;
+  }
 //   if(fModuleInfo){
 //     delete fModuleInfo;
 //   }
 
 }
 
-//____________________________________________________________________________________
-CbmTrdModuleRec* CbmTrdClusterFinder::AddModule(Int_t address, TGeoPhysicalNode* node)
+//_____________________________________________________________________
+Bool_t CbmTrdClusterFinder::AddCluster(CbmTrdCluster* c)
 {
-  Bool_t tripad=kFALSE;
-  if( TString(node->GetName()).Contains("moduleBu", TString::kIgnoreCase) ) tripad=kTRUE;
+  Int_t ncl(fClusters->GetEntriesFast()); 
+  new((*fClusters)[ncl++]) CbmTrdCluster(*c); 
+  return kTRUE;
+}
 
+//____________________________________________________________________________________
+CbmTrdModuleRec* CbmTrdClusterFinder::AddModule(CbmTrdDigi *digi)
+{
+  Int_t address = digi->GetAddressModule();
   CbmTrdModuleRec *module(NULL);
-  if(tripad){
-    module = fModules[address] = new CbmTrdModuleRecT(address, node);//, layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ, UseFASP());
-  } else {
-    module = fModules[address] = new CbmTrdModuleRecR(address, node);// layerId);//, orientation, x, y, z, sizeX, sizeY, sizeZ);  
-  }
+  if(digi->GetType()==CbmTrdDigi::kFASP) module = fModules[address] = new CbmTrdModuleRecT(address);
+  else module = fModules[address] = new CbmTrdModuleRecR(address);
+
+  // try to load Geometry parameters for module
+  const CbmTrdParModGeo *pGeo(NULL);
+  if(!fGeoPar || !(pGeo = (const CbmTrdParModGeo *)fGeoPar->GetModulePar(address))){
+    LOG(FATAL) << GetName() << "::AddModule : No Geo params for module "<< address <<". Using default."<< FairLogger::endl;
+  } else module->SetGeoPar(pGeo);
 
   // try to load read-out parameters for module
   const CbmTrdParModDigi *pDigi(NULL);
@@ -119,7 +132,7 @@ CbmTrdModuleRec* CbmTrdClusterFinder::AddModule(Int_t address, TGeoPhysicalNode*
   } else module->SetChmbPar(pChmb);
 
   // try to load Gain parameters for module
-  if(tripad){
+  if(digi->GetType()==CbmTrdDigi::kFASP){
     const CbmTrdParModGain *pGain(NULL);
     if(!fGainPar || !(pGain = (const CbmTrdParModGain *)fGainPar->GetModulePar(address))){
       LOG(WARNING) << GetName() << "::AddModule : No Gain params for modAddress "<< address <<". Using default."<< FairLogger::endl;
@@ -135,6 +148,8 @@ void CbmTrdClusterFinder::SetParContainers()
   fGasPar = static_cast<CbmTrdParSetGas*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGas"));
   fDigiPar = static_cast<CbmTrdParSetDigi*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetDigi"));
   fGainPar = static_cast<CbmTrdParSetGain*>(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdParSetGain"));
+  // Get the full geometry information of the TRD modules
+  fGeoPar = new CbmTrdParSetGeo();
 }
 
 //_____________________________________________________________________
@@ -151,25 +166,28 @@ InitStatus CbmTrdClusterFinder::Init()
   fClusters = new TClonesArray("CbmTrdCluster", 100);
   ioman->Register("TrdCluster","TRD",fClusters,IsOutputBranchPersistent("TrdCluster"));
 
-  fGeoHandler->Init();
- 
-  // Get the full geometry information of the detector gas layers and store
-  // them with the CbmTrdModuleRec. This information can then be used for
-  // transformation calculations 
-  std::map<Int_t, TGeoPhysicalNode*> moduleMap = fGeoHandler->FillModuleMap();
-
-  Int_t nrModules = fDigiPar->GetNrOfModules();
-  Int_t nrNodes = moduleMap.size();
-  if (nrModules != nrNodes) LOG(FATAL) << "Geometry and parameter files have different number of modules.";
-  for (Int_t loop=0; loop< nrModules; ++loop) {
-     Int_t address = fDigiPar->GetModuleId(loop);
-     std::map<Int_t, TGeoPhysicalNode*>::iterator it = moduleMap.find(address);
-     if ( it  == moduleMap.end() ) {
-       LOG(FATAL) << "Expected module with address " << address << " wasn't found in the map with TGeoNode information.";
-     }
-     AddModule(address, it->second);
+  if(!IsTimeBased() && !ioman->GetObject("Event")){ 
+    LOG(WARNING) << GetName()
+            << ": Event mode selected but no event array found! Run in time-based mode."<< FairLogger::endl;
+    SetTimeBased();
   }
-
+//   // Get the full geometry information of the detector gas layers and store
+//   // them with the CbmTrdModuleRec. This information can then be used for
+//   // transformation calculations 
+//   std::map<Int_t, TGeoPhysicalNode*> moduleMap = fGeoHandler->FillModuleMap();
+// 
+//   Int_t nrModules = fDigiPar->GetNrOfModules();
+//   Int_t nrNodes = moduleMap.size();
+//   if (nrModules != nrNodes) LOG(FATAL) << "Geometry and parameter files have different number of modules.";
+//   for (Int_t loop=0; loop< nrModules; ++loop) {
+//      Int_t address = fDigiPar->GetModuleId(loop);
+//      std::map<Int_t, TGeoPhysicalNode*>::iterator it = moduleMap.find(address);
+//      if ( it  == moduleMap.end() ) {
+//        LOG(FATAL) << "Expected module with address " << address << " wasn't found in the map with TGeoNode information.";
+//      }
+//      AddModule(address, it->second);
+//   }
+  
 //   // new call needed when parameters are initialized from ROOT file
 //   fDigiPar->Initialize();
 
@@ -214,7 +232,8 @@ void CbmTrdClusterFinder::Exec(Option_t* /*option*/)
     Int_t moduleAddress = digi->GetAddressModule();
 
     std::map<Int_t, CbmTrdModuleRec*>::iterator imod = fModules.find(moduleAddress);
-    mod=imod->second;
+    if(imod == fModules.end()) mod = AddModule(digi);
+    else mod=imod->second;
 
     mod->AddDigi(digi, iDigi);    
   }

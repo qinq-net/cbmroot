@@ -21,10 +21,8 @@ CbmTrdModuleSim::CbmTrdModuleSim()
 }
 
 //_______________________________________________________________________________
-CbmTrdModuleSim::CbmTrdModuleSim(Int_t mod, Int_t ly, Int_t rot, 
-                  Double_t x, Double_t y, Double_t z, 
-                  Double_t dx, Double_t dy, Double_t dz)
-  : CbmTrdModuleAbstract(mod, ly, rot, x, y, z, dx, dy, dz)
+CbmTrdModuleSim::CbmTrdModuleSim(Int_t mod, Int_t ly, Int_t rot)
+  : CbmTrdModuleAbstract(mod, ly, rot)
   ,fPointId(-1)
   ,fEventId(-1)
   ,fInputId(-1)
@@ -38,7 +36,7 @@ CbmTrdModuleSim::CbmTrdModuleSim(Int_t mod, Int_t ly, Int_t rot,
 //_______________________________________________________________________________
 CbmTrdModuleSim::~CbmTrdModuleSim()
 {
-  LOG(DEBUG) << GetName() << "::delete[%s]"<< GetTitle() << FairLogger::endl;
+  LOG(DEBUG) << GetName() << "::delete["<< GetTitle() <<"]"<< FairLogger::endl;
   //if(fAsicPar) delete fAsicPar;
 }
 

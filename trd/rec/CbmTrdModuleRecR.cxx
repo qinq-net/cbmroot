@@ -41,10 +41,8 @@ CbmTrdModuleRecR::CbmTrdModuleRecR()
 }
   
 //_______________________________________________________________________________
-CbmTrdModuleRecR::CbmTrdModuleRecR(Int_t mod, TGeoPhysicalNode* node, Int_t ly, Int_t rot, 
-				   Double_t x, Double_t y, Double_t z, 
-				   Double_t dx, Double_t dy, Double_t dz)
-  : CbmTrdModuleRec(mod, node, ly, rot, x, y, z, dx, dy, dz)
+CbmTrdModuleRecR::CbmTrdModuleRecR(Int_t mod, Int_t ly, Int_t rot)
+  : CbmTrdModuleRec(mod, ly, rot)
   ,fDigiCounter(0)
   ,fDigiMap()
   ,fClusterMap()
@@ -392,8 +390,6 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
     local_pad_posV[iDim] = 0.0;
     local_pad_dposV[iDim] = 0.0;
   }
-
-
   
   Double_t xVar = 0;
   Double_t yVar = 0;
@@ -411,7 +407,7 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
     Int_t ncols= fDigiPar->GetNofColumns();
     Int_t nrows= fDigiPar->GetNofRows();
     Int_t row= digi->GetAddressChannel()/ncols;
-    Int_t col= digi->GetAddressChannel()%ncols;
+    Int_t col= digi->GetAddressChannel()%ncols; 
     Int_t srow, sector= fDigiPar->GetSectorRow(row, srow);
 
     
@@ -453,8 +449,7 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
 	
   // --- If a TGeoNode is attached, transform into global coordinate system
   Double_t global[3];
-  if ( !fNode ) LOG(FATAL) << "No TgeoPhysicalNode available";
-  fNode->GetMatrix()->LocalToMaster(hit_pos, global);
+  LocalToMaster(hit_pos, global);
 
   fDigiPar->TransformHitError(cluster_pad_dposV);
 

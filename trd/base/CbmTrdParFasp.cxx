@@ -11,7 +11,7 @@ CbmTrdParFasp::CbmTrdParFasp(Int_t address, Int_t FebGrouping,
            Double_t x, Double_t y, Double_t z)
   : CbmTrdParAsic(address, FebGrouping, x, y, z)
 {
-
+  SetNameTitle(Form("FASP%d_%d", address/1000, address%1000), "FASP definition");
 }
 
 //___________________________________________________________________
