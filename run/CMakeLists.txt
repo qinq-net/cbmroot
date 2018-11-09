@@ -71,6 +71,8 @@ CbmMCStreamerQa.cxx
 CbmSetup.cxx
 CbmDigitizeInfo.cxx
 CbmDigitization.cxx
+CbmDigitizationSource.cxx
+CbmInputChain.cxx
 )
 
 set(LINKDEF CbmRunLinkDef.h)
