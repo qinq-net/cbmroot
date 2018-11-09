@@ -42,8 +42,6 @@ class CbmTofStarTrigger2019
       inline UShort_t  GetStarTrigCmd() const { return fusStarTrigCmd;}
       UInt_t           GetStarTrigerWord() const;
       UInt_t           GetFullGdpbEpoch()  const;
-
-      // Accessors => Mostly provided by CbmTofStarTrigger
       std::vector< gdpb::FullMessage > GetGdpbMessages( UShort_t usGdpbId ) const;
 
       // Operators

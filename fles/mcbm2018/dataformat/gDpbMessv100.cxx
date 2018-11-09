@@ -70,6 +70,10 @@ double gdpbv100::Message::getMsgFullTimeD(uint64_t epoch) const
          return gdpbv100::kdEpochInNs * static_cast<double_t>( getGdpbEpEpochNb() );
       case MSG_SLOWC:
       case MSG_SYST:
+      case MSG_STAR_TRI_A:
+      case MSG_STAR_TRI_B:
+      case MSG_STAR_TRI_C:
+      case MSG_STAR_TRI_D:
          return gdpbv100::kdEpochInNs * static_cast<double_t>( epoch );
       default:
          return 0.0;
@@ -198,7 +202,7 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
                os << buf;
 
             snprintf(buf, sizeof(buf),
-                  "EPOCH @%17.11f Get4:%2d Epoche2:%10u 0x%08x StampTime:%2d Sync:%x Dataloss:%x Epochloss:%x Epochmissmatch:%x",
+                  "EPOCH @%17.11f Get4:%2d Epoche2:%10u 0x%08x Sync:%x Dataloss:%x Epochloss:%x Epochmissmatch:%x",
                         timeInSec, getGdpbGenChipId(), getGdpbEpEpochNb(), getGdpbEpEpochNb(),
                         getGdpbEpSync(), getGdpbEpDataLoss(), getGdpbEpEpochLoss(), getGdpbEpMissmatch());
 
@@ -259,7 +263,7 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
          {
             if( getGdpbHitIs24b() )
             {
-               snprintf(buf, sizeof(buf), "Get4 24 bits, Chip:0x%04x Chn:%1x Edge:%1x Ts:0x%03x Ft:0x%02x CRC8:0x%02x",
+               snprintf(buf, sizeof(buf), "Get4 24 bits, Chip:0x%04x Chn:%1x Edge:%1x Ts:0x%03x",
                      getGdpbGenChipId(), getGdpbHitChanId(), getGdpbHit24Edge(), getGdpbHitFullTs() );
             } // if( getGdpbHitIs24b() )
                else

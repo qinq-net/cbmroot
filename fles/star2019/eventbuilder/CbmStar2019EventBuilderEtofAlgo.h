@@ -1,29 +1,32 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                  CbmTofStarEventBuilderAlgo2019                   -----
+// -----                  CbmStar2019EventBuilderEtofAlgo                  -----
 // -----               Created 03.11.2018 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#ifndef CbmTofStarEventBuilderAlgo2019_H
-#define CbmTofStarEventBuilderAlgo2019_H
+#ifndef CbmStar2019EventBuilderEtofAlgo_H
+#define CbmStar2019EventBuilderEtofAlgo_H
 
-#include "Timeslice.hpp"
+#include "CbmStar2019Algo.h"
+
 #include "gDpbMessv100.h"
 #include "CbmTofStarData2019.h"
+#include "CbmTofDigiExp.h"
 
 #include <vector>
 #include <map>
 #include <chrono>
-#include <chrono>
 
-class CbmTofStar2019Par;
-
+class CbmStar2019TofPar;
+/*
 class TCanvas;
 class TH1;
 class TH2;
 class TProfile;
 class THttpServer;
+*/
+
 
 #ifdef STAR_SUBEVT_BUILDER
    /*
@@ -35,36 +38,40 @@ class THttpServer;
    extern "C" int star_rhicf_write(unsigned int trg_word, void *dta, int bytes);
 #endif // STAR_SUBEVT_BUILDER
 
-class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
+class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
 {
    public:
-      CbmTofStarEventBuilderAlgo2019( THttpServer* server = nullptr );
-      ~CbmTofStarEventBuilderAlgo2019();
+      CbmStar2019EventBuilderEtofAlgo();
+      ~CbmStar2019EventBuilderEtofAlgo();
 
-      Bool_t InitStsParameters();
-      Bool_t CreateHistograms();
+      virtual Bool_t Init();
+      virtual void Reset();
+      virtual void Finish();
+
+      Bool_t InitContainers();
+      Bool_t ReInitContainers();
+      TList* GetParList();
+
+      Bool_t InitParameters();
+
       Bool_t ProcessTs( const fles::Timeslice& ts );
-      Bool_t ProcessMs( const fles::Timeslice& ts, size_t uMsComp, UInt_t uMsIdx );
+      Bool_t ProcessTs( const fles::Timeslice& ts, size_t component ) { return ProcessTs( ts ); }
+      Bool_t ProcessMs( const fles::Timeslice& ts, size_t uMsCompIdx, size_t uMsIdx );
       Bool_t BuildEvents();
 
-   private:
-      /// Constants
-      constexpr uint32_t kuBytesPerMessage = 8;
+      Bool_t CreateHistograms();
 
+   private:
       /// Control flags
       Bool_t fbMonitorMode; //! Switch ON the filling of a minimal set of histograms
       Bool_t fbSandboxMode; //! Switch OFF the emission of data toward the STAR DAQ
       Bool_t fbPulserMode;  //! Build events for Pulser generated
 
-      /// FLES containers
-      std::vector< size_t > fvMsComponentsList; //!
-      size_t                fuNbCoreMsPerTs; //!
-      size_t                fuNbOverMsPerTs; //!
-      Bool_t                fbIgnoreOverlapMs; //! /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
-
       /// Settings from parameter file
-      CbmTofStar2019Par* fUnpackPar;      //!
+      CbmStar2019TofPar* fUnpackPar;      //!
+         /// Readout chain dimensions and mapping
       UInt_t fuNrOfGdpbs;           // Total number of GDPBs in the system
+      std::map<UInt_t, UInt_t> fGdpbIdIndexMap; // gDPB ID to index map
       UInt_t fuNrOfFeePerGdpb;      // Number of FEBs per GDPB
       UInt_t fuNrOfGet4PerFee;      // Number of GET4s per FEE
       UInt_t fuNrOfChannelsPerGet4; // Number of channels in each GET4
@@ -73,16 +80,18 @@ class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
       UInt_t fuNrOfGet4;            // Total number of Get4 chips in the system
       UInt_t fuNrOfGet4PerGdpb;     // Number of GET4s per GDPB
       UInt_t fuNrOfChannelsPerGdpb; // Number of channels per GDPB
-
+         /// Detector Mapping
       UInt_t fuNrOfGbtx;
       UInt_t fuNrOfModules;
       std::vector< Int_t > fviNrOfRpc;
       std::vector< Int_t > fviRpcType;
       std::vector< Int_t > fviRpcSide;
       std::vector< Int_t > fviModuleId;
-
-      const UInt_t kuNbFeePerGbtx  = 5; /// TODO => In parameter!
-      const UInt_t kuNbGbtxPerGdpb = 6; /// TODO => In parameter!
+         /// Event window limits
+      Double_t                 fdAllowedTriggersSpread;
+      std::vector< Double_t >  fdStarTriggerDeadtime;   //! [sector]
+      std::vector< Double_t >  fdStarTriggerDelay;      //! [sector]
+      std::vector< Double_t >  fdStarTriggerWinSize;    //! [sector]
 
       /// Running indices
       uint64_t fulCurrentTsIndex;  // Idx of the current TS
@@ -96,44 +105,38 @@ class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
       Int_t    fiEquipmentId;
 
       /// Current time references for each GDPB: merged epoch marker, epoch cycle, full epoch [fuNrOfGdpbs]
-      std::vector< < ULong64_t > fvvulCurrentEpoch; //!
-      std::vector< < ULong64_t > fvvulCurrentEpochCycle; //! Epoch cycle from the Ms Start message and Epoch counter flip
-      std::vector< < ULong64_t > fvvulCurrentEpochFull; //! Epoch + Epoch Cycle
+      std::vector< ULong64_t > fvulCurrentEpoch; //!
+      std::vector< ULong64_t > fvulCurrentEpochCycle; //! Epoch cycle from the Ms Start message and Epoch counter flip
+      std::vector< ULong64_t > fvulCurrentEpochFull; //! Epoch + Epoch Cycle
 
       /// Buffers
-      std::vector< gdpbv100::Message >     fvmEpSupprBuffer;        //! [sector]
-      std::vector< gdpbv100::FullMessage > fvBufferMessages;        //! [sector]
-//      std::vector< gdpbv100::FullMessage > fvBufferMessagesOverlap; //! [sector] ==> Try to shift the conditions to buffer filling!
-      std::vector< CbmTofStarTrigger2019 > fvBufferTriggers;        //! [sector]
-//      std::vector< CbmTofStarTrigger2019 > fvBufferTriggersOverlap; //! [sector] ==> Try to shift the conditions to buffer filling!
+      std::vector< std::vector< gdpbv100::Message > >    fvvmEpSupprBuffer;        //! [sector]
+      std::vector< std::vector< gdpbv100::FullMessage > > fvvBufferMessages;        //! [sector]
+//      std::vector< std::vector< gdpbv100::FullMessage > > fvvBufferMessagesOverlap; //! [sector] ==> Try to shift the conditions to buffer filling!
+      std::vector< std::vector< CbmTofStarTrigger2019 > > fvvBufferTriggers;        //! [sector]
+//      std::vector< std::vector< CbmTofStarTrigger2019 > > fvvBufferTriggersOverlap; //! [sector] ==> Try to shift the conditions to buffer filling!
 
       /// STAR TRIGGER detection
-      std::vector< ULong64_t > fulGdpbTsMsb;          //! [sector]
-      std::vector< ULong64_t > fulGdpbTsLsb;          //! [sector]
-      std::vector< ULong64_t > fulStarTsMsb;          //! [sector]
-      std::vector< ULong64_t > fulStarTsMid;          //! [sector]
-      std::vector< ULong64_t > fulGdpbTsFullLast;     //! [sector]
-      std::vector< ULong64_t > fulStarTsFullLast;     //! [sector]
-      std::vector< UInt_t    > fuStarTokenLast;       //! [sector]
-      std::vector< UInt_t    > fuStarDaqCmdLast;      //! [sector]
-      std::vector< UInt_t    > fuStarTrigCmdLast;     //! [sector]
-      std::vector< ULong64_t > fulGdpbTsFullLastCore; //! [sector]
-      std::vector< ULong64_t > fulStarTsFullLastCore; //! [sector]
-      std::vector< UInt_t    > fuStarTokenLastCore;   //! [sector]
-      std::vector< UInt_t    > fuStarDaqCmdLastCore;  //! [sector]
-      std::vector< UInt_t    > fuStarTrigCmdLastCore; //! [sector]
+      std::vector< ULong64_t > fvulGdpbTsMsb;          //! [sector]
+      std::vector< ULong64_t > fvulGdpbTsLsb;          //! [sector]
+      std::vector< ULong64_t > fvulStarTsMsb;          //! [sector]
+      std::vector< ULong64_t > fvulStarTsMid;          //! [sector]
+      std::vector< ULong64_t > fvulGdpbTsFullLast;     //! [sector]
+      std::vector< ULong64_t > fvulStarTsFullLast;     //! [sector]
+      std::vector< UInt_t    > fvuStarTokenLast;       //! [sector]
+      std::vector< UInt_t    > fvuStarDaqCmdLast;      //! [sector]
+      std::vector< UInt_t    > fvuStarTrigCmdLast;     //! [sector]
+      std::vector< ULong64_t > fvulGdpbTsFullLastCore; //! [sector]
+      std::vector< ULong64_t > fvulStarTsFullLastCore; //! [sector]
+      std::vector< UInt_t    > fvuStarTokenLastCore;   //! [sector]
+      std::vector< UInt_t    > fvuStarDaqCmdLastCore;  //! [sector]
+      std::vector< UInt_t    > fvuStarTrigCmdLastCore; //! [sector]
 
       /// Buffer insertion limits
-      std::vector< Double_t > fdMessCandidateTimeStart; //! [sector]
-      std::vector< Double_t > fdMessCandidateTimeStop;  //! [sector]
-      std::vector< Double_t > fdTrigCandidateTimeStart; //! [sector]
-      std::vector< Double_t > fdTrigCandidateTimeStop;  //! [sector]
-
-      /// Event window limits
-      Double_t                 fdAllowedTriggersSpread;
-      std::vector< Double_t >  fdStarTriggerDeadtime;   //! [sector]
-      std::vector< Double_t >  fdStarTriggerDelay;      //! [sector]
-      std::vector< Double_t >  fdStarTriggerWinSize;    //! [sector]
+      std::vector< Double_t > fvdMessCandidateTimeStart; //! [sector]
+      std::vector< Double_t > fvdMessCandidateTimeStop;  //! [sector]
+      std::vector< Double_t > fvdTrigCandidateTimeStart; //! [sector]
+      std::vector< Double_t > fvdTrigCandidateTimeStop;  //! [sector]
 
       void ProcessEpochCycle( uint64_t ulCycleData );
       void ProcessEpoch( gdpbv100::Message mess );
@@ -146,10 +149,10 @@ class CbmTofStarEventBuilderAlgo2019 : // public CbmAlgo
       void ProcessSysMess( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 );
       void ProcessPattern( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 );
 
-      CbmTofStarEventBuilderAlgo2019(const CbmTofStarEventBuilderAlgo2019&);
-      CbmTofStarEventBuilderAlgo2019 operator=(const CbmTofStarEventBuilderAlgo2019&);
+      CbmStar2019EventBuilderEtofAlgo(const CbmStar2019EventBuilderEtofAlgo&);
+      CbmStar2019EventBuilderEtofAlgo operator=(const CbmStar2019EventBuilderEtofAlgo&);
 
-      ClassDef(CbmTofStarEventBuilder2018, 1)
+      ClassDef(CbmStar2019EventBuilderEtofAlgo, 1)
 };
 
 #endif

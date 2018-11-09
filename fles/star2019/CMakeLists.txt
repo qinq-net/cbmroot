@@ -24,6 +24,7 @@ Set(INCLUDE_DIRECTORIES
 
   ${CBMROOT_SOURCE_DIR}/fles/star2019/
   ${CBMROOT_SOURCE_DIR}/fles/star2019/parameter
+  ${CBMROOT_SOURCE_DIR}/fles/star2019/commonMQ
   ${CBMROOT_SOURCE_DIR}/fles/star2019/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/star2019/monitor
   ${CBMROOT_SOURCE_DIR}/fles/star2019/eventbuilder
@@ -62,11 +63,11 @@ Set(SRCS
 #   unpacker/CbmStar2019TofUnpacker.cxx
 
 #   monitor/CbmStar2019MonitorTofAlgo.cxx
-   monitor/CbmStar2019MonitorTof.cxx
+#   monitor/CbmStar2019MonitorTof.cxx
 
    eventbuilder/CbmTofStarData2019.cxx
-#   eventbuilder/CbmStar2019EventBuilderEtofAlgo.cxx
-   eventbuilder/CbmStar2019EventBuilderEtof.cxx
+   eventbuilder/CbmStar2019EventBuilderEtofAlgo.cxx
+#   eventbuilder/CbmStar2019EventBuilderEtof.cxx
 )
 
 #Set(NO_DICT_SRCS

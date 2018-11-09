@@ -1,11 +1,13 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                  CbmTofStarEventBuilderAlgo2019                   -----
+// -----                  CbmStar2019EventBuilderEtofAlgo                  -----
 // -----               Created 03.11.2018 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#include "CbmTofStarEventBuilderAlgo2019.h"
+#include "CbmStar2019EventBuilderEtofAlgo.h"
+
+#include "CbmStar2019TofPar.h"
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
@@ -23,12 +25,252 @@
 #include <iomanip>
 #include <fstream>
 
+// -------------------------------------------------------------------------
+CbmStar2019EventBuilderEtofAlgo::CbmStar2019EventBuilderEtofAlgo() :
+   CbmStar2019Algo(),
+   /// From the class itself
+   fbMonitorMode( kFALSE ),
+   fbSandboxMode( kFALSE ),
+   fbPulserMode( kFALSE ),
+   fUnpackPar( nullptr ),
+   fuNrOfGdpbs( 0 ),
+   fGdpbIdIndexMap(),
+   fuNrOfFeePerGdpb( 0 ),
+   fuNrOfGet4PerFee( 0 ),
+   fuNrOfChannelsPerGet4( 0 ),
+   fuNrOfChannelsPerFee( 0 ),
+   fuNrOfGet4( 0 ),
+   fuNrOfGet4PerGdpb( 0 ),
+   fuNrOfChannelsPerGdpb( 0 ),
+   fuNrOfGbtx( 0 ),
+   fuNrOfModules( 0 ),
+   fviNrOfRpc(),
+   fviRpcType(),
+   fviRpcSide(),
+   fviModuleId(),
+   fdAllowedTriggersSpread( -1.0 ),
+   fdStarTriggerDeadtime(),
+   fdStarTriggerDelay(),
+   fdStarTriggerWinSize(),
+   fulCurrentTsIndex( 0 ),
+   fdTsStartTime( -1.0 ),
+   fuCurrentMs( 0 ),
+   fdMsIndex( -1.0 ),
+   fuGdpbId( 0 ),
+   fuGdpbNr( 0 ),
+   fuGet4Id( 0 ),
+   fuGet4Nr( 0 ),
+   fiEquipmentId( 0 ),
+   fvulCurrentEpoch(),
+   fvulCurrentEpochCycle(),
+   fvulCurrentEpochFull(),
+   fvvmEpSupprBuffer(),
+   fvvBufferMessages(),
+   fvvBufferTriggers(),
+   fvulGdpbTsMsb(),
+   fvulGdpbTsLsb(),
+   fvulStarTsMsb(),
+   fvulStarTsMid(),
+   fvulGdpbTsFullLast(),
+   fvulStarTsFullLast(),
+   fvuStarTokenLast(),
+   fvuStarDaqCmdLast(),
+   fvuStarTrigCmdLast(),
+   fvulGdpbTsFullLastCore(),
+   fvulStarTsFullLastCore(),
+   fvuStarTokenLastCore(),
+   fvuStarDaqCmdLastCore(),
+   fvuStarTrigCmdLastCore(),
+   fvdMessCandidateTimeStart(),
+   fvdMessCandidateTimeStop(),
+   fvdTrigCandidateTimeStart()
+{
+}
+CbmStar2019EventBuilderEtofAlgo::~CbmStar2019EventBuilderEtofAlgo()
+{
+}
 
-Bool_t CbmTofStarEventBuilderAlgo2019::ProcessTs( const fles::Timeslice& ts )
+// -------------------------------------------------------------------------
+Bool_t CbmStar2019EventBuilderEtofAlgo::Init()
+{
+   LOG(INFO) << "Initializing STAR eTOF 2019 event builder algo" << FairLogger::endl;
+
+   return kTRUE;
+}
+void CbmStar2019EventBuilderEtofAlgo::Reset()
+{
+}
+void CbmStar2019EventBuilderEtofAlgo::Finish()
+{
+   /// Printout Goodbye message and stats
+
+   /// Write Output histos
+
+}
+
+// -------------------------------------------------------------------------
+Bool_t CbmStar2019EventBuilderEtofAlgo::InitContainers()
+{
+   LOG(INFO) << "Init parameter containers for CbmStar2019EventBuilderEtofAlgo"
+               << FairLogger::endl;
+   Bool_t initOK = ReInitContainers();
+
+   CreateHistograms();
+
+   return initOK;
+}
+Bool_t CbmStar2019EventBuilderEtofAlgo::ReInitContainers()
+{
+   LOG(INFO) << "********************************************** CbmStar2019EventBuilderEtofAlgo::ReInitContainers()";
+   fUnpackPar = (CbmStar2019TofPar*)fParCList->FindObject("CbmStar2019TofPar");
+   if( nullptr == fUnpackPar )
+      return kFALSE;
+
+   LOG(INFO) << "ReInit parameter containers for CbmStar2019EventBuilderEtofAlgo"
+             << FairLogger::endl;
+
+   Bool_t initOK = InitParameters();
+
+   return initOK;
+}
+TList* CbmStar2019EventBuilderEtofAlgo::GetParList()
+{
+   fUnpackPar = new CbmStar2019TofPar("CbmStar2019TofPar");
+   fParCList->Add(fUnpackPar);
+
+   return fParCList;
+}
+Bool_t CbmStar2019EventBuilderEtofAlgo::InitParameters()
+{
+   fuNrOfGdpbs = fUnpackPar->GetNrOfGdpbs();
+   LOG(INFO) << "Nr. of Tof GDPBs: " << fuNrOfGdpbs << FairLogger::endl;
+
+   fuNrOfFeePerGdpb = fUnpackPar->GetNrOfFeePerGdpb();
+   LOG(INFO) << "Nr. of FEEs per Tof GDPB: " << fuNrOfFeePerGdpb
+               << FairLogger::endl;
+
+   fuNrOfGet4PerFee = fUnpackPar->GetNrOfGet4PerFee();
+   LOG(INFO) << "Nr. of GET4 per Tof FEE: " << fuNrOfGet4PerFee
+               << FairLogger::endl;
+
+   fuNrOfChannelsPerGet4 = fUnpackPar->GetNrOfChannelsPerGet4();
+   LOG(INFO) << "Nr. of channels per GET4: " << fuNrOfChannelsPerGet4
+               << FairLogger::endl;
+
+   fuNrOfChannelsPerFee = fuNrOfGet4PerFee * fuNrOfChannelsPerGet4;
+   LOG(INFO) << "Nr. of channels per FEE: " << fuNrOfChannelsPerFee
+               << FairLogger::endl;
+
+   fuNrOfGet4 = fuNrOfGdpbs * fuNrOfFeePerGdpb * fuNrOfGet4PerFee;
+   LOG(INFO) << "Nr. of GET4s: " << fuNrOfGet4 << FairLogger::endl;
+
+   fuNrOfGet4PerGdpb = fuNrOfFeePerGdpb * fuNrOfGet4PerFee;
+   LOG(INFO) << "Nr. of GET4s per GDPB: " << fuNrOfGet4PerGdpb
+               << FairLogger::endl;
+
+   fuNrOfChannelsPerGdpb = fuNrOfGet4PerGdpb * fuNrOfChannelsPerGet4;
+   LOG(INFO) << "Nr. of channels per GDPB: " << fuNrOfChannelsPerGdpb
+               << FairLogger::endl;
+
+   fGdpbIdIndexMap.clear();
+   for( UInt_t i = 0; i < fuNrOfGdpbs; ++i )
+   {
+      fGdpbIdIndexMap[fUnpackPar->GetGdpbId(i)] = i;
+      LOG(INFO) << "GDPB Id of TOF  " << i << " : " << std::hex << fUnpackPar->GetGdpbId(i)
+                 << std::dec << FairLogger::endl;
+   } // for( UInt_t i = 0; i < fuNrOfGdpbs; ++i )
+
+   fuNrOfGbtx  =  fUnpackPar->GetNrOfGbtx();
+   LOG(INFO) << "Nr. of GBTx: " << fuNrOfGbtx << FairLogger::endl;
+
+   fuNrOfModules  =  fUnpackPar->GetNrOfModules();
+   LOG(INFO) << "Nr. of GBTx: " << fuNrOfModules << FairLogger::endl;
+
+   fviRpcType.resize(  fuNrOfGbtx );
+   fviModuleId.resize( fuNrOfGbtx );
+   fviNrOfRpc.resize(  fuNrOfGbtx );
+   fviRpcSide.resize(  fuNrOfGbtx );
+   for( UInt_t uGbtx = 0; uGbtx < fuNrOfGbtx; ++uGbtx)
+   {
+      fviNrOfRpc[ uGbtx ]  = fUnpackPar->GetNrOfRpc( uGbtx );
+      fviRpcType[ uGbtx ]  = fUnpackPar->GetRpcType( uGbtx );
+      fviRpcSide[ uGbtx ]  = fUnpackPar->GetRpcSide( uGbtx );
+      fviModuleId[ uGbtx ] = fUnpackPar->GetModuleId( uGbtx );
+   } // for( UInt_t uGbtx = 0; uGbtx < uNrOfGbtx; ++uGbtx)
+
+   LOG(INFO) << "Nr. of RPCs per GBTx: ";
+   for( UInt_t uGbtx = 0; uGbtx < fuNrOfGbtx; ++uGbtx)
+      LOG(INFO) << Form(" %2d", fviNrOfRpc[ uGbtx ] );
+   LOG(INFO) << FairLogger::endl;
+
+   LOG(INFO) << "RPC type per GBTx:    ";
+   for( UInt_t uGbtx = 0; uGbtx < fuNrOfGbtx; ++uGbtx)
+      LOG(INFO) << Form(" %2d", fviRpcType[ uGbtx ] );
+   LOG(INFO) << FairLogger::endl;
+
+   LOG(INFO) << "RPC side per GBTx:    ";
+   for( UInt_t uGbtx = 0; uGbtx < fuNrOfGbtx; ++uGbtx)
+      LOG(INFO) << Form(" %2d", fviRpcSide[ uGbtx ] );
+   LOG(INFO) << FairLogger::endl;
+
+   LOG(INFO) << "Module ID per GBTx:   ";
+   for( UInt_t uGbtx = 0; uGbtx < fuNrOfGbtx; ++uGbtx)
+      LOG(INFO) << Form(" %2d", fviModuleId[ uGbtx ] );
+   LOG(INFO) << FairLogger::endl;
+
+   fdMsSizeInNs  = fUnpackPar->GetSizeMsInNs();
+   fdTsCoreSizeInNs = fdMsSizeInNs * fuNbCoreMsPerTs;
+   LOG(INFO) << "Timeslice parameters: each MS is "
+             << fdMsSizeInNs << " ns"
+             << FairLogger::endl;
+
+   ///
+   fvulCurrentEpoch.resize( fuNrOfGdpbs, 0 );
+   fvulCurrentEpochCycle.resize( fuNrOfGdpbs, 0 );
+   fvulCurrentEpochFull.resize( fuNrOfGdpbs, 0 );
+
+   ///
+   fvvmEpSupprBuffer.resize( fuNrOfGdpbs );
+   fvvBufferMessages.resize( fuNrOfGdpbs );
+   fvvBufferTriggers.resize( fuNrOfGdpbs );
+
+   /// STAR Trigger decoding and monitoring
+   fvulGdpbTsMsb.resize(  fuNrOfGdpbs );
+   fvulGdpbTsLsb.resize(  fuNrOfGdpbs );
+   fvulStarTsMsb.resize(  fuNrOfGdpbs );
+   fvulStarTsMid.resize(  fuNrOfGdpbs );
+   fvulGdpbTsFullLast.resize(  fuNrOfGdpbs );
+   fvulStarTsFullLast.resize(  fuNrOfGdpbs );
+   fvuStarTokenLast.resize(  fuNrOfGdpbs );
+   fvuStarDaqCmdLast.resize(  fuNrOfGdpbs );
+   fvuStarTrigCmdLast.resize(  fuNrOfGdpbs );
+   for (UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb)
+   {
+      fvulGdpbTsMsb[ uGdpb ] = 0;
+      fvulGdpbTsLsb[ uGdpb ] = 0;
+      fvulStarTsMsb[ uGdpb ] = 0;
+      fvulStarTsMid[ uGdpb ] = 0;
+      fvulGdpbTsFullLast[ uGdpb ] = 0;
+      fvulStarTsFullLast[ uGdpb ] = 0;
+      fvuStarTokenLast[ uGdpb ]   = 0;
+      fvuStarDaqCmdLast[ uGdpb ]  = 0;
+      fvuStarTrigCmdLast[ uGdpb ] = 0;
+   } // for (Int_t iGdpb = 0; iGdpb < fuNrOfGdpbs; ++iGdpb)
+
+   /// Ignore overlap ms if flag set by user
+   fuNbMsLoop = fuNbCoreMsPerTs;
+   if( kFALSE == fbIgnoreOverlapMs )
+      fuNbMsLoop += fuNbOverMsPerTs;
+
+	return kTRUE;
+}
+// -------------------------------------------------------------------------
+
+Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
 {
    fulCurrentTsIndex = ts.index();
    fdTsStartTime = static_cast< Double_t >( ts.descriptor( 0, 0 ).idx );
-   Double_t dTsStopTimeCore = fdTsStartTime + fdMsDuration * fuNbCoreMsPerTs;
+   Double_t dTsStopTimeCore = fdTsStartTime + fdTsCoreSizeInNs;
 
    /// Compute the limits for accepting hits and trigger in thie TS, for eac gDPB/sector
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
@@ -39,31 +281,31 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessTs( const fles::Timeslice& ts )
          if( fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ] < 0.0 )
          {
             /// Event window for this gDPB is fully before the trigger
-            fdMessCandidateTimeStart[ uGdpb ] = fdTsStartTime;
+            fvdMessCandidateTimeStart[ uGdpb ] = fdTsStartTime;
             // << Accept more than needed as this should be safer and small amounts >>
-            fdMessCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread + 2.0 * fdStarTriggerWinSize[ uGdpb ]; // + fdStarTriggerWinSize[ uGdpb ];
-            fdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime   + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
-            fdTrigCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ]
+            fvdMessCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread + 2.0 * fdStarTriggerWinSize[ uGdpb ]; // + fdStarTriggerWinSize[ uGdpb ];
+            fvdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime   + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
+            fvdTrigCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
 
          } // if( fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ] < 0.0 )
             else
             {
                /// Event window for this gDPB is on both sides of the trigger
-               fdMessCandidateTimeStart[ uGdpb ] = fdTsStartTime;
+               fvdMessCandidateTimeStart[ uGdpb ] = fdTsStartTime;
                // << Accept more than needed as this should be safer and small amounts >>
-               fdMessCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread + fdStarTriggerWinSize[ uGdpb ]; // + fdStarTriggerDelay[ uGdpb ];
-               fdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime   + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
-               fdTrigCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ]
+               fvdMessCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread + fdStarTriggerWinSize[ uGdpb ]; // + fdStarTriggerDelay[ uGdpb ];
+               fvdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime   + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
+               fvdTrigCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
             } // else of if( fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ] < 0.0 )
       } // if( fdStarTriggerDeadtime[ uGdpb ] < 0.0 )
          else
          {
             /// Event window for this gDPB starts after the trigger => fully after
              // << Accept more than needed as this should be safer and small amounts >>
-            fdMessCandidateTimeStart[ uGdpb ] = fdTsStartTime; // - fdAllowedTriggersSpread + fdStarTriggerDelay[ uGdpb ];
-            fdMessCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread + fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ];
-            fdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime   + fdAllowedTriggersSpread ;
-            fdTrigCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread;
+            fvdMessCandidateTimeStart[ uGdpb ] = fdTsStartTime; // - fdAllowedTriggersSpread + fdStarTriggerDelay[ uGdpb ];
+            fvdMessCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread + fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ];
+            fvdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime   + fdAllowedTriggersSpread;
+            fvdTrigCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread;
          } // else of if( fdStarTriggerDelay[ uGdpb ] < 0.0 )
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
@@ -73,7 +315,7 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessTs( const fles::Timeslice& ts )
       UInt_t uMsComp = fvMsComponentsList[ uMsCompIdx ];
 
       /// Loop over core microslices (and overlap ones if chosen)
-      for( UInt_t uMsIdx = 0; uMsIdx < uNbMsLoop; uMsIdx ++ )
+      for( UInt_t uMsIdx = 0; uMsIdx < fuNbMsLoop; uMsIdx ++ )
       {
          if( kFALSE == ProcessMs( ts, uMsComp, uMsIdx ) )
          {
@@ -88,7 +330,7 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessTs( const fles::Timeslice& ts )
    return kTRUE;
 }
 
-Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, size_t uMsComp, UInt_t uMsIdx )
+Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, size_t uMsCompIdx, size_t uMsIdx )
 {
    UInt_t uMsComp = fvMsComponentsList[ uMsCompIdx ];
    auto msDescriptor = ts.descriptor( uMsComp, uMsIdx );
@@ -106,12 +348,10 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
    /// Get pointer on MS data
    const uint8_t* msContent = reinterpret_cast<const uint8_t*>( ts.content( uMsComp, uMsIdx ) );
 
-   if( 0 == uMsIdx && 0 == uMsCompIdx )
-      dTsStartTime = (1e-9) * fdMsIndex;
-
+/*
    if( fdStartTimeMsSz < 0 )
       fdStartTimeMsSz = (1e-9) * fdMsIndex;
-/*
+
    fvhMsSzPerLink[ uMsComp ]->Fill(size);
    if( 2 * fuHistoryHistoSize < (1e-9) * fdMsIndex - fdStartTimeMsSz )
    {
@@ -123,13 +363,14 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
 */
 
    /// If not integer number of message in input buffer, print warning/error
-   if (0 != (size % kuBytesPerMessage))
+   if (0 != (size % fUnpackPar->GetNbByteMessage()))
       LOG(ERROR) << "The input microslice buffer does NOT "
                  << "contain only complete nDPB messages!"
                  << FairLogger::endl;
 
    /// Compute the number of complete messages in the input microslice buffer
-   uint32_t uNbMessages = (size - (size % kuBytesPerMessage)) / kuBytesPerMessage;
+   uint32_t uNbMessages = ( size - ( size % fUnpackPar->GetNbByteMessage() ) )
+                          / fUnpackPar->GetNbByteMessage();
 
    /// Get the gDPB ID from the MS header
    fuGdpbId = fiEquipmentId;
@@ -144,31 +385,32 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
                 << FairLogger::endl
                 << "If valid this index has to be added in the TOF parameter file in the RocIdArray field"
                 << FairLogger::endl;
-      continue;
+      return kFALSE;
    } // if( it == fGdpbIdIndexMap.end() )
       else fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
 
    /// Store the last STAR trigger values for the core MS when reaching the first overlap MS, needed to check for clones
    if( fuNbCoreMsPerTs == fuCurrentMs )
    {
-      fulGdpbTsFullLastCore[ fuGdpbNr ] = fulGdpbTsFullLast[ fuGdpbNr ];
-      fulStarTsFullLastCore[ fuGdpbNr ] = fulStarTsFullLast[ fuGdpbNr ];
-      fuStarTokenLastCore[ fuGdpbNr ]   = fuStarTokenLast[ fuGdpbNr ];
-      fuStarDaqCmdLastCore[ fuGdpbNr ]  = fuStarDaqCmdLast[ fuGdpbNr ];
-      fuStarTrigCmdLastCore[ fuGdpbNr ] = fuStarTrigCmdLast[ fuGdpbNr ];
+      fvulGdpbTsFullLastCore[ fuGdpbNr ] = fvulGdpbTsFullLast[ fuGdpbNr ];
+      fvulStarTsFullLastCore[ fuGdpbNr ] = fvulStarTsFullLast[ fuGdpbNr ];
+      fvuStarTokenLastCore[ fuGdpbNr ]   = fvuStarTokenLast[ fuGdpbNr ];
+      fvuStarDaqCmdLastCore[ fuGdpbNr ]  = fvuStarDaqCmdLast[ fuGdpbNr ];
+      fvuStarTrigCmdLastCore[ fuGdpbNr ] = fvuStarTrigCmdLast[ fuGdpbNr ];
    } // if( fuNbCoreMsPerTs == fuCurrentMs )
 
    /// Restore the last STAR trigger values for the core MS when reaching the first core MS, needed to check for clones
    if( 0 == fuCurrentMs )
    {
-      fulGdpbTsFullLast[ fuGdpbNr ] = fulGdpbTsFullLastCore[ fuGdpbNr ];
-      fulStarTsFullLast[ fuGdpbNr ] = fulStarTsFullLastCore[ fuGdpbNr ];
-      fuStarTokenLast[ fuGdpbNr ]   = fuStarTokenLastCore[ fuGdpbNr ];
-      fuStarDaqCmdLast[ fuGdpbNr ]  = fuStarDaqCmdLastCore[ fuGdpbNr ];
-      fuStarTrigCmdLast[ fuGdpbNr ] = fuStarTrigCmdLastCore[ fuGdpbNr ];
+      fvulGdpbTsFullLast[ fuGdpbNr ] = fvulGdpbTsFullLastCore[ fuGdpbNr ];
+      fvulStarTsFullLast[ fuGdpbNr ] = fvulStarTsFullLastCore[ fuGdpbNr ];
+      fvuStarTokenLast[ fuGdpbNr ]   = fvuStarTokenLastCore[ fuGdpbNr ];
+      fvuStarDaqCmdLast[ fuGdpbNr ]  = fvuStarDaqCmdLastCore[ fuGdpbNr ];
+      fvuStarTrigCmdLast[ fuGdpbNr ] = fvuStarTrigCmdLastCore[ fuGdpbNr ];
    } // if( 0 == fuCurrentMs )
 
    // Prepare variables for the loop on contents
+   Int_t messageType = -111;
    const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>(msContent);
    for( uint32_t uIdx = 0; uIdx < uNbMessages; uIdx++ )
    {
@@ -178,24 +420,22 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
       /// Catch the Epoch cycle block which is always the first 64b of the MS
       if( 0 == uIdx )
       {
-         ProcessEpochCyle( ulData );
+         ProcessEpochCycle( ulData );
          continue;
       } // if( 0 == uIdx )
 
       gdpbv100::Message mess(ulData);
-
+/*
       if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
       {
          mess.printDataCout();
          fuRawDataPrintMsgIdx ++;
       } // if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
-
-      // Increment counter for different message types
-      // and fill the corresponding histogram
+*/
+      /// Get message type
       messageType = mess.getMessageType();
-      fviMsgCounter[messageType]++;
 
-      fuGet4Id = ConvertElinkToGet4( mess.getGdpbGenChipId() );
+      fuGet4Id = fUnpackPar->ElinkIdxToGet4Idx( mess.getGdpbGenChipId() );
       fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
 
       if( fuNrOfGet4PerGdpb <= fuGet4Id &&
@@ -215,7 +455,7 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
             } // if( getGdpbHitIs24b() )
                else
                {
-                  fvmEpSupprBuffer[fuGdpbNr].push_back( mess );
+                  fvvmEpSupprBuffer[fuGdpbNr].push_back( mess );
                } // else of if( getGdpbHitIs24b() )
             break;
          } // case gdpbv100::MSG_HIT:
@@ -224,7 +464,7 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
             if( gdpbv100::kuChipIdMergedEpoch == fuGet4Id )
             {
                ProcessEpoch(mess);
-
+/*
                if( kTRUE == fbPrintAllEpochsEnable )
                {
                   LOG(INFO) << "Epoch: " << Form("0x%08x ", fuGdpbId)
@@ -237,6 +477,7 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
                             << ", Epoch miss " << std::setw(1) << mess.getGdpbEpMissmatch()
                             << FairLogger::endl;
                } // if( kTRUE == fbPrintAllEpochsEnable )
+*/
             } // if this epoch message is a merged one valid for all chips
                else
                {
@@ -247,12 +488,12 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
          } // case gdpbv100::MSG_EPOCH:
          case gdpbv100::MSG_SLOWC:
          {
-            fvmEpSupprBuffer[fuGdpbNr].push_back( mess );
+            fvvmEpSupprBuffer[fuGdpbNr].push_back( mess );
             break;
          } // case gdpbv100::MSG_SLOWC:
          case gdpbv100::MSG_SYST:
          {
-            fvmEpSupprBuffer[fuGdpbNr].push_back( mess );
+            fvvmEpSupprBuffer[fuGdpbNr].push_back( mess );
             break;
          } // case gdpbv100::MSG_SYST:
          case gdpbv100::MSG_STAR_TRI_A:
@@ -273,10 +514,10 @@ Bool_t CbmTofStarEventBuilderAlgo2019::ProcessMs( const fles::Timeslice& ts, siz
 }
 
 // -------------------------------------------------------------------------
-void CbmTofStarEventBuilderAlgo2019::ProcessEpochCycle( uint64_t ulCycleData )
+void CbmStar2019EventBuilderEtofAlgo::ProcessEpochCycle( uint64_t ulCycleData )
 {
-   uint64_t ulEpochCycleVal = ulCycleData & gdpbv100::kulEpochCycleFieldSz;
-
+   ULong64_t ulEpochCycleVal = ulCycleData & gdpbv100::kulEpochCycleFieldSz;
+/*
    if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
    {
       LOG(INFO) << "CbmMcbm2018MonitorTof::ProcessEpochCyle => "
@@ -285,21 +526,20 @@ void CbmTofStarEventBuilderAlgo2019::ProcessEpochCycle( uint64_t ulCycleData )
                  << FairLogger::endl;
       fuRawDataPrintMsgIdx ++;
    } // if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
-
-/*
-      if( !( ulEpochCycleVal == fvulCurrentEpochCycle[fuGet4Nr] ||
-             ulEpochCycleVal == fvulCurrentEpochCycle[fuGet4Nr] + 1 ) )
-         LOG(ERROR) << "CbmMcbm2018MonitorTof::ProcessEpochCyle => "
-                    << " Missmatch in epoch cycles detected, probably fake cycles due to epoch index corruption! "
-                    << Form( " Current cycle 0x%09X New cycle 0x%09X", fvulCurrentEpochCycle[fuGet4Nr], ulEpochCycleVal )
-                    << FairLogger::endl;
 */
+   if( !( ulEpochCycleVal == fvulCurrentEpochCycle[fuGet4Nr] ||
+          ulEpochCycleVal == fvulCurrentEpochCycle[fuGet4Nr] + 1 ) )
+      LOG(ERROR) << "CbmStar2019EventBuilderEtofAlgo::ProcessEpochCycle => "
+                 << " Missmatch in epoch cycles detected, probably fake cycles due to epoch index corruption! "
+                 << Form( " Current cycle 0x%09llX New cycle 0x%09llX", fvulCurrentEpochCycle[fuGet4Nr], ulEpochCycleVal )
+                 << FairLogger::endl;
+
    fvulCurrentEpochCycle[fuGdpbNr] = ulEpochCycleVal;
 
    return;
 }
 
-void CbmTofStarEventBuilderAlgo2019::ProcessEpoch( gdpbv100::Message mess )
+void CbmStar2019EventBuilderEtofAlgo::ProcessEpoch( gdpbv100::Message mess )
 {
    ULong64_t ulEpochNr = mess.getGdpbEpEpochNb();
 
@@ -309,7 +549,7 @@ void CbmTofStarEventBuilderAlgo2019::ProcessEpoch( gdpbv100::Message mess )
    fvulCurrentEpoch[ fuGdpbNr ] = ulEpochNr;
    fvulCurrentEpochFull[ fuGdpbNr ] = ulEpochNr + gdpbv100::kulEpochCycleBins * fvulCurrentEpochCycle[ fuGdpbNr ];
 
-   fulCurrentEpochTime = mess.getMsgFullTime(ulEpochNr);
+//   fulCurrentEpochTime = mess.getMsgFullTime(ulEpochNr);
 
    /// Re-align the epoch number of the message in case it will be used later:
    /// We received the epoch after the data instead of the one before!
@@ -321,28 +561,28 @@ void CbmTofStarEventBuilderAlgo2019::ProcessEpoch( gdpbv100::Message mess )
    ProcessEpSupprBuffer( fuGdpbNr );
 }
 
-void CbmTofStarEventBuilderAlgo2019::ProcessStarTrigger(gdpb::Message mess)
+void CbmStar2019EventBuilderEtofAlgo::ProcessStarTrigger( gdpbv100::Message mess )
 {
    Int_t iMsgIndex = mess.getStarTrigMsgIndex();
 
    switch( iMsgIndex )
    {
       case 0:
-         fulGdpbTsMsb[fuGdpbNr] = mess.getGdpbTsMsbStarA();
+         fvulGdpbTsMsb[fuGdpbNr] = mess.getGdpbTsMsbStarA();
          break;
       case 1:
-         fulGdpbTsLsb[fuGdpbNr] = mess.getGdpbTsLsbStarB();
-         fulStarTsMsb[fuGdpbNr] = mess.getStarTsMsbStarB();
+         fvulGdpbTsLsb[fuGdpbNr] = mess.getGdpbTsLsbStarB();
+         fvulStarTsMsb[fuGdpbNr] = mess.getStarTsMsbStarB();
          break;
       case 2:
-         fulStarTsMid[fuGdpbNr] = mess.getStarTsMidStarC();
+         fvulStarTsMid[fuGdpbNr] = mess.getStarTsMidStarC();
          break;
       case 3:
       {
-         ULong64_t ulNewGdpbTsFull = ( fulGdpbTsMsb[fuGdpbNr] << 24 )
-                                   + ( fulGdpbTsLsb[fuGdpbNr]       );
-         ULong64_t ulNewStarTsFull = ( fulStarTsMsb[fuGdpbNr] << 48 )
-                                   + ( fulStarTsMid[fuGdpbNr] <<  8 )
+         ULong64_t ulNewGdpbTsFull = ( fvulGdpbTsMsb[fuGdpbNr] << 24 )
+                                   + ( fvulGdpbTsLsb[fuGdpbNr]       );
+         ULong64_t ulNewStarTsFull = ( fvulStarTsMsb[fuGdpbNr] << 48 )
+                                   + ( fvulStarTsMid[fuGdpbNr] <<  8 )
                                    + mess.getStarTsLsbStarD();
          UInt_t uNewToken  = mess.getStarTokenStarD();
          UInt_t uNewDaqCmd  = mess.getStarDaqCmdStarD();
@@ -364,63 +604,64 @@ void CbmTofStarEventBuilderAlgo2019::ProcessStarTrigger(gdpb::Message mess)
                    << FairLogger::endl;
 */
 
-         if( ( uNewToken == fuStarTokenLast[fuGdpbNr] ) && ( ulNewGdpbTsFull == fulGdpbTsFullLast[fuGdpbNr] ) &&
-             ( ulNewStarTsFull == fulStarTsFullLast[fuGdpbNr] ) && ( uNewDaqCmd == fuStarDaqCmdLast[fuGdpbNr] ) &&
-             ( uNewTrigCmd == fuStarTrigCmdLast[fuGdpbNr] ) )
+         if( ( uNewToken == fvuStarTokenLast[fuGdpbNr] ) && ( ulNewGdpbTsFull == fvulGdpbTsFullLast[fuGdpbNr] ) &&
+             ( ulNewStarTsFull == fvulStarTsFullLast[fuGdpbNr] ) && ( uNewDaqCmd == fvuStarDaqCmdLast[fuGdpbNr] ) &&
+             ( uNewTrigCmd == fvuStarTrigCmdLast[fuGdpbNr] ) )
          {
-            UInt_t uTrigWord =  ( (fuStarTrigCmdLast[fuGdpbNr] & 0x00F) << 16 )
-                     + ( (fuStarDaqCmdLast[fuGdpbNr]   & 0x00F) << 12 )
-                     + ( (fuStarTokenLast[fuGdpbNr]    & 0xFFF)       );
+            UInt_t uTrigWord =  ( (fvuStarTrigCmdLast[fuGdpbNr] & 0x00F) << 16 )
+                     + ( (fvuStarDaqCmdLast[fuGdpbNr]   & 0x00F) << 12 )
+                     + ( (fvuStarTokenLast[fuGdpbNr]    & 0xFFF)       );
             LOG(WARNING) << "Possible error: identical STAR tokens found twice in a row => ignore 2nd! "
                          << " TS " << fulCurrentTsIndex
                          << " gDBB #" << fuGdpbNr << " "
-                         << Form("token = %5u ", fuStarTokenLast[fuGdpbNr] )
-                         << Form("gDPB ts  = %12llu ", fulGdpbTsFullLast[fuGdpbNr] )
-                         << Form("STAR ts = %12llu ", fulStarTsFullLast[fuGdpbNr] )
-                         << Form("DAQ cmd = %2u ", fuStarDaqCmdLast[fuGdpbNr] )
-                         << Form("TRG cmd = %2u ", fuStarTrigCmdLast[fuGdpbNr] )
+                         << Form("token = %5u ", fvuStarTokenLast[fuGdpbNr] )
+                         << Form("gDPB ts  = %12llu ", fvulGdpbTsFullLast[fuGdpbNr] )
+                         << Form("STAR ts = %12llu ", fvulStarTsFullLast[fuGdpbNr] )
+                         << Form("DAQ cmd = %2u ", fvuStarDaqCmdLast[fuGdpbNr] )
+                         << Form("TRG cmd = %2u ", fvuStarTrigCmdLast[fuGdpbNr] )
                          << Form("TRG Wrd = %5x ", uTrigWord )
                          << FairLogger::endl;
             return;
          } // if exactly same message repeated
 
          // GDPB TS counter reset detection
-         if( ulNewGdpbTsFull < fulGdpbTsFullLast[fuGdpbNr] )
-            LOG(DEBUG) << "Probable reset of the GDPB TS: old = " << Form("%16llu", fulGdpbTsFullLast[fuGdpbNr])
+         if( ulNewGdpbTsFull < fvulGdpbTsFullLast[fuGdpbNr] )
+            LOG(DEBUG) << "Probable reset of the GDPB TS: old = " << Form("%16llu", fvulGdpbTsFullLast[fuGdpbNr])
                        << " new = " << Form("%16llu", ulNewGdpbTsFull)
-                       << " Diff = -" << Form("%8llu", fulGdpbTsFullLast[fuGdpbNr] - ulNewGdpbTsFull)
+                       << " Diff = -" << Form("%8llu", fvulGdpbTsFullLast[fuGdpbNr] - ulNewGdpbTsFull)
                        << " GDPB #" << Form( "%2u", fuGdpbNr)
                        << FairLogger::endl;
 
          // STAR TS counter reset detection
-         if( ulNewStarTsFull < fulStarTsFullLast[fuGdpbNr] )
-            LOG(DEBUG) << "Probable reset of the STAR TS: old = " << Form("%16llu", fulStarTsFullLast[fuGdpbNr])
+         if( ulNewStarTsFull < fvulStarTsFullLast[fuGdpbNr] )
+            LOG(DEBUG) << "Probable reset of the STAR TS: old = " << Form("%16llu", fvulStarTsFullLast[fuGdpbNr])
                        << " new = " << Form("%16llu", ulNewStarTsFull)
-                       << " Diff = -" << Form("%8llu", fulStarTsFullLast[fuGdpbNr] - ulNewStarTsFull)
+                       << " Diff = -" << Form("%8llu", fvulStarTsFullLast[fuGdpbNr] - ulNewStarTsFull)
                        << " GDPB #" << Form( "%2u", fuGdpbNr)
                        << FairLogger::endl;
 
 /*
          LOG(INFO) << "Updating  trigger token for " << fuGdpbNr
-                   << " " << fuStarTokenLast[fuGdpbNr] << " " << uNewToken
+                   << " " << fvuStarTokenLast[fuGdpbNr] << " " << uNewToken
                    << FairLogger::endl;
 */
 
          /// Generate Trigger object and store it for event building ///
-         CbmTofStarTrigger2019 newTrig( fulGdpbTsFullLast[fuGdpbNr], fulStarTsFullLast[fuGdpbNr], fuStarTokenLast[fuGdpbNr],
-                                        fuStarDaqCmdLast[fuGdpbNr], fuStarTrigCmdLast[fuGdpbNr] );
-         if( fuCurrentMs < fuNbCoreMsPerTs )
-            fvBufferTriggers[fuGdpbNr].push_back( newTrig );
-            else fvBufferTriggersOverlap[fuGdpbNr].push_back( newTrig );
+         CbmTofStarTrigger2019 newTrig( fvulGdpbTsFullLast[fuGdpbNr], fvulStarTsFullLast[fuGdpbNr], fvuStarTokenLast[fuGdpbNr],
+                                        fvuStarDaqCmdLast[fuGdpbNr], fvuStarTrigCmdLast[fuGdpbNr] );
+         Double_t dTriggerTime = newTrig.GetFullGdpbTs() * gdpbv100::kdClockCycleSizeNs;
+         if( fvdTrigCandidateTimeStart[ fuGdpbNr ] < dTriggerTime &&
+             dTriggerTime < fvdTrigCandidateTimeStop[ fuGdpbNr ] )
+            fvvBufferTriggers[fuGdpbNr].push_back( newTrig );
 
          if( fuCurrentMs < fuNbCoreMsPerTs )
          {
-            ULong64_t ulGdpbTsDiff = ulNewGdpbTsFull - fulGdpbTsFullLast[fuGdpbNr];
-            fulGdpbTsFullLast[fuGdpbNr] = ulNewGdpbTsFull;
-            fulStarTsFullLast[fuGdpbNr] = ulNewStarTsFull;
-            fuStarTokenLast[fuGdpbNr]   = uNewToken;
-            fuStarDaqCmdLast[fuGdpbNr]  = uNewDaqCmd;
-            fuStarTrigCmdLast[fuGdpbNr] = uNewTrigCmd;
+            ULong64_t ulGdpbTsDiff = ulNewGdpbTsFull - fvulGdpbTsFullLast[fuGdpbNr];
+            fvulGdpbTsFullLast[fuGdpbNr] = ulNewGdpbTsFull;
+            fvulStarTsFullLast[fuGdpbNr] = ulNewStarTsFull;
+            fvuStarTokenLast[fuGdpbNr]   = uNewToken;
+            fvuStarDaqCmdLast[fuGdpbNr]  = uNewDaqCmd;
+            fvuStarTrigCmdLast[fuGdpbNr] = uNewTrigCmd;
          }
          ///---------------------------------------------------------///
          break;
@@ -431,9 +672,9 @@ void CbmTofStarEventBuilderAlgo2019::ProcessStarTrigger(gdpb::Message mess)
 }
 
 // -------------------------------------------------------------------------
-void CbmTofStarEventBuilderAlgo2019::ProcessEpSupprBuffer( uint32_t uGdpbNr )
+void CbmStar2019EventBuilderEtofAlgo::ProcessEpSupprBuffer( uint32_t uGdpbNr )
 {
-   Int_t iBufferSize = fvmEpSupprBuffer[ fuGdpbNr ].size();
+   Int_t iBufferSize = fvvmEpSupprBuffer[ fuGdpbNr ].size();
 
    if( 0 == iBufferSize )
       return;
@@ -443,10 +684,10 @@ void CbmTofStarEventBuilderAlgo2019::ProcessEpSupprBuffer( uint32_t uGdpbNr )
 
    /// Data are sorted between epochs, not inside => Epoch level ordering
    /// Sorting at lower bin precision level
-   std::stable_sort( fvmEpSupprBuffer[ fuGdpbNr ].begin(), fvmEpSupprBuffer[ fuGdpbNr ].begin() );
+   std::stable_sort( fvvmEpSupprBuffer[ fuGdpbNr ].begin(), fvvmEpSupprBuffer[ fuGdpbNr ].begin() );
 
    /// Compute original epoch index before epoch suppression
-   ULong64_t ulCurEpochGdpbGet4 = fvvulCurrentEpochFull[ fuGdpbNr ][ fuGet4Id ];
+   ULong64_t ulCurEpochGdpbGet4 = fvulCurrentEpochFull[ fuGdpbNr ];
 
    /// Ignore the first epoch as it should never appear (start delay!!)
    if( 0 == ulCurEpochGdpbGet4 )
@@ -455,44 +696,41 @@ void CbmTofStarEventBuilderAlgo2019::ProcessEpSupprBuffer( uint32_t uGdpbNr )
    /// In Ep. Suppr. Mode, receive following epoch instead of previous
    ulCurEpochGdpbGet4 --;
 
+   Int_t messageType = -111;
    for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
    {
 
-      messageType = fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getMessageType();
+      messageType = fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getMessageType();
 
-      fuGet4Id = ConvertElinkToGet4( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbGenChipId() );
+      fuGet4Id = fUnpackPar->ElinkIdxToGet4Idx( fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbGenChipId() );
       fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
 
       /// Store the full message in the proper buffer
-      gdpb::FullMessage fullMess( mess, ulCurEpochGdpbGet4 );
-/* ==> Try to shift the conditions to buffer filling!
-      if( fuCurrentMs < fuNbCoreMsPerTs )
-         fvBufferMessages[fuGdpbNr].push_back( fullMess );
-         else fvBufferMessagesOverlap[fuGdpbNr].push_back( fullMess );
-*/
-
-      if(
+      gdpbv100::FullMessage fullMess( fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
+      if( fvdMessCandidateTimeStart[ fuGdpbNr ] < fullMess.GetFullTimeNs() &&
+          fullMess.GetFullTimeNs() < fvdMessCandidateTimeStop[ fuGdpbNr ] )
+         fvvBufferMessages[fuGdpbNr].push_back( fullMess );
 
       /// Do other actions on it if needed
       switch (messageType)
       {
          case gdpbv100::MSG_HIT:
          {
-            ProcessHit( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
+            ProcessHit( fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
             break;
          } // case gdpbv100::MSG_HIT:
          case gdpbv100::MSG_SLOWC:
          {
-            ProcessSlCtrl( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
+            ProcessSlCtrl( fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
             break;
          } // case gdpbv100::MSG_SLOWC:
          case gdpbv100::MSG_SYST:
          {
-            if( gdpbv100::SYS_PATTERN == fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbSysSubType() )
+            if( gdpbv100::SYS_PATTERN == fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbSysSubType() )
             {
-               ProcessPattern( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
-            } // if( gdpbv100::SYS_PATTERN == fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbSysSubType() )
-               else ProcessSysMess( fvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
+               ProcessPattern( fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
+            } // if( gdpbv100::SYS_PATTERN == fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbSysSubType() )
+               else ProcessSysMess( fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
             break;
          } // case gdpbv100::MSG_SYST:
          case gdpbv100::MSG_EPOCH:
@@ -509,11 +747,11 @@ void CbmTofStarEventBuilderAlgo2019::ProcessEpSupprBuffer( uint32_t uGdpbNr )
       } // switch( mess.getMessageType() )
    } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
 
-   fvmEpSupprBuffer[ fuGdpbNr ].clear();
+   fvvmEpSupprBuffer[ fuGdpbNr ].clear();
 }
 
 // -------------------------------------------------------------------------
-void CbmTofStarEventBuilderAlgo2019::ProcessHit( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 )
+void CbmStar2019EventBuilderEtofAlgo::ProcessHit( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 )
 {
    UInt_t uChannel = mess.getGdpbHitChanId();
    UInt_t uTot     = mess.getGdpbHit32Tot();
@@ -527,29 +765,26 @@ void CbmTofStarEventBuilderAlgo2019::ProcessHit( gdpbv100::Message mess, uint64_
    UInt_t uChannelNrInFee    = (fuGet4Id % fuNrOfGet4PerFee) * fuNrOfChannelsPerGet4 + uChannel;
    UInt_t uFeeNr             = (fuGet4Id / fuNrOfGet4PerFee);
    UInt_t uFeeNrInSys        = fuGdpbNr * fuNrOfFeePerGdpb + uFeeNr;
-   UInt_t uRemappedChannelNr = uFeeNr * fuNrOfChannelsPerFee + fvuGet4ToPadi[ uChannelNrInFee ];
-   UInt_t uGbtxNr            = (uFeeNr / kuNbFeePerGbtx);
-   UInt_t uFeeInGbtx         = (uFeeNr % kuNbFeePerGbtx);
-   UInt_t uGbtxNrInSys       = fuGdpbNr * kuNbGbtxPerGdpb + uGbtxNr;
-
-   ULong_t  ulHitTime = mess.getMsgFullTime(ulCurEpochGdpbGet4);
-   Double_t dHitTime  = mess.getMsgFullTimeD(ulCurEpochGdpbGet4);
+   UInt_t uRemappedChannelNr = uFeeNr * fuNrOfChannelsPerFee + fUnpackPar->Get4ChanToPadiChan( uChannelNrInFee );
+   UInt_t uGbtxNr            = (uFeeNr / fUnpackPar->GetNrOfFeePerGbtx());
+   UInt_t uFeeInGbtx         = (uFeeNr % fUnpackPar->GetNrOfFeePerGbtx());
+   UInt_t uGbtxNrInSys       = fuGdpbNr * fUnpackPar->GetNrOfGbtxPerGdpb() + uGbtxNr;
 
    ULong_t  ulhitTime = mess.getMsgFullTime(  ulCurEpochGdpbGet4 );
    Double_t dHitTime  = mess.getMsgFullTimeD( ulCurEpochGdpbGet4 );
    Double_t dHitTot   = uTot;     // in bins
 
-   UInt_t uFebIdx     = (uGet4Id / fuNrOfGet4PerFeb);
-   UInt_t uFullFebIdx = (fuGdpbNr * fuNrOfFebsPerGdpb) + uFebIdx;
+   UInt_t uFebIdx     = (fuGet4Id / fUnpackPar->GetNrOfGet4PerFee());
+   UInt_t uFullFebIdx = (fuGdpbNr * fUnpackPar->GetNrOfFeePerGdpb()) + uFebIdx;
 
-   UInt_t uChanInGdpb = uGet4Id * fuNrOfChannelsPerGet4 + uChannel;
+   UInt_t uChanInGdpb = fuGet4Id * fuNrOfChannelsPerGet4 + uChannel;
    UInt_t uChanInSyst = fuGdpbNr * fuNrOfChannelsPerGdpb + uChanInGdpb;
    if( fUnpackPar->GetNumberOfChannels() < uChanInSyst )
    {
       LOG(ERROR) << "Invalid mapping index " << uChanInSyst
                  << " VS " << fUnpackPar->GetNumberOfChannels()
                  <<", from " << fuGdpbNr
-                 <<", " << uGet4Id
+                 <<", " << fuGet4Id
                  <<", " << uChannel
                  << FairLogger::endl;
       return;
@@ -557,11 +792,11 @@ void CbmTofStarEventBuilderAlgo2019::ProcessHit( gdpbv100::Message mess, uint64_
 
 }
 
-void CbmTofStarEventBuilderAlgo2019::ProcessSlCtrl( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 )
+void CbmStar2019EventBuilderEtofAlgo::ProcessSlCtrl( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 )
 {
 }
 
-void CbmTofStarEventBuilderAlgo2019::ProcessSysMess( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 )
+void CbmStar2019EventBuilderEtofAlgo::ProcessSysMess( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 )
 {
    switch( mess.getGdpbSysSubType() )
    {
@@ -623,7 +858,7 @@ void CbmTofStarEventBuilderAlgo2019::ProcessSysMess( gdpbv100::Message mess, uin
    } // switch( getGdpbSysSubType() )
 }
 
-void CbmTofStarEventBuilderAlgo2019::ProcessPattern( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 )
+void CbmStar2019EventBuilderEtofAlgo::ProcessPattern( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 )
 {
    uint16_t usType   = mess.getGdpbSysPattType();
    uint16_t usIndex  = mess.getGdpbSysPattIndex();

@@ -7,6 +7,8 @@
 #pragma link C++ class CbmStar2019TofPar;
 #pragma link C++ class CbmStar2019ContFact;
 
+#pragma link C++ class CbmStar2019Algo;
+
 //#pragma link C++ class CbmStar2019TofUnpackerAlgo;
 //#pragma link C++ class CbmStar2019TofUnpacker;
 

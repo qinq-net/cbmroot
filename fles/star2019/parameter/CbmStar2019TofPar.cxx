@@ -19,17 +19,12 @@ CbmStar2019TofPar::CbmStar2019TofPar(const char* name,
   : FairParGenericSet(name, title, context),
     fiNrOfGdpb(-1),
     fiGdpbIdArray(),
-    fiNrOfFeesPerGdpb(-1),
-    fiNrOfGet4PerFee(-1),
-    fiNrOfChannelsPerGet4(-1),
     fiNrOfModule( -1 ),
     fiNrOfGbtx(-1),
     fiNrOfRpc(),
     fiRpcType(),
     fiRpcSide(),
     fiModuleId(),
-    fiNbMsTot(0),
-    fiNbMsOverlap(0),
     fdSizeMsInNs(0.0),
     fdStarTriggerDeadtime(),
     fdStarTriggerDelay(),
@@ -64,17 +59,12 @@ void CbmStar2019TofPar::putParams(FairParamList* l)
    if (!l) return;
    l->add("NrOfGdpbs",           fiNrOfGdpb);
    l->add("GdpbIdArray",         fiGdpbIdArray);
-   l->add("NrOfFeesPerGdpb",     fiNrOfFeesPerGdpb);
-   l->add("NrOfGet4PerFee",      fiNrOfGet4PerFee);
-   l->add("NrOfChannelsPerGet4", fiNrOfChannelsPerGet4);
    l->add("NrOfGbtx",            fiNrOfGbtx);
    l->add("NrOfModule",          fiNrOfModule);
    l->add("NrOfRpcs",            fiNrOfRpc);
    l->add("RpcType",             fiRpcType);
    l->add("RpcSide",             fiRpcSide);
    l->add("ModuleId",            fiModuleId);
-   l->add("NbMsTot",             fiNbMsTot);
-   l->add("NbMsOverlap",         fiNbMsOverlap);
    l->add("SizeMsInNs",          fdSizeMsInNs);
    l->add("StarTriggerDeadtime", fdStarTriggerDeadtime);
    l->add("StarTriggerDelay",    fdStarTriggerDelay);
@@ -93,10 +83,6 @@ Bool_t CbmStar2019TofPar::getParams(FairParamList* l) {
    fiGdpbIdArray.Set(fiNrOfGdpb);
    if ( ! l->fill("GdpbIdArray", &fiGdpbIdArray) ) return kFALSE;
 
-   if ( ! l->fill("NrOfFeesPerGdpb", &fiNrOfFeesPerGdpb) ) return kFALSE;
-   if ( ! l->fill("NrOfGet4PerFee", &fiNrOfGet4PerFee) ) return kFALSE;
-   if ( ! l->fill("NrOfChannelsPerGet4", &fiNrOfChannelsPerGet4) ) return kFALSE;
-
    if ( ! l->fill("NrOfGbtx", &fiNrOfGbtx) ) return kFALSE;
 
    if ( ! l->fill("NrOfModule", &fiNrOfModule) ) return kFALSE;
@@ -113,8 +99,6 @@ Bool_t CbmStar2019TofPar::getParams(FairParamList* l) {
    fiModuleId.Set(fiNrOfGbtx);
    if ( ! l->fill("ModuleId", &fiModuleId) ) return kFALSE;
 
-   if ( ! l->fill("NbMsTot",     &fiNbMsTot) ) return kFALSE;
-   if ( ! l->fill("NbMsOverlap", &fiNbMsOverlap) ) return kFALSE;
    if ( ! l->fill("SizeMsInNs",  &fdSizeMsInNs) ) return kFALSE;
 
    fdStarTriggerDeadtime.Set(fiNrOfGdpb);
@@ -128,5 +112,60 @@ Bool_t CbmStar2019TofPar::getParams(FairParamList* l) {
    return kTRUE;
 }
 
+// -------------------------------------------------------------------------
+Int_t CbmStar2019TofPar::Get4ChanToPadiChan( UInt_t uChannelInFee )
+{
+   if( uChannelInFee < kuNbChannelsPerFee )
+      return kuGet4topadi[ uChannelInFee ] - 1;
+      else
+      {
+         LOG(FATAL) << "CbmStar2019TofPar::Get4ChanToPadiChan => Index out of bound, "
+                    << uChannelInFee << " vs " << kuNbChannelsPerFee
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uChannelInFee < kuNbChannelsPerFee )
+}
+Int_t CbmStar2019TofPar::PadiChanToGet4Chan( UInt_t uChannelInFee )
+{
+   if( uChannelInFee < kuNbChannelsPerFee )
+      return kuPaditoget4[ uChannelInFee ] - 1;
+      else
+      {
+         LOG(FATAL) << "CbmStar2019TofPar::PadiChanToGet4Chan => Index out of bound, "
+                    << uChannelInFee << " vs " << kuNbChannelsPerFee
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uChannelInFee < kuNbChannelsPerFee )
+}
+// -------------------------------------------------------------------------
+Int_t CbmStar2019TofPar::ElinkIdxToGet4Idx( UInt_t uElink )
+{
+   if( uElink < kuNbGet4PerGbtx )
+      return kuGet4topadi[ uElink ];
+      else
+      {
+         LOG(FATAL) << "CbmStar2019TofPar::ElinkIdxToGet4Idx => Index out of bound, "
+                    << uElink << " vs " << kuNbGet4PerGbtx
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uElink < kuNbGet4PerGbtx )
+}
+Int_t CbmStar2019TofPar::Get4IdxToElinkIdx( UInt_t uElink )
+{
+   if( uElink < kuNbGet4PerGbtx )
+      return kuPaditoget4[ uElink ];
+      else
+      {
+         LOG(FATAL) << "CbmStar2019TofPar::Get4IdxToElinkIdx => Index out of bound, "
+                    << uElink << " vs " << kuNbGet4PerGbtx
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uElink < kuNbGet4PerGbtx )
+}
+// -------------------------------------------------------------------------
 
 ClassImp(CbmStar2019TofPar)
