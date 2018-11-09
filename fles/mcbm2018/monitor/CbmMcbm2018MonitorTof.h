@@ -71,6 +71,8 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
       inline void EnablePulserMode( Bool_t bEnaFlag = kTRUE ) { fbPulserModeEnable = bEnaFlag; }
       inline void EnableCoincidenceMaps( Bool_t bEnaFlag = kTRUE ) { fbCoincMapsEnable = bEnaFlag; }
 
+      inline void EnableOldFwData( Bool_t bEnaFlag = kTRUE ) { fbOldFwData = bEnaFlag; }
+
       void SaveAllHistos( TString sFileName = "" );
       void ResetAllHistos();
       void ResetEvolutionHistograms();
@@ -124,6 +126,7 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
       Bool_t fbPrintAllEpochsEnable;
       Bool_t fbPulserModeEnable;
       Bool_t fbCoincMapsEnable;
+      Bool_t fbOldFwData;
 
       /** Running indices **/
       uint64_t fulCurrentTsIndex;  // Idx of the current TS
@@ -155,6 +158,8 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
         **/
       std::vector< ULong64_t > fvulCurrentEpoch; //!
       std::vector< Bool_t >    fvbFirstEpochSeen; //!
+      std::vector< ULong64_t > fvulCurrentEpochCycle; //! Epoch cycle from the Ms Start message and Epoch counter flip
+      std::vector< ULong64_t > fvulCurrentEpochFull; //! Epoch + Epoch Cycle
 
       ULong64_t fulCurrentEpochTime;     /** Time stamp of current epoch **/
 
@@ -206,6 +211,7 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
             /// Per Gdpb
       TH2* fhGdpbMessType;
       TH2* fhGdpbSysMessType;
+      TH2* fhGdpbSysMessPattType;
       TH2* fhGdpbEpochFlags;
       TH2* fhGdpbEpochSyncEvo;
       TH2* fhGdpbEpochMissEvo;
@@ -213,11 +219,20 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
       std::vector< TH2* > fvhGdpbGet4MessType;
       std::vector< TH2* > fvhGdpbGet4ChanScm;
       std::vector< TH2* > fvhGdpbGet4ChanErrors;
-         // Slow control messages
+            /// Slow control messages
       TH2* fhScmScalerCounters;
       TH2* fhScmDeadtimeCounters;
       TH2* fhScmSeuCounters;
       TH2* fhScmSeuCountersEvo;
+            /// Pattern messages per gDPB
+      TH2* fhPatternMissmatch;
+      TH2* fhPatternEnable;
+      TH2* fhPatternResync;
+            /// Per MS in gDPB
+      std::vector< TH2* > fvhGdpbPatternMissmatchEvo;
+      std::vector< TH2* > fvhGdpbPatternEnableEvo;
+      std::vector< TH2* > fvhGdpbPatternResyncEvo;
+
          // Hit messages
             /// TODO: Channel rate plots!
       std::vector< TH2      * > fvhRawFt_gDPB;
@@ -262,10 +277,12 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
 
       void CreateHistograms();
 
+      void ProcessEpochCycle( uint64_t ulCycleData );
       void FillHitInfo(       gdpbv100::Message );
       void FillEpochInfo(     gdpbv100::Message );
       void PrintSlcInfo(      gdpbv100::Message );
       void PrintSysInfo(      gdpbv100::Message );
+      void FillPattInfo(      gdpbv100::Message );
       void PrintGenInfo(      gdpbv100::Message );
       void FillStarTrigInfo(  gdpbv100::Message );
 
