@@ -53,17 +53,6 @@ void run_digi(
   TString parFile = dataSet + ".par.root";
   TString outFile = dataSet + ".raw.root";
   if ( eventMode ) outFile = dataSet + ".event.raw.root";
-  // ------------------------------------------------------------------------
-  
-  
-  // -----   Remove old CTest runtime dependency file  ----------------------
-  TString dataDir = gSystem->DirName(dataSet);
-  TString dataName = gSystem->BaseName(dataSet);
-  TString testName = (eventMode ? "run_digi_event" : "run_digi");
-  TString depFile = Remove_CTest_Dependency_File(dataDir, testName,
-                                                 dataName);
-  // ------------------------------------------------------------------------
-
 
    // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
@@ -116,7 +105,6 @@ void run_digi(
   // -----   Finish   -------------------------------------------------------
   std::cout << " Test passed" << std::endl;
   std::cout << " All ok " << std::endl;
-  Generate_CTest_Dependency_File(depFile);
   // ------------------------------------------------------------------------
 
 

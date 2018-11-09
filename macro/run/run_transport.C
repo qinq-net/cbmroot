@@ -101,15 +101,6 @@ void run_transport(Int_t nEvents = 2,
   gDebug = 0;
   // ------------------------------------------------------------------------
 
-  
-  // -----   Remove old CTest runtime dependency file   ---------------------
-  TString workdir(gSystem->DirName(output));
-  TString depFile = Remove_CTest_Dependency_File(workdir, "run_transport",
-                                                 setupName);
-  // ------------------------------------------------------------------------
-
-
-
   // -----   Create simulation run   ----------------------------------------
   FairRunSim* run = new FairRunSim();
   run->SetName("TGeant3");              // Transport engine
@@ -280,8 +271,6 @@ void run_transport(Int_t nEvents = 2,
   std::cout << " Test passed" << std::endl;
   std::cout << " All ok " << std::endl;
 
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
   RemoveGeoManager();
   // ------------------------------------------------------------------------
 

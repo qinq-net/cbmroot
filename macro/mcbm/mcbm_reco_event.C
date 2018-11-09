@@ -41,14 +41,6 @@ void mcbm_reco_event(
   // ------------------------------------------------------------------------
 
 
-  // -----   Remove old CTest runtime dependency file  ----------------------
-  TString dataDir = gSystem->DirName(dataset);
-  TString dataName = gSystem->BaseName(dataset);
-  TString depFile = Remove_CTest_Dependency_File(dataDir, "mcbm_reco_event",
-                                                 dataName);
-  // ------------------------------------------------------------------------
-
-
   // -----   Load the geometry setup   -------------------------------------
   std::cout << std::endl;
   TString setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
@@ -304,7 +296,5 @@ void mcbm_reco_event(
     tempMon->Print();
   }
 
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
   RemoveGeoManager();
 }

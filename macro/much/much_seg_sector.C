@@ -41,12 +41,6 @@ void much_seg_sector(TString mcFile = "",
 //  TString parFile = "data/params.test.mcbm.root";
   TString parFile = "data/params.root";
 
-  // Function needed for CTest runtime dependency
-
-  TString depFile = Remove_CTest_Dependency_File("data", "much_seg");
-
-  
-
   // ------------------------------------------------------------------------
 
   // -----   Analysis run   -------------------------------------------------
@@ -77,8 +71,5 @@ void much_seg_sector(TString mcFile = "",
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
 
-  // Function needed for CTest runtime dependency
-
-  Generate_CTest_Dependency_File(depFile);
   RemoveGeoManager();
 }

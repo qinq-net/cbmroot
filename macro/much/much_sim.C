@@ -38,9 +38,6 @@ void much_sim(TString inputSignal = "",
   TString geoFile = "data/much_geofile_full.root";
   //  TString geoFile = "data/parallelopiped_geofile_full.root";
 
-  // Function needed for CTest runtime dependency
-  TString depFile = Remove_CTest_Dependency_File("data", "much_sim");
-
   // -----   Confirm input parameters    ------------------------------------
   cout << endl;
   cout << "========  CBMROOT Macro much_sim  =================" << endl;
@@ -267,8 +264,6 @@ void much_sim(TString inputSignal = "",
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
 
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
   RemoveGeoManager();
 }
 

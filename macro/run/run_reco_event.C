@@ -46,20 +46,6 @@ void run_reco_event(
   TString outFile = dataset + ".rec.root";
   // ------------------------------------------------------------------------
 
-
-  // -----   Remove old CTest runtime dependency file  ----------------------
-  TString dataDir  = gSystem->DirName(dataset);
-  TString dataName = gSystem->BaseName(dataset);
-  TString depFile;
-  if ( useMC ) depFile = Remove_CTest_Dependency_File(dataDir,
-                                                      "run_reco_event_mc",
-                                                      dataName);
-  else depFile = Remove_CTest_Dependency_File(dataDir,
-                                             "run_reco_event",
-                                             dataName);
-  // ------------------------------------------------------------------------
-
-
   // -----   Load the geometry setup   -------------------------------------
   std::cout << std::endl;
   TString setupFile = srcDir + "/geometry/setup/setup_" + setup + ".C";
@@ -235,7 +221,6 @@ void run_reco_event(
 
 
   // -----   Function needed for CTest runtime dependency   -----------------
-  Generate_CTest_Dependency_File(depFile);
   RemoveGeoManager();
   // ------------------------------------------------------------------------
 

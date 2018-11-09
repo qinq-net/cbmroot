@@ -19,6 +19,8 @@ Else()
   List(APPEND cbm_setup sis100_electron sis100_muon_jpsi)
 EndIf()
 
+
+
 ForEach(setup IN LISTS cbm_setup)
 
   # The test dependencies are set such that parallel execution is prevented, even is there is no logical
@@ -31,47 +33,45 @@ ForEach(setup IN LISTS cbm_setup)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_transport.sh ${NumEvents} \"${setup}\" \"data/${setup}_test\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set(dep_transport ${testname})
+  Set(fixture_digi fixture_digi_${testname})
+  set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_digi})
+
   
   # --- Digitisation run, event-by-event
   Set(testname run_digi_event_${setup})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_digi.sh ${NumEvents} \"data/${setup}_test\" 0. 0. 1)
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_transport})
-  Set(_FileName_Dependency data/run_transport_${setup}_ok)
-  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
-  Set(dep_digi_event ${testname})
+  set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_digi})
+  Set(fixture_reco_event fixture_reco_event_${testname})
+  set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_reco_event})
   
   # --- Reconstruction run, event-by-event
   Set(testname run_reco_event_${setup})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_reco_event.sh ${NumEvents} \"data/${setup}_test\" \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_digi_event})
-  Set(_FileName_Dependency data/run_digi_event_${setup}_test_ok)
-  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
-  Set(dep_reco_event ${testname})
+  set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_reco_event})
+  Set(fixture_reco_event_mc fixture_reco_event_mc_${testname})
+  set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_reco_event_mc})
   
   # --- Reconstruction run, event-by-event, with MC input
   Set(testname run_reco_event_mc_${setup})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_reco_event.sh ${NumEvents} \"data/${setup}_test\" \"${setup}\" 1)
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_reco_event})
-  Set(_FileName_Dependency data/run_digi_event_${setup}_test_ok)
-  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
-  Set(dep_reco_event_mc ${testname})
+  set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_reco_event_mc})
+  Set(fixture_digi_tb fixture_digi_tb_${testname})
+  set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_digi_tb})
   
   # --- Digitisation run, time-based
   Set(testname run_digi_${setup})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_digi.sh ${NumEvents} \"data/${setup}_test\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_reco_event_mc})
-  Set(_FileName_Dependency data/run_transport_${setup}_ok)
-  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
-  Set(dep_digi ${testname})
+  set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_digi_tb})
+  Set(fixture_overlaps fixture_overlaps_${testname})
+  set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_overlaps})
   
   # --- QA run
   # --- I have to check the macro first for being up-to-date
@@ -90,9 +90,7 @@ ForEach(setup IN LISTS cbm_setup)
   	Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/check_overlaps.sh \"data/${setup}_test\")
   	Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "900")
   	Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  	Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_reco_event_mc})
-  	Set(_FileName_Dependency data/run_transport_${setup}_ok)
-  	Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+        set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_digi})
   EndIf()
  
 EndForEach(setup IN LISTS cbm_setup)

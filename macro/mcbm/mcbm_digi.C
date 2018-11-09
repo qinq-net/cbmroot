@@ -56,15 +56,6 @@ void mcbm_digi(
   // ------------------------------------------------------------------------
   
   
-  // -----   Remove old CTest runtime dependency file  ----------------------
-  TString dataDir = gSystem->DirName(dataSet);
-  TString dataName = gSystem->BaseName(dataSet);
-  TString testName = (eventMode ? "mcbm_digi_event" : "mcbm_digi");
-  TString depFile = Remove_CTest_Dependency_File(dataDir, testName,
-                                                 dataName);
-  // ------------------------------------------------------------------------
-
-
    // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
   timer.Start();
@@ -139,7 +130,6 @@ void mcbm_digi(
   // -----   Finish   -------------------------------------------------------
   std::cout << " Test passed" << std::endl;
   std::cout << " All ok " << std::endl;
-  Generate_CTest_Dependency_File(depFile);
   // ------------------------------------------------------------------------
 
 

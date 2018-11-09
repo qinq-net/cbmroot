@@ -28,12 +28,6 @@ void much_digi(Int_t nEvents = 3, Int_t flag = 0)
   TString outFile = "data/raw.root";
   // ------------------------------------------------------------------------
   
-  
-  // -----   Remove old CTest runtime dependency file  ----------------------
-  TString depFile = Remove_CTest_Dependency_File("data", "much_digi");
-  // ------------------------------------------------------------------------
-
-
    // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
   timer.Start();
@@ -84,7 +78,6 @@ void much_digi(Int_t nEvents = 3, Int_t flag = 0)
   // -----   Finish   -------------------------------------------------------
   std::cout << " Test passed" << std::endl;
   std::cout << " All ok " << std::endl;
-  Generate_CTest_Dependency_File(depFile);
   // ------------------------------------------------------------------------
 
 
