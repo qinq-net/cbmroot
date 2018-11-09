@@ -50,10 +50,6 @@ void mvd_qa4_reco( const char* setup = "sis100_electron")
     gROOT->LoadMacro(setupFile);
     gInterpreter->ProcessLine(setupFunct);
 
-    // Function needed for CTest runtime dependency
-    TString depFile = Remove_CTest_Dependency_File(outDir, "mvd_qa4_reco");
-
-
     // In general, the following parts need not be touched
     // ========================================================================
 
@@ -157,7 +153,5 @@ void mvd_qa4_reco( const char* setup = "sis100_electron")
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
 
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
   RemoveGeoManager();
 }

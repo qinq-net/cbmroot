@@ -27,9 +27,6 @@ void mvd_qa1_transUrqmd( const char* setup = "sis100_electron")
 
   TString geoFile = outDir + "geoQA.root";
 
-  // Function needed for CTest runtime dependency
-  TString depFile = Remove_CTest_Dependency_File(outDir, "mvd_qa1_transUrqmd");
-
   TString setupFile = inDir + "/geometry/setup/setup_"+ setup +".C";
   TString setupFunct = "setup_";
   setupFunct = setupFunct + setup + "()";
@@ -232,7 +229,5 @@ void mvd_qa1_transUrqmd( const char* setup = "sis100_electron")
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
 
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
 }
 

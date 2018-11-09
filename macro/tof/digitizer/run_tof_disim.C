@@ -62,9 +62,6 @@ void run_tof_disim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
   // ------------------------------------------------------------------------
 
-  // Function needed for CTest runtime dependency
-  TString depFile = Remove_CTest_Dependency_File(outDir, "run_tof_disim" , setup);
-
   TString setupFile = inDir + "/geometry/setup/setup_"+ setup +".C";
   TString setupFunct = "setup_";
   setupFunct = setupFunct + setup + "()";
@@ -227,7 +224,5 @@ void run_tof_disim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
   
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
 }
 

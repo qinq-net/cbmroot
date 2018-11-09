@@ -14,14 +14,13 @@ GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/tof/digitizer/run_tof_disi
 add_test(tof_disim ${CBMROOT_BINARY_DIR}/macro/tof/digitizer/run_tof_disim.sh ${NumEvents} \"${setup}\")
 SET_TESTS_PROPERTIES(tof_disim PROPERTIES TIMEOUT "600")
 SET_TESTS_PROPERTIES(tof_disim PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+set_tests_properties(tof_disim PROPERTIES FIXTURES_SETUP fixture_tof_digi1)
 
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/tof/digitizer/run_digi_test.C)
 add_test(tof_digi1 ${CBMROOT_BINARY_DIR}/macro/tof/digitizer/run_digi_test.sh ${NumEvents} \"${setup}\")
 SET_TESTS_PROPERTIES(tof_digi1 PROPERTIES TIMEOUT "300")
-SET_TESTS_PROPERTIES(tof_digi1 PROPERTIES DEPENDS tof_disim)
 SET_TESTS_PROPERTIES(tof_digi1 PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-Set(_FileName_Dependency data/run_tof_disim_${setup}_ok)
-Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+set_tests_properties(tof_digi1 PROPERTIES FIXTURES_REQUIRED fixture_tof_digi1)
 
 
 ### To do later: run with different digitizer/clusterizer options

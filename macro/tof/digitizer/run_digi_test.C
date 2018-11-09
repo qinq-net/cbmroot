@@ -77,9 +77,6 @@ void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
               << tofBdfFile->GetString() << std::endl;
   }
 
-  // Function needed for CTest runtime dependency
-  TString depFile = Remove_CTest_Dependency_File(outDir, "run_digi_test" , setup);
-
   // In general, the following parts need not be touched
   // ========================================================================
 
@@ -221,7 +218,5 @@ void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
    cout << " Test passed" << endl;
    cout << " All ok " << endl;
   
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
   RemoveGeoManager();
 }

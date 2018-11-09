@@ -32,10 +32,7 @@ void mvd_qa2_transDelta(const char* setup = "sis100_electron")
   TString outFile = outpath + outfile;
 
   // Parameter file name
-  TString parFile = outpath + "params.root";
-
-  // Function needed for CTest runtime dependency
-  TString depFile = Remove_CTest_Dependency_File(outDir, "mvd_qa2_transDelta");
+  TString parFile = outpath + "params_delta.root";
 
   TString setupFile = inDir + "/geometry/setup/setup_"+ setup +".C";
   TString setupFunct = "setup_";
@@ -194,7 +191,5 @@ void mvd_qa2_transDelta(const char* setup = "sis100_electron")
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
 
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
 }
 

@@ -50,10 +50,6 @@ void mvd_qa3_digitize( const char* setup = "sis100_electron")
     gROOT->LoadMacro(setupFile);
     gInterpreter->ProcessLine(setupFunct);
 
-    // Function needed for CTest runtime dependency
-    TString depFile = Remove_CTest_Dependency_File(outDir, "mvd_qa3_digitize");
-
-
     // In general, the following parts need not be touched
     // ========================================================================
 
@@ -122,10 +118,7 @@ void mvd_qa3_digitize( const char* setup = "sis100_electron")
     std::cout << std::endl;
     // ---------------------------------------------------------------------------
 
-
   std::cout << " Test passed" << std::endl;
   std::cout << " All ok " << std::endl;
 
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
 }
