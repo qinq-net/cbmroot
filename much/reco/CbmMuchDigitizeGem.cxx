@@ -1003,7 +1003,7 @@ void CbmMuchDigitizeGem::AddCharge(CbmMuchPad* pad, UInt_t charge, Int_t iPoint,
   signal->AddNoise(fMeanNoise);
   UInt_t address = pad->GetAddress();
   //match->AddCharge(iPoint,charge,time+driftTime,fgDeltaResponse,time,eventNr,inputNr);
-  CbmLink link(charge, iPoint, fCurrentEvent, fCurrentInput);
+  CbmLink link(charge, iPoint, fCurrentMCEntry, fCurrentInput);
   //std::cout<<"Before AddLink"<< endl;
   (signal->GetMatch())->AddLink(link);
   //std::cout<<"After AddLink"<< endl;
@@ -1041,7 +1041,7 @@ Bool_t CbmMuchDigitizeGem::BufferSignals(Int_t iPoint,Double_t time, Double_t dr
     //signal->MakeSignalShape(it->second,fgDeltaResponse);
     signal->SetCharge(it->second);
     signal->AddNoise(fMeanNoise);
-    CbmLink link(signal->GetCharge(), iPoint, fCurrentEvent, fCurrentInput);
+    CbmLink link(signal->GetCharge(), iPoint, fCurrentMCEntry, fCurrentInput);
     (signal->GetMatch())->AddLink(link);
     //Adding all these temporary signal into the CbmMuchReadoutBuffer
     CbmMuchReadoutBuffer::Instance()->Fill(address, signal);

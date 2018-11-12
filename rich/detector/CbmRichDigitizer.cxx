@@ -143,11 +143,11 @@ Int_t CbmRichDigitizer::ProcessMcEvent()
 
    for(Int_t j = 0; j < nofRichPoints; j++){
       CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(j);
-      ProcessPoint(point, j, fCurrentEvent, fCurrentInput);
+      ProcessPoint(point, j, fCurrentMCEntry, fCurrentInput);
    }
   // cout << "nofDigis:" << fRichDigis->GetEntries() << endl;
 
-   AddNoiseDigis(fCurrentEvent, fCurrentInput);
+   AddNoiseDigis(fCurrentMCEntry, fCurrentInput);
 
    return nofRichPoints;
 }

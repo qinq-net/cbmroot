@@ -103,6 +103,7 @@ class CbmDigitize : public FairTask
     Bool_t fEventMode;
     Int_t fCurrentInput;
     Int_t fCurrentEvent;
+    Int_t fCurrentMCEntry;
     Double_t fCurrentEventTime;
     CbmDaqBuffer* fDaqBuffer;
 

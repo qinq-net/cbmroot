@@ -557,6 +557,7 @@ void CbmStsDigitize::ProcessMCEvent() {
 
   // --- MC Event info (input file, entry number, start time)
   LOG(DEBUG) << GetName() << ": Processing event " << fCurrentEvent
+      << ", entry " << fCurrentMCEntry
       << " from input " << fCurrentInput << " at t = " << fCurrentEventTime
       << " ns with " << fPoints->GetEntriesFast() << " StsPoints "
       << FairLogger::endl;
@@ -566,7 +567,7 @@ void CbmStsDigitize::ProcessMCEvent() {
   assert ( fPoints );
   for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
     const CbmStsPoint* point = (const CbmStsPoint*) fPoints->At(iPoint);
-    CbmLink* link = new CbmLink(1., iPoint, fCurrentEvent, fCurrentInput);
+    CbmLink* link = new CbmLink(1., iPoint, fCurrentMCEntry, fCurrentInput);
 
     // --- Discard secondaries if the respective flag is set
     if ( fDigiPar->GetDiscardSecondaries() ) {

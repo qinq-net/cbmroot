@@ -1201,7 +1201,7 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                         {
                            // Store Link with weight 0 to have a trace of MC tracks firing the channel
                            // but whose Digi is not propagated to next stage
-                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fCurrentEvent,fCurrentInput ));
+                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fCurrentMCEntry,fCurrentInput ));
 
                           if( fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
@@ -1243,7 +1243,7 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                         // The original digi will be deleted below, together with the unused digis from the buffer.
                         CbmTofDigiExp* digi = new CbmTofDigiExp(*(fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]));
                         digi->SetTime(digi->GetTime() * fdDigiTimeConvFactor + fCurrentEventTime);  // ns->ps
-                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fCurrentEvent,fCurrentInput));
+                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fCurrentMCEntry,fCurrentInput));
                         digi->SetMatch(digiMatch);
 
                         CbmLink LP = digiMatch->GetMatchedLink();
@@ -1322,7 +1322,7 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                         {
                            // Store Link with weight 0 to have a trace of MC tracks firing the channel
                            // but whose Digi is not propagated to next stage
-                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fCurrentEvent,fCurrentInput ));
+                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fCurrentMCEntry,fCurrentInput ));
 
                            if( fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
@@ -1366,7 +1366,7 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                         // The original digi will be deleted below, together with the unused digis from the buffer.
  			            CbmTofDigi* digi = new CbmTofDigi(*(fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]));
 			            digi->SetTime(digi->GetTime()*fdDigiTimeConvFactor + fCurrentEventTime); // ns -> ps
-                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fCurrentEvent,fCurrentInput ));
+                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fCurrentMCEntry,fCurrentInput ));
 			            digi->SetMatch(digiMatch);
 
                         CbmLink LP = digiMatch->GetMatchedLink();

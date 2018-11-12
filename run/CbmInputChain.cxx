@@ -38,9 +38,6 @@ CbmInputChain::CbmInputChain(TChain* chain, Double_t rate) :
     fDeltaDist = new TF1("DeltaDist", "exp(-x/[0])/[0]", 0., 10. * mean);
     fDeltaDist->SetParameter(0, mean);
   }
-  else
-    LOG(FATAL) << "InputChain: illegal non-positive rate " << rate
-               << FairLogger::endl;
 
 }
 // ---------------------------------------------------------------------------
@@ -57,7 +54,7 @@ CbmInputChain::~CbmInputChain() {
 
 // -----   Time difference to next event   -----------------------------------
 Double_t CbmInputChain::GetDeltaT() {
-  assert(fDeltaDist);
+  if ( ! fDeltaDist ) return 0.;
   return fDeltaDist->GetRandom();
 }
 // ---------------------------------------------------------------------------

@@ -44,15 +44,21 @@ void CbmDigitize::GetEventInfo() {
   // --- The event number is taken from the FairRootManager
   fCurrentEvent = FairRootManager::Instance()->GetEntryNr();
 
-  // --- In a FairRunAna, take input number and time from FairEventHeader
+  // --- In a FairRunAna, take MC entry number, input number and time
+  // --- from FairEventHeader. Note that the MC entry number need
+  // --- not coincide with the event number, for instance if the run
+  // --- does not start with the first MC entry, or in the case of
+  // --- mixed MC inputs to digitization.
   if ( FairRunAna::Instance() ) {
     FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
     assert ( event );
     fCurrentInput   = event->GetInputFileId();
+    fCurrentMCEntry = event->GetMCEntryNumber();
     fCurrentEventTime = event->GetEventTime();
   } //? FairRunAna
   else {  // no FairRunAna
-    fCurrentInput = 0;
+    fCurrentInput = -1;
+    fCurrentMCEntry = -1;
     fCurrentEventTime = 0.;
   } //? not FairRunAna
 

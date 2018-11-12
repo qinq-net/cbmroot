@@ -25,7 +25,8 @@ CbmDigitizationSource::CbmDigitizationSource() :
         fCurrentEntryId(0),
         fCurrentInputId(0),
         fCurrentRunId(0),
-        fFirstCall(kTRUE) {
+        fFirstCall(kTRUE),
+        fEventMode(kFALSE) {
 }
 // ---------------------------------------------------------------------------
 
@@ -126,12 +127,14 @@ Bool_t CbmDigitizationSource::Init() {
   ActivateObject(object, "MCEventHeader.");
 
   // Set the time of the first event for each input
-  for (auto const& mapEntry : fInputs) {
-    CbmInputChain* input = mapEntry.second;
-    Double_t time = input->GetDeltaT();
-    LOG(INFO) << "First time for input " << mapEntry.first << " is " << time
-              << FairLogger::endl;
-    fNextEvent.insert(std::make_pair(time, mapEntry.first));
+  if ( ! fEventMode ) {
+    for (auto const& mapEntry : fInputs) {
+      CbmInputChain* input = mapEntry.second;
+      Double_t time = input->GetDeltaT();
+      LOG(INFO) << "First time for input " << mapEntry.first << " is " << time
+          << FairLogger::endl;
+      fNextEvent.insert(std::make_pair(time, mapEntry.first));
+    }
   }
 
   return kTRUE;
@@ -150,7 +153,6 @@ Int_t CbmDigitizationSource::ReadEvent(UInt_t event) {
   // the first entry of the first input directly, without incrementing its
   // current entry bookkeeper.
   if ( fFirstCall ) {
-    LOG(INFO) << "First call to ReadEvent" << FairLogger::endl;
     CbmInputChain* input = fInputs.at(0);
     input->GetChain()->GetEntry(0);
     fCurrentRunId = fMCEventHeader->GetRunID();
@@ -158,26 +160,48 @@ Int_t CbmDigitizationSource::ReadEvent(UInt_t event) {
     fCurrentEntryId = 0;
     fCurrentTime = 0.;
     fFirstCall = kFALSE;
+    LOG(INFO) << "DigitizationSource: Run ID is " << fCurrentRunId
+        << FairLogger::endl;
     return 0;
   }
 
+  // In the event-by-event mode, get the respective event from the first
+  // input; the event time is zero.
+  if ( fEventMode ) {
+    CbmInputChain* input = fInputs[0];
+    // Stop run if out-of-range of input tree
+    if ( event >= input->GetNofEntries() ) {
+      LOG(INFO) << "DigitizationSource: Requested event " << event
+          << " exceeds number of entries in input ( "
+          << input->GetNofEntries() << " )" << FairLogger::endl;
+      return 1;
+    }
+    fInputs[0]->GetChain()->GetEntry(event);
+    fCurrentInputId = 0;
+    fCurrentEntryId = event;
+    fCurrentTime = 0.;
+    LOG(INFO) << "DigitizationSource: Event " << event << " at t = "
+              << fCurrentTime << " ns" << " from input " << fCurrentInputId
+              << " (entry " << fCurrentEntryId << ")" << FairLogger::endl;
+    return 0;
+  }
+
+  // Get the input with the next event time
   Double_t time = fNextEvent.begin()->first;
   UInt_t inputId = fNextEvent.begin()->second;
   CbmInputChain* input = fInputs.at(inputId);
   assert(input);
 
   // Get the next entry from the respective input chain
-  Int_t entryId = input->GetNextEntry();
+  fCurrentEntryId = input->GetNextEntry();
   fCurrentTime = time;
-  fCurrentEntryId = entryId;
   fCurrentInputId = inputId;
-
   LOG(INFO) << "DigitizationSource: Event " << event << " at t = " << time
-            << " ns" << " from input " << inputId << " (entry " << entryId
-            << ")" << FairLogger::endl;
+            << " ns" << " from input " << inputId << " (entry "
+            << fCurrentEntryId << ")" << FairLogger::endl;
 
   // Stop the run if the number of entries in this input is reached
-  if (entryId < 0) {
+  if (fCurrentEntryId < 0) {
     LOG(INFO) << "DigitizationSource: No more entries in input " << inputId
         << FairLogger::endl;
     return 1;

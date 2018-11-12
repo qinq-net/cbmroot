@@ -151,6 +151,17 @@ class CbmDigitizationSource : public FairSource
     }
 
 
+    /** @brief Set event-by-event mode
+     ** @value choice  kTRUE if event-by-event mode
+     **
+     ** In the event-by-event mode, only the first input is processed.
+     ** No event start time is generated; the event time is always zero.
+     **/
+    void SetEventMode(Bool_t choice = kTRUE) {
+      fEventMode = choice;
+    }
+
+
     /** @brief Abstract in base class. No implementation here.
      **
      ** Is actually not called at all from FairRunAna.
@@ -170,6 +181,7 @@ class CbmDigitizationSource : public FairSource
     Int_t fCurrentInputId;
     Int_t fCurrentRunId;
     Bool_t fFirstCall;
+    Bool_t fEventMode;
 
 
 

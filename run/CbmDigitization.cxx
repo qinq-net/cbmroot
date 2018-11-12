@@ -16,6 +16,7 @@
 #include "FairParAsciiFileIo.h"
 #include "FairParRootFileIo.h"
 #include "FairRuntimeDb.h"
+#include "CbmDigitizationSource.h"
 #include "CbmMuchDigitizeGem.h"
 #include "CbmMvdDigitizer.h"
 #include "CbmPsdSimpleDigitizer.h"
@@ -231,11 +232,13 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   LOG(INFO) << "==================================================="
       << FairLogger::endl;
 
+
   // --- Look for input branches
   Int_t nBranches = CheckInputFile();
   TString word = (nBranches == 1 ? "branch" : "branches");
   LOG(INFO) << fName << ": " << nBranches << " input " << word << " found"
       << FairLogger::endl << FairLogger::endl;
+
 
   // --- Create default digitizers
   Int_t nDigis = CreateDefaultDigitizers();
@@ -243,15 +246,18 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   LOG(INFO) << fName << ": " << nDigis << word << " instantiated."
       << FairLogger::endl << FairLogger::endl;
 
+
   // --- Extract needed information from runtime database
   FairRuntimeDb* rtdb = FairRuntimeDb::instance();
   FairParRootFileIo* parIoRoot = new FairParRootFileIo();
   parIoRoot->open(fParRootFile.Data(), "READ");
   rtdb->setFirstInput(parIoRoot);
 
+
   // --- Get geometry from runtime database
   rtdb->getContainer("FairGeoParSet");
   rtdb->initContainers(fRun);
+
 
   // --- Add default parameter files for TRD and TOF
   TString tofGeo = GetGeoTag(kTof, gGeoManager);
@@ -277,17 +283,17 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   delete rtdb;
   delete parIoRoot;
 
+
   // --- Delete TGeoManager (will be initialised again from FairRunAna)
   if (gROOT->GetVersionInt() >= 60602) {
     gGeoManager->GetListOfVolumes()->Delete();
     gGeoManager->GetListOfShapes()->Delete();
     delete gGeoManager;
   } //? ROOT version
-  LOG(INFO) << "==================================================="
-      << FairLogger::endl;
 
 
   // --- Create CbmRunAna
+  std::cout << std::endl;
   CbmRunAna* run = new CbmRunAna();
   run->SetAsync();
   run->SetGenerateRunInfo(fGenerateRunInfo);
@@ -297,26 +303,32 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   if ( fMonitor ) LOG(INFO) << fName << ": Monitor is enabled."
       << FairLogger::endl << FairLogger::endl;
 
+
   // --- Add input files
-  Int_t nInputs = fInputFiles.size();
-  for (Int_t iInput = 0; iInput < nInputs; iInput++) {
-    FairFileSource* source = new FairFileSource(fInputFiles.at(iInput));
-    if ( ! fDaq->IsEventMode() )
-      source->SetEventMeanTime(1.e9 / fEventRates.at(iInput));
-    run->SetSource(source);
-    if ( ! fDaq->IsEventMode() )
-      LOG(INFO) << fName << ": Use input file " << fInputFiles.at(iInput)
-      << " at event rate " << fEventRates.at(iInput) << " / s "
-      << FairLogger::endl;
-    else
-      LOG(INFO) << fName << ": Use input file " << fInputFiles.at(iInput)
-      << FairLogger::endl;
+  CbmDigitizationSource* source = new CbmDigitizationSource();
+  if ( fDaq->IsEventMode() ) source->SetEventMode();
+  for (Int_t iInput = 0; iInput < fInputFiles.size(); iInput++) {
+    // In the event-by-event case, ignore all but the first input
+    if ( fDaq->IsEventMode() && iInput > 0 ) {
+      LOG(WARNING) << fName << ": Event-by-event mode; ignoring input "
+          << iInput << FairLogger::endl;
+    }
+    else {
+      LOG(INFO) << fName << ": Adding input " << iInput << " with rate "
+          << fEventRates.at(iInput) << FairLogger::endl;
+      TChain* chain = new TChain("cbmsim");
+      chain->Add(fInputFiles.at(iInput).Data());
+      source->AddInput(iInput, chain, fEventRates.at(iInput));
+    }
   }
+  run->SetSource(source);
+
 
   // --- Set output file
   run->SetOutputFile(fOutFile);
   LOG(INFO) << fName << ": Output file is " << fOutFile
       << FairLogger::endl << FairLogger::endl;
+
 
   // --- Register digitisers
   for (auto it = fDigitizers.begin(); it != fDigitizers.end(); it++) {
@@ -331,31 +343,34 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
     } //? active and digitizer instance present
   } //# digitizers
 
+
   // --- In event-by-event mode: also empty events (time-slices) are stored
   if ( fDaq->IsEventMode() ) StoreAllTimeSlices();
 
+
   // --- Register DAQ
   run->AddTask(fDaq);
+
 
   // --- Set runtime database
   std::cout << std::endl;
   LOG(INFO) << fName << ": Setting runtime DB " << FairLogger::endl;
   LOG(INFO) << fName << ": ROOT I/O is " << fParRootFile << FairLogger::endl;
   rtdb = run->GetRuntimeDb();
-
   parIoRoot = new FairParRootFileIo();
   parIoRoot->open(fParRootFile.Data(), "UPDATE");
   if ( fParAsciiFiles.IsEmpty() ) {
     LOG(INFO) << fName << ": No ASCII input to parameter database"
         << FairLogger::endl;
     rtdb->setFirstInput(parIoRoot);
-  } else {
+  } //? ASCII parameter file list empty
+  else {
     FairParAsciiFileIo* parIoAscii = new FairParAsciiFileIo();
     parIoAscii->open(&fParAsciiFiles, "in");
     rtdb->setFirstInput(parIoAscii);
     rtdb->setSecondInput(parIoRoot);
-  } //? Parameter list not empty
-//  rtdb->Print();
+  } //? ASCII parameter file list not empty
+
 
   // --- Initialise run
   std::cout << std::endl << std::endl;
@@ -365,8 +380,10 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   run->Init();
   rtdb->setOutput(parIoRoot);
   rtdb->saveOutput();
+  LOG(INFO) << fName << ": Initialising run...finished" << FairLogger::endl;
   LOG(INFO) << "==================================================="
       << FairLogger::endl;
+
 
   // --- Run digitisation
   std::cout << std::endl << std::endl << std::endl;
@@ -386,6 +403,7 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   LOG(INFO) << fName << ": Run finished." << FairLogger::endl;
   LOG(INFO) << "==================================================="
       << FairLogger::endl;
+
 
   // --- Resource monitoring
   std::cout << std::endl << std::endl;

@@ -174,7 +174,7 @@ void CbmTrdDigitizer::Exec(Option_t*)
       }
       mod = AddModule(point->GetDetectorID());
     } else mod = imod->second;
-    mod->SetLinkId(fCurrentInput, fCurrentEvent, iPoint);
+    mod->SetLinkId(fCurrentInput, fCurrentMCEntry, iPoint);
     mod->MakeDigi(point, fCurrentEventTime, TMath::Abs(track->GetPdgCode()) == 11);
   }
 
