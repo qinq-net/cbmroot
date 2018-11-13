@@ -6,7 +6,8 @@
 # and PANDAROOT.
 
 # Check if cmake has the required version
-CMAKE_MINIMUM_REQUIRED(VERSION 3.3.2 FATAL_ERROR)
+# For the CTest fixtures at least CMake 3.7.2 is needed.
+CMAKE_MINIMUM_REQUIRED(VERSION 3.7.2 FATAL_ERROR)
 
 # Set name of our project to "CBMROOT". Has to be done
 # after check of cmake version                        
