@@ -733,11 +733,11 @@ void CbmMcbm2018MonitorStsSync::CreateHistograms()
       } // for( UInt_t uXyterIdxB = 0; uXyterIdxB < fuNbStsXyters; ++uXyterIdxB )
 
       sHistName = Form( "fhPulserIntervalAsic_%03u", uXyterIdx );
-      title =  Form( "Time diff between consecutive hits in ASIC %03us; dt [ns];  Counts", uXyterIdx, uXyterIdx );
+      title =  Form( "Time diff between consecutive hits in ASIC %03us; dt [ns];  Counts", uXyterIdx );
       fhPulserIntervalAsic.push_back( new TH1I( sHistName, title, 200, 0, 200 * stsxyter::kdClockCycleNs ) );
 
       sHistName = Form( "fhPulserIntervalLongAsic_%03u", uXyterIdx );
-      title =  Form( "Time diff between consecutive hits in ASIC %03us; dt [ns];  Counts", uXyterIdx, uXyterIdx );
+      title =  Form( "Time diff between consecutive hits in ASIC %03us; dt [ns];  Counts", uXyterIdx );
       fhPulserIntervalLongAsic.push_back( new TH1I( sHistName, title, 1e5, 0, 1e6 * stsxyter::kdClockCycleNs ) );
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
@@ -1210,7 +1210,7 @@ Bool_t CbmMcbm2018MonitorStsSync::DoUnpack(const fles::Timeslice& ts, size_t com
             // Print message if requested
             if( fbPrintMessages )
             {
-               std::cout << Form("DPB %2u TS %12u MS %12u mess %5u ", fuCurrDpbIdx, fulCurrentTsIdx, fulCurrentMsIdx, uIdx );
+               std::cout << Form("DPB %2u TS %12llu MS %12llu mess %5u ", fuCurrDpbIdx, fulCurrentTsIdx, fulCurrentMsIdx, uIdx );
                mess.PrintMess( std::cout, fPrintMessCtrl );
             } // if( fbPrintMessages )
 
@@ -1265,7 +1265,7 @@ Bool_t CbmMcbm2018MonitorStsSync::DoUnpack(const fles::Timeslice& ts, size_t com
                                                    usStatusField );
 
                      /// Always print status messages
-                     std::cout << Form("DPB %2u TS %12u MS %12u mess %5u ", fuCurrDpbIdx, fulCurrentTsIdx, fulCurrentMsIdx, uIdx );
+                     std::cout << Form("DPB %2u TS %12llu MS %12llu mess %5u ", fuCurrDpbIdx, fulCurrentTsIdx, fulCurrentMsIdx, uIdx );
                      mess.PrintMess( std::cout, fPrintMessCtrl );
 //                   FillTsMsbInfo( mess );
                   break;

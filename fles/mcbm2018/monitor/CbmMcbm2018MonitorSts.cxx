@@ -824,7 +824,7 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       {
          sHistName = Form( "hStsFebChanDtCoinc_%03u_%03u", uFebIdx, uFebIdxB );
          title = Form( "Channel coincidences Time diff between FEB #%03u and  FEB #%03u; Time difference [ns]",
-                        uFebIdx, uFebIdxB, uFebIdx, uFebIdxB );
+                        uFebIdx, uFebIdxB );
          fhStsFebChanDtCoinc[ uFebIdx ][ uFebIdxB ] = new TH1I( sHistName, title, 400, -1250., 1250.);
 
          sHistName = Form( "hStsFebChanCoinc_%03u_%03u", uFebIdx, uFebIdxB );

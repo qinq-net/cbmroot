@@ -179,32 +179,32 @@ private:
    TH2* fhStsMessTypePerElink;
    TH2* fhStsSysMessTypePerElink;
 
-   std::vector<TH1 *> fhStsChanCntRaw;
-   std::vector<TH1 *> fhStsChanCntRawGood;
-   std::vector<TH2 *> fhStsChanAdcRaw;
-   std::vector<TProfile*> fhStsChanAdcRawProf;
-   std::vector<TH2*> fhStsChanRawTs;
-   std::vector<TH2*> fhStsChanMissEvt;
-   std::vector<TH2*> fhStsChanMissEvtEvo;
-   std::vector<TH2*> fhStsChanHitRateEvo;
-   std::vector<TH1*> fhStsFebRateEvo;
-   std::vector<TH1*> fhStsFebMissEvtEvo;
-   std::vector<TH2*> fhStsChanHitRateEvoLong;
-   std::vector<TH1*> fhStsFebRateEvoLong;
+   std::vector<TH1 *> fhStsChanCntRaw; //!
+   std::vector<TH1 *> fhStsChanCntRawGood; //!
+   std::vector<TH2 *> fhStsChanAdcRaw; //!
+   std::vector<TProfile*> fhStsChanAdcRawProf; //!
+   std::vector<TH2*> fhStsChanRawTs; //!
+   std::vector<TH2*> fhStsChanMissEvt; //!
+   std::vector<TH2*> fhStsChanMissEvtEvo; //!
+   std::vector<TH2*> fhStsChanHitRateEvo; //!
+   std::vector<TH1*> fhStsFebRateEvo; //!
+   std::vector<TH1*> fhStsFebMissEvtEvo; //!
+   std::vector<TH2*> fhStsChanHitRateEvoLong; //!
+   std::vector<TH1*> fhStsFebRateEvoLong; //!
 
    /// Pulser time difference histos
    Double_t                          fdStsStartTs; //! Last hits in each ASIC
    std::vector< stsxyter::FinalHit > fvmStsLastHitAsic; //! Last hits in each ASIC
-   std::vector<TH2 *>                fhStsTimeDiffPerAsic;
-   std::vector< std::vector<TH1 *> > fhStsTimeDiffPerAsicPair;
-   std::vector< std::vector<TH1 *> > fhStsTimeDiffClkPerAsicPair;
-   std::vector< std::vector<TH2 *> > fhStsTimeDiffEvoPerAsicPair;
-   std::vector< std::vector<TProfile *> > fhStsTimeDiffEvoPerAsicPairProf;
-   std::vector< std::vector<TProfile *> > fhStsRawTimeDiffEvoPerAsicPairProf;
-   std::vector< std::vector<TH2 *> > fhStsTsLsbMatchPerAsicPair;
-   std::vector< std::vector<TH2 *> > fhStsTsMsbMatchPerAsicPair;
-   std::vector<TH1 *>                fhStsIntervalAsic;
-   std::vector<TH1 *>                fhStsIntervalLongAsic;
+   std::vector<TH2 *>                fhStsTimeDiffPerAsic; //!
+   std::vector< std::vector<TH1 *> > fhStsTimeDiffPerAsicPair; //!
+   std::vector< std::vector<TH1 *> > fhStsTimeDiffClkPerAsicPair; //!
+   std::vector< std::vector<TH2 *> > fhStsTimeDiffEvoPerAsicPair; //!
+   std::vector< std::vector<TProfile *> > fhStsTimeDiffEvoPerAsicPairProf; //!
+   std::vector< std::vector<TProfile *> > fhStsRawTimeDiffEvoPerAsicPairProf; //!
+   std::vector< std::vector<TH2 *> > fhStsTsLsbMatchPerAsicPair; //!
+   std::vector< std::vector<TH2 *> > fhStsTsMsbMatchPerAsicPair; //!
+   std::vector<TH1 *>                fhStsIntervalAsic; //!
+   std::vector<TH1 *>                fhStsIntervalLongAsic; //!
 
    /// Processing methods
    void CreateStsHistograms();
@@ -293,31 +293,31 @@ private:
    TH2* fhTofScmSeuCounters;
    TH2* fhTofScmSeuCountersEvo;
       /// Hit messages
-   std::vector< TH2      * > fvhTofRawFt_gDPB;
-   std::vector< TH2      * > fvhTofRawTot_gDPB;
-   std::vector< TH1      * > fvhTofChCount_gDPB;
-   std::vector< TH2      * > fvhTofChannelRate_gDPB;
-   std::vector< TH2      * > fvhTofRemapTot_gDPB;
-   std::vector< TH1      * > fvhTofRemapChCount_gDPB;
-   std::vector< TH2      * > fvhTofRemapChRate_gDPB;
-   std::vector< TH1      * > fvhTofFeeRate_gDPB;
-   std::vector< TH1      * > fvhTofFeeErrorRate_gDPB;
-   std::vector< TProfile * > fvhTofFeeErrorRatio_gDPB;
-   std::vector< TH1      * > fvhTofFeeRateLong_gDPB;
-   std::vector< TH1      * > fvhTofFeeErrorRateLong_gDPB;
-   std::vector< TProfile * > fvhTofFeeErrorRatioLong_gDPB;
+   std::vector< TH2      * > fvhTofRawFt_gDPB; //!
+   std::vector< TH2      * > fvhTofRawTot_gDPB; //!
+   std::vector< TH1      * > fvhTofChCount_gDPB; //!
+   std::vector< TH2      * > fvhTofChannelRate_gDPB; //!
+   std::vector< TH2      * > fvhTofRemapTot_gDPB; //!
+   std::vector< TH1      * > fvhTofRemapChCount_gDPB; //!
+   std::vector< TH2      * > fvhTofRemapChRate_gDPB; //!
+   std::vector< TH1      * > fvhTofFeeRate_gDPB; //!
+   std::vector< TH1      * > fvhTofFeeErrorRate_gDPB; //!
+   std::vector< TProfile * > fvhTofFeeErrorRatio_gDPB; //!
+   std::vector< TH1      * > fvhTofFeeRateLong_gDPB; //!
+   std::vector< TH1      * > fvhTofFeeErrorRateLong_gDPB; //!
+   std::vector< TProfile * > fvhTofFeeErrorRatioLong_gDPB; //!
 
       /// STAR TRIGGER detection
-   std::vector< TH1 *      > fvhTofTokenMsgType;
-   std::vector< TH1 *      > fvhTofTriggerRate;
-   std::vector< TH2 *      > fvhTofCmdDaqVsTrig;
-   std::vector< TH2 *      > fvhTofStarTokenEvo;
-   std::vector< TProfile * > fvhTofStarTrigGdpbTsEvo;
-   std::vector< TProfile * > fvhTofStarTrigStarTsEvo;
+   std::vector< TH1 *      > fvhTofTokenMsgType; //!
+   std::vector< TH1 *      > fvhTofTriggerRate; //!
+   std::vector< TH2 *      > fvhTofCmdDaqVsTrig; //!
+   std::vector< TH2 *      > fvhTofStarTokenEvo; //!
+   std::vector< TProfile * > fvhTofStarTrigGdpbTsEvo; //!
+   std::vector< TProfile * > fvhTofStarTrigStarTsEvo; //!
 
       /// Pulser monitoring
    const Double_t kdTofMaxDtPulserPs = 100e3;
-   std::vector< std::vector< TH1 * > > fvhTofTimeDiffPulser;
+   std::vector< std::vector< TH1 * > > fvhTofTimeDiffPulser; //!
    TH2 * fhTofTimeRmsPulser;
    TH2 * fhTofTimeRmsZoomFitPuls;
    TH2 * fhTofTimeResFitPuls;

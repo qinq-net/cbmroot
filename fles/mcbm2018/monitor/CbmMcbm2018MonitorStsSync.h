@@ -163,18 +163,18 @@ private:
    TH2* fhPulserStatusMessType;
    TH2* fhPulserMsStatusFieldType;
 
-   std::vector<TH1 *> fhPulserChanCntRaw;
-   std::vector<TH1 *> fhPulserChanCntRawGood;
-   std::vector<TH2 *> fhPulserChanAdcRaw;
-   std::vector<TProfile*> fhPulserChanAdcRawProf;
-   std::vector<TH2*> fhPulserChanRawTs;
-   std::vector<TH2*> fhPulserChanMissEvt;
-   std::vector<TH2*> fhPulserChanMissEvtEvo;
-   std::vector<TH2*> fhPulserChanHitRateEvo;
-   std::vector<TH1*> fhPulserFebRateEvo;
-   std::vector<TH1*> fhPulserFebMissEvtEvo;
-   std::vector<TH2*> fhPulserChanHitRateEvoLong;
-   std::vector<TH1*> fhPulserFebRateEvoLong;
+   std::vector<TH1 *> fhPulserChanCntRaw; //!
+   std::vector<TH1 *> fhPulserChanCntRawGood; //!
+   std::vector<TH2 *> fhPulserChanAdcRaw; //!
+   std::vector<TProfile*> fhPulserChanAdcRawProf; //!
+   std::vector<TH2*> fhPulserChanRawTs; //!
+   std::vector<TH2*> fhPulserChanMissEvt; //!
+   std::vector<TH2*> fhPulserChanMissEvtEvo; //!
+   std::vector<TH2*> fhPulserChanHitRateEvo; //!
+   std::vector<TH1*> fhPulserFebRateEvo; //!
+   std::vector<TH1*> fhPulserFebMissEvtEvo; //!
+   std::vector<TH2*> fhPulserChanHitRateEvoLong; //!
+   std::vector<TH1*> fhPulserFebRateEvoLong; //!
 
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
@@ -183,18 +183,18 @@ private:
    /// Pulser time difference histos
    Double_t                          fdStartTs; //! Last hits in each ASIC
    std::vector< stsxyter::FinalHit > fvmLastHitAsic; //! Last hits in each ASIC
-   std::vector<TH2 *>                fhPulserTimeDiffPerAsic;
-   std::vector< std::vector<TH1 *> > fhPulserTimeDiffPerAsicPair;
-   std::vector< std::vector<TH1 *> > fhPulserTimeDiffClkPerAsicPair;
-   std::vector< std::vector<TH2 *> > fhPulserTimeDiffEvoPerAsicPair;
-   std::vector< std::vector<TProfile *> > fhPulserTimeDiffEvoPerAsicPairProf;
-   std::vector< std::vector<TProfile *> > fhPulserRawTimeDiffEvoPerAsicPairProf;
-   std::vector< std::vector<TH2 *> > fhPulserTsLsbMatchPerAsicPair;
-   std::vector< std::vector<TH2 *> > fhPulserTsMsbMatchPerAsicPair;
-   std::vector< std::vector<TProfile *> > fhPulserTsLsbDiffEvoPerAsicPairProf;
-   std::vector< std::vector<TProfile *> > fhPulserTsMsbDiffEvoPerAsicPairProf;
-   std::vector<TH1 *>                fhPulserIntervalAsic;
-   std::vector<TH1 *>                fhPulserIntervalLongAsic;
+   std::vector<TH2 *>                fhPulserTimeDiffPerAsic; //!
+   std::vector< std::vector<TH1 *> > fhPulserTimeDiffPerAsicPair; //!
+   std::vector< std::vector<TH1 *> > fhPulserTimeDiffClkPerAsicPair; //!
+   std::vector< std::vector<TH2 *> > fhPulserTimeDiffEvoPerAsicPair; //!
+   std::vector< std::vector<TProfile *> > fhPulserTimeDiffEvoPerAsicPairProf; //!
+   std::vector< std::vector<TProfile *> > fhPulserRawTimeDiffEvoPerAsicPairProf; //!
+   std::vector< std::vector<TH2 *> > fhPulserTsLsbMatchPerAsicPair; //!
+   std::vector< std::vector<TH2 *> > fhPulserTsMsbMatchPerAsicPair; //!
+   std::vector< std::vector<TProfile *> > fhPulserTsLsbDiffEvoPerAsicPairProf; //!
+   std::vector< std::vector<TProfile *> > fhPulserTsMsbDiffEvoPerAsicPairProf; //!
+   std::vector<TH1 *>                fhPulserIntervalAsic; //!
+   std::vector<TH1 *>                fhPulserIntervalLongAsic; //!
 
    static const UInt_t kuNbValuesForTimeDiffMean = 100;
    constexpr static const double kdPulserPeriod = 154000; /// ns
