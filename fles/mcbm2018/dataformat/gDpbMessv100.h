@@ -108,12 +108,13 @@ namespace gdpbv100 {
       GET4_V2X_ERR_SPI         = 0x0A,
       GET4_V2X_ERR_DLL_LOCK    = 0x0B,
       GET4_V2X_ERR_DLL_RESET   = 0x0C,
-      GET4_V2X_ERR_TOT_OVERWRT = 0x11,
+      GET4_V2X_ERR_TOT_OVERWRT = 0x11, // Not there anymore in manual for Get4 v2.00?
       GET4_V2X_ERR_TOT_RANGE   = 0x12,
       GET4_V2X_ERR_EVT_DISCARD = 0x13,
       GET4_V2X_ERR_ADD_RIS_EDG = 0x14,
       GET4_V2X_ERR_UNPAIR_FALL = 0x15,
       GET4_V2X_ERR_SEQUENCE_ER = 0x16,
+      GET4_V2X_ERR_EPOCH_OVERF = 0x17, // New in manual for Get4 v2.00, no description?
       GET4_V2X_ERR_UNKNOWN     = 0x7F
    };
 

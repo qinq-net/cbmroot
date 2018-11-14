@@ -9,7 +9,7 @@
 #define CbmTofStarData2019_H
 
 //#ifndef __CINT__
-  #include "rocMess_wGet4v2.h"
+  #include "gDpbMessv100.h"
 //#endif
 
 #include "Rtypes.h"
@@ -22,7 +22,7 @@ class CbmTofStarTrigger2019
       // Constructors
       CbmTofStarTrigger2019( ULong64_t ulGdpbTsFullIn, ULong64_t ulStarTsFullIn,
                              UInt_t    uStarTokenIn,   UInt_t    uStarDaqCmdIn,
-                             UInt_t    uStarTrigCmdIn );
+                             UInt_t    uStarTrigCmdIn, UShort_t usGdpbId = 0 );
 
       // Destructor
       ~CbmTofStarTrigger2019() {};
@@ -42,12 +42,13 @@ class CbmTofStarTrigger2019
       inline UShort_t  GetStarTrigCmd() const { return fusStarTrigCmd;}
       UInt_t           GetStarTrigerWord() const;
       UInt_t           GetFullGdpbEpoch()  const;
-      std::vector< gdpb::FullMessage > GetGdpbMessages( UShort_t usGdpbId ) const;
+      std::vector< gdpbv100::FullMessage > GetGdpbMessages() const;
 
       // Operators
       bool operator<(const CbmTofStarTrigger2019& other) const;
 
    private:
+      UShort_t  fusGdpbId;
       ULong64_t fulGdpbTsFull;
       ULong64_t fulStarTsFull;
       UInt_t    fuStarToken;
@@ -96,7 +97,7 @@ class CbmTofStarSubevent2019
                         bFlagState ? (fulEventStatusFlags |= kulFlagIncompleteEvt) :
                                      (fulEventStatusFlags &= ~(kulFlagIncompleteEvt) ); }
 //#ifndef __CINT__
-      inline void AddMsg( gdpb::FullMessage & msgIn){ fvMsgBuffer.push_back( msgIn ); }
+      inline void AddMsg( gdpbv100::FullMessage & msgIn){ fvMsgBuffer.push_back( msgIn ); }
 //#endif
 
       // Accessors
@@ -110,7 +111,7 @@ class CbmTofStarSubevent2019
       inline Bool_t            GetIncompleteEventFlag()  const { return 0 < (fulEventStatusFlags & kulFlagIncompleteEvt); }
       inline Int_t             GetEventSize()            const { return fuEventSizeBytes; }
 //#ifndef __CINT__
-      inline gdpb::Message     GetMsg( UInt_t uMsgIdx ) const;
+      inline gdpbv100::Message     GetMsg( UInt_t uMsgIdx ) const;
 //#endif
       inline UInt_t            GetMsgBuffSize() const { return fvMsgBuffer.size();}
 //#ifndef __CINT__
@@ -154,13 +155,10 @@ class CbmTofStarSubevent2019
       ULong64_t                     fulEventStatusFlags;
       UInt_t                        fuEventSizeBytes;
 //#ifndef __CINT__
-      std::vector< gdpb::FullMessage > fvMsgBuffer;
+      std::vector< gdpbv100::FullMessage > fvMsgBuffer;
       ULong64_t                     fpulBuff[kuMaxOutputSize];
 //#endif
 
-
-      CbmTofStarSubevent2019(const CbmTofStarSubevent2019&);
-      CbmTofStarSubevent2019 operator=(const CbmTofStarSubevent2019&);
 
 //   ClassDef(CbmTofStarSubevent2019, 1)
 };

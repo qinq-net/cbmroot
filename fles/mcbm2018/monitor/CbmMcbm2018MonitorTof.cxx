@@ -696,7 +696,7 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       title = Form("Error messages per GET4 channel in gDPB %02u; GET4 channel # ; Error", uGdpb);
       fvhGdpbGet4ChanErrors.push_back( new TH2I(name, title,
                fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb,
-               21, 0., 21.) );
+               22, 0., 22.) );
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 1, "0x00: Readout Init    ");
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 2, "0x01: Sync            ");
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 3, "0x02: Epoch count sync");
@@ -710,14 +710,15 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(11, "0x0a: SPI             ");
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(12, "0x0b: DLL Lock error  "); // <- From GET4 v1.2
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(13, "0x0c: DLL Reset invoc."); // <- From GET4 v1.2
-      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(14, "0x11: Overwrite       ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(14, "0x11: Overwrite       "); // <- From GET4 v1.0 to 1.3
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(15, "0x12: ToT out of range");
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(16, "0x13: Event Discarded ");
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(17, "0x14: Add. Rising edge"); // <- From GET4 v1.3
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(18, "0x15: Unpaired Falling"); // <- From GET4 v1.3
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(19, "0x16: Sequence error  "); // <- From GET4 v1.3
-      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(20, "0x7f: Unknown         ");
-      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(21, "Corrupt/unsuprtd error");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(20, "0x17: Epoch Overflow  "); // <- From GET4 v2.0
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(21, "0x7f: Unknown         ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(22, "Corrupt/unsuprtd error");
 
       /*******************************************************************/
       name = Form("hGdpbPatternMissmatchEvo_%02u", uGdpb);
@@ -1898,13 +1899,17 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                            fhGet4ChanErrors->Fill(dFullChId, 18);
                            fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 18 );
                            break;
-                        case gdpbv100::GET4_V2X_ERR_UNKNOWN:
+                        case gdpbv100::GET4_V2X_ERR_EPOCH_OVERF:
                            fhGet4ChanErrors->Fill(dFullChId, 19);
                            fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 19 );
                            break;
-                        default: // Corrupt error or not yet supported error
+                        case gdpbv100::GET4_V2X_ERR_UNKNOWN:
                            fhGet4ChanErrors->Fill(dFullChId, 20);
                            fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 20 );
+                           break;
+                        default: // Corrupt error or not yet supported error
+                           fhGet4ChanErrors->Fill(dFullChId, 21);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 21 );
                            break;
                      } // Switch( mess.getGdpbSysErrData() )
                   } // if( gdpbv100::SYSMSG_GET4_EVENT == mess.getGdpbSysSubType() )
@@ -2063,7 +2068,7 @@ void CbmMcbm2018MonitorTof::ProcessEpochCycle( uint64_t ulCycleData )
    if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
    {
       LOG(INFO) << "CbmMcbm2018MonitorTof::ProcessEpochCyle => "
-                 << Form( " TS %5d MS %3d In data 0x%016X Cycle 0x%016X",
+                 << Form( " TS %5lu MS %3lu In data 0x%016lX Cycle 0x%016lX",
                            fulCurrentTsIndex, fuCurrentMs, ulCycleData, ulEpochCycleVal )
                  << FairLogger::endl;
       fuRawDataPrintMsgIdx ++;

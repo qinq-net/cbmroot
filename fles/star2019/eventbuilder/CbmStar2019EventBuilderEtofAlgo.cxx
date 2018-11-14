@@ -65,6 +65,7 @@ CbmStar2019EventBuilderEtofAlgo::CbmStar2019EventBuilderEtofAlgo() :
    fvulCurrentEpochCycle(),
    fvulCurrentEpochFull(),
    fvvmEpSupprBuffer(),
+   fvvBufferMajorAsicErrors(),
    fvvBufferMessages(),
    fvvBufferTriggers(),
    fvulGdpbTsMsb(),
@@ -231,6 +232,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::InitParameters()
 
    ///
    fvvmEpSupprBuffer.resize( fuNrOfGdpbs );
+   fvvBufferMajorAsicErrors.resize( fuNrOfGdpbs );
    fvvBufferMessages.resize( fuNrOfGdpbs );
    fvvBufferTriggers.resize( fuNrOfGdpbs );
 
@@ -244,7 +246,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::InitParameters()
    fvuStarTokenLast.resize(  fuNrOfGdpbs );
    fvuStarDaqCmdLast.resize(  fuNrOfGdpbs );
    fvuStarTrigCmdLast.resize(  fuNrOfGdpbs );
-   for (UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb)
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       fvulGdpbTsMsb[ uGdpb ] = 0;
       fvulGdpbTsLsb[ uGdpb ] = 0;
@@ -272,7 +274,8 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
    fdTsStartTime = static_cast< Double_t >( ts.descriptor( 0, 0 ).idx );
    Double_t dTsStopTimeCore = fdTsStartTime + fdTsCoreSizeInNs;
 
-   /// Compute the limits for accepting hits and trigger in thie TS, for eac gDPB/sector
+   /// Compute the limits for accepting hits and trigger in this TS, for each gDPB/sector
+   /// => Avoid special cases and buffering for the overlap MS
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       if( fdStarTriggerDelay[ uGdpb ] < 0.0 )
@@ -293,7 +296,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
                /// Event window for this gDPB is on both sides of the trigger
                fvdMessCandidateTimeStart[ uGdpb ] = fdTsStartTime;
                // << Accept more than needed as this should be safer and small amounts >>
-               fvdMessCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread + fdStarTriggerWinSize[ uGdpb ]; // + fdStarTriggerDelay[ uGdpb ];
+               fvdMessCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread + 2.0 * fdStarTriggerWinSize[ uGdpb ]; // + fdStarTriggerDelay[ uGdpb ];
                fvdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime   + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
                fvdTrigCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
             } // else of if( fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ] < 0.0 )
@@ -326,6 +329,27 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
          } // if( kFALSE == ProcessMs( ts, uMsCompIdx, uMsIdx ) )
       } // for( UInt_t uMsIdx = 0; uMsIdx < uNbMsLoop; uMsIdx ++ )
    } // for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsList.size(); ++uMsCompIdx )
+
+   /// Clear event buffer from previous TS
+   /// ... Hopefully whatever had to be done with it was done before calling Process TS again ^^'
+   fvEventsBuffer.clear();
+
+   /// Build events from all triggers and data found in this TS core MS + part of the overlap MS
+   if( kFALSE == BuildEvents() )
+   {
+      LOG(ERROR) << "Failed to build events in ts " << fulCurrentTsIndex
+                 << FairLogger::endl;
+      return kFALSE;
+   } // if( kFALSE == BuildEvents() )
+
+   /// Clear buffers to prepare for the next TS
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      fvvmEpSupprBuffer[ uGdpb ].clear();
+      fvvBufferMajorAsicErrors[ uGdpb ].clear();
+      fvvBufferMessages[ uGdpb ].clear();
+      fvvBufferTriggers[ uGdpb ].clear();
+   } // for (Int_t iGdpb = 0; iGdpb < fuNrOfGdpbs; ++iGdpb)
 
    return kTRUE;
 }
@@ -444,7 +468,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
          LOG(WARNING) << "Message with Get4 ID too high: " << fuGet4Id
                       << " VS " << fuNrOfGet4PerGdpb << " set in parameters." << FairLogger::endl;
 
-      switch (messageType)
+      switch( messageType )
       {
          case gdpbv100::MSG_HIT:
          {
@@ -500,8 +524,18 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
          case gdpbv100::MSG_STAR_TRI_B:
          case gdpbv100::MSG_STAR_TRI_C:
          case gdpbv100::MSG_STAR_TRI_D:
+         {
             ProcessStarTrigger( mess );
+
+            /// If A message, check that the following ones are B, C, D
+            /// ==> TBD only if necessary
+/*
+            if( gdpbv100::MSG_STAR_TRI_A == messageType )
+            {
+            } // if( gdpbv100::MSG_STAR_TRI_A == messageType )
+*/
             break;
+         } // case gdpbv100::MSG_STAR_TRI_A-D
          default:
             LOG(ERROR) << "Message type " << std::hex
                        << std::setw(2) << static_cast<uint16_t>(messageType)
@@ -648,7 +682,8 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessStarTrigger( gdpbv100::Message mess
 
          /// Generate Trigger object and store it for event building ///
          CbmTofStarTrigger2019 newTrig( fvulGdpbTsFullLast[fuGdpbNr], fvulStarTsFullLast[fuGdpbNr], fvuStarTokenLast[fuGdpbNr],
-                                        fvuStarDaqCmdLast[fuGdpbNr], fvuStarTrigCmdLast[fuGdpbNr] );
+                                        fvuStarDaqCmdLast[fuGdpbNr], fvuStarTrigCmdLast[fuGdpbNr],
+                                        fuGdpbId );
          Double_t dTriggerTime = newTrig.GetFullGdpbTs() * gdpbv100::kdClockCycleSizeNs;
          if( fvdTrigCandidateTimeStart[ fuGdpbNr ] < dTriggerTime &&
              dTriggerTime < fvdTrigCandidateTimeStop[ fuGdpbNr ] )
@@ -707,12 +742,9 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessEpSupprBuffer( uint32_t uGdpbNr )
 
       /// Store the full message in the proper buffer
       gdpbv100::FullMessage fullMess( fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
-      if( fvdMessCandidateTimeStart[ fuGdpbNr ] < fullMess.GetFullTimeNs() &&
-          fullMess.GetFullTimeNs() < fvdMessCandidateTimeStop[ fuGdpbNr ] )
-         fvvBufferMessages[fuGdpbNr].push_back( fullMess );
 
       /// Do other actions on it if needed
-      switch (messageType)
+      switch( messageType )
       {
          case gdpbv100::MSG_HIT:
          {
@@ -748,6 +780,24 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessEpSupprBuffer( uint32_t uGdpbNr )
    } // for( Int_t iMsgIdx = 0; iMsgIdx < iBufferSize; iMsgIdx++ )
 
    fvvmEpSupprBuffer[ fuGdpbNr ].clear();
+}
+void CbmStar2019EventBuilderEtofAlgo::StoreMessageInBuffer( gdpbv100::FullMessage fullMess, uint32_t uGdpbNr )
+{
+   /// Store in the major error buffer only if GET4 error not channel related
+   uint16_t usG4ErrorType = fullMess.getGdpbSysErrData();
+   if( gdpbv100::MSG_SYST == fullMess.getMessageType() &&
+       gdpbv100::SYS_GET4_ERROR == fullMess.getGdpbSysSubType() &&
+       ( usG4ErrorType < gdpbv100::GET4_V2X_ERR_TOT_OVERWRT ||
+         usG4ErrorType > gdpbv100::GET4_V2X_ERR_SEQUENCE_ER )
+      )
+   {
+      fvvBufferMajorAsicErrors[fuGdpbNr].push_back( fullMess );
+      return;
+   } // if GET4 error out of TOT/hit building error range
+
+   if( fvdMessCandidateTimeStart[ fuGdpbNr ] < fullMess.GetFullTimeNs() &&
+       fullMess.GetFullTimeNs() < fvdMessCandidateTimeStop[ fuGdpbNr ] )
+      fvvBufferMessages[fuGdpbNr].push_back( fullMess );
 }
 
 // -------------------------------------------------------------------------
@@ -904,3 +954,264 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessPattern( gdpbv100::Message mess, ui
    return;
 }
 // -------------------------------------------------------------------------
+
+Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
+{
+   /// Get an iterator to the 1st trigger of each gDPB/sector
+   /// + Use iterators to keep track of where we stand in the message and error buffers
+   /// => Allow to avoid needless looping and to properly deal with user defined deadtime (double counting)
+   std::vector< std::vector< CbmTofStarTrigger2019 >::iterator > itTrigger; /// [sector]
+   std::vector< std::vector< gdpbv100::FullMessage >::iterator > itErrorMessStart; /// [sector]
+   std::vector< std::vector< gdpbv100::FullMessage >::iterator > itMessStart; /// [sector]
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      itTrigger.push_back( fvvBufferTriggers[ uGdpb ].begin() );
+      itErrorMessStart.push_back( fvvBufferMajorAsicErrors[ uGdpb ].begin() );
+      itMessStart.push_back( fvvBufferMessages[ uGdpb ].begin() );
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   /// Check that all gDPB/sectors are not straight at end of their trigger buffer (TS w/o triggers)
+   Bool_t bAllSectAllTriggDone = kTRUE;
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      /// => Check can be stopped ad soon as a gDPB/sector not at end is found!
+      if( fvvBufferTriggers[ uGdpb ].end() != itTrigger[ uGdpb ] )
+      {
+         bAllSectAllTriggDone = kFALSE;
+         break;
+      } // if( fvvBufferTriggers[ uGdpb ].end() != (*itTrigger[ uGdpb ]) )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   /// while at least one gDPB not at end of its triger buffer
+   /// ==> Need to include a TS edge check? Should be taken care of be the fdAllowedTriggersSpread
+   ///     but check here if problem of split events on TS edge
+   while( kFALSE == bAllSectAllTriggDone )
+   {
+      /// Check if all @ same trigger ID and CMD fields
+      Bool_t bAllSectorsMatch = kTRUE;
+      UInt_t   uFirstStarToken    = (*itTrigger[ 0 ]).GetStarToken();
+      UShort_t usFirstStarDaqCmd  = (*itTrigger[ 0 ]).GetStarDaqCmd();
+      UShort_t usFirstStarTrigCmd = (*itTrigger[ 0 ]).GetStarTrigCmd();
+      for( UInt_t uGdpb = 1; uGdpb < fuNrOfGdpbs; ++uGdpb )
+      {
+         if(   itTrigger[ uGdpb ] == fvvBufferTriggers[ uGdpb ].end()     ||
+             (*itTrigger[ uGdpb ]).GetStarToken()   != uFirstStarToken    ||
+             (*itTrigger[ uGdpb ]).GetStarDaqCmd()  != usFirstStarDaqCmd  ||
+             (*itTrigger[ uGdpb ]).GetStarTrigCmd() != usFirstStarTrigCmd
+            )
+         {
+            bAllSectorsMatch = kFALSE;
+            break;
+         } // If end of buffer or any field differs for any gDPB/sector current trigger, not all matched!
+      } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+      if( kTRUE == bAllSectorsMatch )
+      {
+         /// Yes = Complete event
+         /// Create event
+         CbmTofStarSubevent2019 starSubEvent; /// Mean trigger is set latter, SourceId 0 for the full wheel!
+
+         /// Loop gDPB/sector
+         Double_t dMeanTriggerGdpbTs = 0;
+         Double_t dMeanTriggerStarTs = 0;
+         for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+         {
+            /// Prepare mean trigger for event header
+            dMeanTriggerGdpbTs += (*itTrigger[ uGdpb ]).GetFullGdpbTs();
+            dMeanTriggerStarTs += (*itTrigger[ uGdpb ]).GetFullStarTs();
+
+            /// Convert STAR trigger to 4 full messages and insert in buffer
+            std::vector< gdpbv100::FullMessage > vTrigMess = (*itTrigger[ uGdpb ]).GetGdpbMessages();
+            for( std::vector< gdpbv100::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
+            {
+               starSubEvent.AddMsg( (*itMess) );
+            } // for( std::vector< gdpbv100::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
+
+            /// Prepare trigger window limits in ns for data selection
+            Double_t dWinBeg = gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs()
+                              - fdStarTriggerDelay[ uGdpb ];
+            Double_t dWinEnd = gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs()
+                              - fdStarTriggerDelay[ uGdpb ]
+                              + fdStarTriggerWinSize[ uGdpb ];
+            Double_t dDeadEnd = gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs()
+                               + fdStarTriggerDeadtime[ uGdpb ];
+
+            /// Loop on important errors buffer and select all from "last event" to "end of trigger window"
+            while( itErrorMessStart[ uGdpb ] != fvvBufferMajorAsicErrors[ uGdpb ].end() &&
+                   (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd
+                  )
+            {
+               starSubEvent.AddMsg( (*itErrorMessStart[ uGdpb ]) );
+               ++itErrorMessStart[ uGdpb ];
+            } // while( not at buffer end && (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd )
+
+            /// Loop on data and select data fitting the trigger window
+            /// Also advance start iterator to end of deadtime
+            std::vector< gdpbv100::FullMessage >::iterator itFirstMessOutOfDeadtime = itMessStart[ uGdpb ];
+            while( itMessStart[ uGdpb ] != fvvBufferMessages[ uGdpb ].end() &&
+                   ( (*itMessStart[ uGdpb ]).GetFullTimeNs() < dDeadEnd ||
+                     (*itMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd
+                    )
+                  )
+            {
+               /// If in trigger window, add to event
+               if( dWinBeg < (*itMessStart[ uGdpb ]).GetFullTimeNs() &&
+                   (*itMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd
+                  )
+                  starSubEvent.AddMsg( (*itMessStart[ uGdpb ]) );
+
+               /// Needed to catch the case where deadtime finishes before the trigger window
+               if( (*itMessStart[ uGdpb ]).GetFullTimeNs() < dDeadEnd )
+                  ++itFirstMessOutOfDeadtime;
+
+               ++itMessStart[ uGdpb ];
+            } // while( not at buffer end && (not out of deadtime || not out of trigg win ) )
+            itMessStart[ uGdpb ] = itFirstMessOutOfDeadtime;
+
+            /// Advance iterator on trigger
+            ++itTrigger[ uGdpb ];
+         } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+         /// Set Mean trigger in event header
+         dMeanTriggerGdpbTs /= fuNrOfGdpbs;
+         dMeanTriggerStarTs /= fuNrOfGdpbs;
+         CbmTofStarTrigger2019 meanTrigger( static_cast< ULong64_t >( dMeanTriggerGdpbTs ), static_cast< ULong64_t >( dMeanTriggerStarTs ),
+                                            uFirstStarToken, usFirstStarDaqCmd, usFirstStarTrigCmd );
+         starSubEvent.SetTrigger( meanTrigger );
+
+         /// Add event to event buffer
+         fvEventsBuffer.push_back( starSubEvent );
+      } // if( kTRUE == bAllSectorsMatch )
+         else
+         {
+            /// No = at least 1 missed a trigger
+            /// Check which gDPB/sector has the trigger with the smallest gDPB TS
+            std::vector< CbmTofStarTrigger2019 >::iterator itEarliestTrigger;
+            ULong64_t ulEarliestGdpbTs = 0xFFFFFFFFFFFFFFFFUL;
+            for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+            {
+               if(   itTrigger[ uGdpb ] != fvvBufferTriggers[ uGdpb ].end() &&
+                   (*itTrigger[ uGdpb ]).GetFullGdpbTs() < ulEarliestGdpbTs )
+               {
+                  itEarliestTrigger = itTrigger[ uGdpb ];
+                  ulEarliestGdpbTs  = (*itTrigger[ uGdpb ]).GetFullGdpbTs();
+               } // if( not at end of buffer && (*itTrigger[ uGdpb ]).GetFullGdpbTs() < ulEarliestGdpbTs )
+            } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+            /// Find all gDPB with a matching trigger
+            UInt_t uNrOfMatchedGdpbs = 0;
+            std::vector< Bool_t > vbMatchingTrigger( fuNrOfGdpbs, kFALSE );  /// [sector]
+            Double_t dMeanTriggerGdpbTs = 0;
+            Double_t dMeanTriggerStarTs = 0;
+            for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+            {
+               if(   itTrigger[ uGdpb ] != fvvBufferTriggers[ uGdpb ].end()     &&
+                   (*itTrigger[ uGdpb ]).GetStarToken()   == (*itEarliestTrigger).GetStarToken()  &&
+                   (*itTrigger[ uGdpb ]).GetStarDaqCmd()  == (*itEarliestTrigger).GetStarDaqCmd() &&
+                   (*itTrigger[ uGdpb ]).GetStarTrigCmd() == (*itEarliestTrigger).GetStarTrigCmd()
+                  )
+               {
+                  uNrOfMatchedGdpbs++;
+                  vbMatchingTrigger[ uGdpb ] = kTRUE;
+
+                  dMeanTriggerGdpbTs += (*itTrigger[ uGdpb ]).GetFullGdpbTs();
+                  dMeanTriggerStarTs += (*itTrigger[ uGdpb ]).GetFullStarTs();
+               } // if matching trigger
+            } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+            /// Compute the mean trigger from all matching triggers
+            dMeanTriggerGdpbTs /= uNrOfMatchedGdpbs;
+            dMeanTriggerStarTs /= uNrOfMatchedGdpbs;
+            CbmTofStarTrigger2019 meanTrigger( static_cast< ULong64_t >( dMeanTriggerGdpbTs ), static_cast< ULong64_t >( dMeanTriggerStarTs ),
+                                               (*itEarliestTrigger).GetStarToken(),
+                                               (*itEarliestTrigger).GetStarDaqCmd(),
+                                               (*itEarliestTrigger).GetStarTrigCmd() );
+
+            /// Create event & add to header the mean trigger, the "incomplete event" flag
+            CbmTofStarSubevent2019 starSubEvent; /// Mean trigger is set latter, SourceId 0 for the full wheel!
+            starSubEvent.SetTrigger( meanTrigger );
+            starSubEvent.SetIncompleteEventFlag();
+
+            /// Loop gDPB/sector
+            for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+            {
+               /// Check if this gDPB/sector has a matching trigger
+                  /// Select trigger time => If matching trigger, use its TS, otherwise use the calulated mean trigger TS
+               ULong64_t ulTriggerTime = static_cast< ULong64_t >( dMeanTriggerGdpbTs );
+               if( kTRUE == vbMatchingTrigger[ uGdpb ] )
+               {
+                  /// Select trigger time => If matching trigger, use its TS, otherwise use the calulated mean trigger TS
+                  ulTriggerTime = (*itTrigger[ uGdpb ]).GetFullGdpbTs();
+
+                  /// If matching trigger, convert STAR trigger to 4 full messages and insert in buffer
+                  std::vector< gdpbv100::FullMessage > vTrigMess = (*itTrigger[ uGdpb ]).GetGdpbMessages();
+                  for( std::vector< gdpbv100::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
+                  {
+                     starSubEvent.AddMsg( (*itMess) );
+                  } // for( std::vector< gdpbv100::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
+               } // if( kTRUE == vbMatchingTrigger[ uGdpb ] )
+
+               /// Prepare trigger window limits in ns for data selection
+               Double_t dWinBeg = gdpbv100::kdClockCycleSizeNs * ulTriggerTime
+                                 - fdStarTriggerDelay[ uGdpb ];
+               Double_t dWinEnd = gdpbv100::kdClockCycleSizeNs * ulTriggerTime
+                                 - fdStarTriggerDelay[ uGdpb ]
+                                 + fdStarTriggerWinSize[ uGdpb ];
+               Double_t dDeadEnd = gdpbv100::kdClockCycleSizeNs * ulTriggerTime
+                                  + fdStarTriggerDeadtime[ uGdpb ];
+
+               /// Loop on important errors buffer and select all from "last event" to "end of trigger window"
+               while( itErrorMessStart[ uGdpb ] != fvvBufferMajorAsicErrors[ uGdpb ].end() &&
+                      (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd )
+               {
+                  starSubEvent.AddMsg( (*itErrorMessStart[ uGdpb ]) );
+                  ++itErrorMessStart[ uGdpb ];
+               } // while( not at buffer end && (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd )
+
+               /// Loop on data and select data fitting the trigger window
+               /// Also advance start iterator to end of deadtime
+               std::vector< gdpbv100::FullMessage >::iterator itFirstMessOutOfDeadtime = itMessStart[ uGdpb ];
+               while( itMessStart[ uGdpb ] != fvvBufferMessages[ uGdpb ].end() &&
+                      ( (*itMessStart[ uGdpb ]).GetFullTimeNs() < dDeadEnd ||
+                        (*itMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd
+                       )
+                     )
+               {
+                  /// If in trigger window, add to event
+                  if( dWinBeg < (*itMessStart[ uGdpb ]).GetFullTimeNs() &&
+                      (*itMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd
+                     )
+                     starSubEvent.AddMsg( (*itMessStart[ uGdpb ]) );
+
+                  /// Needed to catch the case where deadtime finishes before the trigger window
+                  if( (*itMessStart[ uGdpb ]).GetFullTimeNs() < dDeadEnd )
+                     ++itFirstMessOutOfDeadtime;
+
+                  ++itMessStart[ uGdpb ];
+               } // while( not at buffer end && (not out of deadtime || not out of trigg win ) )
+               itMessStart[ uGdpb ] = itFirstMessOutOfDeadtime;
+
+               /// Advance iterator for gDPB/sector with matching trigger
+               if( kTRUE == vbMatchingTrigger[ uGdpb ] )
+                  ++itTrigger[ uGdpb ];
+            } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+            /// Add event to event buffer
+            fvEventsBuffer.push_back( starSubEvent );
+         } // else of if( kTRUE == bAllSectorsMatch )
+
+      /// Check if all gDPB/sectors are at end of their trigger buffer
+      bAllSectAllTriggDone = kTRUE;
+      for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+      {
+         /// => Check can be stopped ad soon as a gDPB/sector not at end is found!
+         if( fvvBufferTriggers[ uGdpb ].end() != itTrigger[ uGdpb ] )
+         {
+            bAllSectAllTriggDone = kFALSE;
+            break;
+         } // if( fvvBufferTriggers[ uGdpb ].end() != (*itTrigger[ uGdpb ]) )
+      } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   } // while( kFALSE == bAllSectAllTriggDone )
+
+   return kTRUE;
+}

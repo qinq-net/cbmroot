@@ -14,8 +14,9 @@
 
 /********************** CbmTofStarTrigger2019 *************************/
 CbmTofStarTrigger2019::CbmTofStarTrigger2019( ULong64_t ulGdpbTsFullIn, ULong64_t ulStarTsFullIn,
-                     UInt_t    uStarTokenIn,   UInt_t    uStarDaqCmdIn,
-                     UInt_t    uStarTrigCmdIn ) :
+                                              UInt_t    uStarTokenIn,   UInt_t    uStarDaqCmdIn,
+                                              UInt_t    uStarTrigCmdIn, UShort_t usGdpbId ) :
+   fusGdpbId( usGdpbId ),
    fulGdpbTsFull( ulGdpbTsFullIn ),
    fulStarTsFull( ulStarTsFullIn ),
    fuStarToken(   uStarTokenIn ),
@@ -42,16 +43,17 @@ UInt_t CbmTofStarTrigger2019::GetStarTrigerWord() const
 UInt_t CbmTofStarTrigger2019::GetFullGdpbEpoch() const
 {
    // trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
-   UInt_t uEpochIndex =  (fulGdpbTsFull >> get4v2x::kuCtSize)
-                       & get4v2x::kuEpochCounterSz;
+   UInt_t uEpochIndex =  (fulGdpbTsFull >> gdpbv100::kuCtSize)
+                       & gdpbv100::kuEpochCounterSz;
    return uEpochIndex;
 }
-std::vector< gdpb::FullMessage > CbmTofStarTrigger2019::GetGdpbMessages( UShort_t usGdpbId ) const
+std::vector< gdpbv100::FullMessage > CbmTofStarTrigger2019::GetGdpbMessages() const
 {
-   gdpb::Message mCommonData( ( static_cast< ULong64_t >( usGdpbId ) << 48 ) // GdpbId
-                              + gdpb::MSG_STAR_TRI // Message type
-                            );
-   std::vector< gdpb::FullMessage > vMsgs( 4, mCommonData );
+   gdpbv100::FullMessage mCommonData( ( static_cast< ULong64_t >( fusGdpbId ) << 48 ) // GdpbId
+                                      + gdpbv100::MSG_STAR_TRI_A, // Message type
+                                      ( GetFullGdpbTs() >> gdpbv100::kuCtSize ) // gDPB TS in epochs
+                                    );
+   std::vector< gdpbv100::FullMessage > vMsgs( 4, mCommonData );
 
    /// Subtype 0
    vMsgs[ 0 ].setStarTrigMsgIndex( 0 ); // Message Subtype
@@ -95,6 +97,7 @@ CbmTofStarSubevent2019::CbmTofStarSubevent2019( CbmTofStarTrigger2019 triggerIn,
 {
    SetSource( sourceIdIn );
 }
+
 CbmTofStarSubevent2019::~CbmTofStarSubevent2019()
 {
    ClearSubEvent();
@@ -150,7 +153,7 @@ void * CbmTofStarSubevent2019::BuildOutput( Int_t & iOutputSizeBytes )
                 + (static_cast< ULong64_t >( fTrigger.GetStarTrigCmd() )     );
    fpulBuff[3] = fulEventStatusFlags;
 
-   // does not work due to "error: cannot convert ‘gdpb::Message’ to ‘long unsigned int’ in assignment"
+   // does not work due to "error: cannot convert ‘gdpbv100::Message’ to ‘long unsigned int’ in assignment"
 //  std::copy( fvMsgBuffer.begin(), fvMsgBuffer.begin() + uMsgsToRead, pulBuff + 4 );
 
    // Unoptimized replacement: item by item copy
@@ -202,7 +205,7 @@ Bool_t CbmTofStarSubevent2019::LoadInput( void * pBuff, Int_t iInputSizeBytes )
    UInt_t uMsgsToRead = (iInputSzLg - 4)/2;
    for( UInt_t uMsgIdx = 0; uMsgIdx < uMsgsToRead; uMsgIdx++)
    {
-      gdpb::FullMessage mess( pulLongBuff[4 + 2 * uMsgIdx], pulLongBuff[4 + 2 * uMsgIdx + 1] );
+      gdpbv100::FullMessage mess( pulLongBuff[4 + 2 * uMsgIdx], pulLongBuff[4 + 2 * uMsgIdx + 1] );
       fvMsgBuffer.push_back( mess );
    } // for( UInt_t uMsgIdx = 0; uMsgIdx < uMsgsToRead; uMsgIdx++)
 
@@ -227,7 +230,7 @@ void CbmTofStarSubevent2019::PrintSubEvent()
 
    for( UInt_t uMsgIdx = 0; uMsgIdx < fvMsgBuffer.size(); uMsgIdx++)
    {
-      fvMsgBuffer[uMsgIdx].PrintMessage( gdpb::msg_print_Prefix | gdpb::msg_print_Data );
+      fvMsgBuffer[uMsgIdx].PrintMessage( gdpbv100::msg_print_Prefix | gdpbv100::msg_print_Data );
    } // for( UInt_t uMsgIdx = 0; uMsgIdx < uMsgsToRead; uMsgIdx++)
 
    std::cout << "-------------------------------------------------------" << std::endl;

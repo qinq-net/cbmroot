@@ -27,17 +27,6 @@ class TProfile;
 class THttpServer;
 */
 
-
-#ifdef STAR_SUBEVT_BUILDER
-   /*
-    ** Function to send sub-event block to the STAR DAQ system
-    *       trg_word received is packed as:
-    *
-    *       trg_cmd|daq_cmd|tkn_hi|tkn_mid|tkn_lo
-   */
-   extern "C" int star_rhicf_write(unsigned int trg_word, void *dta, int bytes);
-#endif // STAR_SUBEVT_BUILDER
-
 class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
 {
    public:
@@ -57,7 +46,9 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       Bool_t ProcessTs( const fles::Timeslice& ts );
       Bool_t ProcessTs( const fles::Timeslice& ts, size_t component ) { return ProcessTs( ts ); }
       Bool_t ProcessMs( const fles::Timeslice& ts, size_t uMsCompIdx, size_t uMsIdx );
+
       Bool_t BuildEvents();
+      const std::vector< CbmTofStarSubevent2019 > & GetEventBuffer() const { return fvEventsBuffer; }
 
       Bool_t CreateHistograms();
 
@@ -110,11 +101,13 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       std::vector< ULong64_t > fvulCurrentEpochFull; //! Epoch + Epoch Cycle
 
       /// Buffers
-      std::vector< std::vector< gdpbv100::Message > >    fvvmEpSupprBuffer;        //! [sector]
+      std::vector< std::vector< gdpbv100::Message > >    fvvmEpSupprBuffer;         //! [sector]
+      std::vector< std::vector< gdpbv100::FullMessage > > fvvBufferMajorAsicErrors; //! [sector], buffer to make sure GET4 errors 0-12 are always transmitted
       std::vector< std::vector< gdpbv100::FullMessage > > fvvBufferMessages;        //! [sector]
 //      std::vector< std::vector< gdpbv100::FullMessage > > fvvBufferMessagesOverlap; //! [sector] ==> Try to shift the conditions to buffer filling!
       std::vector< std::vector< CbmTofStarTrigger2019 > > fvvBufferTriggers;        //! [sector]
 //      std::vector< std::vector< CbmTofStarTrigger2019 > > fvvBufferTriggersOverlap; //! [sector] ==> Try to shift the conditions to buffer filling!
+      std::vector< CbmTofStarSubevent2019 > fvEventsBuffer;                         //! Event buffer
 
       /// STAR TRIGGER detection
       std::vector< ULong64_t > fvulGdpbTsMsb;          //! [sector]
@@ -138,11 +131,13 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       std::vector< Double_t > fvdTrigCandidateTimeStart; //! [sector]
       std::vector< Double_t > fvdTrigCandidateTimeStop;  //! [sector]
 
+
       void ProcessEpochCycle( uint64_t ulCycleData );
       void ProcessEpoch( gdpbv100::Message mess );
       void ProcessStarTrigger( gdpbv100::Message mess );
 
       void ProcessEpSupprBuffer( uint32_t uGdpbNr );
+      void StoreMessageInBuffer( gdpbv100::FullMessage fullMess, uint32_t uGdpbNr );
 
       void ProcessHit( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 );
       void ProcessSlCtrl( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 );
