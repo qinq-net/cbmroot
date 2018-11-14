@@ -67,7 +67,7 @@ Set(SRCS
 
    eventbuilder/CbmTofStarData2019.cxx
    eventbuilder/CbmStar2019EventBuilderEtofAlgo.cxx
-#   eventbuilder/CbmStar2019EventBuilderEtof.cxx
+   eventbuilder/CbmStar2019EventBuilderEtof.cxx
 )
 
 #Set(NO_DICT_SRCS

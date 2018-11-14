@@ -48,7 +48,7 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       Bool_t ProcessMs( const fles::Timeslice& ts, size_t uMsCompIdx, size_t uMsIdx );
 
       Bool_t BuildEvents();
-      const std::vector< CbmTofStarSubevent2019 > & GetEventBuffer() const { return fvEventsBuffer; }
+      std::vector< CbmTofStarSubevent2019 > & GetEventBuffer() { return fvEventsBuffer; }
 
       Bool_t CreateHistograms();
 

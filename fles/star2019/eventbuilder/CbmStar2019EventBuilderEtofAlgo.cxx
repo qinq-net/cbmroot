@@ -89,6 +89,14 @@ CbmStar2019EventBuilderEtofAlgo::CbmStar2019EventBuilderEtofAlgo() :
 }
 CbmStar2019EventBuilderEtofAlgo::~CbmStar2019EventBuilderEtofAlgo()
 {
+   /// Clear buffers
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      fvvmEpSupprBuffer[ uGdpb ].clear();
+      fvvBufferMajorAsicErrors[ uGdpb ].clear();
+      fvvBufferMessages[ uGdpb ].clear();
+      fvvBufferTriggers[ uGdpb ].clear();
+   } // for (Int_t iGdpb = 0; iGdpb < fuNrOfGdpbs; ++iGdpb)
 }
 
 // -------------------------------------------------------------------------

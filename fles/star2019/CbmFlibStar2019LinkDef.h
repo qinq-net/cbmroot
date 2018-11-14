@@ -18,8 +18,8 @@
 
 #pragma link C++ class CbmTofStarTrigger2019;
 #pragma link C++ class CbmTofStarSubevent2019;
-//#pragma link C++ class CbmStar2019EventBuilderEtofAlgo;
-//#pragma link C++ class CbmStar2019EventBuilderEtof;
+#pragma link C++ class CbmStar2019EventBuilderEtofAlgo;
+#pragma link C++ class CbmStar2019EventBuilderEtof;
 //#pragma link C++ class CbmStar2019EventBuilderEtofMq;
 
 #endif
