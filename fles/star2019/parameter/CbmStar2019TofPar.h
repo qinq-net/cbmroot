@@ -65,17 +65,17 @@ class CbmStar2019TofPar : public FairParGenericSet
 
    inline Int_t GetNrOfGbtx() {return fiNrOfGbtx;}
    inline Int_t GetNrOfModules() {return fiNrOfModule;}
-   inline Int_t GetNrOfRpc(Int_t i) {return fiNrOfRpc[i];}
-   inline Int_t GetRpcType(Int_t i) {return fiRpcType[i];}
-   inline Int_t GetRpcSide(Int_t i) {return fiRpcSide[i];}
-   inline Int_t GetModuleId(Int_t i) {return fiModuleId[i];}
+   Int_t GetNrOfRpc( UInt_t uGbtx );
+   Int_t GetRpcType( UInt_t uGbtx );
+   Int_t GetRpcSide( UInt_t uGbtx );
+   Int_t GetModuleId( UInt_t uGbtx );
 
    inline Double_t GetSizeMsInNs() { return fdSizeMsInNs;}
 
-   inline Double_t GetStarTriggDeadtime(Int_t gdpb) { return fdStarTriggerDeadtime[gdpb];}
-   inline Double_t GetStarTriggDelay(Int_t gdpb) { return fdStarTriggerDelay[gdpb];}
-   inline Double_t GetStarTriggWinSize(Int_t gdpb) { return fdStarTriggerWinSize[gdpb];}
-   inline Double_t GetTsDeadtimePeriod() { return fdTsDeadtimePeriod;}
+   inline Double_t GetStarTriggAllowedSpread() { return fdStarTriggAllowedSpread;}
+   Double_t GetStarTriggDeadtime( UInt_t uGdpb );
+   Double_t GetStarTriggDelay( UInt_t uGdpb );
+   Double_t GetStarTriggWinSize( UInt_t uGdpb );
 
  private:
    /// Constants
@@ -132,27 +132,19 @@ class CbmStar2019TofPar : public FairParGenericSet
    /// Variables
    Int_t    fiNrOfGdpb; // Total number of GDPBs
    TArrayI  fiGdpbIdArray; // Array to hold the unique IDs for all Tof GDPBs
-/*
-   Int_t    fiNrOfFeesPerGdpb; // Number of FEEs which are connected to one GDPB
-   Int_t    fiNrOfGet4PerFee;  // Number of GET4 chips which are connected to one FEB
-   Int_t    fiNrOfChannelsPerGet4;  // Number of channels per GET4
-*/
    Int_t    fiNrOfGbtx;   // Total number of Gbtx links
    Int_t    fiNrOfModule; // Total number of Modules
    TArrayI  fiNrOfRpc;    // number of Rpcs connected to Gbtx link, i.e. 3 or 5
    TArrayI  fiRpcType;    // type of Rpcs connected to Gbtx link
    TArrayI  fiRpcSide;    // side of Rpcs connected to Gbtx link, i.e. 0 or 1
    TArrayI  fiModuleId;   // Module Identifier connected to Gbtx link, has to match geometry
-/*
-   Int_t    fiNbMsTot; // Total number of MS per link in TS
-   Int_t    fiNbMsOverlap; // Number of overlap MS per TS
-*/
+
    Double_t fdSizeMsInNs; // Size of the MS in ns, needed for MS border detection
 
+   Double_t fdStarTriggAllowedSpread; // Allowed "Jitter" of the triggers in different gDPB relative to each other, used to give a bit of flexibility on TS edges
    TArrayD  fdStarTriggerDeadtime; // STAR: Array to hold for each gDPB the deadtime between triggers in ns
    TArrayD  fdStarTriggerDelay; // STAR: Array to hold for each gDPB the Delay in ns to subtract when looking for beginning of coincidence of data with trigger window
    TArrayD  fdStarTriggerWinSize; // STAR: Array to hold for each gDPB the Size of the trigger window in ns
-   Double_t fdTsDeadtimePeriod; // Period (ns) in the first MS of each TS where events with missing triggers should be built using the overlap MS of previous TS (overlap events)
 
    ClassDef(CbmStar2019TofPar,1);
 };

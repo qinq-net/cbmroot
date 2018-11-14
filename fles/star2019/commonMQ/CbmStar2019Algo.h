@@ -43,6 +43,8 @@ class CbmStar2019Algo
          fuNbOverMsPerTs( 0 ),
          fuNbMsLoop( 0 ),
          fbIgnoreOverlapMs( kFALSE ),
+         fdMsSizeInNs(-1.0),
+         fdTsCoreSizeInNs(-1.0),
          fDigiVect(),
          fParameterMap()
          {};

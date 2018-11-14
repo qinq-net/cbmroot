@@ -151,6 +151,7 @@ TList* CbmStar2019EventBuilderEtofAlgo::GetParList()
 }
 Bool_t CbmStar2019EventBuilderEtofAlgo::InitParameters()
 {
+   /// Parameters for variables dimensionning
    fuNrOfGdpbs = fUnpackPar->GetNrOfGdpbs();
    LOG(INFO) << "Nr. of Tof GDPBs: " << fuNrOfGdpbs << FairLogger::endl;
 
@@ -195,6 +196,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::InitParameters()
    fuNrOfModules  =  fUnpackPar->GetNrOfModules();
    LOG(INFO) << "Nr. of GBTx: " << fuNrOfModules << FairLogger::endl;
 
+   /// Parameters for detector mapping
    fviRpcType.resize(  fuNrOfGbtx );
    fviModuleId.resize( fuNrOfGbtx );
    fviNrOfRpc.resize(  fuNrOfGbtx );
@@ -227,11 +229,23 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::InitParameters()
       LOG(INFO) << Form(" %2d", fviModuleId[ uGbtx ] );
    LOG(INFO) << FairLogger::endl;
 
+   /// Parameters for FLES containers processing
    fdMsSizeInNs  = fUnpackPar->GetSizeMsInNs();
-   fdTsCoreSizeInNs = fdMsSizeInNs * fuNbCoreMsPerTs;
    LOG(INFO) << "Timeslice parameters: each MS is "
              << fdMsSizeInNs << " ns"
              << FairLogger::endl;
+
+   /// Parameters for STAR trigger & event building
+   fdAllowedTriggersSpread = fUnpackPar->GetStarTriggAllowedSpread();
+   fdStarTriggerDeadtime.resize( fuNrOfGdpbs, 0.0 );
+   fdStarTriggerDelay.resize( fuNrOfGdpbs, 0.0 );
+   fdStarTriggerWinSize.resize( fuNrOfGdpbs, 0.0 );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      fdStarTriggerDeadtime[ uGdpb ] = fUnpackPar->GetStarTriggDeadtime( uGdpb );
+      fdStarTriggerDelay[ uGdpb ]    = fUnpackPar->GetStarTriggDelay( uGdpb );
+      fdStarTriggerWinSize[ uGdpb ]  = fUnpackPar->GetStarTriggWinSize( uGdpb );
+   } // for (Int_t iGdpb = 0; iGdpb < fuNrOfGdpbs; ++iGdpb)
 
    ///
    fvulCurrentEpoch.resize( fuNrOfGdpbs, 0 );
@@ -280,6 +294,21 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
 {
    fulCurrentTsIndex = ts.index();
    fdTsStartTime = static_cast< Double_t >( ts.descriptor( 0, 0 ).idx );
+
+   /// On first TS, extract the TS parameters from header (by definition stable over time)
+   if( -1.0 == fdTsCoreSizeInNs )
+   {
+      fuNbCoreMsPerTs = ts.num_core_microslices();
+      fuNbOverMsPerTs = ts.num_microslices( 0 ) - ts.num_core_microslices();
+      fdTsCoreSizeInNs = fdMsSizeInNs * fuNbCoreMsPerTs;
+      LOG(INFO) << "Timeslice parameters: each TS has "
+                << fuNbCoreMsPerTs << " Core MS and "
+                << fuNbOverMsPerTs << " Overlap MS, for a core duration of "
+                << fdTsCoreSizeInNs << " ns"
+                << FairLogger::endl;
+   } // if( -1.0 == fdTsCoreSizeInNs )
+
+   /// Compute time of TS core end
    Double_t dTsStopTimeCore = fdTsStartTime + fdTsCoreSizeInNs;
 
    /// Compute the limits for accepting hits and trigger in this TS, for each gDPB/sector

@@ -26,10 +26,10 @@ CbmStar2019TofPar::CbmStar2019TofPar(const char* name,
     fiRpcSide(),
     fiModuleId(),
     fdSizeMsInNs(0.0),
+    fdStarTriggAllowedSpread(0.0),
     fdStarTriggerDeadtime(),
     fdStarTriggerDelay(),
-    fdStarTriggerWinSize(),
-    fdTsDeadtimePeriod(0.0)
+    fdStarTriggerWinSize()
 {
    detName="Tof";
 }
@@ -69,7 +69,6 @@ void CbmStar2019TofPar::putParams(FairParamList* l)
    l->add("StarTriggerDeadtime", fdStarTriggerDeadtime);
    l->add("StarTriggerDelay",    fdStarTriggerDelay);
    l->add("StarTriggerWinSize",  fdStarTriggerWinSize);
-   l->add("TsDeadtimePeriod",    fdTsDeadtimePeriod);
 }
 
 //------------------------------------------------------
@@ -107,7 +106,6 @@ Bool_t CbmStar2019TofPar::getParams(FairParamList* l) {
    if ( ! l->fill("StarTriggerDeadtime", &fdStarTriggerDeadtime) ) return kFALSE;
    if ( ! l->fill("StarTriggerDelay",    &fdStarTriggerDelay) ) return kFALSE;
    if ( ! l->fill("StarTriggerWinSize",  &fdStarTriggerWinSize) ) return kFALSE;
-   if ( ! l->fill("TsDeadtimePeriod",  &fdTsDeadtimePeriod) ) return kFALSE;
 
    return kTRUE;
 }
@@ -165,6 +163,99 @@ Int_t CbmStar2019TofPar::Get4IdxToElinkIdx( UInt_t uElink )
                     << FairLogger::endl;
          return -1;
       } // else of if( uElink < kuNbGet4PerGbtx )
+}
+// -------------------------------------------------------------------------
+Int_t CbmStar2019TofPar::GetNrOfRpc( UInt_t uGbtx )
+{
+   if( uGbtx < fiNrOfGbtx )
+      return fiNrOfRpc[ uGbtx ];
+      else
+      {
+         LOG(FATAL) << "CbmStar2019TofPar::GetNrOfRpc => Index out of bound, "
+                    << uGbtx << " vs " << fiNrOfGbtx
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uGbtx < fiNrOfGbtx )
+}
+Int_t CbmStar2019TofPar::GetRpcType( UInt_t uGbtx )
+{
+   if( uGbtx < fiNrOfGbtx )
+      return fiRpcType[ uGbtx ];
+      else
+      {
+         LOG(FATAL) << "CbmStar2019TofPar::GetRpcType => Index out of bound, "
+                    << uGbtx << " vs " << fiNrOfGbtx
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uGbtx < fiNrOfGbtx )
+}
+Int_t CbmStar2019TofPar::GetRpcSide( UInt_t uGbtx )
+{
+   if( uGbtx < fiNrOfGbtx )
+      return fiRpcSide[ uGbtx ];
+      else
+      {
+         LOG(FATAL) << "CbmStar2019TofPar::GetRpcSide => Index out of bound, "
+                    << uGbtx << " vs " << fiNrOfGbtx
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uGbtx < fiNrOfGbtx )
+}
+Int_t CbmStar2019TofPar::GetModuleId( UInt_t uGbtx )
+{
+   if( uGbtx < fiNrOfGbtx )
+      return fiModuleId[ uGbtx ];
+      else
+      {
+         LOG(FATAL) << "CbmStar2019TofPar::GetModuleId => Index out of bound, "
+                    << uGbtx << " vs " << fiNrOfGbtx
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uGbtx < fiNrOfGbtx )
+}
+// -------------------------------------------------------------------------
+Double_t CbmStar2019TofPar::GetStarTriggDeadtime( UInt_t uGdpb )
+{
+   if( uGdpb < fiNrOfGdpb )
+      return fdStarTriggerDeadtime[ uGdpb ];
+      else
+      {
+         LOG(FATAL) << "CbmStar2019TofPar::GetStarTriggDeadtime => Index out of bound, "
+                    << uGdpb << " vs " << fiNrOfGdpb
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uGdpb < fiNrOfGdpb )
+}
+Double_t CbmStar2019TofPar::GetStarTriggDelay( UInt_t uGdpb )
+{
+   if( uGdpb < fiNrOfGdpb )
+      return fdStarTriggerDelay[ uGdpb ];
+      else
+      {
+         LOG(FATAL) << "CbmStar2019TofPar::GetStarTriggDelay => Index out of bound, "
+                    << uGdpb << " vs " << fiNrOfGdpb
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uGdpb < fiNrOfGdpb )
+}
+Double_t CbmStar2019TofPar::GetStarTriggWinSize( UInt_t uGdpb )
+{
+   if( uGdpb < fiNrOfGdpb )
+      return fdStarTriggerWinSize[ uGdpb ];
+      else
+      {
+         LOG(FATAL) << "CbmStar2019TofPar::GetStarTriggWinSize => Index out of bound, "
+                    << uGdpb << " vs " << fiNrOfGdpb
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uGdpb < fiNrOfGdpb )
 }
 // -------------------------------------------------------------------------
 
