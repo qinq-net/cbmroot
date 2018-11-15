@@ -83,7 +83,7 @@ CbmTofStarSubevent2019::CbmTofStarSubevent2019() :
    fTrigger( CbmTofStarTrigger2019( 0, 0, 0, 0, 0) ),
    fusSourceId( 0 ),
    fulEventStatusFlags( 0 ),
-   fuEventSizeBytes( 0 ),
+   fuEventSizeBytes( 4 * sizeof( ULong64_t ) ),
    fvMsgBuffer()
 {
 }
@@ -92,7 +92,7 @@ CbmTofStarSubevent2019::CbmTofStarSubevent2019( CbmTofStarTrigger2019 triggerIn,
    fTrigger( triggerIn ),
    fusSourceId( sourceIdIn ),
    fulEventStatusFlags( 0 ),
-   fuEventSizeBytes( 0 ),
+   fuEventSizeBytes( 4 * sizeof( ULong64_t ) ),
    fvMsgBuffer()
 {
    SetSource( sourceIdIn );

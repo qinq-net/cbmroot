@@ -17,6 +17,8 @@ CbmStar2019TofPar::CbmStar2019TofPar(const char* name,
 			             const char* title,
 			             const char* context)
   : FairParGenericSet(name, title, context),
+    fiMonitorMode(0),
+    fiDebugMonitorMode(0),
     fiNrOfGdpb(-1),
     fiGdpbIdArray(),
     fiNrOfModule( -1 ),
@@ -57,6 +59,8 @@ void CbmStar2019TofPar::clear()
 void CbmStar2019TofPar::putParams(FairParamList* l)
 {
    if (!l) return;
+   l->add("MonitorMode",         fiMonitorMode);
+   l->add("DebugMonitorMode",    fiDebugMonitorMode);
    l->add("NrOfGdpbs",           fiNrOfGdpb);
    l->add("GdpbIdArray",         fiGdpbIdArray);
    l->add("NrOfGbtx",            fiNrOfGbtx);
@@ -76,6 +80,10 @@ void CbmStar2019TofPar::putParams(FairParamList* l)
 Bool_t CbmStar2019TofPar::getParams(FairParamList* l) {
 
    if (!l) return kFALSE;
+
+   if ( ! l->fill("MonitorMode", &fiMonitorMode) ) return kFALSE;
+
+   if ( ! l->fill("DebugMonitorMode", &fiDebugMonitorMode) ) return kFALSE;
 
    if ( ! l->fill("NrOfGdpbs", &fiNrOfGdpb) ) return kFALSE;
 

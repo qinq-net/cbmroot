@@ -8,6 +8,7 @@
 #include "CbmStar2019EventBuilderEtofAlgo.h"
 
 #include "CbmStar2019TofPar.h"
+#include "CbmHistManager.h"
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
@@ -17,8 +18,9 @@
 
 #include "TROOT.h"
 #include "TString.h"
-#include "THttpServer.h"
+#include "TH2.h"
 #include "TProfile.h"
+#include "TH1.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -30,8 +32,7 @@ CbmStar2019EventBuilderEtofAlgo::CbmStar2019EventBuilderEtofAlgo() :
    CbmStar2019Algo(),
    /// From the class itself
    fbMonitorMode( kFALSE ),
-   fbSandboxMode( kFALSE ),
-   fbPulserMode( kFALSE ),
+   fbDebugMonitorMode( kFALSE ),
    fUnpackPar( nullptr ),
    fuNrOfGdpbs( 0 ),
    fGdpbIdIndexMap(),
@@ -84,7 +85,18 @@ CbmStar2019EventBuilderEtofAlgo::CbmStar2019EventBuilderEtofAlgo() :
    fvuStarTrigCmdLastCore(),
    fvdMessCandidateTimeStart(),
    fvdMessCandidateTimeStop(),
-   fvdTrigCandidateTimeStart()
+   fvdTrigCandidateTimeStart(),
+   fvhHitsTimeToTriggerRaw(),
+   fvhHitsTimeToTriggerSel(),
+   fvhHitsTimeToTriggerSelVsDaq(),
+   fvhHitsTimeToTriggerSelVsTrig(),
+   fvhTriggerDt(),
+   fhEventSizeDistribution( nullptr ),
+   fhEventSizeEvolution( nullptr ),
+   fhEventNbEvolution( nullptr ),
+   fhEventNbDistributionInTs( nullptr ),
+   fhEventSizeDistributionInTs( nullptr ),
+   fhMissingTriggersEvolution( nullptr )
 {
 }
 CbmStar2019EventBuilderEtofAlgo::~CbmStar2019EventBuilderEtofAlgo()
@@ -151,6 +163,17 @@ TList* CbmStar2019EventBuilderEtofAlgo::GetParList()
 }
 Bool_t CbmStar2019EventBuilderEtofAlgo::InitParameters()
 {
+   /// Control flags
+   fbMonitorMode = fUnpackPar->GetMonitorMode();
+   LOG(INFO) << "Monitor mode:       "
+             << ( fbMonitorMode ? "ON" : "OFF" )
+             << FairLogger::endl;
+
+   fbDebugMonitorMode = fUnpackPar->GetDebugMonitorMode();
+   LOG(INFO) << "Debug Monitor mode: "
+             << ( fbDebugMonitorMode ? "ON" : "OFF" )
+             << FairLogger::endl;
+
    /// Parameters for variables dimensionning
    fuNrOfGdpbs = fUnpackPar->GetNrOfGdpbs();
    LOG(INFO) << "Nr. of Tof GDPBs: " << fuNrOfGdpbs << FairLogger::endl;
@@ -286,6 +309,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::InitParameters()
    if( kFALSE == fbIgnoreOverlapMs )
       fuNbMsLoop += fuNbOverMsPerTs;
 
+   if( kTRUE == fbMonitorMode )
+      CreateHistograms();
+
 	return kTRUE;
 }
 // -------------------------------------------------------------------------
@@ -301,10 +327,12 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
       fuNbCoreMsPerTs = ts.num_core_microslices();
       fuNbOverMsPerTs = ts.num_microslices( 0 ) - ts.num_core_microslices();
       fdTsCoreSizeInNs = fdMsSizeInNs * fuNbCoreMsPerTs;
+      fdTsFullSizeInNs = fdMsSizeInNs * (fuNbCoreMsPerTs + fuNbOverMsPerTs);
       LOG(INFO) << "Timeslice parameters: each TS has "
                 << fuNbCoreMsPerTs << " Core MS and "
                 << fuNbOverMsPerTs << " Overlap MS, for a core duration of "
-                << fdTsCoreSizeInNs << " ns"
+                << fdTsCoreSizeInNs << " ns and a full duration of "
+                << fdTsFullSizeInNs << " ns"
                 << FairLogger::endl;
    } // if( -1.0 == fdTsCoreSizeInNs )
 
@@ -387,6 +415,17 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
       fvvBufferMessages[ uGdpb ].clear();
       fvvBufferTriggers[ uGdpb ].clear();
    } // for (Int_t iGdpb = 0; iGdpb < fuNrOfGdpbs; ++iGdpb)
+
+   /// Fill plots if in monitor mode
+   if( fbMonitorMode )
+   {
+      if( kFALSE == FillHistograms() )
+      {
+         LOG(ERROR) << "Failed to fill histos in ts " << fulCurrentTsIndex
+                    << FairLogger::endl;
+         return kFALSE;
+      } // if( kFALSE == FillHistograms() )
+   } // if( fbMonitorMode )
 
    return kTRUE;
 }
@@ -1057,6 +1096,10 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
             dMeanTriggerGdpbTs += (*itTrigger[ uGdpb ]).GetFullGdpbTs();
             dMeanTriggerStarTs += (*itTrigger[ uGdpb ]).GetFullStarTs();
 
+            if( fbMonitorMode && fbDebugMonitorMode )
+               fvhTriggerDt[ uGdpb ]->Fill(  (*itTrigger[ uGdpb ]).GetFullGdpbTs()
+                                           - (*itTrigger[ 0 ]).GetFullGdpbTs() );
+
             /// Convert STAR trigger to 4 full messages and insert in buffer
             std::vector< gdpbv100::FullMessage > vTrigMess = (*itTrigger[ uGdpb ]).GetGdpbMessages();
             for( std::vector< gdpbv100::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
@@ -1091,14 +1134,30 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                     )
                   )
             {
+               Double_t dMessTime = (*itMessStart[ uGdpb ]).GetFullTimeNs();
+
+               /// Fill Histo if monitor mode
+               if( fbMonitorMode )
+                  fvhHitsTimeToTriggerRaw[ uGdpb ]->Fill( dMessTime );
+
                /// If in trigger window, add to event
-               if( dWinBeg < (*itMessStart[ uGdpb ]).GetFullTimeNs() &&
-                   (*itMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd
-                  )
+               if( dWinBeg < dMessTime && dMessTime < dWinEnd )
+               {
                   starSubEvent.AddMsg( (*itMessStart[ uGdpb ]) );
+                  /// Fill Histo if monitor mode
+                  if( fbMonitorMode )
+                  {
+                     fvhHitsTimeToTriggerSel[ uGdpb ]->Fill( dMessTime );
+                     if( fbDebugMonitorMode )
+                     {
+                        fvhHitsTimeToTriggerSelVsDaq[ uGdpb ]->Fill(  dMessTime, usFirstStarDaqCmd );
+                        fvhHitsTimeToTriggerSelVsTrig[ uGdpb ]->Fill( dMessTime, usFirstStarTrigCmd );
+                     } // if( fbDebugMonitorMode )
+                  } // if( fbMonitorMode )
+               } // if( dWinBeg < dMessTime && dMessTime < dWinEnd )
 
                /// Needed to catch the case where deadtime finishes before the trigger window
-               if( (*itMessStart[ uGdpb ]).GetFullTimeNs() < dDeadEnd )
+               if( dMessTime < dDeadEnd )
                   ++itFirstMessOutOfDeadtime;
 
                ++itMessStart[ uGdpb ];
@@ -1134,6 +1193,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                   ulEarliestGdpbTs  = (*itTrigger[ uGdpb ]).GetFullGdpbTs();
                } // if( not at end of buffer && (*itTrigger[ uGdpb ]).GetFullGdpbTs() < ulEarliestGdpbTs )
             } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+            UInt_t   uEarliestStarToken    = (*itEarliestTrigger).GetStarToken();
+            UShort_t usEarliestStarDaqCmd  = (*itEarliestTrigger).GetStarDaqCmd();
+            UShort_t usEarliestStarTrigCmd = (*itEarliestTrigger).GetStarTrigCmd();
 
             /// Find all gDPB with a matching trigger
             UInt_t uNrOfMatchedGdpbs = 0;
@@ -1143,9 +1205,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
             for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
             {
                if(   itTrigger[ uGdpb ] != fvvBufferTriggers[ uGdpb ].end()     &&
-                   (*itTrigger[ uGdpb ]).GetStarToken()   == (*itEarliestTrigger).GetStarToken()  &&
-                   (*itTrigger[ uGdpb ]).GetStarDaqCmd()  == (*itEarliestTrigger).GetStarDaqCmd() &&
-                   (*itTrigger[ uGdpb ]).GetStarTrigCmd() == (*itEarliestTrigger).GetStarTrigCmd()
+                   (*itTrigger[ uGdpb ]).GetStarToken()   == uEarliestStarToken  &&
+                   (*itTrigger[ uGdpb ]).GetStarDaqCmd()  == usEarliestStarDaqCmd &&
+                   (*itTrigger[ uGdpb ]).GetStarTrigCmd() == usEarliestStarTrigCmd
                   )
                {
                   uNrOfMatchedGdpbs++;
@@ -1187,6 +1249,13 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                      starSubEvent.AddMsg( (*itMess) );
                   } // for( std::vector< gdpbv100::FullMessage >::iterator itMess = vTrigMess.begin(); itMess != vTrigMess.end(); ++ itMess )
                } // if( kTRUE == vbMatchingTrigger[ uGdpb ] )
+                  else if( fbMonitorMode && fbDebugMonitorMode )
+                  {
+                     /// Fill missing trigger per sector evolution plot only in debug monitor mode
+                     fhMissingTriggersEvolution->Fill( dMeanTriggerGdpbTs / 1e9 / 60.0,
+                                                       fUnpackPar->GetGdpbToSectorOffset() + uGdpb );
+                  } // else if( fbMonitorMode && fbDebugMonitorMode )
+
 
                /// Prepare trigger window limits in ns for data selection
                Double_t dWinBeg = gdpbv100::kdClockCycleSizeNs * ulTriggerTime
@@ -1214,14 +1283,30 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                        )
                      )
                {
+                  Double_t dMessTime = (*itMessStart[ uGdpb ]).GetFullTimeNs();
+
+                  /// Fill Histo if monitor mode
+                  if( fbMonitorMode )
+                     fvhHitsTimeToTriggerRaw[ uGdpb ]->Fill( dMessTime );
+
                   /// If in trigger window, add to event
-                  if( dWinBeg < (*itMessStart[ uGdpb ]).GetFullTimeNs() &&
-                      (*itMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd
-                     )
+                  if( dWinBeg < dMessTime && dMessTime < dWinEnd )
+                  {
                      starSubEvent.AddMsg( (*itMessStart[ uGdpb ]) );
+                     /// Fill Histo if monitor mode
+                     if( fbMonitorMode )
+                     {
+                        fvhHitsTimeToTriggerSel[ uGdpb ]->Fill( dMessTime );
+                        if( fbDebugMonitorMode )
+                        {
+                           fvhHitsTimeToTriggerSelVsDaq[ uGdpb ]->Fill(  dMessTime, usEarliestStarDaqCmd );
+                           fvhHitsTimeToTriggerSelVsTrig[ uGdpb ]->Fill( dMessTime, usEarliestStarTrigCmd );
+                        } // if( fbDebugMonitorMode )
+                     } // if( fbMonitorMode )
+                  } // if( dWinBeg < dMessTime && dMessTime < dWinEnd )
 
                   /// Needed to catch the case where deadtime finishes before the trigger window
-                  if( (*itMessStart[ uGdpb ]).GetFullTimeNs() < dDeadEnd )
+                  if( dMessTime < dDeadEnd )
                      ++itFirstMessOutOfDeadtime;
 
                   ++itMessStart[ uGdpb ];
@@ -1252,3 +1337,162 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
 
    return kTRUE;
 }
+
+// -------------------------------------------------------------------------
+
+Bool_t CbmStar2019EventBuilderEtofAlgo::CreateHistograms()
+{
+   /// Create sector related histograms
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      UInt_t uSector = fUnpackPar->GetGdpbToSectorOffset() + uGdpb;
+      std::string sFolder = Form( "sector%2u", uSector);
+
+      fvhHitsTimeToTriggerRaw.push_back( new TH1D(
+         Form( "hHitsTimeToTriggerRawSect%2u", uSector ),
+         Form( "Time to trigger for all neighboring hits in sector %2u; t - Ttrigg [ns]; Hits []", uSector ),
+         2000, -5000, 5000  ) );
+
+      UInt_t uNbBinsDtSel = fdStarTriggerWinSize[ uGdpb ] - fdStarTriggerDelay[ uGdpb ];
+      Double_t dMaxDtSel = fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ];
+      fvhHitsTimeToTriggerSel.push_back( new TH1D(
+         Form( "hHitsTimeToTriggerSelSect%2u", uSector ),
+         Form( "Time to trigger for all selected hits in sector %2u; t - Ttrigg [ns]; Hits []", uSector ),
+         uNbBinsDtSel, fdStarTriggerDelay[ uGdpb ], dMaxDtSel ) );
+
+      /// Add pointers to the vector with all histo for access by steering class
+      AddHistoToVector( fvhHitsTimeToTriggerRaw[ uGdpb ], sFolder );
+      AddHistoToVector( fvhHitsTimeToTriggerSel[ uGdpb ], sFolder );
+
+      if( kTRUE == fbDebugMonitorMode )
+      {
+         fvhHitsTimeToTriggerSelVsDaq.push_back( new TH2D(
+            Form( "hHitsTimeToTriggerSelVsDaqSect%2u", uSector ),
+            Form( "Time to trigger for all selected hits vs DAQ CMD in sector %2u; t - Ttrigg [ns]; DAQ CMD []; Hits []", uSector ),
+            uNbBinsDtSel, fdStarTriggerDelay[ uGdpb ], dMaxDtSel,
+            16, 0., 16.  ) );
+
+         fvhHitsTimeToTriggerSelVsTrig.push_back( new TH2D(
+            Form( "hHitsTimeToTriggerSelVsTrigSect%2u", uSector ),
+            Form( "Time to trigger for all selected hits vs TRIG CMD in sector %2u; t - Ttrigg [ns]; TRIG CMD []; Hits []", uSector ),
+            uNbBinsDtSel, fdStarTriggerDelay[ uGdpb ], dMaxDtSel,
+            16, 0., 16.  ) );
+
+         fvhTriggerDt.push_back( new TH1I(
+            Form( "hhTriggerDtSect%2u", uSector ),
+            Form( "Trigger time difference between sector %2u and the first sector, full events only; Ttrigg%2u - TtriggRef [ns]; events []",
+                  uSector, uSector ),
+            200, -100, 100  ) );
+
+         /// Add pointers to the vector with all histo for access by steering class
+         AddHistoToVector( fvhHitsTimeToTriggerSelVsDaq[ uGdpb ],  sFolder );
+         AddHistoToVector( fvhHitsTimeToTriggerSelVsTrig[ uGdpb ], sFolder );
+         AddHistoToVector( fvhTriggerDt[ uGdpb ],                  sFolder );
+      } // if( kTRUE == fbDebugMonitorMode )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   /// Create event builder related histograms
+   fhEventNbPerTs = new TH1I( "hEventNbPerTs",
+      "Number of Events per TS; Events []; TS []",
+      1000 , 0, 100 );
+
+   fhEventSizeDistribution = new TH1I( "hEventSizeDistribution",
+      "Event size distribution; Event size [byte]; Events []",
+      CbmTofStarSubevent2019::GetMaxOutputSize()/8 , 0, CbmTofStarSubevent2019::GetMaxOutputSize() );
+
+   fhEventSizeEvolution    = new TProfile( "hEventSizeEvolution",
+      "Event size evolution; Time in run [min]; mean Event size [byte];",
+       14400, 0, 14400 );
+
+   fhEventNbEvolution      = new TH1I( "hEventNbEvolution",
+      "Event number evolution; Time in run [min]; Events [];",
+       14400, 0, 14400 );
+
+   /// Add pointers to the vector with all histo for access by steering class
+   AddHistoToVector( fhEventNbPerTs,          "eventbuilder" );
+   AddHistoToVector( fhEventSizeDistribution, "eventbuilder" );
+   AddHistoToVector( fhEventSizeEvolution,    "eventbuilder" );
+   AddHistoToVector( fhEventNbEvolution,      "eventbuilder" );
+
+   if( kTRUE == fbDebugMonitorMode )
+   {
+      UInt_t uNbBinsInTs = fdTsFullSizeInNs / 1000. / 10.;
+      fhEventNbDistributionInTs   = new TH1I( "hEventNbDistributionInTs",
+         "Event number distribution inside TS; Time in TS [us]; Events [];",
+          uNbBinsInTs, 0, fdTsFullSizeInNs / 1000. );
+
+      fhEventSizeDistributionInTs = new TProfile( "hEventNbEvolution",
+         "Event size distribution inside TS; Time in TS [us]; mean Event size [Byte];",
+          uNbBinsInTs, 0, fdTsFullSizeInNs / 1000. );
+
+      fhMissingTriggersEvolution = new TH2I(
+         "hMissingTriggersEvolution",
+         "Missing trigger counts per sector vs time in run; Time in run [min]; Sector []; Missing triggers []",
+         14400, 0, 14400,
+         12, 13, 25  );
+
+      /// Add pointers to the vector with all histo for access by steering class
+      AddHistoToVector( fhEventNbDistributionInTs,   "eventbuilder" );
+      AddHistoToVector( fhEventSizeDistributionInTs, "eventbuilder" );
+      AddHistoToVector( fhMissingTriggersEvolution,  "eventbuilder" );
+   } // if( kTRUE == fbDebugMonitorMode )
+
+   return kTRUE;
+}
+Bool_t CbmStar2019EventBuilderEtofAlgo::FillHistograms()
+{
+   UInt_t uNbEvents = fvEventsBuffer.size();
+   fhEventNbPerTs->Fill( uNbEvents );
+
+   for( UInt_t uEvent = 0; uEvent < uNbEvents; ++uEvent )
+   {
+      UInt_t uEventSize       = fvEventsBuffer[ uEvent ].GetEventSize();
+      Double_t dEventTimeSec  = fvEventsBuffer[ uEvent ].GetEventTimeSec();
+      Double_t dEventTimeMin  = dEventTimeSec / 60.0;
+
+      fhEventSizeDistribution->Fill( uEventSize );
+      fhEventSizeEvolution->Fill( dEventTimeMin, uEventSize );
+      fhEventNbEvolution->Fill( dEventTimeMin );
+
+      if( kTRUE == fbDebugMonitorMode )
+      {
+         Double_t dEventTimeInTs = ( fvEventsBuffer[ uEvent ].GetTrigger().GetFullGdpbTs()
+                                    - fdTsStartTime ) / 1000.0;
+         fhEventNbDistributionInTs->Fill( dEventTimeInTs  );
+         fhEventSizeDistributionInTs->Fill( dEventTimeInTs, uEventSize );
+      } // if( kTRUE == fbDebugMonitorMode )
+   } // for( UInt_t uEvent = 0; uEvent < uNbEvents; ++uEvent )
+
+   return kTRUE;
+}
+Bool_t CbmStar2019EventBuilderEtofAlgo::ResetHistograms()
+{
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      fvhHitsTimeToTriggerRaw[ uGdpb ]->Reset();
+      fvhHitsTimeToTriggerSel[ uGdpb ]->Reset();
+
+      if( kTRUE == fbDebugMonitorMode )
+      {
+         fvhHitsTimeToTriggerSelVsDaq[ uGdpb ]->Reset();
+         fvhHitsTimeToTriggerSelVsTrig[ uGdpb ]->Reset();
+         fvhTriggerDt[ uGdpb ]->Reset();
+      } // if( kTRUE == fbDebugMonitorMode )
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   /// Create event builder related histograms
+   fhEventNbPerTs->Reset();
+   fhEventSizeDistribution->Reset();
+   fhEventSizeEvolution->Reset();
+   fhEventNbEvolution->Reset();
+
+   if( kTRUE == fbDebugMonitorMode )
+   {
+      fhEventNbDistributionInTs->Reset();
+      fhEventSizeDistributionInTs->Reset();
+       fhMissingTriggersEvolution->Reset();
+   } // if( kTRUE == fbDebugMonitorMode )
+
+   return kTRUE;
+}
+// -------------------------------------------------------------------------

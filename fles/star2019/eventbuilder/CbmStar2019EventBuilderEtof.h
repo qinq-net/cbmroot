@@ -51,6 +51,7 @@ class CbmStar2019EventBuilderEtof : public CbmTSUnpack
    private:
       /// Control flags
       Bool_t fbMonitorMode;  //! Switch ON the filling of a minimal set of histograms
+      Bool_t fbDebugMonitorMode; //! Switch ON the filling of a additional set of histograms
       Bool_t fbSandboxMode;  //! Switch OFF the emission of data toward the STAR DAQ
       Bool_t fbEventDumpEna; //! Switch ON the dumping of the events to a binary file
 

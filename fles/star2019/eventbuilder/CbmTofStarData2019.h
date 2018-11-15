@@ -97,7 +97,7 @@ class CbmTofStarSubevent2019
                         bFlagState ? (fulEventStatusFlags |= kulFlagIncompleteEvt) :
                                      (fulEventStatusFlags &= ~(kulFlagIncompleteEvt) ); }
 //#ifndef __CINT__
-      inline void AddMsg( gdpbv100::FullMessage & msgIn){ fvMsgBuffer.push_back( msgIn ); }
+      inline void AddMsg( gdpbv100::FullMessage & msgIn){ fvMsgBuffer.push_back( msgIn ); fuEventSizeBytes += 2 * sizeof( ULong64_t ); }
 //#endif
 
       // Accessors
@@ -117,6 +117,7 @@ class CbmTofStarSubevent2019
 //#ifndef __CINT__
       inline static uint32_t   GetMaxOutputSize() { return kuMaxOutputSize;}
 //#endif
+      inline Double_t          GetEventTimeSec() const { return (1e-9) * gdpbv100::kdClockCycleSizeNs * fTrigger.GetFullGdpbTs(); }
 
       // Content clearing
       void   ClearSubEvent();

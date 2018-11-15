@@ -21,11 +21,11 @@
 class CbmStar2019TofPar;
 /*
 class TCanvas;
+class THttpServer;
+*/
 class TH1;
 class TH2;
 class TProfile;
-class THttpServer;
-*/
 
 class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
 {
@@ -51,12 +51,13 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       std::vector< CbmTofStarSubevent2019 > & GetEventBuffer() { return fvEventsBuffer; }
 
       Bool_t CreateHistograms();
+      Bool_t FillHistograms();
+      Bool_t ResetHistograms();
 
    private:
       /// Control flags
-      Bool_t fbMonitorMode; //! Switch ON the filling of a minimal set of histograms
-      Bool_t fbSandboxMode; //! Switch OFF the emission of data toward the STAR DAQ
-      Bool_t fbPulserMode;  //! Build events for Pulser generated
+      Bool_t fbMonitorMode;      //! Switch ON the filling of a minimal set of histograms
+      Bool_t fbDebugMonitorMode; //! Switch ON the filling of a additional set of histograms
 
       /// Settings from parameter file
       CbmStar2019TofPar* fUnpackPar;      //!
@@ -131,6 +132,19 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       std::vector< Double_t > fvdTrigCandidateTimeStart; //! [sector]
       std::vector< Double_t > fvdTrigCandidateTimeStop;  //! [sector]
 
+      /// Histograms
+      std::vector< TH1* > fvhHitsTimeToTriggerRaw;       //! [sector]
+      std::vector< TH1* > fvhHitsTimeToTriggerSel;       //! [sector]
+      std::vector< TH2* > fvhHitsTimeToTriggerSelVsDaq;  //! [sector], extra monitor for debug
+      std::vector< TH2* > fvhHitsTimeToTriggerSelVsTrig; //! [sector], extra monitor for debug
+      std::vector< TH1* > fvhTriggerDt;                  //! [sector], extra monitor for debug
+      TH1 *               fhEventNbPerTs;                //!
+      TH1 *               fhEventSizeDistribution;       //!
+      TProfile *          fhEventSizeEvolution;          //!
+      TH1 *               fhEventNbEvolution;            //!
+      TH1 *               fhEventNbDistributionInTs;     //! extra monitor for debug
+      TProfile *          fhEventSizeDistributionInTs;   //! extra monitor for debug
+      TH2 *               fhMissingTriggersEvolution;    //! extra monitor for debug
 
       void ProcessEpochCycle( uint64_t ulCycleData );
       void ProcessEpoch( gdpbv100::Message mess );

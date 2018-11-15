@@ -8,6 +8,7 @@
 #include "CbmStar2019EventBuilderEtof.h"
 
 #include "CbmStar2019EventBuilderEtofAlgo.h"
+#include "CbmStar2019TofPar.h"
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
@@ -16,6 +17,7 @@
 #include "FairRunOnline.h"
 #include "FairParGenericSet.h"
 
+#include "THttpServer.h"
 #include "TROOT.h"
 #include "TString.h"
 
@@ -24,6 +26,8 @@
 #include <iomanip>
 #include <fstream>
 #include <chrono>
+
+Bool_t bStarEtof2019EventBuilderResetHistos = kFALSE;
 
 CbmStar2019EventBuilderEtof::CbmStar2019EventBuilderEtof( UInt_t uNbGdpb )
   : CbmTSUnpack(),
@@ -73,7 +77,7 @@ Bool_t CbmStar2019EventBuilderEtof::InitContainers()
       fParCList->Remove(tempObj);
 
       std::string sParamName{ tempObj->GetName() };
-      FairParGenericSet* newObj = (FairParGenericSet*)( FairRun::Instance()->GetRuntimeDb()->getContainer( sParamName.data() ) );
+      FairParGenericSet* newObj = dynamic_cast<FairParGenericSet*>( FairRun::Instance()->GetRuntimeDb()->getContainer( sParamName.data() ) );
 
       if( nullptr == newObj )
       {
@@ -87,7 +91,47 @@ Bool_t CbmStar2019EventBuilderEtof::InitContainers()
       delete tempObj;
    } // for( Int_t iparC = 0; iparC < fParCList->GetEntries(); ++iparC )
 
+   /// Control flags
+   CbmStar2019TofPar * pUnpackPar = dynamic_cast<CbmStar2019TofPar*>( FairRun::Instance()->GetRuntimeDb()->getContainer( "CbmStar2019TofPar" ) );
+   if( nullptr == pUnpackPar )
+   {
+      LOG(ERROR) << "Failed to obtain parameter container CbmStar2019TofPar"
+                 << FairLogger::endl;
+      return kFALSE;
+   } // if( nullptr == pUnpackPar )
+
+   fbMonitorMode = pUnpackPar->GetMonitorMode();
+   LOG(INFO) << "Monitor mode:       "
+             << ( fbMonitorMode ? "ON" : "OFF" )
+             << FairLogger::endl;
+
+   fbDebugMonitorMode = pUnpackPar->GetDebugMonitorMode();
+   LOG(INFO) << "Debug Monitor mode: "
+             << ( fbDebugMonitorMode ? "ON" : "OFF" )
+             << FairLogger::endl;
+
    Bool_t initOK = fEventBuilderAlgo->InitContainers();
+
+   /// If monitor mode enabled, trigger histos creation, obtain pointer on them and add them to the HTTP server
+   if( kTRUE == fbMonitorMode )
+   {
+      /// Trigger histo creation on all associated algos
+      initOK &= fEventBuilderAlgo->CreateHistograms();
+
+      /// Obtain vector of pointers on each histo from the algo (+ optionally desired folder)
+      std::vector< std::pair< TNamed *, std::string > > vHistos = fEventBuilderAlgo->GetHistoVector();
+
+      /// Register the histos in the HTTP server
+      THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
+      for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
+      {
+         server->Register( vHistos[ uHisto ].second.data(), vHistos[ uHisto ].first );
+      } // for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
+
+      server->RegisterCommand("/Reset_EvtBuild_Hist", "bStarEtof2019EventBuilderResetHistos=kTRUE");
+      server->Restrict("/Reset_EvtBuild_Hist", "allow=admin");
+
+   } // if( kTRUE == fbMonitorMode )
 
    return initOK;
 }
@@ -146,6 +190,13 @@ void CbmStar2019EventBuilderEtof::SetEventDumpEnable( Bool_t bDumpEna )
 
 Bool_t CbmStar2019EventBuilderEtof::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
+   if( fbMonitorMode && bStarEtof2019EventBuilderResetHistos )
+   {
+      LOG(INFO) << "Reset eTOF STAR histos " << FairLogger::endl;
+      fEventBuilderAlgo->ResetHistograms();
+      bStarEtof2019EventBuilderResetHistos = kFALSE;
+   } // if( fbMonitorMode && bStarEtof2019EventBuilderResetHistos )
+
    if( kFALSE == fEventBuilderAlgo->ProcessTs( ts ) )
    {
       LOG(ERROR) << "Failed processing TS " << ts.index()

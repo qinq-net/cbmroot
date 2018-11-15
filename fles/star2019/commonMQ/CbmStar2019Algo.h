@@ -18,8 +18,10 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <utility>
 
 class TList;
+class TNamed;
 
 template<typename T>
 bool is_this_type(const boost::any& varValue)
@@ -45,6 +47,7 @@ class CbmStar2019Algo
          fbIgnoreOverlapMs( kFALSE ),
          fdMsSizeInNs(-1.0),
          fdTsCoreSizeInNs(-1.0),
+         fvpAllHistoPointers(),
          fDigiVect(),
          fParameterMap()
          {};
@@ -66,6 +69,11 @@ class CbmStar2019Algo
       virtual void SetParameter(std::string param) {;}
       virtual std::string GetParameter(std::string param) { return std::string{""}; }
 
+      /// For monitor algos
+      void AddHistoToVector( TNamed * pointer, std::string sFolder = "" )
+         { fvpAllHistoPointers.push_back( std::pair< TNamed *, std::string >( pointer, sFolder ) ); }
+      std::vector< std::pair< TNamed *, std::string > > GetHistoVector() { return fvpAllHistoPointers; }
+
       /// For unpacker algos
       void ClearVector() {fDigiVect.clear();}
       std::vector<T> GetVector() {return fDigiVect;}
@@ -83,6 +91,13 @@ class CbmStar2019Algo
       Bool_t                fbIgnoreOverlapMs;  //! /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
       Double_t              fdMsSizeInNs;       //! Size of a single MS, [nanoseconds]
       Double_t              fdTsCoreSizeInNs;   //! Total size of the core MS in a TS, [nanoseconds]
+      Double_t              fdTsFullSizeInNs;   //! Total size of the core MS in a TS, [nanoseconds]
+
+      /// For monitor algos
+      /// => Pointers should be filled with TH1*, TH2*, TProfile*, ...
+      /// ==> To check if object N is of type T, use "T ObjectPointer = dynamic_cast<T>( fvpAllHistoPointers[N].first );" and check for nullptr
+      /// ==> To get back the original class name use "fvpAllHistoPointers[N].first->ClassName()" which returns a const char * (e.g. "TH1I")
+      std::vector< std::pair< TNamed *, std::string > > fvpAllHistoPointers; //! Vector of pointers to histograms + optional folder name
 
       /// For unpacker algos
       std::vector<T> fDigiVect;

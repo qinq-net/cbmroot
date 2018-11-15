@@ -63,6 +63,11 @@ class CbmStar2019TofPar : public FairParGenericSet
    Int_t ElinkIdxToGet4Idx( UInt_t uElink );
    Int_t Get4IdxToElinkIdx( UInt_t uElink );
 
+   static constexpr UInt_t GetGdpbToSectorOffset()      { return kuGdpbToSectorOffset; }
+
+   inline Bool_t GetMonitorMode()      { return ( 1 == fiMonitorMode      ? kTRUE : kFALSE ); }
+   inline Bool_t GetDebugMonitorMode() { return ( 1 == fiDebugMonitorMode ? kTRUE : kFALSE ); }
+
    inline Int_t GetNrOfGbtx() {return fiNrOfGbtx;}
    inline Int_t GetNrOfModules() {return fiNrOfModule;}
    Int_t GetNrOfRpc( UInt_t uGbtx );
@@ -128,8 +133,12 @@ class CbmStar2019TofPar : public FairParGenericSet
          23, 22,  5,  0, 30, 32,  6,  4,
          10,  8, 20, 19, 35,  9, 21, 36
       };
+      /// Mapping in STAR
+   static const uint32_t kuGdpbToSectorOffset = 13;
 
    /// Variables
+   Int_t    fiMonitorMode; // Enable histograms in event builder processes and algo, 0 = OFF / 1 = ON
+   Int_t    fiDebugMonitorMode; // Enable extra debuging histos in bth event builder and monitor processes and algo, 0 = OFF / 1 = ON
    Int_t    fiNrOfGdpb; // Total number of GDPBs
    TArrayI  fiGdpbIdArray; // Array to hold the unique IDs for all Tof GDPBs
    Int_t    fiNrOfGbtx;   // Total number of Gbtx links
