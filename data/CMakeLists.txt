@@ -3,7 +3,6 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
-${CBMROOT_SOURCE_DIR}/base 
 ${CBMROOT_SOURCE_DIR}/data 
 # needed by rootcling
 ${CBMROOT_SOURCE_DIR}/data/raw
@@ -33,7 +32,7 @@ ${FAIRROOT_LIBRARY_DIR}
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
-
+CbmAddress.cxx
 CbmTimeSlice.cxx
 CbmEvent.cxx
 CbmHit.cxx
@@ -148,4 +147,5 @@ Set(DEPENDENCIES
 
 GENERATE_LIBRARY()
 
-
+# Install file which has no corresponding source file 
+Install(FILES CbmDefs.h DESTINATION include)

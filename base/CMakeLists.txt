@@ -24,14 +24,11 @@ Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
   ${Boost_LIBRARY_DIRS}
-#  ${CMAKE_SOURCE_DIR}/base
 )
  
 link_directories( ${LINK_DIRECTORIES})
 
 Set(SRCS
-CbmAddress.cxx
-
 #CbmDigiManager.cxx
 CbmPropagator.cxx
 
@@ -104,7 +101,3 @@ If ( ${ROOT_HAS_GDML} STREQUAL yes )
 EndIf ( ${ROOT_HAS_GDML} STREQUAL yes )
 
 GENERATE_LIBRARY()
-
-# Install file which has no corresponding source file 
-Install(FILES CbmDefs.h DESTINATION include)
-
