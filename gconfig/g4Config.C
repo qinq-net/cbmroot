@@ -26,7 +26,8 @@ void Config()
 /// character: eg. stepLimit+specialCuts.
 
    TG4RunConfiguration* runConfiguration 
-           = new TG4RunConfiguration("geomRoot", "QGSP_BERT_EMV+optical");
+           = new TG4RunConfiguration("geomRoot", "QGSP_BERT_EMV+optical",
+                                     "stepLimiter+specialCuts");
 
 /// Create the G4 VMC 
    TGeant4* geant4 = new TGeant4("TGeant4", "The Geant4 Monte Carlo", runConfiguration);
@@ -56,7 +57,12 @@ void Config()
    Int_t cut=gROOT->LoadMacro(cuts.Data());
    if(cut==0)gInterpreter->ProcessLine("SetCuts()"); 
 
+
    //set geant4 specific stuff
+  Text_t buffer[50];
+  sprintf(buffer,"/random/setSeeds %i  %i ",gRandom->GetSeed(), gRandom->GetSeed());
+  geant4->ProcessGeantCommand(buffer);
+
   geant4->SetMaxNStep(10000);  // default is 30000
   geant4->ProcessGeantMacro(configm1.Data());
 
