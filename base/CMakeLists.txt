@@ -75,6 +75,7 @@ report/CbmHtmlReportElement.cxx
 report/CbmLatexReportElement.cxx
 
 utils/CbmUtils.cxx
+utils/CbmGeometryUtils.cxx
 
 CbmMatchRecoToMC.cxx
 )
