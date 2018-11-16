@@ -1,60 +1,50 @@
+//js
 #include "CbmAnaMuonCandidate.h"
 #include "CbmStsTrack.h"
 #include "CbmKFTrack.h"
 #include "TLorentzVector.h"
 
-CbmAnaMuonCandidate::CbmAnaMuonCandidate()
-  : TObject(),
-    track(),
-    fMCTrackId(-1),
-    fpMC(),
-    fpRC(),
-    muchPoints(),
-    muchHits(),
-    stsPoints(),
-    stsHits(),
-    fIsReconstructed(kFALSE),
-    fNStsHits(0),
-    fNMuchHits(0),
-    fChiToVertex(100.),
-    fNTriggerHits(0),
-    fSign(0.),
-    fNMuchPoints(0),
-    fNStsPoints(0)
-{
+CbmAnaMuonCandidate::CbmAnaMuonCandidate(){
+  fIsReconstructed = kFALSE;
+  fNStsHits = 0;
+  fNMuchHits = 0;
+  TRDhits=0;
+  fChiToVertex = 100.;
+  fNTriggerHits = 0;
+  fSign = 0;
+  fMCTrackIdSTS = -1;
+  fTrackIdSTS = -1;
+  fMCTrackIdMuCh = -1;
+  fTrackIdMuCh = -1;
+  fTofM = -1000;
+  ftrueMu = 0;
   for (Int_t i=0;i<NPLANES;i++){
     muchPoints[i]=-1;
     muchHits[i]=-1;
-    stsPoints[i]=-1;
-    stsHits[i]=-1;
-  }  
+    fBeta[i]=0;
+  }
+  
 }
 
 
-CbmAnaMuonCandidate::CbmAnaMuonCandidate(Int_t iTrack, TLorentzVector pMC)
-  : TObject(),
-    track(),
-    fMCTrackId(iTrack),
-    fpMC(pMC),
-    fpRC(),
-    muchPoints(),
-    muchHits(),
-    stsPoints(),
-    stsHits(),
-    fIsReconstructed(kFALSE),
-    fNStsHits(0),
-    fNMuchHits(0),
-    fChiToVertex(100.),
-    fNTriggerHits(0),
-    fSign(0.),
-    fNMuchPoints(0),
-    fNStsPoints(0)
-{
+CbmAnaMuonCandidate::CbmAnaMuonCandidate(Int_t iTrack, TLorentzVector pMC){
+  fIsReconstructed = kFALSE;
+  fNStsHits = 0;
+  fNMuchHits = 0;
+  TRDhits=0;
+  fChiToVertex = 100.;
+  fNTriggerHits = 0;
+  fSign = 0;
+  fTofM = -1000;
+  ftrueMu = 0;
+  
+  fMCTrackIdMuCh = iTrack;
+  fpMC = pMC;
+  
   for (Int_t i=0;i<NPLANES;i++){
     muchPoints[i]=-1;
     muchHits[i]=-1;
-    stsPoints[i]=-1;
-    stsHits[i]=-1;
+    fBeta[i]=0;
   }
   
 }
@@ -70,10 +60,11 @@ void CbmAnaMuonCandidate::SetMomentumRC(Double_t* T){
   fpRC.SetXYZM(px,py,pz,0.105658);
 }
 
-Bool_t CbmAnaMuonCandidate::IsReconstructed(Int_t nMuchHitsCut, Int_t nStsHitsCut, Double_t chiToVertexCut){
+Bool_t CbmAnaMuonCandidate::IsReconstructed(Int_t nMuchHitsCut, Int_t nStsHitsCut, Double_t chiToVertexCut, Int_t nTRDHitsCut){
   if (fNMuchHits<nMuchHitsCut) return kFALSE;
   if (fNStsHits<nStsHitsCut) return kFALSE;
   if (fChiToVertex>chiToVertexCut) return kFALSE;
+  if (TRDhits<nTRDHitsCut) return kFALSE;
   return kTRUE;
 }
 
