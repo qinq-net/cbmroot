@@ -1,5 +1,13 @@
 
 #!/bin/bash
+
+Running=`ps uaxww | grep HitB`
+
+if [[ $Running == *"hitbuilder1"* ]]; then 
+    echo Hitbuilder is still running, wait or cleanup!
+    exit 1 
+fi
+
 $FAIRROOTPATH/bin/shmmonitor --cleanup
 
 if [ -z "$1" ]; then 
@@ -11,9 +19,9 @@ fi
 _reqmod=3 
 _reqtint=100 
 _batch=1
-_iUnp=1
+_iUnp=6
 
-_dirname=@VMCWORKDIR@/macro/beamtime/mcbm2018/input/$_runname/
+_dirname=@VMCWORKDIR@/macro/beamtime/star2019/input/$_runname/
 _filename=$_runname_*.tsa
 _digifile=$_runname.$_reqtint.$_reqmod.root
 
@@ -129,7 +137,7 @@ HITBUILDER+=" --channel-config name=syscmd,type=sub,method=connect,transport=zer
 #HITBUILDER+=" --channel-config name=tofcalib,type=push,method=bind,transport=shmem,address=tcp://127.0.0.1:5558"
 #HITBUILDER+=" --transport shmem"
 #HITBUILDER+=" --verbosity DEBUG"
-#HITBUILDER+=" --verbosity INFO"
+HITBUILDER+=" --verbosity INFO"
 #HITBUILDER+=" --verbosity WARN"
 HITBUILDER+=" --OutRootFile $_digifile"
 #HITBUILDER+=" --MaxEvent 10000"
