@@ -9,6 +9,8 @@
 
 // FAIR classes and includes
 #include "FairParamList.h"
+#include "FairDetParIo.h"
+#include "FairParIo.h"
 #include "FairLogger.h"
 
 // ROOT Classes and includes
@@ -47,6 +49,7 @@ CbmTofDigiBdfPar::CbmTofDigiBdfPar( const char* name,
   fiDetUId(),
   fMapDetInd(),
   fsBeamInputFile(""),
+  fsBeamCalibFile(""),
   fiClusterRadiusModel(-1),
   fiSmTypeInpMapp(),
   fdEfficiency(),
@@ -117,6 +120,7 @@ void CbmTofDigiBdfPar::putParams(FairParamList* l)
    for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
       l->add(Form("ChOrientation%03d", iSmType), fiChOrientation[iSmType]);
    l->add("BeamInputFile",      fsBeamInputFile);
+   l->add("BeamCalibFile",      fsBeamCalibFile);
    l->add("ClusterRadiusModel", fiClusterRadiusModel);
    l->add("SmTypeInpMapp",      fiSmTypeInpMapp);
    if( 1 == fiClusterRadiusModel )
@@ -278,14 +282,15 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
 */
    // Use Text_t as FairParamList does not seem to support TStrings yet
 
-   /*
-   Int_t iMaxSizeFilename = 5000;
+   
+   Int_t iMaxSizeFilename = 500;
    Text_t *sTempText;
    sTempText = new Text_t[iMaxSizeFilename];
    if ( ! l->fill("BeamInputFile",   sTempText, iMaxSizeFilename ) ) return kFALSE;
    fsBeamInputFile = sTempText;
-   */
-
+   if ( l->fill("BeamCalibFile",   sTempText, iMaxSizeFilename ) ) 
+   fsBeamCalibFile = sTempText;
+   
    if ( ! l->fill("ClusterRadiusModel", &fiClusterRadiusModel) ) return kFALSE;
 
    fiSmTypeInpMapp.Set(fiNbSmTypes);
@@ -748,6 +753,7 @@ void CbmTofDigiBdfPar::printParams()
    // Beamtime variables
    LOG(INFO)<<"=> Beamtime variables: "<<FairLogger::endl;
    LOG(INFO)<<"  Beamtime data input file name:      "<<fsBeamInputFile<<FairLogger::endl;
+   LOG(INFO)<<"  Beamtime data calib file name:      "<<fsBeamCalibFile<<FairLogger::endl;
    switch( fiClusterRadiusModel )
    {
       case -1:

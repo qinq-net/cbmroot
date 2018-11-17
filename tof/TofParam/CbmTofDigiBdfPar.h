@@ -20,10 +20,10 @@
 #include "TArrayD.h"
 #include <map>
 
+class FairParIo;
+class FairParamList;
 
 class TH1;
-
-class FairParamList;
 
 class CbmTofDigiBdfPar : public FairParGenericSet
 {
@@ -40,6 +40,7 @@ class CbmTofDigiBdfPar : public FairParGenericSet
     Bool_t LoadBeamtimeHistos();
 
     void SetInputFile (TString FileName) { fsBeamInputFile = FileName; }
+    void SetCalibFile (TString FileName) { fsBeamCalibFile = FileName; }
 
     // Fee properties
     Double_t GetFeeGainSigma()       const
@@ -72,6 +73,7 @@ class CbmTofDigiBdfPar : public FairParGenericSet
 
     // Beamtime variables
     TString  GetInputFileName()     const { return fsBeamInputFile; };
+    TString  GetCalibFileName()     const { return fsBeamCalibFile; };
     Int_t    GetClusterRadiusModel() const{ return fiClusterRadiusModel;};
     Int_t    GetTypeInputMap( Int_t iSmType ) const;
     Double_t GetEfficiency( Int_t iSmType ) const;
@@ -141,6 +143,7 @@ class CbmTofDigiBdfPar : public FairParGenericSet
 
     // Beamtime variables
     TString                fsBeamInputFile;
+    TString                fsBeamCalibFile;
     Int_t                  fiClusterRadiusModel; // 0 = fixed value, 1 = Landau distrib. with fixed param, 2 = Landau distrib. with bdf params
     TArrayI                fiSmTypeInpMapp;
     TArrayD                fdEfficiency;      // [fiNbSmTypes] -> in parameter?
