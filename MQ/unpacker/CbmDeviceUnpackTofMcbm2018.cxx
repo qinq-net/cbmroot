@@ -663,7 +663,7 @@ Bool_t CbmDeviceUnpackTofMcbm2018::DoUnpack(const fles::Timeslice& ts, size_t co
             LOG(ERROR) << "Could not find the gDPB index for AFCK id 0x"
                        << std::hex << fuGdpbId << std::dec
                        << " in microslice " << fdMsIndex;
-	    FairMQStateMachine::ChangeState(STOP);
+	    //FairMQStateMachine::ChangeState(STOP);
             continue;
          } // if( it == fGdpbIdIndexMap.end() )
             else fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
