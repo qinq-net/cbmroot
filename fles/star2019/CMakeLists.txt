@@ -74,14 +74,11 @@ Set(SRCS
 #  unpacker/rocMess_wGet4v1.cxx
 #)
 
-If( STAR_SUBEVT_BUILDER )
-  ADD_DEFINITIONS(-DSTAR_SUBEVT_BUILDER)
   Message(STATUS "Compiling with support for STAR DAQ Event writing")
 Set(NO_DICT_SRCS
   # STAR sub-event writer source code
-#  unpacker/star_rhicf.c
+  ${CBMROOT_SOURCE_DIR}/fles/star2017/unpacker/star_rhicf.c
 )
-EndIf()
 
 If(_UINT8_T_EXIST)
   Add_Definitions(-DHAVE_UINT8_T_HEADER_FILE)
