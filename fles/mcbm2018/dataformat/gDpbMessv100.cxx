@@ -263,13 +263,13 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
          {
             if( getGdpbHitIs24b() )
             {
-               snprintf(buf, sizeof(buf), "Get4 24 bits, Chip:0x%04x Chn:%1x Edge:%1x Ts:0x%03x",
+               snprintf(buf, sizeof(buf), "Get4 24 bits, Get4:0x%04x Chn:%1x Edge:%1x Ts:0x%03x",
                      getGdpbGenChipId(), getGdpbHitChanId(), getGdpbHit24Edge(), getGdpbHitFullTs() );
             } // if( getGdpbHitIs24b() )
                else
                {
                   snprintf(buf, sizeof(buf),
-                    "Get4 32 bits, Chip:0x%04x Channel %1d Ts:0x%03x Ft:0x%02x Tot:0x%02x  Dll %1d",
+                    "Get4 32 bits, Get4:0x%04x Channel %1d Ts:0x%03x Ft:0x%02x Tot:0x%02x  Dll %1d",
                     getGdpbGenChipId(), getGdpbHitChanId(), getGdpbHitCoarse(),
                     getGdpbHitFineTs(), getGdpbHit32Tot(), getGdpbHit32DllLck() );
                } // else of if( getGdpbHitIs24b() )
@@ -286,7 +286,7 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
          {
             // GET4 slow control message, new "true" ROC support
             snprintf(buf, sizeof(buf),
-               "Get4 Slow control, chip %03d => Chan:%01d Edge:%01d Type:%01x Data:0x%06x",
+               "Get4 Slow control, Get4:0x%04x => Chan:%01d Edge:%01d Type:%01x Data:0x%06x",
                getGdpbGenChipId(), 0x0, 0x0, 0x0, getGdpbSlcData() );
             break;
          } // case MSG_SLOWC:

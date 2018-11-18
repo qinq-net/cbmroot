@@ -77,7 +77,6 @@ class CbmStar2019Algo
       /// For unpacker algos
       void ClearVector() {fDigiVect.clear();}
       std::vector<T> GetVector() {return fDigiVect;}
-      virtual void SetTShiftRef(Double_t);
 
    protected:
       /// Parameter management
@@ -97,6 +96,13 @@ class CbmStar2019Algo
       /// => Pointers should be filled with TH1*, TH2*, TProfile*, ...
       /// ==> To check if object N is of type T, use "T ObjectPointer = dynamic_cast<T>( fvpAllHistoPointers[N].first );" and check for nullptr
       /// ==> To get back the original class name use "fvpAllHistoPointers[N].first->ClassName()" which returns a const char * (e.g. "TH1I")
+      /// ===> Usage example with feeding a THttpServer:
+      /// ===> #include "TH2.h"
+      /// ===> std::string sClassName = vHistos[ uHisto ].first.ClassName();
+      /// ===> if( !strncmp( sClassName, "TH1", 3 ) )
+      /// ===>    server->Register( vHistos[ uHisto ].second.data(), dynamic_cast< TH1 * >(vHistos[ uHisto ].first) );
+      /// ===> else if( !strncmp( sClassName, "TH2", 3 ) )
+      /// ===>    server->Register( vHistos[ uHisto ].second.data(), dynamic_cast< TH2 * >(vHistos[ uHisto ].first) );
       std::vector< std::pair< TNamed *, std::string > > fvpAllHistoPointers; //! Vector of pointers to histograms + optional folder name
 
       /// For unpacker algos

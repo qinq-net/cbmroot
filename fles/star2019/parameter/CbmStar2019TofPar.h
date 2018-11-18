@@ -61,7 +61,7 @@ class CbmStar2019TofPar : public FairParGenericSet
    Int_t PadiChanToGet4Chan( UInt_t uChannelInFee );
 
    Int_t ElinkIdxToGet4Idx( UInt_t uElink );
-   Int_t Get4IdxToElinkIdx( UInt_t uElink );
+   Int_t Get4IdxToElinkIdx( UInt_t uGet4 );
 
    static constexpr UInt_t GetGdpbToSectorOffset()      { return kuGdpbToSectorOffset; }
 

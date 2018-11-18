@@ -47,6 +47,8 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       Bool_t ProcessTs( const fles::Timeslice& ts, size_t component ) { return ProcessTs( ts ); }
       Bool_t ProcessMs( const fles::Timeslice& ts, size_t uMsCompIdx, size_t uMsIdx );
 
+      void AddMsComponentToList( size_t component, UShort_t usDetectorId );
+
       Bool_t BuildEvents();
       std::vector< CbmTofStarSubevent2019 > & GetEventBuffer() { return fvEventsBuffer; }
 
@@ -144,6 +146,7 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       TH1 *               fhEventNbEvolution;            //!
       TH1 *               fhEventNbDistributionInTs;     //! extra monitor for debug
       TProfile *          fhEventSizeDistributionInTs;   //! extra monitor for debug
+      TH2 *               fhRawTriggersStats;            //! extra monitor for debug
       TH2 *               fhMissingTriggersEvolution;    //! extra monitor for debug
 
       void ProcessEpochCycle( uint64_t ulCycleData );

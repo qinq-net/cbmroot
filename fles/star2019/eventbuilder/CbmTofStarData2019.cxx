@@ -97,6 +97,28 @@ CbmTofStarSubevent2019::CbmTofStarSubevent2019( CbmTofStarTrigger2019 triggerIn,
 {
    SetSource( sourceIdIn );
 }
+CbmTofStarSubevent2019::CbmTofStarSubevent2019(const CbmTofStarSubevent2019 & eventIn ) :
+   fbTriggerSet( eventIn.fbTriggerSet ),
+   fTrigger( eventIn.fTrigger ),
+   fusSourceId( eventIn.fusSourceId ),
+   fulEventStatusFlags( eventIn.fulEventStatusFlags ),
+   fuEventSizeBytes( eventIn.fuEventSizeBytes ),
+   fvMsgBuffer( eventIn.fvMsgBuffer )
+{
+   /// Buffer ignored as always refilled when accessed with BuildOutput
+}
+CbmTofStarSubevent2019 CbmTofStarSubevent2019::operator=( const CbmTofStarSubevent2019 & eventIn )
+{
+   fbTriggerSet         = eventIn.fbTriggerSet ;
+   fTrigger             = eventIn.fTrigger;
+   fusSourceId          = eventIn.fusSourceId;
+   fulEventStatusFlags  = eventIn.fulEventStatusFlags;
+   fuEventSizeBytes     = eventIn.fuEventSizeBytes;
+   fvMsgBuffer          = eventIn.fvMsgBuffer;
+   /// Buffer ignored as always refilled when accessed with BuildOutput
+
+   return *this;
+}
 
 CbmTofStarSubevent2019::~CbmTofStarSubevent2019()
 {

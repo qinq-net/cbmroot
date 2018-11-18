@@ -10,7 +10,7 @@
 
 #include "Timeslice.hpp"
 
-#include "CbmTSUnpack.h"
+#include "CbmMcbmUnpack.h"
 
 class CbmStar2019EventBuilderEtofAlgo;
 
@@ -24,7 +24,7 @@ extern "C" int star_rhicf_write(unsigned int trg_word, void *dta, int bytes);
 
 class CbmDigi;
 
-class CbmStar2019EventBuilderEtof : public CbmTSUnpack
+class CbmStar2019EventBuilderEtof : public CbmMcbmUnpack
 {
    public:
 
@@ -48,6 +48,10 @@ class CbmStar2019EventBuilderEtof : public CbmTSUnpack
       void SetSandboxMode( Bool_t bSandboxMode = kTRUE ){ fbSandboxMode = bSandboxMode; }
       void SetEventDumpEnable( Bool_t bDumpEna = kTRUE );
 
+      /// Temp until we change from CbmMcbmUnpack to something else
+      void AddMsComponentToList( size_t component, UShort_t usDetectorId );
+      void SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb ){};
+
    private:
       /// Control flags
       Bool_t fbMonitorMode;  //! Switch ON the filling of a minimal set of histograms
@@ -57,9 +61,14 @@ class CbmStar2019EventBuilderEtof : public CbmTSUnpack
 
       /// Parameters management
       TList* fParCList;
+
+      /// Statistics & first TS rejection
+      uint64_t fulTsCounter;
+
+      /// Processing algo
       CbmStar2019EventBuilderEtofAlgo * fEventBuilderAlgo;
 
-      ///* Event dump to binary file *///
+      /// Event dump to binary file
       std::fstream * fpBinDumpFile;
       const UInt_t   kuBinDumpBegWord = 0xFEEDBEAF;
       const UInt_t   kuBinDumpEndWord = 0xFAEBDEEF;

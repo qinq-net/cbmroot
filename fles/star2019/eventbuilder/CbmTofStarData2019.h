@@ -68,6 +68,8 @@ class CbmTofStarSubevent2019
       // Constructors
       CbmTofStarSubevent2019();
       CbmTofStarSubevent2019( CbmTofStarTrigger2019 triggerIn, UShort_t sourceIdIn );
+      CbmTofStarSubevent2019( const CbmTofStarSubevent2019 & );
+      CbmTofStarSubevent2019 operator=( const CbmTofStarSubevent2019 & );
 
       // Destructor
       ~CbmTofStarSubevent2019();

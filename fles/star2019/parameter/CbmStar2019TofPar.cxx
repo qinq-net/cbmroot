@@ -5,6 +5,8 @@
 
 #include "CbmStar2019TofPar.h"
 
+#include "gDpbMessv100.h"
+
 #include "FairParamList.h"
 #include "FairDetParIo.h"
 #include "FairParIo.h"
@@ -70,7 +72,8 @@ void CbmStar2019TofPar::putParams(FairParamList* l)
    l->add("RpcSide",             fiRpcSide);
    l->add("ModuleId",            fiModuleId);
    l->add("SizeMsInNs",          fdSizeMsInNs);
-   l->add("StarTriggerDeadtime", fdStarTriggerDeadtime);
+   l->add("SizeMsInNs",          fdSizeMsInNs);
+   l->add("StarTriggAllowedSpread", fdStarTriggAllowedSpread);
    l->add("StarTriggerDelay",    fdStarTriggerDelay);
    l->add("StarTriggerWinSize",  fdStarTriggerWinSize);
 }
@@ -78,6 +81,9 @@ void CbmStar2019TofPar::putParams(FairParamList* l)
 //------------------------------------------------------
 
 Bool_t CbmStar2019TofPar::getParams(FairParamList* l) {
+
+   LOG(INFO) << "CbmStar2019TofPar::getParams"
+              << FairLogger::endl;
 
    if (!l) return kFALSE;
 
@@ -108,12 +114,17 @@ Bool_t CbmStar2019TofPar::getParams(FairParamList* l) {
 
    if ( ! l->fill("SizeMsInNs",  &fdSizeMsInNs) ) return kFALSE;
 
+   if ( ! l->fill("StarTriggAllowedSpread",  &fdStarTriggAllowedSpread) ) return kFALSE;
+
    fdStarTriggerDeadtime.Set(fiNrOfGdpb);
    fdStarTriggerDelay.Set(fiNrOfGdpb);
    fdStarTriggerWinSize.Set(fiNrOfGdpb);
    if ( ! l->fill("StarTriggerDeadtime", &fdStarTriggerDeadtime) ) return kFALSE;
    if ( ! l->fill("StarTriggerDelay",    &fdStarTriggerDelay) ) return kFALSE;
    if ( ! l->fill("StarTriggerWinSize",  &fdStarTriggerWinSize) ) return kFALSE;
+
+   LOG(INFO) << "CbmStar2019TofPar::getParams DONE!"
+              << FairLogger::endl;
 
    return kTRUE;
 }
@@ -148,25 +159,29 @@ Int_t CbmStar2019TofPar::PadiChanToGet4Chan( UInt_t uChannelInFee )
 // -------------------------------------------------------------------------
 Int_t CbmStar2019TofPar::ElinkIdxToGet4Idx( UInt_t uElink )
 {
-   if( uElink < kuNbGet4PerGbtx )
-      return kuGet4topadi[ uElink ];
+   if( gdpbv100::kuChipIdMergedEpoch == uElink  )
+      return uElink;
+   else if( uElink < kuNbGet4PerGdpb )
+      return kuElinkToGet4[ uElink % kuNbGet4PerGbtx ] + kuNbGet4PerGbtx * ( uElink / kuNbGet4PerGbtx );
       else
       {
          LOG(FATAL) << "CbmStar2019TofPar::ElinkIdxToGet4Idx => Index out of bound, "
-                    << uElink << " vs " << kuNbGet4PerGbtx
+                    << uElink << " vs " << kuNbGet4PerGdpb
                     << ", returning crazy value!"
                     << FairLogger::endl;
          return -1;
       } // else of if( uElink < kuNbGet4PerGbtx )
 }
-Int_t CbmStar2019TofPar::Get4IdxToElinkIdx( UInt_t uElink )
+Int_t CbmStar2019TofPar::Get4IdxToElinkIdx( UInt_t uGet4 )
 {
-   if( uElink < kuNbGet4PerGbtx )
-      return kuPaditoget4[ uElink ];
+   if( gdpbv100::kuChipIdMergedEpoch == uGet4  )
+      return uGet4;
+   else if( uGet4 < kuNbGet4PerGdpb )
+      return kuGet4ToElink[ uGet4 % kuNbGet4PerGbtx ] + kuNbGet4PerGbtx * ( uGet4 / kuNbGet4PerGbtx );
       else
       {
          LOG(FATAL) << "CbmStar2019TofPar::Get4IdxToElinkIdx => Index out of bound, "
-                    << uElink << " vs " << kuNbGet4PerGbtx
+                    << uGet4 << " vs " << kuNbGet4PerGdpb
                     << ", returning crazy value!"
                     << FairLogger::endl;
          return -1;

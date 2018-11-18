@@ -30,12 +30,14 @@
 Bool_t bStarEtof2019EventBuilderResetHistos = kFALSE;
 
 CbmStar2019EventBuilderEtof::CbmStar2019EventBuilderEtof( UInt_t uNbGdpb )
-  : CbmTSUnpack(),
+  : CbmMcbmUnpack(),
     fbMonitorMode( kFALSE ),
     fbSandboxMode( kFALSE ),
     fbEventDumpEna( kFALSE ),
     fParCList( nullptr ),
-    fEventBuilderAlgo( nullptr )
+    fulTsCounter( 0 ),
+    fEventBuilderAlgo( nullptr ),
+    fpBinDumpFile( nullptr )
 {
    fEventBuilderAlgo = new CbmStar2019EventBuilderEtofAlgo();
 }
@@ -47,7 +49,7 @@ CbmStar2019EventBuilderEtof::~CbmStar2019EventBuilderEtof()
 
 Bool_t CbmStar2019EventBuilderEtof::Init()
 {
-   LOG(INFO) << "CbmStar2019EventBuilderEtof::Init => modif of 2018/02/14 18:52 CET" << FairLogger::endl;
+   LOG(INFO) << "CbmStar2019EventBuilderEtof::Init" << FairLogger::endl;
    LOG(INFO) << "Initializing STAR eTOF 2018 Event Builder" << FairLogger::endl;
 
    FairRootManager* ioman = FairRootManager::Instance();
@@ -63,12 +65,7 @@ void CbmStar2019EventBuilderEtof::SetParContainers()
 {
    LOG(INFO) << "Setting parameter containers for " << GetName()
              << FairLogger::endl;
-}
 
-Bool_t CbmStar2019EventBuilderEtof::InitContainers()
-{
-   LOG(INFO) << "Init parameter containers for " << GetName()
-               << FairLogger::endl;
    fParCList = fEventBuilderAlgo->GetParList();
 
    for( Int_t iparC = 0; iparC < fParCList->GetEntries(); ++iparC )
@@ -84,12 +81,19 @@ Bool_t CbmStar2019EventBuilderEtof::InitContainers()
          LOG(ERROR) << "Failed to obtain parameter container " << sParamName
                     << ", for parameter index " << iparC
                     << FairLogger::endl;
-         return kFALSE;
+         return;
       } // if( nullptr == newObj )
 
       fParCList->AddAt(newObj, iparC);
-      delete tempObj;
+//      delete tempObj;
    } // for( Int_t iparC = 0; iparC < fParCList->GetEntries(); ++iparC )
+
+}
+
+Bool_t CbmStar2019EventBuilderEtof::InitContainers()
+{
+   LOG(INFO) << "Init parameter containers for " << GetName()
+               << FairLogger::endl;
 
    /// Control flags
    CbmStar2019TofPar * pUnpackPar = dynamic_cast<CbmStar2019TofPar*>( FairRun::Instance()->GetRuntimeDb()->getContainer( "CbmStar2019TofPar" ) );
@@ -188,8 +192,21 @@ void CbmStar2019EventBuilderEtof::SetEventDumpEnable( Bool_t bDumpEna )
                      << FairLogger::endl;
 }
 
+void CbmStar2019EventBuilderEtof::AddMsComponentToList( size_t component, UShort_t usDetectorId )
+{
+   fEventBuilderAlgo->AddMsComponentToList( component, usDetectorId );
+}
+
 Bool_t CbmStar2019EventBuilderEtof::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
+   if( 0 == fulTsCounter )
+   {
+      LOG(INFO) << "FIXME ===> Jumping 1st TS as corrupted with current FW + FLESNET combination"
+                << FairLogger::endl;
+      fulTsCounter++;
+      return kTRUE;
+   } // if( 0 == fulTsCounter )
+
    if( fbMonitorMode && bStarEtof2019EventBuilderResetHistos )
    {
       LOG(INFO) << "Reset eTOF STAR histos " << FairLogger::endl;
@@ -228,7 +245,7 @@ Bool_t CbmStar2019EventBuilderEtof::DoUnpack(const fles::Timeslice& ts, size_t c
                               pDataBuff, iBuffSzByte );
          } // if( kFALSE == fbSandboxMode )
 
-         LOG(INFO) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
+         LOG(DEBUG) << "Sent STAR event with size " << iBuffSzByte << " Bytes"
                    << " and token " << eventBuffer[ uEvent ].GetTrigger().GetStarToken()
                    << FairLogger::endl;
 
@@ -246,7 +263,12 @@ Bool_t CbmStar2019EventBuilderEtof::DoUnpack(const fles::Timeslice& ts, size_t c
                          << FairLogger::endl;
    } // for( UInt_t uEvent = 0; uEvent < eventBuffer.size(); ++uEvent )
 
-  return kTRUE;
+   if( 0 == fulTsCounter % 10000 )
+      LOG(INFO) << "Processed " << fulTsCounter << "TS"
+                << FairLogger::endl;
+   fulTsCounter++;
+
+   return kTRUE;
 }
 
 void CbmStar2019EventBuilderEtof::Reset()
@@ -265,6 +287,39 @@ void CbmStar2019EventBuilderEtof::Finish()
                 << FairLogger::endl;
       fpBinDumpFile->close();
    } // if( NULL != fpBinDumpFile )
+
+   /// If monitor mode enabled, trigger histos creation, obtain pointer on them and add them to the HTTP server
+   if( kTRUE == fbMonitorMode )
+   {
+      /// Obtain vector of pointers on each histo from the algo (+ optionally desired folder)
+      std::vector< std::pair< TNamed *, std::string > > vHistos = fEventBuilderAlgo->GetHistoVector();
+
+      /// (Re-)Create ROOT file to store the histos
+      TDirectory * oldDir = NULL;
+      TFile * histoFile = NULL;
+      // Store current directory position to allow restore later
+      oldDir = gDirectory;
+      // open separate histo file in recreate mode
+      histoFile = new TFile( "data/eventBuilderMonHist.root" , "RECREATE");
+      histoFile->cd();
+
+      /// Register the histos in the HTTP server
+      for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
+      {
+         /// Make sure we end up in chosen folder
+         gDirectory->mkdir( vHistos[ uHisto ].second.data() );
+         gDirectory->cd( vHistos[ uHisto ].second.data() );
+
+         /// Write plot
+         vHistos[ uHisto ].first->Write();
+
+         histoFile->cd();
+      } // for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
+
+     // Restore original directory position
+     oldDir->cd();
+     histoFile->Close();
+   } // if( kTRUE == fbMonitorMode )
 }
 
 ClassImp(CbmStar2019EventBuilderEtof)
