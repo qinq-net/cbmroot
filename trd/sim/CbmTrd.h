@@ -41,6 +41,9 @@ public:
    **/
    CbmTrd(const char* name, Bool_t active);
 
+   CbmTrd(const CbmTrd&) = delete;
+   CbmTrd operator=(const CbmTrd&) = delete;
+
    /**
     * \brief Destructor.
     **/
@@ -100,6 +103,7 @@ public:
 
    void   UseGlobalPhysicsProcesses(Bool_t use) { fUseGlobalPhysicsProcesses=use; }
 
+   void SetTransformationMatrix(TGeoMatrix* mat) { fCombiTrans = mat; }
 private:
 
    /** Track information to be stored until the track leaves the
@@ -118,10 +122,8 @@ private:
 
    Bool_t         fUseGlobalPhysicsProcesses; //! weather to follow the global switch for physics cuts for the TRDgas
 
-   TGeoCombiTrans*   fCombiTrans;  //! Transformation matrix for geometry positioning
+   TGeoMatrix*   fCombiTrans;  //! Transformation matrix for geometry positioning
 
-   std::string fVolumeName;
-   
    /**
     * \brief Resets the private members for the track parameters.
     **/
@@ -130,23 +132,9 @@ private:
    virtual void SetSpecialPhysicsCuts();
 
    virtual void        ConstructRootGeometry();
-   void                ExpandTrdNodes(TGeoNode* fN);
+   
 
-    /** @brief Check how the TGeoVolume in file was produced
-     *  Check how the TGeoVolume in the geometry file was produced.
-     *  The new way is to export the volume with the Export function
-     *  of TGeoVolume together with a TGeoMatrix.
-     *  To identify a file of new type check for TGeoVolume and a TGeoMatrix
-     *  derived class in the file.
-     */
-    Bool_t IsNewGeometryFile(TString filename);
-
-
-
-   CbmTrd(const CbmTrd&);
-   CbmTrd operator=(const CbmTrd&);
-
-   ClassDef(CbmTrd, 9);
+   ClassDef(CbmTrd, 10);
 };
 
 
