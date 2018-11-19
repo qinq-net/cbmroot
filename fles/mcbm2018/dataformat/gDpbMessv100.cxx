@@ -64,7 +64,8 @@ double gdpbv100::Message::getMsgFullTimeD(uint64_t epoch) const
             return ( static_cast<double_t>(FullTimeStamp(epoch, (getGdpbHitCoarse() << 7)))
                     + ( static_cast<double_t>(getGdpbHitFineTs() - 8. ) * gdpbv100::kdFtSize /gdpbv100::kdFtBinsNb) )
                    * (gdpbv100::kdClockCycleSizeNs / gdpbv100::kdFtSize);
-            else return ( gdpbv100::kdEpochInNs * static_cast<double_t>( epoch ) + static_cast<double_t>( getGdpbHitFullTs() ) * gdpbv100::kdClockCycleSizeNs / gdpbv100::kdFtBinsNb );
+            else return ( gdpbv100::kdEpochInNs * static_cast<double_t>( epoch )
+                         + static_cast<double_t>( getGdpbHitFullTs() ) * gdpbv100::kdClockCycleSizeNs / gdpbv100::kdFtBinsNb );
       } // case MSG_HIT:
       case MSG_EPOCH:
          return gdpbv100::kdEpochInNs * static_cast<double_t>( getGdpbEpEpochNb() );

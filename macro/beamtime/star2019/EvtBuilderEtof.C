@@ -12,7 +12,8 @@ FairRunOnline *run = NULL;
 
 void EvtBuilderEtof(TString inFile = "", TString sHostname = "localhost",
                  Int_t iStartFile = -1, Int_t iStopFile = -1,
-                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080  )
+                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8081,
+                 Bool_t bSandbox = kFALSE  )
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
 //  TString inDir  = srcDir + "/input/";
@@ -24,8 +25,8 @@ void EvtBuilderEtof(TString inFile = "", TString sHostname = "localhost",
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/test.root";
-  TString parFile = "data/testparam.root";
+  TString outFile = "data/event.root";
+  TString parFile = "data/eventparam.root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -60,7 +61,7 @@ void EvtBuilderEtof(TString inFile = "", TString sHostname = "localhost",
 
   // Get4 Unpacker
   CbmStar2019EventBuilderEtof* etofEventBuilder = new CbmStar2019EventBuilderEtof();
-  etofEventBuilder->SetSandboxMode();
+  etofEventBuilder->SetSandboxMode( bSandbox );
 
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();

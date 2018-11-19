@@ -342,8 +342,8 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
    {
       fuNbCoreMsPerTs = ts.num_core_microslices();
       fuNbOverMsPerTs = ts.num_microslices( 0 ) - ts.num_core_microslices();
-      fdTsCoreSizeInNs = fdMsSizeInNs * fuNbCoreMsPerTs;
-      fdTsFullSizeInNs = fdMsSizeInNs * (fuNbCoreMsPerTs + fuNbOverMsPerTs);
+      fdTsCoreSizeInNs = fdMsSizeInNs * ( fuNbCoreMsPerTs + 1 );
+      fdTsFullSizeInNs = fdMsSizeInNs * ( fuNbCoreMsPerTs + fuNbOverMsPerTs + 1 );
       LOG(INFO) << "Timeslice parameters: each TS has "
                 << fuNbCoreMsPerTs << " Core MS and "
                 << fuNbOverMsPerTs << " Overlap MS, for a core duration of "
@@ -549,15 +549,18 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
       } // if( 0 == uIdx )
 
       gdpbv100::Message mess(ulData);
-/*
-         mess.printDataCout();
-         continue;
-*/
       /// Get message type
       messageType = mess.getMessageType();
 
       fuGet4Id = fUnpackPar->ElinkIdxToGet4Idx( mess.getGdpbGenChipId() );
       fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
+
+      if( 5916 == fulCurrentTsIndex && gdpbv100::MSG_STAR_TRI_A <= messageType)
+         mess.printDataCout();
+/*
+         mess.printDataCout();
+         continue;
+*/
 
       if( fuNrOfGet4PerGdpb <= fuGet4Id &&
           !mess.isStarTrigger()  &&
@@ -571,8 +574,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
          {
             if( mess.getGdpbHitIs24b() )
             {
-               LOG(FATAL) << "This event builder does not support 24b hit message!!!."
+               LOG(ERROR) << "This event builder does not support 24b hit message!!!."
                           << FairLogger::endl;
+               continue;
             } // if( getGdpbHitIs24b() )
                else
                {
@@ -602,8 +606,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
             } // if this epoch message is a merged one valid for all chips
                else
                {
-                  LOG(FATAL) << "This event builder does not support unmerged epoch messages!!!."
+                  LOG(ERROR) << "This event builder does not support unmerged epoch messages!!!."
                              << FairLogger::endl;
+                  continue;
                } // if single chip epoch message
             break;
          } // case gdpbv100::MSG_EPOCH:
@@ -815,6 +820,8 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessStarTrigger( gdpbv100::Message mess
          if( fbMonitorMode && fbDebugMonitorMode )
             fhRawTriggersStats->Fill( 4., fUnpackPar->GetGdpbToSectorOffset() + fuGdpbNr );
 
+//         LOG(INFO) << "First full trigger in TS " << fulCurrentTsIndex << FairLogger::endl;
+
          break;
       } // case 3
       default:
@@ -864,21 +871,25 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessEpSupprBuffer( uint32_t uGdpbNr )
       {
          case gdpbv100::MSG_HIT:
          {
-            ProcessHit( fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
+            ProcessHit( fullMess, ulCurEpochGdpbGet4 );
+            StoreMessageInBuffer( fullMess, fuGdpbNr );
             break;
          } // case gdpbv100::MSG_HIT:
          case gdpbv100::MSG_SLOWC:
          {
-            ProcessSlCtrl( fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
+            ProcessSlCtrl( fullMess, ulCurEpochGdpbGet4 );
+            StoreMessageInBuffer( fullMess, fuGdpbNr );
             break;
          } // case gdpbv100::MSG_SLOWC:
          case gdpbv100::MSG_SYST:
          {
-            if( gdpbv100::SYS_PATTERN == fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbSysSubType() )
+            if( gdpbv100::SYS_PATTERN == fullMess.getGdpbSysSubType() )
             {
-               ProcessPattern( fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
+               ProcessPattern( fullMess, ulCurEpochGdpbGet4 );
             } // if( gdpbv100::SYS_PATTERN == fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ].getGdpbSysSubType() )
-               else ProcessSysMess( fvvmEpSupprBuffer[ fuGdpbNr ][ iMsgIdx ], ulCurEpochGdpbGet4 );
+               else ProcessSysMess( fullMess, ulCurEpochGdpbGet4 );
+            StoreMessageInBuffer( fullMess, fuGdpbNr );
+
             break;
          } // case gdpbv100::MSG_SYST:
          case gdpbv100::MSG_EPOCH:
@@ -899,6 +910,15 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessEpSupprBuffer( uint32_t uGdpbNr )
 }
 void CbmStar2019EventBuilderEtofAlgo::StoreMessageInBuffer( gdpbv100::FullMessage fullMess, uint32_t uGdpbNr )
 {
+/*
+   if( 5916 == fulCurrentTsIndex )
+      LOG(INFO) << Form( "gDPB %2u Type %1u Start %12f Stop %12f Time %12f",
+                        uGdpbNr, fullMess.getMessageType(),
+                        fvdMessCandidateTimeStart[ fuGdpbNr ],
+                        fvdMessCandidateTimeStop[ fuGdpbNr ],
+                        fullMess.GetFullTimeNs() );
+*/
+
    /// Store in the major error buffer only if GET4 error not channel related
    uint16_t usG4ErrorType = fullMess.getGdpbSysErrData();
    if( gdpbv100::MSG_SYST == fullMess.getMessageType() &&
@@ -908,12 +928,26 @@ void CbmStar2019EventBuilderEtofAlgo::StoreMessageInBuffer( gdpbv100::FullMessag
       )
    {
       fvvBufferMajorAsicErrors[fuGdpbNr].push_back( fullMess );
+/*
+      if( 5916 == fulCurrentTsIndex )
+         LOG(INFO) << " => Stored" << FairLogger::endl;
+*/
       return;
    } // if GET4 error out of TOT/hit building error range
 
    if( fvdMessCandidateTimeStart[ fuGdpbNr ] < fullMess.GetFullTimeNs() &&
        fullMess.GetFullTimeNs() < fvdMessCandidateTimeStop[ fuGdpbNr ] )
+   {
       fvvBufferMessages[fuGdpbNr].push_back( fullMess );
+/*
+      if( 5916 == fulCurrentTsIndex )
+         LOG(INFO) << " => Stored";
+*/
+   } // if in limits
+/*
+   if( 5916 == fulCurrentTsIndex )
+      LOG(INFO) << FairLogger::endl;
+*/
 }
 
 // -------------------------------------------------------------------------
@@ -1108,6 +1142,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
       UInt_t   uFirstStarToken    = (*itTrigger[ 0 ]).GetStarToken();
       UShort_t usFirstStarDaqCmd  = (*itTrigger[ 0 ]).GetStarDaqCmd();
       UShort_t usFirstStarTrigCmd = (*itTrigger[ 0 ]).GetStarTrigCmd();
+      ULong64_t ulFirstFullGdpbTs = (*itTrigger[ 0 ]).GetFullGdpbTs();
       for( UInt_t uGdpb = 1; uGdpb < fuNrOfGdpbs; ++uGdpb )
       {
          if(   itTrigger[ uGdpb ] == fvvBufferTriggers[ uGdpb ].end()     ||
@@ -1137,8 +1172,11 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
             dMeanTriggerStarTs += (*itTrigger[ uGdpb ]).GetFullStarTs();
 
             if( fbMonitorMode && fbDebugMonitorMode )
-               fvhTriggerDt[ uGdpb ]->Fill(  (*itTrigger[ uGdpb ]).GetFullGdpbTs()
-                                           - (*itTrigger[ 0 ]).GetFullGdpbTs() );
+            {
+               Long64_t ilTriggerDt =  static_cast< Long64_t >( (*itTrigger[ uGdpb ]).GetFullGdpbTs() )
+                                     - static_cast< Long64_t >( ulFirstFullGdpbTs );
+               fvhTriggerDt[ uGdpb ]->Fill( ilTriggerDt );
+            } // if( fbMonitorMode && fbDebugMonitorMode )
 
             /// Convert STAR trigger to 4 full messages and insert in buffer
             std::vector< gdpbv100::FullMessage > vTrigMess = (*itTrigger[ uGdpb ]).GetGdpbMessages();
@@ -1149,9 +1187,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
 
             /// Prepare trigger window limits in ns for data selection
             Double_t dWinBeg = gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs()
-                              - fdStarTriggerDelay[ uGdpb ];
+                              + fdStarTriggerDelay[ uGdpb ];
             Double_t dWinEnd = gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs()
-                              - fdStarTriggerDelay[ uGdpb ]
+                              + fdStarTriggerDelay[ uGdpb ]
                               + fdStarTriggerWinSize[ uGdpb ];
             Double_t dDeadEnd = gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs()
                                + fdStarTriggerDeadtime[ uGdpb ];
@@ -1176,9 +1214,18 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
             {
                Double_t dMessTime = (*itMessStart[ uGdpb ]).GetFullTimeNs();
 
+               if( 5916 == fulCurrentTsIndex )
+                  LOG(INFO) << Form( "gDPB %2u Match Mess %12f Start %12f Stop %12f dStart %6f dStop %6f",
+                                    uGdpb, dMessTime,
+                                    dWinBeg, dWinEnd,
+                                    dMessTime - dWinBeg, dWinEnd - dMessTime )
+                             << ( dWinBeg < dMessTime && dMessTime < dWinEnd ? " IN" : "" )
+                             << FairLogger::endl;
+
+
                /// Fill Histo if monitor mode
                if( fbMonitorMode )
-                  fvhHitsTimeToTriggerRaw[ uGdpb ]->Fill( dMessTime );
+                  fvhHitsTimeToTriggerRaw[ uGdpb ]->Fill( dMessTime - gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs() );
 
                /// If in trigger window, add to event
                if( dWinBeg < dMessTime && dMessTime < dWinEnd )
@@ -1187,7 +1234,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                   /// Fill Histo if monitor mode
                   if( fbMonitorMode )
                   {
-                     fvhHitsTimeToTriggerSel[ uGdpb ]->Fill( dMessTime );
+                     fvhHitsTimeToTriggerSel[ uGdpb ]->Fill( dMessTime - gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs() );
                      if( fbDebugMonitorMode )
                      {
                         fvhHitsTimeToTriggerSelVsDaq[ uGdpb ]->Fill(  dMessTime, usFirstStarDaqCmd );
@@ -1236,6 +1283,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
             UInt_t   uEarliestStarToken    = (*itEarliestTrigger).GetStarToken();
             UShort_t usEarliestStarDaqCmd  = (*itEarliestTrigger).GetStarDaqCmd();
             UShort_t usEarliestStarTrigCmd = (*itEarliestTrigger).GetStarTrigCmd();
+            ULong64_t ulEarliestFullGdpbTs = (*itEarliestTrigger).GetFullGdpbTs();
 
             /// Find all gDPB with a matching trigger
             UInt_t uNrOfMatchedGdpbs = 0;
@@ -1254,8 +1302,11 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                   vbMatchingTrigger[ uGdpb ] = kTRUE;
 
                   if( fbMonitorMode && fbDebugMonitorMode )
-                     fvhTriggerDt[ uGdpb ]->Fill(  (*itTrigger[ uGdpb ]).GetFullGdpbTs()
-                                                 - (*itTrigger[ 0 ]).GetFullGdpbTs() );
+                  {
+                     Long64_t ilTriggerDt =  static_cast< Long64_t >( (*itTrigger[ uGdpb ]).GetFullGdpbTs() )
+                                           - static_cast< Long64_t >( ulEarliestFullGdpbTs );
+                     fvhTriggerDt[ uGdpb ]->Fill(  ilTriggerDt );
+                  } // if( fbMonitorMode && fbDebugMonitorMode )
 
                   dMeanTriggerGdpbTs += (*itTrigger[ uGdpb ]).GetFullGdpbTs();
                   dMeanTriggerStarTs += (*itTrigger[ uGdpb ]).GetFullStarTs();
@@ -1303,9 +1354,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
 
                /// Prepare trigger window limits in ns for data selection
                Double_t dWinBeg = gdpbv100::kdClockCycleSizeNs * ulTriggerTime
-                                 - fdStarTriggerDelay[ uGdpb ];
+                                 + fdStarTriggerDelay[ uGdpb ];
                Double_t dWinEnd = gdpbv100::kdClockCycleSizeNs * ulTriggerTime
-                                 - fdStarTriggerDelay[ uGdpb ]
+                                 + fdStarTriggerDelay[ uGdpb ]
                                  + fdStarTriggerWinSize[ uGdpb ];
                Double_t dDeadEnd = gdpbv100::kdClockCycleSizeNs * ulTriggerTime
                                   + fdStarTriggerDeadtime[ uGdpb ];
@@ -1328,10 +1379,18 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                      )
                {
                   Double_t dMessTime = (*itMessStart[ uGdpb ]).GetFullTimeNs();
-
+/*
+               if( 5916 == fulCurrentTsIndex )
+      LOG(INFO) << Form( "gDPB %2u Miss Mess %12f Start %12f Stop %12f",
+                        uGdpb, dMessTime,
+                        dWinBeg,
+                        dWinEnd )
+                 << ( dWinBeg < dMessTime && dMessTime < dWinEnd ? " IN" : "" )
+                 << FairLogger::endl;
+*/
                   /// Fill Histo if monitor mode
                   if( fbMonitorMode )
-                     fvhHitsTimeToTriggerRaw[ uGdpb ]->Fill( dMessTime );
+                     fvhHitsTimeToTriggerRaw[ uGdpb ]->Fill( dMessTime - gdpbv100::kdClockCycleSizeNs * ulTriggerTime );
 
                   /// If in trigger window, add to event
                   if( dWinBeg < dMessTime && dMessTime < dWinEnd )
@@ -1340,7 +1399,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                      /// Fill Histo if monitor mode
                      if( fbMonitorMode )
                      {
-                        fvhHitsTimeToTriggerSel[ uGdpb ]->Fill( dMessTime );
+                        fvhHitsTimeToTriggerSel[ uGdpb ]->Fill( dMessTime - gdpbv100::kdClockCycleSizeNs * ulTriggerTime );
                         if( fbDebugMonitorMode )
                         {
                            fvhHitsTimeToTriggerSelVsDaq[ uGdpb ]->Fill(  dMessTime, usEarliestStarDaqCmd );
@@ -1427,7 +1486,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::CreateHistograms()
 
          fvhTriggerDt.push_back( new TH1I(
             Form( "hhTriggerDtSect%2u", uSector ),
-            Form( "Trigger time difference between sector %2u and the first sector, full events only; Ttrigg%2u - TtriggRef [ns]; events []",
+            Form( "Trigger time difference between sector %2u and the first sector, full events only; Ttrigg%2u - TtriggRef [Clk]; events []",
                   uSector, uSector ),
             200, -100, 100  ) );
 
