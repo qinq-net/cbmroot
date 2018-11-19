@@ -13,6 +13,9 @@
 #include "CbmPixelHit.h"
 #include "TMath.h"
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/base_object.hpp>
+
 class CbmTofHit : public CbmPixelHit
 {
 public:
@@ -77,9 +80,17 @@ public:
   Int_t GetClusterSize() { return CbmHit::GetRefId(); }
 
 private:
-
-  Int_t fFlag; ///< Flag for general purposes [TDC, event tagging...]
+  Int_t fFlag;    ///< Flag for general purposes [TDC, event tagging...]
   Int_t fChannel; ///< Channel identifier
+
+  friend class boost::serialization::access;
+
+  template <class Archive>
+   void serialize(Archive& ar, const unsigned int /*version*/)
+   {
+        ar& fFlag;
+        ar& fChannel;
+   }
 
   ClassDef(CbmTofHit, 4)
 };
