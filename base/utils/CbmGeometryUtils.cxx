@@ -139,10 +139,11 @@ namespace Cbm {
       return IsNewGeometryFile(filename, tempString, &tempMatrix);
     }
 
-    void ImportRootGeometry(TString& filename, FairModule* mod) {
+    void ImportRootGeometry(TString& filename, FairModule* mod, TGeoMatrix* mat) {
 
       TString fVolumeName{""};
       TGeoMatrix* tempMatrix{nullptr};
+
       IsNewGeometryFile(filename, fVolumeName, &tempMatrix);
 
       TGeoVolume *module1 = TGeoVolume::Import(filename, fVolumeName.Data());
@@ -150,20 +151,32 @@ namespace Cbm {
       if ( gLogger->IsLogNeeded(DEBUG) ) {
 	LOG(DEBUG) << "Information about imported volume:" << FairLogger::endl;
 	module1->Print();
-	LOG(DEBUG) << FairLogger::endl;
+ 	LOG(DEBUG) << FairLogger::endl;
 	LOG(DEBUG) << "Information about imported transformation matrix:" 
 		   << FairLogger::endl;
 	tempMatrix->Print();
+        if (mat) {
+          LOG(DEBUG) << "There is a transformation matrix passed "
+                     << "from the module class which overwrites "
+                     << "the imported matrix." << FairLogger::endl;
+          LOG(DEBUG) << FairLogger::endl;
+          LOG(DEBUG) << "Information about passed transformation matrix:" 
+                     << FairLogger::endl;
+          mat->Print();
+        }
       }
 
       Cbm::GeometryUtils::CorrectMediaId();
       Cbm::GeometryUtils::RemoveDuplicateMaterials();
       Cbm::GeometryUtils::RemoveDuplicateMedia();
       
-      gGeoManager->GetTopVolume()->AddNode(module1, 0, tempMatrix);
-      
-      Cbm::GeometryUtils::ExpandNodes(module1, mod);
-      
+      if (mat) {
+        gGeoManager->GetTopVolume()->AddNode(module1, 0, mat);
+      } else {
+        gGeoManager->GetTopVolume()->AddNode(module1, 0, tempMatrix);
+      }
+
+      Cbm::GeometryUtils::ExpandNodes(module1, mod);      
       gGeoManager->SetAllIndex();
       
     }

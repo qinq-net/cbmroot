@@ -12,7 +12,9 @@ namespace Cbm {
     void RemoveDuplicateMaterials();
     void RemoveDuplicateMedia();
 
-    void ImportRootGeometry(TString& filename, FairModule* mod);
+    void ImportRootGeometry(TString& filename, 
+                            FairModule* mod, 
+                            TGeoMatrix* mat = nullptr);
 
     bool IsNewGeometryFile(TString& filename);    
     bool IsNewGeometryFile(TString& filename, 
