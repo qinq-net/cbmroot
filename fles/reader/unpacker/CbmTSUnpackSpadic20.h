@@ -23,6 +23,7 @@
 
 
 #include <vector>
+#include <array>
 
 class CbmTSUnpackSpadic20 : public CbmTSUnpack
 {
@@ -63,7 +64,7 @@ class CbmTSUnpackSpadic20 : public CbmTSUnpack
     Bool_t b_multiFlag;                /**< = true, if the hit is a corrected multimessage. (For QA)*/
     Int_t time;                        /**< Timestamp of the hit.*/
     ULong_t fullTime;                  /**< Fulltime of the hit.*/
-    Short_t samples[32];               /**< Samples of the hit.*/
+    std::array<Short_t,32> samples;               /**< Samples of the hit.*/
     
   };
 

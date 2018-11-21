@@ -159,13 +159,14 @@ CbmTSUnpackSpadic20::DoUnpack (const fles::Timeslice& ts, size_t component)
 		  time,		
 		  fullTime
 		  };
+	      currHit.samples.fill(-256);
 	      if(samples == 0) //hit messages with 0 samples are discarded here
 		{
 		  currHit.b_complete = false;
 		  n_zeroSample++;
 		  continue;
 		}		
-	      std::copy(temp_sample_array.begin(),temp_sample_array.begin()+samples,currHit.samples);
+	      std::copy(temp_sample_array.begin(),temp_sample_array.begin()+samples,currHit.samples.begin());
 
 	      if(currHit.fullTime - multihit_buffer[std::make_pair(link, addr)][channel].fullTime < 32)//successor  
 		{
@@ -187,7 +188,7 @@ CbmTSUnpackSpadic20::DoUnpack (const fles::Timeslice& ts, size_t component)
 		  triggerType = currHit.triggerType;
 		  time = currHit.time;
 		  samples = currHit.nrSamples;
-		  std::copy(currHit.samples,currHit.samples + currHit.nrSamples,sample_values.begin());
+		  std::copy(currHit.samples.begin(),currHit.samples.begin() + currHit.nrSamples,sample_values.begin());
 		  n_final_hit++;		  
 		}
 	      else
@@ -245,6 +246,7 @@ CbmTSUnpackSpadic20::DoUnpack (const fles::Timeslice& ts, size_t component)
 				bufferOverflowCounter, samples, sample_ptr,
 				isHit, isInfo, isEpoch, isEpochOutOfSynch, isHitAborted,
 				isOverflow, isStrange);
+	  sample_values.fill(-256);
 	}
     }
   return kTRUE;
