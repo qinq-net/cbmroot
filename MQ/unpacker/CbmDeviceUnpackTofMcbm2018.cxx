@@ -603,6 +603,7 @@ bool CbmDeviceUnpackTofMcbm2018::HandleMessage(FairMQMessagePtr& msg, int /*inde
     ChangeState(END);
     LOG(INFO) << "Current State: " <<  FairMQStateMachine::GetCurrentStateName();
   }
+  return true;
 }
 
 Bool_t CbmDeviceUnpackTofMcbm2018::DoUnpack(const fles::Timeslice& ts, size_t component)
