@@ -7,31 +7,31 @@
 
 #include <cassert>
 #include "TFile.h"
+#include "TList.h"
+#include "TObjString.h"
+#include "TRandom.h"
 #include "FairMCEventHeader.h"
 #include "FairLogger.h"
 
 
 // -----   Default constructor   ---------------------------------------------
-CbmInputChain::CbmInputChain() :
-        TObject(),
-        fChain(nullptr),
-        fRate(0.),
-        fCurrentEntryId(-1),
-        fDeltaDist(nullptr),
-        fNofUsedEntries(0) {
+CbmInputChain::CbmInputChain() : CbmInputChain(nullptr, 0., Cbm::kRegular) {
 }
 // ---------------------------------------------------------------------------
 
 
 
 // -----   Constructor   -----------------------------------------------------
-CbmInputChain::CbmInputChain(TChain* chain, Double_t rate) :
+CbmInputChain::CbmInputChain(TChain* chain, Double_t rate,
+                             Cbm::ETreeAccess mode) :
         TObject(),
         fChain(chain),
         fRate(rate),
-        fCurrentEntryId(-1),
-        fDeltaDist(nullptr),
-        fNofUsedEntries(0) {
+        fMode(mode),
+        fBranches(),
+        fLastUsedEntry(-1),
+        fNofUsedEntries(0),
+        fDeltaDist(nullptr) {
 
   if (rate > 0.) {
     Double_t mean = 1.e9 / rate;       // mean time between events
@@ -52,6 +52,18 @@ CbmInputChain::~CbmInputChain() {
 
 
 
+// -----   Get branch list   -------------------------------------------------
+std::set<TString>& CbmInputChain::GetBranchList() {
+
+  // At first call, read branch list from file
+  if ( fBranches.empty() ) ReadBranches();
+
+  return fBranches;
+}
+// ---------------------------------------------------------------------------
+
+
+
 // -----   Time difference to next event   -----------------------------------
 Double_t CbmInputChain::GetDeltaT() {
   if ( ! fDeltaDist ) return 0.;
@@ -65,24 +77,54 @@ Double_t CbmInputChain::GetDeltaT() {
 Int_t CbmInputChain::GetNextEntry() {
 
   assert(fChain);
-  fCurrentEntryId++;
 
-  // Return -1 if all entries in the chain were processed
-  if (fCurrentEntryId >= GetNofEntries()) return -1;
+  // Determine entry number to be retrieved
+  Int_t entry = -1;
+  if ( fMode == Cbm::kRandom ) {
+    entry = gRandom->Integer(GetNofEntries());
+  } //? Random entry number
+  else {
+    entry = fLastUsedEntry + 1;
+    if ( entry >= GetNofEntries() ) entry = ( fMode == Cbm::kRepeat ? 0 : -1 );
+  } //? Sequential entry number
+
+  // Stop run when entryId is -1. This happens when mode is kRegular and
+  // the end of the chain is reached.
+  if ( entry < 0 ) return -1;
 
   // Get entry from chain
-  Int_t nBytes = fChain->GetEntry(fCurrentEntryId, 1);
+  assert(entry >= 0 && entry < GetNofEntries());  // Just to make sure...
+  Int_t nBytes = fChain->GetEntry(entry);
+  if (nBytes <= 0) LOG(WARNING) << "InputChain: " << nBytes
+      << " Bytes read from tree!" << FairLogger::endl;
+  fLastUsedEntry = entry;
   fNofUsedEntries++;
 
-  // Warning if no data were read
-  if (nBytes <= 0)
-    LOG(WARNING) << "InputChain: " << nBytes << " Bytes read from tree!"
-                 << FairLogger::endl;
-
-  return fCurrentEntryId;
+  return entry;
 
 }
 // ---------------------------------------------------------------------------
+
+
+
+// -----   Get list of data branches from file   -----------------------------
+UInt_t CbmInputChain::ReadBranches() {
+
+  fBranches.clear();
+  TList* listFile =
+      dynamic_cast<TList*>(fChain->GetFile()->Get("BranchList"));
+  assert(listFile);
+  TObjString* branchName = nullptr;
+  for (Int_t entry = 0; entry < listFile->GetEntries(); entry++) {
+    branchName = dynamic_cast<TObjString*>(listFile->At(entry));
+    assert(branchName);
+    fBranches.insert(branchName->GetString());
+  } //# Entries in branch list
+
+  return fBranches.size();
+}
+// ---------------------------------------------------------------------------
+
 
 ClassImp(CbmInputChain)
 

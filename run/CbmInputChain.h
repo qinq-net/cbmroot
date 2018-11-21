@@ -6,9 +6,12 @@
 #ifndef CBMINPUTCHAIN_H
 #define CBMINPUTCHAIN_H 1
 
+#include <set>
 #include "TChain.h"
 #include "TF1.h"
 #include "TObject.h"
+#include "CbmDefs.h"
+
 
 /** @class CbmInputChain
  ** @author Volker Friese <v.friese@gsi.de>
@@ -36,12 +39,20 @@ class CbmInputChain : public TObject
     /** @brief Constructor
      ** @param chain  Pointer to input file chain
      ** @param rate   Event rate [1/s]. Must be positive.
+     ** @param mode   Access mode (see EAccessMode)
      **/
-    CbmInputChain(TChain* chain, Double_t rate);
+    CbmInputChain(TChain* chain, Double_t rate,
+                  Cbm::ETreeAccess mode = Cbm::kRegular);
 
 
     /** @brief Destructor **/
     virtual ~CbmInputChain();
+
+
+    /** @brief List of branches
+     ** @value Reference to branch list
+     **/
+    std::set<TString>& GetBranchList();
 
 
     /** @brief Pointer to chain
@@ -81,7 +92,7 @@ class CbmInputChain : public TObject
     /** @brief Number of used entries
      ** @value Number of successful calls to GetNextEvent()
      **/
-    Int_t GetNofUsedEntries() const {
+    UInt_t GetNofUsedEntries() const {
       return fNofUsedEntries;
     }
 
@@ -96,14 +107,24 @@ class CbmInputChain : public TObject
 
   private:
 
-    TChain* fChain;   //!
-    Double_t fRate;
-    Int_t fCurrentEntryId;
-    TF1* fDeltaDist;  //!
-    UInt_t fNofUsedEntries;
+    TChain* fChain;                //! Input chain
+    Double_t fRate;                // Event rate [1/s]
+    Cbm::ETreeAccess fMode;        // Access mode to tree
+    std::set<TString> fBranches;   // List of branch names
+    UInt_t fLastUsedEntry;         // Index of last used entry
+    UInt_t fNofUsedEntries;        // Number of used entries
+    TF1* fDeltaDist;               // Probability distribution for delta(t)
 
 
-  ClassDef(CbmInputChain, 1);
+    /** @brief Read list of branches from file
+     ** @value Number of branches
+     **
+     ** The list of branches is stored as TList in each file.
+     **/
+    UInt_t ReadBranches();
+
+
+    ClassDef(CbmInputChain, 1);
 
 };
 

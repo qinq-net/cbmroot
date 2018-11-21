@@ -58,7 +58,24 @@ inline Double_t CbmNeutronMass()  { return 0.939565379; }
 inline Double_t CbmElectronMass() { return 0.000510998928; }
 
 
+namespace Cbm {
 
+
+  /** @enumerator ETreeAccess
+   ** @brief Mode to read entries from a ROOT TTree
+   **
+   ** kRegular: Incremental; start with first entry; stop with last entry
+   ** kRepeat:  Incremental; start with first entry; after last entry jump
+   **           to first entry
+   ** kRandom:  Random choice of entries between first and last one.
+   **/
+  enum ETreeAccess {
+    kRegular, kRepeat, kRandom
+  };
+
+
+
+}
 
 
 

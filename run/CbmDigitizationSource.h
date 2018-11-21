@@ -7,6 +7,7 @@
 #define CBMDIGITIZATIONSOURCE_H 1
 
 #include <map>
+#include <set>
 #include "TObject.h"
 #include "TString.h"
 #include "FairEventHeader.h"
@@ -70,18 +71,19 @@ class CbmDigitizationSource : public FairSource
      ** @param fileName  Input file name
      ** @param rate      Input event rate (1/s)
      **/
-    void AddInput(UInt_t inputId, TChain* chain, Double_t rate);
+    void AddInput(UInt_t inputId, TChain* chain, Double_t rate,
+                  Cbm::ETreeAccess mode = Cbm::kRegular);
 
 
     /** @brief Maximal entry number the source can run to
      ** @param lastEntry  Last entry as specified by FairRunAna
      ** @value Last entry possible with this source
      **
-     ** Inherited from FairSource. Since there are several inputs
+     ** Inherited from FairSource. Since there can be several inputs
      ** being randomly mixed together, a maximal entry number cannot
      ** be specified. Thus, a practically infinite value is returned.
      ** The run is then terminated by ReadEvent() returning non-zero.
-     ** If lastEntry is specified by FairrunAna (i.e., by the user),
+     ** If lastEntry is specified by FairRunAna (i.e., by the user),
      ** this is the return value.
      **/
     virtual Int_t CheckMaxEventNo(Int_t lastEntry = 0);
@@ -101,6 +103,21 @@ class CbmDigitizationSource : public FairSource
      ** Fills run ID, input ID, entry ID and event time.
      **/
     virtual void FillEventHeader(FairEventHeader* event);
+
+
+    /** @brief List of branch names
+     ** @value Reference to set of branch names
+     **/
+    const std::set<TString>& GetBranchList() const {
+      return fBranches;
+    }
+
+
+    /** @brief Input
+     ** @param inputId  Input identifier
+     ** @value Pointer to CbmInputChain object
+     **/
+    CbmInputChain* GetInput(UInt_t inputId);
 
 
     /** @brief Source type is kFILE **/
@@ -176,12 +193,25 @@ class CbmDigitizationSource : public FairSource
     std::map<Double_t, UInt_t> fNextEvent;    //! Key is time, value is inputId
     FairMCEventHeader* fMCEventHeader;
     TObjArray* fListOfFolders;
+    std::set<TString> fBranches;              // List of branches names
     Double_t fCurrentTime;
     Int_t fCurrentEntryId;
     Int_t fCurrentInputId;
     Int_t fCurrentRunId;
     Bool_t fFirstCall;
     Bool_t fEventMode;
+
+
+    /** @brief Compare an input branch list with the global branch list
+     ** @param input Input chain
+     ** @value kTRUE if the branch list of the input is compatible
+     **
+     ** The branch list of the input is considered compatible if all branches
+     ** of the global list are present in the input. Additional branches
+     ** in the input are not considered harmful. The global branch list
+     ** is defined by the first input.
+     **/
+    Bool_t CheckBranchList(CbmInputChain* input);
 
 
 

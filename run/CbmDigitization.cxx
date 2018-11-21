@@ -35,8 +35,8 @@ CbmDigitization::CbmDigitization() :
   TNamed("CbmDigitization", "Digitisation Run"),
   fDigitizers(),
   fDaq(new CbmDaq()),
-  fInputFiles(),
-  fEventRates(),
+  fSource(new CbmDigitizationSource()),
+  fNofInputs(0),
   fOutFile(),
   fParRootFile(),
   fParAsciiFiles(),
@@ -58,19 +58,22 @@ CbmDigitization::~CbmDigitization() {
     if ( it->second ) delete it->second;
   } //# CbmDigitizeInfos
   // CbmDaq and the digitizers are destructed by FairRun.
+  if ( fSource ) delete fSource;
 }
 // --------------------------------------------------------------------------
 
 
 
 // -----   Add an input file   ----------------------------------------------
-Int_t CbmDigitization::AddInput(TString fileName, Double_t eventRate) {
+void CbmDigitization::AddInput(TString fileName, Double_t eventRate,
+                                Cbm::ETreeAccess mode) {
   if ( gSystem->AccessPathName(fileName) )
     LOG(FATAL) << fName << ": input file " << fileName << " does not exist!"
       << FairLogger::endl;
-  fInputFiles.push_back(fileName);
-  fEventRates.push_back(eventRate);
-  return fInputFiles.size();
+  TChain* chain = new TChain("cbmsim");
+  chain->Add(fileName.Data());
+  fSource->AddInput(fNofInputs, chain, eventRate, mode);
+  fNofInputs++;
 }
 // --------------------------------------------------------------------------
 
@@ -93,41 +96,38 @@ Bool_t CbmDigitization::AddParameterAsciiFile(TString fileName) {
 
 
 // -----   Check input file   -----------------------------------------------
-Int_t CbmDigitization::CheckInputFile() {
+Int_t CbmDigitization::CheckInput() {
 
-  // --- Open input file and get tree
-  TFile* file = new TFile(fInputFiles[0]);
+  // --- Check presence of input data branch for the digitizers.
+  // --- If the branch is not found, the digitizer will not be instantiated.
+  Int_t nBranches = 0;
+  for (auto const& entry : fDigitizers) {
+    auto setIt = fSource->GetBranchList().find(entry.second->GetBranchName());
+    if ( setIt != fSource->GetBranchList().end() ) {
+      LOG(INFO) << fName << ": Found branch " << entry.second->GetBranchName()
+          << " for system " << CbmModuleList::GetModuleNameCaps(entry.first)
+          << FairLogger::endl;
+      entry.second->SetPresent();
+      nBranches++;
+    } //? Branch required by digitizer is present in branch list
+  }
+
+  // Now we have to do some gymnastics to get the run ID, which is needed
+  // to determine the geometry tags, which in turn are needed to register
+  // the proper ASCII parameter files. This is rather nasty; the parameter
+  // handling is really a pain in the neck.
+  CbmInputChain* input = fSource->GetInput(0);
+  assert(input);
+  TFile* file = input->GetChain()->GetFile();
   assert(file);
-  LOG(INFO) << fName << ": Opening first input file " << fInputFiles[0]
-            << FairLogger::endl;
   TTree* tree = dynamic_cast<TTree*>(file->Get("cbmsim"));
   assert(tree);
-
-  // --- Get run id from event header
   FairMCEventHeader* header = new FairMCEventHeader();
   tree->SetBranchAddress("MCEventHeader.", &header);
   tree->GetEntry(0);
   fRun = header->GetRunID();
   LOG(INFO) << fName << ": Run id is " << fRun << FairLogger::endl;
 
-  // --- Search for input branches
-  Int_t nBranches = 0;
-  for (auto it = fDigitizers.begin(); it != fDigitizers.end(); it++) {
-    TBranch* branch = tree->GetBranch(it->second->GetBranchName().Data());
-    if ( branch ) {
-      LOG(INFO) << fName << ": Found branch " << it->second->GetBranchName()
-          << " for system " << CbmModuleList::GetModuleNameCaps(it->first)
-          << FairLogger::endl;
-      it->second->SetPresent();
-      nBranches++;
-    } //? branch found
-  } //# systems
-
-  // --- Clean up and finish
-  delete tree;
-  file->Close();
-  delete file;
-  delete header;
   return nBranches;
 }
 // --------------------------------------------------------------------------
@@ -234,17 +234,17 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
 
 
   // --- Look for input branches
-  Int_t nBranches = CheckInputFile();
+  Int_t nBranches = CheckInput();
   TString word = (nBranches == 1 ? "branch" : "branches");
   LOG(INFO) << fName << ": " << nBranches << " input " << word << " found"
-      << FairLogger::endl << FairLogger::endl;
+      << FairLogger::endl;
 
 
   // --- Create default digitizers
   Int_t nDigis = CreateDefaultDigitizers();
   word = (nDigis == 1 ? " digitiser" : " digitisers");
   LOG(INFO) << fName << ": " << nDigis << word << " instantiated."
-      << FairLogger::endl << FairLogger::endl;
+      << FairLogger::endl;
 
 
   // --- Extract needed information from runtime database
@@ -301,33 +301,18 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
       << ": Run info will be generated." << FairLogger::endl;
   FairMonitor::GetMonitor()->EnableMonitor(fMonitor);
   if ( fMonitor ) LOG(INFO) << fName << ": Monitor is enabled."
-      << FairLogger::endl << FairLogger::endl;
+      << FairLogger::endl;
 
 
-  // --- Add input files
-  CbmDigitizationSource* source = new CbmDigitizationSource();
-  if ( fDaq->IsEventMode() ) source->SetEventMode();
-  for (Int_t iInput = 0; iInput < fInputFiles.size(); iInput++) {
-    // In the event-by-event case, ignore all but the first input
-    if ( fDaq->IsEventMode() && iInput > 0 ) {
-      LOG(WARNING) << fName << ": Event-by-event mode; ignoring input "
-          << iInput << FairLogger::endl;
-    }
-    else {
-      LOG(INFO) << fName << ": Adding input " << iInput << " with rate "
-          << fEventRates.at(iInput) << FairLogger::endl;
-      TChain* chain = new TChain("cbmsim");
-      chain->Add(fInputFiles.at(iInput).Data());
-      source->AddInput(iInput, chain, fEventRates.at(iInput));
-    }
-  }
-  run->SetSource(source);
+  // --- Register source
+  if ( fDaq->IsEventMode() ) fSource->SetEventMode();
+  run->SetSource(fSource);
 
 
   // --- Set output file
   run->SetOutputFile(fOutFile);
   LOG(INFO) << fName << ": Output file is " << fOutFile
-      << FairLogger::endl << FairLogger::endl;
+      << FairLogger::endl;
 
 
   // --- Register digitisers
@@ -353,7 +338,6 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
 
 
   // --- Set runtime database
-  std::cout << std::endl;
   LOG(INFO) << fName << ": Setting runtime DB " << FairLogger::endl;
   LOG(INFO) << fName << ": ROOT I/O is " << fParRootFile << FairLogger::endl;
   rtdb = run->GetRuntimeDb();
@@ -370,6 +354,8 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
     rtdb->setFirstInput(parIoAscii);
     rtdb->setSecondInput(parIoRoot);
   } //? ASCII parameter file list not empty
+  LOG(INFO) << "==================================================="
+      << FairLogger::endl;
 
 
   // --- Initialise run

@@ -107,4 +107,7 @@
 #pragma link C++ class CbmStsxyterRawHitMessage;
 #pragma link C++ class CbmTrbRawMessage;
 
+
+#pragma link C++ enum Cbm::ETreeAccess;
+
 #endif

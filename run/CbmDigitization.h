@@ -15,7 +15,9 @@
 #include "FairLogger.h"
 #include "CbmDaq.h"
 #include "CbmDefs.h"
+#include "CbmDigitizationSource.h"
 #include "CbmDigitizeInfo.h"
+#include "CbmInputChain.h"
 
 class TGeoManager;
 class CbmDigitize;
@@ -38,7 +40,8 @@ class CbmDigitization : public TNamed
      ** @param fileName  Name of input file (MC)
      ** @param eventRate Rate for events from input file [1/s]
      **/
-    Int_t AddInput(TString fileName, Double_t eventRate = -1.);
+    void AddInput(TString fileName, Double_t eventRate = -1.,
+                  Cbm::ETreeAccess mode = Cbm::kRegular);
 
 
     /** @brief Add an ASCII parameter file
@@ -166,8 +169,10 @@ class CbmDigitization : public TNamed
 
     std::map<Int_t, CbmDigitizeInfo*> fDigitizers;
     CbmDaq* fDaq;
-    std::vector<TString> fInputFiles;
-    std::vector<Double_t> fEventRates;
+    CbmDigitizationSource* fSource;
+    UInt_t fNofInputs;
+    //std::vector<TString> fInputFiles;
+    //std::vector<Double_t> fEventRates;
     TString fOutFile;
     TString fParRootFile;
     TList fParAsciiFiles;
@@ -185,15 +190,15 @@ class CbmDigitization : public TNamed
     CbmDigitization operator=(const CbmDigitization&) = delete;
 
 
-    /** @brief Check the presence of input arrays (MCPoint) in the tree.
-     ** @value Number of MCPoint arrays found in the tree.
+    /** @brief Check the presence of input branches.
+     ** @value Number of required branches (MCPoint) found in the tree.
      **
-     ** The tree of the first input file is searched for input branches
-     ** (MCPoint). For each present input branch, the corresponding
-     ** digitizer will be instantiated. In addition, the run number
-     ** is extracted from the MCEventHeader.
+     ** The branch list is searched for the input branches (MCPoint)
+     ** required by the digitizers. For each present input branch,
+     ** the corresponding digitizer will be instantiated. In addition,
+     ** the run number is extracted from the MCEventHeader.
      **/
-    Int_t CheckInputFile();
+    Int_t CheckInput();
 
 
     /** @brief Instantiate the default digitisers for the active systems
