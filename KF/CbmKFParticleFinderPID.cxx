@@ -105,7 +105,7 @@ InitStatus CbmKFParticleFinderPID::Init()
     if(fTimeSliceMode)
       if(mcManager == 0)
       {
-        Fatal("CbmKFParticleFinder::Init", "MC Data Manager is not found! Losos!");
+        Fatal("CbmKFParticleFinderPID::Init", "MC Data Manager is not found!");
         return kERROR;
       }
 
@@ -114,7 +114,7 @@ InitStatus CbmKFParticleFinderPID::Init()
       fMCTracks = mcManager->InitBranch("MCTrack");
       if(fMCTracks==0)
       {
-        Fatal("CbmKFParticleFinderPID::Init","mc track array not found!");
+        Fatal("CbmKFParticleFinderPID::Init","MC track array not found!");
         return kERROR;
       }
     }
@@ -123,7 +123,7 @@ InitStatus CbmKFParticleFinderPID::Init()
       fMCTrackArray=(TClonesArray*) ioman->GetObject("MCTrack");
       if(fMCTrackArray==0)
       {
-        Fatal("CbmKFParticleFinderPID::Init","mc track array not found!");
+        Fatal("CbmKFParticleFinderPID::Init","MC track array not found!");
         return kERROR;
       }
     }
