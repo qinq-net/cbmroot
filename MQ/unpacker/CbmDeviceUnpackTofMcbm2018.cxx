@@ -171,14 +171,27 @@ try
     Int_t iNReq=0;
 
     while(iNReq<36){   // FIXME, setup parameter hardwired!
-      iReqDet = fConfig->GetValue<uint64_t>(Form("ReqDet%d",iNReq++));
+      iReqDet = fConfig->GetValue<uint64_t>(Form("ReqDet%d",iNReq));
       if (iReqDet == 0) break;
       AddReqDigiAddr(iReqDet);
+      iNReq++;
+    }
+
+    if(iNReq == 0) {  // take all defined detectors 
+      for(Int_t iGbtx= 0; iGbtx < fviNrOfRpc.size(); iGbtx+=2)  {
+	for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; iRpc++)  {
+	  Int_t iAddr = CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
+							iRpc,0,0,
+							fviRpcType[iGbtx]);
+	  AddReqDigiAddr(iAddr);
+	}
+      }
     }
 
     LOG(INFO)<<"ReqMode "<<fiReqMode
 	     <<" in " << fiReqTint << " ns "
-	     <<" with "<<fiReqDigiAddr.size()<<" detectors ";
+	     <<" with "<<fiReqDigiAddr.size()
+	     <<" detectors out of " << fviNrOfRpc.size() <<" GBTx ";
 } catch (InitTaskError& e) {
  LOG(ERROR) << e.what();
  ChangeState(ERROR_FOUND);
