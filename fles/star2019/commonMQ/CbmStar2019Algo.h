@@ -22,6 +22,7 @@
 
 class TList;
 class TNamed;
+class TCanvas;
 
 template<typename T>
 bool is_this_type(const boost::any& varValue)
@@ -73,6 +74,9 @@ class CbmStar2019Algo
       void AddHistoToVector( TNamed * pointer, std::string sFolder = "" )
          { fvpAllHistoPointers.push_back( std::pair< TNamed *, std::string >( pointer, sFolder ) ); }
       std::vector< std::pair< TNamed *, std::string > > GetHistoVector() { return fvpAllHistoPointers; }
+      void AddCanvasToVector( TCanvas * pointer, std::string sFolder = "" )
+         { fvpAllCanvasPointers.push_back( std::pair< TCanvas *, std::string >( pointer, sFolder ) ); }
+      std::vector< std::pair< TCanvas *, std::string > > GetCanvasVector() { return fvpAllCanvasPointers; }
 
       /// For unpacker algos
       void ClearVector() {fDigiVect.clear();}
@@ -103,7 +107,8 @@ class CbmStar2019Algo
       /// ===>    server->Register( vHistos[ uHisto ].second.data(), dynamic_cast< TH1 * >(vHistos[ uHisto ].first) );
       /// ===> else if( !strncmp( sClassName, "TH2", 3 ) )
       /// ===>    server->Register( vHistos[ uHisto ].second.data(), dynamic_cast< TH2 * >(vHistos[ uHisto ].first) );
-      std::vector< std::pair< TNamed *, std::string > > fvpAllHistoPointers; //! Vector of pointers to histograms + optional folder name
+      std::vector< std::pair< TNamed  *, std::string > > fvpAllHistoPointers; //! Vector of pointers to histograms + optional folder name
+      std::vector< std::pair< TCanvas *, std::string > > fvpAllCanvasPointers; //! Vector of pointers to canvases + optional folder name
 
       /// For unpacker algos
       std::vector<T> fDigiVect;
