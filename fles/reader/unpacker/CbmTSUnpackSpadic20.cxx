@@ -15,13 +15,14 @@
 
 #include "TClonesArray.h"
 
+#include "CbmHistManager.h"
+
 #include <iostream>
 #include <array>
 #include <algorithm>
 
 CbmTSUnpackSpadic20::CbmTSUnpackSpadic20 () :
-  CbmTSUnpack (), fSpadicRaw (new TClonesArray ("CbmSpadicRawMessage", 10)), fEpochMarkerArray (), fPreviousEpochMarkerArray (), fSuperEpochArray (), fEpochMarker (0), fSuperEpoch (0), fNrExtraneousSamples
-  { 0 }
+  CbmTSUnpack (), fSpadicRaw (new TClonesArray ("CbmSpadicRawMessage", 10)), fEpochMarkerArray (), fPreviousEpochMarkerArray (), fSuperEpochArray (), fEpochMarker (0), fSuperEpoch (0), fNrExtraneousSamples { 0 }, multihit_buffer(), fHm (new CbmHistManager)
 {}
 
 CbmTSUnpackSpadic20::~CbmTSUnpackSpadic20 ()
@@ -42,7 +43,14 @@ CbmTSUnpackSpadic20::Init ()
     }
   ioman->Register ("SpadicRawMessage", "spadic raw data", fSpadicRaw, kFALSE);
 
+  CbmTSUnpackSpadic20::CreateHistograms();
   return kTRUE;
+}
+
+void
+CbmTSUnpackSpadic20::CreateHistograms()
+{
+  
 }
 
 Bool_t
@@ -119,6 +127,8 @@ CbmTSUnpackSpadic20::DoUnpack (const fles::Timeslice& ts, size_t component)
 	    }
 	  else if (mp->is_hit ())
 	    {
+	      TString HistName = ""; 
+	      n_hit++;
 	      LOG(DEBUG) << counter << " This is a hit message"
 			 << FairLogger::endl;
 	      isHit = true;
@@ -134,6 +144,57 @@ CbmTSUnpackSpadic20::DoUnpack (const fles::Timeslice& ts, size_t component)
 		}
 	      auto temp_sample_array = mp->samples();
 	      std::copy(temp_sample_array.begin(),temp_sample_array.begin()+samples,sample_values.begin());
+
+	      //Changes by J.Beckhoff
+	      ULong_t fullTime = ( ( static_cast<ULong_t>(fSuperEpoch) << 24) | 
+		      ( static_cast<ULong_t>(fEpochMarker) << 12) | 
+		      ( time & 0xfff )
+		      );
+	      hit_object currHit{
+		triggerType,
+		  stopType,
+		  samples,
+		  true,  //b_complete
+		  false, //b_multiFlag
+		  time,		
+		  fullTime
+		  };
+	      if(samples == 0) //hit messages with 0 samples are discarded here
+		{
+		  currHit.b_complete = false;
+		  n_zeroSample++;
+		  continue;
+		}		
+	      std::copy(temp_sample_array.begin(),temp_sample_array.begin()+samples,currHit.samples);
+
+	      if(currHit.fullTime - multihit_buffer[std::make_pair(link, addr)][channel].fullTime < 32)//successor  
+		{
+		  n_succ++;
+		  currHit = correct_successor(link, addr, channel, currHit);
+		}
+	      if(currHit.stopType >= 3) //predecessor
+		{
+		  n_pre++;
+		  currHit = correct_predecessor(link, addr, channel, currHit);
+		}
+	      if(currHit.b_complete == true) //hit is complete and ready for digi creation
+		{
+		  if(currHit.b_multiFlag == true) // flag corrected multimessages with StopType = 10
+		    {
+		      stopType = 10;
+		      n_finalMultiMessage++;
+		    }		  
+		  triggerType = currHit.triggerType;
+		  time = currHit.time;
+		  samples = currHit.nrSamples;
+		  std::copy(currHit.samples,currHit.samples + currHit.nrSamples,sample_values.begin());
+		  n_final_hit++;		  
+		}
+	      else
+		{	
+		  continue;
+		}
+	      //end changes J.Beckhoff	 	           
 	    }
 	  else if (mp->is_hit_aborted ())
 	    {
@@ -189,6 +250,63 @@ CbmTSUnpackSpadic20::DoUnpack (const fles::Timeslice& ts, size_t component)
   return kTRUE;
 }
 
+//changes by J.Beckhoff
+CbmTSUnpackSpadic20::hit_object CbmTSUnpackSpadic20::correct_successor(Int_t link, Int_t addr, Int_t channel, hit_object currHit)
+{
+  Int_t samples_pre = multihit_buffer[std::make_pair(link, addr)][channel].nrSamples;
+  Int_t samples_succ = currHit.nrSamples;  
+  if(samples_pre < 6)//multimessage, if predecessor with less than 6 samples    
+    {
+      for(Int_t i = currHit.nrSamples-1; i >= 0; i--) //combine pre + succ samples
+	{
+	  if(i >= samples_pre)//predecessor samples
+	    {
+	      currHit.samples[i] = currHit.samples[i-samples_pre];
+	    }
+	  else //successor samples
+	    {
+	      currHit.samples[i] = multihit_buffer[std::make_pair(link, addr)][channel].samples[i];
+	    }
+	}
+      //set hit variables
+      currHit.nrSamples = std::min((samples_pre + samples_succ), 32);
+      currHit.triggerType = multihit_buffer[std::make_pair(link, addr)][channel].triggerType; //time and triggerType of predecessor
+      currHit.time = multihit_buffer[std::make_pair(link, addr)][channel].time;  //time and triggerType of predecessor
+      currHit.fullTime = multihit_buffer[std::make_pair(link, addr)][channel].fullTime;  //time and triggerType of predecessor
+      currHit.b_complete = true;
+      currHit.b_multiFlag = true;
+      n_multimessage_succ++;
+    }
+  else // multihit, handled to the digitizer
+    {
+      currHit.b_complete = true;
+      currHit.b_multiFlag = false;
+      n_multihit_succ++;
+    }  
+  multihit_buffer[std::make_pair(link,addr)].erase(channel); //delete buffer entry  
+  return currHit;   
+}
+
+CbmTSUnpackSpadic20::hit_object CbmTSUnpackSpadic20::correct_predecessor(Int_t link, Int_t addr, Int_t channel, hit_object currHit) 
+{
+  if(currHit.nrSamples < 6) //multimessage, if less than 6 samples
+    {
+      currHit.b_complete = false;
+      n_multimessage_pre++;
+    }  
+  else //multihit, handled to the digitizer
+    {
+      currHit.b_complete = true;      
+      n_multihit_pre++;
+    }
+  currHit.b_multiFlag = false;
+  //make buffer entry
+  multihit_buffer[std::make_pair(link,addr)].erase(channel);
+  multihit_buffer[std::make_pair(link,addr)].insert(std::make_pair(channel, currHit));
+  return currHit;
+}
+//end changes by J.Beckhoff
+	      
 void
 CbmTSUnpackSpadic20::print_message (const spadic::Message& m)
 {
@@ -286,6 +404,13 @@ CbmTSUnpackSpadic20::Reset ()
 void
 CbmTSUnpackSpadic20::Finish ()
 {
+  LOG(DEBUG) << n_hit << " initial hits" << FairLogger::endl
+	     << n_pre << " Predecessor, " << n_succ << " Successor" << FairLogger::endl
+	     << "Multihits: " << n_multihit_pre << " Predecessor, " << n_multihit_succ << " Successor" << FairLogger::endl
+	     << "Multimessages: " << n_multimessage_pre << " Predecessor, " << n_multimessage_succ << " Successor" << FairLogger::endl
+	     << "Zero Sample Hits: " << n_zeroSample << FairLogger::endl
+	     << "Final Multimessages: " << n_finalMultiMessage << FairLogger::endl
+	     << n_final_hit << " final hits" << FairLogger::endl;
   for (auto it = fSuperEpochArray.begin (); it != fSuperEpochArray.end (); it++)
     {
       LOG(DEBUG) << "There have been " << it->second << " SuperEpochs for Afck"
@@ -293,7 +418,12 @@ CbmTSUnpackSpadic20::Finish ()
 		 << " in this file" << FairLogger::endl;
 
     }
-
+  
+  gDirectory->mkdir (this->GetName ());
+  gDirectory->Cd (this->GetName ());
+  fHm->WriteToFile ();
+  FairRootManager::Instance ()->GetOutFile ()->cd ();
+  
 }
 
 /*
