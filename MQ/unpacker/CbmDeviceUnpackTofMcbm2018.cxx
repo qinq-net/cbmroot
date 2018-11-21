@@ -650,6 +650,30 @@ Bool_t CbmDeviceUnpackTofMcbm2018::DoUnpack(const fles::Timeslice& ts, size_t co
       uint32_t uNbMessages = (size - (size % kuBytesPerMessage) )
                             / kuBytesPerMessage;
 
+
+////////////////////////////////////////////////////////////////////////
+//                   FINAL SOLUTION                                   //
+////////////////////////////////////////////////////////////////////////
+
+         // Get the gDPB ID from the MS header
+         fuGdpbId = fiEquipmentId;
+
+         /// Check if this gDPB ID was declared in parameter file and stop there if not
+         auto it = fGdpbIdIndexMap.find( fuGdpbId );
+         if( it == fGdpbIdIndexMap.end() )
+         {
+            LOG(ERROR) << "Could not find the gDPB index for AFCK id 0x"
+                      << std::hex << fuGdpbId << std::dec
+                      << " in microslice " << fdMsIndex
+	      ;
+            continue;
+         } // if( it == fGdpbIdIndexMap.end() )
+            else fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
+
+////////////////////////////////////////////////////////////////////////
+//                   FINAL SOLUTION                                   //
+////////////////////////////////////////////////////////////////////////
+
       // Prepare variables for the loop on contents
       const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>( msContent );
       for (uint32_t uIdx = 0; uIdx < uNbMessages; uIdx ++)
@@ -664,28 +688,6 @@ Bool_t CbmDeviceUnpackTofMcbm2018::DoUnpack(const fles::Timeslice& ts, size_t co
             mess.printDataCout();
          } // if( gLogger->IsLogNeeded(fair::mq::logger::DEBUG) )
 	 */
-
-////////////////////////////////////////////////////////////////////////
-//                   TEMP SOLUTION                                    //
-////////////////////////////////////////////////////////////////////////
-         fuGdpbId = mess.getGdpbGenGdpbId();
-
-         /// Check if this gDPB ID was declared in parameter file and stop there if not
-         auto it = fGdpbIdIndexMap.find( fuGdpbId );
-         if( it == fGdpbIdIndexMap.end() )
-         {
-            LOG(ERROR) << "Could not find the gDPB index for AFCK id 0x"
-                       << std::hex << fuGdpbId << std::dec
-                       << " in microslice " << fdMsIndex;
-	    //FairMQStateMachine::ChangeState(STOP);
-            continue;
-         } // if( it == fGdpbIdIndexMap.end() )
-            else fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
-
-////////////////////////////////////////////////////////////////////////
-//                   TEMP SOLUTION                                    //
-////////////////////////////////////////////////////////////////////////
-
 
          // Increment counter for different message types
          messageType = mess.getMessageType();
