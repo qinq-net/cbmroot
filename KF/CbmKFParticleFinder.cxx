@@ -9,6 +9,10 @@
 #include "L1Field.h"
 #include "CbmKFVertex.h"
 #include "CbmEvent.h"
+#include "CbmMCDataManager.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCEventList.h"
+#include "CbmMCTrack.h"
 
 //KF Particle headers
 #include "KFParticleTopoReconstructor.h"
@@ -26,7 +30,7 @@
 using std::vector;
 
 CbmKFParticleFinder::CbmKFParticleFinder(const char* name, Int_t iVerbose):
-  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fTrackArray(0), fEvents(0), fPrimVtx(0), fTopoReconstructor(0), fPVFindMode(2), fPID(0),
+  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fTrackArray(0), fEvents(0), fTopoReconstructor(0), fPVFindMode(2), fPID(0),
   fSuperEventAnalysis(0), fSETracks(0), fSEField(0), fSEpdg(0), fSETrackId(0), fSEChiPrim(0), fTimeSliceMode(0)
 {
   fTopoReconstructor = new KFParticleTopoReconstructor;
@@ -77,12 +81,39 @@ InitStatus CbmKFParticleFinder::Init()
     return kERROR;
   }
 
-  // Get pointer to PrimaryVertex object from IOManager if it exists
-  // The old name for the object is "PrimaryVertex" the new one
-  // "PrimaryVertex." Check first for the new name
-  fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex."));
-  if (nullptr == fPrimVtx) {
-    fPrimVtx = dynamic_cast<CbmVertex*>(ioman->GetObject("PrimaryVertex"));
+  //In case of reconstruction of pure signal no PV is defined. The MC PV is used.
+  if(fPVFindMode == 0)
+  {
+    if(fTimeSliceMode)
+    {
+      CbmMCDataManager* mcManager = (CbmMCDataManager*) ioman->GetObject("MCDataManager");
+      if(mcManager==0)
+        Error("CbmKFParticleFinder::Init","MC Data Manager not found!");
+      
+      fMCTrackArray= mcManager->InitBranch("MCTrack");
+    
+      if(fMCTrackArray==0)
+      {
+        Error("CbmKFParticleFinder::Init","MC track array not found!");
+        return kERROR;
+      }
+      
+      fEventList =  (CbmMCEventList*) ioman->GetObject("MCEventList.");
+      if(fEventList==0)
+      {
+        Error("CbmKFParticleFinder::Init","MC Event List not found!");
+        return kERROR;
+      }
+    }
+    else
+    {
+      fMCTrackArrayEvent = (TClonesArray*) ioman->GetObject("MCTrack");
+      if(fMCTrackArrayEvent==0)
+      {
+        Error("CbmKFParticleFinder::Init","MC track array not found!");
+        return kERROR;
+      }
+    }
   }
 
   return kSUCCESS;
@@ -105,6 +136,7 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
     if(fTimeSliceMode)
       event = (CbmEvent*) fEvents->At(iEvent);
     eventTopoReconstructor[iEvent].SetChi2PrimaryCut( InversedChi2Prob(0.0001, 2) );
+    eventTopoReconstructor[iEvent].CopyCuts(fTopoReconstructor);
     
     int nTracksEvent = 0;
     if(fTimeSliceMode)
@@ -195,9 +227,47 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
     CbmL1PFFitter fitter;
     vector<float> vChiToPrimVtx;
     CbmKFVertex kfVertex;
-    if(fPrimVtx)
-      kfVertex = CbmKFVertex(*fPrimVtx);
-    
+    if(fPVFindMode == 0)
+    {
+      int nMCEvents = 1;
+      if(fTimeSliceMode)
+        nMCEvents = fEventList->GetNofEvents();   
+      
+      float mcpv[3] = {0.f, 0.f, 0.f};
+      bool isMCPVFound = false;
+      for(int iMCEvent=0; iMCEvent<nMCEvents; iMCEvent++)
+      {
+        int nMCTracks = 0;
+        if(fTimeSliceMode)
+          nMCTracks = fMCTrackArray->Size(0, iMCEvent);
+        else
+          nMCTracks = fMCTrackArrayEvent->GetEntriesFast();
+                  
+        for(Int_t iMC=0; iMC<nMCTracks; iMC++)
+        {
+          CbmMCTrack *cbmMCTrack;
+          if(fTimeSliceMode)
+            cbmMCTrack = (CbmMCTrack*)fMCTrackArray->Get(0, iMCEvent, iMC);
+          else
+            cbmMCTrack = (CbmMCTrack*)fMCTrackArrayEvent->At(iMC);
+          
+          if(cbmMCTrack->GetMotherId() < 0)
+          {
+            mcpv[0] = cbmMCTrack->GetStartX();
+            mcpv[1] = cbmMCTrack->GetStartY();
+            mcpv[2] = cbmMCTrack->GetStartZ();
+            isMCPVFound = true;
+            break;
+          }
+        }
+        if(isMCPVFound) break;
+      }
+      
+      kfVertex.GetRefX() = mcpv[0];
+      kfVertex.GetRefY() = mcpv[1];
+      kfVertex.GetRefZ() = mcpv[2];
+    }
+      
     vector<L1FieldRegion> vField, vFieldAtLastPoint;
     fitter.Fit(vRTracks, pdg);
     fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, 3);
@@ -245,10 +315,11 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
       timer.Start();
             
       eventTopoReconstructor[iEvent].Init(tracks, tracksAtLastPoint);
+      
       if(fPVFindMode == 0)
-      {
+      {        
         KFPVertex primVtx_tmp;
-        primVtx_tmp.SetXYZ(0,0,0);
+        primVtx_tmp.SetXYZ(kfVertex.GetRefX(), kfVertex.GetRefY(), kfVertex.GetRefZ());
         primVtx_tmp.SetCovarianceMatrix( 0,0,0,0,0,0 );
         primVtx_tmp.SetNContributors( 0 );
         primVtx_tmp.SetChi2( -100 );
@@ -261,7 +332,6 @@ void CbmKFParticleFinder::Exec(Option_t* /*opt*/)
         eventTopoReconstructor[iEvent].ReconstructPrimVertex();
       else if(fPVFindMode == 2)
         eventTopoReconstructor[iEvent].ReconstructPrimVertex(0);
-      
 
       eventTopoReconstructor[iEvent].SortTracks();
       eventTopoReconstructor[iEvent].ReconstructParticles();
