@@ -184,7 +184,7 @@ Bool_t CbmDigitizationSource::Init() {
   }
 
   // Get folder from first input file and register it to FairRootManager
-  TFile* file = fInputs[0]->GetChain()->GetFile();
+  TFile* file = fInputs.begin()->second->GetChain()->GetFile();
   TFolder* folder = dynamic_cast<TFolder*>(file->Get("cbmroot"));
   assert(folder);
   gROOT->GetListOfBrowsables()->Add(folder);
@@ -226,10 +226,10 @@ Int_t CbmDigitizationSource::ReadEvent(UInt_t event) {
   // the first entry of the first input directly, without incrementing its
   // current entry bookkeeper.
   if ( fFirstCall ) {
-    CbmInputChain* input = fInputs.at(0);
+    CbmInputChain* input = fInputs.begin()->second;
     input->GetChain()->GetEntry(0);
     fCurrentRunId = fMCEventHeader->GetRunID();
-    fCurrentInputId = 0;
+    fCurrentInputId = fInputs.begin()->first;
     fCurrentEntryId = 0;
     fCurrentTime = 0.;
     fFirstCall = kFALSE;
@@ -241,7 +241,7 @@ Int_t CbmDigitizationSource::ReadEvent(UInt_t event) {
   // In the event-by-event mode, get the respective event from the first
   // input; the event time is zero.
   if ( fEventMode ) {
-    CbmInputChain* input = fInputs[0];
+    CbmInputChain* input = fInputs.begin()->second;
     // Stop run if out-of-range of input tree
     if ( event >= input->GetNofEntries() ) {
       LOG(INFO) << "DigitizationSource: Requested event " << event
@@ -249,8 +249,8 @@ Int_t CbmDigitizationSource::ReadEvent(UInt_t event) {
           << input->GetNofEntries() << " )" << FairLogger::endl;
       return 1;
     }
-    fInputs[0]->GetChain()->GetEntry(event);
-    fCurrentInputId = 0;
+    input->GetChain()->GetEntry(event);
+    fCurrentInputId = fInputs.begin()->first;
     fCurrentEntryId = event;
     fCurrentTime = 0.;
     LOG(INFO) << "DigitizationSource: Event " << event << " at t = "
