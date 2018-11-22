@@ -7,6 +7,7 @@
  **
  **/
 
+// 2018-11-22 - DE - set mRICH v18g with 6x 3x2 PMT array as new default
 // 2018-06-27 - DE - set flipped mTOF v18j geometry as new default
 // 2018-05-24 - DE - place 20deg_long setup back at 25 degrees, see issue #1078
 // 2018-02-27 - DE - use mTRD v18o to fix redmine issue #1046 with tracking
@@ -43,7 +44,7 @@ void setup_sis18_mcbm_25deg_long()
   TString trdGeoTag       = "v18o_mcbm";    // long, with mBUCH
   //  TString trdGeoTag       = "v18n_mcbm";    // long, without mBUCH
   TString tofGeoTag       = "v18j_mcbm";    // long distance
-  TString richGeoTag      = "v18d_mcbm";    // long distance
+  TString richGeoTag      = "v18g_mcbm";    // long distance
   TString psdGeoTag       = "v18d_mcbm";    // at 25 degree, below the beampipe
   // ------------------------------------------------------------------------
 
