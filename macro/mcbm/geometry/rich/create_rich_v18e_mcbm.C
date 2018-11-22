@@ -1,3 +1,23 @@
+#include "TSystem.h"
+#include "TGeoManager.h"
+#include "TGeoVolume.h"
+#include "TGeoMaterial.h"
+#include "TGeoMedium.h"
+#include "TGeoPgon.h"
+#include "TGeoSphere.h"
+#include "TGeoMatrix.h"
+#include "TGeoCompositeShape.h"
+#include "TGeoXtru.h"
+#include "TFile.h"
+#include "TString.h"
+#include "TList.h"
+#include "TRandom3.h"
+#include "TDatime.h"
+
+#include "TGeoArb8.h"
+#include "TGeoTube.h"
+#include "TGeoCone.h"
+
 #include <iostream>
 using namespace std; 
 
@@ -17,6 +37,8 @@ void create_rich_v18e_mcbm()
 	gSystem->Load("libGeom");
 	//gGeoMan = gGeoManager;// (TGeoManager*)gROOT->FindObject("FAIRGeom");
 	//new TGeoManager ("Testbox", "Testbox");
+
+	TGeoManager* gGeoMan = NULL;  // Pointer to TGeoManager instance
 
 	RichGeomType richGeomType = kAerogel;
 
@@ -150,6 +172,8 @@ void create_rich_v18e_mcbm()
 	Bool_t isIncludeSensPlane = false;
 	const Double_t sensPlaneSize = 200.;
 	const Double_t sensPlaneBoxDistance = 1.;
+
+        Int_t i;
 
 	TGeoRotation *rotBox= new TGeoRotation("rotBox", 0., 0., 0.);
 
