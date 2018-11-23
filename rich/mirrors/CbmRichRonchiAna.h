@@ -28,7 +28,7 @@ private:
 
     string fTiffFileNameV;
     string fTiffFileNameH;
-
+    
     vector<vector<int> > ReadTiffFile(const string& fileName);
 
     void DoMeanIntensityY(vector<vector<int> >& data);
@@ -37,10 +37,19 @@ private:
 
     void DoRotation(vector<vector<int> >& data);
 
-    void DoMeanY( vector<vector<int> >& data);
+    void DoMeanY(vector<vector<int> >& data);
 
     void FillH2WithVector(TH2* hist, const vector<vector<int> >& data);
-
+    
+    vector<vector<int> > DoSuperpose(const vector<vector<int> >& dataH, const vector<vector<int> >& dataV);
+    
+    vector<pair<int,int> > DoIntersection(const vector<vector<int> >& dataH, const vector<vector<int> >& dataV);
+    
+    void DoIntersectionFinder(vector<vector<int> >& dataSup);
+    
+    vector<pair<int,int> > DoNumInt(vector<pair<int,int> >& intersectionXY, vector<vector<int> >& dataSup);
+    
+   
     /**
     * \brief Copy constructor.
     */
