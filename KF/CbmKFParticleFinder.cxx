@@ -545,6 +545,7 @@ void CbmKFParticleFinder::FillKFPTrackVector(KFPTrackVector* tracks, const vecto
     tracks->SetId(trackId[iTr], iTr);
     tracks->SetPDG(pdg[iTr], iTr);
     tracks->SetQ(q, iTr);
+    tracks->SetNPixelHits(vRTracks[iTr].GetNofMvdHits(), iTr);
 
     if(fPVFindMode == 0)
     {    
