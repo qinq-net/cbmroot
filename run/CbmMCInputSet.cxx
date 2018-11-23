@@ -46,7 +46,7 @@ CbmMCInputSet::~CbmMCInputSet() {
 
 
 // -----   Add an input to the set   -----------------------------------------
-void CbmMCInputSet::AddInput(UInt_t inputId, CbmInputChain* input) {
+void CbmMCInputSet::AddInput(UInt_t inputId, CbmMCInput* input) {
 
   // Catch invalid input pointer.
   if ( ! input ) {
@@ -84,7 +84,7 @@ void CbmMCInputSet::AddInput(UInt_t inputId, CbmInputChain* input) {
 
 
 // -----   Check the branch list of an input   -------------------------------
-Bool_t CbmMCInputSet::CheckBranchList(CbmInputChain* input) {
+Bool_t CbmMCInputSet::CheckBranchList(CbmMCInput* input) {
 
   assert(input);
   Bool_t success = kTRUE;

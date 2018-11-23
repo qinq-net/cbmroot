@@ -1,9 +1,9 @@
-/** @file CbmInputChain.cxx
+/** @file CbmMCInput.cxx
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 09.11.2018
  **/
 
-#include "CbmInputChain.h"
+#include "CbmMCInput.h"
 
 #include <cassert>
 #include "TFile.h"
@@ -15,14 +15,14 @@
 
 
 // -----   Default constructor   ---------------------------------------------
-CbmInputChain::CbmInputChain() : CbmInputChain(nullptr, 0., Cbm::kRegular) {
+CbmMCInput::CbmMCInput() : CbmMCInput(nullptr, 0., Cbm::kRegular) {
 }
 // ---------------------------------------------------------------------------
 
 
 
 // -----   Constructor   -----------------------------------------------------
-CbmInputChain::CbmInputChain(TChain* chain, Double_t rate,
+CbmMCInput::CbmMCInput(TChain* chain, Double_t rate,
                              Cbm::ETreeAccess mode) :
         TObject(),
         fChain(chain),
@@ -45,7 +45,7 @@ CbmInputChain::CbmInputChain(TChain* chain, Double_t rate,
 
 
 // -----   Destructor   ------------------------------------------------------
-CbmInputChain::~CbmInputChain() {
+CbmMCInput::~CbmMCInput() {
   if (fDeltaDist) delete fDeltaDist;
 }
 // ---------------------------------------------------------------------------
@@ -53,7 +53,7 @@ CbmInputChain::~CbmInputChain() {
 
 
 // -----   Get branch list   -------------------------------------------------
-std::set<TString>& CbmInputChain::GetBranchList() {
+std::set<TString>& CbmMCInput::GetBranchList() {
 
   // At first call, read branch list from file
   if ( fBranches.empty() ) ReadBranches();
@@ -65,7 +65,7 @@ std::set<TString>& CbmInputChain::GetBranchList() {
 
 
 // -----   Time difference to next event   -----------------------------------
-Double_t CbmInputChain::GetDeltaT() {
+Double_t CbmMCInput::GetDeltaT() {
   if ( ! fDeltaDist ) return 0.;
   return fDeltaDist->GetRandom();
 }
@@ -74,7 +74,7 @@ Double_t CbmInputChain::GetDeltaT() {
 
 
 // -----   Get next entry from chain   ---------------------------------------
-Int_t CbmInputChain::GetNextEntry() {
+Int_t CbmMCInput::GetNextEntry() {
 
   assert(fChain);
 
@@ -108,7 +108,7 @@ Int_t CbmInputChain::GetNextEntry() {
 
 
 // -----   Get list of data branches from file   -----------------------------
-UInt_t CbmInputChain::ReadBranches() {
+UInt_t CbmMCInput::ReadBranches() {
 
   fBranches.clear();
   TList* listFile =
@@ -126,5 +126,5 @@ UInt_t CbmInputChain::ReadBranches() {
 // ---------------------------------------------------------------------------
 
 
-ClassImp(CbmInputChain)
+ClassImp(CbmMCInput)
 

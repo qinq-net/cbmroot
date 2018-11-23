@@ -14,7 +14,7 @@
 #include "FairLogger.h"
 #include "FairMCEventHeader.h"
 #include "FairSource.h"
-#include "CbmInputChain.h"
+#include "CbmMCInput.h"
 
 class FairEventHeader;
 
@@ -115,9 +115,9 @@ class CbmDigitizationSource : public FairSource
 
     /** @brief Input
      ** @param inputId  Input identifier
-     ** @value Pointer to CbmInputChain object
+     ** @value Pointer to  object
      **/
-    CbmInputChain* GetInput(UInt_t inputId);
+    CbmMCInput* GetInput(UInt_t inputId);
 
 
     /** @brief Source type is kFILE **/
@@ -189,7 +189,7 @@ class CbmDigitizationSource : public FairSource
 
   private:
 
-    std::map<UInt_t, CbmInputChain*> fInputs; //! Key is inputId
+    std::map<UInt_t, CbmMCInput*> fInputs; //! Key is inputId
     std::map<Double_t, UInt_t> fNextEvent;    //! Key is time, value is inputId
     FairMCEventHeader* fMCEventHeader;
     TObjArray* fListOfFolders;
@@ -211,7 +211,7 @@ class CbmDigitizationSource : public FairSource
      ** in the input are not considered harmful. The global branch list
      ** is defined by the first input.
      **/
-    Bool_t CheckBranchList(CbmInputChain* input);
+    Bool_t CheckBranchList(CbmMCInput* input);
 
 
 

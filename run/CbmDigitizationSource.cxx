@@ -65,7 +65,7 @@ void CbmDigitizationSource::AddInput(UInt_t inputId, TChain* chain,
 
   // First input; defines branch list
   if ( fInputs.empty() ) {
-    CbmInputChain* input = new CbmInputChain(chain, rate, mode);
+    CbmMCInput* input = new CbmMCInput(chain, rate, mode);
     fBranches = input->GetBranchList();
     fInputs[inputId] = input;
   } //? First input
@@ -77,7 +77,7 @@ void CbmDigitizationSource::AddInput(UInt_t inputId, TChain* chain,
                << " is already defined!" << FairLogger::endl;
     return;
     }
-    CbmInputChain* input = new CbmInputChain(chain, rate, mode);
+    CbmMCInput* input = new CbmMCInput(chain, rate, mode);
     if ( ! CheckBranchList(input) ) {
       LOG(FATAL) << "DigitizationSource: Incompatible branch list!"
           << FairLogger::endl;
@@ -92,7 +92,7 @@ void CbmDigitizationSource::AddInput(UInt_t inputId, TChain* chain,
 
 
 // -----   Check the branch list of an input   -------------------------------
-Bool_t CbmDigitizationSource::CheckBranchList(CbmInputChain* input) {
+Bool_t CbmDigitizationSource::CheckBranchList(CbmMCInput* input) {
 
   assert(input);
   Bool_t success = kTRUE;
@@ -162,7 +162,7 @@ void CbmDigitizationSource::FillEventHeader(FairEventHeader* event) {
 
 
 // -----   Get an input   ----------------------------------------------------
-CbmInputChain* CbmDigitizationSource::GetInput(UInt_t inputId) {
+CbmMCInput* CbmDigitizationSource::GetInput(UInt_t inputId) {
   if ( fInputs.find(inputId) == fInputs.end() ) return nullptr;
   else return fInputs[inputId];
 }
@@ -178,7 +178,7 @@ Bool_t CbmDigitizationSource::Init() {
 
   // Register the input chains to FairRootManager
   for (auto const& mapEntry : fInputs) {
-    CbmInputChain* input = mapEntry.second;
+    CbmMCInput* input = mapEntry.second;
     FairRootManager::Instance()->SetInChain(input->GetChain(),
                                             mapEntry.first);
   }
@@ -202,7 +202,7 @@ Bool_t CbmDigitizationSource::Init() {
   // Set the time of the first event for each input
   if ( ! fEventMode ) {
     for (auto const& mapEntry : fInputs) {
-      CbmInputChain* input = mapEntry.second;
+      CbmMCInput* input = mapEntry.second;
       Double_t time = input->GetDeltaT();
       LOG(INFO) << "First time for input " << mapEntry.first << " is " << time
           << FairLogger::endl;
@@ -226,7 +226,7 @@ Int_t CbmDigitizationSource::ReadEvent(UInt_t event) {
   // the first entry of the first input directly, without incrementing its
   // current entry bookkeeper.
   if ( fFirstCall ) {
-    CbmInputChain* input = fInputs.begin()->second;
+    CbmMCInput* input = fInputs.begin()->second;
     input->GetChain()->GetEntry(0);
     fCurrentRunId = fMCEventHeader->GetRunID();
     fCurrentInputId = fInputs.begin()->first;
@@ -241,7 +241,7 @@ Int_t CbmDigitizationSource::ReadEvent(UInt_t event) {
   // In the event-by-event mode, get the respective event from the first
   // input; the event time is zero.
   if ( fEventMode ) {
-    CbmInputChain* input = fInputs.begin()->second;
+    CbmMCInput* input = fInputs.begin()->second;
     // Stop run if out-of-range of input tree
     if ( event >= input->GetNofEntries() ) {
       LOG(INFO) << "DigitizationSource: Requested event " << event
@@ -262,7 +262,7 @@ Int_t CbmDigitizationSource::ReadEvent(UInt_t event) {
   // Get the input with the next event time
   Double_t time = fNextEvent.begin()->first;
   UInt_t inputId = fNextEvent.begin()->second;
-  CbmInputChain* input = fInputs.at(inputId);
+  CbmMCInput* input = fInputs.at(inputId);
   assert(input);
 
   // Get the next entry from the respective input chain

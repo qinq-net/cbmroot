@@ -116,7 +116,7 @@ Int_t CbmDigitization::CheckInput() {
   // to determine the geometry tags, which in turn are needed to register
   // the proper ASCII parameter files. This is rather nasty; the parameter
   // handling is really a pain in the neck.
-  CbmInputChain* input = fSource->GetInput(0);
+  CbmMCInput* input = fSource->GetInput(0);
   assert(input);
   TFile* file = input->GetChain()->GetFile();
   assert(file);

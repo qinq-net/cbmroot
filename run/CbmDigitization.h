@@ -17,7 +17,7 @@
 #include "CbmDefs.h"
 #include "CbmDigitizationSource.h"
 #include "CbmDigitizeInfo.h"
-#include "CbmInputChain.h"
+//#include "CbmInputChain.h"
 
 class TGeoManager;
 class CbmDigitize;

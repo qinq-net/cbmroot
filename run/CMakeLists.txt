@@ -72,7 +72,7 @@ CbmSetup.cxx
 CbmDigitizeInfo.cxx
 CbmDigitization.cxx
 CbmDigitizationSource.cxx
-CbmInputChain.cxx
+CbmMCInput.cxx
 CbmMCInputSet.cxx
 )
 

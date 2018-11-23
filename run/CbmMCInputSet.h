@@ -11,7 +11,7 @@
 #include <utility>
 #include "TF1.h"
 #include "TObject.h"
-#include "CbmInputChain.h"
+#include "CbmMCInput.h"
 
 
 
@@ -54,7 +54,7 @@ class CbmMCInputSet : public TObject
      ** @param inputId  Unique input identifier
      ** @param input    Pointer to CbmMCInput object
      **/
-    void AddInput(UInt_t inputId, CbmInputChain* input);
+    void AddInput(UInt_t inputId, CbmMCInput* input);
 
 
     /** @brief List of branches
@@ -100,8 +100,8 @@ class CbmMCInputSet : public TObject
   private:
 
     Double_t fRate;                // Event rate [1/s]
-    std::map<UInt_t, CbmInputChain*> fInputs; // Key is input ID
-    std::map<UInt_t, CbmInputChain*>::iterator fInputHandle; // Handle for inputs
+    std::map<UInt_t, CbmMCInput*> fInputs; // Key is input ID
+    std::map<UInt_t, CbmMCInput*>::iterator fInputHandle; // Handle for inputs
     std::set<TString> fBranches;   // List of branch names
     TF1* fDeltaDist;               // Probability distribution for delta(t)
 
@@ -115,7 +115,7 @@ class CbmMCInputSet : public TObject
      ** in the input are not considered harmful. The referece branch list
      ** is defined by the first input.
      **/
-    Bool_t CheckBranchList(CbmInputChain* input);
+    Bool_t CheckBranchList(CbmMCInput* input);
 
 
 

@@ -1,10 +1,10 @@
-/** @file CbmInputChain.h
+/** @file CbmMCInput.h
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 09.11.2018
  **/
 
-#ifndef CBMINPUTCHAIN_H
-#define CBMINPUTCHAIN_H 1
+#ifndef CBMMCINPUT_H
+#define CBMMCINPUT_H 1
 
 #include <set>
 #include "TChain.h"
@@ -13,27 +13,24 @@
 #include "CbmDefs.h"
 
 
-/** @class CbmInputChain
+/** @class CbmMCInput
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 9 November 2018
- ** @brief Wrapper for an input tree chain with event rate
+ ** @brief An MC (transport) input to digitisation in CBM
  **
- ** CbmInputChain wraps a TChain with an event rate, both to be specified
- ** in the constructor. It allows to sample the time difference between
- ** two events in the chain, assuming a Poisson process (exponential
- ** distribution, the first moment of which is the inverse rate),
- ** using the method GetDeltaT().
- ** CbmInputChain allows subsequent access to the entries in the chain
- ** by the method GetNextEntry(). Random access to entries in the chain
- ** can be obtained by GetChain()->GetEntry(Int_t entryId).
- */
-class CbmInputChain : public TObject
+ ** CbmMCInput gives access to the entries of a TChain according to the
+ ** specified access mode through the mathod GetNextEntry(). The access to
+ ** the tree entries can be sequential with stopping at the end
+ ** (mode = kRegular), sequential round-the-corner (mode kRepeat) or random
+ ** (mode = kRandom).
+ **/
+class CbmMCInput : public TObject
 {
 
   public:
 
     /** @brief Default constructor **/
-    CbmInputChain();
+    CbmMCInput();
 
 
     /** @brief Constructor
@@ -41,12 +38,12 @@ class CbmInputChain : public TObject
      ** @param rate   Event rate [1/s]. Must be positive.
      ** @param mode   Access mode (see EAccessMode)
      **/
-    CbmInputChain(TChain* chain, Double_t rate,
+    CbmMCInput(TChain* chain, Double_t rate,
                   Cbm::ETreeAccess mode = Cbm::kRegular);
 
 
     /** @brief Destructor **/
-    virtual ~CbmInputChain();
+    virtual ~CbmMCInput();
 
 
     /** @brief List of branches
@@ -124,8 +121,8 @@ class CbmInputChain : public TObject
     UInt_t ReadBranches();
 
 
-    ClassDef(CbmInputChain, 1);
+    ClassDef(CbmMCInput, 1);
 
 };
 
-#endif /* CBMINPUTCHAIN_H */
+#endif /* CBMMCINPUT_H */
