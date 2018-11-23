@@ -127,7 +127,10 @@ can->cd(6);
  h2pfxes->GetYaxis()->SetTitleOffset(1.3);
 
  TString FADD=Form("pl_Datime(\"%s\")",sysinfo.Data());
- gInterpreter->ProcessLine(FADD.Data());
+ if(gROOT->IsBatch())
+ {
+   gInterpreter->ProcessLine(FADD.Data());
+ }
 
  can->SaveAs(Form("pl_TIS.pdf"));
 }

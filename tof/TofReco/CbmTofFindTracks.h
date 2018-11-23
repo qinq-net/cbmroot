@@ -151,6 +151,14 @@ class CbmTofFindTracks : public FairTask
   Int_t GetNStationsFired();
   void  ResetStationsFired();
 
+  inline void SetBeamMomentumLab (Double_t dval) { fdBeamMomentumLab = dval; }
+  inline void SetRemoveSignalPropagationTime (Bool_t bval) { fbRemoveSignalPropagationTime = bval; }
+
+  inline Double_t GetVertexT() const { return fVTX_T; }
+  inline Double_t GetVertexX() const { return fVTX_X; }
+  inline Double_t GetVertexY() const { return fVTX_Y; }
+  inline Double_t GetVertexZ() const { return fVTX_Z; }
+
  private:
 
   static CbmTofFindTracks *fInstance;
@@ -276,6 +284,9 @@ class CbmTofFindTracks : public FairTask
   TTimeStamp fStart;
   TTimeStamp fStop;
   Double_t   fdTrackingTime;
+
+  Double_t   fdBeamMomentumLab;        // beam momentum in lab frame [AGeV/c]
+  Bool_t     fbRemoveSignalPropagationTime;
 
   ClassDef(CbmTofFindTracks,1);
 

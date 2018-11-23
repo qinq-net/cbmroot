@@ -58,11 +58,15 @@ public:
    inline void SetTyMean ( Double_t val ) { fTyMean = val; }
    inline void SetSIGLIM ( Double_t val ) { fSIGLIM = val; }
    inline void SetChiMaxAccept ( Double_t val ) { fChiMaxAccept = val; }
+   inline void SetPosYMaxScal ( Double_t val ) { fPosYMaxScal = val; }
 
+   inline Double_t GetTxLIM () { return fTxLIM; }
+   inline Double_t GetTyLIM () { return fTyLIM; }
+   inline Double_t GetTyMean () { return fTyMean; }
    inline Double_t GetSIGLIM () { return fSIGLIM; }
    inline Double_t GetChiMaxAccept () { return fChiMaxAccept; }
 
-   void Line3Dfit(CbmTofTracklet*  pTrk);
+   static void Line3Dfit(CbmTofTracklet*  pTrk);
    Bool_t  Active(CbmTofTracklet*  pTrk);
 
    void PrintStatus(char* cComm);
@@ -87,7 +91,7 @@ public:
    Double_t fSIGLIM;
    Double_t fChiMaxAccept;
    Double_t fPosYMaxScal;
-   LKFMinuit fMinuit;
+   static LKFMinuit fMinuit;
 
    //intermediate storage variables
    std::vector<CbmTofTracklet *>  fTracks;        // Tracklets to which hit is assigned

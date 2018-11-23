@@ -18,6 +18,7 @@
 using std::vector;
 
 CbmTofTracklet::CbmTofTracklet() :
+   TObject(),
    fTrackLength(0.),
    fPidHypo(-1),
    fDistance(0.),
@@ -40,6 +41,7 @@ CbmTofTracklet::CbmTofTracklet() :
 }
 
 CbmTofTracklet::CbmTofTracklet( const CbmTofTracklet &t) :
+   TObject(t),
    fTrackLength(t.fTrackLength),
    fPidHypo(t.fPidHypo),
    fDistance(t.fDistance),
@@ -301,6 +303,51 @@ Double_t CbmTofTracklet::UpdateTt(){
   return fTt;
 }
 
+Double_t CbmTofTracklet::GetXdif(Int_t iDetId, CbmTofHit* pHit) {
+  Double_t dXref = 0.;
+  Int_t iNref = 0;
+
+  for(UInt_t iHit = 0; iHit < fTofHit.size(); iHit++) {
+    if(iDetId == fTofDet[iHit] || 0 == fTofDet[iHit]) continue;
+
+    Double_t dDZ = pHit->GetZ() - fhit[iHit].GetZ();
+    dXref += fhit[iHit].GetX() + fTrackPar.GetTx()*dDZ;
+    iNref++;
+  }
+
+  if(iNref == 0) {
+    LOG(ERROR) << "DetId "<<iDetId<<", Nref "<<iNref
+	 <<" sizes "<<fTofHit.size()<<", "<<fhit.size()<<FairLogger::endl;
+    return 1.E20;
+  }
+
+  dXref /= iNref;
+
+  return pHit->GetX() - dXref;
+}
+
+Double_t CbmTofTracklet::GetYdif(Int_t iDetId, CbmTofHit* pHit) {
+  Double_t dYref = 0.;
+  Int_t iNref = 0;
+
+  for(UInt_t iHit = 0; iHit < fTofHit.size(); iHit++) {
+    if(iDetId == fTofDet[iHit] || 0 == fTofDet[iHit]) continue;
+
+    Double_t dDZ = pHit->GetZ() - fhit[iHit].GetZ();
+    dYref += fhit[iHit].GetY() + fTrackPar.GetTy()*dDZ;
+    iNref++;
+  }
+
+  if(iNref == 0) {
+    LOG(ERROR) << "DetId "<<iDetId<<", Nref "<<iNref
+	 <<" sizes "<<fTofHit.size()<<", "<<fhit.size()<<FairLogger::endl;
+    return 1.E20;
+  }
+
+  dYref /= iNref;
+
+  return pHit->GetY() - dYref;
+}
 
 Double_t CbmTofTracklet::GetTdif(Int_t iDetId, CbmTofHit* pHit){
   Double_t dTref=0.;

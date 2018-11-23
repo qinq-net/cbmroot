@@ -18,6 +18,7 @@
 
 class FairFileSource;
 class CbmTimeSlice;
+class CbmMCEventList;
 class TClonesArray;
 class CbmTofDigiExp;
 
@@ -64,10 +65,13 @@ class CbmTofBuildDigiEvents: public FairTask
     CbmTofBuildDigiEvents& operator=(const CbmTofBuildDigiEvents&);
 
     void ProcessIdealEvents(Double_t dProcessingTime);
+    void FillMCEventList();
 
     FairFileSource* fFileSource;
     CbmTimeSlice* fTimeSliceHeader;
 		TClonesArray* fTofTimeSliceDigis;
+    CbmMCEventList* fInputMCEventList;
+    CbmMCEventList* fOutputMCEventList;
     TClonesArray* fTofEventDigis;
     Double_t fdEventWindow;
     std::map<std::tuple<Int_t, Int_t, Int_t>, UChar_t> fNominalTriggerCounterMultiplicity;

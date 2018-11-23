@@ -90,6 +90,12 @@ class CbmTofTracklet : public TObject {
 	/**  Track y position at TOF  **/
 	Double_t GetTrackY() const { return fTrackPar.GetY(); }
 
+	/**  Track x slope  **/
+	Double_t GetTrackTx() const { return fTrackPar.GetTx(); }
+
+	/**  Track y slope  **/
+	Double_t GetTrackTy() const { return fTrackPar.GetTy(); }
+
 	/** Normalized distance from hit to track **/
 	Double_t GetDistance() const { return fDistance; }
 	Double_t GetTime() const { return fTime; }
@@ -182,6 +188,8 @@ class CbmTofTracklet : public TObject {
 	  }
 	}
 
+	virtual Double_t GetXdif(Int_t iSmType, CbmTofHit* pHit);
+	virtual Double_t GetYdif(Int_t iSmType, CbmTofHit* pHit);
 	virtual Double_t GetTdif(Int_t iSmType, CbmTofHit* pHit);
 	virtual Double_t Dist3D(CbmTofHit* pHit0, CbmTofHit* pHit1);
 	virtual Bool_t ContainsAddr(Int_t iAddr); 

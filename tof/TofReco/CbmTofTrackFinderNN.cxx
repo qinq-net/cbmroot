@@ -48,6 +48,7 @@ using std::cout;
 using std::endl;
    
 const Int_t DetMask = 0x3FFFFF; // check for consistency with geometry
+LKFMinuit CbmTofTrackFinderNN::fMinuit;
 
 CbmTofTrackFinderNN::CbmTofTrackFinderNN() :
   fHits(NULL),
@@ -63,7 +64,6 @@ CbmTofTrackFinderNN::CbmTofTrackFinderNN() :
   fSIGLIM(4.),
   fChiMaxAccept(3.),
   fPosYMaxScal(0.55),
-  fMinuit(),
   fTracks(),
   fvTrkVec()
 {
@@ -88,7 +88,6 @@ CbmTofTrackFinderNN::CbmTofTrackFinderNN(const CbmTofTrackFinderNN &finder) :
   fSIGLIM(4.),
   fChiMaxAccept(3.),
   fPosYMaxScal(0.55),
-  fMinuit(),
   fTracks(),
   fvTrkVec()
 {
@@ -393,7 +392,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
 			    (dYex-pHit->GetY())/fFindTracks->GetSigY(iAddr), dChi)
 	  		    <<FairLogger::endl; 
 
-	    if(   dChi < fSIGLIM )  // FIXME: should scale limit with material budget between hit and track reference
+      if(   dChi < fSIGLIM )  // FIXME: should scale limit with material budget between hit and track reference
 	    { // extend and update tracklet 
 	      LOG(DEBUG) << Form("<IP> TofTracklet %d, HMul %d, Hits %d, %d mark for extension by %d, add = 0x%08x, DT %6.2f, DX %6.2f, DY=%6.2f ",
 				 iTrk,pTrk->GetNofHits(),iHit0,iHit1,iHit, pHit->GetAddress(), dTex-pHit->GetTime(),dXex-pHit->GetX(),dYex-pHit->GetY() )
@@ -440,7 +439,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	CbmTofTracklet* pTrk = pTrkInd[0];
 	if(NULL == pTrk) continue;
 
-	LOG(DEBUG) << Form("%d hit match candidates to %d TofTracklets",iNCand,fTracks.size())<<FairLogger::endl;
+	LOG(DEBUG) << Form("%d hit match candidates to %lu TofTracklets",iNCand,fTracks.size())<<FairLogger::endl;
 	for (Int_t iM=0; iM<iNCand; iM++) {
 	  pTrk = (CbmTofTracklet *)pTrkInd[iM];
 	  if(NULL == pTrk) break;
@@ -658,7 +657,7 @@ void  CbmTofTrackFinderNN::TrklSeed(Int_t iHit)
 	  gGeoManager->MasterToLocal(hitpos1, hitpos1_local);
 	  dSizey1=fChannelInfo1->GetSizey();
 	}
-	Double_t dDT = dDT = pHit->GetTime()- pHit1->GetTime();
+	Double_t dDT = pHit->GetTime()- pHit1->GetTime();
 	Double_t dLz = pHit->GetZ()   - pHit1->GetZ();
 	Double_t dTx = (pHit->GetX() - pHit1->GetX())/dLz;
 	Double_t dTy = (pHit->GetY() - pHit1->GetY())/dLz;

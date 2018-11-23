@@ -2270,7 +2270,7 @@ Bool_t   CbmTofEventClusterizer::FillHistos()
 	    }      // position condition end  
           } // Match condition end
         }  // closing of selector loop
-     } 
+     } // digi index range check condition end 
      else {
              LOG(ERROR)<<"CbmTofEventClusterizer::FillHistos: invalid digi index "<<iDetIndx
                        <<" digi0,1"<<iDigInd0<<", "<<iDigInd1<<" - max:"
@@ -2341,7 +2341,7 @@ Bool_t   CbmTofEventClusterizer::FillHistos()
          }
        }
      }
-   }
+   } // iHitInd hit loop end
 
    for( Int_t iSmType = 0; iSmType < fDigiBdfPar->GetNbSmTypes(); iSmType++ ){
       for( Int_t iRpc = 0; iRpc < fDigiBdfPar->GetNbRpc( iSmType); iRpc++ )
@@ -2390,7 +2390,7 @@ Bool_t   CbmTofEventClusterizer::FillHistos()
       } // for( Int_t iRpc = 0; iRpc < fDigiBdfPar->GetNbRpc( iSmType); iRpc++ )
    }
    fhNbSameSide->Fill(fiNbSameSide);
-  }
+  } // if(0<iNbTofHits) end
 
   return kTRUE;
 }

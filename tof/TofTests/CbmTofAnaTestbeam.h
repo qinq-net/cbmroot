@@ -23,6 +23,10 @@ class CbmTofDigiExp;
 class CbmTofHit;
 class CbmTofTracklet;
 
+class CbmMCDataArray;
+class CbmMCDataObject;
+class CbmMCEventList;
+
 #include "FairTask.h"
 #include "CbmTofAddress.h"    // in cbmdata/tof
 
@@ -31,6 +35,9 @@ class TH1;
 class TH2;
 class TString;
 class TTrbHeader;
+class TGeoNode;
+class TGeoPhysicalNode;
+class TEfficiency;
 
 #include "TTimeStamp.h"
 
@@ -181,12 +188,19 @@ class CbmTofAnaTestbeam : public FairTask {
       inline void SetDutY    ( Double_t val ) { fdDutY  = val; }
       inline void SetDutDY   ( Double_t val ) { fdDutDY = val; }
 
+      inline void SetMonteCarloComparison(Bool_t bval) { fbMonteCarloComparison = bval; }
+      inline void SetGhostTrackHitQuota(Double_t val) { fdGhostTrackHitQuota = val; }
+      inline void SetDelayMCPoints(Bool_t bval) { fbDelayMCPoints = bval; }
+
    private:
       Bool_t   LoadGeometry();
       Bool_t   CreateHistos();
       Bool_t   FillHistos();
       Bool_t   WriteHistos();
       Bool_t   DeleteHistos();
+
+      Bool_t   FindModuleNodes();
+      void ExpandNode(TGeoNode* tMotherNode);
 
       /**
        ** @brief Initialize other parameters not included in parameter classes.
@@ -412,7 +426,9 @@ class CbmTofAnaTestbeam : public FairTask {
       TH2 *fhDT04DX4_2, *fhDT04DY4_2, *fhDT04DT4_2;
 
       TH1 * fhDutPullX;
+      TH1 * fhDutPullXB;
       TH1 * fhDutPullY;
+      TH1 * fhDutPullYB;
       TH1 * fhDutPullZ;
       TH1 * fhDutPullT;
       TH1 * fhDutPullTB;
@@ -438,6 +454,95 @@ class CbmTofAnaTestbeam : public FairTask {
       TH3 * fhDutXYDX;     
       TH3 * fhDutXYDY;     
       TH3 * fhDutXYDT;     
+
+
+      TH1 * fhNMergedMCEvents;
+      TH1 * fhAccTrackMul;
+      TH1 * fhAccRefTrackMul;
+      TH1 * fhAccPrimTrackMul;
+      TH1 * fhAccTrackPointMul;
+      TH1 * fhAccRefTrackPointMul;
+      TH1 * fhAccRndmTrackPointMul;
+
+      TH2 * fhAccRefTrackAcceptance;
+      TEfficiency * fhAccRefTrackAcceptanceEfficiency;
+      TEfficiency * fhAccRefTrackAcceptancePurity;
+      TH2 * fhAccRefTrackMulCentrality;
+      TH2 * fhAccRefTracksProcSpec;
+
+      TEfficiency * fhSelEfficiency;
+      TEfficiency * fhSelPurity;
+      TEfficiency * fhSelRefTrackShare;
+      TEfficiency * fhSelMatchEfficiency;
+      TEfficiency * fhSelMatchPurity;
+      TH2 * fhResX04HitExp;
+      TH2 * fhResX04ExpMC;
+      TH2 * fhResX04HitMC;
+      TH2 * fhResY04HitExp;
+      TH2 * fhResY04ExpMC;
+      TH2 * fhResY04HitMC;
+      TH2 * fhResT04HitExp;
+      TH2 * fhResT04ExpMC;
+      TH2 * fhResT04HitMC;
+      TH1 * fhNTracksPerMRefHit;
+      TH1 * fhNTracksPerSel2Hit;
+      TH1 * fhNTracksPerDutHit;
+      TH1 * fhNTracksPerSelMRefHit;
+      TH1 * fhNTracksPerSelSel2Hit;
+      TH1 * fhNTracksPerSelDutHit;
+
+      TEfficiency * fhDutEfficiency;
+      TH2 * fhDutResX_Hit_Trk;
+      TH2 * fhDutResX_Trk_MC;
+      TH2 * fhDutResX_Hit_MC;
+      TH2 * fhDutResY_Hit_Trk;
+      TH2 * fhDutResY_Trk_MC;
+      TH2 * fhDutResY_Hit_MC;
+      TH2 * fhDutResT_Hit_Trk;
+      TH2 * fhDutResT_Trk_MC;
+      TH2 * fhDutResT_Hit_MC;
+
+      TH2 * fhPVResTAll;
+      TH2 * fhPVResXAll;
+      TH2 * fhPVResYAll;
+      TH2 * fhPVResTRef;
+      TH2 * fhPVResXRef;
+      TH2 * fhPVResYRef;
+
+      TH2 * fhAccRefTrackResT;
+      TH2 * fhAccRefTrackResX;
+      TH2 * fhAccRefTrackResY;
+      TH2 * fhAccRefTrackResTx;
+      TH2 * fhAccRefTrackResTy;
+      TH2 * fhAccRefTrackResV;
+      TH2 * fhAccRefTrackResN;
+
+      TEfficiency * fhAccRefTrackShare;
+      TEfficiency * fhRecRefTrackEfficiency;
+      TEfficiency * fhRecRndmTrackEfficiency;
+      TEfficiency * fhRecRefTrackGhostShare;
+      TEfficiency * fhRecRefTrackCloneShare;
+      TEfficiency * fhRecRndmTrackGhostShare;
+      TEfficiency * fhRecRndmTrackCloneShare;
+
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH2 *> fhDomTracksProcSpec;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH2 *> fhDomTracksProcMat;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH2 *> fhRndmTracksProcSpec;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH2 *> fhRndmTracksProcMat;
+
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH1 *> fhCounterAccTrackMul;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH1 *> fhCounterAccRefTrackMul;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH1 *> fhCounterAccRndmTrackMul;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH1 *> fhCounterAccDomTrackMul;
+
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH1 *> fhCounterRecRefTrackEfficiencyPassed;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH1 *> fhCounterRecRefTrackEfficiencyTotal;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH1 *> fhCounterRecRefTrackPurityPassed;
+
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH2 *> fhCounterRefTrackMulHitMul;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH2 *> fhCounterRefTrackLocalXY;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH2 *> fhCounterRefTrackMulCell;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TH2 *> fhCounterHitMulCell;
 
       // Test class performance
  
@@ -526,6 +631,33 @@ class CbmTofAnaTestbeam : public FairTask {
 
       CbmTofFindTracks*           fFindTracks;   // Pointer to Task 
       CbmTofTestBeamClusterizer*  fClusterizer;  // Pointer to Task 
+
+      Bool_t fbMonteCarloComparison;
+      Bool_t fbPointsInInputFile;
+      Bool_t fbTracksInInputFile;
+      CbmMCDataObject* fMCEventHeader;
+      CbmMCEventList* fMCEventList;
+      TClonesArray* fAccTracks;
+      TClonesArray* fTofPointsTB;
+      CbmMCDataArray* fTofPoints;
+      CbmMCDataArray* fMCTracks;
+      TClonesArray* fTofHitPointMatches;
+      TClonesArray* fTofHitAccTrackMatches;
+      TClonesArray* fTofTrackletAccTrackMatches;
+      TClonesArray* fTofAccTrackTrackletMatches;
+      TClonesArray* fTofAccTrackPointMatches;
+
+      TString fCurrentNodePath;
+      TString fCurrentModuleNodePath;
+      Int_t fiCurrentModuleType;
+      Int_t fiCurrentModuleIndex;
+      Int_t fiCurrentCounterIndex;
+      std::map<std::tuple<Int_t, Int_t, Int_t>, TGeoPhysicalNode*> fCounterModuleNodes;
+
+      Int_t fiNAccRefTracks;
+      Double_t fdGhostTrackHitQuota;
+      Bool_t fbDelayMCPoints;
+
 
       ClassDef(CbmTofAnaTestbeam, 1);
 };

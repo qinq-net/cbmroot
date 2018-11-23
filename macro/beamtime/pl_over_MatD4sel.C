@@ -166,7 +166,10 @@ can->cd(12);
 }
 
  TString FADD=Form("pl_Datime(\"%s\")",sysinfo.Data());
- gInterpreter->ProcessLine(FADD.Data());
+ if(gROOT->IsBatch())
+ {
+   gInterpreter->ProcessLine(FADD.Data());
+ }
 
  //report summary
  can->SaveAs("pl_over_MatD4sel.pdf");

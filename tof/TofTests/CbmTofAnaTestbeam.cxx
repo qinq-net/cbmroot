@@ -17,14 +17,23 @@
 #include "CbmTofDigiBdfPar.h" // in tof/TofParam
 #include "CbmTofAddress.h"    // in cbmdata/tof
 #include "CbmMatch.h"
+#include "CbmTrackMatchNew.h"
 #include "CbmTofTracklet.h"
 #include "CbmEvent.h"
 #include "CbmVertex.h"
+#include "CbmTofPoint.h"
 
 #include "CbmTofTestBeamClusterizer.h"
+#include "CbmTofTrackFinderNN.h"
 
 #include "TTrbHeader.h"
 //#include "TMbsMappingTofPar.h"
+
+#include "CbmMCTrack.h"
+#include "CbmMCDataManager.h"
+#include "CbmMCDataArray.h"
+#include "CbmMCDataObject.h"
+#include "CbmMCEventList.h"
 
 // CBMroot classes and includes
 
@@ -33,6 +42,7 @@
 #include "FairRuntimeDb.h"
 #include "FairRootManager.h"
 #include "FairLogger.h"
+#include "FairMCEventHeader.h"
 
 // ROOT Classes and includes
 #include "Riostream.h"
@@ -48,6 +58,13 @@
 #include "TROOT.h"
 #include "TDirectory.h"
 #include "TGeoManager.h"
+#include "TGeoPhysicalNode.h"
+#include "TMCProcess.h"
+#include "TEfficiency.h"
+
+// C++ STL
+#include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
 
 using std::cout;
 using std::endl;
@@ -68,6 +85,88 @@ static Double_t fdMemoryTime = 1.E12; // memory time in ns
 static std::vector<TH2D *> fhLHTime; 
 static std::vector< std::vector<CbmTofHit*>  > fvLHit; 
 static std::map<UInt_t, UInt_t> fDetIdMap;
+
+struct cmp_str
+{
+   bool operator()(char const *a, char const *b)
+   {
+      return std::strcmp(a, b) < 0;
+   }
+};
+
+std::map<Int_t, const char*> giPdgMap
+{
+   // Gauge bosons
+   { 22, "#gamma"},
+   // leptons
+   { 11, "e^{-}"},
+   {-11, "e^{+}"},
+   { 13, "#mu^{-}"},
+   {-13, "#mu^{+}"},
+   // mesons
+   { 111, "#pi^{0}"},
+   { 211, "#pi^{+}"},
+   {-211, "#pi^{-}"},
+   { 221, "#eta"},
+   { 130, "#Kappa^{0}_{L}"},
+   { 310, "#Kappa^{0}_{S}"},
+   { 321, "#Kappa^{+}"},
+   {-321, "#Kappa^{-}"},
+   // baryons
+   { 2112, "n"},
+   {-2112, "#bar{n}"},
+   { 2212, "p"},
+   {-2212, "#bar{p}"},
+   { 3112, "#Sigma^{-}"},
+   {-3112, "#Sigma^{+}"},
+   { 3122, "#Lambda"},
+   {-3122, "#bar{#Lambda}"},
+   { 3212, "#Sigma^{0}"},
+   {-3212, "#bar{#Sigma^{0}}"},
+   { 3222, "#Sigma^{+}"},
+   {-3222, "#Sigma^{-}"},
+   { 3312, "#Xi^{-}"},
+   {-3312, "#Xi^{+}"},
+   { 3322, "#Xi^{0}"},
+   {-3322, "#bar{#Xi^{0}}"},
+   { 3334, "#Omega^{-}"},
+   {-3334, "#Omega^{+}"},
+   // fragments
+   {1000010020, "d"},
+   {1000010030, "t"},
+   {1000020040, "#alpha"},
+   // dummy
+   { 0, "Geant"}
+};
+
+std::map<const char*, const char*, cmp_str> gcMaterialMap
+{
+   {"RPCgas", "gas"},
+   {"RPCgas_noact", "gas"},
+   {"RPCglass", "glass"},
+   {"air", "air"},
+   {"aluminium", "box"},
+   {"carbon", "pcb"},
+   {"targetMaterial", "target"},
+   {"silicon", "diamond"}
+};
+
+std::map<const char*, const char*, cmp_str> gcProcessMap
+{
+   {"Compton scattering", "Compton"},
+   {"Decay", "Decay"},
+   {"Delta ray", "Delta"},
+   {"Hadronic interaction", "Hadronic"},
+   {"Lepton pair production", "Pair"},
+   {"Photoelectric effect", "Photo"},
+   {"Positron annihilation", "Annil"},
+   {"Primary particle emission", "Primary"},
+   {"Bremstrahlung", "Brems"}
+};
+
+void GetPdgName(Int_t iPdgCode, const char*& cPdgName);
+void GetMaterialName(const char* cMaterial, const char*& cMaterialName);
+void GetProcessName(const char* cProcess, const char*& cProcessName);
 
 //___________________________________________________________________
 //
@@ -279,10 +378,12 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhDT04DY4_2(NULL),
     fhDT04DT4_2(NULL),
     fhDutPullX(NULL),
+    fhDutPullXB(NULL),
     fhDutPullY(NULL),
+    fhDutPullYB(NULL),
     fhDutPullZ(NULL),
     fhDutPullT(NULL),
-    fhDutPullTB(NULL), 
+    fhDutPullTB(NULL),
     fhDutChi_Found(NULL),
     fhDutChi_Missed(NULL),
     fhDutChi_Match(NULL),
@@ -305,6 +406,83 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhDutXYDX(NULL),
     fhDutXYDY(NULL),
     fhDutXYDT(NULL),
+    fhNMergedMCEvents(NULL),
+    fhAccTrackMul(NULL),
+    fhAccRefTrackMul(NULL),
+    fhAccPrimTrackMul(NULL),
+    fhAccTrackPointMul(NULL),
+    fhAccRefTrackPointMul(NULL),
+    fhAccRndmTrackPointMul(NULL),
+    fhAccRefTrackAcceptance(NULL),
+    fhAccRefTrackAcceptanceEfficiency(NULL),
+    fhAccRefTrackAcceptancePurity(NULL),
+    fhAccRefTrackMulCentrality(NULL),
+    fhAccRefTracksProcSpec(NULL),
+    fhSelEfficiency(NULL),
+    fhSelPurity(NULL),
+    fhSelRefTrackShare(NULL),
+    fhSelMatchEfficiency(NULL),
+    fhSelMatchPurity(NULL),
+    fhResX04HitExp(NULL),
+    fhResX04ExpMC(NULL),
+    fhResX04HitMC(NULL),
+    fhResY04HitExp(NULL),
+    fhResY04ExpMC(NULL),
+    fhResY04HitMC(NULL),
+    fhResT04HitExp(NULL),
+    fhResT04ExpMC(NULL),
+    fhResT04HitMC(NULL),
+    fhNTracksPerMRefHit(NULL),
+    fhNTracksPerSel2Hit(NULL),
+    fhNTracksPerDutHit(NULL),
+    fhNTracksPerSelMRefHit(NULL),
+    fhNTracksPerSelSel2Hit(NULL),
+    fhNTracksPerSelDutHit(NULL),
+    fhDutEfficiency(NULL),
+    fhDutResX_Hit_Trk(NULL),
+    fhDutResX_Trk_MC(NULL),
+    fhDutResX_Hit_MC(NULL),
+    fhDutResY_Hit_Trk(NULL),
+    fhDutResY_Trk_MC(NULL),
+    fhDutResY_Hit_MC(NULL),
+    fhDutResT_Hit_Trk(NULL),
+    fhDutResT_Trk_MC(NULL),
+    fhDutResT_Hit_MC(NULL),
+    fhPVResTAll(NULL),
+    fhPVResXAll(NULL),
+    fhPVResYAll(NULL),
+    fhPVResTRef(NULL),
+    fhPVResXRef(NULL),
+    fhPVResYRef(NULL),
+    fhAccRefTrackResT(NULL),
+    fhAccRefTrackResX(NULL),
+    fhAccRefTrackResY(NULL),
+    fhAccRefTrackResTx(NULL),
+    fhAccRefTrackResTy(NULL),
+    fhAccRefTrackResV(NULL),
+    fhAccRefTrackResN(NULL),
+    fhAccRefTrackShare(NULL),
+    fhRecRefTrackEfficiency(NULL),
+    fhRecRndmTrackEfficiency(NULL),
+    fhRecRefTrackGhostShare(NULL),
+    fhRecRefTrackCloneShare(NULL),
+    fhRecRndmTrackGhostShare(NULL),
+    fhRecRndmTrackCloneShare(NULL),
+    fhDomTracksProcSpec(),
+    fhDomTracksProcMat(),
+    fhRndmTracksProcSpec(),
+    fhRndmTracksProcMat(),
+    fhCounterAccTrackMul(),
+    fhCounterAccRefTrackMul(),
+    fhCounterAccRndmTrackMul(),
+    fhCounterAccDomTrackMul(),
+    fhCounterRecRefTrackEfficiencyPassed(),
+    fhCounterRecRefTrackEfficiencyTotal(),
+    fhCounterRecRefTrackPurityPassed(),
+    fhCounterRefTrackMulHitMul(),
+    fhCounterRefTrackLocalXY(),
+    fhCounterRefTrackMulCell(),
+    fhCounterHitMulCell(),
     fhTrklNofHitsRate(NULL),
     fhTrklDetHitRate(NULL),
     fhTrklNofHitsRateInSpill(NULL),
@@ -376,7 +554,30 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fSIGY(1.),
     fEnableMatchPosScaling(kTRUE),
     fFindTracks(NULL),
-    fClusterizer(NULL)
+    fClusterizer(NULL),
+    fbMonteCarloComparison(kFALSE),
+    fbPointsInInputFile(kFALSE),
+    fbTracksInInputFile(kFALSE),
+    fMCEventHeader(NULL),
+    fMCEventList(NULL),
+    fAccTracks(NULL),
+    fTofPointsTB(NULL),
+    fTofPoints(NULL),
+    fMCTracks(NULL),
+    fTofHitPointMatches(NULL),
+    fTofHitAccTrackMatches(NULL),
+    fTofTrackletAccTrackMatches(NULL),
+    fTofAccTrackTrackletMatches(NULL),
+    fTofAccTrackPointMatches(NULL),
+    fCurrentNodePath(),
+    fCurrentModuleNodePath(),
+    fiCurrentModuleType(-1),
+    fiCurrentModuleIndex(-1),
+    fiCurrentCounterIndex(-1),
+    fCounterModuleNodes(),
+    fiNAccRefTracks(0),
+    fdGhostTrackHitQuota(0.7),
+    fbDelayMCPoints(kFALSE)
 
 {
 }
@@ -496,12 +697,20 @@ Bool_t   CbmTofAnaTestbeam::LoadGeometry()
 	      << dDutXmin << " to " << dDutXmax 
 	      <<", dx = "<< dDutDx
 	      <<FairLogger::endl;
-     return kTRUE;
+
    } else {
      LOG(ERROR) <<"Dut inconsistent "<<fiDut<<", "<<fiDutNch
 		<<FairLogger::endl;
      return kFALSE;
    }
+
+   if(!FindModuleNodes())
+   {
+     LOG(ERROR)<<"Could not retrieve module nodes from TGeoManager!"<<FairLogger::endl;
+     return kFALSE;
+   }
+
+   return kTRUE;
 }
 
 void CbmTofAnaTestbeam::Exec(Option_t* opt)
@@ -597,6 +806,66 @@ void CbmTofAnaTestbeam::Finish()
   LOG(INFO) << "Finish up with " << fEvents << " analyzed events in " 
 	    <<iNspills <<" spills "<< FairLogger::endl;
 
+   if(fbMonteCarloComparison)
+   {
+     TH1* tCurrentHistogram(NULL);
+
+     if(fhAccRefTracksProcSpec->GetEntries())
+     {
+       fhAccRefTracksProcSpec->LabelsDeflate("X");
+       fhAccRefTracksProcSpec->LabelsDeflate("Y");
+       fhAccRefTracksProcSpec->LabelsOption("<d", "X");
+       fhAccRefTracksProcSpec->LabelsOption("<v", "Y");
+       fhAccRefTracksProcSpec->Scale(1./fhAccRefTracksProcSpec->GetEntries());
+     }
+
+     for(auto const & CounterModuleNode : fCounterModuleNodes)
+     {
+       auto const & CounterID = CounterModuleNode.first;
+
+       tCurrentHistogram = fhDomTracksProcSpec.at(CounterID);
+       if(tCurrentHistogram->GetEntries())
+       {
+         tCurrentHistogram->LabelsDeflate("X");
+         tCurrentHistogram->LabelsDeflate("Y");
+         tCurrentHistogram->LabelsOption("<d", "X");
+         tCurrentHistogram->LabelsOption("<v", "Y");
+         tCurrentHistogram->Scale(1./tCurrentHistogram->GetEntries());
+       }
+
+       tCurrentHistogram = fhDomTracksProcMat.at(CounterID);
+       if(tCurrentHistogram->GetEntries())
+       {
+         tCurrentHistogram->LabelsDeflate("X");
+         tCurrentHistogram->LabelsDeflate("Y");
+         tCurrentHistogram->LabelsOption("<d", "X");
+         tCurrentHistogram->LabelsOption("<v", "Y");
+         tCurrentHistogram->Scale(1./tCurrentHistogram->GetEntries());
+       }
+
+       tCurrentHistogram = fhRndmTracksProcSpec.at(CounterID);
+       if(tCurrentHistogram->GetEntries())
+       {
+         tCurrentHistogram->LabelsDeflate("X");
+         tCurrentHistogram->LabelsDeflate("Y");
+         tCurrentHistogram->LabelsOption("<d", "X");
+         tCurrentHistogram->LabelsOption("<v", "Y");
+         tCurrentHistogram->Scale(1./tCurrentHistogram->GetEntries());
+       }
+
+       tCurrentHistogram = fhRndmTracksProcMat.at(CounterID);
+       if(tCurrentHistogram->GetEntries())
+       {
+         tCurrentHistogram->LabelsDeflate("X");
+         tCurrentHistogram->LabelsDeflate("Y");
+         tCurrentHistogram->LabelsOption("<d", "X");
+         tCurrentHistogram->LabelsOption("<v", "Y");
+         tCurrentHistogram->Scale(1./tCurrentHistogram->GetEntries());
+       }
+     }
+   }
+
+
    WriteHistos();
    // Prevent them from being sucked in by the CbmHadronAnalysis WriteHistograms method
    DeleteHistos();
@@ -654,6 +923,112 @@ Bool_t   CbmTofAnaTestbeam::RegisterInputs()
      if( NULL == fTrbHeader) {
        LOG(INFO)<<"CbmTofAnaTestbeam::RegisterInputs => Could not get the TofTrbHeader Object"<<FairLogger::endl;
      }
+
+     if(fbMonteCarloComparison)
+     {
+       // The input data arrays correspond to a timeslice.
+       fMCEventList = dynamic_cast<CbmMCEventList*>(fManager->GetObject("MCEventList."));
+       if(!fMCEventList)
+       {
+         // The input data arrays correspond to a reconstructed event.
+         fMCEventList = dynamic_cast<CbmMCEventList*>(fManager->GetObject("EventList."));
+
+         // TODO: For the time being, the following check prevents the MC comparison code
+         //       from being executed when ordinary event-by-event input is being processed.
+         //       Without a MC event list at hand (as is the case in event-based mode) it is
+         //       not straightforward to find the position of the MC event header in the
+         //       input chain.
+         if(!fMCEventList)
+         {
+           LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not retrieve branch \"(MC)EventList.\" for MC comparison."<<FairLogger::endl;
+           return kFALSE;
+         }
+       }
+
+       CbmMCDataManager* tMCManager = dynamic_cast<CbmMCDataManager*>(fManager->GetObject("MCDataManager"));
+       if(!tMCManager)
+       {
+         LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not retrieve CbmMCDataManager for MC comparison."<<FairLogger::endl;
+         return kFALSE;
+       }
+
+       fMCEventHeader = tMCManager->GetObject("MCEventHeader.");
+       if(!fMCEventHeader)
+       {
+         LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not retrieve branch \"MCEventHeader.\" for MC comparison."<<FairLogger::endl;
+         return kFALSE;
+       }
+
+       fTofPointsTB = dynamic_cast<TClonesArray*>(fManager->GetObject("TofPointTB"));
+       if(fTofPointsTB)
+       {
+         fbPointsInInputFile = kTRUE;
+       }
+       else
+       {
+         fTofPoints = tMCManager->InitBranch("TofPoint");
+         if(!fTofPoints)
+         {
+           LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not retrieve branch \"TofPoint\" for MC comparison."<<FairLogger::endl;
+           return kFALSE;
+         }
+       }
+
+       fTofHitPointMatches = dynamic_cast<TClonesArray*>(fManager->GetObject("TofHitMatch"));
+       if(!fTofHitPointMatches)
+       {
+         LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not retrieve branch \"TofHitMatch\" for MC comparison."<<FairLogger::endl;
+         return kFALSE;
+       }
+
+       fAccTracks = dynamic_cast<TClonesArray*>(fManager->GetObject("TofAccMCTracks"));
+       if(fAccTracks)
+       {
+         fbTracksInInputFile = kTRUE;
+
+         fTofAccTrackPointMatches = dynamic_cast<TClonesArray*>(fManager->GetObject("TofAccMCTrackPointMatch"));
+         if(!fTofAccTrackPointMatches)
+         {
+           LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not retrieve branch \"TofAccMCTrackPointMatch\" for MC comparison."<<FairLogger::endl;
+           return kFALSE;
+         }
+
+         fTofHitAccTrackMatches = dynamic_cast<TClonesArray*>(fManager->GetObject("TofHitTrackMatch"));
+         if(!fTofHitAccTrackMatches)
+         {
+           LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not retrieve branch \"TofHitTrackMatch\" for MC comparison."<<FairLogger::endl;
+           return kFALSE;
+         }
+
+         if(fTofTrackColl)
+         {
+           fTofTrackletAccTrackMatches = dynamic_cast<TClonesArray*>(fManager->GetObject("TofTrackMatch"));
+           if(!fTofTrackletAccTrackMatches)
+           {
+             LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not retrieve branch \"TofTrackMatch\" for MC comparison."<<FairLogger::endl;
+             return kFALSE;
+           }
+
+           fTofAccTrackTrackletMatches = dynamic_cast<TClonesArray*>(fManager->GetObject("TofAccMCTrackMatch"));
+           if(!fTofAccTrackTrackletMatches)
+           {
+             LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not retrieve branch \"TofAccMCTrackMatch\" for MC comparison."<<FairLogger::endl;
+             return kFALSE;
+           }
+         }
+       }
+       else
+       {
+         fMCTracks = tMCManager->InitBranch("MCTrack");
+         if(!fMCTracks)
+         {
+           LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not retrieve branch \"MCTrack\" for MC comparison."<<FairLogger::endl;
+           return kFALSE;
+         }
+       }
+
+    }
+
    }else{
      if( NULL == fTofDigisCollIn)
        fTofDigisCollIn   = (TClonesArray *) fManager->GetObject("TofCalDigi");
@@ -698,6 +1073,12 @@ Bool_t   CbmTofAnaTestbeam::RegisterInputs()
      fTofDigiMatchColl = new TClonesArray("CbmMatch",100);
      fTofHitsColl      = new TClonesArray("CbmTofHit",100);
      fTofTrackColl     = new TClonesArray("CbmTofTracklet",100); 
+
+     if(fbMonteCarloComparison)
+     {
+       LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => MC comparison not compatible with 'CbmEvent' processing!!!"<<FairLogger::endl;
+       fbMonteCarloComparison = kFALSE;
+     }
    }
    return kTRUE;
 }
@@ -1281,8 +1662,14 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhDutPullX=new TH1F(  Form("hDutPullX_Sm_%d",iDutId),
 			    Form("hDutPullX_Sm_%d;  #DeltaX",iDutId),
 			    100, -10., 10.);  
+     fhDutPullXB=new TH1F(  Form("hDutPullXB_Sm_%d",iDutId),
+			    Form("hDutPullXB_Sm_%d;  #DeltaX",iDutId),
+			    100, -10., 10.);  
      fhDutPullY=new TH1F(  Form("hDutPullY_Sm_%d",iDutId),
 			    Form("hDutPullY_Sm_%d;  #DeltaY",iDutId),
+			    100, -10., 10.);  
+     fhDutPullYB=new TH1F(  Form("hDutPullYB_Sm_%d",iDutId),
+			    Form("hDutPullYB_Sm_%d;  #DeltaY",iDutId),
 			    100, -10., 10.);  
      fhDutPullZ=new TH1F(  Form("hDutPullZ_Sm_%d",iDutId),
 			    Form("hDutPullZ_Sm_%d;  #DeltaZ",iDutId),
@@ -1365,6 +1752,433 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",iDutId), 
 			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ns)",iDutId),
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -DTSIZ, DTSIZ); 
+
+
+     if(fbMonteCarloComparison)
+     {
+       Int_t iNCounters(fCounterModuleNodes.size());
+
+
+       fhNMergedMCEvents = new TH1F("hNMergedMCEvents",
+                                    "Merged MC events; events []; ",
+                                    10, -0.5, 9.5);
+
+       fhAccTrackMul = new TH1F("hAccTrackMul",
+                                "Acc track mul; MUL []; ",
+                                150, -0.5, 149.5);
+       fhAccRefTrackMul = new TH1F("hAccRefTrackMul",
+                                   "Acc ref track mul; MUL []; ",
+                                   50, -0.5, 49.5);
+       fhAccPrimTrackMul = new TH1F("hAccPrimTrackMul",
+                                    "Acc prim track mul; MUL []; ",
+                                    60, -0.5, 59.5);
+       fhAccTrackPointMul = new TH1F("hAccTrackPointMul",
+                                     "Acc track points; points []; ",
+                                     iNCounters, -0.5, iNCounters - 0.5);
+       fhAccRefTrackPointMul = new TH1F("hAccRefTrackPointMul",
+                                        "Acc ref track points; points []; ",
+                                        iNCounters, -0.5, iNCounters - 0.5);
+       fhAccRndmTrackPointMul = new TH1F("hAccRndmTrackPointMul",
+                                         "Acc rndm track points; points []; ",
+                                         iNCounters, -0.5, iNCounters - 0.5);
+
+
+       fhAccRefTrackAcceptance = new TH2F("hAccRefTrackAcceptance",
+                                          "Ref track acceptance; y_{lab} []; p_{t}/m [1/c]",
+                                          42, -1., 6., 30, 0., 2.5);
+
+       fhAccRefTrackAcceptanceEfficiency = new TEfficiency("hAccRefTrackAcceptanceEfficiency",
+                                                           "Ref track acceptance efficiency; y_{lab} []; p_{t}/m [1/c]",
+                                                           42, -1., 6., 30, 0., 2.5);
+
+       fhAccRefTrackAcceptancePurity = new TEfficiency("hAccRefTrackAcceptancePurity",
+                                                       "Ref track acceptance purity; y_{lab} []; p_{t}/m [1/c]",
+                                                       42, -1., 6., 30, 0., 2.5);
+
+       fhAccRefTrackMulCentrality = new TH2F("hAccRefTrackMulCentrality",
+                                             "Acc ref track mul vs. centrality; b [fm]; MUL []",
+                                             20, 0., 20., 50, -0.5, 49.5);
+
+       fhAccRefTracksProcSpec = new TH2F("hAccRefTracksProcSpec",
+                                         "ref track proc/spec; ; ",
+                                         5, 0., 5., 5, 0., 5.);
+       fhAccRefTracksProcSpec->SetCanExtend(TH1::kAllAxes);
+       fhAccRefTracksProcSpec->SetStats(0);
+
+
+       fhSelEfficiency = new TEfficiency("hSelEfficiency",
+                                         "; acc ref MUL []; Sel efficiency []",
+                                         50, 0., 50.);
+
+       fhSelPurity = new TEfficiency("hSelPurity",
+                                     "; acc ref MUL []; Sel purity []",
+                                     50, 0., 50.);
+
+       fhSelRefTrackShare = new TEfficiency("hSelRefTrackShare",
+                                            "; acc ref MUL []; Sel ref track share []",
+                                            50, 0.5, 50.5);
+
+       fhSelMatchEfficiency = new TEfficiency("hSelMatchEfficiency",
+                                              "; acc ref MUL []; Sel match efficiency []",
+                                              50, 0., 50.);
+
+       fhSelMatchPurity = new TEfficiency("hSelMatchPurity",
+                                          "; acc ref MUL []; Sel match purity []",
+                                          50, 0., 50.);
+
+
+       fhResX04HitExp = new TH2F("hResX04HitExp",
+                                 "DUT hit-exp residual X; acc ref MUL []; X_{hit} - X_{exp} [cm]",
+                                 50, 0., 50.,
+                                 801, -4., 4.);
+
+       fhResX04ExpMC = new TH2F("hResX04ExpMC",
+                                 "DUT exp-MC residual X; acc ref MUL []; X_{exp} - X_{MC} [cm]",
+                                 50, 0., 50.,
+                                 801, -4., 4.);
+
+       fhResX04HitMC = new TH2F("hResX04HitMC",
+                                 "DUT hit-MC residual X; acc ref MUL []; X_{hit} - X_{MC} [cm]",
+                                 50, 0., 50.,
+                                 801, -4., 4.);
+
+       fhResY04HitExp = new TH2F("hResY04HitExp",
+                                 "DUT hit-exp residual Y; acc ref MUL []; Y_{hit} - Y_{exp} [cm]",
+                                 50, 0., 50.,
+                                 3001, -15., 15.);
+
+       fhResY04ExpMC = new TH2F("hResY04ExpMC",
+                                 "DUT exp-MC residual Y; acc ref MUL []; Y_{exp} - Y_{MC} [cm]",
+                                 50, 0., 50.,
+                                 3001, -15., 15.);
+
+       fhResY04HitMC = new TH2F("hResY04HitMC",
+                                 "DUT hit-MC residual Y; acc ref MUL []; Y_{hit} - Y_{MC} [cm]",
+                                 50, 0., 50.,
+                                 3001, -15., 15.);
+
+       fhResT04HitExp = new TH2F("hResT04HitExp",
+                                 "DUT hit-exp residual T; acc ref MUL []; T_{hit} - T_{exp} [ns]",
+                                 50, 0., 50.,
+                                 3001, -1.5, 1.5);
+
+       fhResT04ExpMC = new TH2F("hResT04ExpMC",
+                                "DUT exp-MC residual T; acc ref MUL []; T_{exp} - T_{MC} [ns]",
+                                50, 0., 50.,
+                                3001, -1.5, 1.5);
+
+       fhResT04HitMC = new TH2F("hResT04HitMC",
+                                "DUT hit-MC residual T; acc ref MUL []; T_{hit} - T_{MC} [ns]",
+                                50, 0., 50.,
+                                3001, -1.5, 1.5);
+
+       fhNTracksPerMRefHit = new TH1F("hNTracksPerMRefHit",
+                                      "MRef tracks/hit; #tracks/hit []; ",
+                                      20, -0.5, 19.5);
+
+       fhNTracksPerSel2Hit = new TH1F("hNTracksPerSel2Hit",
+                                      "Sel2 tracks/hit; #tracks/hit []; ",
+                                      20, -0.5, 19.5);
+
+       fhNTracksPerDutHit = new TH1F("hNTracksPerDutHit",
+                                      "DUT tracks/hit; #tracks/hit []; ",
+                                      20, -0.5, 19.5);
+
+       fhNTracksPerSelMRefHit = new TH1F("hNTracksPerSelMRefHit",
+                                         "MRef sel tracks/hit; #tracks/hit []; ",
+                                         20, -0.5, 19.5);
+
+       fhNTracksPerSelSel2Hit = new TH1F("hNTracksPerSelSel2Hit",
+                                         "Sel2 sel tracks/hit; #tracks/hit []; ",
+                                         20, -0.5, 19.5);
+
+       fhNTracksPerSelDutHit = new TH1F("hNTracksPerSelDutHit",
+                                        "DUT sel tracks/hit; #tracks/hit []; ",
+                                        20, -0.5, 19.5);
+
+
+       fhDutEfficiency = new TEfficiency("hDutEfficiency",
+                                         "; acc ref MUL []; DUT efficiency []",
+                                         50, 0., 50.);
+
+       fhDutResX_Hit_Trk = new TH2F("hDutResX_Hit_Trk",
+                                    "DUT hit-trklt residual X; acc ref MUL []; X_{hit} - X_{trklt} [cm]",
+                                    50, 0., 50.,
+                                    801, -4., 4.);
+
+       fhDutResX_Trk_MC = new TH2F("hDutResX_Trk_MC",
+                                   "DUT trklt-MC residual X; acc ref MUL []; X_{trklt} - X_{MC} [cm]",
+                                   50, 0., 50.,
+                                   801, -4., 4.);
+
+       fhDutResX_Hit_MC = new TH2F("hDutResX_Hit_MC",
+                                   "DUT hit-MC residual X; acc ref MUL []; X_{hit} - X_{MC} [cm]",
+                                   50, 0., 50.,
+                                   801, -4., 4.);
+
+       fhDutResY_Hit_Trk = new TH2F("hDutResY_Hit_Trk",
+                                    "DUT hit-trklt residual Y; acc ref MUL []; Y_{hit} - Y_{trklt} [cm]",
+                                    50, 0., 50.,
+                                    3001, -15., 15.);
+
+       fhDutResY_Trk_MC = new TH2F("hDutResY_Trk_MC",
+                                   "DUT trklt-MC residual Y; acc ref MUL []; Y_{trklt} - Y_{MC} [cm]",
+                                   50, 0., 50.,
+                                   3001, -15., 15.);
+
+       fhDutResY_Hit_MC = new TH2F("hDutResY_Hit_MC",
+                                   "DUT hit-MC residual Y; acc ref MUL []; Y_{hit} - Y_{MC} [cm]",
+                                   50, 0., 50.,
+                                   3001, -15., 15.);
+
+       fhDutResT_Hit_Trk = new TH2F("hDutResT_Hit_Trk",
+                                    "DUT hit-trklt residual T; acc ref MUL []; T_{hit} - T_{trklt} [ns]",
+                                    50, 0., 50.,
+                                    3001, -1.5, 1.5);
+
+       fhDutResT_Trk_MC = new TH2F("hDutResT_Trk_MC",
+                                   "DUT trklt-MC residual T; acc ref MUL []; T_{trklt} - T_{MC} [ns]",
+                                   50, 0., 50.,
+                                   3001, -1.5, 1.5);
+
+       fhDutResT_Hit_MC = new TH2F("hDutResT_Hit_MC",
+                                   "DUT hit-MC residual T; acc ref MUL []; T_{hit} - T_{MC} [ns]",
+                                   50, 0., 50.,
+                                   3001, -1.5, 1.5);
+
+
+       fhPVResTAll = new TH2F("hPVResTAll",
+                              "PV all reco-MC residual T; acc ref MUL []; T_{reco} - T_{MC} [ns]",
+                              50, 0., 50.,
+	                            3001, -1.5, 1.5);
+
+       fhPVResXAll = new TH2F("hPVResXAll",
+                              "PV all reco-MC residual X; acc ref MUL []; X_{reco} - X_{MC} [cm]",
+                              50, 0., 50.,
+	                            801, -4., 4.);
+
+       fhPVResYAll = new TH2F("hPVResYAll",
+                              "PV all reco-MC residual Y; acc ref MUL []; Y_{reco} - Y_{MC} [cm]",
+                              50, 0., 50.,
+	                            2001, -10., 10.);
+
+       fhPVResTRef = new TH2F("hPVResTRef",
+                              "PV ref reco-MC residual T; acc ref MUL []; T_{reco} - T_{MC} [ns]",
+                              50, 0., 50.,
+	                            3001, -1.5, 1.5);
+
+       fhPVResXRef = new TH2F("hPVResXRef",
+                              "PV ref reco-MC residual X; acc ref MUL []; X_{reco} - X_{MC} [cm]",
+                              50, 0., 50.,
+	                            801, -4., 4.);
+
+       fhPVResYRef = new TH2F("hPVResYRef",
+                              "PV ref reco-MC residual Y; acc ref MUL []; Y_{reco} - Y_{MC} [cm]",
+                              50, 0., 50.,
+	                            2001, -10., 10.);
+
+
+       fhAccRefTrackResT = new TH2F("hAccRefTrackResT",
+                                    "ref track-tracklet residual T; acc ref MUL []; T0_{trk} - T_{trklt} [ns]",
+                                    50, 0., 50.,
+	                                  3001, -1.5, 1.5);
+
+       fhAccRefTrackResX = new TH2F("hAccRefTrackResX",
+                                    "ref track-tracklet residual X; acc ref MUL []; X0_{trk} - X_{trklt} [cm]",
+                                    50, 0., 50.,
+	                                  801, -4., 4.);
+
+       fhAccRefTrackResY = new TH2F("hAccRefTrackResY",
+                                    "ref track-tracklet residual Y; acc ref MUL []; Y0_{trk} - Y_{trklt} [cm]",
+                                    50, 0., 50.,
+	                                  2001, -10., 10.);
+
+       fhAccRefTrackResTx = new TH2F("hAccRefTrackResTx",
+                                    "ref track-tracklet residual Tx; acc ref MUL []; Tx0_{trk} - Tx_{trklt} []",
+                                    50, 0., 50.,
+	                                  201, -1., 1.);
+
+       fhAccRefTrackResTy = new TH2F("hAccRefTrackResTy",
+                                    "ref track-tracklet residual Ty; acc ref MUL []; Ty0_{trk} - Ty_{trklt} []",
+                                    50, 0., 50.,
+	                                  201, -1., 1.);
+
+       fhAccRefTrackResV = new TH2F("hAccRefTrackResV",
+                                    "ref track-tracklet residual V; acc ref MUL []; V0_{trk} - V_{trklt} [cm/ns]",
+                                    50, 0., 50.,
+	                                  101, -5., 5.);
+
+       fhAccRefTrackResN = new TH2F("hAccRefTrackResN",
+                                    "ref track-tracklet residual N; acc ref MUL []; N0_{trk} - N_{trklt} []",
+                                    50, 0., 50.,
+	                                  11, -5.5, 5.5);
+
+
+       fhAccRefTrackShare = new TEfficiency("hAccRefTrackShare",
+                                            "; acc ref MUL []; acc ref share []",
+                                            50, 0., 50.);
+
+       fhRecRefTrackEfficiency = new TEfficiency("hRecRefTrackEfficiency",
+                                                 "; acc ref MUL []; acc ref reco eff []",
+                                                 50, 0., 50.);
+
+       fhRecRndmTrackEfficiency = new TEfficiency("hRecRndmTrackEfficiency",
+                                                  "; acc ref MUL []; acc rndm reco eff []",
+                                                  50, 0., 50.);
+
+       fhRecRefTrackGhostShare = new TEfficiency("hRecRefTrackGhostShare",
+                                                 "; acc ref MUL []; acc ref ghost share []",
+                                                 50, 0., 50.);
+
+       fhRecRefTrackCloneShare = new TEfficiency("hRecRefTrackCloneShare",
+                                                 "; acc ref MUL []; acc ref clone share []",
+                                                 50, 0., 50.);
+
+       fhRecRndmTrackGhostShare = new TEfficiency("hRecRndmTrackGhostShare",
+                                                  "; acc ref MUL []; acc rndm ghost share []",
+                                                  50, 0., 50.);
+
+       fhRecRndmTrackCloneShare = new TEfficiency("hRecRndmTrackCloneShare",
+                                                  "; acc ref MUL []; acc rndm clone share []",
+                                                  50, 0., 50.);
+
+       TH1* tCurrentHistogram(NULL);
+
+       for(auto const & CounterModuleNode : fCounterModuleNodes)
+       {
+         auto const & CounterID = CounterModuleNode.first;
+
+         Int_t iModuleType = std::get<0>(CounterID);
+         Int_t iModuleIndex = std::get<1>(CounterID);
+         Int_t iCounterIndex = std::get<2>(CounterID);
+         Int_t iNCounterCells = fDigiBdfPar->GetNbChan(iModuleType, iCounterIndex);
+
+
+         tCurrentHistogram = new TH2F(Form("hDomTracksProcSpec_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d dom proc/spec; ; ", iModuleType, iModuleIndex, iCounterIndex),
+                                      5, 0., 5., 5, 0., 5.);
+         tCurrentHistogram->SetCanExtend(TH1::kAllAxes);
+         tCurrentHistogram->SetStats(0);
+
+         fhDomTracksProcSpec.insert(std::make_pair(CounterID, dynamic_cast<TH2*>(tCurrentHistogram)));
+
+
+         tCurrentHistogram = new TH2F(Form("hDomTracksProcMat_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d dom proc/mat; ; ", iModuleType, iModuleIndex, iCounterIndex),
+                                      5, 0., 5., 5, 0., 5.);
+         tCurrentHistogram->SetCanExtend(TH1::kAllAxes);
+         tCurrentHistogram->SetStats(0);
+
+         fhDomTracksProcMat.insert(std::make_pair(CounterID, dynamic_cast<TH2*>(tCurrentHistogram)));
+
+
+         tCurrentHistogram = new TH2F(Form("hRndmTracksProcSpec_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d rndm proc/spec; ; ", iModuleType, iModuleIndex, iCounterIndex),
+                                      5, 0., 5., 5, 0., 5.);
+         tCurrentHistogram->SetCanExtend(TH1::kAllAxes);
+         tCurrentHistogram->SetStats(0);
+
+         fhRndmTracksProcSpec.insert(std::make_pair(CounterID, dynamic_cast<TH2*>(tCurrentHistogram)));
+
+
+         tCurrentHistogram = new TH2F(Form("hRndmTracksProcMat_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d rndm proc/mat; ; ", iModuleType, iModuleIndex, iCounterIndex),
+                                      5, 0., 5., 5, 0., 5.);
+         tCurrentHistogram->SetCanExtend(TH1::kAllAxes);
+         tCurrentHistogram->SetStats(0);
+
+         fhRndmTracksProcMat.insert(std::make_pair(CounterID, dynamic_cast<TH2*>(tCurrentHistogram)));
+
+
+         tCurrentHistogram = new TH1F(Form("hCounterAccTrackMul_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d acc mul; MUL []; ", iModuleType, iModuleIndex, iCounterIndex),
+                                      100, -0.5, 99.5);
+
+         fhCounterAccTrackMul.insert(std::make_pair(CounterID, tCurrentHistogram));
+
+
+         tCurrentHistogram = new TH1F(Form("hCounterAccRefTrackMul_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d acc ref mul; MUL []; ", iModuleType, iModuleIndex, iCounterIndex),
+                                      50, -0.5, 49.5);
+
+         fhCounterAccRefTrackMul.insert(std::make_pair(CounterID, tCurrentHistogram));
+
+
+         tCurrentHistogram = new TH1F(Form("hCounterAccRndmTrackMul_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d acc rndm mul; MUL []; ", iModuleType, iModuleIndex, iCounterIndex),
+                                      50, -0.5, 49.5);
+
+         fhCounterAccRndmTrackMul.insert(std::make_pair(CounterID, tCurrentHistogram));
+
+
+         tCurrentHistogram = new TH1F(Form("hCounterAccDomTrackMul_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d acc dom mul; MUL []; ", iModuleType, iModuleIndex, iCounterIndex),
+                                      50, -0.5, 49.5);
+
+         fhCounterAccDomTrackMul.insert(std::make_pair(CounterID, tCurrentHistogram));
+
+
+         tCurrentHistogram = new TH1F(Form("hCounterRecRefTrackEfficiencyPassed_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d acc ref reco eff; acc ref MUL []; reco efficiency []", iModuleType, iModuleIndex, iCounterIndex),
+                                      50, 0., 50.);
+
+         fhCounterRecRefTrackEfficiencyPassed.insert(std::make_pair(CounterID, tCurrentHistogram));
+
+
+         tCurrentHistogram = new TH1F(Form("hCounterRecRefTrackEfficiencyTotal_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d acc ref reco eff; acc ref MUL []; reco efficiency []", iModuleType, iModuleIndex, iCounterIndex),
+                                      50, 0., 50.);
+
+         fhCounterRecRefTrackEfficiencyTotal.insert(std::make_pair(CounterID, tCurrentHistogram));
+
+
+         tCurrentHistogram = new TH1F(Form("hCounterRecRefTrackPurityPassed_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d acc ref reco pure; acc ref MUL []; reco purity []", iModuleType, iModuleIndex, iCounterIndex),
+                                      50, 0., 50.);
+
+         fhCounterRecRefTrackPurityPassed.insert(std::make_pair(CounterID, tCurrentHistogram));
+
+
+         tCurrentHistogram = new TH2F(Form("hCounterRefTrackMulHitMul_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d acc ref mul/hit mul; acc ref MUL []; hit MUL []", iModuleType, iModuleIndex, iCounterIndex),
+                                      50, -0.5, 49.5, 30, -0.5, 29.5);
+
+         fhCounterRefTrackMulHitMul.insert(std::make_pair(CounterID, dynamic_cast<TH2*>(tCurrentHistogram)));
+
+
+         tCurrentHistogram = new TH2F(Form("hCounterRefTrackLocalXY_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d acc ref track position; X [cm]; Y [cm]", iModuleType, iModuleIndex, iCounterIndex),
+                                      2*iNbinXY + 1, -17., 17., 2*iNbinXY + 1, -17., 17.);
+
+         fhCounterRefTrackLocalXY.insert(std::make_pair(CounterID, dynamic_cast<TH2*>(tCurrentHistogram)));
+
+
+         tCurrentHistogram = new TH2F(Form("hCounterRefTrackMulCell_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                      Form("%d-%d-%d cell acc ref mul; strip []; ref track MUL []", iModuleType, iModuleIndex, iCounterIndex),
+                                      iNCounterCells, 0, iNCounterCells, 10, -0.5, 9.5);
+
+         fhCounterRefTrackMulCell.insert(std::make_pair(CounterID, dynamic_cast<TH2*>(tCurrentHistogram)));
+       }
+     }
+
+
+     for(auto const & CounterModuleNode : fCounterModuleNodes)
+     {
+       auto const & CounterID = CounterModuleNode.first;
+
+       Int_t iModuleType = std::get<0>(CounterID);
+       Int_t iModuleIndex = std::get<1>(CounterID);
+       Int_t iCounterIndex = std::get<2>(CounterID);
+       Int_t iNCounterCells = fDigiBdfPar->GetNbChan(iModuleType, iCounterIndex);
+
+       TH1* tCurrentHistogram = new TH2F(Form("hCounterHitMulCell_%d_%d_%d", iModuleType, iModuleIndex, iCounterIndex),
+                                         Form("%d-%d-%d cell hit mul; strip []; hit MUL []", iModuleType, iModuleIndex, iCounterIndex),
+                                         iNCounterCells, 0, iNCounterCells, 10, -0.5, 9.5);
+
+       fhCounterHitMulCell.insert(std::make_pair(CounterID, dynamic_cast<TH2*>(tCurrentHistogram)));
+     }
+
+
      // rate histos
      Double_t TRange = 600.; //in seconds
      Double_t NStations=10.;
@@ -1407,6 +2221,55 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 // ------------------------------------------------------------------
 Bool_t CbmTofAnaTestbeam::FillHistos()
 {
+   if(fbMonteCarloComparison)
+   {
+     if(fbTracksInInputFile)
+     {
+       fiNAccRefTracks = 0;
+
+       TGeoNode* tNode(NULL);
+       TGeoMedium* tMedium(NULL);
+       TGeoMaterial* tMaterial(NULL);
+
+       const char* cMaterialName;
+
+       fhAccTrackMul->Fill(fAccTracks->GetEntriesFast());
+
+       // Determine the number of reference tracks in the reconstructed event
+       // as a function of which several QA observables are studied. A reference
+       // track must originate from the target (not necessarily from the primary
+       // vertex) and intersect the active planes of at least 3 different
+       // counters.
+       Int_t iNAccPrimTracks(0);
+
+       for(Int_t iTrack = 0; iTrack < fAccTracks->GetEntriesFast(); iTrack++)
+       {
+         CbmMCTrack* tAccTrack = dynamic_cast<CbmMCTrack*>(fAccTracks->At(iTrack));
+         CbmMatch* tAccTrackPointMatch = dynamic_cast<CbmMatch*>(fTofAccTrackPointMatches->At(iTrack));
+
+         tNode = gGeoManager->FindNode(tAccTrack->GetStartX(), tAccTrack->GetStartY(), tAccTrack->GetStartZ());
+         tMedium = tNode->GetMedium();
+         tMaterial = tMedium->GetMaterial();
+
+         GetMaterialName(tMaterial->GetName(), cMaterialName);
+
+         if(0 == std::strcmp("target", cMaterialName))
+         {
+           iNAccPrimTracks++;
+
+           if(3 <= tAccTrackPointMatch->GetNofLinks())
+           {
+             fiNAccRefTracks++;
+           }
+         }
+       }
+
+       fhAccRefTrackMul->Fill(fiNAccRefTracks);
+       fhAccPrimTrackMul->Fill(iNAccPrimTracks);
+     }
+   }
+
+
    // Constants, TODO => put as parameter !!!
 
    // Declare variables outside the loop
@@ -1423,6 +2286,11 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    CbmTofCell  *fChannelInfo2;
    CbmTofCell  *fChannelInfo3;
    CbmTofCell  *fChannelInfo4;
+
+   Int_t iBRefHitInd(-1);
+   Int_t iMRefHitInd(-1);
+   Int_t iSel2HitInd(-1);
+   Bool_t bGoodTrackSel(kFALSE);
 
    // Trb System 
    if (NULL != fTrbHeader) { 
@@ -1519,6 +2387,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        if(iDetId == fiBeamRefAddr) {
 	 dMulD  = (Double_t) iBeamRefMul;
 	 pDia=pHit;
+   iBRefHitInd = iNbTofHits - 1;
 	 dTDia = pDia->GetTime();
 	 dTAv = dTDia;
 	 dMAv=1.;
@@ -1569,6 +2438,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 dMAv=1.;
 	 pDia->Delete();
 	 pDia=(CbmTofHit*) fTofHitsColl->At( iNbTofHits );
+   iBRefHitInd = iNbTofHits;
 	 iNbTofHits++;
        }
      }
@@ -1606,6 +2476,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	  if ( pHit->GetTime() < dTDia) {
 	    dTDia = pHit->GetTime();
 	    pDia  = pHit;
+      iBRefHitInd = iHitInd;
 	  }
       }
       if(dMulD>0){ // average fastest channels
@@ -1865,6 +2736,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		   BSel[0]=kFALSE; // invalidate previous matches
 		   dDTD4Min=dDTD4;
 		   pHitRef=pHit2;
+       iMRefHitInd = iHitInd2;
 		   fChannelInfoRef=fChannelInfo2;
 		   LOG(DEBUG1)<<Form("accept Mrpc, look for Sel2 %d, 0x%08x",fiMrpcSel2,fiMrpcSel2Addr)
 			<<FairLogger::endl;
@@ -1942,6 +2814,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 			         Chi2Max = Chi2Match;
 			         BSel[0] = kTRUE;
 			         pHitSel2= pHit3;
+               iSel2HitInd = iHitInd3;
 			         fChannelInfoSel2=fChannelInfo3;
 			         LOG(DEBUG)<<Form("better Sel2 0x%08x with Chi2 %7.1f, x %7.1f, Deltax %7.1f",
 						   fiMrpcSel2Addr,Chi2Max,xPos3B,xPos3B-xPos2)
@@ -1952,7 +2825,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		         }
 		       }
 		     } // loop over third hit end
-		 
+
+
 		     if(BSel[0]){
 		       fhChiSel24->Fill(Chi2Max);
 		       fhDXSel24->Fill(xPos3B-xPos2);
@@ -2041,6 +2915,19 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		    Chi2List[0],Chi2List[1],Chi2List[2],Chi2List[3])
 	     <<Form(", Muls %4.0f, %4.0f, %4.0f",dMulD, dMul0, dMul4)
  	     <<FairLogger::endl;
+
+   if(fbMonteCarloComparison)
+   {
+     if(BSel[0])
+     {
+       fhSelEfficiency->Fill(kTRUE, fiNAccRefTracks);
+     }
+     else
+     {
+       fhSelEfficiency->Fill(kFALSE, fiNAccRefTracks);
+     }
+   }
+
 
    // selector 0 distributions 
    if(BSel[0]){
@@ -2151,6 +3038,89 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
       }
     }
 
+    if(fbMonteCarloComparison)
+    {
+      if(fbTracksInInputFile)
+      {
+        const CbmLink& tMRefTrackLink = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iMRefHitInd))->GetMatchedLink();
+
+        if(-1 < tMRefTrackLink.GetFile() && -1 < tMRefTrackLink.GetEntry() && -1 < tMRefTrackLink.GetIndex())
+        {
+          // A Sel2 counter was defined.
+          if(pHitSel2)
+          {
+            const CbmLink& tSel2TrackLink = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iSel2HitInd))->GetMatchedLink();
+
+            // Sel2 and MRef selector hits originate from different MC tracks.
+            if(!(tSel2TrackLink == tMRefTrackLink))
+            {
+              fhSelPurity->Fill(kFALSE, fiNAccRefTracks);
+            }
+            else
+            {
+              // The beam reference counter is NOT a diamond and thus qualifies for
+              // track match checking.
+              if(5 != fiBeamRefSmType)
+              {
+                const CbmLink& tBRefTrackLink = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iBRefHitInd))->GetMatchedLink();
+
+                // BRef and MRef selector hits originate from different MC tracks.
+                if(!(tBRefTrackLink == tMRefTrackLink))
+                {
+                  fhSelPurity->Fill(kFALSE, fiNAccRefTracks);
+                }
+                else
+                {
+                  fhSelPurity->Fill(kTRUE, fiNAccRefTracks);
+                  bGoodTrackSel = kTRUE;
+                }
+              }
+              else
+              {
+                fhSelPurity->Fill(kTRUE, fiNAccRefTracks);
+                bGoodTrackSel = kTRUE;
+              }
+            }
+          }
+        }
+        else
+        {
+          fhSelPurity->Fill(kFALSE, fiNAccRefTracks);
+        }
+
+        if(bGoodTrackSel)
+        {
+          TGeoNode* tNode(NULL);
+          TGeoMedium* tMedium(NULL);
+          TGeoMaterial* tMaterial(NULL);
+
+          const char* cMaterialName;
+
+          Int_t iTrackSelInd = (dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iMRefHitInd))->GetMatchedLink()).GetIndex();
+
+          CbmMCTrack* tTrackSel = dynamic_cast<CbmMCTrack*>(fAccTracks->At(iTrackSelInd));
+          CbmMatch* tTrackSelPointMatch = dynamic_cast<CbmMatch*>(fTofAccTrackPointMatches->At(iTrackSelInd));
+
+          tNode = gGeoManager->FindNode(tTrackSel->GetStartX(), tTrackSel->GetStartY(), tTrackSel->GetStartZ());
+          tMedium = tNode->GetMedium();
+          tMaterial = tMedium->GetMaterial();
+
+          GetMaterialName(tMaterial->GetName(), cMaterialName);
+
+          if(0 == std::strcmp("target", cMaterialName) && 3 <= tTrackSelPointMatch->GetNofLinks())
+          {
+            fhSelRefTrackShare->Fill(kTRUE, fiNAccRefTracks);
+          }
+          else
+          {
+            fhSelRefTrackShare->Fill(kFALSE, fiNAccRefTracks);
+          }
+        }
+
+      }
+    }
+
+
     if(iNbMatchedHits>0){
      // best match
      LOG(DEBUG)<<Form("best match D4 (%d): 0x%p, 0x%p in ch 0x%08x, 0x%08x: %12.1f < %12.1f ?",
@@ -2188,6 +3158,11 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      }
 
      if ( Chi2List[iM0] < fdChi2Lim) {
+
+       if(fbMonteCarloComparison)
+       {
+         fhSelMatchEfficiency->Fill(kTRUE, fiNAccRefTracks);
+       }
 
        Int_t iDetId1 = (pHit1->GetAddress() & DetMask);
        Int_t iChId1 = pHit1->GetAddress();
@@ -2405,6 +3380,97 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        fhY0DT04D4best->Fill(hitpos1_local[1],dToD);
        if(fTrbHeader != NULL) fhTISDT04D4best->Fill(fTrbHeader->GetTimeInSpill(),dToD);
        else                   fhTISDT04D4best->Fill((dTAv-StartSpillTime)/1.E9,dToD);
+
+       if(fbMonteCarloComparison)
+       {
+         Int_t iDutHitInd = fTofHitsColl->IndexOf(pHit1);
+
+         if(fbTracksInInputFile)
+         {
+           if(bGoodTrackSel)
+           {
+             const CbmLink& tMRefTrackLink = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iMRefHitInd))->GetMatchedLink();
+             const CbmLink& tDutTrackLink = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iDutHitInd))->GetMatchedLink();
+
+             if(!(tDutTrackLink == tMRefTrackLink))
+             {
+               fhSelMatchPurity->Fill(kFALSE, fiNAccRefTracks);
+             }
+             else
+             {
+               fhSelMatchPurity->Fill(kTRUE, fiNAccRefTracks);
+             }
+           }
+
+
+           fhNTracksPerSelMRefHit->Fill(dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iMRefHitInd))->GetNofLinks());
+           if(pHitSel2)
+           {
+             fhNTracksPerSelSel2Hit->Fill(dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iSel2HitInd))->GetNofLinks());
+           }
+           fhNTracksPerSelDutHit->Fill(dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iDutHitInd))->GetNofLinks());
+         }
+
+
+         CbmMatch* tDutHitPointMatch = dynamic_cast<CbmMatch*>(fTofHitPointMatches->At(iDutHitInd));
+         const CbmLink& tDutHitPointLink = tDutHitPointMatch->GetMatchedLink();
+         CbmTofPoint* tDutHitMatchedPoint(NULL);
+
+         Int_t iFileIndex  = tDutHitPointLink.GetFile();
+         Int_t iEventIndex = tDutHitPointLink.GetEntry();
+         Int_t iArrayIndex = tDutHitPointLink.GetIndex();
+
+         if(-1 < iFileIndex && -1 < iEventIndex && -1 < iArrayIndex)
+         {
+           Double_t dMCEventStartTime(0.);
+
+           if(fbPointsInInputFile)
+           {
+             tDutHitMatchedPoint = dynamic_cast<CbmTofPoint*>(fTofPointsTB->At(iArrayIndex));
+           }
+           else
+           {
+             tDutHitMatchedPoint = dynamic_cast<CbmTofPoint*>(fTofPoints->Get(iFileIndex, iEventIndex, iArrayIndex));
+
+             dMCEventStartTime = fMCEventList->GetEventTime(iEventIndex, iFileIndex);
+           }
+
+           // The extrapolation of a hit position in the DUT plane from the
+           // position of the reference hit in the MRef plane following the
+           // intercept theorem (fEnableMatchPosScaling) is based on
+           // two assumptions:
+           // 1) The track which both DUT and MRef hits are supposed to be
+           //    associated with is a 3D original straight line.
+           // 2) The global X and Y coordinates of hits in both planes have
+           //    identical signs.
+
+           fhResX04HitExp->Fill(fiNAccRefTracks, xPos1 - xPos2 - fdDXMean);
+           fhResX04ExpMC->Fill(fiNAccRefTracks, xPos2 - tDutHitMatchedPoint->GetX() + fdDXMean);
+           fhResX04HitMC->Fill(fiNAccRefTracks, xPos1 - tDutHitMatchedPoint->GetX());
+
+           fhResY04HitExp->Fill(fiNAccRefTracks, yPos1 - yPos2 - fdDYMean);
+           fhResY04ExpMC->Fill(fiNAccRefTracks, yPos2 - tDutHitMatchedPoint->GetY() + fdDYMean);
+           fhResY04HitMC->Fill(fiNAccRefTracks, yPos1 - tDutHitMatchedPoint->GetY());
+
+           fhResT04HitExp->Fill(fiNAccRefTracks, dToD); // center-adjustable with 'fdDTMean'
+           Double_t dSign(1.);
+           if(pHit1->GetZ() < pHit2->GetZ())
+           {
+             dSign = -1.;
+           }
+           Double_t dDutMCPointDelay(0.);
+           Double_t dMRefMCPointDelay(0.);
+           if(fbDelayMCPoints)
+           {
+             dDutMCPointDelay  = 0.5*(fChannelInfo1->GetSizey() >= fChannelInfo1->GetSizex() ? fChannelInfo1->GetSizey() : fChannelInfo1->GetSizex())/fDigiBdfPar->GetSigVel(fiDut, fiDutSm, fiDutRpc);
+             dMRefMCPointDelay = 0.5*(fChannelInfo2->GetSizey() >= fChannelInfo2->GetSizex() ? fChannelInfo2->GetSizey() : fChannelInfo2->GetSizex())/fDigiBdfPar->GetSigVel(fiMrpcRef, fiMrpcRefSm, fiMrpcRefRpc);
+           }
+           fhResT04ExpMC->Fill(fiNAccRefTracks, tof2 + dSign*dDTexp - tDutHitMatchedPoint->GetTime() - dMCEventStartTime - dMRefMCPointDelay); // center-adjustable with 'fdTOffD4'
+           fhResT04HitMC->Fill(fiNAccRefTracks, tof1 - tDutHitMatchedPoint->GetTime() - dMCEventStartTime - dDutMCPointDelay); // TODO: how to adjust?
+         }
+
+       }
+
        
        if(iNbMatchedHits>1){
 	 LOG(DEBUG)<<Form(" Matches>1: %d with first chi2s = %12.1f, %12.1f, %12.1f, %12.1f",iNbMatchedHits,
@@ -2581,7 +3647,21 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 }
        }
      }  // fdChi2Lim end 
+     else
+     {
+       if(fbMonteCarloComparison)
+       {
+         fhSelMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+       }
+     }
     }   // end of if(iNbMatchedHits>0)
+    else
+    {
+      if(fbMonteCarloComparison)
+      {
+        fhSelMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+      }
+    }
    }    // BSel[0] condition end 
 
    // Tracklet based analysis
@@ -2852,7 +3932,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   pLHit=pLLHit;
 	   dTLH=dTLLH;
 	   } // enable/disable neigbor inspection 
-	   if( dTLH > 0) dDelTLH=TMath::Log10( pTrk->GetTime()-dTLH);  
+    // TODO: Why was the fitted tracklet time at the origin (and not at the DUT plane) used here before?
+//	   if( dTLH > 0) dDelTLH=TMath::Log10( pTrk->GetTime()-dTLH);
+	   if( dTLH > 0) dDelTLH=TMath::Log10( pTrk->GetFitT(dDutzPos)-dTLH);  
 	   /*
 	     LOG(INFO)<< "Got LHTime NbinsX: "<<iNbinsX
 		      << ", Bin "<<iBin<<", Row "<<iRow<<", Col "<<iCol 
@@ -2896,11 +3978,15 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   */
 
 	   Double_t dDX = pHit->GetX() - pTrk->GetFitX(pHit->GetZ());    // - tPar->GetX() - tPar->GetTx()*dDZ;
+	   Double_t dDXB= pTrk->GetXdif(fiDutAddr, pHit);                // ignore pHit in calc of reference
 	   Double_t dDY = pHit->GetY() - pTrk->GetFitY(pHit->GetZ());    // - tPar->GetTy()*dDZ;
-	   Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetR()); // pTrk->GetTdif(fStationType[iSt]);
+	   Double_t dDYB= pTrk->GetYdif(fiDutAddr, pHit);                // ignore pHit in calc of reference
+	   Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetZ()); // pTrk->GetTdif(fStationType[iSt]);
 	   Double_t dDTB= pTrk->GetTdif(fiDutAddr, pHit);                // ignore pHit in calc of reference
 	   fhDutPullX->Fill(dDX);
+	   fhDutPullXB->Fill(dDXB);
 	   fhDutPullY->Fill(dDY);
+	   fhDutPullYB->Fill(dDYB);
 	   fhDutPullT->Fill(dDT);
 	   fhDutPullTB->Fill(dDTB);
 	   fhDutChi_Found->Fill(pTrk->GetChiSq());
@@ -2912,6 +3998,61 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   fhDutXYDX->Fill(hitpos_local[0],hitpos_local[1],dDX);
 	   fhDutXYDY->Fill(hitpos_local[0],hitpos_local[1],dDY);
 	   fhDutXYDT->Fill(hitpos_local[0],hitpos_local[1],dDTB);
+
+     if(fbMonteCarloComparison)
+     {
+       fhDutEfficiency->Fill(kTRUE, fiNAccRefTracks);
+
+       Int_t iDutHitIndex = pTrk->GetTofHitIndex(pTrk->HitIndexOfAddr(fiDutAddr));
+       CbmTofHit* tDutHitPointer = dynamic_cast<CbmTofHit*>(fTofHitsColl->At(iDutHitIndex));
+       Double_t dDutHitChi = pTrk->GetMatChi2(fiDutAddr);
+
+       pTrk->RemoveTofHitIndex(-1, fiDutAddr, NULL, 0.);
+       CbmTofTrackFinderNN::Line3Dfit(pTrk);
+       pTrk->SetTime(pTrk->UpdateT0());
+       pTrk->AddTofHitIndex(iDutHitIndex, fiDutAddr, tDutHitPointer, dDutHitChi);
+       pHit = pTrk->HitPointerOfAddr(fiDutAddr);
+
+       CbmMatch* tDutHitPointMatch = dynamic_cast<CbmMatch*>(fTofHitPointMatches->At(iDutHitIndex));
+       const CbmLink& tDutHitPointLink = tDutHitPointMatch->GetMatchedLink();
+       CbmTofPoint* tDutHitMatchedPoint(NULL);
+
+       Int_t iFileIndex  = tDutHitPointLink.GetFile();
+       Int_t iEventIndex = tDutHitPointLink.GetEntry();
+       Int_t iArrayIndex = tDutHitPointLink.GetIndex();
+
+       if(-1 < iFileIndex && -1 < iEventIndex && -1 < iArrayIndex)
+       {
+         Double_t dMCEventStartTime(0.);
+
+         if(fbPointsInInputFile)
+         {
+           tDutHitMatchedPoint = dynamic_cast<CbmTofPoint*>(fTofPointsTB->At(iArrayIndex));
+         }
+         else
+         {
+           tDutHitMatchedPoint = dynamic_cast<CbmTofPoint*>(fTofPoints->Get(iFileIndex, iEventIndex, iArrayIndex));
+
+           dMCEventStartTime = fMCEventList->GetEventTime(iEventIndex, iFileIndex);
+         }
+
+         fhDutResX_Hit_Trk->Fill(fiNAccRefTracks, pTrk->GetXdif(fiDutAddr, pHit));
+         fhDutResX_Trk_MC->Fill(fiNAccRefTracks, pTrk->GetFitX(pHit->GetZ()) - tDutHitMatchedPoint->GetX());
+         fhDutResX_Hit_MC->Fill(fiNAccRefTracks, pHit->GetX() - tDutHitMatchedPoint->GetX());
+
+         fhDutResY_Hit_Trk->Fill(fiNAccRefTracks, pTrk->GetYdif(fiDutAddr, pHit));
+         fhDutResY_Trk_MC->Fill(fiNAccRefTracks, pTrk->GetFitY(pHit->GetZ()) - tDutHitMatchedPoint->GetY());
+         fhDutResY_Hit_MC->Fill(fiNAccRefTracks, pHit->GetY() - tDutHitMatchedPoint->GetY());
+
+         fhDutResT_Hit_Trk->Fill(fiNAccRefTracks, pTrk->GetTdif(fiDutAddr, pHit));
+         fhDutResT_Trk_MC->Fill(fiNAccRefTracks, pTrk->GetFitT(pHit->GetZ()) - tDutHitMatchedPoint->GetTime() - dMCEventStartTime);
+         fhDutResT_Hit_MC->Fill(fiNAccRefTracks, pHit->GetTime() - tDutHitMatchedPoint->GetTime() - dMCEventStartTime);
+       }
+
+       CbmTofTrackFinderNN::Line3Dfit(pTrk);
+       pTrk->SetTime(pTrk->UpdateT0());
+     }
+
 	   if(NULL != pLHit){
 	     Int_t iHit = pTrk->HitIndexOfAddr(fiDutAddr);
 	     CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At( iHit );
@@ -2973,10 +4114,19 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 					TMath::Power(hitpos_local[1] - LHpos_local[1],2.) );
 	       fhDutDTLH_DD_Missed->Fill( dDelTLH, dDD ); 
 	     }
-	   } 
+
+       if(fbMonteCarloComparison)
+       {
+         fhDutEfficiency->Fill(kFALSE, fiNAccRefTracks);
+	     } 
 	 }                 
        }
-     } // #tracklets > 0 end
+
+     } // end of loop over all tracklets
+
+     } //(iNbTofTracks>0) end
+
+
      /*  this is the proper place LHTime filling, move for testing purpose*/
      if(fFindTracks != NULL && fdMemoryTime > 0.) {
        // everything else done -> update hit memory to latest hits 
@@ -3029,8 +4179,506 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 }
        }
      } //(fdMemoryTime > 0.) end
-     
-   }   // TclonesArray existing end
+
+   }   // (NULL!=fTofTrackColl && NULL != fFindTracks) end
+
+
+   std::map<std::tuple<Int_t, Int_t, Int_t>, std::map<Int_t, Int_t>> CounterNCellHits;
+
+   for(Int_t iHit = 0; iHit < fTofHitsColl->GetEntries(); iHit++)
+   {
+     CbmTofHit* tHit = dynamic_cast<CbmTofHit*>(fTofHitsColl->At(iHit));
+     Int_t iHitAddress = tHit->GetAddress();
+     Int_t iModuleType = CbmTofAddress::GetSmType(iHitAddress);
+     Int_t iModuleIndex = CbmTofAddress::GetSmId(iHitAddress);
+     Int_t iCounterIndex = CbmTofAddress::GetRpcId(iHitAddress);
+     Int_t iCellIndex = CbmTofAddress::GetChannelId(iHitAddress);
+
+     CounterNCellHits[std::make_tuple(iModuleType, iModuleIndex, iCounterIndex)][iCellIndex]++;
+
+     if(fbMonteCarloComparison)
+     {
+       if(fbTracksInInputFile)
+       {
+         CbmMatch* tHitTrackMatch = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iHit));
+
+         if(fiMrpcRefAddr == (iHitAddress & DetMask))
+         {
+           fhNTracksPerMRefHit->Fill(tHitTrackMatch->GetNofLinks());
+         }
+         else if(fiMrpcSel2Addr == (iHitAddress & DetMask))
+         {
+           fhNTracksPerSel2Hit->Fill(tHitTrackMatch->GetNofLinks());
+         }
+         else if(fiDutAddr == (iHitAddress & DetMask))
+         {
+           fhNTracksPerDutHit->Fill(tHitTrackMatch->GetNofLinks());
+         }
+       }
+     }
+   }
+
+
+   if(fbMonteCarloComparison)
+   {
+     // Retrieve the original MC event header which provides detailed information
+     // about the collision parameters in case no event mixing occurred during
+     // event reconstruction.
+     FairMCEventHeader* tMCEventHeader(NULL);
+     Double_t dMCEventStartTime(0.);
+
+     if(1 == fMCEventList->GetNofEvents())
+     {
+       Int_t iFileID   = fMCEventList->GetFileIdByIndex(0);
+       Int_t iEventID  = fMCEventList->GetEventIdByIndex(0);
+
+       dMCEventStartTime = fMCEventList->GetEventTimeByIndex(0);
+       tMCEventHeader = dynamic_cast<FairMCEventHeader*>(fMCEventHeader->Get(iFileID, iEventID));
+
+       fhAccRefTrackMulCentrality->Fill(tMCEventHeader->GetB(), fiNAccRefTracks);
+     }
+
+     fhNMergedMCEvents->Fill(fMCEventList->GetNofEvents());
+
+     if(tMCEventHeader && fFindTracks && fFindTracks->InspectEvent() && fFindTracks->GetVertexT())
+     {
+       // collision vertex reconstruction QA
+       fhPVResTAll->Fill(fiNAccRefTracks, fFindTracks->GetVertexT() - tMCEventHeader->GetT() - dMCEventStartTime);
+       fhPVResXAll->Fill(fiNAccRefTracks, fFindTracks->GetVertexX() - tMCEventHeader->GetX());
+       fhPVResYAll->Fill(fiNAccRefTracks, fFindTracks->GetVertexY() - tMCEventHeader->GetY());
+     }
+
+
+     if(fbTracksInInputFile)
+     {
+       TGeoNode* tNode(NULL);
+       TGeoMedium* tMedium(NULL);
+       TGeoMaterial* tMaterial(NULL);
+
+       const char* cPdgName;
+       const char* cMaterialName;
+       const char* cProcessName;
+
+       Double_t dLocalTrackStart[3] = {0., 0., 0.};
+       Double_t dGlobalTrackStart[3] = {0., 0., 0.};
+       Double_t dLocalPoint[3] = {0., 0., 0.};
+       Double_t dGlobalPoint[3] = {0., 0., 0.};
+
+       std::map<std::tuple<Int_t, Int_t, Int_t>, Int_t> CounterNAccTracks;
+       std::map<std::tuple<Int_t, Int_t, Int_t>, Int_t> CounterNAccRefTracks;
+       std::map<std::tuple<Int_t, Int_t, Int_t>, Int_t> CounterNAccRndmTracks;
+       std::map<std::tuple<Int_t, Int_t, Int_t>, Int_t> CounterNAccDomTracks;
+       std::map<std::tuple<Int_t, Int_t, Int_t>, Int_t> CounterNRecRefTracks;
+       std::map<std::tuple<Int_t, Int_t, Int_t>, Int_t> CounterNPureRefTracks;
+
+       std::map<std::tuple<Int_t, Int_t, Int_t>, std::map<Int_t, Int_t>> CounterNCellAccRefTracks;
+
+
+       Double_t dRefPVRecoT(0.);
+       Double_t dRefPVRecoX(0.);
+       Double_t dRefPVRecoY(0.);
+       Int_t    iRefPVRecoN(0);
+
+       for(Int_t iTrack = 0; iTrack < fAccTracks->GetEntriesFast(); iTrack++)
+       {
+         Bool_t bIsAccRefTrack(kFALSE);
+
+         CbmMCTrack* tAccTrack = dynamic_cast<CbmMCTrack*>(fAccTracks->At(iTrack));
+         CbmMatch* tAccTrackPointMatch = dynamic_cast<CbmMatch*>(fTofAccTrackPointMatches->At(iTrack));
+         CbmMatch* tAccTrackTrackletMatch(NULL);
+         if(fTofTrackColl)
+         {
+           tAccTrackTrackletMatch = dynamic_cast<CbmMatch*>(fTofAccTrackTrackletMatches->At(iTrack));
+         }
+
+         dGlobalTrackStart[0] = tAccTrack->GetStartX();
+         dGlobalTrackStart[1] = tAccTrack->GetStartY();
+         dGlobalTrackStart[2] = tAccTrack->GetStartZ();
+
+         tNode = gGeoManager->FindNode(dGlobalTrackStart[0], dGlobalTrackStart[1], dGlobalTrackStart[2]);
+         tMedium = tNode->GetMedium();
+         tMaterial = tMedium->GetMaterial();
+
+         GetPdgName(tAccTrack->GetPdgCode(), cPdgName);
+         GetMaterialName(tMaterial->GetName(), cMaterialName);
+         GetProcessName(TMCProcessName[tAccTrack->GetGeantProcessId()], cProcessName);
+
+         fhAccTrackPointMul->Fill(tAccTrackPointMatch->GetNofLinks());
+         // XXX: tAccTrack->GetNPoints(kTof)
+
+         if(0 == std::strcmp("target", cMaterialName) && 3 <= tAccTrackPointMatch->GetNofLinks())
+         {
+           bIsAccRefTrack = kTRUE;
+
+           fhAccRefTrackShare->Fill(kTRUE, fiNAccRefTracks);
+
+           if(tAccTrack->GetMass())
+           {
+             fhAccRefTrackAcceptance->Fill(tAccTrack->GetRapidity(), tAccTrack->GetPt()/tAccTrack->GetMass());
+           }
+
+           fhAccRefTracksProcSpec->Fill(cProcessName, cPdgName, 1.);
+
+           if(fTofTrackColl)
+           {
+             if(0 < tAccTrackTrackletMatch->GetNofLinks())
+             {
+               fhRecRefTrackEfficiency->Fill(kTRUE, fiNAccRefTracks);
+
+               if(tAccTrack->GetMass())
+               {
+                 fhAccRefTrackAcceptanceEfficiency->Fill(kTRUE, tAccTrack->GetRapidity(), tAccTrack->GetPt()/tAccTrack->GetMass());
+               }
+
+               CbmTofTracklet* tTracklet = dynamic_cast<CbmTofTracklet*>(fTofTrackColl->At((tAccTrackTrackletMatch->GetMatchedLink()).GetIndex()));
+
+               // The properties of 'CbmTofTrackletParam' (fX, fY, fTx, fTy) describe
+               // the position and orientation of the tracklet at fZ = 0.
+               // The MC reference track, however, can - according to its definition -
+               // originate from the entire target volume, i.e. have an origin in Z
+               // different from 0. As the track production vertex is just a random
+               // point on its straight-line trajectory, we are free to choose any
+               // other location along the track/tracklet for a point-to-point
+               // comparison between the two 3D straight lines. Since methods
+               // for tracklet parameter extrapolation along Z are available in
+               // 'CbmTofTracklet', values are calculated at 'CbmMCTrack::fStartZ'
+               // for tracklet-track comparison.
+               fhAccRefTrackResT->Fill(fiNAccRefTracks, tTracklet->GetFitT(tAccTrack->GetStartZ()) - tAccTrack->GetStartT());
+               fhAccRefTrackResX->Fill(fiNAccRefTracks, tTracklet->GetFitX(tAccTrack->GetStartZ()) - tAccTrack->GetStartX());
+               fhAccRefTrackResY->Fill(fiNAccRefTracks, tTracklet->GetFitY(tAccTrack->GetStartZ()) - tAccTrack->GetStartY());
+               fhAccRefTrackResTx->Fill(fiNAccRefTracks, tTracklet->GetTrackTx() - tAccTrack->GetPx()/tAccTrack->GetPz());
+               fhAccRefTrackResTy->Fill(fiNAccRefTracks, tTracklet->GetTrackTy() - tAccTrack->GetPy()/tAccTrack->GetPz());
+               fhAccRefTrackResV->Fill(fiNAccRefTracks, 1./tTracklet->GetTt() - tAccTrack->GetP()/tAccTrack->GetEnergy()*TMath::Ccgs()*1.e-9);
+
+               // To compare the number of hits assigned to the tracklet with the
+               // number of points created by the MC reference track the number
+               // of diamond hits which have no point equivalent in the MC track
+               // needs to be subtracted from the number of tracklet hits.
+               Int_t iNTrackletHits = tTracklet->GetNofHits();
+
+               for(Int_t iHit = 0; iHit < tTracklet->GetNofHits(); iHit++)
+               {
+                 if(5 == CbmTofAddress::GetSmType((tTracklet->GetTofHitPointer(iHit))->GetAddress()))
+                 {
+                   iNTrackletHits--;
+                 }
+               }
+
+               fhAccRefTrackResN->Fill(fiNAccRefTracks, iNTrackletHits - tAccTrackPointMatch->GetNofLinks());
+
+               Int_t iRefPVRecoW = tTracklet->GetNofHits();
+
+               if(fFindTracks)
+               {
+                 if(iRefPVRecoW >= fFindTracks->GetMinNofHits())
+                 {
+                   dRefPVRecoT += iRefPVRecoW*tTracklet->GetFitT(0.);
+                   dRefPVRecoX += iRefPVRecoW*tTracklet->GetFitX(0.);
+                   dRefPVRecoY += iRefPVRecoW*tTracklet->GetFitY(0.);
+                   iRefPVRecoN += iRefPVRecoW;
+                 }
+               }
+             }
+             else
+             {
+               fhRecRefTrackEfficiency->Fill(kFALSE, fiNAccRefTracks);
+
+               if(tAccTrack->GetMass())
+               {
+                 fhAccRefTrackAcceptanceEfficiency->Fill(kFALSE, tAccTrack->GetRapidity(), tAccTrack->GetPt()/tAccTrack->GetMass());
+               }
+             }
+           }
+
+           fhAccRefTrackPointMul->Fill(tAccTrackPointMatch->GetNofLinks());
+         }
+         else
+         {
+           fhAccRefTrackShare->Fill(kFALSE, fiNAccRefTracks);
+
+           if(fTofTrackColl)
+           {
+             if(0 < tAccTrackTrackletMatch->GetNofLinks())
+             {
+               fhRecRndmTrackEfficiency->Fill(kTRUE, fiNAccRefTracks);
+             }
+             else
+             {
+               fhRecRndmTrackEfficiency->Fill(kFALSE, fiNAccRefTracks);
+             }
+           }
+
+           fhAccRndmTrackPointMul->Fill(tAccTrackPointMatch->GetNofLinks());
+         }
+
+         // Having a maximum of 1 MC point per track per counter this point loop is
+         // effectively a loop over counters which the MC track crossed.
+         for(Int_t iPoint = 0; iPoint < tAccTrackPointMatch->GetNofLinks(); iPoint++)
+         {
+           const CbmLink& tLink = tAccTrackPointMatch->GetLink(iPoint);
+
+           CbmTofPoint* tPoint(NULL);
+           Int_t iFileIndex  = tLink.GetFile();
+           Int_t iEventIndex = tLink.GetEntry();
+           Int_t iArrayIndex = tLink.GetIndex();
+
+           if(fbPointsInInputFile)
+           {
+             tPoint = dynamic_cast<CbmTofPoint*>(fTofPointsTB->At(iArrayIndex));
+           }
+           else
+           {
+             tPoint = dynamic_cast<CbmTofPoint*>(fTofPoints->Get(iFileIndex, iEventIndex, iArrayIndex));
+           }
+
+           Int_t iModuleType   = fGeoHandler->GetSMType(tPoint->GetDetectorID());
+           Int_t iModuleIndex  = fGeoHandler->GetSModule(tPoint->GetDetectorID());
+           Int_t iCounterIndex = fGeoHandler->GetCounter(tPoint->GetDetectorID());
+
+           auto CounterID = std::make_tuple(iModuleType, iModuleIndex, iCounterIndex);
+
+           CounterNAccTracks[CounterID]++;
+
+           // A MC reference track passed through the current counter.
+           if(bIsAccRefTrack)
+           {
+             CounterNAccRefTracks[CounterID]++;
+
+             fChannelInfo = fDigiPar->GetCell(tPoint->GetDetectorID());
+             gGeoManager->FindNode(fChannelInfo->GetX(), fChannelInfo->GetY(), fChannelInfo->GetZ());
+             dGlobalPoint[0] = tPoint->GetX();
+             dGlobalPoint[1] = tPoint->GetY();
+             dGlobalPoint[2] = tPoint->GetZ();
+             gGeoManager->MasterToLocal(dGlobalPoint, dLocalPoint);
+
+             fhCounterRefTrackLocalXY[CounterID]->Fill(dLocalPoint[0], dLocalPoint[1]);
+
+             Int_t iNCounterCells = fDigiBdfPar->GetNbChan(iModuleType, iCounterIndex);
+
+             Int_t iCellIndex(-1);
+             if(fChannelInfo->GetSizey() >= fChannelInfo->GetSizex())
+             {
+               iCellIndex = static_cast<Int_t>(dLocalPoint[0]/fChannelInfo->GetSizex() + static_cast<Double_t>(iNCounterCells)/2.);
+             }
+             else
+             {
+               iCellIndex = static_cast<Int_t>(dLocalPoint[1]/fChannelInfo->GetSizey() + static_cast<Double_t>(iNCounterCells)/2.);
+             }
+
+             CounterNCellAccRefTracks[CounterID][iCellIndex]++;
+
+             if(fTofTrackColl)
+             {
+               // A tracklet was constructed for the MC reference track.
+               if(0 < tAccTrackTrackletMatch->GetNofLinks())
+               {
+                 Int_t iCounterAddress = CbmTofAddress::GetUniqueAddress(iModuleIndex, iCounterIndex, 0, 0, iModuleType);
+
+                 CbmTofTracklet* tTracklet = dynamic_cast<CbmTofTracklet*>(fTofTrackColl->At((tAccTrackTrackletMatch->GetMatchedLink()).GetIndex()));
+
+                 Int_t iHitIndex = tTracklet->HitIndexOfAddr(iCounterAddress);
+
+                 // A hit on the current counter was assigned to the tracklet.
+                 // As there is a point created by the MC reference track on this
+                 // counter, the counter is efficient with respect to the MC
+                 // reference track because it provided a hit to the matched
+                 // tracklet where it should provide one.
+                 if(-1 < iHitIndex)
+                 {
+                   CounterNRecRefTracks[CounterID]++;
+
+                   iHitIndex = tTracklet->GetTofHitIndex(iHitIndex);
+                   CbmMatch* tHitTrackMatch = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iHitIndex));
+
+                   // Although the counter detected a hit that is attributed
+                   // to the tracklet matching the MC reference track best it
+                   // is not granted that this hit actually is the true one
+                   // which in turn matches the MC reference track best. If yes,
+                   // the counter "purely" detected the track.
+                   if(iTrack == tHitTrackMatch->GetMatchedLink().GetIndex())
+                   {
+                     CounterNPureRefTracks[CounterID]++;
+                   }
+                 }
+               }
+             }
+           }
+
+           TGeoPhysicalNode* tModuleNode = fCounterModuleNodes.at(CounterID);
+
+           tModuleNode->GetMatrix()->MasterToLocal(dGlobalTrackStart, dLocalTrackStart);
+
+           if(tModuleNode->GetVolume()->Contains(dLocalTrackStart))
+           {
+             fhDomTracksProcSpec.at(CounterID)->Fill(cProcessName, cPdgName, 1.);
+             fhDomTracksProcMat.at(CounterID)->Fill(cProcessName, cMaterialName, 1.);
+
+             CounterNAccDomTracks[CounterID]++;
+           }
+           else
+           {
+             if(!bIsAccRefTrack)
+             {
+               fhRndmTracksProcSpec.at(CounterID)->Fill(cProcessName, cPdgName, 1.);
+               fhRndmTracksProcMat.at(CounterID)->Fill(cProcessName, cMaterialName, 1.);
+
+               CounterNAccRndmTracks[CounterID]++;
+             }
+           }
+         }
+       }
+
+       if(tMCEventHeader && fFindTracks)
+       {
+         if(0 < iRefPVRecoN)
+         {
+           dRefPVRecoT /= iRefPVRecoN;
+           dRefPVRecoX /= iRefPVRecoN;
+           dRefPVRecoY /= iRefPVRecoN;
+
+           fhPVResTRef->Fill(fiNAccRefTracks, dRefPVRecoT - tMCEventHeader->GetT() - dMCEventStartTime);
+           fhPVResXRef->Fill(fiNAccRefTracks, dRefPVRecoX - tMCEventHeader->GetX());
+           fhPVResYRef->Fill(fiNAccRefTracks, dRefPVRecoY - tMCEventHeader->GetY());
+         }
+       }
+
+
+       if(fTofTrackColl)
+       {
+         std::set<CbmLink> tMatchedAccTracks;
+
+         for(Int_t iTracklet = 0; iTracklet < fTofTrackColl->GetEntriesFast(); iTracklet++)
+         {
+           CbmTrackMatchNew* tTrackletAccTrackMatch = dynamic_cast<CbmTrackMatchNew*>(fTofTrackletAccTrackMatches->At(iTracklet));
+           const CbmLink& tLink = tTrackletAccTrackMatch->GetMatchedLink();
+
+           // Ignore tracklets which have been matched to a beam or to a dark point
+           // for which no MC track exists.
+           // TODO: dedicated QA for such cases
+           if(-1 < tLink.GetFile() && -1 < tLink.GetEntry() && -1 < tLink.GetIndex())
+           {
+             CbmMCTrack* tAccTrack = dynamic_cast<CbmMCTrack*>(fAccTracks->At(tLink.GetIndex()));
+             CbmMatch* tAccTrackPointMatch = dynamic_cast<CbmMatch*>(fTofAccTrackPointMatches->At(tLink.GetIndex()));
+
+             dGlobalTrackStart[0] = tAccTrack->GetStartX();
+             dGlobalTrackStart[1] = tAccTrack->GetStartY();
+             dGlobalTrackStart[2] = tAccTrack->GetStartZ();
+
+             tNode = gGeoManager->FindNode(dGlobalTrackStart[0], dGlobalTrackStart[1], dGlobalTrackStart[2]);
+             tMedium = tNode->GetMedium();
+             tMaterial = tMedium->GetMaterial();
+
+             GetMaterialName(tMaterial->GetName(), cMaterialName);
+
+             if(0 == std::strcmp("target", cMaterialName) && 3 <= tAccTrackPointMatch->GetNofLinks())
+             {
+               if(fdGhostTrackHitQuota > tTrackletAccTrackMatch->GetTrueOverAllHitsRatio())
+               {
+                 fhRecRefTrackGhostShare->Fill(kTRUE, fiNAccRefTracks);
+
+                 if(tAccTrack->GetMass())
+                 {
+                   fhAccRefTrackAcceptancePurity->Fill(kFALSE, tAccTrack->GetRapidity(), tAccTrack->GetPt()/tAccTrack->GetMass());
+                 }
+               }
+               else
+               {
+                 fhRecRefTrackGhostShare->Fill(kFALSE, fiNAccRefTracks);
+
+                 if(tAccTrack->GetMass())
+                 {
+                   fhAccRefTrackAcceptancePurity->Fill(kTRUE, tAccTrack->GetRapidity(), tAccTrack->GetPt()/tAccTrack->GetMass());
+                 }
+               }
+
+               // Another tracklet has been matched to the MC track the current
+               // tracklet has been matched to as well.
+               if(kFALSE == (tMatchedAccTracks.emplace(1., tLink.GetIndex(), tLink.GetEntry(), tLink.GetFile())).second)
+               {
+                 fhRecRefTrackCloneShare->Fill(kTRUE, fiNAccRefTracks);
+               }
+               else
+               {
+                 fhRecRefTrackCloneShare->Fill(kFALSE, fiNAccRefTracks);
+               }
+             }
+             else
+             {
+               if(fdGhostTrackHitQuota > tTrackletAccTrackMatch->GetTrueOverAllHitsRatio())
+               {
+                 fhRecRndmTrackGhostShare->Fill(kTRUE, fiNAccRefTracks);
+               }
+               else
+               {
+                 fhRecRndmTrackGhostShare->Fill(kFALSE, fiNAccRefTracks);
+               }
+
+               // Another tracklet has been matched to the MC track the current
+               // tracklet has been matched to as well.
+               if(kFALSE == (tMatchedAccTracks.emplace(1., tLink.GetIndex(), tLink.GetEntry(), tLink.GetFile())).second)
+               {
+                 fhRecRndmTrackCloneShare->Fill(kTRUE, fiNAccRefTracks);
+               }
+               else
+               {
+                 fhRecRndmTrackCloneShare->Fill(kFALSE, fiNAccRefTracks);
+               }
+             }
+           }
+         }
+       }
+
+
+       for(auto const & CounterModuleNode : fCounterModuleNodes)
+       {
+         auto const & CounterID = CounterModuleNode.first;
+         Int_t iModuleType = std::get<0>(CounterID);
+         Int_t iModuleIndex = std::get<1>(CounterID);
+         Int_t iCounterIndex = std::get<2>(CounterID);
+         Int_t iNCounterCells = fDigiBdfPar->GetNbChan(iModuleType, iCounterIndex);
+
+         fhCounterAccTrackMul.at(CounterID)->Fill(CounterNAccTracks[CounterID]);
+         fhCounterAccRefTrackMul.at(CounterID)->Fill(CounterNAccRefTracks[CounterID]);
+         fhCounterAccRndmTrackMul.at(CounterID)->Fill(CounterNAccRndmTracks[CounterID]);
+         fhCounterAccDomTrackMul.at(CounterID)->Fill(CounterNAccDomTracks[CounterID]);
+
+         if(fTofTrackColl)
+         {
+           fhCounterRecRefTrackEfficiencyPassed.at(CounterID)->Fill(CounterNAccRefTracks[CounterID], CounterNRecRefTracks[CounterID]);
+           fhCounterRecRefTrackEfficiencyTotal.at(CounterID)->Fill(CounterNAccRefTracks[CounterID], CounterNAccRefTracks[CounterID]);
+           fhCounterRecRefTrackPurityPassed.at(CounterID)->Fill(CounterNAccRefTracks[CounterID], CounterNPureRefTracks[CounterID]);
+         }
+
+         Int_t iCounterHitMul(0);
+         Int_t iCounterRefTrackMul(0);
+
+         for(Int_t iCell = 0; iCell < iNCounterCells; iCell++)
+         {
+           fhCounterRefTrackMulCell.at(CounterID)->Fill(iCell, CounterNCellAccRefTracks[CounterID][iCell]);
+           iCounterRefTrackMul += CounterNCellAccRefTracks[CounterID][iCell];
+           iCounterHitMul += CounterNCellHits[CounterID][iCell];
+         }
+
+         fhCounterRefTrackMulHitMul.at(CounterID)->Fill(iCounterRefTrackMul, iCounterHitMul);
+       }
+     }
+   }
+
+
+   for(auto const & CounterModuleNode : fCounterModuleNodes)
+   {
+     auto const & CounterID = CounterModuleNode.first;
+     Int_t iModuleType = std::get<0>(CounterID);
+     Int_t iModuleIndex = std::get<1>(CounterID);
+     Int_t iCounterIndex = std::get<2>(CounterID);
+     Int_t iNCounterCells = fDigiBdfPar->GetNbChan(iModuleType, iCounterIndex);
+
+     for(Int_t iCell = 0; iCell < iNCounterCells; iCell++)
+     {
+       fhCounterHitMulCell.at(CounterID)->Fill(iCell, CounterNCellHits[CounterID][iCell]);
+     }
+   }
+
    return kTRUE;  
 }  //FillHistos end 
 // ------------------------------------------------------------------
@@ -3295,6 +4943,7 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
    gDirectory->cd( oldir->GetPath() );
 
    fHist->Close();
+
    return kTRUE;
 }
 
@@ -3306,5 +4955,128 @@ Bool_t   CbmTofAnaTestbeam::DeleteHistos()
 
    return kTRUE;
 }
+
+
+Bool_t CbmTofAnaTestbeam::FindModuleNodes()
+{
+   Bool_t bFoundTofNode(kFALSE);
+   TGeoNode* tTofNode(NULL);
+
+   fCurrentNodePath = "/" + (TString)gGeoManager->GetTopNode()->GetName();
+
+   TObjArray* tDaughterNodes = gGeoManager->GetTopNode()->GetNodes();
+   for(Int_t iNode = 0; iNode < tDaughterNodes->GetEntriesFast(); iNode++)
+   {
+     TGeoNode* tDaughterNode = dynamic_cast<TGeoNode*>(tDaughterNodes->At(iNode));
+     if(TString(tDaughterNode->GetName()).Contains("tof", TString::kIgnoreCase))
+     {
+       bFoundTofNode = kTRUE;
+       tTofNode = tDaughterNode;
+       fCurrentNodePath += "/" + (TString)tDaughterNode->GetName();
+       break;
+     }
+   }
+
+   if(!bFoundTofNode)
+   {
+     LOG(ERROR)<<"Could not retrieve 'tof' node from TGeoManager."<<FairLogger::endl;
+     return kFALSE;
+   }
+
+   ExpandNode(tTofNode);
+
+   return kTRUE;
+}
+
+
+void CbmTofAnaTestbeam::ExpandNode(TGeoNode* tMotherNode)
+{
+  TObjArray* tDaughterNodes = tMotherNode->GetNodes();
+
+  for(Int_t iNode = 0; iNode < tDaughterNodes->GetEntriesFast(); iNode++)
+  {
+    TGeoNode* tDaughterNode = dynamic_cast<TGeoNode*>(tDaughterNodes->At(iNode));
+    fCurrentNodePath += "/" + (TString)tDaughterNode->GetName();
+
+    // Extract the current module type and module index from the module node
+    if(TString(tDaughterNode->GetName()).Contains("module"))
+    {
+      fiCurrentModuleType = -1;
+      fiCurrentModuleIndex = -1;
+      fiCurrentCounterIndex = -1;
+
+      boost::regex rgx(".*_(\\d+)_.*");
+      boost::cmatch match;
+      if( boost::regex_search(tDaughterNode->GetName(), match, rgx) )
+      {
+        fiCurrentModuleType = boost::lexical_cast<Int_t>(match[1]);
+      }
+
+      fiCurrentModuleIndex = tDaughterNode->GetNumber();
+
+      fCurrentModuleNodePath = fCurrentNodePath;
+    }
+    // Extract the current counter index from the counter node
+    else if(TString(tDaughterNode->GetName()).Contains("counter"))
+    {
+      fiCurrentCounterIndex = tDaughterNode->GetNumber();
+
+      fCounterModuleNodes[std::make_tuple(fiCurrentModuleType, fiCurrentModuleIndex, fiCurrentCounterIndex)] = new TGeoPhysicalNode(fCurrentModuleNodePath.Data());
+    }
+
+    // Expand nodes recursively
+    if(0 < tDaughterNode->GetNdaughters())
+    {
+      ExpandNode(tDaughterNode);
+    }
+
+    // Remove a node's name from the current node path upon completing a recursion step
+    fCurrentNodePath.ReplaceAll("/"+(TString)tDaughterNode->GetName(), "");
+  }
+}
+
+
+void GetPdgName(Int_t iPdgCode, const char*& cPdgName)
+{
+  auto itPdg = giPdgMap.find(iPdgCode);
+  if(itPdg != giPdgMap.end())
+  {
+    cPdgName = itPdg->second;
+  }
+  else
+  {
+    cPdgName = "XXX";
+    LOG(ERROR)<<"unknown PDG code: "<<iPdgCode<<FairLogger::endl;
+  }
+}
+
+void GetMaterialName(const char* cMaterial, const char*& cMaterialName)
+{
+  auto itMaterial = gcMaterialMap.find(cMaterial);
+  if(itMaterial != gcMaterialMap.end())
+  {
+    cMaterialName = itMaterial->second;
+  }
+  else
+  {
+    cMaterialName = "XXX";
+    LOG(ERROR)<<"unknown material: "<<cMaterial<<FairLogger::endl;
+  }
+}
+
+void GetProcessName(const char* cProcess, const char*& cProcessName)
+{
+  auto itProcess = gcProcessMap.find(cProcess);
+  if(itProcess != gcProcessMap.end())
+  {
+    cProcessName = itProcess->second;
+  }
+  else
+  {
+    cProcessName = "XXX";
+    LOG(ERROR)<<"unknown process: "<<cProcess<<FairLogger::endl;
+  }
+}
+
 
 ClassImp(CbmTofAnaTestbeam);

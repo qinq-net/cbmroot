@@ -82,7 +82,7 @@ void pl_XY_trk(Int_t NSt=4, Double_t MinEff=0.5, Double_t dThr=0.01){
 	newpad->SetFillStyle(4000);
 	newpad->Draw();
 	newpad->cd();
-	TPaveLabel *tit = new TPaveLabel(0.2,0.75,0.45,0.9,Form(" <eff>: %5.2f",eff[iSt]));
+	TPaveLabel *tit = new TPaveLabel(0.2,0.75,0.45,0.9,Form(" <eff>: %5.3f",eff[iSt]));
 	tit->SetFillColor(0);
 	tit->SetTextFont(52);
 	tit->SetBorderSize(1);

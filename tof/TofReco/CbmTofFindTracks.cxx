@@ -169,7 +169,9 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     fbUseSigCalib(kTRUE),
     fStart(),
     fStop(),
-    fdTrackingTime(0.)
+    fdTrackingTime(0.),
+    fdBeamMomentumLab(0.),
+    fbRemoveSignalPropagationTime(kFALSE)
 {
     if ( !fInstance ) fInstance = this;
 }
@@ -915,11 +917,18 @@ void CbmTofFindTracks::ExecFind(Option_t* /*opt*/)
     // set diamond positions to (0,0,0) to allow inclusion in straight line fit
     if ( (iDetId & 0x0000F00F) == 0x00005006 )     // modify diamond position 
     {
-      TVector3 hitPos(0.,0.,0.);
+      if(0. != fdBeamMomentumLab)
+      {
+        Double_t dTargetTimeOffset = pHit->GetZ()/fdBeamMomentumLab*TMath::Sqrt(TMath::Power(fdBeamMomentumLab, 2.) + TMath::Power(0.938271998, 2.))/TMath::Ccgs()*1.0e09;
+        pHit->SetTime(pHit->GetTime() - dTargetTimeOffset);
+      }
+
+//      TVector3 hitPos(0.,0.,0.);
+      TVector3 hitPos(pHit->GetX(), pHit->GetY(), 0.);
 //      TVector3 hitPosErr(1.,1.,5.0);  // including positioning uncertainty 
       pHit->SetPosition(hitPos);
       TVector3 hitPosErr(1.,1.,1.0);  // including positioning uncertainty 
-      pHit->SetPositionError(hitPosErr);
+      pHit->SetPositionError(hitPosErr); // FIXME: This is overwritten a few lines below!
     } 
     Double_t dSIGX=GetSigX(iDetId);
     if(dSIGX == 0.) dSIGX = fSIGX;
@@ -929,6 +938,21 @@ void CbmTofFindTracks::ExecFind(Option_t* /*opt*/)
     if(dSIGZ == 0.) dSIGZ = fSIGZ;
     TVector3 hitPosErr(dSIGX,dSIGY,dSIGZ);  // include positioning uncertainty 
     pHit->SetPositionError(hitPosErr); 
+
+    if(fbRemoveSignalPropagationTime)
+    {
+      Int_t iHitAddress = pHit->GetAddress();
+      Int_t iModuleType = CbmTofAddress::GetSmType(iHitAddress);
+      Int_t iModuleIndex = CbmTofAddress::GetSmId(iHitAddress);
+      Int_t iCounterIndex = CbmTofAddress::GetRpcId(iHitAddress);
+
+      CbmTofCell* fChannelInfo = fDigiPar->GetCell(iHitAddress);
+
+      Double_t dSignalPropagationTime = 0.5*(fChannelInfo->GetSizey() >= fChannelInfo->GetSizex() ? fChannelInfo->GetSizey() : fChannelInfo->GetSizex())
+                                            /fDigiBdfPar->GetSigVel(iModuleType, iModuleIndex, iCounterIndex);
+
+      pHit->SetTime(pHit->GetTime() - dSignalPropagationTime);
+    }
 
     Int_t iRpcInd= fMapRpcIdParInd[iDetId];
     Double_t dTcor=0.;

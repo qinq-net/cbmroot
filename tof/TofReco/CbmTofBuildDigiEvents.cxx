@@ -10,6 +10,7 @@
 #include "CbmTimeSlice.h"
 #include "CbmTofDigiExp.h"
 #include "CbmMatch.h"
+#include "CbmMCEventList.h"
 //#include "CbmTofDef.h" TODO
 
 #include "FairLogger.h"
@@ -28,6 +29,8 @@ CbmTofBuildDigiEvents::CbmTofBuildDigiEvents() :
   fFileSource(NULL),
   fTimeSliceHeader(NULL),
   fTofTimeSliceDigis(NULL),
+  fInputMCEventList(NULL),
+  fOutputMCEventList(NULL),
   fTofEventDigis(NULL),
   fdEventWindow(0.),
   fNominalTriggerCounterMultiplicity(),
@@ -160,8 +163,14 @@ void CbmTofBuildDigiEvents::Exec(Option_t*)
 
         if(ActualTriggerCounterMultiplicity.size() >= fiTriggerMultiplicity)
         {
+          if(fbPreserveMCBacklinks)
+          {
+            FillMCEventList();
+          }
+
           FairRootManager::Instance()->Fill();
           fiNEvents++;
+          fOutputMCEventList->Clear("");
           fTofEventDigis->Delete();
         }
         else
@@ -234,8 +243,24 @@ InitStatus CbmTofBuildDigiEvents::Init()
     return kFATAL;
   }
 
-  fTofEventDigis = new TClonesArray("CbmTofDigiExp", 100);
+  fInputMCEventList = dynamic_cast<CbmMCEventList*>(FairRootManager::Instance()->GetObject("MCEventList."));
+  if(!fInputMCEventList)
+  {
+    LOG(ERROR)<<"Could not retrieve branch 'MCEventList.' from FairRootManager."<<FairLogger::endl;
+    return kFATAL;
+  }
 
+  if(FairRootManager::Instance()->GetObject("TofPointTB"))
+  {
+    LOG(ERROR)<<"Timeslice branch with MC points found. Event building would not work properly."<<FairLogger::endl;
+    return kFATAL;
+  }
+
+
+  fOutputMCEventList = new CbmMCEventList();
+  FairRootManager::Instance()->Register("EventList.", "EventList", fOutputMCEventList, IsOutputBranchPersistent("EventList."));
+
+  fTofEventDigis = new TClonesArray("CbmTofDigiExp", 100);
   FairRootManager::Instance()->Register("CbmTofDigiExp", "TOF event digis", fTofEventDigis, IsOutputBranchPersistent("CbmTofDigiExp"));
 
 
@@ -328,8 +353,14 @@ void CbmTofBuildDigiEvents::ProcessIdealEvents(Double_t dProcessingTime)
 
       if(ActualTriggerCounterMultiplicity.size() >= fiTriggerMultiplicity)
       {
+        if(fbPreserveMCBacklinks)
+        {
+          FillMCEventList();      
+        }
+
         FairRootManager::Instance()->Fill();
         fiNEvents++;
+        fOutputMCEventList->Clear("");
         fTofEventDigis->Delete();
       }
       else
@@ -350,6 +381,59 @@ void CbmTofBuildDigiEvents::ProcessIdealEvents(Double_t dProcessingTime)
   }
 }
 // ---------------------------------------------------------------------------
+
+
+
+// ---------------------------------------------------------------------------
+void CbmTofBuildDigiEvents::FillMCEventList()
+{
+  std::set<std::pair<Int_t, Int_t>> MCEventSet;
+
+  for(Int_t iDigi = 0; iDigi < fTofEventDigis->GetEntriesFast(); iDigi++)
+  {
+    CbmTofDigiExp* tDigi = dynamic_cast<CbmTofDigiExp*>(fTofEventDigis->At(iDigi));
+    Int_t iNMCLinks = tDigi->GetMatch()->GetNofLinks();
+
+    for(Int_t iLink = 0; iLink < iNMCLinks; iLink++)
+    {
+      const CbmLink& tLink = tDigi->GetMatch()->GetLink(iLink);
+
+      Int_t iFileIndex  = tLink.GetFile();
+      Int_t iEventIndex = tLink.GetEntry();
+
+      // Collect original MC event affiliations of digis attributed to
+      // the current reconstructed event.
+      if(-1 < iFileIndex && -1 < iEventIndex)
+      {
+        MCEventSet.emplace(iFileIndex, iEventIndex);
+      }
+    }
+  }
+
+  // Read the respective start times of the original MC events contributing to
+  // the reconstructed event from the input MC event list and make them
+  // available in the output MC event list.
+  for(auto const & MCEvent : MCEventSet)
+  {
+    Int_t iFileIndex = MCEvent.first;
+    Int_t iEventIndex = MCEvent.second;
+
+    Double_t dStartTime = fInputMCEventList->GetEventTime(iEventIndex, iFileIndex);
+
+    if(-1. != dStartTime)
+    {
+      fOutputMCEventList->Insert(iEventIndex, iFileIndex, dStartTime);
+    }
+    else
+    {
+      LOG(FATAL)<<Form("Could not find MC event (%d, %d) in the input MC event list.", iFileIndex, iEventIndex)<<FairLogger::endl;
+    }
+  }
+
+  fOutputMCEventList->Sort();
+}
+// ---------------------------------------------------------------------------
+
 
 
 // ---------------------------------------------------------------------------
