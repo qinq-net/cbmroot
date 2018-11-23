@@ -73,6 +73,7 @@ CbmDigitizeInfo.cxx
 CbmDigitization.cxx
 CbmDigitizationSource.cxx
 CbmInputChain.cxx
+CbmMCInputSet.cxx
 )
 
 set(LINKDEF CbmRunLinkDef.h)

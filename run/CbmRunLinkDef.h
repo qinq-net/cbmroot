@@ -25,6 +25,7 @@
 #pragma link C++ class CbmDigitization;
 #pragma link C++ class CbmDigitizationSource;
 #pragma link C++ class CbmInputChain;
+#pragma link C++ class CbmMCInputSet;
 
 #endif
 
