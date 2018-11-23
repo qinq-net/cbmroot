@@ -186,7 +186,7 @@ void create_rich_v18g_mcbm()
 //  	Double_t zPos[4] = {355, 355, 355, 355};   // { 50,  50,  50,  50};
 
 //  	Double_t xPos[4] = {-48, -18,  12,  42};
-  	Double_t xPos[4] = {-21,   0,  21,  42};
+  	Double_t xPos[4] = {-26,   0,  26,  52};
   	Double_t yPos[4] = {  0,   0,   0,   0};
   	Double_t zPos[4] = {355, 355, 355, 355};
         Double_t proto_angle[4];
