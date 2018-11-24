@@ -129,7 +129,7 @@ Bool_t CbmStar2019EventBuilderEtof::InitContainers()
       THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
       for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
       {
-         server->Register( vHistos[ uHisto ].second.data(), vHistos[ uHisto ].first );
+         server->Register( Form( "/%s", vHistos[ uHisto ].second.data() ), vHistos[ uHisto ].first );
       } // for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
 
       server->RegisterCommand("/Reset_EvtBuild_Hist", "bStarEtof2019EventBuilderResetHistos=kTRUE");
