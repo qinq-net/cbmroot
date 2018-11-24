@@ -22,6 +22,7 @@
 #include "TH2.h"
 #include "TProfile.h"
 #include "TH1.h"
+#include "TCanvas.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -56,8 +57,10 @@ CbmStar2019EventBuilderEtofAlgo::CbmStar2019EventBuilderEtofAlgo() :
    fdStarTriggerWinSize(),
    fulCurrentTsIndex( 0 ),
    fdTsStartTime( -1.0 ),
+   fdTsStopTimeCore( -1.0 ),
    fuCurrentMs( 0 ),
-   fdMsIndex( -1.0 ),
+   fdMsTime( -1.0 ),
+   fuMsIndex( 0 ),
    fuGdpbId( 0 ),
    fuGdpbNr( 0 ),
    fuGet4Id( 0 ),
@@ -92,13 +95,21 @@ CbmStar2019EventBuilderEtofAlgo::CbmStar2019EventBuilderEtofAlgo() :
    fvhHitsTimeToTriggerSelVsDaq(),
    fvhHitsTimeToTriggerSelVsTrig(),
    fvhTriggerDt(),
+   fvhTriggerDistributionInTs(),
+   fvhTriggerDistributionInMs(),
+   fvhMessDistributionInMs(),
    fhEventSizeDistribution( nullptr ),
    fhEventSizeEvolution( nullptr ),
    fhEventNbEvolution( nullptr ),
    fhEventNbDistributionInTs( nullptr ),
    fhEventSizeDistributionInTs( nullptr ),
    fhRawTriggersStats( nullptr ),
-   fhMissingTriggersEvolution( nullptr )
+   fhMissingTriggersEvolution( nullptr ),
+   fcTimeToTrigRaw( nullptr ),
+   fcTimeToTrigSel( nullptr ),
+   fcTrigDistMs( nullptr ),
+   fcMessDistMs( nullptr ),
+   fcEventBuildStats( nullptr )
 {
 }
 CbmStar2019EventBuilderEtofAlgo::~CbmStar2019EventBuilderEtofAlgo()
@@ -342,8 +353,8 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
    {
       fuNbCoreMsPerTs = ts.num_core_microslices();
       fuNbOverMsPerTs = ts.num_microslices( 0 ) - ts.num_core_microslices();
-      fdTsCoreSizeInNs = fdMsSizeInNs * ( fuNbCoreMsPerTs + 1 );
-      fdTsFullSizeInNs = fdMsSizeInNs * ( fuNbCoreMsPerTs + fuNbOverMsPerTs + 1 );
+      fdTsCoreSizeInNs = fdMsSizeInNs * ( fuNbCoreMsPerTs );
+      fdTsFullSizeInNs = fdMsSizeInNs * ( fuNbCoreMsPerTs + fuNbOverMsPerTs );
       LOG(INFO) << "Timeslice parameters: each TS has "
                 << fuNbCoreMsPerTs << " Core MS and "
                 << fuNbOverMsPerTs << " Overlap MS, for a core duration of "
@@ -360,7 +371,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
    } // if( -1.0 == fdTsCoreSizeInNs )
 
    /// Compute time of TS core end
-   Double_t dTsStopTimeCore = fdTsStartTime + fdTsCoreSizeInNs;
+   fdTsStopTimeCore = fdTsStartTime + fdTsCoreSizeInNs;
+//      LOG(INFO) << Form( "TS %5d Start %12f Stop %12f", fulCurrentTsIndex, fdTsStartTime, fdTsStopTimeCore )
+//                << FairLogger::endl;
 
    /// Compute the limits for accepting hits and trigger in this TS, for each gDPB/sector
    /// => Avoid special cases and buffering for the overlap MS
@@ -374,9 +387,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
             /// Event window for this gDPB is fully before the trigger
             fvdMessCandidateTimeStart[ uGdpb ] = fdTsStartTime;
             // << Accept more than needed as this should be safer and small amounts >>
-            fvdMessCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread + 2.0 * fdStarTriggerWinSize[ uGdpb ]; // + fdStarTriggerWinSize[ uGdpb ];
-            fvdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime   + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
-            fvdTrigCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
+            fvdMessCandidateTimeStop[ uGdpb ]  = fdTsStopTimeCore + fdAllowedTriggersSpread + 2.0 * fdStarTriggerWinSize[ uGdpb ]; // + fdStarTriggerWinSize[ uGdpb ];
+            fvdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime    + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
+            fvdTrigCandidateTimeStop[ uGdpb ]  = fdTsStopTimeCore + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
 
          } // if( fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ] < 0.0 )
             else
@@ -384,9 +397,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
                /// Event window for this gDPB is on both sides of the trigger
                fvdMessCandidateTimeStart[ uGdpb ] = fdTsStartTime;
                // << Accept more than needed as this should be safer and small amounts >>
-               fvdMessCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread + 2.0 * fdStarTriggerWinSize[ uGdpb ]; // + fdStarTriggerDelay[ uGdpb ];
-               fvdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime   + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
-               fvdTrigCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
+               fvdMessCandidateTimeStop[ uGdpb ]  = fdTsStopTimeCore + fdAllowedTriggersSpread + 2.0 * fdStarTriggerWinSize[ uGdpb ]; // + fdStarTriggerDelay[ uGdpb ];
+               fvdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime    + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
+               fvdTrigCandidateTimeStop[ uGdpb ]  = fdTsStopTimeCore + fdAllowedTriggersSpread - fdStarTriggerDelay[ uGdpb ];
             } // else of if( fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ] < 0.0 )
       } // if( fdStarTriggerDeadtime[ uGdpb ] < 0.0 )
          else
@@ -394,9 +407,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
             /// Event window for this gDPB starts after the trigger => fully after
              // << Accept more than needed as this should be safer and small amounts >>
             fvdMessCandidateTimeStart[ uGdpb ] = fdTsStartTime; // - fdAllowedTriggersSpread + fdStarTriggerDelay[ uGdpb ];
-            fvdMessCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread + fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ];
-            fvdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime   + fdAllowedTriggersSpread;
-            fvdTrigCandidateTimeStop[ uGdpb ]  = dTsStopTimeCore + fdAllowedTriggersSpread;
+            fvdMessCandidateTimeStop[ uGdpb ]  = fdTsStopTimeCore + fdAllowedTriggersSpread + fdStarTriggerDelay[ uGdpb ] + fdStarTriggerWinSize[ uGdpb ];
+            fvdTrigCandidateTimeStart[ uGdpb ] = fdTsStartTime    + fdAllowedTriggersSpread;
+            fvdTrigCandidateTimeStop[ uGdpb ]  = fdTsStopTimeCore + fdAllowedTriggersSpread;
          } // else of if( fdStarTriggerDelay[ uGdpb ] < 0.0 )
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
@@ -406,16 +419,16 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
       UInt_t uMsComp = fvMsComponentsList[ uMsCompIdx ];
 
       /// Loop over core microslices (and overlap ones if chosen)
-      for( UInt_t uMsIdx = 0; uMsIdx < fuNbMsLoop; uMsIdx ++ )
+      for( fuMsIndex = 0; fuMsIndex < fuNbMsLoop; fuMsIndex ++ )
       {
-         if( kFALSE == ProcessMs( ts, uMsComp, uMsIdx ) )
+         if( kFALSE == ProcessMs( ts, uMsComp, fuMsIndex ) )
          {
-            LOG(ERROR) << "Failed to process ts " << fulCurrentTsIndex << " MS " << uMsIdx
+            LOG(ERROR) << "Failed to process ts " << fulCurrentTsIndex << " MS " << fuMsIndex
                        << " for component " << uMsComp
                        << FairLogger::endl;
             return kFALSE;
-         } // if( kFALSE == ProcessMs( ts, uMsCompIdx, uMsIdx ) )
-      } // for( UInt_t uMsIdx = 0; uMsIdx < uNbMsLoop; uMsIdx ++ )
+         } // if( kFALSE == ProcessMs( ts, uMsCompIdx, fuMsIndex ) )
+      } // for( fuMsIndex = 0; fuMsIndex < uNbMsLoop; fuMsIndex ++ )
    } // for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsList.size(); ++uMsCompIdx )
 
    /// Clear event buffer from previous TS
@@ -461,7 +474,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
    /// Store MS/TS information
    fuCurrentMs       = uMsIdx;
    fiEquipmentId     = msDescriptor.eq_id;
-   fdMsIndex         = static_cast<double>(msDescriptor.idx);
+   fdMsTime         = static_cast<double>(msDescriptor.idx);
    uint32_t size     = msDescriptor.size;
 //    fulLastMsIdx = msDescriptor.idx;
    if (size > 0)
@@ -473,16 +486,16 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
 
 /*
    if( fdStartTimeMsSz < 0 )
-      fdStartTimeMsSz = (1e-9) * fdMsIndex;
+      fdStartTimeMsSz = (1e-9) * fdMsTime;
 
    fvhMsSzPerLink[ uMsComp ]->Fill(size);
-   if( 2 * fuHistoryHistoSize < (1e-9) * fdMsIndex - fdStartTimeMsSz )
+   if( 2 * fuHistoryHistoSize < (1e-9) * fdMsTime - fdStartTimeMsSz )
    {
       // Reset the evolution Histogram and the start time when we reach the end of the range
       fvhMsSzTimePerLink[ uMsComp ]->Reset();
-      fdStartTimeMsSz = (1e-9) * fdMsIndex;
-   } // if( 2 * fuHistoryHistoSize < (1e-9) * fdMsIndex - fdStartTimeMsSz )
-   fvhMsSzTimePerLink[ uMsComp ]->Fill((1e-9) * fdMsIndex - fdStartTimeMsSz, size);
+      fdStartTimeMsSz = (1e-9) * fdMsTime;
+   } // if( 2 * fuHistoryHistoSize < (1e-9) * fdMsTime - fdStartTimeMsSz )
+   fvhMsSzTimePerLink[ uMsComp ]->Fill((1e-9) * fdMsTime - fdStartTimeMsSz, size);
 */
 
    /// If not integer number of message in input buffer, print warning/error
@@ -504,7 +517,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
    {
       LOG(FATAL) << "Could not find the gDPB index for AFCK id 0x"
                 << std::hex << fuGdpbId << std::dec
-                << " in microslice " << fdMsIndex
+                << " in microslice " << fdMsTime
                 << FairLogger::endl
                 << "If valid this index has to be added in the TOF parameter file in the RocIdArray field"
                 << FairLogger::endl;
@@ -554,9 +567,10 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
 
       fuGet4Id = fUnpackPar->ElinkIdxToGet4Idx( mess.getGdpbGenChipId() );
       fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
-
+/*
       if( 5916 == fulCurrentTsIndex && gdpbv100::MSG_STAR_TRI_A <= messageType)
          mess.printDataCout();
+*/
 /*
          mess.printDataCout();
          continue;
@@ -818,7 +832,18 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessStarTrigger( gdpbv100::Message mess
          ///---------------------------------------------------------///
          /// Full Trigger only if we reached this point
          if( fbMonitorMode && fbDebugMonitorMode )
+         {
             fhRawTriggersStats->Fill( 4., fUnpackPar->GetGdpbToSectorOffset() + fuGdpbNr );
+            fvhTriggerDistributionInTs[ fuGdpbNr ]->Fill( (dTriggerTime - fdTsStartTime) / 1000.0 );
+            fvhTriggerDistributionInMs[ fuGdpbNr ]->Fill( (dTriggerTime - fdMsTime) / 1000.0 );
+            if( (dTriggerTime - fdMsTime) / 1000.0 < -1000 )
+               LOG(INFO) << Form( "Trigger in wrong MS TS %6llu", fulCurrentTsIndex )
+                         << Form( " MS %3u ", fuMsIndex )
+                         << Form( " Ttrig %15.2f", dTriggerTime )
+                         << Form( " Tms %15.2f", fdMsTime )
+                         << Form( " dT %15.5f", ( (dTriggerTime - fdMsTime) / 1000.0 ) )
+                         << FairLogger::endl;
+         } // if( fbMonitorMode && fbDebugMonitorMode )
 
 //         LOG(INFO) << "First full trigger in TS " << fulCurrentTsIndex << FairLogger::endl;
 
@@ -934,6 +959,9 @@ void CbmStar2019EventBuilderEtofAlgo::StoreMessageInBuffer( gdpbv100::FullMessag
 */
       return;
    } // if GET4 error out of TOT/hit building error range
+
+   if( fbMonitorMode && fbDebugMonitorMode )
+      fvhMessDistributionInMs[ fuGdpbNr ]->Fill( (fullMess.GetFullTimeNs() - fdMsTime) / 1000.0 );
 
    if( fvdMessCandidateTimeStart[ fuGdpbNr ] < fullMess.GetFullTimeNs() &&
        fullMess.GetFullTimeNs() < fvdMessCandidateTimeStop[ fuGdpbNr ] )
@@ -1089,7 +1117,7 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessPattern( gdpbv100::Message mess, ui
       } // case gdpbv100::PATT_ENABLE:
       case gdpbv100::PATT_RESYNC:
       {
-         LOG(INFO) << Form( "RESYNC pattern message => Type %d, Index %2d, Pattern 0x%08X", usType, usIndex, uPattern )
+         LOG(DEBUG) << Form( "RESYNC pattern message => Type %d, Index %2d, Pattern 0x%08X", usType, usIndex, uPattern )
                    << FairLogger::endl;
 
          break;
@@ -1213,7 +1241,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                   )
             {
                Double_t dMessTime = (*itMessStart[ uGdpb ]).GetFullTimeNs();
-
+/*
                if( 5916 == fulCurrentTsIndex )
                   LOG(INFO) << Form( "gDPB %2u Match Mess %12f Start %12f Stop %12f dStart %6f dStop %6f",
                                     uGdpb, dMessTime,
@@ -1221,7 +1249,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                                     dMessTime - dWinBeg, dWinEnd - dMessTime )
                              << ( dWinBeg < dMessTime && dMessTime < dWinEnd ? " IN" : "" )
                              << FairLogger::endl;
-
+*/
 
                /// Fill Histo if monitor mode
                if( fbMonitorMode )
@@ -1237,8 +1265,10 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                      fvhHitsTimeToTriggerSel[ uGdpb ]->Fill( dMessTime - gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs() );
                      if( fbDebugMonitorMode )
                      {
-                        fvhHitsTimeToTriggerSelVsDaq[ uGdpb ]->Fill(  dMessTime, usFirstStarDaqCmd );
-                        fvhHitsTimeToTriggerSelVsTrig[ uGdpb ]->Fill( dMessTime, usFirstStarTrigCmd );
+                        fvhHitsTimeToTriggerSelVsDaq[ uGdpb ]->Fill(  dMessTime - gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs(),
+                                                                      usFirstStarDaqCmd );
+                        fvhHitsTimeToTriggerSelVsTrig[ uGdpb ]->Fill( dMessTime - gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs(),
+                                                                      usFirstStarTrigCmd );
                      } // if( fbDebugMonitorMode )
                   } // if( fbMonitorMode )
                } // if( dWinBeg < dMessTime && dMessTime < dWinEnd )
@@ -1402,8 +1432,10 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                         fvhHitsTimeToTriggerSel[ uGdpb ]->Fill( dMessTime - gdpbv100::kdClockCycleSizeNs * ulTriggerTime );
                         if( fbDebugMonitorMode )
                         {
-                           fvhHitsTimeToTriggerSelVsDaq[ uGdpb ]->Fill(  dMessTime, usEarliestStarDaqCmd );
-                           fvhHitsTimeToTriggerSelVsTrig[ uGdpb ]->Fill( dMessTime, usEarliestStarTrigCmd );
+                           fvhHitsTimeToTriggerSelVsDaq[ uGdpb ]->Fill(  dMessTime - gdpbv100::kdClockCycleSizeNs * ulTriggerTime,
+                                                                         usEarliestStarDaqCmd );
+                           fvhHitsTimeToTriggerSelVsTrig[ uGdpb ]->Fill( dMessTime - gdpbv100::kdClockCycleSizeNs * ulTriggerTime,
+                                                                         usEarliestStarTrigCmd );
                         } // if( fbDebugMonitorMode )
                      } // if( fbMonitorMode )
                   } // if( dWinBeg < dMessTime && dMessTime < dWinEnd )
@@ -1449,7 +1481,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::CreateHistograms()
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       UInt_t uSector = fUnpackPar->GetGdpbToSectorOffset() + uGdpb;
-      std::string sFolder = Form( "sector%2u", uSector);
+      std::string sFolder = Form( "/sector%2u", uSector);
 
       LOG(INFO) << "gDPB " << uGdpb << " is " << sFolder
                  << FairLogger::endl;
@@ -1485,15 +1517,35 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::CreateHistograms()
             16, 0., 16.  ) );
 
          fvhTriggerDt.push_back( new TH1I(
-            Form( "hhTriggerDtSect%2u", uSector ),
+            Form( "hTriggerDtSect%2u", uSector ),
             Form( "Trigger time difference between sector %2u and the first sector, full events only; Ttrigg%2u - TtriggRef [Clk]; events []",
                   uSector, uSector ),
             200, -100, 100  ) );
+
+         /// FIXME: hardcoded nb of MS in TS (include overlap)
+         /// as this number is known only later when 1st TS is received
+         UInt_t uNbBinsInTs = fdMsSizeInNs * 111 / 1000. / 10.;
+         UInt_t uNbBinsInMs = fdMsSizeInNs * 20  / 1000. / 10.;
+
+         fvhTriggerDistributionInTs.push_back( new TH1I( Form( "hTriggerDistInTsSect%2u", uSector ),
+             Form( "Trigger distribution inside TS in sector %2u; Time in TS [us]; Trigger [];", uSector ),
+             uNbBinsInTs, -0.5 - fdMsSizeInNs * 10 / 1000., fdMsSizeInNs * 101 / 1000. - 0.5 ) );
+
+         fvhTriggerDistributionInMs.push_back( new TH1I( Form( "hTriggerDistInMsSect%2u", uSector ),
+             Form( "Trigger distribution inside MS in sector %2u; Time in MS [us]; Trigger [];", uSector ),
+             uNbBinsInMs, -0.5 - fdMsSizeInNs * 10 / 1000., fdMsSizeInNs * 10 / 1000. - 0.5 ) );
+
+         fvhMessDistributionInMs.push_back( new TH1I( Form( "hMessDistInMsSect%2u", uSector ),
+             Form( "Messages distribution inside MS in sector %2u; Time in MS [us]; Trigger [];", uSector ),
+             uNbBinsInMs, -0.5 - fdMsSizeInNs * 10 / 1000., fdMsSizeInNs * 10 / 1000. - 0.5 ) );
 
          /// Add pointers to the vector with all histo for access by steering class
          AddHistoToVector( fvhHitsTimeToTriggerSelVsDaq[ uGdpb ],  sFolder );
          AddHistoToVector( fvhHitsTimeToTriggerSelVsTrig[ uGdpb ], sFolder );
          AddHistoToVector( fvhTriggerDt[ uGdpb ],                  sFolder );
+         AddHistoToVector( fvhTriggerDistributionInTs[ uGdpb ],    sFolder );
+         AddHistoToVector( fvhTriggerDistributionInMs[ uGdpb ],    sFolder );
+         AddHistoToVector( fvhMessDistributionInMs[ uGdpb ],       sFolder );
       } // if( kTRUE == fbDebugMonitorMode )
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
@@ -1555,8 +1607,110 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::CreateHistograms()
       AddHistoToVector( fhEventNbDistributionInTs,   "eventbuilder" );
       AddHistoToVector( fhEventSizeDistributionInTs, "eventbuilder" );
       AddHistoToVector( fhRawTriggersStats,          "eventbuilder" );
-      AddHistoToVector( fhMissingTriggersEvolution, "eventbuilder" );
+      AddHistoToVector( fhMissingTriggersEvolution,  "eventbuilder" );
    } // if( kTRUE == fbDebugMonitorMode )
+
+   /// Canvases
+   Double_t w = 10;
+   Double_t h = 10;
+
+      /// Raw Time to trig for all sectors
+   fcTimeToTrigRaw = new TCanvas( "cTimeToTrigRaw", "Raw Time to trig for all sectors", w, h);
+   fcTimeToTrigRaw->Divide( 2, fuNrOfGdpbs / 2 );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      fcTimeToTrigRaw->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogy();
+      fvhHitsTimeToTriggerRaw[ uGdpb ]->Draw();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+      /// Selected Time to trig for all sectors
+   fcTimeToTrigSel = new TCanvas( "cTimeToTrigSel", "Selected Time to trig for all sectors", w, h);
+   fcTimeToTrigSel->Divide( 2, fuNrOfGdpbs / 2 );
+   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   {
+      fcTimeToTrigSel->cd( 1 + uGdpb );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogy();
+      fvhHitsTimeToTriggerSel[ uGdpb ]->Draw();
+   } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   if( kTRUE == fbDebugMonitorMode )
+   {
+      /// Trigger time to MS start for all sectors
+      fcTrigDistMs = new TCanvas( "cTrigDistMs", "Trigger time to MS start for all sectors", w, h);
+      fcTrigDistMs->Divide( 2, fuNrOfGdpbs / 2 );
+      for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+      {
+         fcTrigDistMs->cd( 1 + uGdpb );
+         gPad->SetGridx();
+         gPad->SetGridy();
+         gPad->SetLogy();
+         fvhTriggerDistributionInMs[ uGdpb ]->Draw();
+      } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+      /// Message time to MS start for all sectors
+      fcMessDistMs = new TCanvas( "cMessDistMs", "Message time to MS start for all sectors", w, h);
+      fcMessDistMs->Divide( 2, fuNrOfGdpbs / 2 );
+      for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+      {
+         fcMessDistMs->cd( 1 + uGdpb );
+         gPad->SetGridx();
+         gPad->SetGridy();
+         gPad->SetLogy();
+         fvhMessDistributionInMs[ uGdpb ]->Draw();
+      } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+   } // if( kTRUE == fbDebugMonitorMode )
+
+      /// Event building process summary and statistics
+   fcEventBuildStats = new TCanvas( "cEvtBuildStats", "Event building statistics", w, h);
+   if( kTRUE == fbDebugMonitorMode )
+      fcEventBuildStats->Divide( 2, 3 );
+      else fcEventBuildStats->Divide( 2, 2 );
+
+   fcEventBuildStats->cd( 1 );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogy();
+   fhEventNbPerTs->Draw();
+
+   fcEventBuildStats->cd( 2 );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogy();
+   fhEventSizeDistribution->Draw();
+
+   fcEventBuildStats->cd( 3 );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogy();
+   fhEventSizeEvolution->Draw();
+
+   fcEventBuildStats->cd( 4 );
+   gPad->SetGridx();
+   gPad->SetGridy();
+   gPad->SetLogy();
+   fhEventNbEvolution->Draw();
+
+   if( kTRUE == fbDebugMonitorMode )
+   {
+      fcEventBuildStats->cd( 5 );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogy();
+      fhEventNbDistributionInTs->Draw();
+
+      fcEventBuildStats->cd( 6 );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      gPad->SetLogy();
+      fhEventSizeDistributionInTs->Draw();
+   } // if( kTRUE == fbDebugMonitorMode )
+
+   AddCanvasToVector( fcEventBuildStats, "canvases" );
 
    return kTRUE;
 }
@@ -1599,6 +1753,9 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ResetHistograms()
          fvhHitsTimeToTriggerSelVsDaq[ uGdpb ]->Reset();
          fvhHitsTimeToTriggerSelVsTrig[ uGdpb ]->Reset();
          fvhTriggerDt[ uGdpb ]->Reset();
+         fvhTriggerDistributionInTs[ uGdpb ]->Reset();
+         fvhTriggerDistributionInMs[ uGdpb ]->Reset();
+         fvhMessDistributionInMs[ uGdpb ]->Reset();
       } // if( kTRUE == fbDebugMonitorMode )
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 

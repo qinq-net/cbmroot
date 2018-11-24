@@ -88,10 +88,12 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       std::vector< Double_t >  fdStarTriggerWinSize;    //! [sector]
 
       /// Running indices
-      uint64_t fulCurrentTsIndex;  // Idx of the current TS
-      Double_t fdTsStartTime;  // Time in ns of current TS from the index of the first MS first component
+      uint64_t fulCurrentTsIndex; // Idx of the current TS
+      Double_t fdTsStartTime;     // Time in ns of current TS from the index of the first MS first component
+      Double_t fdTsStopTimeCore;  // End Time in ns of current TS Core from the index of the first MS first component
       size_t   fuCurrentMs; // Idx of the current MS in TS (0 to fuTotalMsNb)
-      Double_t fdMsIndex;   // Time in ns of current MS from its index
+      Double_t fdMsTime;    // Time in ns of current MS from its index field in header
+      UInt_t   fuMsIndex;   // Index of current MS within the TS
       UInt_t   fuGdpbId;    // Id (hex number) of the GDPB for current message
       UInt_t   fuGdpbNr;    // running number (0 to fuNrOfGdpbs) of the GDPB for current message
       UInt_t   fuGet4Id;    // running number (0 to fuNrOfGet4PerGdpb) of the Get4 chip of a unique GDPB for current message
@@ -140,6 +142,9 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       std::vector< TH2* > fvhHitsTimeToTriggerSelVsDaq;  //! [sector], extra monitor for debug
       std::vector< TH2* > fvhHitsTimeToTriggerSelVsTrig; //! [sector], extra monitor for debug
       std::vector< TH1* > fvhTriggerDt;                  //! [sector], extra monitor for debug
+      std::vector< TH1* > fvhTriggerDistributionInTs;    //! [sector], extra monitor for debug
+      std::vector< TH1* > fvhTriggerDistributionInMs;    //! [sector], extra monitor for debug
+      std::vector< TH1* > fvhMessDistributionInMs;       //! [sector], extra monitor for debug
       TH1 *               fhEventNbPerTs;                //!
       TH1 *               fhEventSizeDistribution;       //!
       TProfile *          fhEventSizeEvolution;          //!
@@ -148,6 +153,11 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       TProfile *          fhEventSizeDistributionInTs;   //! extra monitor for debug
       TH2 *               fhRawTriggersStats;            //! extra monitor for debug
       TH2 *               fhMissingTriggersEvolution;    //! extra monitor for debug
+      TCanvas *           fcTimeToTrigRaw;               //! All sectors
+      TCanvas *           fcTimeToTrigSel;               //! All sectors
+      TCanvas *           fcTrigDistMs;                  //! All sectors, extra monitor for debug
+      TCanvas *           fcMessDistMs;                  //! All sectors, extra monitor for debug
+      TCanvas *           fcEventBuildStats;             //!
 
       void ProcessEpochCycle( uint64_t ulCycleData );
       void ProcessEpoch( gdpbv100::Message mess );
