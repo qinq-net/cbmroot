@@ -69,7 +69,7 @@ CbmMcbm2018MonitorTof::CbmMcbm2018MonitorTof() :
     fuNrOfGet4(0),
     fuNrOfGet4PerGdpb(0),
     fuNrOfChannelsPerGdpb(0),
-    fuRawDataPrintMsgNb(200),
+    fuRawDataPrintMsgNb(100000),
     fuRawDataPrintMsgIdx(fuRawDataPrintMsgNb),
     fbPrintAllHitsEnable(kFALSE),
     fbPrintAllEpochsEnable(kFALSE),
@@ -1599,6 +1599,24 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
 
       fuCurrentMs = uMsIdx;
 
+      if( 0 == fulCurrentTsIndex && 0 == uMsIdx )
+      {
+         for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsList.size(); ++uMsCompIdx )
+         {
+            UInt_t uMsComp = fvMsComponentsList[ uMsCompIdx ];
+            auto msDescriptor = ts.descriptor( uMsComp, uMsIdx );
+            LOG(INFO) << "hi hv eqid flag si sv idx/start        crc      size     offset"
+                      << FairLogger::endl;
+            LOG(INFO) << Form( "%02x %02x %04x %04x %02x %02x %016lx %08x %08x %016lx",
+                            static_cast<unsigned int>(msDescriptor.hdr_id),
+                            static_cast<unsigned int>(msDescriptor.hdr_ver), msDescriptor.eq_id, msDescriptor.flags,
+                            static_cast<unsigned int>(msDescriptor.sys_id),
+                            static_cast<unsigned int>(msDescriptor.sys_ver), msDescriptor.idx, msDescriptor.crc,
+                            msDescriptor.size, msDescriptor.offset )
+                      << FairLogger::endl;
+         } // for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsList.size(); ++uMsCompIdx )
+      } // if( 0 == fulCurrentTsIndex && 0 == uMsIdx )
+
       /// Loop over registered components
       for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsList.size(); ++uMsCompIdx )
       {
@@ -1652,10 +1670,23 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
          auto it = fGdpbIdIndexMap.find( fuGdpbId );
          if( it == fGdpbIdIndexMap.end() )
          {
+             LOG(INFO) << "---------------------------------------------------------------"
+                       << FairLogger::endl;
+             LOG(INFO) << "hi hv eqid flag si sv idx/start        crc      size     offset"
+                       << FairLogger::endl;
+             LOG(INFO) << Form( "%02x %02x %04x %04x %02x %02x %016lx %08x %08x %016lx",
+                               static_cast<unsigned int>(msDescriptor.hdr_id),
+                               static_cast<unsigned int>(msDescriptor.hdr_ver), msDescriptor.eq_id, msDescriptor.flags,
+                               static_cast<unsigned int>(msDescriptor.sys_id),
+                               static_cast<unsigned int>(msDescriptor.sys_ver), msDescriptor.idx, msDescriptor.crc,
+                               msDescriptor.size, msDescriptor.offset )
+                       << FairLogger::endl;
             LOG(FATAL) << "Could not find the gDPB index for AFCK id 0x"
                       << std::hex << fuGdpbId << std::dec
+                      << " in timeslice " << fulCurrentTsIndex
                       << " in microslice " << fdMsIndex
-                      << FairLogger::endl
+                      << " component " << uMsCompIdx
+                      << "\n"
                       << "If valid this index has to be added in the TOF parameter file in the RocIdArray field"
                       << FairLogger::endl;
             continue;
@@ -2535,13 +2566,14 @@ void CbmMcbm2018MonitorTof::FillPattInfo(gdpbv100::Message mess)
    {
       case gdpbv100::PATT_MISSMATCH:
       {
-         LOG(INFO) << Form( "Missmatch pattern message => Type %d, Index %2d, Pattern 0x%08X", usType, usIndex, uPattern )
+         LOG(DEBUG) << Form( "Missmatch pattern message => Type %d, Index %2d, Pattern 0x%08X", usType, usIndex, uPattern )
                    << FairLogger::endl;
          for( UInt_t uBit = 0; uBit < 32; ++uBit )
             if( ( uPattern >> uBit ) & 0x1 )
             {
-               fhPatternMissmatch->Fill( 32 * usIndex + uBit, fuGdpbNr );
-               fvhGdpbPatternMissmatchEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, 32 * usIndex + uBit );
+               UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
+               fhPatternMissmatch->Fill( uBadAsic, fuGdpbNr );
+               fvhGdpbPatternMissmatchEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
             } // if( ( uPattern >> uBit ) & 0x1 )
 
          break;
@@ -2551,22 +2583,24 @@ void CbmMcbm2018MonitorTof::FillPattInfo(gdpbv100::Message mess)
          for( UInt_t uBit = 0; uBit < 32; ++uBit )
             if( ( uPattern >> uBit ) & 0x1 )
             {
-               fhPatternEnable->Fill( 32 * usIndex + uBit, fuGdpbNr );
-               fvhGdpbPatternEnableEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, 32 * usIndex + uBit );
+               UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
+               fhPatternEnable->Fill( uBadAsic, fuGdpbNr );
+               fvhGdpbPatternEnableEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
             } // if( ( uPattern >> uBit ) & 0x1 )
 
          break;
       } // case gdpbv100::PATT_ENABLE:
       case gdpbv100::PATT_RESYNC:
       {
-         LOG(INFO) << Form( "RESYNC pattern message => Type %d, Index %2d, Pattern 0x%08X", usType, usIndex, uPattern )
+         LOG(DEBUG) << Form( "RESYNC pattern message => Type %d, Index %2d, Pattern 0x%08X", usType, usIndex, uPattern )
                    << FairLogger::endl;
 
          for( UInt_t uBit = 0; uBit < 32; ++uBit )
             if( ( uPattern >> uBit ) & 0x1 )
             {
-               fhPatternResync->Fill( 32 * usIndex + uBit, fuGdpbNr );
-               fvhGdpbPatternResyncEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, 32 * usIndex + uBit );
+               UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
+               fhPatternResync->Fill( uBadAsic, fuGdpbNr );
+               fvhGdpbPatternResyncEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
             } // if( ( uPattern >> uBit ) & 0x1 )
 
          break;
@@ -2761,7 +2795,7 @@ void CbmMcbm2018MonitorTof::Finish()
    } // for (UInt_t i = 0; i < fuNrOfGdpbs; ++i)
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
 
-
+/*
    /// Update RMS plots
    if( kTRUE == fbPulserModeEnable )
    {
@@ -2782,6 +2816,7 @@ void CbmMcbm2018MonitorTof::Finish()
    } // if( kTRUE == fbPulserModeEnable )
 
    SaveAllHistos();
+*/
 }
 
 void CbmMcbm2018MonitorTof::FillOutput(CbmDigi* /*digi*/)
