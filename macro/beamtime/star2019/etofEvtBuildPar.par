@@ -1,13 +1,15 @@
 [CbmStar2019TofPar]
 //----------------------------------------------------------------------------
-MonitorMode: Int_t 1
-DebugMonitorMode: Int_t 1
-NrOfGdpbs: Int_t 6
+MonitorMode: Int_t 0
+DebugMonitorMode: Int_t 0
+NrOfGdpbs: Int_t 12
 GdpbIdArray: Int_t \
-0x1970 0x18f6 0x1861 \
+0x1970 0x18f6 0x0b59 \
+0x1898 0x5f64 0x18e6 \
+0x6141 0x0b5c 0x1861 \
 0x0b39 0x5f71 0x18b6
-NrOfGbtx: Int_t 36
-NrOfModule: Int_t 48
+NrOfGbtx: Int_t 72
+NrOfModule: Int_t 36
 NrOfRpc: Int_t \
   3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3 \
   3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3 \
@@ -42,8 +44,8 @@ StarTriggerDelay: Double_t \
 -2000.0 -2000.0 -2000.0 -2000.0 \
 -2000.0 -2000.0 -2000.0 -2000.0
 StarTriggerWinSize: Double_t \
- 2000.0  2000.0  2000.0  2000.0 \
- 2000.0  2000.0  2000.0  2000.0 \
- 2000.0  2000.0  2000.0  2000.0
+ 3000.0  3000.0  3000.0  3000.0 \
+ 3000.0  3000.0  3000.0  3000.0 \
+ 3000.0  3000.0  3000.0  300.0
 
 
