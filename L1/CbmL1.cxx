@@ -1218,7 +1218,7 @@ void CbmL1::Reconstruct(CbmEvent* event)
   {
     Int_t iFile  = FairRunAna::Instance()->GetEventHeader()->GetInputFileId();
     Int_t iEvent = FairRunAna::Instance()->GetEventHeader()->GetMCEntryNumber();
-    vFileEvent.insert(DFSET::value_type(iFile, iEvent-1) );
+    vFileEvent.insert(DFSET::value_type(iFile, iEvent) );
   }
 
   if( fVerbose>1 ) cout << endl << "CbmL1::Exec event " << ++nevent << " ..." << endl << endl;
