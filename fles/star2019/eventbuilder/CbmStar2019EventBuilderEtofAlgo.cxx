@@ -526,24 +526,24 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
       else fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
 
    /// Store the last STAR trigger values for the core MS when reaching the first overlap MS, needed to check for clones
-   if( fuNbCoreMsPerTs == fuCurrentMs )
+   if( 0 < fuNbOverMsPerTs && fuNbCoreMsPerTs == fuCurrentMs )
    {
       fvulGdpbTsFullLastCore[ fuGdpbNr ] = fvulGdpbTsFullLast[ fuGdpbNr ];
       fvulStarTsFullLastCore[ fuGdpbNr ] = fvulStarTsFullLast[ fuGdpbNr ];
       fvuStarTokenLastCore[ fuGdpbNr ]   = fvuStarTokenLast[ fuGdpbNr ];
       fvuStarDaqCmdLastCore[ fuGdpbNr ]  = fvuStarDaqCmdLast[ fuGdpbNr ];
       fvuStarTrigCmdLastCore[ fuGdpbNr ] = fvuStarTrigCmdLast[ fuGdpbNr ];
-   } // if( fuNbCoreMsPerTs == fuCurrentMs )
+   } // if( 0 < fuNbOverMsPerTs && fuNbCoreMsPerTs == fuCurrentMs )
 
    /// Restore the last STAR trigger values for the core MS when reaching the first core MS, needed to check for clones
-   if( 0 == fuCurrentMs )
+   if( 0 < fuNbOverMsPerTs && 0 == fuCurrentMs )
    {
       fvulGdpbTsFullLast[ fuGdpbNr ] = fvulGdpbTsFullLastCore[ fuGdpbNr ];
       fvulStarTsFullLast[ fuGdpbNr ] = fvulStarTsFullLastCore[ fuGdpbNr ];
       fvuStarTokenLast[ fuGdpbNr ]   = fvuStarTokenLastCore[ fuGdpbNr ];
       fvuStarDaqCmdLast[ fuGdpbNr ]  = fvuStarDaqCmdLastCore[ fuGdpbNr ];
       fvuStarTrigCmdLast[ fuGdpbNr ] = fvuStarTrigCmdLastCore[ fuGdpbNr ];
-   } // if( 0 == fuCurrentMs )
+   } // if( 0 < fuNbOverMsPerTs && 0 == fuCurrentMs )
 
    // Prepare variables for the loop on contents
    Int_t messageType = -111;
@@ -572,6 +572,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
          mess.printDataCout();
 */
 /*
+      if( gdpbv100::MSG_STAR_TRI_A <= messageType )
          mess.printDataCout();
          continue;
 */
@@ -812,8 +813,8 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessStarTrigger( gdpbv100::Message mess
 */
 
          /// Generate Trigger object and store it for event building ///
-         CbmTofStarTrigger2019 newTrig( fvulGdpbTsFullLast[fuGdpbNr], fvulStarTsFullLast[fuGdpbNr], fvuStarTokenLast[fuGdpbNr],
-                                        fvuStarDaqCmdLast[fuGdpbNr], fvuStarTrigCmdLast[fuGdpbNr],
+         CbmTofStarTrigger2019 newTrig( ulNewGdpbTsFull, ulNewStarTsFull, uNewToken,
+                                        uNewDaqCmd, uNewTrigCmd,
                                         fuGdpbId );
          Double_t dTriggerTime = newTrig.GetFullGdpbTs() * gdpbv100::kdClockCycleSizeNs;
          if( fvdTrigCandidateTimeStart[ fuGdpbNr ] < dTriggerTime &&
@@ -836,13 +837,19 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessStarTrigger( gdpbv100::Message mess
             fhRawTriggersStats->Fill( 4., fUnpackPar->GetGdpbToSectorOffset() + fuGdpbNr );
             fvhTriggerDistributionInTs[ fuGdpbNr ]->Fill( (dTriggerTime - fdTsStartTime) / 1000.0 );
             fvhTriggerDistributionInMs[ fuGdpbNr ]->Fill( (dTriggerTime - fdMsTime) / 1000.0 );
+
             if( (dTriggerTime - fdMsTime) / 1000.0 < -1000 )
+            {
                LOG(INFO) << Form( "Trigger in wrong MS TS %6llu", fulCurrentTsIndex )
                          << Form( " MS %3u ", fuMsIndex )
                          << Form( " Ttrig %15.2f", dTriggerTime )
                          << Form( " Tms %15.2f", fdMsTime )
                          << Form( " dT %15.5f", ( (dTriggerTime - fdMsTime) / 1000.0 ) )
                          << FairLogger::endl;
+               LOG(INFO) << Form( "Full token, gDPB TS LSB bits: 0x%16lx, STAR TS MSB bits: 0x%16lx",
+                              ulNewGdpbTsFull, ulNewStarTsFull )
+                         << FairLogger::endl;
+            }
          } // if( fbMonitorMode && fbDebugMonitorMode )
 
 //         LOG(INFO) << "First full trigger in TS " << fulCurrentTsIndex << FairLogger::endl;
