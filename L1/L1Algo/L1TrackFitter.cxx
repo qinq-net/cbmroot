@@ -362,7 +362,7 @@ void L1Algo::L1KFTrackFitter()
   L1Station staFirst, staLast;
   fvec x[MaxNStations], u[MaxNStations], v[MaxNStations], y[MaxNStations], time[MaxNStations], timeEr[MaxNStations], z[MaxNStations];
   fvec x_first, y_first, time_first, x_last, y_last, time_last, time_er_first, time_er_last; 
-  fvec Sy[MaxNStations], w[MaxNStations];
+  fvec Sy[MaxNStations], w[MaxNStations], w_time[MaxNStations];
   fvec y_temp, x_temp;
   fvec fz0, fz1, fz2, z_start, z_end;
   L1FieldValue fB[MaxNStations], fB_temp _fvecalignment;
@@ -388,6 +388,7 @@ void L1Algo::L1KFTrackFitter()
     for(i=0; i<nHits; i++)
     {
       w[i] = ZERO;
+      w_time[i] = ZERO;
       z[i] = ZSta[i];
     }
     
@@ -401,6 +402,7 @@ void L1Algo::L1KFTrackFitter()
         const int ista = (*vSFlag)[hit.f]/4;
         iSta[i] = ista;
         w[ista][iVec] = 1.;
+        if (ista>NMvdStations) w_time[ista][iVec] = 1.;
           
         u[ista][iVec]  = (*vStsStrips)[hit.f] ;
         v[ista][iVec]  = (*vStsStripsB)[hit.b];    
@@ -504,6 +506,7 @@ void L1Algo::L1KFTrackFitter()
 
         fvec initialised = fvec(z[i] < z_end) & fvec(z_start <= z[i]);
         fvec w1 = (w[i] & (initialised));
+        fvec w1_time = (w_time[i] & (initialised));
         fvec wIn = (ONE & (initialised));
             
         fld1 = fld;
@@ -549,7 +552,7 @@ void L1Algo::L1KFTrackFitter()
         L1Filter( T, sta[i].backInfo,  v[i], w1 );        
         T1.Filter( sta[i].backInfo,  v[i], w1 );
         
-        T1.Filter(time[i], timeEr[i], w1);
+        T1.Filter(time[i], timeEr[i], w1_time);
 //         std::cout << "Filter 2" << std::endl;
 //         T1.Compare(T);
         
@@ -672,6 +675,7 @@ void L1Algo::L1KFTrackFitter()
         fvec initialised = fvec(z[i] <= z_end) & fvec(z_start < z[i]);
         fvec w1  = (w[i] & (initialised));
         fvec wIn = (ONE  & (initialised));
+        fvec w1_time = (w_time[i] & (initialised));
             
         L1Extrapolate( T, z[i], qp0, fld,&w1 );
         
@@ -703,7 +707,7 @@ void L1Algo::L1KFTrackFitter()
         
         T1.Filter( sta[i].frontInfo, u[i], w1 );
         T1.Filter( sta[i].backInfo,  v[i], w1 );
-        T1.Filter(time[i], timeEr[i], w1);
+        T1.Filter(time[i], timeEr[i], w1_time);
         
         fB2 = fB1; 
         fz2 = fz1;

@@ -1472,7 +1472,7 @@ void L1Algo::CATrackFinder()
       if (ist<NMvdStations) {
         L1StsHit &h = *(const_cast<L1StsHit*>(&((*vStsHits)[ih])));
         h.t_reco =0;
-        h.t_er=1000000;  
+        h.t_er=100;  
       }
     }
 
