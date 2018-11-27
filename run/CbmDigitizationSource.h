@@ -194,6 +194,21 @@ class CbmDigitizationSource : public FairSource
     }
 
 
+    /** @brief Set the offset for the first event time
+     ** @param time  Time offset for first event
+     **
+     ** If the event times start with or close to zero, negative digi times
+     ** can occur because of the finite time resolution of the detectors.
+     ** However, the first time slice always start from zero. To avoid
+     ** conflicts or loss of data, a time offset is introduced, preventing
+     ** negative digi times. The default value of this offset is set in the
+     ** constructor. It can be changed by this method.
+     **/
+    void SetTimeStart(Double_t time) {
+      fTimeStart = time;
+    }
+
+
   private:
 
     std::vector<CbmMCInputSet*> fInputSets;
@@ -202,6 +217,7 @@ class CbmDigitizationSource : public FairSource
     FairMCEventHeader* fMCEventHeader;
     TObjArray* fListOfFolders;
     std::set<TString> fBranches;              // List of branches names
+    Double_t fTimeStart;                      // Time offset first first event
     Double_t fCurrentTime;
     Int_t fCurrentEntryId;
     Int_t fCurrentInputId;
@@ -209,6 +225,7 @@ class CbmDigitizationSource : public FairSource
     Bool_t fFirstCall;
     Bool_t fEventMode;
     CbmMCInputSet* fCurrentInputSet;
+    Bool_t fSwitchInputSet;   // Flag to switch the input set at next ReadEvent
 
 
     /** @brief Compare an input set branch list with the reference list

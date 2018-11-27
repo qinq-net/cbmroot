@@ -165,6 +165,17 @@ class CbmDigitization : public TNamed
     void SetParameterRootFile(TString fileName);
 
 
+    /** @brief Set the start time of the run
+     ** @param time Start time of run [ns]
+     **
+     ** A default of 1000 ns is hard-coded in the constructor of
+     ** CbmDigitizationSource. It can be changed with this method.
+     **/
+    void SetStartTime(Double_t time) {
+      fSource->SetTimeStart(time);
+    }
+
+
     /** @brief Set length of the time-slices
      ** @param length  Length of time-slices [ns]
      **

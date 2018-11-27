@@ -8,6 +8,7 @@
 #include "CbmDigitizationSource.h"
 
 #include <cassert>
+#include <iomanip>
 #include <utility>
 #include "TChain.h"
 #include "TFolder.h"
@@ -24,13 +25,15 @@ CbmDigitizationSource::CbmDigitizationSource() :
         fMCEventHeader(),
         fListOfFolders(new TObjArray()),
         fBranches(),
+        fTimeStart(1000.),
         fCurrentTime(0.),
         fCurrentEntryId(0),
         fCurrentInputId(0),
         fCurrentRunId(0),
         fFirstCall(kTRUE),
         fEventMode(kFALSE),
-        fCurrentInputSet(nullptr) {
+        fCurrentInputSet(nullptr),
+        fSwitchInputSet(kFALSE) {
 }
 // ---------------------------------------------------------------------------
 
@@ -255,7 +258,7 @@ Bool_t CbmDigitizationSource::Init() {
   if ( ! fEventMode ) {
     for ( Int_t iSet = 0; iSet < fInputSets.size(); iSet++ ) {
       CbmMCInputSet* inputSet = fInputSets.at(iSet);
-      Double_t time = inputSet->GetDeltaT();
+      Double_t time = fTimeStart + inputSet->GetDeltaT();
       LOG(INFO) << "First time for input set " << iSet << " is "
           << time << " ns." << FairLogger::endl;
       fNextEvent.insert(std::make_pair(time, inputSet));
@@ -291,14 +294,32 @@ Int_t CbmDigitizationSource::ReadEvent(UInt_t event) {
   // input; the event time is zero.
   if ( fEventMode ) return ReadEventByEvent(event);
 
+  // If the last used input set was exhausted, switch to a the next one
+  if ( fSwitchInputSet ) {
+
+    // Delete this entry from the list of next input sets
+    fNextEvent.erase(fNextEvent.begin());
+
+    // Generate a new event time for this input set and add it to the list
+    Double_t newTime = fCurrentTime + fCurrentInputSet->GetDeltaT();
+    fNextEvent.insert(std::make_pair(newTime, fCurrentInputSet));
+
+    // Store current time and input set
+    fCurrentTime = fNextEvent.begin()->first;
+    fCurrentInputSet = fNextEvent.begin()->second;
+
+  } //? Switch to next input set
+
   // Get the next entry from the current input set
   assert(fCurrentInputSet);
   auto result = fCurrentInputSet->GetNextEntry();
-  Bool_t switchInputSet = std::get<0>(result);
+  fSwitchInputSet = std::get<0>(result);
   fCurrentInputId = std::get<1>(result);
   fCurrentEntryId = std::get<2>(result);
+  std::cout << std::endl;
   LOG(INFO) << "DigitizationSource: Event " << event << " at t = "
-      << fCurrentTime << " ns" << " from input " << fCurrentInputId
+      << std::fixed << std::setprecision(3) << fCurrentTime << " ns"
+      << " from input " << fCurrentInputId
       << " (entry " << fCurrentEntryId << ")" << FairLogger::endl;
 
   // Stop the run if the number of entries in this input is reached
@@ -306,24 +327,6 @@ Int_t CbmDigitizationSource::ReadEvent(UInt_t event) {
     LOG(INFO) << "DigitizationSource: No more entries in input "
         << fCurrentInputId << FairLogger::endl;
     return 1;
-  }
-
-  // If the current input set is exhausted, switch to another one
-  if ( switchInputSet ) {
-
-    // Remove this input from the list of next events
-    fNextEvent.erase(fNextEvent.begin());
-
-    // Calculate next event time for this input set
-    Double_t newTime = fCurrentTime + fCurrentInputSet->GetDeltaT();
-    fNextEvent.insert(std::make_pair(newTime, fCurrentInputSet));
-    LOG(DEBUG) << "DigitizationSource: Next event time for current input "
-               << " set is t = " << time << " ns" << FairLogger::endl;
-
-    // Set the current input set to the next one in time
-    fCurrentTime = fNextEvent.begin()->first;
-    fCurrentInputSet = fNextEvent.begin()->second;
-
   }
 
   return 0;
@@ -380,7 +383,6 @@ void CbmDigitizationSource::ReadRunId() {
   input->GetChain()->GetEntry(0);
   fCurrentRunId = fMCEventHeader->GetRunID();
   fCurrentEntryId = 0;
-  fCurrentTime = 0.;
   fFirstCall = kFALSE;
   LOG(INFO) << "DigitizationSource: Run ID is " << fCurrentRunId
       << FairLogger::endl;
