@@ -137,7 +137,7 @@ string CbmLitTrackingQaReport::PrintTrackingEfficiency(
   	// If includeRich == true than search for tracking efficiency histograms which contain "Rich"
   	// otherwise search for tracking efficiency histograms excluding those which contain "Rich"
   	string effRegex = "";
-  	if (isPidEfficiency) effRegex = (includeRich) ? "hte_.*Rich.*_Eff_p" : "hte_((?!Rich).)*_Eff_p";
+  	if (!isPidEfficiency) effRegex = (includeRich) ? "hte_.*Rich.*_Eff_p" : "hte_((?!Rich).)*_Eff_p";
   	else effRegex = (includeRich) ? "hpe_.*Rich.*_Eff_p" : "hpe_((?!Rich).)*_Eff_p";
 
   	vector<TH1*> histos = HM()->H1Vector(effRegex);
@@ -159,7 +159,10 @@ string CbmLitTrackingQaReport::PrintTrackingEfficiency(
   	for (it = catToCell.begin(); it != catToCell.end(); it++) { cat[(*it).second] = (*it).first; }
 
 	Int_t nofEvents = HM()->H1("hen_EventNo_TrackingQa")->GetEntries();
-	string str = R()->TableBegin("Tracking efficiency", list_of(string("")).range(cat));
+	string tableTitle = (isPidEfficiency)?"PID efficiency":"Tracking efficiency";
+	if (includeRich) tableTitle += " (with RICH)"; else tableTitle += " (without RICH)";
+
+	string str = R()->TableBegin(tableTitle, list_of(string("")).range(cat));
 	Int_t histCounter = 0;
   	for (Int_t iRow = 0; iRow < nofRows; iRow++) {
   		vector<string> cells(nofCats);
@@ -171,8 +174,8 @@ string CbmLitTrackingQaReport::PrintTrackingEfficiency(
 			Double_t acc = HM()->H1(accName)->GetEntries() / nofEvents;
 			Double_t rec = HM()->H1(recName)->GetEntries() / nofEvents;
 			Double_t eff = (acc != 0.) ? 100. * rec / acc : 0.;
-			string accStr = NumberToString<Double_t>(acc);
-			string recStr = NumberToString<Double_t>(rec);
+			string accStr = NumberToString<Double_t>(acc, 2);
+			string recStr = NumberToString<Double_t>(rec, 2);
 			string effStr = NumberToString<Double_t>(eff);
 			vector<string> split = Split(effName, '_');
 			cells[catToCell[split[3]]] = effStr + "(" + recStr + "/" + accStr + ")";

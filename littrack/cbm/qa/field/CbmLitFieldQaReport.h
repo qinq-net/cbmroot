@@ -47,6 +47,12 @@ private:
     void DrawFieldSlices();
     
     /**
+     * \brief Draw field map components for RICH PMT plane.
+     */
+    void DrawFieldRichPmtPlane();
+
+
+    /**
      * \brief Draw field map components along Z coordinate.
      */
     void DrawFieldAlongZ();

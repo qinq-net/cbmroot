@@ -7,6 +7,8 @@
 #include "CbmLitFieldQaReport.h"
 #include "CbmUtils.h"
 #include "CbmHistManager.h"
+#include "detector/CbmRichDigiMapManager.h"
+#include "detector/CbmRichGeoManager.h"
 
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
@@ -14,6 +16,7 @@
 
 #include "TGraph.h"
 #include "TGraph2D.h"
+#include "TVector3.h"
 
 #include <boost/assign/list_of.hpp>
 #include <sstream>
@@ -34,10 +37,10 @@ fAlongZXY(),
 fZMin(-10.),
 fZMax(300.),
 fZStep(1.),
-fAcceptanceAngleX(35.),
-fAcceptanceAngleY(35.),
-fNofBinsX(30),
-fNofBinsY(30),
+//fAcceptanceAngleX(35.),
+//fAcceptanceAngleY(35.),
+fNofBinsX(100),
+fNofBinsY(100),
 fMinZFieldIntegral(171.),
 fMaxZFieldIntegral(330.),
 fHM(NULL),
@@ -58,10 +61,12 @@ InitStatus CbmLitFieldQa::Init()
     fXSlicePosition.resize(fNofSlices);
     fYSlicePosition.resize(fNofSlices);
     for (Int_t i = 0; i < fNofSlices; i++) {
-        Double_t tanXangle = tan(fAcceptanceAngleX * 3.14159265 / 180); //
-        Double_t tanYangle = tan(fAcceptanceAngleY * 3.14159265 / 180); //
-        fXSlicePosition[i] = fZSlicePosition[i] * tanXangle;
-        fYSlicePosition[i] = fZSlicePosition[i] * tanYangle;
+//        Double_t tanXangle = tan(fAcceptanceAngleX * 3.14159265 / 180); //
+//        Double_t tanYangle = tan(fAcceptanceAngleY * 3.14159265 / 180); //
+//        fXSlicePosition[i] = fZSlicePosition[i] * tanXangle;
+//        fYSlicePosition[i] = fZSlicePosition[i] * tanYangle;
+        fXSlicePosition[i] = 250.;
+        fYSlicePosition[i] = 250.;
     }
     
     vector<Double_t> tmp = list_of(0.)(10.)(20.)(30.);
@@ -77,10 +82,18 @@ InitStatus CbmLitFieldQa::Init()
     
     CreateHistos();
     FillBHistos();
+    FillRichPmtPlaneBHistos();
+
     CbmSimulationReport* report = new CbmLitFieldQaReport();
     report->Create(fHM, fOutputDir);
     delete report;
-    fHM->WriteToFile();
+    TDirectory * oldir = gDirectory;
+    TFile* outFile = FairRootManager::Instance()->GetOutFile();
+    if (outFile != NULL) {
+        outFile->cd();
+        fHM->WriteToFile();
+    }
+    gDirectory->cd( oldir->GetPath() );
     
     // print some field values at RICH entrance
     Double_t B[3];
@@ -112,6 +125,8 @@ void CbmLitFieldQa::CreateHistos()
     for (Int_t v = 0; v < 4; v++) {
         for (Int_t i = 0; i < fNofSlices; i++) {
             TGraph2D* graph = new TGraph2D();
+            graph->SetNpx(200);
+            graph->SetNpy(200);
             string name = "hmf_" + names[v] + "_Graph2D_" + ToString<Int_t>(fZSlicePosition[i]);
             string title = name + ";X [cm];Y [cm];" + zTitle[v];
             graph->SetNameTitle(name.c_str(), title.c_str());
@@ -138,6 +153,18 @@ void CbmLitFieldQa::CreateHistos()
             TGraph* graph = new TGraph();
             string name = "hmf_" + names[v] + "AlongZXYIntegral_Graph_" + ToString<Int_t>(fAlongZXY[i].first) + "_" + ToString<Int_t>(fAlongZXY[i].second);
             string title = name + ";Z [cm];B_{Int_t} [kGauss*m]";
+            graph->SetNameTitle(name.c_str(), title.c_str());
+            fHM->Add(name, graph);
+        }
+    }
+
+    for (Int_t p = 0; p < 2; p++) {
+        for (Int_t v = 0; v < 4; v++) {
+            TGraph2D* graph = new TGraph2D();
+            graph->SetNpx(200);
+            graph->SetNpy(200);
+            string name = "hmf_" + names[v] + "_Rich_Pmt_" + ((p==0)?"up":"down");
+            string title = name + ";X [cm];Y [cm];" + zTitle[v];
             graph->SetNameTitle(name.c_str(), title.c_str());
             fHM->Add(name, graph);
         }
@@ -225,6 +252,39 @@ void CbmLitFieldQa::FillBHistos()
             }
         }
     }
+}
+
+void CbmLitFieldQa::FillRichPmtPlaneBHistos()
+{
+    string names[] = {"Bx", "By", "Bz", "Mod"};
+    vector<Int_t> pixels = CbmRichDigiMapManager::GetInstance().GetPixelAddresses();
+    if (pixels.size() == 0) return;
+
+    Double_t maxModB = 0.;
+    for (Int_t i = 0; i < pixels.size(); i++){
+        TVector3 inPos;
+        CbmRichPixelData* pixelData = CbmRichDigiMapManager::GetInstance().GetPixelDataByAddress(pixels[i]);
+        inPos.SetXYZ(pixelData->fX, pixelData->fY, pixelData->fZ);
+        string ud = "up";
+        if (inPos.Y() < 0) ud = "down";
+        TVector3 outPos;
+        CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
+
+        // Get field value
+        // Take B-field values from real PMT position
+        Double_t pos[3] = {inPos.X(), inPos.Y(), inPos.Z()};
+        Double_t B[4];
+        fField->GetFieldValue(pos, B);
+
+        B[3] = sqrt(B[0] * B[0] + B[1] * B[1] + B[2] * B[2]);
+        if (maxModB < B[3]) maxModB = B[3];
+        for (Int_t v = 0; v < 4; v++) {
+            string name = "hmf_" + names[v] + "_Rich_Pmt_" + ud;
+            // Take B-field values from real PMT position, but display them for rotated X and Y
+            fHM->G2(name)->SetPoint(fHM->G2(name)->GetN(), outPos.X(), outPos.Y(), B[v]);
+        }
+    }
+    cout << "Maximum Bmod onto RICH PMT:" << maxModB << " kGauss" << endl;
 }
 
 ClassImp(CbmLitFieldQa);

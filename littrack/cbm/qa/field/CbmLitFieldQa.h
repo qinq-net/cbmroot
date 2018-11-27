@@ -57,8 +57,8 @@ public:
     
     /* Setters */
     void SetSliceZPosition(const vector<Double_t>& zPos) { fZSlicePosition = zPos; }
-    void SetAcceptanceAngleX(Double_t xangle) { fAcceptanceAngleX = xangle; }
-    void SetAcceptanceAngleY(Double_t yangle) { fAcceptanceAngleY = yangle; }
+//    void SetAcceptanceAngleX(Double_t xangle) { fAcceptanceAngleX = xangle; }
+//    void SetAcceptanceAngleY(Double_t yangle) { fAcceptanceAngleY = yangle; }
     void SetNofBinsX(Int_t nofBinsX) { fNofBinsX = nofBinsX; }
     void SetNofBinsY(Int_t nofBinsY) { fNofBinsY = nofBinsY; }
     void SetZMin(Double_t zMin) { fZMin = zMin; }
@@ -75,10 +75,15 @@ private:
     void CreateHistos();
     
     /**
-     * \brief Fill gåraphs and histos for field map for each field component (Bx, By, Bz, |B|).
+     * \brief Fill graphs and histos for field map for each field component (Bx, By, Bz, |B|).
      */
     void FillBHistos();
     
+    /**
+     * \brief Fill B-field histograms for RICH PMT plane
+     */
+    void FillRichPmtPlaneBHistos();
+
     // Pointer to the magnetic field map
     FairField* fField;
     
@@ -92,8 +97,8 @@ private:
     vector<Double_t> fYSlicePosition; // Y coordinate of slice
     
     Int_t fNofSlices; // Number of slices along Z for field approximation
-    Double_t fAcceptanceAngleX; // Acceptance angle for X
-    Double_t fAcceptanceAngleY; // Acceptance angle for Y
+//    Double_t fAcceptanceAngleX; // Acceptance angle for X
+//    Double_t fAcceptanceAngleY; // Acceptance angle for Y
     Int_t fNofBinsX; // Number of bins for X
     Int_t fNofBinsY; // Number of bins for Y
     Double_t fMinZFieldIntegral; // start Z position for field integral
