@@ -111,7 +111,7 @@ void CbmRichHitProducer::ProcessDigi(
     CbmRichDigi* digi = static_cast<CbmRichDigi*>(fRichDigis->At(digiIndex));
     if (digi == nullptr) return;
     if (digi->GetAddress() < 0) return;
-    CbmRichMapData* data =  CbmRichDigiMapManager::GetInstance().GetDataByAddress(digi->GetAddress());
+    CbmRichPixelData* data =  CbmRichDigiMapManager::GetInstance().GetPixelDataByAddress(digi->GetAddress());
     TVector3 posPoint;
     posPoint.SetXYZ(data->fX, data->fY, data->fZ);
     TVector3 detPoint;

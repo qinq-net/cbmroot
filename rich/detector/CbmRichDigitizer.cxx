@@ -45,7 +45,8 @@ CbmRichDigitizer::CbmRichDigitizer()
    fTimeResolution(1.),
    fDarkRatePerPixel(1000),
    fPixelDeadTime(30.),
-   fFiredPixelsMap()
+   fFiredPixelsMap(),
+   fMaxNofHitsPerPmtCut(65)
 {
 
 }
@@ -154,7 +155,7 @@ Int_t CbmRichDigitizer::ProcessMcEvent()
 
 void CbmRichDigitizer::GenerateNoiseBetweenEvents(Double_t oldEventTime, Double_t newEventTime)
 {
-    Int_t nofPixels = CbmRichDigiMapManager::GetInstance().GetAddresses().size();
+    Int_t nofPixels = CbmRichDigiMapManager::GetInstance().GetPixelAddresses().size();
     Double_t dT = newEventTime - oldEventTime;
     Double_t nofNoisePixels = nofPixels * dT * (fDarkRatePerPixel / 1.e9);
 
@@ -162,7 +163,7 @@ void CbmRichDigitizer::GenerateNoiseBetweenEvents(Double_t oldEventTime, Double_
             << " nofNoisePixels:" <<nofNoisePixels << FairLogger::endl;
 
     for(Int_t j = 0; j < nofNoisePixels; j++) {
-        Int_t address = CbmRichDigiMapManager::GetInstance().GetRandomAddress();
+        Int_t address = CbmRichDigiMapManager::GetInstance().GetRandomPixelAddress();
         CbmLink link(1., -1, -1, -1);
         Double_t time = gRandom->Uniform(oldEventTime, newEventTime);
         AddDigi(address, time, link);
@@ -175,7 +176,7 @@ void CbmRichDigitizer::ProcessPoint(CbmRichPoint* point, Int_t pointId, Int_t ev
 //	TGeoNode* node = gGeoManager->FindNode(point->GetX(), point->GetY(), point->GetZ());
 	gGeoManager->FindNode(point->GetX(), point->GetY(), point->GetZ());
 	string path(gGeoManager->GetPath());
-	Int_t address = CbmRichDigiMapManager::GetInstance().GetAdressByPath(path);
+	Int_t address = CbmRichDigiMapManager::GetInstance().GetPixelAddressByPath(path);
 
 	Int_t trackId = point->GetTrackID();
 	if (trackId < 0) return;
@@ -258,34 +259,60 @@ void CbmRichDigitizer::AddCrossTalkDigis(
 
 Int_t CbmRichDigitizer::AddDigisToOutputArray()
 {
-  Int_t nofDigis = 0;
+    Int_t nofDigis = 0;
 
-  for(auto const &dm : fDigisMap) {
-    CbmRichDigi* digi = new CbmRichDigi();
-    digi->SetAddress(dm.second->GetAddress());
-    CbmMatch* digiMatch = new CbmMatch(*dm.second->GetMatch());
-    digi->SetMatch(digiMatch);
-    digi->SetTime(dm.second->GetTime());
-    SendDigi(digi);
-    nofDigis++;
-  } //# digis in map
+    // fMaxNofHitsPerPmtCut is a maximum number of hits which can be registered per PMT per event.
+    // If more then the whole PMT is skipped
+    map<Int_t, Int_t> digisPerPmtMap;
+    for(auto const &dm : fDigisMap) {
+        CbmRichPixelData* pixelData = CbmRichDigiMapManager::GetInstance().GetPixelDataByAddress(dm.second->GetAddress());
+        if (nullptr == pixelData) continue;
+        Int_t pmtId = pixelData->fPmtId;
+        digisPerPmtMap[pmtId]++;
+    }
 
-  LOG(DEBUG) << "Number of RICH digis: " << nofDigis << FairLogger::endl;
-  return nofDigis;
+    Int_t nofSkippedPmts = 0;
+    for(auto const &dm : digisPerPmtMap) {
+        if (dm.second > fMaxNofHitsPerPmtCut) nofSkippedPmts++;
+    }
+
+    Int_t nofSkippedDigis = 0;
+    for(auto const &dm : fDigisMap) {
+        CbmRichPixelData* pixelData = CbmRichDigiMapManager::GetInstance().GetPixelDataByAddress(dm.second->GetAddress());
+        if (nullptr == pixelData) continue;
+        if (digisPerPmtMap[pixelData->fPmtId] > fMaxNofHitsPerPmtCut){
+            nofSkippedDigis++;
+            continue;
+        }
+
+        CbmRichDigi* digi = new CbmRichDigi();
+        digi->SetAddress(dm.second->GetAddress());
+        CbmMatch* digiMatch = new CbmMatch(*dm.second->GetMatch());
+        digi->SetMatch(digiMatch);
+        digi->SetTime(dm.second->GetTime());
+        SendDigi(digi);
+        nofDigis++;
+    } //# digis in map
+
+    LOG(DEBUG) << "Number of RICH digis before skip: " << fDigisMap.size() << FairLogger::endl;
+    LOG(DEBUG) << "Nof skipped PMTs:" << nofSkippedPmts << FairLogger::endl;
+    LOG(DEBUG) << "Nof skipped digis:" << nofSkippedDigis << FairLogger::endl;
+    LOG(DEBUG) << "Number of RICH digis: " << nofDigis << FairLogger::endl;
+    return nofDigis;
 }
 
 void CbmRichDigitizer::AddNoiseDigis(
         Int_t eventNum,
         Int_t inputNum)
 {
-    Int_t nofPixels = CbmRichDigiMapManager::GetInstance().GetAddresses().size();
+    Int_t nofPixels = CbmRichDigiMapManager::GetInstance().GetPixelAddresses().size();
     Double_t dT = 50.; //ns
     Double_t nofRichPoints = fRichPoints->GetEntries();
     Double_t nofNoiseDigis = nofRichPoints * nofPixels * dT * (fNoiseDigiRate / 1.e9);
 
     LOG(DEBUG) << "CbmRichDigitizer::AddNoiseDigis NofAllPixels:" << nofPixels << " nofNoiseDigis:" << nofNoiseDigis << FairLogger::endl;
     for(Int_t j = 0; j < nofNoiseDigis; j++) {
-        Int_t address = CbmRichDigiMapManager::GetInstance().GetRandomAddress();
+        Int_t address = CbmRichDigiMapManager::GetInstance().GetRandomPixelAddress();
         CbmLink link(1., -1, eventNum, inputNum);
         Double_t time = fCurrentEventTime + gRandom->Uniform(0, dT);
         AddDigi(address, time, link);

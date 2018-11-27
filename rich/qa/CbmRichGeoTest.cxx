@@ -165,7 +165,7 @@ void CbmRichGeoTest::InitHistograms()
     int nBinsY = 105;
     
     fHM = new CbmHistManager();
-    
+
     fHM->Create2<TH2D>("fhHitsXY", "fhHitsXY;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, nBinsY, yMin, yMax);
     fHM->Create2<TH2D>("fhPointsXY", "fhPointsXY;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, nBinsY, yMin, yMax);
     fHM->Create2<TH2D>("fhPointsXYNoRotation", "fhPointsXYNoRotation;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, nBinsY, yMin, yMax);
@@ -975,7 +975,35 @@ void CbmRichGeoTest::DrawPmts()
 {
     fHM->Create3<TH3D>("fhPointsXYZ", "fhPointsXYZ;X [cm];Y [cm];Z [cm];Yield", 100, -50, 50, 100, -300, 300, 100, 100, 300);
     fHM->Create3<TH3D>("fhHitsXYZ", "fhHitsXYZ;X [cm];Y [cm];Z [cm];Yield",100, -50, 50, 100, -300, 300, 100, 100, 300);
-    vector<Int_t> addr = CbmRichDigiMapManager::GetInstance().GetAddresses();
+    vector<Int_t> pixels = CbmRichDigiMapManager::GetInstance().GetPixelAddresses();
+    vector<Int_t> pmts = CbmRichDigiMapManager::GetInstance().GetPmtIds();
+    
+    {
+        TCanvas *c = fHM->CreateCanvas("richgeo_pixels_xy", "richgeo_pixels_xy", 1500, 1500);
+        c->SetGrid(true, true);
+        TH2D* pad = new TH2D("richgeo_pixels_xy", ";X [cm];Y [cm]", 1, -120, 120, 1, -210, 210);
+        //TH2D* pad = new TH2D("richgeo_pixels_xy", ";X [cm];Y [cm]", 1, -20, 20, 1, 140, 180);
+        pad->SetStats(false);
+        pad->Draw();
+        DrawPmtPoint("xy", pixels, true);
+    }
+    
+    {
+        TCanvas *c = fHM->CreateCanvas("richgeo_pixels_xz", "richgeo_pixels_xz", 1500, 1500);
+        c->SetGrid(true, true);
+        TH2D* pad = new TH2D("richgeo_pixels_xz", ";Z [cm];X [cm]", 1, 200, 250, 1, -120., 120. );
+        pad->SetStats(false);
+        pad->Draw();
+        DrawPmtPoint("zx", pixels, true);
+    }
+    
+    {
+        fHM->CreateCanvas("richgeo_pixels_yz", "richgeo_pixels_yz", 1500, 1500);
+        TH2D* pad = new TH2D("richgeo_pixels_yz", ";Z [cm];Y [cm]", 1, 200, 250, 1, -220, 220);
+        pad->SetStats(false);
+        pad->Draw();
+        DrawPmtPoint("zy", pixels, true);
+    }
     
     {
         TCanvas *c = fHM->CreateCanvas("richgeo_pmts_xy", "richgeo_pmts_xy", 1500, 1500);
@@ -983,30 +1011,13 @@ void CbmRichGeoTest::DrawPmts()
         TH2D* pad = new TH2D("richgeo_pmts_xy", ";X [cm];Y [cm]", 1, -120, 120, 1, -210, 210);
         pad->SetStats(false);
         pad->Draw();
-        DrawPmtPoint("xy", addr);
+        DrawPmtPoint("xy", pmts, false);
     }
-    
-    {
-        TCanvas *c = fHM->CreateCanvas("richgeo_pmts_xz", "richgeo_pmts_xz", 1500, 1500);
-        c->SetGrid(true, true);
-        TH2D* pad = new TH2D("richgeo_pmts_xz", ";Z [cm];X [cm]", 1, 200, 250, 1, -120., 120. );
-        pad->SetStats(false);
-        pad->Draw();
-        DrawPmtPoint("xz", addr);
-    }
-    
-    {
-        fHM->CreateCanvas("richgeo_pmts_yz", "richgeo_pmts_yz", 1500, 1500);
-        TH2D* pad = new TH2D("richgeo_pmts_yz", ";Z [cm];Y [cm]", 1, 200, 250, 1, -220, 220);
-        pad->SetStats(false);
-        pad->Draw();
-        DrawPmtPoint("yz", addr);
-    }
-    
 
-    for (unsigned int i = 0; i < addr.size(); i++){
-        CbmRichMapData* mapData = CbmRichDigiMapManager::GetInstance().GetDataByAddress(addr[i]);
-        TVector3 inPos (mapData->fX, mapData->fY, mapData->fZ);
+
+    for (unsigned int i = 0; i < pixels.size(); i++){
+        CbmRichPixelData* pixelData = CbmRichDigiMapManager::GetInstance().GetPixelDataByAddress(pixels[i]);
+        TVector3 inPos (pixelData->fX, pixelData->fY, pixelData->fZ);
         TVector3 outPos;
         CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
     
@@ -1015,48 +1026,63 @@ void CbmRichGeoTest::DrawPmts()
     }
     
     {
-        fHM->CreateCanvas("richgeo_pmts_points_xyz", "richgeo_pmts_points_xyz", 1500, 1500);
+        fHM->CreateCanvas("richgeo_pixels_points_xyz", "richgeo_pixels_points_xyz", 1500, 1500);
         fHM->H3("fhPointsXYZ")->Draw();
     }
     
     {
-        fHM->CreateCanvas("richgeo_pmts_hits_xyz", "richgeo_pmts_hits_xyz", 1500, 1500);
+        fHM->CreateCanvas("richgeo_pixels_hits_xyz", "richgeo_pixels_hits_xyz", 1500, 1500);
         fHM->H3("fhHitsXYZ")->Draw();
     }
     
 }
 
 void CbmRichGeoTest::DrawPmtPoint(
-		const string& options,
-		const vector<Int_t>& addr)
+		const string& coordinates,
+		const vector<Int_t>& ids,
+		Bool_t isDrawPixel)
 {
-    
-    for (unsigned int i = 0; i < addr.size(); i++){
-        CbmRichMapData* mapData = CbmRichDigiMapManager::GetInstance().GetDataByAddress(addr[i]);
-        TVector3 inPos (mapData->fX, mapData->fY, mapData->fZ);
+    for (unsigned int i = 0; i < ids.size(); i++){
+        TVector3 inPos;
+        Double_t boxHalfSize = 0.0;
+        if (isDrawPixel) {
+            CbmRichPixelData* pixelData = CbmRichDigiMapManager::GetInstance().GetPixelDataByAddress(ids[i]);
+            inPos.SetXYZ(pixelData->fX, pixelData->fY, pixelData->fZ);
+            boxHalfSize = 0.15;
+        } else {
+            CbmRichPmtData* pmtData = CbmRichDigiMapManager::GetInstance().GetPmtDataById(ids[i]);
+            inPos.SetXYZ(pmtData->fX, pmtData->fY, pmtData->fZ);
+            boxHalfSize = 0.5 * pmtData->fHeight;
+        }
         TVector3 outPos;
-        //if ( !(inPos.X() > 0 && inPos.Y() > 0)) continue;
-        //cout << "DrawPmtPoint  IN x:" << inPos.X() << " y:" << inPos.Y() << " z:" << inPos.Z() << endl;
         CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
-        TEllipse* pointDr = NULL;
-       // cout << "DrawPmtPoint OUT x:" << outPos.X() << " y:" << outPos.Y() << " z:" << outPos.Z() << endl;
-        if (options == string("xy")) pointDr = new TEllipse(outPos.X(), outPos.Y(), 0.2);
-        if (options == string("xz")) pointDr = new TEllipse(outPos.Z(), outPos.X(), 0.2);
-        if (options == string("yz")) pointDr = new TEllipse(outPos.Z(), outPos.Y(), 0.2);
-        if (pointDr != NULL) {
-            pointDr->SetFillColor(kBlue);
-            pointDr->SetLineColor(kBlue);
-            pointDr->Draw();
+        TBox* boxOut = nullptr;
+
+        if (coordinates == string("xy")) boxOut = new TBox(outPos.X() - boxHalfSize, outPos.Y() - boxHalfSize, outPos.X() + boxHalfSize, outPos.Y() + boxHalfSize);
+        if (coordinates == string("zx")) boxOut = new TBox(outPos.Z() - boxHalfSize, outPos.X() - boxHalfSize, outPos.Z() + boxHalfSize, outPos.X() + boxHalfSize);
+        if (coordinates == string("zy")) boxOut = new TBox(outPos.Z() - boxHalfSize, outPos.Y() - boxHalfSize, outPos.Z() + boxHalfSize, outPos.Y() + boxHalfSize);
+        if (boxOut != NULL) {
+            if (isDrawPixel) {
+                boxOut->SetFillColor(kBlue);
+            } else {
+                boxOut->SetFillStyle(0);
+                boxOut->SetLineColor(kBlue);
+            }
+            boxOut->Draw();
         }
         
-        TEllipse* pointDrIn = NULL;
-        if (options == string("xy")) pointDrIn = new TEllipse(inPos.X(), inPos.Y(), 0.15);
-        if (options == string("xz")) pointDrIn = new TEllipse(inPos.Z(), inPos.X(), 0.15);
-        if (options == string("yz")) pointDrIn = new TEllipse(inPos.Z(), inPos.Y(), 0.15);
-        if (pointDrIn != NULL) {
-            pointDrIn->SetFillColor(kRed);
-            pointDrIn->SetLineColor(kRed);
-            pointDrIn->Draw();
+        TBox* boxIn = nullptr;
+        if (coordinates == string("xy")) boxIn = new TBox(inPos.X() - boxHalfSize, inPos.Y() - boxHalfSize, inPos.X() + boxHalfSize, inPos.Y() + boxHalfSize);
+        if (coordinates == string("zx")) boxIn = new TBox(inPos.Z() - boxHalfSize, inPos.X() - boxHalfSize, inPos.Z() + boxHalfSize, inPos.X() + boxHalfSize);
+        if (coordinates == string("zy")) boxIn = new TBox(inPos.Z() - boxHalfSize, inPos.Y() - boxHalfSize, inPos.Z() + boxHalfSize, inPos.Y() + boxHalfSize);
+        if (boxIn != NULL) {
+            if (isDrawPixel) {
+                boxIn->SetFillColor(kRed);
+            } else {
+                boxIn->SetFillStyle(0);
+                boxIn->SetLineColor(kRed);
+            }
+            boxIn->Draw();
         }
     }
 }

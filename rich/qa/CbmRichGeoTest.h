@@ -197,7 +197,7 @@ private:
      */
     void DrawPmts();
     
-    void DrawPmtPoint(const string& options, const vector<Int_t>& addr);
+    void DrawPmtPoint(const string& coordinates, const vector<Int_t>& ids, Bool_t isDrawPixel);
     
     /**
      * \brief Calculate efficiency.

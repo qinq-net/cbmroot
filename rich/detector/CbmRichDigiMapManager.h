@@ -10,7 +10,7 @@
 
 #include <map>
 #include <iostream>
-#include "CbmRichMapData.h"
+#include "CbmRichDetectorData.h"
 
 using namespace std;
 
@@ -30,12 +30,12 @@ public:
 	/*
 	 * \brief Return digi address by path to node.
 	 */
-	Int_t GetAdressByPath(const string& path);
+	Int_t GetPixelAddressByPath(const string& path);
 
 	/*
-	 * \brief Return RichMapData by digi address.
+	 * \brief Return CbmRichDataPixel by digi address.
 	 */
-	CbmRichMapData* GetDataByAddress(Int_t address);
+	CbmRichPixelData* GetPixelDataByAddress(Int_t address);
 
 	/*
 	 * \brief Return the addresses of the direct neighbour pixels.
@@ -52,22 +52,35 @@ public:
 	/*
 	 * \brief Return random address. Needed for noise digi.
 	 */
-	Int_t GetRandomAddress();
+	Int_t GetRandomPixelAddress();
     
     
     /*
-     * \brief Return addresses of all pmts
+     * \brief Return addresses of all pixels
      */
-    vector<Int_t> GetAddresses();
+    vector<Int_t> GetPixelAddresses();
 
+    /*
+     * \brief Return ids for all pmts
+     */
+    vector<Int_t> GetPmtIds();
+
+    /*
+     * \brief Return CbmRichDataPmt by id.
+     */
+    CbmRichPmtData* GetPmtDataById(Int_t id);
 
 public:
 	virtual ~CbmRichDigiMapManager();
 
 private:
-	map<string, Int_t> fPathToAddressMap;
-	map<Int_t, CbmRichMapData*> fAddressToDataMap;
-	vector<Int_t> fAddresses; // vector of all  pixel addresses
+	map<string, Int_t> fPixelPathToAddressMap;
+	map<Int_t, CbmRichPixelData*> fPixelAddressToDataMap;
+	vector<Int_t> fPixelAddresses; // vector of all  pixel addresses
+
+    map<string, Int_t> fPmtPathToIdMap;
+    map<Int_t, CbmRichPmtData*> fPmtIdToDataMap;
+    vector<Int_t> fPmtIds;
 
 	/*
 	 * \brief Initialize maps.

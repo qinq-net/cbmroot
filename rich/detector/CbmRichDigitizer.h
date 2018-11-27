@@ -101,6 +101,11 @@ public:
     */
    void SetPixelDeadTime(Double_t dt){ fPixelDeadTime = dt; }
 
+   /**
+    * \brief Set Maximum nimber of hits per PMT cut.
+    */
+   void SetMaxNofHitsPerPmtCut(Double_t nofHits){ fMaxNofHitsPerPmtCut = nofHits; }
+
    /** @brief Write a digi to the output
     ** @param digi  Pointer to digi object
     **/
@@ -124,6 +129,8 @@ private:
    Double_t fNoiseDigiRate; // noise rate per McRichPoint / per  pixel / per second :
                             // hofNoiseDigis = nofRichPoints * nofPixels * dT(50 ns) * (fNoiseDigiRate / 1.e9);
    CbmRichPmtTypeEnum fDetectorType;
+   Int_t fMaxNofHitsPerPmtCut; // maximum number of hits which can be registered per PMT per event.
+                               // If more then the whole PMT is skipped
 
    map<Int_t, CbmRichDigi*> fDigisMap; //map which contains all fired digis, one digi per pixel
 

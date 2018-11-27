@@ -49,7 +49,7 @@ void CbmRichGeoManager::InitGeometry() {
     
     InitMirror();
     
-    //fGP->Print();
+   // fGP->Print();
 }
 
 void CbmRichGeoManager::DetectGeometryType()
