@@ -19,7 +19,7 @@
  ** @brief An MC (transport) input to digitisation in CBM
  **
  ** CbmMCInput gives access to the entries of a TChain according to the
- ** specified access mode through the mathod GetNextEntry(). The access to
+ ** specified access mode through the method GetNextEntry(). The access to
  ** the tree entries can be sequential with stopping at the end
  ** (mode = kRegular), sequential round-the-corner (mode kRepeat) or random
  ** (mode = kRandom).
@@ -35,11 +35,9 @@ class CbmMCInput : public TObject
 
     /** @brief Constructor
      ** @param chain  Pointer to input file chain
-     ** @param rate   Event rate [1/s]. Must be positive.
      ** @param mode   Access mode (see EAccessMode)
      **/
-    CbmMCInput(TChain* chain, Double_t rate,
-                  Cbm::ETreeAccess mode = Cbm::kRegular);
+    CbmMCInput(TChain* chain, Cbm::ETreeAccess mode = Cbm::kRegular);
 
 
     /** @brief Destructor **/
@@ -60,22 +58,28 @@ class CbmMCInput : public TObject
     }
 
 
-    /** @brief Time difference to next event
-     ** @value Time difference to next event [ns]
-     **
-     ** This method samples from the probability distribution for the time
-     ** difference between two subsequent events, assuming a Poisson process
-     ** (exponential distribution).
-     **/
-    Double_t GetDeltaT();
-
-
     /** @brief Get the next unused entry from the chain
      ** @value Id of tree entry.
      **
      ** The method returns -1 if the maximum number of entries is exceeded.
      **/
     Int_t GetNextEntry();
+
+
+    /** @brief Maximal number of events to be read from the input.
+     ** @value Number of entries in the tree for kRegular. -1 else.
+     **/
+    Int_t GetMaxNofEvents() const {
+      return ( fMode == Cbm::kRegular ? fChain->GetEntries() : -1);
+    }
+
+
+    /** @brief Tree access mode
+     ** @value Access mode
+     **/
+    Cbm::ETreeAccess GetMode() const {
+      return fMode;
+    }
 
 
     /** @brief Number of entries
@@ -94,23 +98,14 @@ class CbmMCInput : public TObject
     }
 
 
-    /** @brief Event rate
-     ** @value Event rate [1/s]
-     **/
-    Double_t GetRate() const {
-      return fRate;
-    }
-
 
   private:
 
     TChain* fChain;                //! Input chain
-    Double_t fRate;                // Event rate [1/s]
     Cbm::ETreeAccess fMode;        // Access mode to tree
     std::set<TString> fBranches;   // List of branch names
     UInt_t fLastUsedEntry;         // Index of last used entry
     UInt_t fNofUsedEntries;        // Number of used entries
-    TF1* fDeltaDist;               // Probability distribution for delta(t)
 
 
     /** @brief Read list of branches from file

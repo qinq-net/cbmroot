@@ -37,12 +37,27 @@ class CbmDigitization : public TNamed
 
 
     /** @brief Add an input file
+     ** @param inputId   Unique input identifier
      ** @param fileName  Name of input file (MC)
      ** @param eventRate Rate for events from input file [1/s]
+     ** @param mode      Tree access mode (kRegular / kRepeat / kRandom)
      **/
-    void AddInput(TString fileName, Double_t eventRate = -1.,
+    void AddInput(UInt_t inputId, TString fileName, Double_t eventRate = -1.,
                   Cbm::ETreeAccess mode = Cbm::kRegular);
 
+
+    /** @brief Add an input file
+     ** @param fileName  Name of input file (MC)
+     ** @param eventRate Rate for events from input file [1/s]
+     ** @param mode      Tree access mode (kRegular / kRepeat / kRandom)
+     **
+     ** Shortcut for legacy reasons, when only one input file is used.
+     ** This will set the inputId to zero. Repeated use will lead to abort.
+     **/
+    void AddInput(TString fileName, Double_t eventRate = -1.,
+                  Cbm::ETreeAccess mode = Cbm::kRegular) {
+      AddInput(0, fileName, eventRate, mode);
+    }
 
     /** @brief Add an ASCII parameter file
      ** @param fileName  Name of parameter file
@@ -52,6 +67,16 @@ class CbmDigitization : public TNamed
      ** as second input to the runtime database.
      */
     Bool_t AddParameterAsciiFile(TString fileName);
+
+
+    /** @brief Embed an input file into another one
+     ** @param inputId   Unique input identifier
+     ** @param fileName  Name of input file (MC)
+     ** @param targetInputId ID of the input to be embedded into
+     ** @param mode      Tree access mode (kRegular / kRepeat / kRandom)
+     **/
+    void EmbedInput(UInt_t inputId, TString fileName, UInt_t targetInputId,
+                    Cbm::ETreeAccess mode = Cbm::kRegular);
 
 
     /** @brief Enable resource monitoring (default is kTRUE)
@@ -170,9 +195,6 @@ class CbmDigitization : public TNamed
     std::map<Int_t, CbmDigitizeInfo*> fDigitizers;
     CbmDaq* fDaq;
     CbmDigitizationSource* fSource;
-    UInt_t fNofInputs;
-    //std::vector<TString> fInputFiles;
-    //std::vector<Double_t> fEventRates;
     TString fOutFile;
     TString fParRootFile;
     TList fParAsciiFiles;

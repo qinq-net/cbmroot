@@ -14,7 +14,7 @@
 #include "FairLogger.h"
 #include "FairMCEventHeader.h"
 #include "FairSource.h"
-#include "CbmMCInput.h"
+#include "CbmMCInputSet.h"
 
 class FairEventHeader;
 
@@ -33,8 +33,6 @@ class FairEventHeader;
  ** event rate. The source object has to be registered to the run.
  ** The large number of non-API public methods is due to the
  ** implementation of the base class FairSource.
- **
- ** The inputIds are given sequentially in the order of added inputs.
  **
  ** The class is based on FairMixedSource by M. Al-Turany, stripping
  ** unneeded functionality and introducing a different concept of
@@ -66,17 +64,17 @@ class CbmDigitizationSource : public FairSource
     virtual Bool_t ActivateObject(TObject** object, const char* branchName);
 
 
-    /** @brief Add an transport input
+    /** @brief Add a transport input
      ** @param inputId   Input number (identifier)
-     ** @param fileName  Input file name
-     ** @param rate      Input event rate (1/s)
+     ** @param chain     Pointer to input chain
+     ** @param mode      Tree access mode (kRegular / kRepeat / kRandom)
      **/
     void AddInput(UInt_t inputId, TChain* chain, Double_t rate,
                   Cbm::ETreeAccess mode = Cbm::kRegular);
 
 
     /** @brief Maximal entry number the source can run to
-     ** @param lastEntry  Last entry as specified by FairRunAna
+     ** @param lastEntry  Last entry as specified by FairRunAna. Ignored.
      ** @value Last entry possible with this source
      **
      ** Inherited from FairSource. Since there can be several inputs
@@ -97,6 +95,16 @@ class CbmDigitizationSource : public FairSource
     }
 
 
+    /** @brief Embed a transport input
+     ** @param inputId   Input number (identifier)
+     ** @param chain     Pointer to input chain
+     ** @param targetInputId  ID of the input to be embedded into
+     ** @param mode      Tree access mode (kRegular / kRepeat / kRandom)
+     **/
+    void EmbedInput(UInt_t inputId, TChain* chain, UInt_t targetInputId,
+                    Cbm::ETreeAccess mode = Cbm::kRegular);
+
+
     /** @brief Fill the output event header
      ** @param event Pointer to event header
      **
@@ -113,11 +121,10 @@ class CbmDigitizationSource : public FairSource
     }
 
 
-    /** @brief Input
-     ** @param inputId  Input identifier
-     ** @value Pointer to  object
+    /** @brief First input from the first input set
+     ** @value Pointer to first input
      **/
-    CbmMCInput* GetInput(UInt_t inputId);
+    CbmMCInput* GetFirstInput();
 
 
     /** @brief Source type is kFILE **/
@@ -189,8 +196,9 @@ class CbmDigitizationSource : public FairSource
 
   private:
 
-    std::map<UInt_t, CbmMCInput*> fInputs; //! Key is inputId
-    std::map<Double_t, UInt_t> fNextEvent;    //! Key is time, value is inputId
+    std::vector<CbmMCInputSet*> fInputSets;
+    std::map<UInt_t, CbmMCInputSet*> fInputMap;  //! input ID -> inputSet
+    std::map<Double_t, CbmMCInputSet*> fNextEvent;    //! time -> inputSet
     FairMCEventHeader* fMCEventHeader;
     TObjArray* fListOfFolders;
     std::set<TString> fBranches;              // List of branches names
@@ -200,18 +208,39 @@ class CbmDigitizationSource : public FairSource
     Int_t fCurrentRunId;
     Bool_t fFirstCall;
     Bool_t fEventMode;
+    CbmMCInputSet* fCurrentInputSet;
 
 
-    /** @brief Compare an input branch list with the global branch list
-     ** @param input Input chain
-     ** @value kTRUE if the branch list of the input is compatible
+    /** @brief Compare an input set branch list with the reference list
+     ** @param input Pointer to CbmMCInputSet
+     ** @value kTRUE if the branch list of the input set is compatible
      **
-     ** The branch list of the input is considered compatible if all branches
-     ** of the global list are present in the input. Additional branches
-     ** in the input are not considered harmful. The global branch list
-     ** is defined by the first input.
+     ** The branch list of the input set is considered compatible if all
+     ** branches of the reference list are present in the input set. Additional
+     ** branches in the input set are not considered harmful. The reference
+     ** branch list is defined by the first input set.
      **/
-    Bool_t CheckBranchList(CbmMCInput* input);
+    Bool_t CheckBranchList(CbmMCInputSet* input);
+
+
+    /** @brief Get next entry in event-by-event mode
+     ** @param event Entry number
+     ** @value 0 if successful, 1 if requested entry does not exist
+     **
+     ** In the event-by-event mode, only the first input set is used.
+     ** The event time is zero for all events.
+     **/
+    Int_t ReadEventByEvent(UInt_t event);
+
+
+    /** @brief Read run ID from the first entry in the first input
+     **
+     ** This is used for the first call to ReadEvent, which happens
+     ** from FairRunAna::Init() to get the run ID. The run ID is read
+     ** from FairMCEventHeader and copied to the FairEventHeader by
+     ** FillEventHeader, which is also called from FairRunAna.
+     **/
+    void ReadRunId();
 
 
 

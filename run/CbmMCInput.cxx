@@ -15,30 +15,20 @@
 
 
 // -----   Default constructor   ---------------------------------------------
-CbmMCInput::CbmMCInput() : CbmMCInput(nullptr, 0., Cbm::kRegular) {
+CbmMCInput::CbmMCInput() : CbmMCInput(nullptr, Cbm::kRegular) {
 }
 // ---------------------------------------------------------------------------
 
 
 
 // -----   Constructor   -----------------------------------------------------
-CbmMCInput::CbmMCInput(TChain* chain, Double_t rate,
-                             Cbm::ETreeAccess mode) :
+CbmMCInput::CbmMCInput(TChain* chain, Cbm::ETreeAccess mode) :
         TObject(),
         fChain(chain),
-        fRate(rate),
         fMode(mode),
         fBranches(),
         fLastUsedEntry(-1),
-        fNofUsedEntries(0),
-        fDeltaDist(nullptr) {
-
-  if (rate > 0.) {
-    Double_t mean = 1.e9 / rate;       // mean time between events
-    fDeltaDist = new TF1("DeltaDist", "exp(-x/[0])/[0]", 0., 10. * mean);
-    fDeltaDist->SetParameter(0, mean);
-  }
-
+        fNofUsedEntries(0) {
 }
 // ---------------------------------------------------------------------------
 
@@ -46,7 +36,6 @@ CbmMCInput::CbmMCInput(TChain* chain, Double_t rate,
 
 // -----   Destructor   ------------------------------------------------------
 CbmMCInput::~CbmMCInput() {
-  if (fDeltaDist) delete fDeltaDist;
 }
 // ---------------------------------------------------------------------------
 
@@ -59,15 +48,6 @@ std::set<TString>& CbmMCInput::GetBranchList() {
   if ( fBranches.empty() ) ReadBranches();
 
   return fBranches;
-}
-// ---------------------------------------------------------------------------
-
-
-
-// -----   Time difference to next event   -----------------------------------
-Double_t CbmMCInput::GetDeltaT() {
-  if ( ! fDeltaDist ) return 0.;
-  return fDeltaDist->GetRandom();
 }
 // ---------------------------------------------------------------------------
 

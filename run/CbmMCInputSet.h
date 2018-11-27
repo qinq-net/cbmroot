@@ -50,11 +50,21 @@ class CbmMCInputSet : public TObject
     virtual ~CbmMCInputSet();
 
 
+    /** @brief Activate and connect all input chains
+     ** @param object  Pointer to pointer to branch class
+     ** @param branchName  Name of branch
+     **
+     ** All input trees have to be connected to the argument object.
+     **/
+    virtual Bool_t ActivateObject(TObject** object, const char* branchName);
+
+
     /** @brief Add an input to the set
      ** @param inputId  Unique input identifier
      ** @param input    Pointer to CbmMCInput object
      **/
-    void AddInput(UInt_t inputId, CbmMCInput* input);
+    void AddInput(UInt_t inputId, TChain* chain,
+                  Cbm::ETreeAccess mode = Cbm::kRegular);
 
 
     /** @brief List of branches
@@ -74,6 +84,39 @@ class CbmMCInputSet : public TObject
      ** The return value is zero if the rate was specified to be non-positive.
      **/
     Double_t GetDeltaT();
+
+
+    /** @brief Accessor to first input
+     ** @value ID and Pointer to first CbmMCInput object.
+     **
+     ** Returns -1 for the ID and a null pointer if no input is connected.
+     **/
+    std::pair<UInt_t, CbmMCInput*> GetFirstInput() {
+      return ( fInputs.empty() ?
+          std::make_pair(-1, nullptr) :
+          std::make_pair(fInputs.begin()->first, fInputs.begin()->second) );
+    }
+
+
+    /** @brief Accessor to input
+     ** @param id  Unique input identifier
+     ** @value Pointer to CbmMCInput object. Null if ID is not used.
+     **/
+    CbmMCInput* GetInput(UInt_t id) {
+      return ( fInputs.find(id) == fInputs.end() ? nullptr : fInputs[id] );
+    }
+
+
+    /** @brief Maximal number of events to be read from the input set
+     ** @value Maximal number of events
+     **
+     ** If there is at least one limited input (mode = kRegular),
+     ** the return value is the number of inputs times the minimal event
+     ** number from all inputs. This reflects the fact that all inputs are
+     ** read sequentially. If all inputs are unlimited (kRepeat or kRandom),
+     ** the return value is -1.
+     */
+    Int_t GetMaxNofEvents() const;
 
 
     /** @brief Get the next entry from the inputs
@@ -97,6 +140,10 @@ class CbmMCInputSet : public TObject
     }
 
 
+    /** @brief register all input chains to the FairRootManager **/
+    void RegisterChains();
+
+
   private:
 
     Double_t fRate;                // Event rate [1/s]
@@ -112,7 +159,7 @@ class CbmMCInputSet : public TObject
      **
      ** The branch list of the input is considered compatible if all branches
      ** of the global list are present in the input. Additional branches
-     ** in the input are not considered harmful. The referece branch list
+     ** in the input are not considered harmful. The reference branch list
      ** is defined by the first input.
      **/
     Bool_t CheckBranchList(CbmMCInput* input);

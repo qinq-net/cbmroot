@@ -36,7 +36,6 @@ CbmDigitization::CbmDigitization() :
   fDigitizers(),
   fDaq(new CbmDaq()),
   fSource(new CbmDigitizationSource()),
-  fNofInputs(0),
   fOutFile(),
   fParRootFile(),
   fParAsciiFiles(),
@@ -65,15 +64,15 @@ CbmDigitization::~CbmDigitization() {
 
 
 // -----   Add an input file   ----------------------------------------------
-void CbmDigitization::AddInput(TString fileName, Double_t eventRate,
-                                Cbm::ETreeAccess mode) {
+void CbmDigitization::AddInput(UInt_t inputId, TString fileName,
+                               Double_t eventRate,
+                               Cbm::ETreeAccess mode) {
   if ( gSystem->AccessPathName(fileName) )
     LOG(FATAL) << fName << ": input file " << fileName << " does not exist!"
       << FairLogger::endl;
   TChain* chain = new TChain("cbmsim");
   chain->Add(fileName.Data());
-  fSource->AddInput(fNofInputs, chain, eventRate, mode);
-  fNofInputs++;
+  fSource->AddInput(inputId, chain, eventRate, mode);
 }
 // --------------------------------------------------------------------------
 
@@ -116,7 +115,7 @@ Int_t CbmDigitization::CheckInput() {
   // to determine the geometry tags, which in turn are needed to register
   // the proper ASCII parameter files. This is rather nasty; the parameter
   // handling is really a pain in the neck.
-  CbmMCInput* input = fSource->GetInput(0);
+  CbmMCInput* input = fSource->GetFirstInput();
   assert(input);
   TFile* file = input->GetChain()->GetFile();
   assert(file);
@@ -196,6 +195,21 @@ Int_t CbmDigitization::CreateDefaultDigitizers() {
 void CbmDigitization::Deactivate(Int_t system) {
   if ( fDigitizers.find(system) != fDigitizers.end() )
     fDigitizers[system]->SetActive(kFALSE);
+}
+// --------------------------------------------------------------------------
+
+
+
+// -----   Embed an input file   ----------------------------------------------
+void CbmDigitization::EmbedInput(UInt_t inputId, TString fileName,
+                                 UInt_t targetInputId,
+                                 Cbm::ETreeAccess mode) {
+  if ( gSystem->AccessPathName(fileName) )
+    LOG(FATAL) << fName << ": input file " << fileName << " does not exist!"
+      << FairLogger::endl;
+  TChain* chain = new TChain("cbmsim");
+  chain->Add(fileName.Data());
+  fSource->EmbedInput(inputId, chain, targetInputId, mode);
 }
 // --------------------------------------------------------------------------
 
