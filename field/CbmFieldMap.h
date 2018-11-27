@@ -146,6 +146,8 @@ public:
   /** Read the field map from an ASCII file **/
   void ReadAsciiFile(const char* fileName);
 
+  /** Read the field map from an ASCII file. Updated version. **/
+  void ReadAsciiFile2018(const char* fileName);
 
   /** Read field map from a ROOT file **/	
   void ReadRootFile(const char* fileName, const char* mapName);
