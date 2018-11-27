@@ -44,7 +44,8 @@ void SetDefaultDrawStyle()
    gStyle->SetPadColor(kWhite);
    gStyle->SetStatColor(kWhite);
    gStyle->SetTitleFillColor(kWhite);
-   gStyle->SetPalette(1);
+   gStyle->SetPalette(55, 0);
+  // gStyle->SetPalette(1);
 }
 
 /* Draw TH1 histogram.*/
@@ -239,9 +240,9 @@ void DrawGraph2D(
    graph->GetZaxis()->SetTitleSize(textSize);
    graph->GetXaxis()->SetTitleOffset(1.0);
    graph->GetYaxis()->SetTitleOffset(1.3);
-   graph->GetZaxis()->SetTitleOffset(1.5);
+   graph->GetZaxis()->SetTitleOffset(1.7);
    gPad->SetLeftMargin(0.17);
-   gPad->SetRightMargin(0.30);
+   gPad->SetRightMargin(0.2);
    gPad->SetBottomMargin(0.15);
    gPad->SetTicks(1, 1);
    graph->Draw(drawOpt.c_str());
