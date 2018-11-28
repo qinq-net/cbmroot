@@ -9,7 +9,7 @@
 #define RICH_DETECTOR_CBMRICHDETECTORDATA_H_
 
 #include "TObject.h"
-#include "Fairlogger.h"
+#include "FairLogger.h"
 #include <vector>
 
 using namespace std;
