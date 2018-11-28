@@ -5,7 +5,7 @@
 //#include <cstdio>
 #include <iostream>
 
-std::string GetBinaryRepresentation(size_t const size, void const * const ptr)
+std::string GetBinaryRepresentation(size_t const size, uint8_t const * const ptr)
 {
 	std::string outString;
 
@@ -29,7 +29,7 @@ std::string GetBinaryRepresentation(size_t const size, void const * const ptr)
 /**
  * size in bytes
  */
-std::string GetHexRepresentation(size_t const size, void const * const ptr)
+std::string GetHexRepresentation(size_t const size, uint8_t const * const ptr)
 {
 	std::string outString;
 
@@ -48,7 +48,7 @@ std::string GetHexRepresentation(size_t const size, void const * const ptr)
 	return outString;
 }
 
-std::string GetWordHexRepr(void const * const ptr)
+std::string GetWordHexRepr(uint8_t const * const ptr)
 {
 	std::string outString;
 
@@ -69,7 +69,7 @@ std::string GetWordHexRepr(void const * const ptr)
 	return outString;
 }
 
-std::string GetWordHexReprInv(void const * const ptr)
+std::string GetWordHexReprInv(uint8_t const * const ptr)
 {
 	std::string outString;
 
@@ -90,7 +90,7 @@ std::string GetWordHexReprInv(void const * const ptr)
 	return outString;
 }
 
-void SwapBytes(size_t const size, void const * ptr)
+void SwapBytes(size_t const size, uint8_t const * ptr)
 {
 	unsigned char *b = (unsigned char*) ptr;
 	unsigned char byte[4];
@@ -105,7 +105,7 @@ void SwapBytes(size_t const size, void const * ptr)
 	b[3] = byte[3];
 }
 
-void PrintRaw(size_t const size, void const * const ptr)
+void PrintRaw(size_t const size, uint8_t const * const ptr)
 {
 	size_t nWords = size/4;
 	size_t nRestBytes = size%4;

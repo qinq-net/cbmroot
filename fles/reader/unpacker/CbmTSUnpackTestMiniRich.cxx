@@ -78,7 +78,7 @@ void CbmTSUnpackTestMiniRich::Finish()
 {
 }
 
-void CbmTSUnpackTestMiniRich::ProcessMicroslice(size_t const size, void const * const ptr)
+void CbmTSUnpackTestMiniRich::ProcessMicroslice(size_t const size, uint8_t const * const ptr)
 {
 	if (size == 0) return;
 
@@ -130,7 +130,7 @@ void CbmTSUnpackTestMiniRich::ProcessMicroslice(size_t const size, void const * 
 	ProcessTRBevent(fTRBeventSize2, ptr+offset);
 }
 
-Int_t CbmTSUnpackTestMiniRich::ProcessTRBevent(size_t const size, void const * const ptr)
+Int_t CbmTSUnpackTestMiniRich::ProcessTRBevent(size_t const size, uint8_t const * const ptr)
 {
 	Int_t offset; // offset in bytes
 	Int_t* dataPtr;
@@ -223,7 +223,7 @@ Int_t CbmTSUnpackTestMiniRich::ProcessTRBevent(size_t const size, void const * c
 
 }
 
-Int_t CbmTSUnpackTestMiniRich::ProcessTRBsubevent(size_t const size, void const * const ptr)
+Int_t CbmTSUnpackTestMiniRich::ProcessTRBsubevent(size_t const size, uint8_t const * const ptr)
 {
 	//std::cout << "ProcessTRBsubevent size=" << size << " bytes" << std::endl;
 
@@ -264,7 +264,7 @@ Int_t CbmTSUnpackTestMiniRich::ProcessTRBsubevent(size_t const size, void const 
 	return size; //TODO check
 }
 
-Int_t CbmTSUnpackTestMiniRich::ProcessCTSsubevent(size_t const size, void const * const ptr)
+Int_t CbmTSUnpackTestMiniRich::ProcessCTSsubevent(size_t const size, uint8_t const * const ptr)
 {
 	//std::cout << "ProcessCTSsubevent size=" << size << " bytes" << std::endl;
 
@@ -329,7 +329,7 @@ Int_t CbmTSUnpackTestMiniRich::ProcessCTSsubevent(size_t const size, void const 
 	return size; //TODO check
 }
 
-Int_t CbmTSUnpackTestMiniRich::ProcessSKIPsubevent(size_t const size, void const * const ptr)
+Int_t CbmTSUnpackTestMiniRich::ProcessSKIPsubevent(size_t const size, uint8_t const * const ptr)
 {
 	//std::cout << "ProcessSKIPsubevent size=" << size << " bytes" << std::endl;
 
@@ -356,7 +356,7 @@ Int_t CbmTSUnpackTestMiniRich::ProcessSKIPsubevent(size_t const size, void const
 	return size; //TODO check
 }
 
-Int_t CbmTSUnpackTestMiniRich::ProcessTRBsubsubevent(size_t const size, void const * const ptr)
+Int_t CbmTSUnpackTestMiniRich::ProcessTRBsubsubevent(size_t const size, uint8_t const * const ptr)
 {
 	//std::cout << "ProcessTRBsubsubevent size=" << size  << " bytes" << std::endl;
 
@@ -373,7 +373,7 @@ Int_t CbmTSUnpackTestMiniRich::ProcessTRBsubsubevent(size_t const size, void con
 	return size; //TODO check
 }
 
-void CbmTSUnpackTestMiniRich::ProcessTDCword(void const * const ptr)
+void CbmTSUnpackTestMiniRich::ProcessTDCword(uint8_t const * const ptr)
 {
 	Int_t* tdcDataPtr = (Int_t*)ptr;
 	Int_t tdcData = tdcDataPtr[0];

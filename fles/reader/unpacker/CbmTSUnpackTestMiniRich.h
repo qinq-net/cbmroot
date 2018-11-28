@@ -28,30 +28,30 @@ public:
 
 private:
 
-	void ProcessMicroslice(size_t const size, void const * const ptr);
+	void ProcessMicroslice(size_t const size, uint8_t const * const ptr);
 
 	/**
 	 * Including header
 	 */
-	Int_t ProcessTRBevent(size_t const size, void const * const ptr);
+	Int_t ProcessTRBevent(size_t const size, uint8_t const * const ptr);
 
 	/**
 	 * Including header
 	 * Return number of processed bytes
 	 */
-	Int_t ProcessTRBsubevent(size_t const size, void const * const ptr);
+	Int_t ProcessTRBsubevent(size_t const size, uint8_t const * const ptr);
 
 	/**
 	 * Including TDC header, but not including TRB subsubevent header
 	 * Return number of processed bytes
 	 */
-	Int_t ProcessTRBsubsubevent(size_t const size, void const * const ptr);
+	Int_t ProcessTRBsubsubevent(size_t const size, uint8_t const * const ptr);
 
-	Int_t ProcessCTSsubevent(size_t const size, void const * const ptr);
+	Int_t ProcessCTSsubevent(size_t const size, uint8_t const * const ptr);
 
-	Int_t ProcessSKIPsubevent(size_t const size, void const * const ptr);
+	Int_t ProcessSKIPsubevent(size_t const size, uint8_t const * const ptr);
 
-	void ProcessTDCword(void const * const ptr);
+	void ProcessTDCword(uint8_t const * const ptr);
 
 	/**
 	 * Write unpacked edge into the output collection
