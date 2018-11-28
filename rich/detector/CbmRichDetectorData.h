@@ -11,6 +11,7 @@
 #include "TObject.h"
 #include "FairLogger.h"
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
