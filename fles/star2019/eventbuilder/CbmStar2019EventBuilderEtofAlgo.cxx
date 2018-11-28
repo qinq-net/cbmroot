@@ -1488,7 +1488,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::CreateHistograms()
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
       UInt_t uSector = fUnpackPar->GetGdpbToSectorOffset() + uGdpb;
-      std::string sFolder = Form( "/sector%2u", uSector);
+      std::string sFolder = Form( "sector%2u", uSector);
 
       LOG(INFO) << "gDPB " << uGdpb << " is " << sFolder
                  << FairLogger::endl;
