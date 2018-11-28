@@ -77,6 +77,7 @@ Set(SRCS
   unpacker/CbmTSUnpackSpadicLegacy.cxx
   unpacker/CbmTSUnpackNxyter.cxx
   unpacker/CbmTSUnpackStsxyter.cxx
+  unpacker/CbmTSUnpackTestMiniRich.cxx
   unpacker/CbmTSUnpackFiberHodo.cxx
   unpacker/CbmTSUnpackDummy.cxx
   unpacker/CbmTSUnpackTrb.cxx
@@ -117,6 +118,8 @@ Set(SRCS
   tasks/CbmTrdTestBeamAnalysis.cxx
   tasks/CbmTrdTimeCorrel.cxx
   tasks/CbmTrdTestBeamAnalysis2015SPS.cxx
+
+  tasks/CbmTestMiniRichPairBuilder.cxx
 
   ${FLES_TOF_BEAM_SOURCES}
 )

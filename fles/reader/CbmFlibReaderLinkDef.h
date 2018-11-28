@@ -17,6 +17,10 @@
 #pragma link C++ class CbmTSUnpackSpadicLegacy;
 #pragma link C++ class CbmTSUnpackNxyter;
 #pragma link C++ class CbmTSUnpackStsxyter;
+
+#pragma link C++ class CbmTSUnpackTestMiniRich;
+#pragma link C++ class CbmTestMiniRichPairBuilder;
+
 #pragma link C++ class CbmTSUnpackFiberHodo;
 #pragma link C++ class CbmTSUnpackDummy;
 #pragma link C++ class CbmTSUnpackTrb;
