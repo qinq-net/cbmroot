@@ -326,7 +326,6 @@ void CbmTrd::ConstructRootGeometry()
   if ( Cbm::GeometryUtils::IsNewGeometryFile(fgeoName) ) {
     LOG(INFO) << "Importing TRD geometry from ROOT file "
               << fgeoName.Data() << FairLogger::endl;
-    fCombiTrans = new TGeoTranslation("trd_trans", 0., 0., -400);  
     Cbm::GeometryUtils::ImportRootGeometry(fgeoName, this, fCombiTrans);
   } else {
     LOG(INFO) << "Constructing TRD geometry from ROOT file "
