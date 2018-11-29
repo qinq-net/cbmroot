@@ -1165,7 +1165,51 @@ void CbmL1::TrackFitPerformance()
     { // last hit
       int iMC = vHitMCRef[it->StsHits.back()]; // TODO2: adapt to linking
       if (iMC < 0) continue;
+      
+#define L1FSTPARAMEXTRAPOLATE
+#ifdef L1FSTPARAMEXTRAPOLATE      
+            
+      CbmL1MCTrack mc = *(it->GetMCTracks()[0]);
+      L1TrackPar trPar(it->TLast,it->CLast);
+      L1FieldRegion fld _fvecalignment;
+      L1FieldValue B[3], targB _fvecalignment;
+      float z[3] = {0.f, 0.f, 0.f};
+      int ih = 0;
+      for (unsigned int iMCPoint = 0; iMCPoint < mc.Points.size(); iMCPoint++){
+        const int iMCP = mc.Points[iMCPoint];
+        CbmL1MCPoint &mcP = vMCPoints[iMCP];
+        L1Station &st = algo->vStations[mcP.iStation];
+        z[ih] = st.z[0];
+        if(ih>0 && (z[ih] - z[ih-1])<0.1) continue;
+        st.fieldSlice.GetFieldValue( mcP.x, mcP.y, B[ih] );
+        ih++;
+        if(ih==3) break;
+      }
+      if(ih < 3) continue;
+      CbmL1MCPoint &mcP = vMCPoints[iMC];
+      targB = algo->vtxFieldValue;
+      fld.Set( B[0], z[0], B[1], z[1], B[2], z[2] );
+      L1Extrapolate(trPar, mcP.zOut, trPar.qp, fld);
+
+      h_fitL[0]->Fill( (trPar.x[0]-mcP.xOut) *1.e4);
+      h_fitL[1]->Fill( (trPar.y[0]-mcP.yOut) *1.e4);
+      h_fitL[2]->Fill((trPar.tx[0]-mcP.pxOut/mcP.pzOut)*1.e3);
+      h_fitL[3]->Fill((trPar.ty[0]-mcP.pyOut/mcP.pzOut)*1.e3);
+      h_fitL[4]->Fill(fabs(1./trPar.qp[0])/mcP.p-1);
+
+
+      if( finite(trPar.C00[0]) && trPar.C00[0]>0 ) h_fitL[5]->Fill( (trPar.x[0]-mcP.xOut)/sqrt(trPar.C00[0]));
+      if( finite(trPar.C11[0]) && trPar.C11[0]>0 ) h_fitL[6]->Fill( (trPar.y[0]-mcP.yOut)/sqrt(trPar.C11[0]));
+      if( finite(trPar.C22[0]) && trPar.C22[0]>0 ) h_fitL[7]->Fill( (trPar.tx[0]-mcP.pxOut/mcP.pzOut)/sqrt(trPar.C22[0]));
+      if( finite(trPar.C33[0]) && trPar.C33[0]>0 ) h_fitL[8]->Fill( (trPar.ty[0]-mcP.pyOut/mcP.pzOut)/sqrt(trPar.C33[0]));
+      if( finite(trPar.C44[0]) && trPar.C44[0]>0 ) h_fitL[9]->Fill( (trPar.qp[0]-mcP.q/mcP.p)/sqrt(trPar.C44[0]));
+      h_fitL[10]->Fill(trPar.qp[0]);
+      h_fitL[11]->Fill(mcP.q/mcP.p);
+      h_fitL[12]->Fill(trPar.t[0]-mcP.time);
+      if( finite(trPar.C55[0]) && trPar.C55[0]>0 ) h_fitL[13]->Fill( (trPar.t[0]-mcP.time)/sqrt(trPar.C55[0]));
+#else
       CbmL1MCPoint &mc = vMCPoints[iMC];
+      
       h_fitL[0]->Fill( (it->TLast[0]-mc.x) *1.e4);
       h_fitL[1]->Fill( (it->TLast[1]-mc.y) *1.e4);
       h_fitL[2]->Fill((it->TLast[2]-mc.px/mc.pz)*1.e3);
@@ -1180,6 +1224,8 @@ void CbmL1::TrackFitPerformance()
       h_fitL[11]->Fill(mc.q/mc.p);
       h_fitL[12]->Fill(it->TLast[6]-mc.time);
       if( finite(it->CLast[20]) && it->CLast[20]>0 ) h_fitL[13]->Fill( (it->TLast[6]-mc.time)/sqrt(it->CLast[20]));
+      
+#endif      
     }
 
     { // vertex
