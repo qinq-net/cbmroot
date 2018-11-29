@@ -1084,6 +1084,9 @@ void CbmL1::TrackFitPerformance()
     { // first hit
 #define L1FSTPARAMEXTRAPOLATE
 #ifdef L1FSTPARAMEXTRAPOLATE
+      
+      const int last_station = vHitStore[it->StsHits.back()].iStation;
+      
       CbmL1MCTrack mc = *(it->GetMCTracks()[0]);
       L1TrackPar trPar(it->T,it->C);
       L1FieldRegion fld _fvecalignment;
@@ -1127,8 +1130,8 @@ void CbmL1::TrackFitPerformance()
       if( finite(trPar.C44[0]) && trPar.C44[0]>0 ) h_fit[9]->Fill( (trPar.qp[0]-mcP.q/mcP.p)/sqrt(trPar.C44[0]));
       h_fit[10]->Fill(trPar.qp[0]);
       h_fit[11]->Fill(mcP.q/mcP.p);
-      h_fit[12]->Fill(trPar.t[0]-mcP.time);
-      if( finite(trPar.C55[0]) && trPar.C55[0]>0 ) h_fit[13]->Fill( (trPar.t[0]-mcP.time)/sqrt(trPar.C55[0]));
+      if (last_station>NMvdStations) h_fit[12]->Fill(trPar.t[0]-mcP.time);
+      if (last_station>NMvdStations) if( finite(trPar.C55[0]) && trPar.C55[0]>0 ) h_fit[13]->Fill( (trPar.t[0]-mcP.time)/sqrt(trPar.C55[0]));
       
 #else
       int iMC = vHitMCRef[it->StsHits.front()]; // TODO2: adapt to linking
@@ -1167,7 +1170,9 @@ void CbmL1::TrackFitPerformance()
       if (iMC < 0) continue;
       
 #define L1FSTPARAMEXTRAPOLATE
-#ifdef L1FSTPARAMEXTRAPOLATE      
+#ifdef L1FSTPARAMEXTRAPOLATE 
+      
+      const int last_station = vHitStore[it->StsHits.back()].iStation;
             
       CbmL1MCTrack mc = *(it->GetMCTracks()[0]);
       L1TrackPar trPar(it->TLast,it->CLast);
@@ -1196,6 +1201,7 @@ void CbmL1::TrackFitPerformance()
       h_fitL[2]->Fill((trPar.tx[0]-mcP.pxOut/mcP.pzOut)*1.e3);
       h_fitL[3]->Fill((trPar.ty[0]-mcP.pyOut/mcP.pzOut)*1.e3);
       h_fitL[4]->Fill(fabs(1./trPar.qp[0])/mcP.p-1);
+      if (last_station>NMvdStations) h_fitL[12]->Fill(trPar.t[0]-mcP.time);
 
 
       if( finite(trPar.C00[0]) && trPar.C00[0]>0 ) h_fitL[5]->Fill( (trPar.x[0]-mcP.xOut)/sqrt(trPar.C00[0]));
@@ -1205,8 +1211,7 @@ void CbmL1::TrackFitPerformance()
       if( finite(trPar.C44[0]) && trPar.C44[0]>0 ) h_fitL[9]->Fill( (trPar.qp[0]-mcP.q/mcP.p)/sqrt(trPar.C44[0]));
       h_fitL[10]->Fill(trPar.qp[0]);
       h_fitL[11]->Fill(mcP.q/mcP.p);
-      h_fitL[12]->Fill(trPar.t[0]-mcP.time);
-      if( finite(trPar.C55[0]) && trPar.C55[0]>0 ) h_fitL[13]->Fill( (trPar.t[0]-mcP.time)/sqrt(trPar.C55[0]));
+      if (last_station>NMvdStations) if( finite(trPar.C55[0]) && trPar.C55[0]>0 ) h_fitL[13]->Fill( (trPar.t[0]-mcP.time)/sqrt(trPar.C55[0]));
 #else
       CbmL1MCPoint &mc = vMCPoints[iMC];
       

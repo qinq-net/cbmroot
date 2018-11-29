@@ -388,6 +388,13 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
         TVector3 pos, err;
         mh->Position(pos);
         mh->PositionError(err);
+        
+        th.dx = mh->GetDx();
+        th.dy = mh->GetDy();
+        
+        th.du = mh->GetDx();
+        th.dv = mh->GetDy();
+        th.dxy = mh->GetDxy();
 
         th.x = pos.X();
         th.y = pos.Y();
@@ -1049,6 +1056,8 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
     h.t_mc = th.time;
     h.dx   = th.dx;
     h.dy   = th.dy;
+    h.du   = th.du;
+    h.dv   = th.dv;
     h.dxy   = th.dxy;
 //     h.p = th.p;
 //     h.q = th.q;

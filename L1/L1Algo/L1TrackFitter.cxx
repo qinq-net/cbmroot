@@ -361,7 +361,8 @@ void L1Algo::L1KFTrackFitter()
   L1Station *sta = vStations;
   L1Station staFirst, staLast;
   fvec x[MaxNStations], u[MaxNStations], v[MaxNStations], y[MaxNStations], time[MaxNStations], timeEr[MaxNStations], z[MaxNStations];
-  fvec x_first, y_first, time_first, x_last, y_last, time_last, time_er_first, time_er_last; 
+  fvec dx[MaxNStations], dy[MaxNStations], dxy[MaxNStations], du[MaxNStations], dv[MaxNStations];
+  fvec x_first, y_first, time_first, x_last, y_last, time_last, time_er_first, time_er_last, dx_fst, dy_fst, dxy_fst, time_er_lst, dx_lst, dy_lst, dxy_lst; 
   fvec Sy[MaxNStations], w[MaxNStations], w_time[MaxNStations];
   fvec y_temp, x_temp;
   fvec fz0, fz1, fz2, z_start, z_end;
@@ -405,7 +406,12 @@ void L1Algo::L1KFTrackFitter()
         if (ista>NMvdStations) w_time[ista][iVec] = 1.;
           
         u[ista][iVec]  = (*vStsStrips)[hit.f] ;
-        v[ista][iVec]  = (*vStsStripsB)[hit.b];    
+        v[ista][iVec]  = (*vStsStripsB)[hit.b];  
+        dx[ista][iVec] = hit.dx;
+        dy[ista][iVec] = hit.dy;
+        du[ista][iVec] = hit.du;
+        dv[ista][iVec] = hit.dv;
+        dxy[ista][iVec] = hit.dxy;
         StripsToCoor(u[ista], v[ista], x_temp, y_temp, sta[ista]);
         x[ista][iVec]  = x_temp[iVec];
         y[ista][iVec]  = y_temp[iVec];
@@ -422,6 +428,9 @@ void L1Algo::L1KFTrackFitter()
           y_first[iVec] = y[ista][iVec];
           time_first[iVec] = time[ista][iVec];
           time_er_first[iVec] = timeEr[ista][iVec];
+          dx_fst[iVec] = dx[ista][iVec];
+          dy_fst[iVec] = dy[ista][iVec];
+          dxy_fst[iVec] = dxy[ista][iVec];
           staFirst.XYInfo.C00[iVec] = sta[ista].XYInfo.C00[iVec];
           staFirst.XYInfo.C10[iVec] = sta[ista].XYInfo.C10[iVec];
           staFirst.XYInfo.C11[iVec] = sta[ista].XYInfo.C11[iVec];
@@ -430,6 +439,9 @@ void L1Algo::L1KFTrackFitter()
           z_end[iVec] = z[ista][iVec];
           x_last[iVec] = x[ista][iVec];
           y_last[iVec] = y[ista][iVec];
+          dx_lst[iVec] = dx[ista][iVec];
+          dy_lst[iVec] = dy[ista][iVec];
+          dxy_lst[iVec] = dxy[ista][iVec];
           time_last[iVec] = time[ista][iVec];
           time_er_last[iVec] = timeEr[ista][iVec];
           staLast.XYInfo.C00[iVec] = sta[ista].XYInfo.C00[iVec];
@@ -453,15 +465,11 @@ void L1Algo::L1KFTrackFitter()
       }
     }
 
+
 //fit backward
 
     GuessVec( T, x, y, z, Sy, w, nHits, &z_end);
-
-    
-    GuessVec( T1, x, y, z, Sy, w, nHits, &z_end);
-
-    
-
+    GuessVec( T1, x, y, z, Sy, w, nHits, &z_end, time, w_time);
 
     for( int iter = 0; iter < 2; iter++  ) { // 1.5 iterations
       
@@ -472,13 +480,11 @@ void L1Algo::L1KFTrackFitter()
       i = nHits-1;
 
       FilterFirst( T, x_last, y_last, staLast );
+     // FilterFirst( T1, x_last, y_last, time_last, time_er_last, staLast );
       
-      FilterFirst( T1, x_last, y_last, time_last, time_er_last, staLast );
+      FilterFirst( T1, x_last, y_last, time_last, time_er_last, staLast, dx_lst, dy_lst, dxy_lst );
       
-//       std::cout << "Filter first" << std::endl;
-//       T1.Compare(T);
-
-
+      T1.Filter(time[i], timeEr[i], w_time[i]);
 
      // L1AddMaterial( T, sta[i].materialInfo, qp0 );
 
@@ -496,7 +502,6 @@ void L1Algo::L1KFTrackFitter()
       fld.Set( fB2, fz2, fB1, fz1, fB0, fz0 );
       for( --i; i>=0; i-- )
       {
-//         std::cout << "Iter " << i << std::endl;
         
         fz0 = z[i];
         dz = (fz1-fz0);
@@ -516,13 +521,7 @@ void L1Algo::L1KFTrackFitter()
       //  T1.ExtrapolateLine(z[i]);
         
         L1Extrapolate( T, z[i], qp0, fld, &w1 );
-        
-    //    L1ExtrapolateLine( T, z[i]);
-//         std::cout << "Extrapolate" << std::endl;
-//         T1.Compare(T);
-        
-        
-        
+
         if(i == NMvdStations - 1)
         {
           
@@ -544,19 +543,20 @@ void L1Algo::L1KFTrackFitter()
         L1AddMaterial( T, sta[i].materialInfo, qp0, wIn );
         T1.L1AddMaterial(sta[i].materialInfo, qp01, wIn );        
 #endif
+        L1UMeasurementInfo info = sta[i].frontInfo;
+        info.sigma2 = du[i] * du[i];
+        
         L1Filter( T, sta[i].frontInfo, u[i], w1 );
-        T1.Filter( sta[i].frontInfo, u[i], w1 );
-// //         std::cout << "Filter 1" << std::endl;
-// //         T1.Compare(T);
-// 
+        T1.Filter( info, u[i], w1 );
+        
+        info = sta[i].backInfo;
+        info.sigma2 = dv[i] * dv[i];
+
         L1Filter( T, sta[i].backInfo,  v[i], w1 );        
-        T1.Filter( sta[i].backInfo,  v[i], w1 );
+        T1.Filter( info,  v[i], w1 );
         
         T1.Filter(time[i], timeEr[i], w1_time);
-//         std::cout << "Filter 2" << std::endl;
-//         T1.Compare(T);
-        
-//         std::cin.get();
+
         
         fB2 = fB1; 
         fz2 = fz1;
@@ -647,8 +647,11 @@ void L1Algo::L1KFTrackFitter()
       i = 0;
       
       FilterFirst( T, x_first, y_first, staFirst );
+     // FilterFirst( T1, x_first, y_first, time_first, time_er_first, staFirst);
       
-      FilterFirst( T1, x_first, y_first, time_first, time_er_first, staFirst);
+      FilterFirst( T1, x_first, y_first, time_first, time_er_first, staFirst, dx_fst, dy_fst, dxy_fst );
+      
+      T1.Filter(time[i], timeEr[i], w_time[i]);
       
       // L1AddMaterial( T, sta[i].materialInfo, qp0 );
       qp0  = T.qp;
@@ -705,8 +708,16 @@ void L1Algo::L1KFTrackFitter()
         L1Filter( T, sta[i].frontInfo, u[i], w1 );
         L1Filter( T, sta[i].backInfo,  v[i], w1 );
         
-        T1.Filter( sta[i].frontInfo, u[i], w1 );
-        T1.Filter( sta[i].backInfo,  v[i], w1 );
+        L1UMeasurementInfo info = sta[i].frontInfo;
+        info.sigma2 = du[i] * du[i];
+        
+        T1.Filter( info, u[i], w1 );
+        
+        info = sta[i].backInfo;
+        info.sigma2 = dv[i] * dv[i];
+        
+        T1.Filter( info,  v[i], w1 );
+        
         T1.Filter(time[i], timeEr[i], w1_time);
         
         fB2 = fB1; 
@@ -1432,12 +1443,14 @@ void L1Algo::GuessVec( L1TrackPar &t, fvec *xV, fvec *yV, fvec *zV, fvec *Sy, fv
   t.z = z0;
 }
 
-void L1Algo::GuessVec( L1TrackParFit &t, fvec *xV, fvec *yV, fvec *zV, fvec *Sy, fvec *wV, int NHits, fvec *zCur )
+void L1Algo::GuessVec( L1TrackParFit &t, fvec *xV, fvec *yV, fvec *zV, fvec *Sy, fvec *wV, int NHits, fvec *zCur, fvec *timeV, fvec *w_time )
   // gives nice initial approximation for x,y,tx,ty - almost same as KF fit. qp - is shifted by 4%, residual - ~3.5% (KF fit residual - 1%).
 {
   fvec A0, A1=ZERO, A2=ZERO, A3=ZERO, A4=ZERO, A5=ZERO, a0, a1=ZERO, a2=ZERO,
   b0, b1=ZERO, b2=ZERO;
-  fvec z0, x, y, z, S, w, wz, wS;
+  fvec z0, x, y, z, S, w, wz, wS, time;
+  
+  time = 0;
 
   int i=NHits-1;
   if(zCur)
@@ -1448,10 +1461,13 @@ void L1Algo::GuessVec( L1TrackParFit &t, fvec *xV, fvec *yV, fvec *zV, fvec *Sy,
   A0 = w;
   a0 = w*xV[i];
   b0 = w*yV[i];
+  
+  fvec nhits = 0;
   for( i=0 ; i<NHits; i++ ){
     x = xV[i];
     y = yV[i];
     w = wV[i];
+    if (timeV) nhits = nhits + w_time[i];
     z = zV[i] - z0;
     S = Sy[i];
     wz = w*z;
@@ -1461,7 +1477,9 @@ void L1Algo::GuessVec( L1TrackParFit &t, fvec *xV, fvec *yV, fvec *zV, fvec *Sy,
     A3+=wS;  A4+=wS*z; A5+=wS*S;
     a0+=w*x; a1+=wz*x; a2+=wS*x;
     b0+=w*y; b1+=wz*y; b2+=wS*y;
+    if (timeV)  time += w_time[i]*(timeV[i]-sqrt(x*x+y*y+z*z)/30.f);
   }
+  time = time/nhits;
 
   fvec A3A3 = A3*A3;
   fvec A3A4 = A3*A4;
@@ -1491,7 +1509,10 @@ void L1Algo::GuessVec( L1TrackParFit &t, fvec *xV, fvec *yV, fvec *zV, fvec *Sy,
   t.fy = (  A2*b0 - A1*b1 )*det;
   t.fty = ( -A1*b0 + A0*b1 )*det;
   t.fqp = -L*c_light_i*rsqrt(txtx1 +t.fty*t.fty);
+  if (timeV) t.ft = time&(nhits>0);
+
   t.fz = z0;
+
 }
 
 void L1Algo::FilterFirst( L1TrackPar &track,fvec &x, fvec &y, L1Station &st )
@@ -1525,11 +1546,13 @@ void L1Algo::FilterFirst( L1TrackParFit &track,fvec &x, fvec &y, fvec& t, L1Stat
   track.NDF = -3.0;
   track.chi2 = ZERO;
 }
-void L1Algo::FilterFirst( L1TrackParFit &track, fvec &x, fvec &y, fvec& t, fvec& t_er, L1Station &st, fvec &dx, fvec &dy, fvec &dxy )
+void L1Algo::FilterFirst( L1TrackParFit &track, fvec &x, fvec &y, fvec& t, fvec& t_er, L1Station &st, fvec &dx, fvec &dy, fvec &dxy)
 {
   // initialize covariance matrix
 //   track.C00= dx*dx;
 //   track.C10= dxy;      track.C11= dy*dy;
+
+  
   track.C00= st.XYInfo.C00;
   track.C10= st.XYInfo.C10;      track.C11= st.XYInfo.C11;
   track.C20= ZERO;         track.C21= ZERO;      track.C22= vINF;
@@ -1549,6 +1572,7 @@ void L1Algo::FilterFirst( L1TrackParFit &track, fvec &x, fvec &y, fvec& t, fvec&
   // initialize covariance matrix
 //   track.C00= dx*dx;
 //   track.C10= dxy;      track.C11= dy*dy;
+
   track.C00= st.XYInfo.C00;
   track.C10= st.XYInfo.C10;      track.C11= st.XYInfo.C11;
   track.C20= ZERO;         track.C21= ZERO;      track.C22= vINF;
@@ -1558,7 +1582,6 @@ void L1Algo::FilterFirst( L1TrackParFit &track, fvec &x, fvec &y, fvec& t, fvec&
   
   track.fx = x;
   track.fy = y;
-  track.ft = t;
   track.NDF = -3.0;
   track.chi2 = ZERO;
 }

@@ -629,7 +629,7 @@ class L1Algo{
     ///  ------ Subroutines used by L1Algo::KFTrackFitter()  ------
   
   void GuessVec( L1TrackPar &t, fvec *xV, fvec *yV, fvec *zV, fvec *Sy, fvec *wV, int NHits, fvec *zCur = 0 );
-  void GuessVec( L1TrackParFit &t, fvec *xV, fvec *yV, fvec *zV, fvec *Sy, fvec *wV, int NHits, fvec *zCur = 0 );
+  void GuessVec( L1TrackParFit &t, fvec *xV, fvec *yV, fvec *zV, fvec *Sy, fvec *wV, int NHits, fvec *zCur = 0, fvec *timeV=0, fvec *w_time=0 );
   
   void FilterFirst( L1TrackPar &track,fvec &x, fvec &y, L1Station &st );
   void FilterFirst( L1TrackParFit &track, fvec &x, fvec &y, fvec& t,  L1Station &st);
