@@ -70,6 +70,10 @@ void CbmBuildEventsSimple::FillEvent(Int_t st, Int_t end)
 // =====   Task execution   ==================================================
 void CbmBuildEventsSimple::Exec(Option_t*)
 {
+
+  // Reset output array
+  fEvents->Delete();
+
   Int_t i=0;
   Int_t j=0;
 //  Int_t n=0;
