@@ -41,6 +41,7 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    static constexpr UInt_t GetNbFebsPerDpb()   { return kuNbCrobsPerDpb * kuNbFebsPerCrob; }
    static constexpr UInt_t GetNbAsicsPerFeb()  { return kuNbAsicsPerFeb; }
    static constexpr UInt_t GetNbAsicsPerCrob() { return kuNbFebsPerCrob * kuNbAsicsPerFeb; }
+   static constexpr UInt_t GetNbAsicsPerDpb()  { return kuNbCrobsPerDpb * GetNbAsicsPerCrob(); }
    static constexpr UInt_t GetNbChanPerAsic()  { return kuNbChanPerAsic; }
    static constexpr UInt_t GetNbChanPerFeb()   { return kuNbAsicsPerFeb * kuNbChanPerAsic; }
 
@@ -76,6 +77,8 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    UInt_t GetNrOfAsics()      { return GetNrOfFebs()  * kuNbAsicsPerFeb; }
 
    Bool_t IsCrobActive( UInt_t uDpbIdx, UInt_t uCrobIdx );
+   Bool_t IsFebActive( UInt_t uFebInSystIdx );
+   Bool_t IsFebActive( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
    Int_t GetFebModuleIdx( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
    Int_t GetFebModuleSide( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
    Double_t GetFebAdcGain( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
@@ -140,11 +143,11 @@ class CbmMcbm2018StsPar : public FairParGenericSet
    static const     Double_t kdStereoAngleTan;         // [] See cxx file for assignation
    static constexpr Double_t kdPitchMm      =    0.058; // [mm]
    static constexpr Double_t kdSensorsSzX   =   60;     // [mm], active is 59.570 mm (kiNbStrips*kdPitchMm)
-   static constexpr Double_t kdSensorsSzY   =   40;     // [mm], active is 39.703 mm
+   static constexpr Double_t kdSensorsSzY   =   60;     // [mm], active is 59.570 mm
    static constexpr Int_t    kiCenterStripP =  512;     // []
    static constexpr Int_t    kiCenterStripN =  512;     // []
    static constexpr Double_t kdCenterPosX   =    0.0;   // [mm] Top Center
-   static constexpr Double_t kdCenterPosY   =   39.703 / 2.0; // [mm] Top Center
+   static constexpr Double_t kdCenterPosY   =   59.570 / 2.0; // [mm] Top Center
 
    /// Variables
    UInt_t  fuNbModules;      // Total number of STS modules in the setup

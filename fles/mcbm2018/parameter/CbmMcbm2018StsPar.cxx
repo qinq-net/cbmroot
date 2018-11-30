@@ -119,12 +119,12 @@ Bool_t CbmMcbm2018StsPar::getParams(FairParamList* l) {
    if ( ! l->fill("FebAdcBase",    &fdFebAdcBase ) ) return kFALSE;
    if ( ! l->fill("FebAdcThrGain", &fdFebAdcThrGain ) ) return kFALSE;
    if ( ! l->fill("FebAdcThrOffs", &fiFebAdcThrOffs ) ) return kFALSE;
-
+/*
    LOG(INFO) << "CbmMcbm2018StsPar::getParams => Values " << FairLogger::endl
                 << fuNbModules << FairLogger::endl
                 << fuNrOfDpbs << FairLogger::endl
                 << FairLogger::endl;
-
+*/
   return kTRUE;
 }
 // -------------------------------------------------------------------------
@@ -255,6 +255,56 @@ Bool_t CbmMcbm2018StsPar::IsCrobActive( UInt_t uDpbIdx, UInt_t uCrobIdx )
       else
       {
          LOG(WARNING) << "CbmMcbm2018StsPar::IsCrobActive => Dpb Index out of bound, "
+                      << "returning default inactive!"
+                      << FairLogger::endl;
+         return kFALSE;
+      } // else of if( uDpbIdx < fuNrOfDpbs )
+}
+Bool_t CbmMcbm2018StsPar::IsFebActive( UInt_t uFebInSystIdx )
+{
+
+   if( uFebInSystIdx < GetNrOfFebs() )
+   {
+      return ( -1 == fiFebModuleIdx[ uFebInSystIdx ] ? kFALSE : kTRUE );
+   } // if( uFebInSystIdx < GetNrOfFebs() )
+      else
+      {
+         LOG(WARNING) << "CbmMcbm2018StsPar::IsFebActive => Feb Index out of bound, "
+                      << "returning default inactive!"
+                      << FairLogger::endl;
+         return kFALSE;
+      } // else of if( uFebInSystIdx < GetNrOfFebs() )
+}
+Bool_t CbmMcbm2018StsPar::IsFebActive( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx )
+{
+   if( uDpbIdx < fuNrOfDpbs )
+   {
+      if( uCrobIdx < kuNbCrobsPerDpb )
+      {
+         if( uFebIdx < kuNbFebsPerCrob )
+         {
+            UInt_t uIdx = ( uDpbIdx * kuNbCrobsPerDpb + uCrobIdx ) * kuNbFebsPerCrob + uFebIdx;
+            return IsFebActive( uIdx );
+         } // if( uFebIdx < kuNbFebsPerCrob )
+            else
+            {
+               LOG(WARNING) << "CbmMcbm2018StsPar::IsFebActive => Feb Index out of bound, "
+                            << "returning default inactive!"
+                            << FairLogger::endl;
+               return kFALSE;
+            } // else of if( uFebIdx < kuNbCrobsPerDpb )
+      } // if( uCrobIdx < kuNbCrobsPerDpb )
+         else
+         {
+            LOG(WARNING) << "CbmMcbm2018StsPar::IsFebActive => Crob Index out of bound, "
+                         << "returning default inactive!"
+                         << FairLogger::endl;
+            return kFALSE;
+         } // else of if( uCrobIdx < kuNbCrobsPerDpb )
+   } // if( uDpbIdx < fuNrOfDpbs )
+      else
+      {
+         LOG(WARNING) << "CbmMcbm2018StsPar::IsFebActive => Dpb Index out of bound, "
                       << "returning default inactive!"
                       << FairLogger::endl;
          return kFALSE;
