@@ -74,6 +74,8 @@ public:
    void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
    void SetEnableCoincidenceMaps( Bool_t bEnableCoincidenceMapsOn = kTRUE ) { fbEnableCoincidenceMaps = bEnableCoincidenceMapsOn; }
    void SetCoincidenceBorder( Double_t dCenterPos, Double_t dBorderVal );
+   void SetFebChanCoincidenceLimitNs( Double_t dLimitIn ) { fdFebChanCoincidenceLimit = dLimitIn; }
+   void UseNoiseLimitsSmx2LogicError( Bool_t bUseNoise = kTRUE ) { fbSmx2ErrorUseNoiseLevels = bUseNoise; }
 
 private:
    // Parameters
@@ -95,11 +97,11 @@ private:
    std::vector< std::vector< std::vector< Int_t > > > fviFebModuleIdx;   //! Idx of the STS module for each FEB, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ], -1 if inactive
    std::vector< std::vector< std::vector< Int_t > > > fviFebModuleSide;  //! STS module side for each FEB, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ], 0 = P, 1 = N, -1 if inactive
    std::vector< std::vector< std::vector< Int_t > > > fviFebType;  //! FEB type, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ], 0 = A, 1 = B, -1 if inactive
-   std::vector< std::vector< std::vector< Double_t > > > fviFebAdcGain;  //! ADC gain in e-/b, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ]
-   std::vector< std::vector< std::vector< Double_t > > > fviFebAdcOffs;  //! ADC offset in e-, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ]
+   std::vector< std::vector< std::vector< Double_t > > > fvdFebAdcGain;  //! ADC gain in e-/b, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ]
+   std::vector< std::vector< std::vector< Double_t > > > fvdFebAdcOffs;  //! ADC offset in e-, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ]
 
    // Constants
-   static const Int_t    kiMaxNbFlibLinks = 16;
+   static const Int_t    kiMaxNbFlibLinks = 32;
    static const UInt_t   kuBytesPerMessage = 4;
 
    /// Internal Control/status of monitor
@@ -129,6 +131,7 @@ private:
       /// Hits comparison
    std::vector< std::vector< ULong64_t > > fvulChanLastHitTime;   //! Last hit time in bins for each Channel
    std::vector< std::vector< Double_t  > > fvdChanLastHitTime;    //! Last hit time in ns   for each Channel
+   std::vector< Double_t >                               fvdPrevMsTime;              //! Header time of previous MS per link
    std::vector< Double_t >                               fvdMsTime;                  //! Header time of each MS
    std::vector< std::vector< std::vector< UInt_t > > >   fvuChanNbHitsInMs;          //! Number of hits in each MS for each Channel
    std::vector< std::vector< std::vector< Double_t > > > fvdChanLastHitTimeInMs;     //! Last hit time in bins in each MS for each Channel
@@ -168,25 +171,12 @@ private:
    TH1* fhStsSysMessType;
    TH2* fhStsMessTypePerDpb;
    TH2* fhStsSysMessTypePerDpb;
-
-/*
-   std::vector<TH1 *> fhStsChanCntRaw;
-   std::vector<TH1 *> fhStsChanCntRawGood;
-   std::vector<TH2 *> fhStsChanAdcRaw;
-   std::vector<TProfile*> fhStsChanAdcRawProf;
-   std::vector<TH2*> fhStsChanRawTs;
-   std::vector<TH2*> fhStsChanMissEvt;
-   std::vector<TH2*> fhStsChanMissEvtEvo;
-   std::vector<TH2*> fhStsChanHitRateEvo;
-   std::vector<TH1*> fhStsAsicRateEvo;
-   std::vector<TH1*> fhStsAsicMissEvtEvo;
-   std::vector<TH2*> fhStsChanHitRateEvoLong;
-   std::vector<TH1*> fhStsAsicRateEvoLong;
-*/
+   TH2* fhPulserStatusMessType;
+   TH2* fhPulserMsStatusFieldType;
 
       /// Plots per FEB-8
 //   UInt_t   kuNbAsicPerFeb = 8;
-   Double_t kdFebChanCoincidenceLimit = 300.0; // ns
+   Double_t fdFebChanCoincidenceLimit; // ns
    std::vector<TH1 *>     fhStsFebChanCntRaw;
    std::vector<TH1 *>     fhStsFebChanCntRawGood;
    std::vector<TH2 *>     fhStsFebChanAdcRaw;
@@ -205,15 +195,61 @@ private:
    std::vector<TH2*>      fhStsFebChanHitRateEvoLong;
    std::vector<TH2*>      fhStsFebAsicHitRateEvoLong;
    std::vector<TH1*>      fhStsFebHitRateEvoLong;
+   std::vector< std::vector< Double_t > > fdStsFebChanLastTimeForDist;
+   std::vector< TH2* >    fhStsFebChanDistT;
    std::vector< std::vector<TH1*> > fhStsFebChanDtCoinc;
    std::vector< std::vector<TH2*> > fhStsFebChanCoinc;
 
       /// Plots per module
+   std::vector< TH1* > fhStsModulePNCoincDt;
+   std::vector< TH2* > fhStsModulePNCoincDtAsicP;
+   std::vector< TH2* > fhStsModulePNCoincDtAsicN;
    std::vector< TH2* > fhStsModulePNCoincChan;
    std::vector< TH2* > fhStsModulePNCoincAdc;
    std::vector< TH2* > fhStsModuleCoincAdcChanP;
    std::vector< TH2* > fhStsModuleCoincAdcChanN;
    std::vector< TH2* > fhStsModuleCoincMap;
+
+   /// SXM 2.0 logic error detection and tagging, 1 eLink case
+   Bool_t fbSmx2ErrorUseNoiseLevels;
+   static const UInt_t             kuSmxErrCoincWinNbHits = 11;
+   constexpr static const Double_t kdSmxErrCoincWinBeg    =      0; //ns, true for time sorted hits!
+      /// Coincidence windows for 99.0% tagging (up to 1% of corruption not detected)
+   constexpr static const Double_t kdSmxErrCoincWinMainM07  =  320; //ns
+   constexpr static const Double_t kdSmxErrCoincWinMainM08  =  380; //ns
+   constexpr static const Double_t kdSmxErrCoincWinMainM09  =  450; //ns
+   constexpr static const Double_t kdSmxErrCoincWinMainM10  =  510; //ns
+   constexpr static const Double_t kdSmxErrCoincWinMainM11  =  570; //ns
+      /// Coincidence windows 99.9% tagging (up to 0.1% of corruption not detected)
+   constexpr static const Double_t kdSmxErrCoincWinNoiseM07 =  390; //ns
+   constexpr static const Double_t kdSmxErrCoincWinNoiseM08 =  460; //ns
+   constexpr static const Double_t kdSmxErrCoincWinNoiseM09 =  540; //ns
+   constexpr static const Double_t kdSmxErrCoincWinNoiseM10 =  600; //ns
+   constexpr static const Double_t kdSmxErrCoincWinNoiseM11 =  660; //ns
+      /// Tagging variables
+   Double_t fdSmxErrCoincWinM07;
+   Double_t fdSmxErrCoincWinM08;
+   Double_t fdSmxErrCoincWinM09;
+   Double_t fdSmxErrCoincWinM10;
+   Double_t fdSmxErrCoincWinM11;
+   std::vector< std::vector< std::vector< Double_t > > > fvdSmxErrTimeLastHits; //! [ NbFebs ][ NbSmxPerFeb ][ kuSmxErrCoincWinNbHits ]
+   std::vector< std::vector< UInt_t > > fvuSmxErrIdxFirstHitM07; //! [ NbFebs ][ NbSmxPerFeb ]
+   std::vector< std::vector< UInt_t > > fvuSmxErrIdxFirstHitM08; //! [ NbFebs ][ NbSmxPerFeb ]
+   std::vector< std::vector< UInt_t > > fvuSmxErrIdxFirstHitM09; //! [ NbFebs ][ NbSmxPerFeb ]
+   std::vector< std::vector< UInt_t > > fvuSmxErrIdxFirstHitM10; //! [ NbFebs ][ NbSmxPerFeb ]
+   std::vector< std::vector< UInt_t > > fvuSmxErrIdxFirstHitM11; //! [ NbFebs ][ NbSmxPerFeb ]
+   std::vector< std::vector< UInt_t > > fvuSmxErrIdxLastHit;
+      /// Methods
+   void   SmxErrInitializeVariables();
+   Bool_t SmxErrCheckCoinc( UInt_t uFebIdx, UInt_t uAsicIdx, Double_t dNewHitTime );
+      /// Histograms
+   std::vector< TProfile *>   fhStsFebSmxErrRatioEvo;
+   std::vector< TProfile2D *> fhStsFebSmxErrRatioEvoAsic;
+   std::vector< TProfile *>   fhStsFebSmxErrRatioCopyEvo;
+   std::vector< TProfile2D *> fhStsFebSmxErrRatioCopyEvoAsic;
+   std::vector< TProfile *>   fhStsFebSmxErrRatioCopySameAdcEvo;
+   std::vector< TProfile2D *> fhStsFebSmxErrRatioCopySameAdcEvoAsic;
+
 
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
@@ -242,11 +278,19 @@ private:
 
    void UpdatePairMeanValue( UInt_t uAsicA, UInt_t uAsicB, Double_t dNewValue );
 */
+
+   // Methods later going into Algo
+   Bool_t InitStsParameters();
    void CreateHistograms();
+   Bool_t ProcessStsMs( const fles::Timeslice& ts, size_t uMsComp, UInt_t uMsIdx );
 
    void FillHitInfo(   stsxyter::Message mess, const UShort_t & usElinkIdx, const UInt_t & uAsicIdx, const UInt_t & uMsIdx );
    void FillTsMsbInfo( stsxyter::Message mess, UInt_t uMessIdx = 0, UInt_t uMsIdx = 0);
    void FillEpochInfo( stsxyter::Message mess );
+
+   void ResetStsHistos();
+   void SaveStsHistos( TString sFileName = "" );
+   Bool_t ScanForNoisyChannels( Double_t dNoiseThreshold = 1e3 );
 
    CbmMcbm2018MonitorSts(const CbmMcbm2018MonitorSts&);
    CbmMcbm2018MonitorSts operator=(const CbmMcbm2018MonitorSts&);
