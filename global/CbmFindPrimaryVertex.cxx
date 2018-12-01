@@ -116,6 +116,9 @@ InitStatus CbmFindPrimaryVertex::Init() {
 // -----   Public method Exec   --------------------------------------------
 void CbmFindPrimaryVertex::Exec(Option_t*) {
 
+  // Event number
+  Int_t iEvent = fNofEvents;
+
   // Reset primary vertex
   fTimer.Start();
   fPrimVert->Reset();
@@ -130,7 +133,7 @@ void CbmFindPrimaryVertex::Exec(Option_t*) {
   fNofEvents++;
   fTimeTot += fTimer.RealTime();
   LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-  		      << right << fNofEvents
+  		      << right << iEvent
   		      << ", real time " << fixed << setprecision(6)
   		      << fTimer.RealTime() << " s, tracks used: "
 			  << fPrimVert->GetNTracks()

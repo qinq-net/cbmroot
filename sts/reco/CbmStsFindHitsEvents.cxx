@@ -156,6 +156,7 @@ Int_t CbmStsFindHitsEvents::ProcessEvent(CbmEvent* event) {
 	// Start timer and counter
 	fTimer.Start();
 	Int_t nHitsEvent = 0;
+	Int_t iEvent = ( event ? event->GetNumber() : fNofEvents );
 
 	// --- Sort clusters into modules
 	Int_t nClusters = SortClusters(event);
@@ -180,7 +181,7 @@ Int_t CbmStsFindHitsEvents::ProcessEvent(CbmEvent* event) {
   fTimeTot        += fTimer.RealTime();
 
   LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-  		      << right << (event ? event->GetNumber() : 0) << ", real time " << fixed
+  		      << right << iEvent << ", real time " << fixed
   		      << setprecision(6) << fTimer.RealTime() << " s, clusters: "
   		      << nClusters << ", hits: " << nHitsEvent << FairLogger::endl;
 
@@ -199,8 +200,6 @@ Int_t CbmStsFindHitsEvents::SortClusters(CbmEvent* event) {
     Int_t nClusters = 0;
     if ( event ) nClusters = event->GetNofData(kStsCluster);
     else         nClusters = fClusters->GetEntriesFast();
-    LOG(INFO) << GetName() << ": event " << (event ? event->GetNumber() : 0)
-      << ", clusters " << nClusters << FairLogger::endl;
 
 	// --- Loop over clusters in event
 	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {

@@ -53,13 +53,12 @@ CbmStsFindHits::~CbmStsFindHits() {
 void CbmStsFindHits::Exec(Option_t* /*opt*/) {
 
 	// --- Event number
-	Int_t iEvent =
-			FairRun::Instance()->GetEventHeader()->GetMCEntryNumber();
+	Int_t iEvent = fNofEvents;
 
 	// Start timer and counter
 	fTimer.Start();
 
-  // --- Clear output arrays
+    // --- Clear output arrays
 	fHits->Delete();
 
 	// --- Sort clusters into modules

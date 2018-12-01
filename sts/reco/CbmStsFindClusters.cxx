@@ -399,10 +399,9 @@ void CbmStsFindClusters::ProcessDigi(Int_t index) {
 void CbmStsFindClusters::ProcessLegacyEvent() {
 
   // --- Event number. Note that the FairRun counting start with 1.
-  Int_t eventNumber =
-      FairRun::Instance()->GetEventHeader()->GetMCEntryNumber() - 1;
-  LOG(INFO) << GetName() << ": Processing legacy event "
-            << eventNumber << FairLogger::endl;
+  Int_t eventNumber = fNofUnits;
+  LOG(DEBUG) << GetName() << ": Processing legacy event "
+             << eventNumber << FairLogger::endl;
 
   // --- Reset output array
   fClusters->Delete();
