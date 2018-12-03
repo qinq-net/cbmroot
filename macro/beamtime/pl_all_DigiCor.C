@@ -1,11 +1,12 @@
-void pl_all_DigiCor(Int_t iNDet=6)
+void pl_all_DigiCor(Int_t iNDet=1)
 {
   //  TCanvas *can = new TCanvas("can22","can22");
   //  can->Divide(2,2); 
-  //  TCanvas *can = new TCanvas("can","can",48,55,700,900);
-  TCanvas *can = new TCanvas("can","can",48,56,900,700);
-  can->Divide(4,4,0.01,0.01); 
-  //  can->Divide(2,2,0,0); 
+    TCanvas *can = new TCanvas("can","can",48,55,900,900);
+    //TCanvas *can = new TCanvas("can","can",48,56,900,700);
+    //can->Divide(4,4,0.01,0.01); 
+    //  can->Divide(2,3,0.01,0.01); 
+    can->Divide(5,5,0.01,0.01); 
   Float_t lsize=0.07;
 
  gPad->SetFillColor(0);
@@ -18,9 +19,9 @@ void pl_all_DigiCor(Int_t iNDet=6)
 
  TH1 *h;
  TH2 *h2;
- Int_t iType[6]  ={2,4,6,5,9,8};
- Int_t iNumSm[6] ={2,1,1,1,3,2};
- Int_t iNumRpc[6]={1,1,2,1,2,1};
+ Int_t iType[6]  ={0,1,6,5,9,8};
+ Int_t iNumSm[6] ={5,3,1,1,3,2};
+ Int_t iNumRpc[6]={5,3,2,1,2,1};
  Int_t iCanv=0;
  // if (h!=NULL) h->Delete();
 

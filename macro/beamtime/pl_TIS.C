@@ -83,7 +83,10 @@ can->cd(3);
  TEfficiency *pEffSel = new TEfficiency(*hTIS_sel2,*hTIS_all);
  pEffSel->SetTitle("Selector (MRef & Sel2)  efficiency");
  pEffSel->Draw("AP");
-
+ gPad->Update();
+ auto graph = pEffSel->GetPaintedGraph(); 
+ graph->GetXaxis()->SetRangeUser(0.,10.);
+ gPad->Update();
  /*
  TH1F *hTISsel1frac = (TH1F *)hTIS_all->Clone();
  hTISsel1frac->SetName("hTISsel1frac");
@@ -108,6 +111,10 @@ can->cd(4);
  pEffDut->SetTitle("Relative efficiency of DUT");
  pEffDut->Draw("AP");
  // gPad->SetLogy();
+ gPad->Update();
+ auto gEffDut = pEffDut->GetPaintedGraph(); 
+ gEffDut->GetXaxis()->SetRangeUser(0.,10.);
+ gPad->Update();
 
 can->cd(5);
  gROOT->cd();

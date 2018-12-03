@@ -221,7 +221,7 @@ can->cd(14);
  h1=(TH1 *)gROOT->FindObjectAny(hname);
  if (h1!=NULL) {
   h1->Draw("");
-  h1->SetMinimum(0.5);
+  h1->SetMinimum(0.1*h1->GetMaximum());
   gPad->SetLogy();
   hAll=(TH1 *)h1->Clone();
  }else 

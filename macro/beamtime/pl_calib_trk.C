@@ -162,7 +162,7 @@ can->cd(11);
  h1=(TH1 *)gROOT->FindObjectAny(hname);
  if (h1!=NULL) {
   h1->Draw();
-  h1->SetMaximum(2.);
+  h1->SetMaximum(2.5);
   h1->SetMinimum(0.);
   h1->GetYaxis()->SetTitleOffset(1.3);
   gPad->SetLogz();

@@ -8,6 +8,9 @@ void pl_pull_trk(Int_t NSt=8, Int_t iVar=0, Int_t iFit=0){
   case 4:
     can->Divide(3,3);
     break; 
+  case 18:
+    can->Divide(4,5);
+    break; 
   default:
     can->Divide(4,4);
     ; 
@@ -23,7 +26,7 @@ void pl_pull_trk(Int_t NSt=8, Int_t iVar=0, Int_t iFit=0){
  TH1 *h1;
  TH2 *h2;
 
- const Int_t MSt=10;
+ const Int_t MSt=30;
  Double_t vSt[MSt];
  Double_t vMean[MSt];
  Double_t vSig[MSt];

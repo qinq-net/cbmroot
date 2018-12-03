@@ -12,6 +12,7 @@ gStyle->SetOptStat(kTRUE);
 // gROOT->SetDirLevel(1);
 
  TH1 *h;
+ TH1 *h1;
  TH2 *h2;
  // if (h!=NULL) h->Delete();
  Int_t iNch=0;
