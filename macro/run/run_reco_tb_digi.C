@@ -20,7 +20,7 @@
 using std::cout;
 using std::endl;
 
-void run_reco_tb_digi()
+void run_reco_tb_digi(TString dataSet = "test", Int_t nSlices = -1)
  {
 
   // =========================================================================
@@ -29,12 +29,9 @@ void run_reco_tb_digi()
   
   
   // --- File names
-  TString setupName = "sis100_electron";
-  TString outDir  = "data/";
-  TString inFile  = outDir + setupName + "_test.raw.root";   // Input file (MC events)
-  TString mcFile  = outDir + setupName + "_test.mc.root";    // Transport file
-  TString parFile = outDir + setupName + "_params.root";     // Parameter file
-  TString outFile = outDir + setupName + "_test.reco.root";  // Output file
+  TString inFile  = dataSet + ".raw.root";   // Input file (MC events)
+  TString parFile = dataSet + ".par.root";   // Parameter file
+  TString outFile = dataSet + ".rec.root";   // Output file
 
   // Log level
   TString logLevel = "INFO";  // switch to DEBUG or DEBUG1,... for more info
@@ -118,7 +115,8 @@ void run_reco_tb_digi()
   rtdb->print();
 
   cout << "Starting run " << gGeoManager << endl;
-  run->Run();
+  if ( nSlices < 0 ) run->Run();
+  else run->Run(nSlices);
   // ------------------------------------------------------------------------
 
 

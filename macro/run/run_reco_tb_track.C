@@ -16,7 +16,7 @@
 using std::cout;
 using std::endl;
 
-void run_reco_tb_track()
+void run_reco_tb_track(TString dataSet = "test", Int_t nSlices = -1)
  {
 
   // =========================================================================
@@ -27,46 +27,19 @@ void run_reco_tb_track()
   // --- File names
   TString setupName = "sis100_electron";
   TString outDir  = "data/";
-  TString inFile  = outDir + setupName + "_test.raw.root";   // Input file (MC events)
-  TString mcFile  = outDir + setupName + "_test.mc.root";    // Transport file
-  TString parFile = outDir + setupName + "_params.root";     // Parameter file
-  TString outFile = outDir + setupName + "_test.reco.root";  // Output file
+  TString inFile  = dataSet + ".raw.root";     // Input file (digis)
+  TString parFile = dataSet + ".par.root";     // Parameter file
+  TString outFile = dataSet + ".rec.root";     // Output file
 
   // Log level
   TString logLevel = "INFO";  // switch to DEBUG or DEBUG1,... for more info
   TString logVerbosity = "LOW"; // switch to MEDIUM or HIGH for more info
   
-  // TOF digitisation parameters
-  // For some reason that nobody seems to be able to explain, the TOF
-  // digitisation parameters cannot be retrieved from the parameter file,
-  // in which they are supposed to be stored during digitisation.
-  // They are needed, however, for the TOF cluster finder. So, we read them
-  // here from the ASCII file. Note that there is no guarantee that you use
-  // the same parameters during digitisation and reconstruction this way.
-  // One cannot help asking what we need a parameter database for, then.
-  TList *parFileList = new TList();
-  TString inDir = gSystem->Getenv("VMCWORKDIR");
-  TString paramDir = inDir + "/parameters/";
-  TString setupFile = inDir + "/geometry/setup/setup_" + setupName + ".C";
-  TString setupFunct = "setup_";
-  setupFunct += setupName;
-  setupFunct += "()";
-  gROOT->LoadMacro(setupFile);
-  gInterpreter->ProcessLine(setupFunct);
-  TString geoTag;
-  CbmSetup* setupObject = CbmSetup::Instance();
-  if ( setupObject->GetGeoTag(kTof, geoTag) ) {
-  	TObjString* tofFile = new TObjString(paramDir + "tof/tof_" + geoTag + ".digi.par");
-  	TObjString* tofBdfFile = new TObjString(paramDir + "tof/tof_" + geoTag + ".digibdf.par");
-  	parFileList->Add(tofFile);
-  	parFileList->Add(tofBdfFile);
-  }
-  
-  
+
 
   // ----    Debug option   -------------------------------------------------
   gDebug = 0;
-  gSystem->Load("libLittrack.so");
+  //gSystem->Load("libLittrack.so");
 
   // ========================================================================
 
@@ -76,6 +49,7 @@ void run_reco_tb_track()
   TStopwatch timer;
   timer.Start();
   // ------------------------------------------------------------------------
+
 
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *run = new FairRunAna();
@@ -90,9 +64,10 @@ void run_reco_tb_track()
   // ------------------------------------------------------------------------
 
 
-  // ---- Set the log level 	
+  // ---- Set the log level   -----------------------------------------------
   FairLogger::GetLogger()->SetLogScreenLevel(logLevel.Data());
   FairLogger::GetLogger()->SetLogVerbosityLevel(logVerbosity.Data());
+  // ------------------------------------------------------------------------
   
   
   
@@ -137,9 +112,7 @@ void run_reco_tb_track()
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
   parIo1->open(parFile.Data(),"UPDATE");
-  parIo2->open(parFileList, "in");
   rtdb->setFirstInput(parIo1);
-  rtdb->setSecondInput(parIo2);
   // ------------------------------------------------------------------------
 
 
@@ -151,8 +124,10 @@ void run_reco_tb_track()
   rtdb->print();
 
   cout << "Starting run " << gGeoManager << endl;
-  run->Run();
+  if ( nSlices < 0 ) run->Run();
+  else run->Run(nSlices);
   // ------------------------------------------------------------------------
+
 
   // -----   Finish   -------------------------------------------------------
   timer.Stop();
