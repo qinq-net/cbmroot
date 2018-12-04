@@ -8,7 +8,8 @@ else
 fi
   
 _reqmod=3
-_NrUnpackers=16
+_reqtint=100 
+_iUnp=16
 _batch=1
 
 _dirname=@VMCWORKDIR@/macro/beamtime/mcbm2018/input/$_runname/
