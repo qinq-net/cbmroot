@@ -27,7 +27,7 @@ set(KFPARTICLE_DESTDIR "${CMAKE_BINARY_DIR}/external/KFPARTICLE-prefix")
 
 download_project_if_needed(PROJECT         kfparticle_source
                            GIT_REPOSITORY  ${KFPARTICLE_SRC_URL}
-                           GIT_TAG         "52da14d850b6d903182ce8034b654e1389c18d9b"
+                           GIT_TAG         "36e427f16bab3f755bd86281c681768a73320c54"
                            SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/KFParticle
                            TEST_FILE       CMakeLists.txt
                           )
