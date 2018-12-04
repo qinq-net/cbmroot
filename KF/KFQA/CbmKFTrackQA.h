@@ -19,6 +19,7 @@ class TDirectory;
 class TH1F;
 class TH2F;
 class TObject;
+class CbmMCDataArray;
 
 class CbmKFTrackQA : public FairTask {
  public:
@@ -34,6 +35,7 @@ class CbmKFTrackQA : public FairTask {
   void SetTrackMatchBranchName(const TString& name)   { fStsTrackMatchBranchName = name;  }
   void SetMuchTrackMatchBranchName(const TString& name)   { fMuchTrackMatchBranchName = name;  }
   void SetTrdBranchName (const TString& name)      {   fTrdBranchName = name;  }
+  void SetTrdHitBranchName (const TString& name)      {   fTrdHitBranchName = name;  }
   void SetRichBranchName (const TString& name)      {   fRichBranchName = name;   }
   void SetMuchTrackBranchName (const TString& name) { fMuchTrackBranchName = name; }
   Int_t GetZtoNStation(Double_t getZ);
@@ -55,6 +57,7 @@ class CbmKFTrackQA : public FairTask {
   TString fGlobalTrackBranchName;
   TString fRichBranchName;
   TString fTrdBranchName;
+  TString fTrdHitBranchName;
   TString fTofBranchName;
   TString fMuchTrackBranchName;
   TString fMCTracksBranchName;
@@ -69,6 +72,7 @@ class CbmKFTrackQA : public FairTask {
   TClonesArray* fGlobalTrackArray;
   TClonesArray* fRichRingArray;
   TClonesArray* fTrdTrackArray;
+  TClonesArray* fTrdHitArray;
   TClonesArray* fTofHitArray;
   TClonesArray* fMuchTrackArray;
   TClonesArray* fMCTrackArray;
@@ -77,6 +81,8 @@ class CbmKFTrackQA : public FairTask {
   TClonesArray* fTrdTrackMatchArray;
   TClonesArray* fTofHitMatchArray;
   TClonesArray* fMuchTrackMatchArray;
+  
+  CbmMCDataArray* fTofPoints; // CbmTofPoint array
   
   //output file with histograms
   TString fOutFileName;
@@ -97,7 +103,16 @@ class CbmKFTrackQA : public FairTask {
     //RICH
   static const int NRichRingHisto2D = 3; // r, axis a, axis b
   TH2F* hRichRingHisto2D[10][NRichRingHisto2D]; //All tracks, electrons, muons, pions, kaons, protons, fragments, mismatch, ghost track, ghost ring
+    //Trd
+  static const int NTrdHisto = 2;
+  TH1F* hTrdHisto[14][NTrdHisto]; //All tracks, electrons, muons, pions, kaons, protons, fragments, mismatch, ghost track, ghost trd track, d, t, He3, He4
+  static const int NTrdHisto2D = 1;
+  TH2F* hTrdHisto2D[14][NTrdHisto2D];
+    //Tof
+  static const int NTofHisto2D = 2;
+  TH2F* hTofHisto2D[14][NTofHisto2D]; //All tracks, electrons, muons, pions, kaons, protons, fragments, mismatch, ghost hit, ghost tof hit, d, t, He3, He4
   
+
   ClassDef(CbmKFTrackQA,1);
 };
 
