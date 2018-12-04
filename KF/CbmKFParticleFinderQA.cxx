@@ -24,6 +24,10 @@
 #include "TObject.h"
 #include "TMath.h"
 #include "TDatabasePDG.h"
+#include "TH1F.h"
+#include "TF1.h"
+#include "TCanvas.h"
+#include "TSystem.h"
 
 //c++ and std headers
 #include <iostream>
@@ -36,7 +40,8 @@ CbmKFParticleFinderQA::CbmKFParticleFinderQA(const char* name, Int_t iVerbose, c
   FairTask(name, iVerbose), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fMCTrackArray(nullptr), fMCTrackArrayEvent(nullptr), 
   fEventList(nullptr), fTrackMatchArray(nullptr), fRecParticles(nullptr), fMCParticles(nullptr), fMatchParticles(nullptr), 
   fSaveParticles(false), fSaveMCParticles(false), fTimeSliceMode(false), fOutFileName(outFileName), fOutFile(nullptr), 
-  fEfffileName("Efficiency.txt"), fTopoPerformance(nullptr), fPrintFrequency(100), fNEvents(0), fTime(), fSuperEventAnalysis(false)
+  fEfffileName("Efficiency.txt"), fTopoPerformance(nullptr), fPrintFrequency(100), fNEvents(0), fTime(), fSuperEventAnalysis(false),
+  fReferenceResults("./"), fDecayToAnalyse(-1), fCheckDecayQA(false), fTestOk(false)
 {
   for(Int_t i=0; i<5; i++)
     fTime[i] = 0;
@@ -364,8 +369,15 @@ void CbmKFParticleFinderQA::Finish()
 
   fOutFile->cd();
   WriteHistosCurFile(fTopoPerformance->GetHistosDirectory());
-//         if (histodirmod!=NULL) WriteHistos(histodirmod);
-        //WriteHistos(gDirectory);
+
+  if(fCheckDecayQA && fDecayToAnalyse > -1)
+  {
+    if(fDecayToAnalyse < 0)
+      Error("CbmKFParticleFinderQA::Finish","Please specify the decay to be analysed.");
+    else 
+      CheckDecayQA();
+  }
+  
   if(!(fOutFileName == ""))
   {   
     fOutFile->Close();
@@ -379,9 +391,8 @@ void CbmKFParticleFinderQA::Finish()
   eff.close();
 }
 
-void CbmKFParticleFinderQA::WriteHistosCurFile( TObject *obj ){
-  
-  
+void CbmKFParticleFinderQA::WriteHistosCurFile( TObject *obj )
+{  
   if( !obj->IsFolder() ) obj->Write();
   else{
     TDirectory *cur = gDirectory;
@@ -402,6 +413,122 @@ void CbmKFParticleFinderQA::SetPrintEffFrequency(Int_t n)
 { 
   fTopoPerformance->SetPrintEffFrequency(n); 
   fPrintFrequency = n;
+}
+
+void CbmKFParticleFinderQA::FitDecayQAHistograms(float sigma[14], const bool saveReferenceResults) const
+{
+  static const int nParameters = 7;
+  TString parameterName[nParameters] = {"X","Y","Z","Px","Py","Pz","E"};
+  
+  TH1F* histogram[nParameters*2];
+  TF1*  fit[nParameters*2];
+  
+  for(int iParameter=0; iParameter<nParameters; iParameter++)
+  {
+    TString cloneResidualName = TString("hResidual")+parameterName[iParameter];
+    histogram[iParameter] = (TH1F*) (fTopoPerformance->GetDecayResidual(fDecayToAnalyse,iParameter)->Clone(cloneResidualName.Data()));
+    fit[iParameter] = new TF1(TString("fitResidual")+parameterName[iParameter],"gaus", 
+                              histogram[iParameter]->GetXaxis()->GetXmin(), histogram[iParameter]->GetXaxis()->GetXmax());
+    fit[iParameter]->SetLineColor(kRed);
+    histogram[iParameter]->Fit(TString("fitResidual")+parameterName[iParameter],"QN", "",
+                               histogram[iParameter]->GetXaxis()->GetXmin(), histogram[iParameter]->GetXaxis()->GetXmax());
+    sigma[iParameter] = fit[iParameter]->GetParameter(2);
+    
+    TString clonePullName = TString("hPull")+parameterName[iParameter];
+    histogram[iParameter+nParameters] = (TH1F*) (fTopoPerformance->GetDecayPull(fDecayToAnalyse,iParameter)->Clone(clonePullName.Data()));
+    fit[iParameter+nParameters] = new TF1(TString("fitPull")+parameterName[iParameter],"gaus",
+                                          histogram[iParameter+nParameters]->GetXaxis()->GetXmin(), histogram[iParameter+nParameters]->GetXaxis()->GetXmax());
+    fit[iParameter+nParameters]->SetLineColor(kRed);
+    histogram[iParameter+nParameters]->Fit(TString("fitPull")+parameterName[iParameter],"QN","", 
+                                           histogram[iParameter+nParameters]->GetXaxis()->GetXmin(), histogram[iParameter+nParameters]->GetXaxis()->GetXmax());
+    sigma[iParameter+nParameters] = fit[iParameter+nParameters]->GetParameter(2);
+  }
+  
+  if(saveReferenceResults)
+  {
+    TCanvas fitCanvas("fitCanvas", "fitCanvas", 1600,800);
+    fitCanvas.Divide(4,4);
+    
+    int padMap[nParameters*2] = {1, 2, 3, 9, 10, 11, 12, 5, 6, 7, 13, 14, 15, 16};
+    for(int iHisto=0; iHisto<nParameters*2; iHisto++)
+    {
+      fitCanvas.cd(padMap[iHisto]);
+      histogram[iHisto]->Draw();
+      fit[iHisto]->Draw("same");
+    }
+    
+    TString canvasFile = TString("FitQA_") + fTopoPerformance->fParteff.partName[fDecayToAnalyse] + TString(".pdf");
+    fitCanvas.SaveAs(canvasFile.Data());
+  }
+  
+  for(int iHisto=0; iHisto<nParameters*2; iHisto++)
+    if(fit[iHisto]) delete fit[iHisto];
+}
+
+void CbmKFParticleFinderQA::CheckDecayQA()
+{
+  float sigma[14];
+  FitDecayQAHistograms(sigma, true);
+  
+  TString referenceFileName = fReferenceResults + TString("/qa_") + fTopoPerformance->fParteff.partName[fDecayToAnalyse] + TString(".root");
+  TString qaFileName = TString("qa_") + fTopoPerformance->fParteff.partName[fDecayToAnalyse] + TString(".root");
+  
+  int iQAFile = 2;
+  while(!gSystem->AccessPathName(qaFileName))
+  {
+    qaFileName = TString("qa_") + fTopoPerformance->fParteff.partName[fDecayToAnalyse];
+    qaFileName += iQAFile;
+    qaFileName += TString(".root");
+    iQAFile++;
+  }
+  
+  TFile* curFile = gFile;
+  TDirectory* curDirectory = gDirectory;
+  TFile* qaFile = new TFile(qaFileName.Data(),"RECREATE");
+  
+  TString qaHistoName = TString("qa_")+fTopoPerformance->fParteff.partName[fDecayToAnalyse];
+  TH1F* qaHisto = new TH1F(qaHistoName.Data(), qaHistoName.Data(), 16, 0, 16);
+  
+  TString binLabel[16] = {"#sigma_{x}", "#sigma_{y}", "#sigma_{z}", "#sigma_{p_{x}}", "#sigma_{p_{y}}", "#sigma_{p_{z}}", "#sigma_{E}",
+                          "P_{x}", "P_{y}", "P_{z}", "P_{p_{x}}", "P_{p_{y}}", "P_{p_{z}}", "P_{E}", "#varepsilon_{4#pi}","#varepsilon_{KFP}"};
+  for(int iBin=0; iBin<16; iBin++)
+    qaHisto->GetXaxis()->SetBinLabel(iBin+1, binLabel[iBin].Data());
+  
+  for(int iSigma=0; iSigma<14; iSigma++)
+    qaHisto->SetBinContent(iSigma+1, sigma[iSigma]);
+
+  qaHisto->SetBinContent(15, fTopoPerformance->fParteff.GetTotal4piEfficiency(fDecayToAnalyse));
+  qaHisto->SetBinContent(16, fTopoPerformance->fParteff.GetTotalKFPEfficiency(fDecayToAnalyse));
+
+  qaHisto->Write();
+  
+  //compare with the reference results
+  TFile* referenceFile = new TFile(referenceFileName.Data(),"READ");
+  if(referenceFile->IsOpen())
+  {
+    TH1F* referenceHisto = (TH1F*) referenceFile->Get(qaHistoName);
+    if(referenceHisto)
+    {
+      fTestOk = true;
+      for(int iBin=1; iBin<=7; iBin++)
+        fTestOk &= fabs(referenceHisto->GetBinContent(iBin) - qaHisto->GetBinContent(iBin))/referenceHisto->GetBinContent(iBin) < 0.25;
+      for(int iBin=8; iBin<=14; iBin++)  
+        fTestOk &= fabs(referenceHisto->GetBinContent(iBin) - qaHisto->GetBinContent(iBin))/referenceHisto->GetBinContent(iBin) < 0.25;
+      for(int iBin=15; iBin<=16; iBin++)  
+        fTestOk &= fabs(referenceHisto->GetBinContent(iBin) - qaHisto->GetBinContent(iBin))/referenceHisto->GetBinContent(iBin) < 0.1;
+    }
+    referenceFile->Close();
+    referenceFile->Delete();
+  }
+  
+  if(qaFile) 
+  {
+    qaFile->Close();
+    qaFile->Delete();
+  }
+  
+  gFile = curFile;
+  gDirectory = curDirectory;
 }
 
 ClassImp(CbmKFParticleFinderQA);

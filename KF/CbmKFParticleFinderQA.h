@@ -42,13 +42,21 @@ class CbmKFParticleFinderQA : public FairTask {
   // Set SE analysis
   void SetSuperEventAnalysis() { fSuperEventAnalysis=1; }
 
+  //Tests
+  void SetCheckDecayQA() { fCheckDecayQA = true; }
+  void SetReferenceResults(TString t) { fReferenceResults = t; }
+  void SetDecayToAnalyse(int iDecay) { fDecayToAnalyse = iDecay; }
+  bool IsTestPassed() { return fTestOk; }
+  
  private:
   
   const CbmKFParticleFinderQA& operator = (const CbmKFParticleFinderQA&);
   CbmKFParticleFinderQA(const CbmKFParticleFinderQA&);
   
   void WriteHistosCurFile( TObject *obj );
-  
+  void FitDecayQAHistograms(float sigma[14], const bool saveReferenceResults = false) const;
+  void CheckDecayQA();
+
   //names of input branches
   TString fMCTracksBranchName;      //! Name of the input TCA with MC tracks
   TString fTrackMatchBranchName;      //! Name of the input TCA with track match
@@ -82,6 +90,12 @@ class CbmKFParticleFinderQA : public FairTask {
   
   //for super event analysis
   bool fSuperEventAnalysis;
+  
+  //for tests
+  TString fReferenceResults;
+  int fDecayToAnalyse;
+  bool fCheckDecayQA;
+  bool fTestOk;
   
   ClassDef(CbmKFParticleFinderQA,1);
 };
