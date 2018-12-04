@@ -185,7 +185,10 @@ namespace Cbm {
 			     TString& volumeName,
                              TGeoMatrix** matrix)
     {
-      
+      // Save current gFile and gDirectory information
+      TFile* oldFile=gFile;
+      TDirectory* oldDirectory=gDirectory;
+
       TFile* f=new TFile(filename);
       TList* l = f->GetListOfKeys();
       Int_t numKeys = l->GetSize();
@@ -218,6 +221,12 @@ namespace Cbm {
 	  continue;
 	} 
       }
+
+      // Restore previous gFile and gDirectory information
+      f->Close();
+      delete f;
+      gFile=oldFile;
+      gDirectory=oldDirectory;
        
       if ( foundGeoVolume && foundGeoMatrix ) {
 	LOG(DEBUG) << "Geometry file is of new type." << FairLogger::endl;
