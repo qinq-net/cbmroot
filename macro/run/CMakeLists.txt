@@ -35,7 +35,6 @@ ForEach(setup IN LISTS cbm_setup)
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set(fixture_digi fixture_digi_${testname})
   set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_digi})
-
   
   # --- Digitisation run, event-by-event
   Set(testname run_digi_event_${setup})
@@ -45,7 +44,7 @@ ForEach(setup IN LISTS cbm_setup)
   set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_digi})
   Set(fixture_reco_event fixture_reco_event_${testname})
   set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_reco_event})
-  
+
   # --- Reconstruction run, event-by-event
   Set(testname run_reco_event_${setup})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_reco_event.sh ${NumEvents} \"data/${setup}_test\" \"${setup}\")
@@ -70,27 +69,27 @@ ForEach(setup IN LISTS cbm_setup)
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_digi_tb})
-  Set(fixture_overlaps fixture_overlaps_${testname})
-  set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_overlaps})
+#  Set(fixture_overlaps fixture_overlaps_${testname})
+#  set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_overlaps})
+  set(dep_qa_transport ${testname}) 
   
   # --- QA run
-  # --- I have to check the macro first for being up-to-date
-  #Set(testname run_qa_${setup})
-  #Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_qa.sh ${NumEvents} \"${setup}\")
-  #Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
-  #Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-  #Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_digi})
-  #Set(_FileName_Dependency data/run_reco_${setup}_ok)
-  #Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
-  #Set(dep_qa ${testname})
-  
+  Set(testname run_transport_qa_${setup})
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_transport_qa.sh \"${setup}\" \"data/${setup}_test\")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "20")
+  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+  Set_Tests_Properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_digi})
+  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_qa_transport})
+  set(dep_overlaps ${testname}) 
+
   # --- Geometry checking; only for nightly test
   If($ENV{ctest_model} MATCHES Nightly)
   	Set(testname run_overlap_${setup})
   	Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/check_overlaps.sh \"data/${setup}_test\")
   	Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "900")
   	Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-        set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_digi})
+        Set_Tests_Properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_digi})
+        Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_overlaps})
   EndIf()
  
 EndForEach(setup IN LISTS cbm_setup)
