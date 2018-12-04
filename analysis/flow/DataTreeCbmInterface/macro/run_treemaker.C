@@ -27,6 +27,7 @@ void run_treemaker
   TString traFile = dataSet + ".tra.root";
   TString rawFile = dataSet + ".event.raw.root";
   TString recFile = dataSet + ".rec.root";
+  TString geoFile = dataSet + ".geo.root";
   TString parFile = dataSet + ".par.root";
   TString outFile = dataSet + ".tree.root";
   TString KFeffFile = dataSet + ".KFeff.txt";
@@ -72,6 +73,7 @@ void run_treemaker
   std::cout << "-I- " << myName << ": Using raw file " << rawFile << std::endl;
   std::cout << "-I- " << myName << ": Using parameter file " << parFile << std::endl;
   std::cout << "-I- " << myName << ": Using reco file " << recFile << std::endl;
+  std::cout << "-I- " << myName << ": Using geo file " << geoFile << std::endl;
   
   
   // -----   Reconstruction run   -------------------------------------------
@@ -145,12 +147,7 @@ void run_treemaker
 
   // ----- KF Particle Finder QA --------------------------------------------
   DataTreeCbmInterface* fInterface = new DataTreeCbmInterface();
-  Float_t fPsdXshift = 10.47;
-  cout << "PsdXshift= " << fPsdXshift << endl;
-  fInterface -> SetPsdXpos (fPsdXshift);
-  fInterface -> SetPsdZpos (800.);
-  if (setupName.Contains ("52")) fInterface -> SetNPsdModules(52);
-  else fInterface -> SetNPsdModules(44);
+  fInterface->LoadGeo(geoFile);
     
   fInterface -> SetKFParticleFinderTOF(kfParticleFinder_TOF) ;
   fInterface -> SetKFParticleFinderMC(kfParticleFinder_MC) ;
