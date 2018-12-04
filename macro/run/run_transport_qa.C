@@ -19,7 +19,8 @@ void WriteBenchmarkValues(Int_t, TString, std::vector<std::string>&,
 
 
 void run_transport_qa(const char* setupName = "sis100_electron",
-                      const char* output = "test")
+                      const char* output = "test",
+                      Bool_t writeBenchmarkFile=kFALSE)
 {
 
  // -----   Environment   --------------------------------------------------
@@ -34,8 +35,20 @@ void run_transport_qa(const char* setupName = "sis100_electron",
   std::cout << "-I- " << myName << ": Using input file " << inFile << std::endl;
   // ------------------------------------------------------------------------
 
-  TFile* f = new TFile(inFile);
+  TFile* f = new TFile(inFile, "READ");
+  if(nullptr==f) {
+    std::cerr << "Could not open the input file " << inFile 
+              << std::endl;
+    exit(1);
+  }
+
   TTree* t = static_cast<TTree*>(f->Get("cbmsim"));
+  if(nullptr==t) {
+    std::cerr << "Could not find the cbmsim tree inside the input file "
+              << std::endl;
+    exit(1);
+  }
+
   
   std::vector<std::string> detectors{"Mvd", "Sts", "Rich", "Much", 
                                      "Trd", "Tof", "Psd"};
@@ -84,12 +97,14 @@ void run_transport_qa(const char* setupName = "sis100_electron",
 
   std::for_each(numPoints.begin(), numPoints.end(), [&](int &n){ n/=events; });
 
-//  PrintResult(detectors, numPoints, min, max);
+  if (writeBenchmarkFile) {
+    PrintResult(detectors, numPoints, min, max);
+    // Write new values to the file with the benchmark values 
+    WriteBenchmarkValues(events, setupName, detectors, numPoints, min, max);
+  }
   
   CompareResult(events, setupName, detectors, numPoints);
 
-// Write new values to the file with the benchmark values 
-//  WriteBenchmarkValues(events, setupName, detectors, numPoints, min, max);
 }
 
 void WriteBenchmarkValues(Int_t events, TString setupName, 
@@ -98,16 +113,30 @@ void WriteBenchmarkValues(Int_t events, TString setupName,
                      std::vector<Int_t>& min,
                      std::vector<Int_t>& max)
 {
+  std::vector<Int_t> devInput1{10,10,10,10,10,10,10};
+  std::vector<Int_t> devInput2{2,2,2,2,2,2,2};
+  if (setupName.EqualTo("sis300_electron")) {
+    devInput1[2]=20;
+    devInput2[2]=5;
+  } 
+  if (setupName.EqualTo("sis100_muon_jpsi")) {
+    devInput1[5]=20;
+    devInput2[5]=5;
+  } 
+  if (setupName.EqualTo("sis100_muon_lmvm")) {
+    devInput1[4]=30;
+    devInput1[5]=20;
+    devInput2[4]=10;
+    devInput2[5]=10;
+  } 
+
+
   Float_t mean, deviation1, deviation2;
   TNtuple *ntuple = new TNtuple(setupName,setupName,"mean:deviation1:deviation2");
 
   for (Int_t i=0; i<detectors.size(); ++i) {
     TString det{detectors[i]};
-    if (det.EqualTo("Rich") || 0 == meanPoints[i]) {
-      ntuple->Fill(meanPoints[i], 10, 10);
-    } else {
-      ntuple->Fill(meanPoints[i], 10, 2);
-    }
+    ntuple->Fill(meanPoints[i], devInput1[i], devInput2[i]);
   }
 
   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
@@ -145,9 +174,20 @@ std::vector<std::tuple<Int_t,Int_t, Int_t>> ReadBenchmarkValues(TString setupNam
   srcDir += "/input/qa/";
   TString benchmarkFile = srcDir + "QA_run_transport.root";
 
-  TFile* bFile = new TFile(benchmarkFile); 
+  TFile* bFile = new TFile(benchmarkFile,"READ"); 
+  if(nullptr==bFile) {
+    std::cerr << "Could not open the input file " << benchmarkFile 
+              << std::endl;
+    exit(1);
+  }
  
   TNtuple* ntuple = static_cast<TNtuple*>(bFile->Get(setupName));
+  if (nullptr==ntuple) {
+    std::cerr << "Did not find ntuple with benchmark data for setup "
+              << setupName << std::endl;
+    exit(1);
+  }
+
 
   Float_t* values;
 
