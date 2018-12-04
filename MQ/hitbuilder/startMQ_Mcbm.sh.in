@@ -7,9 +7,9 @@ else
     _runname=$1
 fi
   
-_reqmod=2
-_NrUnpackers=32
-_batch=0
+_reqmod=3
+_NrUnpackers=16
+_batch=1
 
 _dirname=@VMCWORKDIR@/macro/beamtime/mcbm2018/input/$_runname/
 _filename=$_runname_*.tsa
