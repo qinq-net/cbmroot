@@ -70,7 +70,7 @@ InitStatus DataTreeCbmInterface::Init()
 void DataTreeCbmInterface::LoadGeo(const TString &geoFile) {
   const char *fairGeom = "FAIRGeom";
   const int psdNodeId = 6;
-  const char *moduleNamePrefix = "module2060";
+  const char *moduleNamePrefix = "module";
 
   TGeoManager *geoMan = TGeoManager::Import(geoFile.Data(), fairGeom);
   auto *caveNode = geoMan->GetTopNode();
@@ -209,12 +209,6 @@ void DataTreeCbmInterface::ReadEvent()
 void DataTreeCbmInterface::ReadPSD()
 {
   const int nPSDhits = flistPSDhit->GetEntriesFast();
-
-  if (nPSDhits != fPsdModules)
-  {
-    std::cout << "Wrong number of modules in PSD" << std::endl;
-    return;
-  }
 
   for (int i=0; i<fPsdModules; ++i) {
     fDTEvent->GetPSDModule(i)->SetPosition(
