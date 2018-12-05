@@ -26,6 +26,7 @@
 
 #include "TList.h"
 #include "TObjString.h"
+#include "TSystem.h"
 
 using namespace std;
 
@@ -43,6 +44,22 @@ ParameterMQServer::ParameterMQServer() :
 
 void ParameterMQServer::InitTask()
 {
+  string loadLibs = fConfig->GetValue<string>("libs-to-load");
+  if ( loadLibs.length() > 0 ) {
+    LOG(INFO) << "There are libraries to load.";
+    if (loadLibs.find(";") != std::string::npos) {
+      LOG(INFO) << "There are several libraries to load";
+      istringstream f(loadLibs);
+      string s;
+      while (getline(f, s, ';')) {
+	LOG(INFO)<< "Load library " << s;
+	gSystem->Load(s.c_str());
+      }
+    } 
+  } else {
+    LOG(INFO) << "There are no libraries to load.";
+  }
+    
     fFirstInputName = fConfig->GetValue<string>("first-input-name");
     fFirstInputType = fConfig->GetValue<string>("first-input-type");
     fSecondInputName = fConfig->GetValue<string>("second-input-name");

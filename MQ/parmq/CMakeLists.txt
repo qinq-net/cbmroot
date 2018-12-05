@@ -1,6 +1,5 @@
 Set(INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CBMROOT_SOURCE_DIR}/fles/cern2016/param
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -54,14 +53,12 @@ Set(SRCS
   runParameterMQServer.cxx
 #  CbmMQTestContFact.cxx
 )
+
 Set(DEPENDENCIES
   ${DEPENDENCIES}
-  CbmFlibCern2016
-  CbmFlibMcbm2018
-  CbmTof
-  Core
-  Net
   ${FAIR_LIBS}
   ${BOOST_LIBS}
+  Core
+  Net
 )
 GENERATE_EXECUTABLE()

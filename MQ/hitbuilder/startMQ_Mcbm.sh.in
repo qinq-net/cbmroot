@@ -35,7 +35,7 @@ sleep 1
 PARAMETERSERVER+=" --id parmq-server"
 PARAMETERSERVER+=" --channel-name parameters"
 PARAMETERSERVER+=" --channel-config name=parameters,type=rep,method=bind,transport=zeromq,address=tcp://127.0.0.1:5005"
-#PARAMETERSERVER+=" --first-input-name $_paramfile"
+PARAMETERSERVER+=" --libs-to-load libCbmTof;libCbmFlibMcbm2018"
 PARAMETERSERVER+=" --first-input-name $_mapfile;$_digiparfile;$_digibdffile"
 PARAMETERSERVER+=" --first-input-type ASCII"
 PARAMETERSERVER+=" --second-input-name $_geofile"
