@@ -1795,9 +1795,8 @@ void CbmL1::InputPerformance()
               if( stsHitMatch.GetLink(iLink).GetWeight() > bestWeight){
                 bestWeight = stsHitMatch.GetLink(iLink).GetWeight();
                 Int_t iFile  = stsHitMatch.GetLink(iLink).GetFile();
-                Int_t iEvent = stsHitMatch.GetLink(iLink).GetEntry() - 1;
-                if(!fTimesliceMode) //TODO Fix the event number in links
-                  iEvent+=1;
+                Int_t iEvent = stsHitMatch.GetLink(iLink).GetEntry();
+
                 pt = (CbmStsPoint*) fStsPoints->Get(iFile,iEvent,stsHitMatch.GetLink(iLink).GetIndex());
                 
                  }
@@ -1810,7 +1809,7 @@ void CbmL1::InputPerformance()
     
     double mcTime = pt->GetTime();
     
-    //if (fTimesliceMode) mcTime+= fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
+    if (fTimesliceMode) mcTime+= fEventList->GetEventTime(link.GetEntry(), link.GetFile());
 
         // hit pulls and residuals
 
@@ -1938,7 +1937,7 @@ void CbmL1::InputPerformance()
     double mcTime = pt->GetTime();
     
     if (fTimesliceMode) 
-      mcTime+= fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
+      mcTime+= fEventList->GetEventTime(link.GetEntry(), link.GetFile());
    // mcTime+=20;
 
         // hit pulls and residuals
@@ -2009,7 +2008,7 @@ void CbmL1::InputPerformance()
     double mcTime = pt->GetTime();
     
     if (fTimesliceMode) 
-      mcTime+= fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
+      mcTime+= fEventList->GetEventTime(link.GetEntry(), link.GetFile());
 
         // hit pulls and residuals
       if ((sh->GetPlaneId())==0) continue;
@@ -2079,7 +2078,7 @@ void CbmL1::InputPerformance()
     double mcTime = pt->GetTime();
     
     if (fTimesliceMode) 
-      mcTime+= fEventList->GetEventTime(link.GetEntry()+1, link.GetFile());
+      mcTime+= fEventList->GetEventTime(link.GetEntry(), link.GetFile());
 
         // hit pulls and residuals
 
