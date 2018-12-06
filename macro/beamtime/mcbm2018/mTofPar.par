@@ -1,21 +1,22 @@
 [CbmMcbm2018TofPar]
 //----------------------------------------------------------------------------
-NrOfGdpbs: Int_t 2
+NrOfGdpbs: Int_t 3
 GdpbIdArray: Int_t \
-0x1980 0x1911
+0x1980 0x1922 0x18c5
+//0x1980 0x1922
 NrOfFeesPerGdpb: Int_t 30
 NrOfGet4PerFee: Int_t 8
 NrOfChannelsPerGet4: Int_t 4
-NrOfGbtx: Int_t 12
-NrOfModule: Int_t 5
+NrOfGbtx: Int_t 14
+NrOfModule: Int_t 7
 NrOfRpc: Int_t \
-  5  5  5  5  5  5  5  5  5  5  5  5
+  5  5  5  5  5  5  5  5  5  5  5  5  5   5
 RpcType: Int_t \
-  0  0  0  0  0  0  0  0  0  0  0  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0   0
 RpcSide: Int_t \
-  0  1  0  1  0  1  0  1  0  1  0  1
+  0  1  0  1  0  1  0  1  0  1  0  1  0   1
 ModuleId: Int_t \
-  0  0  1  1  2  2  3  3  4  4 -1 -1
+  0  0  1  1  2  2  3  3  4  4  5  5  6   6
 NbMsTot: Int_t 100
 NbMsOverlap: Int_t 1
 SizeMsInNs: Double_t 102400.0

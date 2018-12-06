@@ -76,6 +76,7 @@ CbmMcbm2018MonitorTof::CbmMcbm2018MonitorTof() :
     fbPulserModeEnable(kFALSE),
     fbCoincMapsEnable(kFALSE),
     fbOldFwData(kFALSE),
+    fuDiamondDpbIdx(10000), // Crazy default value => should never make troubles given the price
     fulCurrentTsIndex(0),
     fuCurrentMs(0),
     fdMsIndex(0),
@@ -159,6 +160,9 @@ CbmMcbm2018MonitorTof::CbmMcbm2018MonitorTof() :
     fvhFeeErrorRatioLong_gDPB(),
     fvhRemapTotSideA_mod(),
     fvhRemapTotSideB_mod(),
+    fvhModRate(),
+    fvhModErrorRate(),
+    fvhModErrorRatio(),
     fvhTokenMsgType(),
     fvhTriggerRate(),
     fvhCmdDaqVsTrig(),
@@ -921,6 +925,18 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
          new TH2F(name.Data(), title.Data(),
             kuNbFeeSide * fuNrOfChannelsPerFee, 0, kuNbFeeSide * fuNrOfChannelsPerFee,
             256, 0, 256 ) );
+
+      name = Form("ModRate_gDPB_m%02u", uMod);
+      title = Form( "Counts per second in Module %02u; Time[s] ; Counts", uMod);
+      fvhModRate.push_back( new TH1D(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize) );
+
+      name = Form("ModErrorRate_m%02u", uMod);
+      title = Form( "Error Counts per second in Module %02u; Time[s] ; Error Counts", uMod);
+      fvhModErrorRate.push_back( new TH1D(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize) );
+
+      name = Form("ModErrorRatio_m%02u", uMod);
+      title = Form( "Error to data ratio per second in Module %02u; Time[s] ; Error ratio[]", uMod);
+      fvhModErrorRatio.push_back( new TProfile(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize) );
    } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
 
    /*******************************************************************/
@@ -1053,6 +1069,9 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       {
          server->Register("/TofRaw", fvhRemapTotSideA_mod[ uMod ] );
          server->Register("/TofRaw", fvhRemapTotSideB_mod[ uMod ] );
+         server->Register("/TofMod", fvhModRate[ uMod ] );
+         server->Register("/TofMod", fvhModErrorRate[ uMod ] );
+         server->Register("/TofMod", fvhModErrorRatio[ uMod ] );
 	   } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
 
       for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
@@ -1502,6 +1521,21 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       /*****************************/
    } // if( kTRUE == fbPulserModeEnable )
 
+   /** Create Module rates Canvas **/
+   for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
+   {
+      TCanvas* cModRates = new TCanvas( Form("cModRate_m%02u", uMod),
+                                        Form( "Hit and error Rates for module %02u", uMod),
+                                        w, h);
+      cModRates->cd();
+      gPad->SetLogy();
+      fvhModRate[ uMod ]->Draw("hist");
+
+      fvhModErrorRate[ uMod ]->SetLineColor( kRed );
+      fvhModErrorRate[ uMod ]->Draw("same hist");
+   } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
+   /*****************************/
+
    /** Recovers/Create Ms Size Canvas for STAR 2018 **/
    // Try to recover canvas in case it was created already by another monitor
    // If not existing, create it
@@ -1724,6 +1758,9 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
 
    ///         fuGet4Id = mess.getGdpbGenChipId();
             fuGet4Id = ConvertElinkToGet4( mess.getGdpbGenChipId() );
+               /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
+            if( fuGdpbNr == fuDiamondDpbIdx )
+               fuGet4Id = mess.getGdpbGenChipId();
             fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
 
             if( fuNrOfGet4PerGdpb <= fuGet4Id &&
@@ -1841,6 +1878,13 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
                            1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime));
                         fvhFeeErrorRatio_gDPB[(fuGdpbNr * fuNrOfFeePerGdpb) + uFeeNr]->Fill(
                            1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime), 1, 1 );
+
+                        UInt_t uGbtxNr      = (uFeeNr / kuNbFeePerGbtx);
+                        UInt_t uGbtxNrInSys = fuGdpbNr * kuNbGbtxPerGdpb + uGbtxNr;
+                        fvhModErrorRate[ fviModuleId[ uGbtxNrInSys ] ]->Fill(
+                           1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime));
+                        fvhModErrorRatio[ fviModuleId[ uGbtxNrInSys ] ]->Fill(
+                           1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime), 1, 1);
                      } // if (0 <= fdStartTime)
                      if (0 <= fdStartTimeLong)
                      {
@@ -2140,6 +2184,9 @@ void CbmMcbm2018MonitorTof::FillHitInfo(gdpbv100::Message mess)
    UInt_t uFeeNr      = (fuGet4Id / fuNrOfGet4PerFee);
    UInt_t uFeeNrInSys = fuGdpbNr * fuNrOfFeePerGdpb + uFeeNr;
    UInt_t uRemappedChannelNr = uFeeNr * fuNrOfChannelsPerFee + fvuGet4ToPadi[ uChannelNrInFee ];
+      /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
+   if( fuGdpbNr == fuDiamondDpbIdx )
+      uRemappedChannelNr = uChannelNr;
    UInt_t uGbtxNr      = (uFeeNr / kuNbFeePerGbtx);
    UInt_t uFeeInGbtx  = (uFeeNr % kuNbFeePerGbtx);
    UInt_t uGbtxNrInSys = fuGdpbNr * kuNbGbtxPerGdpb + uGbtxNr;
@@ -2206,8 +2253,8 @@ void CbmMcbm2018MonitorTof::FillHitInfo(gdpbv100::Message mess)
    if( kTRUE == fbPulserModeEnable )
    {
       /// Save last hist time if pulser channel
-      /// Fill the corresponding histos if the time difference is reasonnable
-      if( gdpbv100::kuFeePulserChannel == uChannelNrInFee )
+      /// Fill the corresponding histos if the time difference is reasonnable )
+      if( gdpbv100::kuFeePulserChannel == uChannelNrInFee && fuGdpbNr != fuDiamondDpbIdx )
       {
          fdTsLastPulserHit[ uFeeNrInSys ] = dHitTime;
          fvuFeeNbHitsLastMs[ uFeeNrInSys ]++;
@@ -2284,6 +2331,12 @@ void CbmMcbm2018MonitorTof::FillHitInfo(gdpbv100::Message mess)
             } // if( NULL != fvhTimeDiffPulser[uFeeNrInSys][uFeeB] )
 */
       } // if( gdpbv100::kuFeePulserChannel == uChannelNrInFee )
+      /// Diamond FEE have pulser on channel 0!
+         else if( fuGdpbNr == fuDiamondDpbIdx && 0 == uChannelNrInFee )
+         {
+            fdTsLastPulserHit[ uFeeNrInSys ] = dHitTime;
+            fvuFeeNbHitsLastMs[ uFeeNrInSys ]++;
+         } // if( fuGdpbNr == fuDiamondDpbIdx && 0 == uChannelNrInFee )
    } // if( kTRUE == fbPulserModeEnable )
 
    /// Coincidence maps
@@ -2299,6 +2352,9 @@ void CbmMcbm2018MonitorTof::FillHitInfo(gdpbv100::Message mess)
       fvhRemapChRate_gDPB[ fuGdpbNr ]->Fill( 1e-9 * (dHitTime - fdStartTime), uRemappedChannelNr );
       fvhFeeRate_gDPB[(fuGdpbNr * fuNrOfFeePerGdpb) + uFeeNr]->Fill( 1e-9 * (dHitTime - fdStartTime));
       fvhFeeErrorRatio_gDPB[(fuGdpbNr * fuNrOfFeePerGdpb) + uFeeNr]->Fill( 1e-9 * (dHitTime - fdStartTime), 0, 1);
+
+      fvhModRate[ fviModuleId[ uGbtxNrInSys ] ]->Fill( 1e-9 * (dHitTime - fdStartTime));
+      fvhModErrorRatio[ fviModuleId[ uGbtxNrInSys ] ]->Fill( 1e-9 * (dHitTime - fdStartTime), 0, 1);
    } // if (0 <= fdStartTime)
 
    if (0 <= fdStartTimeLong)
@@ -2572,6 +2628,9 @@ void CbmMcbm2018MonitorTof::FillPattInfo(gdpbv100::Message mess)
             if( ( uPattern >> uBit ) & 0x1 )
             {
                UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
+                  /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
+               if( fuGdpbNr == fuDiamondDpbIdx )
+                  uBadAsic = 32 * usIndex + uBit;
                fhPatternMissmatch->Fill( uBadAsic, fuGdpbNr );
                fvhGdpbPatternMissmatchEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
             } // if( ( uPattern >> uBit ) & 0x1 )
@@ -2584,6 +2643,9 @@ void CbmMcbm2018MonitorTof::FillPattInfo(gdpbv100::Message mess)
             if( ( uPattern >> uBit ) & 0x1 )
             {
                UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
+                  /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
+               if( fuGdpbNr == fuDiamondDpbIdx )
+                  uBadAsic = 32 * usIndex + uBit;
                fhPatternEnable->Fill( uBadAsic, fuGdpbNr );
                fvhGdpbPatternEnableEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
             } // if( ( uPattern >> uBit ) & 0x1 )
@@ -2599,6 +2661,9 @@ void CbmMcbm2018MonitorTof::FillPattInfo(gdpbv100::Message mess)
             if( ( uPattern >> uBit ) & 0x1 )
             {
                UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
+                  /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
+               if( fuGdpbNr == fuDiamondDpbIdx )
+                  uBadAsic = 32 * usIndex + uBit;
                fhPatternResync->Fill( uBadAsic, fuGdpbNr );
                fvhGdpbPatternResyncEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
             } // if( ( uPattern >> uBit ) & 0x1 )
@@ -2795,7 +2860,7 @@ void CbmMcbm2018MonitorTof::Finish()
    } // for (UInt_t i = 0; i < fuNrOfGdpbs; ++i)
    LOG(INFO) << "-------------------------------------" << FairLogger::endl;
 
-/*
+
    /// Update RMS plots
    if( kTRUE == fbPulserModeEnable )
    {
@@ -2816,7 +2881,6 @@ void CbmMcbm2018MonitorTof::Finish()
    } // if( kTRUE == fbPulserModeEnable )
 
    SaveAllHistos();
-*/
 }
 
 void CbmMcbm2018MonitorTof::FillOutput(CbmDigi* /*digi*/)
@@ -2872,6 +2936,10 @@ void CbmMcbm2018MonitorTof::SaveAllHistos( TString sFileName )
    {
       fvhRemapTotSideA_mod[ uMod ]->Write();
       fvhRemapTotSideB_mod[ uMod ]->Write();
+
+      fvhModRate[ uMod ]->Write();
+      fvhModErrorRate[ uMod ]->Write();
+      fvhModErrorRatio[ uMod ]->Write();
    } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
 
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
@@ -3036,6 +3104,10 @@ void CbmMcbm2018MonitorTof::ResetAllHistos()
    {
       fvhRemapTotSideA_mod[ uMod ]->Reset();
       fvhRemapTotSideB_mod[ uMod ]->Reset();
+
+      fvhModRate[ uMod ]->Reset();
+      fvhModErrorRate[ uMod ]->Reset();
+      fvhModErrorRatio[ uMod ]->Reset();
    } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
 
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
@@ -3140,6 +3212,13 @@ void CbmMcbm2018MonitorTof::ResetEvolutionHistograms()
       fvhStarTrigGdpbTsEvo[ uGdpbLoop ]->Reset();
       fvhStarTrigStarTsEvo[ uGdpbLoop ]->Reset();
    } // for( UInt_t uGdpbLoop = 0; uGdpbLoop < fuNrOfGdpbs; ++uGdpbLoop )
+
+   for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
+   {
+      fvhModRate[ uMod ]->Reset();
+      fvhModErrorRate[ uMod ]->Reset();
+      fvhModErrorRatio[ uMod ]->Reset();
+   } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
 
    fdStartTime = -1;
 }

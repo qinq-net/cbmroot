@@ -67,6 +67,7 @@ void MonitorTof(TString inFile = "", TString sHostname = "localhost",
   // Get4 Unpacker
   CbmMcbm2018MonitorTof* test_monitor_tof = new CbmMcbm2018MonitorTof();
   test_monitor_tof->SetFitZoomWidthPs( );
+  test_monitor_tof->SetHistoryHistoSize( 600 );
   test_monitor_tof->SetHistoryHistoSizeLong( 1000. ); // Night: 6 + 10 H
 //  test_monitor_tof->SetHistoryHistoSizeLong( 3840. ); // WE:    6 + 24 + 24 + 10 H
 /*
@@ -76,7 +77,8 @@ void MonitorTof(TString inFile = "", TString sHostname = "localhost",
 */
   test_monitor_tof->SetIgnoreMsOverlap();
   test_monitor_tof->EnablePulserMode();
-  test_monitor_tof->EnableCoincidenceMaps();
+  //test_monitor_tof->EnableCoincidenceMaps();
+  test_monitor_tof->SetDiamondDpbIdx();
 
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();

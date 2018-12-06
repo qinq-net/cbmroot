@@ -73,6 +73,8 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
 
       inline void EnableOldFwData( Bool_t bEnaFlag = kTRUE ) { fbOldFwData = bEnaFlag; }
 
+      inline void SetDiamondDpbIdx( UInt_t uIdx = 2 ) { fuDiamondDpbIdx = uIdx; }
+
       void SaveAllHistos( TString sFileName = "" );
       void ResetAllHistos();
       void ResetEvolutionHistograms();
@@ -127,6 +129,7 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
       Bool_t fbPulserModeEnable;
       Bool_t fbCoincMapsEnable;
       Bool_t fbOldFwData;
+      UInt_t fuDiamondDpbIdx;
 
       /** Running indices **/
       uint64_t fulCurrentTsIndex;  // Idx of the current TS
@@ -252,6 +255,10 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
       const UInt_t kuNbFeeSide = 5;
       std::vector< TH2      * > fvhRemapTotSideA_mod;
       std::vector< TH2      * > fvhRemapTotSideB_mod;
+		/// module plots
+      std::vector< TH1      * > fvhModRate;
+      std::vector< TH1      * > fvhModErrorRate;
+      std::vector< TProfile * > fvhModErrorRatio;
 
       ///* STAR TRIGGER detection *///
       std::vector< TH1 *      > fvhTokenMsgType;
