@@ -116,8 +116,10 @@ void WriteBenchmarkValues(Int_t events, TString setupName,
   std::vector<Int_t> devInput1{10,10,10,10,10,10,10};
   std::vector<Int_t> devInput2{2,2,2,2,2,2,2};
   if (setupName.EqualTo("sis300_electron")) {
-    devInput1[2]=20;
+    devInput1[2]=25;
     devInput2[2]=5;
+    devInput1[6]=15;
+    devInput2[6]=5;
   } 
   if (setupName.EqualTo("sis100_muon_jpsi")) {
     devInput1[5]=20;
@@ -229,11 +231,11 @@ void CompareResult(Int_t entries, TString setupName,
       deviation = TMath::Abs(1. - deviation)*100;
     }
 
-    std::cout << "<DartMeasurement name=" << detectors[i] << " type=\"numeric/double\">";
+    std::cout << "<DartMeasurement name=\"" << detectors[i] << "\" type=\"numeric/double\">";
     std::cout << deviation;
     std::cout << "</DartMeasurement>" << std::endl;
 
-    if (deviation < maxDeviation) {
+    if (deviation <= maxDeviation) {
       ss << "Deviation for detector " << detectors[i] << " with "
          << deviation << "% is less than " << maxDeviation 
          << "%" << std::endl;
