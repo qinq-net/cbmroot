@@ -6,6 +6,7 @@ download_project_if_needed(PROJECT         cppzmq
                            SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/cppzmq
                            TEST_FILE       zmq.hpp
                           )
+
 download_project_if_needed(PROJECT         flib_dpb_20
                            GIT_REPOSITORY  "https://cbmgsi.githost.io/garcia_AT_iri.uni-frankfurt.de/flib_dpb_20.git"
                            GIT_TAG         "ce30a7530204f860c433753ec0db9b649795bf94"
@@ -13,24 +14,6 @@ download_project_if_needed(PROJECT         flib_dpb_20
                            TEST_FILE       CMakeLists.txt
                           )
 
-set(Vc_VERSION 58d7cc670f0c4dd198524c57ef28cc1bc1c8707d) # Hash for tag 1.3.2, Need hash for tests 
-set(Vc_SRC_URL "https://github.com/VcDevel/Vc")
-download_project_if_needed(PROJECT         vc_source
-                           GIT_REPOSITORY  ${Vc_SRC_URL}
-                           GIT_TAG         ${Vc_VERSION}
-                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Vc
-                           TEST_FILE       CMakeLists.txt
-                          )
-
-set(KFPARTICLE_SRC_URL "https://cbmgsi.githost.io/m.zyzak/KFParticle.git")
-set(KFPARTICLE_DESTDIR "${CMAKE_BINARY_DIR}/external/KFPARTICLE-prefix")
-
-download_project_if_needed(PROJECT         kfparticle_source
-                           GIT_REPOSITORY  ${KFPARTICLE_SRC_URL}
-                           GIT_TAG         "36e427f16bab3f755bd86281c681768a73320c54"
-                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/KFParticle
-                           TEST_FILE       CMakeLists.txt
-                          )
 
 Set(IPC_INCLUDE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ipc/ipc/lib/fles_ipc PARENT_SCOPE)
 
@@ -40,6 +23,7 @@ Add_Subdirectory(flib_dpb)
 Add_Subdirectory(flib_dpb_20)
 Add_Subdirectory(spadic)
 
+
 # Build Vc as external project
 set(_LIBDIR_DEFAULT "lib")
 
@@ -47,6 +31,20 @@ set(Vc_DESTDIR "${CMAKE_BINARY_DIR}/external/VC-prefix")
 set(Vc_ROOTDIR "${Vc_DESTDIR}/${CMAKE_BINARY_DIR}")
 set(Vc_LIBNAME "${CMAKE_STATIC_LIBRARY_PREFIX}Vc${CMAKE_STATIC_LIBRARY_SUFFIX}")
 set(Vc_LIBRARY "${Vc_ROOTDIR}/${_LIBDIR_DEFAULT}/${Vc_LIBNAME}")
+
+set(Vc_VERSION 58d7cc670f0c4dd198524c57ef28cc1bc1c8707d) # Hash for tag 1.3.2, Need hash for tests 
+set(Vc_SRC_URL "https://github.com/VcDevel/Vc")
+
+download_project_if_needed(PROJECT         vc_source
+                           GIT_REPOSITORY  ${Vc_SRC_URL}
+                           GIT_TAG         ${Vc_VERSION}
+                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Vc
+                           TEST_FILE       CMakeLists.txt
+                          )
+If(ProjectUpdated)
+  File(REMOVE_RECURSE ${Vc_DESTDIR})
+  Message("VC source directory was changed so build directory was deleted")
+EndIf()
 
 ExternalProject_Add(VC
 #  GIT_REPOSITORY ${Vc_SRC_URL}
@@ -90,6 +88,21 @@ endif()
 
 
 set(KFPARTICLE_LIBNAME "${CMAKE_SHARED_LIBRARY_PREFIX}KFParticle${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
+set(KFPARTICLE_SRC_URL "https://cbmgsi.githost.io/m.zyzak/KFParticle.git")
+set(KFPARTICLE_DESTDIR "${CMAKE_BINARY_DIR}/external/KFPARTICLE-prefix")
+
+download_project_if_needed(PROJECT         kfparticle_source
+                           GIT_REPOSITORY  ${KFPARTICLE_SRC_URL}
+                           GIT_TAG         "36e427f16bab3f755bd86281c681768a73320c54"
+                           SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/KFParticle
+                           TEST_FILE       CMakeLists.txt
+                          )
+
+If(ProjectUpdated)
+  File(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/external/KFPARTICLE-prefix)
+  Message("KFParticle source directory was changed so build directory was deleted")  
+EndIf()
 
 ExternalProject_Add(KFPARTICLE
   DEPENDS Vc

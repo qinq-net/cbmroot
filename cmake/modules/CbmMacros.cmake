@@ -124,6 +124,8 @@ function(download_project_if_needed)
   cmake_parse_arguments(MY "" "${oneValueArgs}"
                        "" ${ARGN} )
 
+  Set(ProjectUpdated FALSE PARENT_SCOPE)
+
   If(NOT EXISTS ${MY_SOURCE_DIR}/${MY_TEST_FILE})
     download_project(PROJ            ${MY_PROJECT}
                      GIT_REPOSITORY  ${MY_GIT_REPOSITORY}
@@ -142,6 +144,7 @@ function(download_project_if_needed)
                        GIT_TAG         ${MY_GIT_TAG}
                        SOURCE_DIR      ${MY_SOURCE_DIR}
                       )
+      Set(ProjectUpdated TRUE PARENT_SCOPE)
     EndIf()
   EndIf()
 EndFunction()

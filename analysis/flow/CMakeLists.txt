@@ -12,6 +12,11 @@ download_project_if_needed(PROJECT         DataTree_source
                            TEST_FILE       CMakeLists.txt
                           )
 
+If(ProjectUpdated)
+  File(REMOVE_RECURSE ${DATATREE_DESTDIR})
+  Message("DataTree source directory was changed so build directory was deleted")  
+EndIf()
+
 ExternalProject_Add(DATATREE
   BUILD_IN_SOURCE 0
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/DataTree
@@ -61,6 +66,11 @@ download_project_if_needed(PROJECT         DataTreeQA_source
                            TEST_FILE       CMakeLists.txt
                           )
 
+If(ProjectUpdated)
+  File(REMOVE_RECURSE ${DATATREEQA_DESTDIR})
+  Message("DataTreeQA source directory was changed so build directory was deleted")  
+EndIf()
+
 ExternalProject_Add(DATATREEQA
   DEPENDS DataTree
   BUILD_IN_SOURCE 0
@@ -107,6 +117,12 @@ Install(FILES ${CMAKE_BINARY_DIR}/lib/${DATATREEQA_LIBNAME}
 #                 GIT_TAG         ${UNIGENQA_VERSION}
 #                 SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/UnigenQA
 #)
+
+
+#If(ProjectUpdated)
+#  File(REMOVE_RECURSE ${UNIGENQA_DESTDIR})
+#  Message("UnigenQA source directory was changed so build directory was deleted")  
+#EndIf()
 
 #ExternalProject_Add(UNIGENQA
 #  BUILD_IN_SOURCE 0
