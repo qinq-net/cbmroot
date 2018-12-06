@@ -10,7 +10,7 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void MonitorSts(TString inFile = "", TString sHostname = "en02",
+void MonitorMuch(TString inFile = "", TString sHostname = "en02",
                  Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
                  Int_t iStartFile = -1, Int_t iStopFile = -1 )
 {
@@ -20,8 +20,8 @@ void MonitorSts(TString inFile = "", TString sHostname = "en02",
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/sts_out.root";
-  TString parFile = "data/sts_param.root";
+  TString outFile = "data/much_out.root";
+  TString parFile = "data/much_param.root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -33,7 +33,7 @@ void MonitorSts(TString inFile = "", TString sHostname = "en02",
   TList *parFileList = new TList();
   TString paramDir = "./";
 
-  TString paramFileHodo = paramDir + "mStsPar.par";
+  TString paramFileHodo = paramDir + "mMuchPar.par";
   TObjString* tutDetDigiFileHodo = new TObjString(paramFileHodo);
   parFileList->Add(tutDetDigiFileHodo);
 
@@ -51,13 +51,14 @@ void MonitorSts(TString inFile = "", TString sHostname = "en02",
 
   // Hodoscopes Monitor
   CbmMcbm2018MonitorSts* monitorSts = new CbmMcbm2018MonitorSts();
-  monitorSts->SetHistoFileName( "data/StsHistos.root" );
+  monitorSts->SetHistoFileName( "data/MuchHistos.root" );
 //  monitorSts->SetPrintMessage();
   monitorSts->SetMsOverlap( 1 );
 //  monitorSts->SetLongDurationLimits( 3600, 10 );
   monitorSts->SetLongDurationLimits( 7200, 60 );
 //  monitorSts->SetEnableCoincidenceMaps();
   monitorSts->SetCoincidenceBorder(   0.0,  200 );
+//  monitorSts->SetMuchMode();
 
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();
@@ -76,7 +77,7 @@ void MonitorSts(TString inFile = "", TString sHostname = "en02",
   } // if( "" != inFile )
       else
       {
-         source->SetHostName( sHostname );
+         source->SetHostName( sHostname);
          source->SetPortNumber( 5556 );
       }
 
