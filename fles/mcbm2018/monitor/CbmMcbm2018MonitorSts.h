@@ -77,8 +77,12 @@ public:
    void SetFebChanCoincidenceLimitNs( Double_t dLimitIn ) { fdFebChanCoincidenceLimit = dLimitIn; }
    void UseNoiseLimitsSmx2LogicError( Bool_t bUseNoise = kTRUE ) { fbSmx2ErrorUseNoiseLevels = bUseNoise; }
 
+   void SetMuchMode( Bool_t bMuchMode = kTRUE ) { fbMuchMode = bMuchMode; }
+
 private:
    // Parameters
+      // Control flags
+   Bool_t fbMuchMode;
       // FLES containers
    std::vector< size_t >    fvMsComponentsList; //!
    size_t                   fuNbCoreMsPerTs; //!
@@ -173,6 +177,7 @@ private:
    TH2* fhStsSysMessTypePerDpb;
    TH2* fhPulserStatusMessType;
    TH2* fhPulserMsStatusFieldType;
+   TH2* fhStsHitsElinkPerDpb;
 
       /// Plots per FEB-8
 //   UInt_t   kuNbAsicPerFeb = 8;

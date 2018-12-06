@@ -43,6 +43,7 @@ Bool_t bMcbm2018ScanNoisySts = kFALSE;
 
 CbmMcbm2018MonitorSts::CbmMcbm2018MonitorSts() :
    CbmMcbmUnpack(),
+   fbMuchMode(kFALSE),
    fvMsComponentsList(),
    fuNbCoreMsPerTs(0),
    fuNbOverMsPerTs(0),
@@ -119,6 +120,7 @@ CbmMcbm2018MonitorSts::CbmMcbm2018MonitorSts() :
    fhStsSysMessTypePerDpb(NULL),
    fhPulserStatusMessType(NULL),
    fhPulserMsStatusFieldType(NULL),
+   fhStsHitsElinkPerDpb(NULL),
    fdFebChanCoincidenceLimit(100.0),
    fhStsFebChanCntRaw(),
    fhStsFebChanCntRawGood(),
@@ -621,6 +623,10 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
    fhPulserMsStatusFieldType->GetYaxis()->SetBinLabel( 4, "Epoch");
 */
 
+   sHistName = "hStsHitsElinkPerDpb";
+   title = "Nb of hit messages per eLink for each DPB; DPB; eLink; Hits nb []";
+   fhStsHitsElinkPerDpb = new TH2I(sHistName, title, fuNrOfDpbs, 0, fuNrOfDpbs, 42, 0., 42.);
+
    // Number of rate bins =
    //      9 for the sub-unit decade
    //    + 9 for each unit of each decade * 10 for the subdecade range
@@ -944,6 +950,7 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       server->Register("/StsRaw", fhStsSysMessTypePerDpb );
       server->Register("/StsRaw", fhPulserStatusMessType );
       server->Register("/StsRaw", fhPulserMsStatusFieldType );
+      server->Register("/StsRaw", fhStsHitsElinkPerDpb );
 
       for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
       {
@@ -1784,10 +1791,14 @@ Bool_t CbmMcbm2018MonitorSts::ProcessStsMs( const fles::Timeslice& ts, size_t uM
             UShort_t usElinkIdx = mess.GetLinkIndex();
             UInt_t   uCrobIdx   = usElinkIdx / fUnpackParSts->GetNbElinkPerCrob();
             Int_t   uFebIdx    = fUnpackParSts->ElinkIdxToFebIdx( usElinkIdx );
+            if( kTRUE == fbMuchMode )
+               uFebIdx = usElinkIdx;
+            fhStsHitsElinkPerDpb->Fill( fuCurrDpbIdx, usElinkIdx );
             if( -1 == uFebIdx )
             {
                LOG(WARNING) << "CbmMcbm2018MonitorSts::DoUnpack => "
-                         << "Wrong elink Idx!"
+                         << "Wrong elink Idx! Elink raw "
+                         << Form("%d remap %d", usElinkIdx, uFebIdx )
                          << FairLogger::endl;
                continue;
             } // if( -1 == uFebIdx )
@@ -2149,6 +2160,7 @@ void CbmMcbm2018MonitorSts::SaveAllHistos( TString sFileName )
    fhStsSysMessTypePerDpb->Write();
    fhPulserStatusMessType->Write();
    fhPulserMsStatusFieldType->Write();
+   fhStsHitsElinkPerDpb->Write();
    gDirectory->cd("..");
    /***************************/
 
@@ -2267,6 +2279,7 @@ void CbmMcbm2018MonitorSts::ResetAllHistos()
    fhStsSysMessTypePerDpb->Reset();
    fhPulserStatusMessType->Reset();
    fhPulserMsStatusFieldType->Reset();
+   fhStsHitsElinkPerDpb->Reset();
 
    for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
    {
