@@ -15,7 +15,9 @@
 #include "TGeoManager.h"
 #include "TKey.h"
 #include "TVirtualMC.h"
+
 #include "CbmModuleList.h"
+#include "CbmGeometryUtils.h"
 #include "CbmPsdPoint.h"
 #include "CbmStack.h"
 
@@ -58,6 +60,9 @@ CbmPsdMC::~CbmPsdMC() {
 // -----   Construct the geometry from file   ------------------------------
 void CbmPsdMC::ConstructGeometry() {
 
+
+
+/*
   LOG(INFO) << GetName() << ": Constructing geometry from file "
               << fgeoName << FairLogger::endl;
 
@@ -130,7 +135,11 @@ void CbmPsdMC::ConstructGeometry() {
   
   LOG(DEBUG) << GetName() << ": " << fNbOfSensitiveVol
       << " sensitive volumes" << FairLogger::endl;
-
+*/
+		
+    LOG(INFO) << "Importing PSD geometry from ROOT file "
+              << fgeoName.Data() << FairLogger::endl;
+    Cbm::GeometryUtils::ImportRootGeometry(fgeoName, this);
 }
 // -------------------------------------------------------------------------
 
