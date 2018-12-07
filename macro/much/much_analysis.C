@@ -159,6 +159,8 @@ void much_analysis(
   std::cout << std::endl << std::endl;
   cout << "Macro finished successfully." << endl;
   cout << "Output file is "    << outFile << endl;
+
+  RemoveGeoManager();
 }
 
 
