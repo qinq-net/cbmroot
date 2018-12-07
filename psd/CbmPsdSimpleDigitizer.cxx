@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <iostream>
 #include <cassert>
+#include <map>
 
 #include "TClonesArray.h"
 
@@ -24,6 +25,9 @@ using std::setw;
 using std::right;
 using std::fixed;
 using std::setprecision;
+
+using std::map;
+using std::pair;
 
 
 // -----   Default constructor   -------------------------------------------
@@ -61,8 +65,8 @@ InitStatus CbmPsdSimpleDigitizer::Init() {
   FairRootManager* ioman = FairRootManager::Instance();
   assert(ioman),
 
-  // Get input array
-  fPointArray = (TClonesArray*) ioman->GetObject("PsdPoint");
+    // Get input array
+    fPointArray = (TClonesArray*) ioman->GetObject("PsdPoint");
   assert(fPointArray);
 
   // Create and register output array
@@ -76,7 +80,7 @@ InitStatus CbmPsdSimpleDigitizer::Init() {
   fTimeTot = 0.;
 
   LOG(INFO) << fName << ": Initialisation successful " << kSUCCESS
-      << FairLogger::endl;
+    << FairLogger::endl;
   return kSUCCESS;
 
 }
@@ -91,7 +95,7 @@ void CbmPsdSimpleDigitizer::Exec(Option_t*) {
   timer.Start();
 
   LOG(DEBUG) << fName << ": processing event " << fCurrentEvent
-      << " at t = " << fCurrentEventTime << " ns" << FairLogger::endl;
+    << " at t = " << fCurrentEventTime << " ns" << FairLogger::endl;
 
   // Declare some variables
   CbmPsdPoint* point = NULL;
@@ -101,15 +105,17 @@ void CbmPsdSimpleDigitizer::Exec(Option_t*) {
   Double_t edep[N_PSD_SECT][N_PSD_MODS];                 //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
   memset(edep, 0,(N_PSD_SECT*N_PSD_MODS)*sizeof(Double_t));
 
+  map <pair <int, int>, double> edepmap;
+
   TVector3 pos;       // Position vector
 
   //for (Int_t imod=0; imod<100; imod++)                   //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
   for (Int_t imod=0; imod<N_PSD_MODS; imod++)//marina
   {
     for (Int_t isec=0; isec<N_PSD_SECT; isec++)
-      {
-	  edep[isec][imod] = 0.;
-      }
+    {
+      edep[isec][imod] = 0.;
+    }
   }
 
   // Event info (for event time)
@@ -122,57 +128,72 @@ void CbmPsdSimpleDigitizer::Exec(Option_t*) {
 
   for (Int_t iPoint=0; iPoint<nPoints; iPoint++)
   {
-      point = (CbmPsdPoint*) fPointArray->At(iPoint);
-      if ( ! point ) continue;
+    point = (CbmPsdPoint*) fPointArray->At(iPoint);
+    if ( ! point ) continue;
 
-      modID = point->GetModuleID(); //marina  1-44 (45)
-      scinID = point->GetDetectorID();//1-60
-      Double_t eLoss = point->GetEnergyLoss();
+    modID = point->GetModuleID(); //marina  1-44 (45)
+    scinID = point->GetDetectorID();//1-60
+    Double_t eLoss = point->GetEnergyLoss();
 
-      sec = (Int_t)((scinID-1)/6)+1;   //marina   1-10
+    sec = (Int_t)((scinID-1)/6)+1;   //marina   1-10
+    auto insert_result = edepmap.insert(
+      std::make_pair(std::make_pair(modID, sec), point->GetEnergyLoss()));
 
-      //cout <<"PSD modID,scinID,eloss " << modID << ", " << scinID << ", " << eLoss <<endl;
+    if (!insert_result.second) { // this entry has existed before
+      (*insert_result.first).second += point->GetEnergyLoss();
+    }
+    //cout <<"PSD modID,scinID,eloss " << modID << ", " << scinID << ", " << eLoss <<endl;
 
-      if ( ((sec-1)>=0 && (sec-1)<N_PSD_SECT) && ((modID-1)>=0 && (modID-1)<N_PSD_MODS) ) {
-        edep[sec-1][modID-1] += eLoss;
-      }
+    if ( ((sec-1)>=0 && (sec-1)<N_PSD_SECT) && ((modID-1)>=0 && (modID-1)<N_PSD_MODS) ) {
+      edep[sec-1][modID-1] += eLoss;
+    }
 
   }// Loop over MCPoints
 
   Int_t nDigis = 0;
-      for (Int_t imod=0; imod<N_PSD_MODS; imod++) {
-        for (Int_t isec=0; isec<N_PSD_SECT; isec++) {
-	  //if (edep[isec][imod]<=0.) cout << "!!  edep  !! : " << edep[isec][imod] << endl;
-	  if ( edep[isec][imod] <= 0. ) continue;
-	  else {
-            Double_t eLossMIP = edep[isec][imod] / 0.005; // 5MeV per MIP
-            Double_t pixPerMIP = 15.; // 15 pix per MIP
-            Double_t eLossMIPSmeared =
-                 gRandom->Gaus(eLossMIP * pixPerMIP,sqrt(eLossMIP * pixPerMIP)) / pixPerMIP;
-            Double_t eLossSmeared = eLossMIPSmeared * 0.005;
-            Double_t eNoise = gRandom->Gaus(0,15) / 50. * 0.005;
-            eLossSmeared += eNoise;
-            // V.F. The digi time is set to the event time. This is a workaround only
-            // to integrate PSD in the common digitisation scheme.
-            CbmPsdDigi* digi = new CbmPsdDigi(isec+1, imod+1,
-                                              eLossSmeared, fCurrentEventTime);
-            SendDigi(digi);
-	    nDigis++;
-	    LOG(DEBUG1) << fName << ": Digi " << nDigis << " Section " << isec+1
-	        << " Module " << imod+1 << " energy " << eLossSmeared <<endl;
-	  }
-        }// section
-      }//module
+  /*
+     for (Int_t imod=0; imod<N_PSD_MODS; imod++) {
+     for (Int_t isec=0; isec<N_PSD_SECT; isec++) {
+  //if (edep[isec][imod]<=0.) cout << "!!  edep  !! : " << edep[isec][imod] << endl;
+  if ( edep[isec][imod] <= 0. ) continue;
+  else {
+   */
+  for (auto edep_entry : edepmap) {
+    int modID = edep_entry.first.first;
+    int secID = edep_entry.first.second;
+    Double_t eDep = edep_entry.second;
 
+    //Double_t eLossMIP = edep[isec][imod] / 0.005; // 5MeV per MIP
+    Double_t eLossMIP = eDep / 0.005; // 5MeV per MIP
+    Double_t pixPerMIP = 15.; // 15 pix per MIP
+    Double_t eLossMIPSmeared =
+      gRandom->Gaus(eLossMIP * pixPerMIP,sqrt(eLossMIP * pixPerMIP)) / pixPerMIP;
+    Double_t eLossSmeared = eLossMIPSmeared * 0.005;
+    Double_t eNoise = gRandom->Gaus(0,15) / 50. * 0.005;
+    eLossSmeared += eNoise;
+    // V.F. The digi time is set to the event time. This is a workaround only
+    // to integrate PSD in the common digitisation scheme.
+    CbmPsdDigi* digi = new CbmPsdDigi(secID, modID,
+                                      eLossSmeared, fCurrentEventTime);
+    SendDigi(digi);
+    nDigis++;
+    LOG(DEBUG1) << fName << ": Digi " << nDigis << " Section " << secID
+      << " Module " << modID << " energy " << eLossSmeared <<endl;
+  }
+  /*
+     }
+     }// section
+     }//module
+   */
 
 
   // --- Event log
   timer.Stop();
   LOG(INFO) << "+ " << setw(15) << GetName() << ": Event " << setw(6)
-         << right << fCurrentEvent << " at " << fixed << setprecision(3)
-         << fCurrentEventTime << " ns, points: " << nPoints
-         << ", digis: " << nDigis << ". Exec time " << setprecision(6)
-         << timer.RealTime() << " s." << FairLogger::endl;
+    << right << fCurrentEvent << " at " << fixed << setprecision(3)
+    << fCurrentEventTime << " ns, points: " << nPoints
+    << ", digis: " << nDigis << ". Exec time " << setprecision(6)
+    << timer.RealTime() << " s." << FairLogger::endl;
 
   // --- Run statistics
   fNofEvents++;

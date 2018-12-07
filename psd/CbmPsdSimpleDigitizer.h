@@ -14,7 +14,7 @@
 
 #include "TRandom3.h"
 
-#define N_PSD_MODS 44
+#define N_PSD_MODS 46
 #define N_PSD_SECT 10
 
 class TClonesArray;
