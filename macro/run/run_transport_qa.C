@@ -122,16 +122,17 @@ void WriteBenchmarkValues(Int_t events, TString setupName,
     devInput2[6]=5;
   } 
   if (setupName.EqualTo("sis100_muon_jpsi")) {
+    devInput1[4]=15;
+    devInput2[4]=5;
     devInput1[5]=20;
     devInput2[5]=5;
   } 
   if (setupName.EqualTo("sis100_muon_lmvm")) {
     devInput1[4]=30;
-    devInput1[5]=20;
+    devInput1[5]=25;
     devInput2[4]=10;
     devInput2[5]=10;
   } 
-
 
   Float_t mean, deviation1, deviation2;
   TNtuple *ntuple = new TNtuple(setupName,setupName,"mean:deviation1:deviation2");
