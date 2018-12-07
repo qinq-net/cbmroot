@@ -80,6 +80,16 @@ CbmTrdModuleRec* CbmTrdHitProducer::AddModule(Int_t address, TGeoPhysicalNode* n
     module = fModules[address] = new CbmTrdModuleRecR(address);
   }
 
+  // Try to load geometry parameters for the module
+  const CbmTrdParModGeo* pGeo = nullptr;
+  if ( ! fGeoPar ) LOG(WARNING) << GetName() << ": No geometry parameter container!"
+      << FairLogger::endl;
+  else pGeo = (const CbmTrdParModGeo*) fGeoPar->GetModulePar(address);
+  if ( ! pGeo ) LOG(WARNING) << GetName() << ": No geometry parameters for module " << address
+        << FairLogger::endl;
+  else module->SetGeoPar(pGeo);
+
+
   // try to load read-out parameters for module
   const CbmTrdParModDigi *pDigi(NULL);
   if(!fDigiPar || !(pDigi = (const CbmTrdParModDigi *)fDigiPar->GetModulePar(address))){
