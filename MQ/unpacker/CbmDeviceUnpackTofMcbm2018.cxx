@@ -430,9 +430,14 @@ Bool_t CbmDeviceUnpackTofMcbm2018::ReInitContainers()
      for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; iRpc++)  {
        for(Int_t iStr= 0; iStr < 32; iStr++)  {
 	 Int_t iStrMap = iStr;
+	 Int_t iRpcMap = iRpc;
+	 if( fviRpcType[iGbtx] == 5) {  // for Diamond 
+	   iStrMap=iStr+32*iRpc;
+	   iRpcMap=0;
+	 }
 	 if( fviRpcSide[iGbtx] == 1) iStrMap=31-iStr;
 	 fviRpcChUId[iCh]=CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
-							  iRpc,iStrMap,
+							  iRpcMap,iStrMap,
 							  fviRpcSide[iGbtx],
 							  fviRpcType[iGbtx]);
 
@@ -696,7 +701,7 @@ Bool_t CbmDeviceUnpackTofMcbm2018::DoUnpack(const fles::Timeslice& ts, size_t co
          fuGet4Id = ConvertElinkToGet4( mess.getGdpbGenChipId() );
          fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
 
-         if( fuNrOfGet4PerGdpb <= fuGet4Id &&
+	 if( fuNrOfGet4PerGdpb <= fuGet4Id &&
              !mess.isStarTrigger()  &&
              ( gdpbv100::kuChipIdMergedEpoch != fuGet4Id ) )
 	   {
@@ -868,8 +873,8 @@ void CbmDeviceUnpackTofMcbm2018::FillHitInfo( gdpbv100::Message mess )
 		    << ", FiS "    << uFeeNrInSys
                   ;
 	} else {
-	  LOG(WARN) << "Fix your mapping problem!";
-	  FairMQStateMachine::ChangeState(PAUSE);
+	  //LOG(WARN) << "Fix your mapping problem!";
+	  //FairMQStateMachine::ChangeState(PAUSE);
 	}
 	return;   // Hit not mapped to digi
       }
