@@ -115,14 +115,20 @@ void WriteBenchmarkValues(Int_t events, TString setupName,
 {
   std::vector<Int_t> devInput1{10,10,10,10,10,10,10};
   std::vector<Int_t> devInput2{2,2,2,2,2,2,2};
+  if (setupName.EqualTo("sis100_electron")) {
+    devInput1[2]=15;
+    devInput2[2]=5;
+  } 
   if (setupName.EqualTo("sis300_electron")) {
+    devInput1[1]=15;
+    devInput2[1]=5;
     devInput1[2]=25;
     devInput2[2]=5;
     devInput1[6]=15;
     devInput2[6]=5;
   } 
   if (setupName.EqualTo("sis100_muon_jpsi")) {
-    devInput1[4]=15;
+    devInput1[4]=35;
     devInput2[4]=5;
     devInput1[5]=20;
     devInput2[5]=5;
