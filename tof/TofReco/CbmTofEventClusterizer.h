@@ -40,6 +40,7 @@ class TClonesArray;
 class TF1;
 class TH1;
 class TH2;
+class TH3; 
 class TProfile;
 class TString;
 #include "TTimeStamp.h"
@@ -106,12 +107,14 @@ class CbmTofEventClusterizer : public FairTask
 	  iCalRpc=(iCalRpc - iRpc)/10;
 	  Int_t iSm = iCalRpc%10;
 	  iCalRpc=(iCalRpc - iSm)/10;
+	  if(fIdMode==1) iRpc=0; // ignore RPC number 
 	  fCalSmAddr   = iSign*CbmTofAddress::GetUniqueAddress(iSm,iRpc,0,0,iCalRpc);}
 	else { fCalSmAddr=0; }
       }
       inline void SetCaldXdYMax (Double_t dCaldXdYMax)  { fdCaldXdYMax = dCaldXdYMax;}
       inline void SetCalCluMulMax (Int_t ival)          { fiCluMulMax  = ival;}
       inline void SetTRefId     (Int_t Id)              { fTRefMode    = Id;}
+      inline void SetIdMode     (Int_t Id)              { fIdMode      = Id;}
       inline void SetDutId      (Int_t Id)              { fDutId       = Id;}
       inline void SetDutSm      (Int_t Id)              { fDutSm       = Id;}
       inline void SetDutRpc     (Int_t Id)              { fDutRpc      = Id;}
@@ -138,6 +141,7 @@ class CbmTofEventClusterizer : public FairTask
       inline void SetSel2Id     (Int_t ival)            { fSel2Id = ival;}
       inline void SetSel2Sm     (Int_t ival)            { fSel2Sm = ival;}
       inline void SetSel2Rpc    (Int_t ival)            { fSel2Rpc = ival;}
+      inline void SetSel2MulMax (Int_t Id)              { fSel2MulMax    = Id;}
 
       inline void SetOutHstFileName(TString OutHstFileName) { fOutHstFileName = OutHstFileName; }
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
@@ -226,22 +230,22 @@ class CbmTofEventClusterizer : public FairTask
       TTrbHeader            *fTrbHeader;
 
       // Input variables 
-      TClonesArray          * fTofPointsColl; // TOF MC points
-      TClonesArray          * fMcTracksColl;  // MC tracks
-      TClonesArray          * fTofDigisColl;  // TOF Digis
+      TClonesArray          * fTofPointsColl;    // TOF MC points
+      TClonesArray          * fMcTracksColl;     // MC tracks
+      TClonesArray          * fTofDigisColl;     // TOF Digis
       TClonesArray          * fTofRawDigisColl;  // TOF Input Digis
-      TClonesArray          * fEventsColl;    // CBMEvents (time based)
+      TClonesArray          * fEventsColl;       // CBMEvents (time based)
 
       // Output variables
       Bool_t                  fbWriteHitsInOut;
       Bool_t                  fbWriteDigisInOut;
-      TClonesArray          * fTofCalDigisColl;   // Calibrated TOF Digis 
-      TClonesArray          * fTofHitsColl;       // TOF hits
-      TClonesArray          * fTofDigiMatchColl;  // TOF Digi Links
+      TClonesArray          * fTofCalDigisColl;      // Calibrated TOF Digis 
+      TClonesArray          * fTofHitsColl;          // TOF hits
+      TClonesArray          * fTofDigiMatchColl;     // TOF Digi Links
       TClonesArray          * fTofCalDigisCollOut;   // Calibrated TOF Digis 
       TClonesArray          * fTofHitsCollOut;       // TOF hits
       TClonesArray          * fTofDigiMatchCollOut;  // TOF Digi Links
-      Int_t  fiNbHits;                            // Index of the CbmTofHit TClonesArray
+      Int_t  fiNbHits;                               // Index of the CbmTofHit TClonesArray
 
       // Generic
       Int_t fVerbose;
@@ -253,7 +257,6 @@ class CbmTofEventClusterizer : public FairTask
                fStorDigiExp; //[nbType][nbSm*nbRpc][nbCh][nDigis]
       std::vector< std::vector< std::vector< std::vector< Int_t > > > >
                fStorDigiInd; //[nbType][nbSm*nbRpc][nbCh][nDigis]
-
       std::vector< Int_t > vDigiIndRef;
 
       /*
@@ -299,6 +302,8 @@ class CbmTofEventClusterizer : public FairTask
       std::vector< TH1* > fhRpcCluMul;         //[nbDet]
       std::vector< TH1* > fhRpcCluRate;        //[nbDet]
       std::vector< TH2* > fhRpcCluPosition;    //[nbDet]
+      std::vector< TProfile* > fhRpcCluPositionEvol;//[nbDet]
+      std::vector< TProfile* > fhRpcCluTimeEvol;    //[nbDet]
       std::vector< TH2* > fhRpcCluDelPos;      //[nbDet]
       std::vector< TH2* > fhRpcCluDelMatPos;   //[nbDet]
       std::vector< TH2* > fhRpcCluTOff;        //[nbDet] 
@@ -327,6 +332,7 @@ class CbmTofEventClusterizer : public FairTask
       std::vector< std::vector< TH2* > > fhTRpcCluDelTof;   // [nbDet][nbSel]
       std::vector< std::vector< TH2* > > fhTRpcCludXdY;     // [nbDet][nbSel]
       std::vector< std::vector< std::vector< std::vector<TH2 *> > > >fhTRpcCluWalk; // [nbDet][nbSel][nbCh][nSide]
+      std::vector< std::vector<TH3 *> >  fhTRpcCluWalk2; // [nbDet][nbSel]
 
       std::vector< std::vector< TH2* > > fhTSmCluPosition; //[nbSmTypes][nbSel]
       std::vector< std::vector< TH2* > > fhTSmCluTOff;     //[nbSmTypes][nbSel]
@@ -366,6 +372,7 @@ class CbmTofEventClusterizer : public FairTask
       Int_t    fiCluMulMax;
       Int_t    fTRefMode;
       Int_t    fTRefHits;
+      Int_t    fIdMode;
       Int_t    fDutId;
       Int_t    fDutSm;
       Int_t    fDutRpc;
@@ -384,6 +391,7 @@ class CbmTofEventClusterizer : public FairTask
       Int_t    fSel2Sm;
       Int_t    fSel2Rpc;
       Int_t    fSel2Addr;
+      Int_t    fSel2MulMax;
 
       std::map<UInt_t, UInt_t> fDetIdIndexMap;
       std::vector< Int_t >  fviDetId;
