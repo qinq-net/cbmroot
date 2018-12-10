@@ -83,6 +83,7 @@ private:
    // Parameters
       // Control flags
    Bool_t fbMuchMode;
+   std::vector< Bool_t >    fvbMaskedComponents;
       // FLES containers
    std::vector< size_t >    fvMsComponentsList; //!
    size_t                   fuNbCoreMsPerTs; //!
@@ -177,6 +178,7 @@ private:
    TH2* fhStsSysMessTypePerDpb;
    TH2* fhPulserStatusMessType;
    TH2* fhPulserMsStatusFieldType;
+   TH2* fhStsMessTypePerElink;
    TH2* fhStsHitsElinkPerDpb;
 
       /// Plots per FEB-8

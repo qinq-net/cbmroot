@@ -37,6 +37,7 @@ class CbmMcbm2018StsPar : public FairParGenericSet
 
    static constexpr UInt_t GetNbCrobsPerDpb()  { return kuNbCrobsPerDpb; }
    static constexpr UInt_t GetNbElinkPerCrob() { return kuNbElinksPerCrob; }
+   static constexpr UInt_t GetNbElinkPerDpb()  { return kuNbCrobsPerDpb * kuNbElinksPerCrob; }
    static constexpr UInt_t GetNbFebsPerCrob()  { return kuNbFebsPerCrob; }
    static constexpr UInt_t GetNbFebsPerDpb()   { return kuNbCrobsPerDpb * kuNbFebsPerCrob; }
    static constexpr UInt_t GetNbAsicsPerFeb()  { return kuNbAsicsPerFeb; }
@@ -92,7 +93,7 @@ class CbmMcbm2018StsPar : public FairParGenericSet
  private:
 
    /// Constants
-   static const UInt_t  kuNbCrobsPerDpb   =   2; // Number of CROBs possible per DPB
+   static const UInt_t  kuNbCrobsPerDpb   =   1; // Number of CROBs possible per DPB
    static const UInt_t  kuNbElinksPerCrob =  42; // Number of elinks in each CROB
    static const UInt_t  kuNbFebsPerCrob   =   5; // Number of FEBs  connected to each DPB
    static const UInt_t  kuNbAsicsPerFeb   =   8; // Number of ASICs connected in each FEB

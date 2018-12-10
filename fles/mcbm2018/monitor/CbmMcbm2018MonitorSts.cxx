@@ -44,6 +44,7 @@ Bool_t bMcbm2018ScanNoisySts = kFALSE;
 CbmMcbm2018MonitorSts::CbmMcbm2018MonitorSts() :
    CbmMcbmUnpack(),
    fbMuchMode(kFALSE),
+   fvbMaskedComponents(),
    fvMsComponentsList(),
    fuNbCoreMsPerTs(0),
    fuNbOverMsPerTs(0),
@@ -120,6 +121,7 @@ CbmMcbm2018MonitorSts::CbmMcbm2018MonitorSts() :
    fhStsSysMessTypePerDpb(NULL),
    fhPulserStatusMessType(NULL),
    fhPulserMsStatusFieldType(NULL),
+   fhStsMessTypePerElink(NULL),
    fhStsHitsElinkPerDpb(NULL),
    fdFebChanCoincidenceLimit(100.0),
    fhStsFebChanCntRaw(),
@@ -623,6 +625,18 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
    fhPulserMsStatusFieldType->GetYaxis()->SetBinLabel( 4, "Epoch");
 */
 
+   sHistName = "hStsMessTypePerElink";
+   title = "Nb of message of each type for each DPB; DPB; Type";
+   fhStsMessTypePerElink = new TH2I(sHistName, title,
+                                    fuNrOfDpbs * fUnpackParSts->GetNbElinkPerDpb(), 0, fuNrOfDpbs * fUnpackParSts->GetNbElinkPerDpb(),
+                                    6, 0., 6.);
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 1, "Dummy");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 2, "Hit");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 3, "TsMsb");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 4, "Epoch");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 5, "Status");
+   fhStsMessTypePerElink->GetYaxis()->SetBinLabel( 6, "Empty");
+
    sHistName = "hStsHitsElinkPerDpb";
    title = "Nb of hit messages per eLink for each DPB; DPB; eLink; Hits nb []";
    fhStsHitsElinkPerDpb = new TH2I(sHistName, title, fuNrOfDpbs, 0, fuNrOfDpbs, 42, 0., 42.);
@@ -950,6 +964,7 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       server->Register("/StsRaw", fhStsSysMessTypePerDpb );
       server->Register("/StsRaw", fhPulserStatusMessType );
       server->Register("/StsRaw", fhPulserMsStatusFieldType );
+      server->Register("/StsRaw", fhStsMessTypePerElink );
       server->Register("/StsRaw", fhStsHitsElinkPerDpb );
 
       for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
@@ -1158,6 +1173,37 @@ Bool_t CbmMcbm2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
    for( UInt_t uMsIdx = 0; uMsIdx < uNbMsLoop; uMsIdx ++ )
    {
       Double_t dMsTime = (1e-9) * static_cast<double>( ts.descriptor( fvMsComponentsList[ 0 ], uMsIdx ).idx );
+
+      if( 0 == fulCurrentTsIdx && 0 == uMsIdx )
+      {
+         for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsList.size(); ++uMsCompIdx )
+         {
+            UInt_t uMsComp = fvMsComponentsList[ uMsCompIdx ];
+            auto msDescriptor = ts.descriptor( uMsComp, uMsIdx );
+            LOG(INFO) << "hi hv eqid flag si sv idx/start        crc      size     offset"
+                      << FairLogger::endl;
+            LOG(INFO) << Form( "%02x %02x %04x %04x %02x %02x %016lx %08x %08x %016lx",
+                            static_cast<unsigned int>(msDescriptor.hdr_id),
+                            static_cast<unsigned int>(msDescriptor.hdr_ver), msDescriptor.eq_id, msDescriptor.flags,
+                            static_cast<unsigned int>(msDescriptor.sys_id),
+                            static_cast<unsigned int>(msDescriptor.sys_ver), msDescriptor.idx, msDescriptor.crc,
+                            msDescriptor.size, msDescriptor.offset )
+                      << FairLogger::endl;
+            uint32_t uEqId  = static_cast< uint32_t >( msDescriptor.eq_id & 0xFFFF );
+            auto it = fDpbIdIndexMap.find( uEqId );
+            if( fDpbIdIndexMap.end() == it )
+            {
+               LOG(WARNING) << "Could not find the sDPB index for AFCK id 0x"
+                         << std::hex << uEqId << std::dec
+                         << " component " << uMsCompIdx
+                         << "\n"
+                         << "If valid this index has to be added in the TOF parameter file in the RocIdArray field"
+                         << "\n"
+                         << "For now we remove it from the list of components analyzed"
+                         << FairLogger::endl;
+            } // if( fDpbIdIndexMap.end() == it )
+         } // for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsList.size(); ++uMsCompIdx )
+      } // if( 0 == fulCurrentTsIndex && 0 == uMsIdx )
 
       // Loop over registered components
       for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsList.size(); ++uMsCompIdx )
@@ -1659,6 +1705,43 @@ Bool_t CbmMcbm2018MonitorSts::ProcessStsMs( const fles::Timeslice& ts, size_t uM
    fuCurrentEquipmentId = msDescriptor.eq_id;
    const uint8_t* msContent = reinterpret_cast<const uint8_t*>( ts.content( uMsComp, uMsIdx ) );
 
+   fulCurrentTsIdx = ts.index();
+   if( 0 == fvbMaskedComponents.size() )
+      fvbMaskedComponents.resize( ts.num_components(), kFALSE );
+
+   if( 0 == fulCurrentTsIdx && 0 == uMsIdx )
+   {
+      LOG(INFO) << "hi hv eqid flag si sv idx/start        crc      size     offset"
+                << FairLogger::endl;
+      LOG(INFO) << Form( "%02x %02x %04x %04x %02x %02x %016lx %08x %08x %016lx",
+                      static_cast<unsigned int>(msDescriptor.hdr_id),
+                      static_cast<unsigned int>(msDescriptor.hdr_ver), msDescriptor.eq_id, msDescriptor.flags,
+                      static_cast<unsigned int>(msDescriptor.sys_id),
+                      static_cast<unsigned int>(msDescriptor.sys_ver), msDescriptor.idx, msDescriptor.crc,
+                      msDescriptor.size, msDescriptor.offset )
+                << FairLogger::endl;
+   } // if( 0 == fulCurrentTsIndex && 0 == uMsIdx )
+   if( kFALSE == fvbMaskedComponents[ uMsComp ] && 0 == uMsIdx )
+   {
+      auto it = fDpbIdIndexMap.find( fuCurrentEquipmentId );
+      if( fDpbIdIndexMap.end() == it )
+      {
+         LOG(WARNING) << "Could not find the sDPB index for AFCK id 0x"
+                   << std::hex << fuCurrentEquipmentId << std::dec
+                   << " component " << uMsComp
+                   << "\n"
+                   << "If valid this index has to be added in the TOF parameter file in the RocIdArray field"
+                   << "\n"
+                   << "For now we remove it from the list of components analyzed"
+                   << FairLogger::endl;
+         fvbMaskedComponents[ uMsComp ] = kTRUE;
+      } // if( fDpbIdIndexMap.end() == it )
+
+   } // if( kFALSE == fvbMaskedComponents[ uMsComp ] && 0 == uMsIdx )
+
+   if( kTRUE == fvbMaskedComponents[ uMsComp ] )
+      return kTRUE;
+
    uint32_t uSize  = msDescriptor.size;
    fulCurrentMsIdx = msDescriptor.idx;
    Double_t dMsTime = (1e-9) * static_cast<double>(fulCurrentMsIdx);
@@ -1789,11 +1872,14 @@ Bool_t CbmMcbm2018MonitorSts::ProcessStsMs( const fles::Timeslice& ts, size_t uM
          {
             // Extract the eLink and Asic indices => Should GO IN the fill method now that obly hits are link/asic specific!
             UShort_t usElinkIdx = mess.GetLinkIndex();
+            fhStsMessTypePerElink->Fill( usElinkIdx, static_cast< uint16_t > (typeMess) );
+            fhStsHitsElinkPerDpb->Fill( fuCurrDpbIdx, usElinkIdx );
+
             UInt_t   uCrobIdx   = usElinkIdx / fUnpackParSts->GetNbElinkPerCrob();
             Int_t   uFebIdx    = fUnpackParSts->ElinkIdxToFebIdx( usElinkIdx );
             if( kTRUE == fbMuchMode )
                uFebIdx = usElinkIdx;
-            fhStsHitsElinkPerDpb->Fill( fuCurrDpbIdx, usElinkIdx );
+
             if( -1 == uFebIdx )
             {
                LOG(WARNING) << "CbmMcbm2018MonitorSts::DoUnpack => "
@@ -1813,11 +1899,15 @@ Bool_t CbmMcbm2018MonitorSts::ProcessStsMs( const fles::Timeslice& ts, size_t uM
          } // case stsxyter::MessType::Hit :
          case stsxyter::MessType::TsMsb :
          {
+            fhStsMessTypePerElink->Fill( fuCurrDpbIdx * fUnpackParSts->GetNbElinkPerDpb(), static_cast< uint16_t > (typeMess) );
+
             FillTsMsbInfo( mess, uIdx, uMsIdx );
             break;
          } // case stsxyter::MessType::TsMsb :
          case stsxyter::MessType::Epoch :
          {
+            fhStsMessTypePerElink->Fill( fuCurrDpbIdx * fUnpackParSts->GetNbElinkPerDpb(), static_cast< uint16_t > (typeMess) );
+
             // The first message in the TS is a special ones: EPOCH
             FillEpochInfo( mess );
 
@@ -1831,6 +1921,8 @@ Bool_t CbmMcbm2018MonitorSts::ProcessStsMs( const fles::Timeslice& ts, size_t uM
          case stsxyter::MessType::Status :
          {
             UShort_t usElinkIdx    = mess.GetStatusLink();
+            fhStsMessTypePerElink->Fill( usElinkIdx, static_cast< uint16_t > (typeMess) );
+
             UInt_t   uCrobIdx   = usElinkIdx / fUnpackParSts->GetNbElinkPerCrob();
             Int_t   uFebIdx    = fUnpackParSts->ElinkIdxToFebIdx( usElinkIdx );
             UInt_t   uAsicIdx   = ( fuCurrDpbIdx * fUnpackParSts->GetNbCrobsPerDpb() + uCrobIdx
@@ -1852,11 +1944,13 @@ Bool_t CbmMcbm2018MonitorSts::ProcessStsMs( const fles::Timeslice& ts, size_t uM
          } // case stsxyter::MessType::Status
          case stsxyter::MessType::Empty :
          {
+            fhStsMessTypePerElink->Fill( fuCurrDpbIdx * fUnpackParSts->GetNbElinkPerDpb(), static_cast< uint16_t > (typeMess) );
 //                   FillTsMsbInfo( mess );
             break;
          } // case stsxyter::MessType::Empty :
          case stsxyter::MessType::Dummy :
          {
+            fhStsMessTypePerElink->Fill( fuCurrDpbIdx * fUnpackParSts->GetNbElinkPerDpb(), static_cast< uint16_t > (typeMess) );
             break;
          } // case stsxyter::MessType::Dummy / ReadDataAck / Ack :
          default:
@@ -2160,6 +2254,7 @@ void CbmMcbm2018MonitorSts::SaveAllHistos( TString sFileName )
    fhStsSysMessTypePerDpb->Write();
    fhPulserStatusMessType->Write();
    fhPulserMsStatusFieldType->Write();
+   fhStsMessTypePerElink->Write();
    fhStsHitsElinkPerDpb->Write();
    gDirectory->cd("..");
    /***************************/
@@ -2279,6 +2374,7 @@ void CbmMcbm2018MonitorSts::ResetAllHistos()
    fhStsSysMessTypePerDpb->Reset();
    fhPulserStatusMessType->Reset();
    fhPulserMsStatusFieldType->Reset();
+   fhStsMessTypePerElink->Reset();
    fhStsHitsElinkPerDpb->Reset();
 
    for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
