@@ -47,7 +47,11 @@ private:
     
     void DoIntersectionFinder(vector<vector<int> >& dataSup);
     
-    vector<pair<int,int> > DoNumInt(vector<pair<int,int> >& intersectionXY, vector<vector<int> >& dataSup);
+    vector<vector<int>> DoFindBasePoint(const vector<vector<int> >& dataH, const vector<vector<int>>& dataV, const vector<pair<int,int>>& intersectionXY);
+    
+    int DoSearchNextLine(const vector<vector<int> >& dataH, const vector<vector<int> >& dataV, vector<vector<int>>& intNumberXY);
+    
+    void DoScanLine(const vector<vector<int>>& dataH, const vector<vector<int>>& dataV, vector<vector<int>>& intNumberXY, int values[]);
     
    
     /**

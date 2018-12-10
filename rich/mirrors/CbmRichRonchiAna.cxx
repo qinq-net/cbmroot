@@ -86,8 +86,9 @@ void CbmRichRonchiAna::Run()
     FillH2WithVector(hSuperpose, dataSup);
     
     // numbering the intersections
-    vector<pair<int,int> > intNumberXY = DoNumInt(intersectionXY, dataSup);
-    
+    vector<vector<int>> intNumberXY = DoFindBasePoint(dataH, dataV, intersectionXY);
+    int values = DoSearchNextLine(dataH, dataV, intNumberXY);
+    //DoScanLine(dataH, dataV, intNumberXY, values);
  
     {
         TCanvas* c = new TCanvas("ronchi_2d_horizontal", "ronchi_2d_horizontal", 2000, 500);
@@ -158,50 +159,282 @@ void CbmRichRonchiAna::Run()
             center->Draw();
         }
     }
+    
+    /*{
+        TCanvas* c = new TCanvas("ronchi_2d_Number_intersection", "ronchi_2d_Number_intersection", 1000, 1000);
+        DrawH2(hSuperpose);
+        
+        for (int i = 0; i < intNumberXY.size()-1; i++) {
+            pair<int,int> xy;
+            xy.first = intNumberXY[i][0];
+            xy.second = intNumberXY[i][1];
+            TEllipse* center = new TEllipse(xy.first, xy.second, 3);
+            center->Draw();
+        }
+    }*/
 }
 
-// /*
-vector<pair<int,int>> CbmRichRonchiAna::DoNumInt(vector<pair<int,int>>& intersectionXY, vector<vector<int>>& dataSup)
+// finding base intersection
+vector<vector<int>> CbmRichRonchiAna::DoFindBasePoint(const vector<vector<int>>& dataH, const vector<vector<int>>& dataV, const vector<pair<int,int>>& intersectionXY)
 {
-    
-    int nX = intersectionXY.size();
-    int intDistance = 20; // approx. distance of intersections
-    int counterLine = 0;
+    vector<vector<int>> intNumberXY; 
+
+   
+    int nX = dataH[0].size();
+    int nY = dataH.size();
+    int nI = intersectionXY.size();
+    int l = 0;
+    int lineDistance = 20; // approx. distance of lines
     int currentY = 0;
-    int intersectionX = 0;
-    int intersectionY = 0;
+    int startx = 0;
     
     bool line = false;
     bool intersection = false;
-  
-    vector<pair<int,int>> intNumberXY;
     
-    for (int y0 = 20; y0 < nX; y0++) {
-        if (dataSup[511][y0] > 0) currentY = y0;
-        for (int x = 510; x > 20; x--) {
-            for (int y = y0-1; y <= y0+1; y++) {
-                if (dataSup[x][y] > 0) {
-                    line = true;
-                    currentY = y0;
-                }
-                for (int i = 0; i <= nX; i++) {
-                    if (intersectionXY[i].first == intersectionX && intersectionXY[i].second == intersectionY );  // nach Eintrag aus intersectionXY suchen, der den aktuellen x- und y-Werten entspricht
-                    
-                }
-            } 
-        }        
+    
+    // if first continuous line is considered as base line   
+    for (int y0 = lineDistance; y0 < nY; y0++) {    // finding base line
+        if (dataH[511][y0] > 0) {
+            currentY = y0;
+            break;
+        }
+    }
+            
+    for (int x = 510; x > lineDistance; x--) {  // finding beginning of base line
+        line = false;
+        for (int ySearch = currentY-1; ySearch <= currentY+1; ySearch++) {
+            if (dataH[x][ySearch] > 0) {
+                currentY = ySearch;
+                line = true;
+                break;
+            }
+        }
+        if (line == false) {
+            startx = x+1;
+            break;
+        }
     }
     
-    return intNumberXY;
+    intNumberXY.resize(nI);
+    for (int x = startx; x < nX; x++) {  // finding first intersection on base line
+        intNumberXY[l].resize(4);
+        for (int ySearch = currentY-1; ySearch <= currentY+1; ySearch++) {
+            if (dataH[x][ySearch] > 0 && dataV[x][ySearch] > 0) {
+                intersection = true;
+                intNumberXY[0][0] = x;
+                intNumberXY[0][1] = ySearch;
+                intNumberXY[0][2] = 0;
+                intNumberXY[0][3] = 0;
+            }
+        }
+        if (intersection == true) break;
+    }
+    
+    /*
+    
+    // if first line bottom left is considered as base line
+    bool foundLine = false;
+    for (int x = 1.5*lineDistance; x < nX; x++) {       
+        for (int y = lineDistance; y < 3*lineDistance; y++) {
+            if (dataH[x][y] > 0) {
+                basePointXY.first = x;
+                basePointXY.second = y;
+                foundLine = true;
+                break;
+            }
+        }
+        if (foundLine == true) break;
+    } */
+    return intNumberXY;  
+}
 
-} // */
+
+// searching for next line
+int CbmRichRonchiAna::DoSearchNextLine(const vector<vector<int>>& dataH, const vector<vector<int>>& dataV, vector<vector<int>>& intNumberXY)
+{
+    int nX = dataH[0].size();
+    int nY = dataH.size();
+    int lineDistance = 20; // approx. distance of lines
+    
+    int i = 0;  // line index of intersection
+    int j = 0;  // column index of intersection
+    int l = 0;  // l-th argument of vector intNumberXY   
+    int xInit = intNumberXY[0][0];     
+    int yInit = intNumberXY[0][1];    
+    
+                
+    int values[] = {i,j,l,xInit,yInit,0};   // last value indicates if last line had been reached
+    
+   cout << "Intersection 0: ["  << intNumberXY[0][0] << "," << intNumberXY[0][1] << "," << intNumberXY[0][2] << "," << intNumberXY[0][3] << "]" << endl; 
+        
+    DoScanLine(dataH, dataV, intNumberXY, values);
+    
+    int currentX = xInit;
+    int currentY = yInit;
+    int counterX = 0;
+    int counterY = 0;
+    
+    for (int y = yInit+1; y <= nY-lineDistance; y++) {  // search next intersection above
+        counterY++;
+        //if (values[5] == 1) break;
+        if (y > 0.9*nY) break;          // can be deleted if bool 'lastLine' in 'DoScanLine' is active 
+        for (int x = currentX-1; x <= currentX+1;x++) {
+            if (dataV[x][y] > 0 && dataH[x][y] > 0) {
+                values[1]++;    // j
+                values[2]++;    // l
+                values[3] = x;  // xInit
+                values[4] = y;  // yInit
+                j = values[1];
+                l = values[2];
+               cout << "l = " << l << "    j = " << j << endl;
+                xInit = x;
+                yInit = y; 
+                intNumberXY[l].push_back(x);
+                intNumberXY[l].push_back(y);
+                intNumberXY[l].push_back(i);
+                intNumberXY[l].push_back(j);
+                counterY = 0;    
+               cout << "IntersectionBase  " << l << ": [" << intNumberXY[l][0] << "," << intNumberXY[l][1] << "," << intNumberXY[l][2] << "," << intNumberXY[l][3] << "]" << endl;
+                DoScanLine(dataH, dataV, intNumberXY, values);
+                break;
+            }
+            else if (dataV[x][y] > 0 && dataH[x][y] == 0) {
+                currentX = x;
+                break;
+            }
+            if (counterY > 2*lineDistance) {  // if no intersection in range of 2*lineDistance, go to next intersection on the right and search from there
+               cout << "Skipping" << endl;
+                xInit = values[3];
+                yInit = values[4];
+               cout << "xInit before = " << xInit << "    yInit before = " << yInit << endl;
+                currentY = yInit;
+                bool foundNext = false;
+                for (int x2 = xInit+1; x2 < nX-2*lineDistance; x2++) {
+                    counterX++;
+                    for (int y2 = currentY-1; y2 <= currentY+1; y2++) {
+                        if (dataV[x2][y2] > 0 && dataH[x2][y2] > 0) {
+                            currentX = x2;
+                            cout << "y = " << y << endl;
+                            xInit = x2;
+                            yInit = y2;
+                            y = yInit+1;
+                            i++;
+                            values[0] = i;
+                            foundNext = true;
+                            counterX = 0;
+                            counterY = 0;
+                           cout << "xInit after = " << xInit << "    yInit after = " << yInit << endl;
+                            break;                           
+                        }
+                        else if (dataH[x2][y2] > 0 && dataV[x][y] == 0) {
+                            currentY = y2;
+                            break;
+                        }
+                        if (counterX > 2*lineDistance) {
+                           cout << "Gap or end of line!" << endl;
+                            counterX = 0;
+                            break;
+                        }
+                    }
+                    if (foundNext == true) break;
+                }
+                if (foundNext == true) break;
+            }            
+        }        
+    }
+}  
 
 
+// scanning the line 'j' and numbering intersections
+void CbmRichRonchiAna::DoScanLine(const vector<vector<int>>& dataH, const vector<vector<int>>& dataV, vector<vector<int>>& intNumberXY, int values[])     // marks intersections on current line and puts data into vector intNumberXY
+{
+    
+    int initialI = values[0];
+    int nX = intNumberXY.size();
+    int lineDistance = 20;
+    int i = values[0];
+    int j = values[1];
+    int l = values[2];
+    int xInit = values[3];
+    int yInit = values[4];
+    int currentY = values[4];
+        
+    bool line = false;
+    bool lineAbove = false; // both this and next bool to detect last line and end the program (has yet to be installed)
+    bool lastLine = false;
+    
+    for (int x = xInit-1; x > 30; x--) {    // searching for intersections on the left side of initial intersection
+        line = false;
+        for (int ySearch = currentY-1; ySearch <= currentY+1; ySearch++) {
+            if (dataH[x][ySearch] > 0 && dataV[x][ySearch] > 0) {
+                currentY = ySearch;
+                i--;
+                l++;
+                intNumberXY[l].push_back(x);
+                intNumberXY[l].push_back(ySearch);
+                intNumberXY[l].push_back(i);
+                intNumberXY[l].push_back(j);
+                line = true;
+                cout << "IntersectionLeft " << l << ": [" << intNumberXY[l][0] << "," << intNumberXY[l][1] << "," << intNumberXY[l][2] << "," << intNumberXY[l][3] << "]" << endl;
+                break;
+            }
+            else if (dataH[x][ySearch] > 0) {
+                currentY = ySearch;
+                line = true;
+                break;
+            }
+        }
+        if (line == false) break;   // end of line had been reached
+    }
+    
+    currentY = yInit;
+    i = initialI;
+    
+    for (int x = xInit+1; x < nX-30; x++) {      // searching for intersections on the right side of initial intersection
+        line = false;        
+        if (x == 511) {     // looking, if this is the last long line
+            lineAbove = false;
+            for (int y2 = currentY; y2 <= currentY+2*lineDistance; y2++) {
+                if (dataH[x][y2] > 0) {
+                    lineAbove = true;
+                }
+            }
+            if (lineAbove == false) values[5] = 1;
+           cout << "                                        values[5] = " << values[5] << endl;
+        }
+        
+        for (int ySearch = currentY-1; ySearch <= currentY+1; ySearch++) {
+            
+            if (dataH[x][ySearch] > 0 && dataV[x][ySearch] > 0) {
+                currentY = ySearch;
+                i++;
+                l++;                
+                intNumberXY[l].push_back(x);
+                intNumberXY[l].push_back(ySearch);
+                intNumberXY[l].push_back(i);
+                intNumberXY[l].push_back(j);
+                line = true;
+                cout << "IntersectionRight " << l << ": [" << intNumberXY[l][0] << "," << intNumberXY[l][1] << "," << intNumberXY[l][2] << "," << intNumberXY[l][3] << "]" << endl;
+                break;
+            }
+            else if (dataH[x][ySearch] > 0) {
+                currentY = ySearch;
+                line = true;
+                break;
+            }
+        }
+        if (line == false) break;
+    }
+    
+    values[2] = l;
+    
+    cout << "values (i="<< i << ", j=" << j << ", l=" << l << ", xInit=" << xInit << ", yInit=" << yInit << ")"  << endl;
+}
+
+
+// calculating mean position in Y
 void CbmRichRonchiAna::DoMeanY(vector<vector<int> >& data)
 {
-
-    // calculating mean position in Y
-
     int meanHalfLength = 5;
     int meanHalfHeight = 3;
     int nX = data.size();
@@ -222,7 +455,7 @@ void CbmRichRonchiAna::DoMeanY(vector<vector<int> >& data)
                 }
             }
             data[x][y] = 0;
-            y=(int) sumY/divider;   // might be calculated more precisely by rounding
+            y=(int) sumY/divider;   
             data[x][y] = curData;
             curData = 0;
             sumY = 0;
@@ -299,7 +532,7 @@ void CbmRichRonchiAna::FillH2WithVector(TH2* hist, const vector<vector<int> >& d
 {
     int nX = data.size();
     int nY = data[0].size();
-
+    
     for (int x = 0; x < nX; x++) {
         for (int y = 0; y < nY; y++){
             if (data[x][y] != 0) {
@@ -324,9 +557,9 @@ vector<pair<int,int> > CbmRichRonchiAna::DoIntersection(const vector<vector<int>
         }
     }
     cout << "Number of intersections: " << intersectionXY.size() << endl;
-    for (int i = 0; i < intersectionXY.size(); i++) {
-        cout << "[" << intersectionXY[i].first << "," << intersectionXY[i].second << "]" << endl;
-    }    
+    //for (int i = 0; i < intersectionXY.size(); i++) {
+    //    cout << "[" << intersectionXY[i].first << "," << intersectionXY[i].second << "]" << endl;
+    //}    
     return intersectionXY;
 }
 
