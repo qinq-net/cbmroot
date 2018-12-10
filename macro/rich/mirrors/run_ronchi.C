@@ -1,14 +1,13 @@
-
-void run_ronchi() 
+void run_ronchi()
 {
     gSystem->Load("libtiff");
 
     std::string dir = "/dir/";
-    std::string fileName1 = "horizontal.tiff";
-    //std::string fileName2 = "vertical.tiff";
+    std::string fileName1 = "horizontal.tif";
+    std::string fileName2 = "vertical.tif";
 
     CbmRichRonchiAna *ronchiAna = new CbmRichRonchiAna();
-    ronchiAna->SetTiffFileNameV("horizontal.tif");
-    //ronchiAna->SetTiffFileName("vertical.tif");
+    ronchiAna->SetTiffFileNameH(fileName1);
+    ronchiAna->SetTiffFileNameV(fileName2);
     ronchiAna->Run();
 }
