@@ -20,7 +20,8 @@ void run_reco_event(
     Int_t nEvents = 2,
     TString dataset = "test",
     TString setup = "sis100_electron",
-    Bool_t useMC = kFALSE
+    Bool_t useMC = kFALSE,
+    Bool_t findPV = kTRUE
 )
 {
 
@@ -141,14 +142,17 @@ void run_reco_event(
   TString macroName = srcDir + "/macro/run/modules/reconstruct.C";
   std::cout << "Loading macro " << macroName << std::endl;
   gROOT->LoadMacro(macroName);
-  TString command = ( useMC ? "reconstruct(kTRUE)" : "reconstruct()" );
+  TString command = "reconstruct(";
+  command += ( useMC ? "kTRUE," : "kFALSE," );
+  command += ( findPV ? "kTRUE)" : "kFALSE)" );
+  std::cout << "Calling " << command << std::endl;
   Bool_t recoSuccess = gROOT->ProcessLine(command.Data());
   if ( ! recoSuccess ) {
-  	std::cerr << "-E-" << myName << ": error in executing " << macroName
+  	std::cerr << "-E- " << myName << ": error in executing " << macroName
   			<< std::endl;
   	return;
   }
-  std::cout << "-I-" << myName << ": " << macroName << " excuted successfully"
+  std::cout << "-I- " << myName << ": " << macroName << " excuted successfully"
   		<< std::endl;
   // ------------------------------------------------------------------------
 

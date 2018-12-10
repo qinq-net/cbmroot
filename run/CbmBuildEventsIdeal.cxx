@@ -131,14 +131,14 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
   } //# detectors
 
 
-  fNofEntries++;
   timer.Stop();
   assert( nEvents == fEvents->GetEntriesFast() );
 
   // --- Execution log
   std::cout << std::endl;
   LOG(INFO) << "+ " << setw(15) << GetName() << ": Time-slice " << setw(3)
-             << right << fNofEntries << ", digis: " << nDigisTot << ", no match: "
+             << right << fNofEntries << ", events: " << setw(6) << nEvents
+             << ", digis: " << nDigisTot << ", no match: "
              << nDigisNoMatch << ", noise: " << nDigisNoise << ". Exec time "
              << fixed << setprecision(6) << timer.RealTime() << " s."
              << FairLogger::endl;
@@ -150,6 +150,8 @@ void CbmBuildEventsIdeal::Exec(Option_t*) {
       LOG(INFO) << event->ToString() << FairLogger::endl;
     }
   }
+
+  fNofEntries++;
 
 }
 // ===========================================================================

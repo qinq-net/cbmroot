@@ -149,3 +149,48 @@ function(download_project_if_needed)
   EndIf()
 EndFunction()
 
+
+#----- Macro GENERATE_CBM_TEST_SCRIPT  --------------------------------------
+#----- Macro for generating an executable test script from a ROOT macro.
+#----- This macro extends GENERATE_ROOT_TEST_SCRIPT from FairRoot such that
+#----  a second argument specifyies the destination directory. This allows
+#----  to generate scripts from macros in a different directory.
+#---   V.F. 18/12/10
+MACRO (GENERATE_CBM_TEST_SCRIPT SCRIPT_FULL_NAME DEST_DIR)
+
+  get_filename_component(path_name ${SCRIPT_FULL_NAME} PATH)
+  get_filename_component(file_extension ${SCRIPT_FULL_NAME} EXT)
+  get_filename_component(file_name ${SCRIPT_FULL_NAME} NAME_WE)
+  set(shell_script_name "${file_name}.sh")
+
+  string(REPLACE ${PROJECT_SOURCE_DIR}
+         ${PROJECT_BINARY_DIR} new_path ${path_name}
+        )
+
+  file(MAKE_DIRECTORY ${new_path}/data)
+
+  CONVERT_LIST_TO_STRING(${LD_LIBRARY_PATH})
+  set(MY_LD_LIBRARY_PATH ${output})
+
+  CONVERT_LIST_TO_STRING(${ROOT_INCLUDE_PATH})
+  set(MY_ROOT_INCLUDE_PATH ${output})
+
+  set(my_script_name ${SCRIPT_FULL_NAME})
+
+  IF(FAIRROOTPATH)
+    configure_file(${FAIRROOTPATH}/share/fairbase/cmake/scripts/root_macro.sh.in
+                   ${DEST_DIR}/${shell_script_name}
+                  )
+  ELSE(FAIRROOTPATH)
+    configure_file(${PROJECT_SOURCE_DIR}/cmake/scripts/root_macro.sh.in
+                   ${DEST_DIR}/${shell_script_name}
+                  )
+  ENDIF(FAIRROOTPATH)
+
+  execute_process(COMMAND "/bin/chmod" "u+x" "${DEST_DIR}/${shell_script_name}")
+  MESSAGE("Created ${DEST_DIR}/${shell_script_name}")
+
+ENDMACRO (GENERATE_CBM_TEST_SCRIPT)
+#----- Macro GENERATE_CBM_TEST_SCRIPT  --------------------------------------
+
+

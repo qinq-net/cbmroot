@@ -1,5 +1,6 @@
 /** Macro module for registration of reconstruction tasks to a run
  **
+ ** This macro creates the task chain for event-by-event reconstruction.
  ** The run instance must be FairRunAna.
  ** The macro assumes a CbmSetup instance.
  ** Reconstruction tasks are instantiated depending on the presence
@@ -13,41 +14,47 @@
  **/
 
 
-Bool_t reconstruct(Bool_t useMC = kFALSE)
+Bool_t reconstruct(Bool_t useMC = kFALSE, Bool_t searchPV = kTRUE)
 {
 
-
   // -----   Get the run instance   ------------------------------------------
-	FairRun* run = FairRun::Instance();
-	if ( ! run ) {
-		std::cerr << "-E- digitize: No run instance!" << std::endl;
-		return kFALSE;
-	}
-	std::cout << std::endl;
-	std::cout << "-I- Macro reconstruct.C called for run " << run->GetName()
-			      << std::endl;
+  FairRun* run = FairRun::Instance();
+  if ( ! run ) {
+    std::cerr << "-E- reconstruct: No run instance!" << std::endl;
+    return kFALSE;
+  }
+  std::cout << std::endl;
+  std::cout << "-I- Macro reconstruct.C called for run " << run->GetName()
+			          << std::endl;
   // -------------------------------------------------------------------------
 
 
   // -----   Get the CBM setup instance   ------------------------------------
-	CbmSetup* setup = CbmSetup::Instance();
-	std::cout << std::endl;
-	std::cout << "-I- digitize: Found setup " << setup->GetTitle() << std::endl;
+  CbmSetup* setup = CbmSetup::Instance();
+  std::cout << std::endl;
+  std::cout << "-I- reconstruct: Found setup " << setup->GetTitle()
+      << std::endl;
   // -------------------------------------------------------------------------
+
+
+  // -----   Ideal event building   ------------------------------------------
+  //run->AddTask(new CbmBuildEventsIdeal());
+  // -------------------------------------------------------------------------
+
 
 
   // -----   Local reconstruction in MVD   ----------------------------------
   if ( setup->IsActive(kMvd) ) {
 
-  	CbmMvdClusterfinder* mvdCluster =
-  			new CbmMvdClusterfinder("MVD Cluster Finder", 0, 0);
-  	run->AddTask(mvdCluster);
-  	std::cout << "-I- : Added task " << mvdCluster->GetName() << std::endl;
+    CbmMvdClusterfinder* mvdCluster =
+        new CbmMvdClusterfinder("MVD Cluster Finder", 0, 0);
+    run->AddTask(mvdCluster);
+    std::cout << "-I- : Added task " << mvdCluster->GetName() << std::endl;
 
-  	CbmMvdHitfinder* mvdHit = new CbmMvdHitfinder("MVD Hit Finder", 0, 0);
-  	mvdHit->UseClusterfinder(kTRUE);
-  	run->AddTask(mvdHit);
-  	std::cout << "-I- : Added task " << mvdHit->GetName() << std::endl;
+    CbmMvdHitfinder* mvdHit = new CbmMvdHitfinder("MVD Hit Finder", 0, 0);
+    mvdHit->UseClusterfinder(kTRUE);
+    run->AddTask(mvdHit);
+    std::cout << "-I- : Added task " << mvdHit->GetName() << std::endl;
 
   }
   // ------------------------------------------------------------------------
@@ -56,13 +63,13 @@ Bool_t reconstruct(Bool_t useMC = kFALSE)
   // -----   Local reconstruction in STS   ----------------------------------
   if ( setup->IsActive(kSts) ) {
 
-  	CbmStsFindClusters* stsCluster = new CbmStsFindClusters();
-  	stsCluster->UseEventMode();
-  	run->AddTask(stsCluster);
+    CbmStsFindClusters* stsCluster = new CbmStsFindClusters();
+    stsCluster->UseEventMode();
+    run->AddTask(stsCluster);
     std::cout << "-I- : Added task " << stsCluster->GetName() << std::endl;
 
-  	FairTask* stsHit = new CbmStsFindHitsEvents();
-  	run->AddTask(stsHit);
+    FairTask* stsHit = new CbmStsFindHitsEvents();
+    run->AddTask(stsHit);
     std::cout << "-I- : Added task " << stsHit->GetName() << std::endl;
 
   }
@@ -72,26 +79,26 @@ Bool_t reconstruct(Bool_t useMC = kFALSE)
   // -----   Local reconstruction in MUCH   ---------------------------------
   if ( setup->IsActive(kMuch) ) {
 
-		// --- Parameter file name
-		TString geoTag;
-		setup->GetGeoTag(kMuch, geoTag);
-		Int_t muchFlag=0;
-		if (geoTag.Contains("mcbm")) muchFlag=1;
+    // --- Parameter file name
+    TString geoTag;
+    setup->GetGeoTag(kMuch, geoTag);
+    Int_t muchFlag=0;
+    if (geoTag.Contains("mcbm")) muchFlag=1;
 
-	        std::cout << geoTag(0,4) << std::endl;
-		TString parFile = gSystem->Getenv("VMCWORKDIR");
-		parFile = parFile + "/parameters/much/much_" + geoTag(0,4)
-				    + "_digi_sector.root";
-		std::cout << "Using parameter file " << parFile << std::endl;
+    std::cout << geoTag(0,4) << std::endl;
+    TString parFile = gSystem->Getenv("VMCWORKDIR");
+    parFile = parFile + "/parameters/much/much_" + geoTag(0,4)
+				        + "_digi_sector.root";
+    std::cout << "Using parameter file " << parFile << std::endl;
 
-		// --- Hit finder for GEMs
-		FairTask* muchHitGem = new CbmMuchFindHitsGem(parFile.Data(),muchFlag);
-		run->AddTask(muchHitGem);
+    // --- Hit finder for GEMs
+    FairTask* muchHitGem = new CbmMuchFindHitsGem(parFile.Data(),muchFlag);
+    run->AddTask(muchHitGem);
 
-//		// --- Hit finder for Straws
-//		CbmMuchFindHitsStraws* strawFindHits =
-//				new CbmMuchFindHitsStraws(parFile.Data());
-//		run->AddTask(strawFindHits);
+    //		// --- Hit finder for Straws
+    //		CbmMuchFindHitsStraws* strawFindHits =
+    //				new CbmMuchFindHitsStraws(parFile.Data());
+    //		run->AddTask(strawFindHits);
 
   }
   // ------------------------------------------------------------------------
@@ -119,7 +126,7 @@ Bool_t reconstruct(Bool_t useMC = kFALSE)
   // -----   Local reconstruction in TOF   ----------------------------------
   if ( setup->IsActive(kTof) ) {
     CbmTofSimpClusterizer* tofCluster
-          = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0);
+    = new CbmTofSimpClusterizer("TOF Simple Clusterizer", 0);
     tofCluster->SetOutputBranchPersistent("TofHit",          kTRUE);
     tofCluster->SetOutputBranchPersistent("TofDigiMatch",    kTRUE);
     run->AddTask(tofCluster);
@@ -177,10 +184,12 @@ Bool_t reconstruct(Bool_t useMC = kFALSE)
 
 
   // -----   Primary vertex finding   ---------------------------------------
-  CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
-  CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
-  run->AddTask(findVertex);
-  std::cout << "-I- : Added task " << findVertex->GetName() << std::endl;
+  if ( searchPV) {
+    CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
+    CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
+    run->AddTask(findVertex);
+    std::cout << "-I- : Added task " << findVertex->GetName() << std::endl;
+  }
   // -------------------------------------------------------------------------
 
 
@@ -211,7 +220,7 @@ Bool_t reconstruct(Bool_t useMC = kFALSE)
   if ( setup->IsActive(kEcal) ) {
 
     CbmEcalHitProducerFastMC* ecalHit =
-    		new CbmEcalHitProducerFastMC("ECAL HitProducer");
+        new CbmEcalHitProducerFastMC("ECAL HitProducer");
     run->AddTask(ecalHit);
     std::cout << "-I- : Added task " << ecalHit->GetName() << std::endl;
 
