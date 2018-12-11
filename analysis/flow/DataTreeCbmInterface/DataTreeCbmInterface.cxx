@@ -10,6 +10,8 @@ using std::endl;
 using std::ifstream;
 
 #include "TDirectory.h"
+#include "TROOT.h"
+
 #include "CbmPsdHit.h"
 #include "CbmPsdDigi.h"
 #include "CbmMCTrack.h"
@@ -108,6 +110,11 @@ void DataTreeCbmInterface::LoadGeo(const TString &geoFile) {
 
   }
 
+  // Fix to avoid crash
+  if (gROOT->GetVersionInt() >= 60602) {
+    geoMan->GetListOfVolumes()->Delete();
+    geoMan->GetListOfShapes()->Delete();
+  }
   delete geoMan;
 }
 
