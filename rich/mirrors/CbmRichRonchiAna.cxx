@@ -160,7 +160,7 @@ void CbmRichRonchiAna::Run()
         }
     }
     
-    /*{
+   /* {
         TCanvas* c = new TCanvas("ronchi_2d_Number_intersection", "ronchi_2d_Number_intersection", 1000, 1000);
         DrawH2(hSuperpose);
         
@@ -260,21 +260,20 @@ int CbmRichRonchiAna::DoSearchNextLine(const vector<vector<int>>& dataH, const v
     int j = 0;  // column index of intersection
     int l = 0;  // l-th argument of vector intNumberXY   
     int xInit = intNumberXY[0][0];     
-    int yInit = intNumberXY[0][1];    
-    
+    int yInit = intNumberXY[0][1];        
                 
-    int values[] = {i,j,l,xInit,yInit,0};   // last value indicates if last line had been reached
+    int values[] = {i,j,l,xInit,yInit,0};   // last value indicates if last line had been reached, to cancel for further searching
     
    cout << "Intersection 0: ["  << intNumberXY[0][0] << "," << intNumberXY[0][1] << "," << intNumberXY[0][2] << "," << intNumberXY[0][3] << "]" << endl; 
         
-    DoScanLine(dataH, dataV, intNumberXY, values);
+    DoScanLine(dataH, dataV, intNumberXY, values);  // scanning and numbering intersections of first line
     
     int currentX = xInit;
     int currentY = yInit;
     int counterX = 0;
     int counterY = 0;
     
-    for (int y = yInit+1; y <= nY-lineDistance; y++) {  // search next intersection above
+    for (int y = yInit+1; y <= nY-2*lineDistance; y++) {  // search next intersection above
         counterY++;
         //if (values[5] == 1) break;
         if (y > 0.9*nY) break;          // can be deleted if bool 'lastLine' in 'DoScanLine' is active 
@@ -287,7 +286,7 @@ int CbmRichRonchiAna::DoSearchNextLine(const vector<vector<int>>& dataH, const v
                 j = values[1];
                 l = values[2];
                cout << "l = " << l << "    j = " << j << endl;
-                xInit = x;
+                //xInit = x;    not needed
                 yInit = y; 
                 intNumberXY[l].push_back(x);
                 intNumberXY[l].push_back(y);
@@ -317,7 +316,7 @@ int CbmRichRonchiAna::DoSearchNextLine(const vector<vector<int>>& dataH, const v
                             cout << "y = " << y << endl;
                             xInit = x2;
                             yInit = y2;
-                            y = yInit+1;
+                            y = yInit;  // y = yInit+1? why does it work yet?
                             i++;
                             values[0] = i;
                             foundNext = true;
@@ -326,7 +325,7 @@ int CbmRichRonchiAna::DoSearchNextLine(const vector<vector<int>>& dataH, const v
                            cout << "xInit after = " << xInit << "    yInit after = " << yInit << endl;
                             break;                           
                         }
-                        else if (dataH[x2][y2] > 0 && dataV[x][y] == 0) {
+                        else if (dataH[x2][y2] > 0) {
                             currentY = y2;
                             break;
                         }
@@ -348,17 +347,17 @@ int CbmRichRonchiAna::DoSearchNextLine(const vector<vector<int>>& dataH, const v
 // scanning the line 'j' and numbering intersections
 void CbmRichRonchiAna::DoScanLine(const vector<vector<int>>& dataH, const vector<vector<int>>& dataV, vector<vector<int>>& intNumberXY, int values[])     // marks intersections on current line and puts data into vector intNumberXY
 {
-    
-    int initialI = values[0];
     int nX = intNumberXY.size();
     int lineDistance = 20;
+    int initialI = values[0];
+    int currentY = values[4];
+        
     int i = values[0];
     int j = values[1];
     int l = values[2];
     int xInit = values[3];
     int yInit = values[4];
-    int currentY = values[4];
-        
+           
     bool line = false;
     bool lineAbove = false; // both this and next bool to detect last line and end the program (has yet to be installed)
     bool lastLine = false;
@@ -384,7 +383,7 @@ void CbmRichRonchiAna::DoScanLine(const vector<vector<int>>& dataH, const vector
                 break;
             }
         }
-        if (line == false) break;   // end of line had been reached
+        if (line == false) break;   // end of line or a gap had been reached
     }
     
     currentY = yInit;
@@ -392,7 +391,7 @@ void CbmRichRonchiAna::DoScanLine(const vector<vector<int>>& dataH, const vector
     
     for (int x = xInit+1; x < nX-30; x++) {      // searching for intersections on the right side of initial intersection
         line = false;        
-        if (x == 511) {     // looking, if this is the last long line
+        if (x == 511) {     // looking, if this is the last continuous line
             lineAbove = false;
             for (int y2 = currentY; y2 <= currentY+2*lineDistance; y2++) {
                 if (dataH[x][y2] > 0) {
