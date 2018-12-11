@@ -12,6 +12,8 @@ add_subdirectory(include)
 If($ENV{ctest_model} MATCHES Nightly)
   add_subdirectory(field)
   add_subdirectory(KF)
+#  add_subdirectory(C2F)
+  add_subdirectory(dimuon)
   Message("Additional Nightly tests")
 EndIf($ENV{ctest_model}  MATCHES Nightly)
 
