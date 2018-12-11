@@ -160,18 +160,18 @@ void CbmRichRonchiAna::Run()
         }
     }
     
-   /* {
+    {
         TCanvas* c = new TCanvas("ronchi_2d_Number_intersection", "ronchi_2d_Number_intersection", 1000, 1000);
         DrawH2(hSuperpose);
         
-        for (int i = 0; i < intNumberXY.size()-1; i++) {
+        for (int i = 0; i < intNumberXY.size(); i++) {
             pair<int,int> xy;
             xy.first = intNumberXY[i][0];
             xy.second = intNumberXY[i][1];
             TEllipse* center = new TEllipse(xy.first, xy.second, 3);
             center->Draw();
         }
-    }*/
+    }
 }
 
 // finding base intersection
