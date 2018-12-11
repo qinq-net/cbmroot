@@ -35,15 +35,6 @@ void run_treemaker
   // ------------------------------------------------------------------------
 
 
-  // -----   Remove old CTest runtime dependency file  ----------------------
-  TString dataDir = gSystem->DirName(dataSet);
-  TString dataName = gSystem->BaseName(dataSet);
-  TString testName = ("run_treemaker");
-  TString depFile = Remove_CTest_Dependency_File(dataDir, testName,
-                                                 dataName);
-  // ------------------------------------------------------------------------  
-  
-
   // -----   Load the geometry setup   -------------------------------------
   std::cout << std::endl;
   TString setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
@@ -208,6 +199,6 @@ void run_treemaker
   // -----   Finish   -------------------------------------------------------
   std::cout << " Test passed" << std::endl;
   std::cout << " All ok " << std::endl;
-  Generate_CTest_Dependency_File(depFile);
+  RemoveGeoManager();
   // ------------------------------------------------------------------------
 }
