@@ -163,10 +163,7 @@ MACRO (GENERATE_CBM_TEST_SCRIPT SCRIPT_FULL_NAME DEST_DIR)
   get_filename_component(file_name ${SCRIPT_FULL_NAME} NAME_WE)
   set(shell_script_name "${file_name}.sh")
 
-  string(REPLACE ${PROJECT_SOURCE_DIR}
-         ${PROJECT_BINARY_DIR} new_path ${path_name}
-        )
-
+  set(new_path ${DEST_DIR})
   file(MAKE_DIRECTORY ${new_path}/data)
 
   CONVERT_LIST_TO_STRING(${LD_LIBRARY_PATH})
@@ -177,15 +174,9 @@ MACRO (GENERATE_CBM_TEST_SCRIPT SCRIPT_FULL_NAME DEST_DIR)
 
   set(my_script_name ${SCRIPT_FULL_NAME})
 
-  IF(FAIRROOTPATH)
-    configure_file(${FAIRROOTPATH}/share/fairbase/cmake/scripts/root_macro.sh.in
-                   ${DEST_DIR}/${shell_script_name}
-                  )
-  ELSE(FAIRROOTPATH)
-    configure_file(${PROJECT_SOURCE_DIR}/cmake/scripts/root_macro.sh.in
-                   ${DEST_DIR}/${shell_script_name}
-                  )
-  ENDIF(FAIRROOTPATH)
+  configure_file(${FAIRROOTPATH}/share/fairbase/cmake/scripts/root_macro.sh.in
+                 ${DEST_DIR}/${shell_script_name}
+                )
 
   execute_process(COMMAND "/bin/chmod" "u+x" "${DEST_DIR}/${shell_script_name}")
   MESSAGE("Created ${DEST_DIR}/${shell_script_name}")
