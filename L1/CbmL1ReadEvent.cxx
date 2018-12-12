@@ -143,6 +143,8 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
     for( DFSET::iterator set_it = vFileEvent.begin(); set_it!=vFileEvent.end(); ++set_it){
       Int_t iFile = set_it->first;
       Int_t iEvent = set_it->second;
+      
+      cout<<iEvent<<" iEvent"<<endl;
 
      
       if(fMvdPoints && listMvdPts)
@@ -425,6 +427,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
           {
             iMC = mvdHitMatch->GetLink(0).GetIndex();
             th.iMC = iMC;
+        //    th.track = iMC;
           }
       }
 //       if( listMvdPts && iMC>=0 ){ // TODO1: don't need this with FairLinks
@@ -549,9 +552,9 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
               if( stsHitMatch.GetLink(iLink).GetWeight() > bestWeight){
                 bestWeight = stsHitMatch.GetLink(iLink).GetWeight();
                 Int_t iFile  = stsHitMatch.GetLink(iLink).GetFile();
-                Int_t iEvent = stsHitMatch.GetLink(iLink).GetEntry() - 1;
-                if(!fTimesliceMode) //TODO Fix the event number in links
-                  iEvent+=1;
+                Int_t iEvent = stsHitMatch.GetLink(iLink).GetEntry();
+//                 if(!fTimesliceMode) //TODO Fix the event number in links
+//                   iEvent+=1;
                 Int_t iIndex = stsHitMatch.GetLink(iLink).GetIndex() + nMvdPoints;
                 Double_t dtrck =dFEI(iFile, iEvent, iIndex);
                 DFEI2I::iterator trk_it = dFEI2vMCPoints.find(dtrck);
@@ -566,7 +569,10 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
       } //fPerformance
 
       if(iMC > -1)
-        th.iMC = iMC;
+      { th.iMC = iMC;
+       // th.track = iMC;
+        
+      }
 
       tmpHits.push_back(th);
       nStsHits++;
@@ -614,7 +620,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
 
         th.x = mh->GetX();
         th.y = mh->GetY();
-        th.z = mh->GetZ();
+        th.z = mh->GetZ()+10;
         
         th.dx = mh->GetDx();
         th.dy = mh->GetDy();
@@ -715,13 +721,11 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
         
    //    for (int k=0; k <TrdHitsOnStation[num+1].size(); k++ ){
          
-        th.iStation = NMvdStations + num + NStsStations+NMuchStations;
+        th.iStation = NMvdStations + mh->GetPlaneId() + NStsStations+NMuchStations;
         
         
         th.time =  mh->GetTime();
         th.t_er =  mh->GetTimeError();  
-
-        //th.iStation = NMvdStations + mh->GetPlaneId() + NStsStations+NMuchStations;
         
      //   th.iSector  = 0;
         th.isStrip  = 0;
@@ -795,7 +799,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
           {
             iMC = trdHitMatch->GetLink(0).GetIndex();
             th.iMC = iMC+nMvdPoints+nStsPoints+nMuchPoints;
-            th.track = vMCPoints[th.iMC].ID;
+      //      th.track = vMCPoints[th.iMC].ID;
             
 //            CbmTrdPoint* pt = (CbmTrdPoint*) fTrdPoints->Get(trdHitMatch->GetLink(0).GetFile(),trdHitMatch->GetLink(0).GetEntry(),trdHitMatch->GetLink(0).GetIndex());
   
@@ -1053,7 +1057,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
 
     h.t_reco = th.time; 
     h.t_er = th.t_er; 
-    h.t_mc = th.time;
+  //  h.track = th.track;
     h.dx   = th.dx;
     h.dy   = th.dy;
     h.du   = th.du;
@@ -1093,7 +1097,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
    //   z_tmp = 0.5 * ( point->GetZOut() + point->GetZIn() );
 //#else
       CbmMuchPixelHit* mh = static_cast<CbmMuchPixelHit*>(fMuchPixelHits->At(- s.ExtIndex - 1) );
-      z_tmp = mh->GetZ();
+      z_tmp = mh->GetZ()+10;
 //#endif
     }
     
@@ -1107,7 +1111,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
 //#endif
     }
     
-        if ((ist >= NStsStations+NMvdStations+NMuchStations+NTrdStations)&&(ist < (NStsStations+NMvdStations+NMuchStations+NTrdStations))) {
+        if ((ist >= NStsStations+NMvdStations+NMuchStations+NTrdStations+NTOFStation)&&(ist < (NStsStations+NMvdStations+NMuchStations+NTrdStations))) {
 //#ifdef STSIDEALHITS
     //  CbmStsPoint* point = L1_DYNAMIC_CAST<CbmStsPoint*>(listStsPts->At(s.ExtIndex));
    //   z_tmp = 0.5 * ( point->GetZOut() + point->GetZIn() );
@@ -1242,8 +1246,10 @@ void CbmL1::Fill_vMCTracks()
     {
       Int_t iFile = set_it->first;
       Int_t iEvent = set_it->second;
-
+      
+      
       Int_t nMCTrack =fMCTracks->Size(iFile, iEvent);
+
 
       for(Int_t iMCTrack= 0; iMCTrack < nMCTrack; iMCTrack++)
       {
@@ -1321,17 +1327,17 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, int file, int event, int 
   {  
     CbmStsPoint *pt = L1_DYNAMIC_CAST<CbmStsPoint*>(fStsPoints->Get(file,event,iPoint) ); // file, event, object   
     if ( !pt ) return 1;
-    if ( fTimesliceMode )
-    {
-      Double_t StartTime = fTimeSlice->GetStartTime();
-      Double_t EndTime = fTimeSlice->GetEndTime();
-      Double_t Time_MC_point =  pt->GetTime() + fEventList->GetEventTime(event, file);
-      if (Time_MC_point < StartTime ) 
-        return 1;
-
-      if (Time_MC_point > EndTime ) 
-        return 1; 
-    } //if ( fTimesliceMode )
+//     if ( fTimesliceMode )
+//     {
+//       Double_t StartTime = fTimeSlice->GetStartTime();
+//       Double_t EndTime = fTimeSlice->GetEndTime();
+//       Double_t Time_MC_point =  pt->GetTime() + fEventList->GetEventTime(event, file);
+//       if (Time_MC_point < StartTime ) 
+//         return 1;
+// 
+//       if (Time_MC_point > EndTime ) 
+//         return 1; 
+//     } //if ( fTimesliceMode )
 
     pt->Position(xyzI);
     pt->Momentum(PI);
@@ -1377,11 +1383,11 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, int file, int event, int 
       Double_t StartTime = fTimeSlice->GetStartTime();
       Double_t EndTime = fTimeSlice->GetEndTime();
       Double_t Time_MC_point =  pt->GetTime() + fEventList->GetEventTime(event, file);
-      if (Time_MC_point < StartTime ) 
-        return 1;
-
-      if (Time_MC_point > EndTime ) 
-        return 1; 
+//       if (Time_MC_point < StartTime ) 
+//         return 1;
+// 
+//       if (Time_MC_point > EndTime ) 
+//         return 1; 
     } //if ( fTimesliceMode )
 
     pt->Position(xyzI);

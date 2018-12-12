@@ -76,7 +76,9 @@ inline void L1Algo::f10(  // input
                         Tindex start_lh, Tindex n1_l,  L1HitPoint *StsHits_l,
                         // output
                         fvec *u_front_l, fvec *u_back_l, fvec *zPos_l,
-                        THitI* hitsl, fvec *HitTime_l, fvec *HitTimeEr, fvec *Event_l
+                        THitI* hitsl, fvec *HitTime_l, fvec *HitTimeEr, fvec *Event_l,
+                        fvec *d_x, fvec *d_y, fvec *d_xy,
+                        fvec *d_u, fvec *d_v
                         )
 {
   const Tindex &end_lh = start_lh+n1_l;
@@ -87,9 +89,10 @@ inline void L1Algo::f10(  // input
     Tindex i1_V= i1/fvecLen;
     Tindex i1_4= i1%fvecLen;
     L1HitPoint &hitl = StsHits_l[ilh];
+    
         
 #ifdef USE_EVENT_NUMBER        
-    Event_l[i1_V][i1_4]=hitl.n;
+    Event_l[i1_V][i1_4]=hitl.track;
 #endif 
     
     HitTime_l[i1_V][i1_4]=hitl.time;
@@ -98,6 +101,14 @@ inline void L1Algo::f10(  // input
     hitsl[i1] = ilh;
     u_front_l[i1_V][i1_4] = hitl.U();
     u_back_l [i1_V][i1_4] = hitl.V();
+    
+#ifdef HitErrors    
+    d_x[i1_V][i1_4]  = hitl.dX();
+    d_y [i1_V][i1_4] = hitl.dY();
+    d_xy[i1_V][i1_4] = hitl.dXY();
+    d_u [i1_V][i1_4] = hitl.dU();
+    d_v [i1_V][i1_4] = hitl.dV();
+#endif 
     zPos_l   [i1_V][i1_4] = hitl.Z();        
   }
 }
@@ -112,7 +123,9 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
                         // output
                         //                 L1TrackPar *T_1,
                         L1TrackPar *T_1,
-                        L1FieldRegion *fld_1
+                        L1FieldRegion *fld_1,                       
+                        fvec *d_x, fvec *d_y, fvec *d_xy,
+                        fvec *d_u, fvec *d_v
                         )
 {
   L1Station &stal = vStations[istal];
@@ -120,9 +133,16 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
   fvec zstal = stal.z;
   fvec zstam = stam.z;
   
+  int istal_global = 5;
+  int istam_global = 6;
+  L1Station &stal_global = vStations[istal_global];
+  L1Station &stam_global = vStations[istam_global];
+  fvec zstal_global = stal_global.z;
+  fvec zstam_global = stam_global.z;
+  
   L1FieldRegion fld0;      // by  left   hit, target and "center" (station in-between). Used here for extrapolation to target and to middle hit
-  L1FieldValue centB, l_B _fvecalignment; // field for singlet creation
-  L1FieldValue m_B _fvecalignment; // field for the next extrapolations
+  L1FieldValue l_B_global, centB, centB_global, l_B _fvecalignment; // field for singlet creation
+  L1FieldValue m_B, m_B_global _fvecalignment; // field for the next extrapolations
   
   for( int i1_V=0; i1_V<n1_V; i1_V++ )
   {    
@@ -139,6 +159,14 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
     fvec &timeEr = HitTimeEr[i1_V];
     const fvec &dzli = 1./(zl-targZ);
     
+#ifdef HitErrors    
+    fvec &du1 = d_u[i1_V];
+    fvec &dv1 = d_v[i1_V];
+    fvec &dx1 = d_x[i1_V];
+    fvec &dy1 = d_y[i1_V]; 
+    fvec &dxy1 = d_xy [i1_V];
+#endif     
+    
     StripsToCoor(u, v, xl, yl, stal);
     
     const fvec &tx = (xl - targX)*dzli;
@@ -150,8 +178,19 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
     //       istac = (istal-NMvdStations)/2+NMvdStations;
     L1Station &stac = vStations[istac];
     fvec zstac = stac.z;
+    
+    int istac_global = istal_global/2; // "center" station
+    
+    L1Station &stac_global = vStations[istac_global];
+    fvec zstac_global = stac.z;    
+
     stac.fieldSlice.GetFieldValue( targX + tx*(zstac - targZ), targY + ty*(zstac - targZ), centB );
     stal.fieldSlice.GetFieldValue( targX + tx*(zstal - targZ), targY + ty*(zstal - targZ), l_B );
+    
+    stam_global.fieldSlice.GetFieldValue( targX + tx*(zstam_global - targZ), targY + ty*(zstam_global - targZ), m_B_global );
+    stal_global.fieldSlice.GetFieldValue( targX + tx*(zstal_global - targZ), targY + ty*(zstal_global - targZ), l_B_global );
+    stac_global.fieldSlice.GetFieldValue( targX + tx*(zstac_global - targZ), targY + ty*(zstac_global - targZ), centB_global );
+    
     if( istac != istal  )
       fld0.Set( l_B, stal.z, centB, stac.z, targB, targZ );
     else
@@ -170,6 +209,8 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
     fvec zstar = star.z;
     star.fieldSlice.GetFieldValue( targX + tx*(zstar - targZ), targY + ty*(zstar - targZ), r_B );
     fld1.Set( r_B, zstar, m_B, zstam, l_B, zstal);
+    if ((istam+1)>=NFStations)  
+      fld1.Set( m_B_global, zstam_global, l_B_global, zstal_global, centB_global, zstac_global  );
 #endif // USE_3HITS
     
     T.chi2 = 0.;
@@ -198,6 +239,33 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
     T.C00 = stal.XYInfo.C00;
     T.C10 = stal.XYInfo.C10;
     T.C11 = stal.XYInfo.C11;
+    
+#ifdef HitErrors       
+    T.C00 = dx1*dx1;
+    T.C10 = dxy1;
+    T.C11 = dy1*dy1;  
+#endif    
+    
+#if defined(mCBM) || defined(GLOBAL) 
+ //  add the target
+
+ if (istal<NFStations)    
+    {  
+      fvec eX, eY, J04, J14;
+      fvec dz;
+      dz = targZ - zl;
+      L1ExtrapolateJXY0(T.tx, T.ty, dz, fld0, eX, eY, J04, J14 );
+      fvec J[6];
+      J[0]= dz; J[1] = 0; J[2]= J04;
+      J[3] = 0; J[4]= dz; J[5]= J14;
+      L1FilterVtx( T, targX, targY, TargetXYInfo, eX, eY, J );
+    }
+    else {
+     L1ExtrapolateLine( T, targZ); 
+     L1FilterXY( T, targX, targY, TargetXYInfo);   
+    }
+  
+#else    
 
     //add the target
     {  
@@ -210,6 +278,8 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
       J[3] = 0; J[4]= dz; J[5]= J14;
       L1FilterVtx( T, targX, targY, TargetXYInfo, eX, eY, J );
     }
+#endif    
+    
 #else  // TODO: doesn't work. Why?
     
     T.x  = targX;
@@ -220,8 +290,15 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
     T.C10 = TargetXYInfo.C10;
     T.C11 = TargetXYInfo.C11;
 
-    // extrapolate to left hit
+#if defined(mCBM) || defined(GLOBAL)    
+    // extrapolate to left hit   
+    if (istal<=NFStations)
+      L1Extrapolate0( T, zl, fld0 );
+    else  
+      L1ExtrapolateLine( T, zl);     
+#else  
     L1Extrapolate0( T, zl, fld0 );
+#endif 
 
     for (int ista = 0; ista <= istal-1; ista++)
     {
@@ -247,9 +324,40 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
     }
     
     // add left hit
-    L1Filter( T, stal.frontInfo, u );
-    L1Filter( T, stal.backInfo,  v );
+  L1UMeasurementInfo info = stal.frontInfo;  
+  
+#ifdef HitErrors
+   info.sigma2 = du1 * du1;
+#endif   
+
+#if defined(mCBM) || defined(GLOBAL)    
+   if (istal<NFStations)
+      L1Filter( T, info, u );
+    else  
+      L1FilterNoField( T, info, u );
+#else   
+    L1Filter( T, info, u );
 #endif
+    
+    info = stal.backInfo;  
+    
+#ifdef HitErrors
+   info.sigma2 = dv1 * dv1;
+#endif 
+   
+   
+#if defined(mCBM) || defined(GLOBAL)    
+   if (istal<NFStations)
+      L1Filter( T, info, v );
+    else  
+      L1FilterNoField( T, info, v ); 
+#else   
+    L1Filter( T, info, v );
+#endif
+    
+#endif
+    
+    FilterTime( T, time, timeEr);
     
     if ( ( isec != kAllPrimEIter ) && ( isec != kAllSecEIter ) ) 
     {
@@ -271,7 +379,17 @@ inline void L1Algo::f11(  /// input 1st stage of singlet search
     }
     fvec dz = zstam - T.z;
     L1ExtrapolateTime( T, dz);
+    
+#if defined(mCBM) || defined(GLOBAL)    
+    // extrapolate to left hit   
+    if (istam<NFStations)
+      L1Extrapolate0( T, zstam, fld0 );
+    else  
+      L1ExtrapolateLine( T, zstam);    // TODO: fld1 doesn't work!
+#else 
     L1Extrapolate0( T, zstam, fld0 ); // TODO: fld1 doesn't work!
+#endif
+    
   }// i1_V
 }
 
@@ -314,7 +432,11 @@ inline void L1Algo::f20(  // input
     
     THitI imh = 0;
     
+#if defined(mCBM) || defined(GLOBAL)       
+    for (int imh = 0; imh < ( StsHitsUnusedStopIndex[&stam - vStations] - StsHitsUnusedStartIndex[&stam - vStations] ); imh++)  
+#else    
     while( areaTime.GetNext( imh ) ) 
+#endif 
     {
       const L1HitPoint &hitm = vStsHits_m[imh];
       
@@ -343,25 +465,41 @@ inline void L1Algo::f20(  // input
       fvec y, C11;
       L1ExtrapolateYC11Line( T1, zm, y, C11 );
       
+#ifndef HitErrors         
       const fscal &dy_est2 = Pick_m22[i1_4] * fabs(C11[i1_4] + stam.XYInfo.C11[i1_4]);      
-      const fscal &dy = hitm.Y() - y[i1_4];
-      if ( dy*dy > dy_est2 && dy < 0  ) continue;
-
-
+#else     
+      const fscal &dy_est2 = Pick_m22[i1_4] * fabs(C11[i1_4] + hitm.dY()*hitm.dY()); 
+#endif     
+      const fscal &dY = hitm.Y() - y[i1_4];
+      
+      if ( dY*dY > dy_est2 && dY < 0  ) continue;
 
       // check x-boundaries
       fvec x, C00;
       L1ExtrapolateXC00Line( T1, zm, x, C00 );
+      
+#ifndef HitErrors       
       const fscal &dx_est2 = Pick_m22[i1_4] * fabs(C00[i1_4] +  stam.XYInfo.C00[i1_4]);
-      const fscal &dx = hitm.X() - x[i1_4];
-      if ( dx*dx > dx_est2 ) continue;
+#else 
+      const fscal &dx_est2 = Pick_m22[i1_4] * fabs(C00[i1_4] +  hitm.dX()*hitm.dX());
+#endif
+      
+      const fscal &dX = hitm.X() - x[i1_4];
+      if ( dX*dX > dx_est2 ) continue;
       
       // check chi2
       fvec C10;
       L1ExtrapolateC10Line( T1, zm, C10 );
       fvec chi2 = T1.chi2;
       
-      L1FilterChi2XYC00C10C11( stam.frontInfo, x, y, C00, C10, C11, chi2, hitm.U() );
+      L1UMeasurementInfo info = stam.frontInfo;
+      
+#ifdef HitErrors    //HitErrors 
+     // if ((&stam - vStations)>=NStsStations)
+      info.sigma2 = hitm.dU() * hitm.dU();  
+#endif      
+      
+      L1FilterChi2XYC00C10C11( info, x, y, C00, C10, C11, chi2, hitm.U() );
 #ifdef DO_NOT_SELECT_TRIPLETS
       if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
 #endif
@@ -371,9 +509,17 @@ inline void L1Algo::f20(  // input
 #ifdef USE_EVENT_NUMBER
       T1.n[i1_4] = hitm.n;
 #endif 
-      L1FilterChi2( stam.backInfo,  x, y, C00, C10, C11, chi2, hitm.V() );
       
-      FilterTime( T1_new, hitm.time, sqrt(TimePrecision));
+      info = stam.backInfo; 
+      
+#ifdef HitErrors    //HitErrors  
+     // if ((&stam - vStations)>=NStsStations)      
+      info.sigma2 = hitm.dV() * hitm.dV();
+#endif   
+      
+      L1FilterChi2( info,  x, y, C00, C10, C11, chi2, hitm.V() );
+      
+      FilterTime( T1_new, hitm.time, hitm.timeEr);
      
 #ifdef DO_NOT_SELECT_TRIPLETS
       if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
@@ -386,11 +532,13 @@ inline void L1Algo::f20(  // input
 #endif // DOUB_PERFORMANCE
       hitsm_2.push_back(imh);
       
-      TripForHit[0][hitsl_1[i1] +  StsHitsUnusedStartIndex[&stam - vStations-1]] = 0;
-      TripForHit[1][hitsl_1[i1] + StsHitsUnusedStartIndex[&stam - vStations-1]] = 0;
+  ///!!!!!!    
       
-      TripForHit[0][hitsl_1[i1] +  StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
-      TripForHit[1][hitsl_1[i1] + StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
+//       TripForHit[0][hitsl_1[i1] +  StsHitsUnusedStartIndex[&stam - vStations-1]] = 0;
+//       TripForHit[1][hitsl_1[i1] + StsHitsUnusedStartIndex[&stam - vStations-1]] = 0;
+//       
+//       TripForHit[0][hitsl_1[i1] +  StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
+//       TripForHit[1][hitsl_1[i1] + StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
       
       if (n2 > 8000) return;
       
@@ -418,7 +566,9 @@ inline void L1Algo::f30(  // input
                         nsL1::vector<L1TrackPar>::TSimd &T_3,
                         vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3,
                         nsL1::vector<fvec>::TSimd &u_front_3, nsL1::vector<fvec>::TSimd &u_back_3, nsL1::vector<fvec>::TSimd &z_Pos_3,
-                        nsL1::vector<fvec>::TSimd &timeR
+                        nsL1::vector<fvec>::TSimd &dx_, nsL1::vector<fvec>::TSimd &dy_,
+                        nsL1::vector<fvec>::TSimd &dv_, nsL1::vector<fvec>::TSimd &du_,
+                        nsL1::vector<fvec>::TSimd &timeR, nsL1::vector<fvec>::TSimd &timeER
                         )
 {
   THitI hitsl_2[fvecLen];
@@ -432,14 +582,27 @@ inline void L1Algo::f30(  // input
   u_front_3.push_back(fvec_0);
   u_back_3.push_back(fvec_0);
   z_Pos_3.push_back(fvec_0);
+  dx_.push_back(fvec_0);
+  dy_.push_back(fvec_0);
+  du_.push_back(fvec_0);
+  dv_.push_back(fvec_0);
+  timeR.push_back(fvec_0);
+  timeER.push_back(fvec_0);
+  
+  
   L1TrackPar T2;
   L1FieldRegion f2;
   // pack the data
   fvec u_front_2;
   fvec u_back_2;
+  fvec dx2;
+  fvec dy2;
+  fvec du2;
+  fvec dv2;
   fvec zPos_2;
   fvec timeM;
   fvec timeMEr;
+  fvec num;
 
 
   // ---- Add the middle hits to parameters estimation. Propagate to right station. ----
@@ -450,10 +613,10 @@ inline void L1Algo::f30(  // input
       Tindex n2_4 = 0;
       for (; n2_4 < fvecLen && i2 < n2; n2_4++, i2++)
       {  
-        if (!mrDuplets[hitsm_2[i2]]) {
-          n2_4--;
-          continue;
-        }
+//         if (!mrDuplets[hitsm_2[i2]]) {
+//           n2_4--;
+//           continue;
+//         }
         const Tindex &i1 = i1_2[i2];
         const Tindex i1_V = i1/fvecLen;
         const Tindex i1_4 = i1%fvecLen;
@@ -472,6 +635,11 @@ inline void L1Algo::f30(  // input
         zPos_2   [n2_4] = hitm.Z();
         timeM    [n2_4] = hitm.time;
         timeMEr  [n2_4] = hitm.timeEr;
+      //  num[n2_4] = hitm.track;
+        dx2[n2_4] = hitm.dX();
+        dy2 [n2_4] = hitm.dY();
+        du2[n2_4] = hitm.dU();
+        dv2 [n2_4] = hitm.dV();
         
         hitsl_2[n2_4] = hitsl_1[i1];
         hitsm_2_tmp[n2_4] = hitsm_2[i2];
@@ -482,9 +650,36 @@ inline void L1Algo::f30(  // input
       L1ExtrapolateTime( T2, dz);
       // add middle hit
       L1ExtrapolateLine( T2, zPos_2 );
-      L1Filter( T2, stam.frontInfo, u_front_2 );      
-      L1Filter( T2, stam.backInfo,  u_back_2 );
-      FilterTime( T2, timeM, timeMEr);
+      
+      L1UMeasurementInfo info = stam.frontInfo;
+      
+#ifdef HitErrors    //HitErrors 
+      info.sigma2 = du2 * du2;  
+#endif  
+      
+#if defined(mCBM) || defined(GLOBAL)    
+   if (istam<NFStations)
+      L1Filter( T2, info, u_front_2 );
+   else L1FilterNoField( T2, info, u_front_2 );
+#else   
+   L1Filter( T2, info, u_front_2 );
+#endif
+   
+   info = stam.backInfo;
+#ifdef HitErrors    //HitErrors  
+   info.sigma2 = dv2 * dv2;  
+#endif  
+
+#if defined(mCBM) || defined(GLOBAL)    
+   if (istam<NFStations)
+      L1Filter( T2, info,  u_back_2 );
+    else  
+      L1FilterNoField( T2, info,  u_back_2 );
+#else   
+    L1Filter( T2, info,  u_back_2 );
+#endif    
+ 
+    FilterTime( T2, timeM, timeMEr);
 
       if ( ( isec != kAllPrimEIter ) && ( isec != kAllSecEIter ) ) 
       {
@@ -508,7 +703,16 @@ inline void L1Algo::f30(  // input
       fvec dz2 = star.z - T2.z;
       L1ExtrapolateTime( T2, dz2);
       // extrapolate to the right hit station
-      L1Extrapolate( T2, star.z, T2.qp, f2 );
+      
+#if defined(mCBM) || defined(GLOBAL)       
+      // extrapolate to the right hit station
+      if (istar <= NFStations)
+        L1Extrapolate( T2, star.z, T2.qp, f2 ); 
+     else  
+        L1ExtrapolateLine( T2, star.z ); 
+#else        
+      L1Extrapolate( T2, star.z, T2.qp, f2 ); 
+#endif 
 
       // ---- Find the triplets(right hit). Reformat data in the portion of triplets. ----
       for (Tindex i2_4 = 0; i2_4 < n2_4; ++i2_4)
@@ -528,16 +732,17 @@ inline void L1Algo::f30(  // input
 #endif
         const fscal &iz = 1/T2.z[i2_4];
         L1HitAreaTime area( vGridTime[ &star - vStations ], T2.x[i2_4]*iz, T2.y[i2_4]*iz, (sqrt(Pick_r22*(T2.C00 + stam.XYInfo.C00))+MaxDZ*fabs(T2.tx))[i2_4]*iz, (sqrt(Pick_r22*(T2.C11 + stam.XYInfo.C11))+MaxDZ*fabs(T2.ty))[i2_4]*iz, time, sqrt(timeError) );
-
-          
+ 
         THitI irh = 0;
-          
-        while( area.GetNext( irh ) ) 
+        
+#if defined(mCBM) || defined(GLOBAL)  
+        for (int irh = 0; irh < ( StsHitsUnusedStopIndex[istar] - StsHitsUnusedStartIndex[istar] ); irh++)           
+#else           
+        while( area.GetNext( irh ) )          
+#endif 
         {
           const L1HitPoint &hitr = vStsHits_r[irh];
-          //  if (fabs(T2.time[i2_4]-hitr.time)>35) continue;
           
-              
 #ifdef USE_EVENT_NUMBER
           if ((T2.n[i2_4]!=hitr.n)) continue;
 #endif 
@@ -557,35 +762,53 @@ inline void L1Algo::f30(  // input
           // check lower boundary
           fvec y, C11;
           L1ExtrapolateYC11Line( T2, zr, y, C11 );
+#ifndef HitErrors           
           const fscal &dy_est2 = (Pick_r22[i2_4]*(fabs(C11[i2_4] + star.XYInfo.C11[i2_4]))); // TODO for FastPrim dx < dy - other sort is optimal. But not for doublets
-          const fscal &dy = yr - y[i2_4];
-          const fscal &dy2 = dy*dy;
-          if ( dy2 > dy_est2 && dy < 0 ) continue; // if (yr < y_minus_new[i2_4]) continue;
+#else //HitErrors           
+          const fscal &dy_est2 = (Pick_r22[i2_4]*(fabs(C11[i2_4] + hitr.dY()*hitr.dY())));          
+#endif 
+          const fscal &dY = yr - y[i2_4];
+          const fscal &dY2 = dY*dY;
+          if ( dY2 > dy_est2 && dY2 < 0 ) continue; // if (yr < y_minus_new[i2_4]) continue;
           
           // check upper boundary
-          if ( dy2 > dy_est2 ) continue; // if (yr > y_plus_new [i2_4] ) continue;
+          if ( dY2 > dy_est2 ) continue; // if (yr > y_plus_new [i2_4] ) continue;
           // check x-boundaries
           fvec x, C00;
           L1ExtrapolateXC00Line( T2, zr, x, C00 );
+          
+#ifndef HitErrors          
           const fscal &dx_est2 = (Pick_r22[i2_4]*(fabs(C00[i2_4] + star.XYInfo.C00[i2_4])));
-          const fscal &dx = hitr.X() - x[i2_4];
-          if ( dx*dx > dx_est2 ) continue;
+#else //HitErrors         
+          const fscal &dx_est2 = (Pick_r22[i2_4]*(fabs(C00[i2_4] + hitr.dX()*hitr.dX())));
+#endif
+          const fscal &dX = hitr.X() - x[i2_4];
+          if ( dX*dX > dx_est2 ) continue;
           // check chi2  // not effective
           fvec C10;
           L1ExtrapolateC10Line( T2, zr, C10 );
           fvec chi2 = T2.chi2;
-
-          L1FilterChi2XYC00C10C11( star.frontInfo, x, y, C00, C10, C11, chi2, hitr.U() );
-          L1FilterChi2           ( star.backInfo,  x, y, C00, C10, C11, chi2, hitr.V() );
+          
+          info = star.frontInfo;
+          
+#ifdef HitErrors 
+          info.sigma2 = hitr.dU() * hitr.dU();
+#endif           
+          L1FilterChi2XYC00C10C11( info, x, y, C00, C10, C11, chi2, hitr.U() );
+          info = star.backInfo;
+#ifdef HitErrors 
+          info.sigma2 = hitr.dV() * hitr.dV();
+#endif          
+          L1FilterChi2           ( info,  x, y, C00, C10, C11, chi2, hitr.V() );
           
           L1TrackPar T = T2;
           
-          FilterTime( T, hitr.time, sqrt(TimePrecision));
+          FilterTime( T, hitr.time, hitr.timeEr);
 #ifdef DO_NOT_SELECT_TRIPLETS
           if (isec!=TRACKS_FROM_TRIPLETS_ITERATION)
 #endif
 
-              if ( chi2[i2_4] > TRIPLET_CHI2_CUT || C00[i2_4] < 0 || C11[i2_4] < 0|| T.C55[i2_4] < 0) continue; // chi2_triplet < CHI2_CUT
+          if ( chi2[i2_4] > TRIPLET_CHI2_CUT || C00[i2_4] < 0 || C11[i2_4] < 0|| T.C55[i2_4] < 0) continue; // chi2_triplet < CHI2_CUT
 //                if ( chi2[i2_4] > TRIPLET_CHI2_CUT || C00[i2_4] < 0 || C11[i2_4] < 0) continue; // chi2_triplet < CHI2_CUT
 
           // pack triplet
@@ -600,8 +823,13 @@ inline void L1Algo::f30(  // input
           T3.SetOneEntry(n3_4, T2, i2_4);
           u_front_3[n3_V][n3_4] = hitr.U();
           u_back_3 [n3_V][n3_4] = hitr.V();
+          dx_[n3_V][n3_4] = hitr.dX();
+          dy_[n3_V][n3_4] = hitr.dY();
+          du_[n3_V][n3_4] = hitr.dU();
+          dv_[n3_V][n3_4] = hitr.dV();
           z_Pos_3  [n3_V][n3_4] = zr;
           timeR    [n3_V][n3_4] = hitr.time;
+          timeER   [n3_V][n3_4] = hitr.timeEr;
           
           n3++;
           n3_V = n3/fvecLen;
@@ -612,6 +840,12 @@ inline void L1Algo::f30(  // input
               u_front_3.push_back(fvec_0);
               u_back_3.push_back(fvec_0);
               z_Pos_3.push_back(fvec_0);
+              dx_.push_back(fvec_0);
+              dy_.push_back(fvec_0);
+              du_.push_back(fvec_0);
+              dv_.push_back(fvec_0);
+              timeR.push_back(fvec_0);
+              timeER.push_back(fvec_0);
           }
           
          if (n3 > 4000) return;
@@ -623,10 +857,13 @@ inline void L1Algo::f30(  // input
 
 /// Add the right hits to parameters estimation.
 inline void L1Algo::f31(  // input
-                        Tindex n3_V,
-                        L1Station &star,
-                        nsL1::vector<fvec>::TSimd &u_front_, nsL1::vector<fvec>::TSimd &u_back_, nsL1::vector<fvec>::TSimd &z_Pos,
-                        nsL1::vector<fvec>::TSimd &timeR,
+                         Tindex n3_V,
+                         L1Station &star,
+                         nsL1::vector<fvec>::TSimd &u_front_, nsL1::vector<fvec>::TSimd &u_back_, nsL1::vector<fvec>::TSimd &z_Pos,
+                         nsL1::vector<fvec>::TSimd &dx_, nsL1::vector<fvec>::TSimd &dy_,
+                         nsL1::vector<fvec>::TSimd &dv_, nsL1::vector<fvec>::TSimd &du_,
+                         nsL1::vector<fvec>::TSimd &timeR,
+                         nsL1::vector<fvec>::TSimd &timeER,
                         // output
                         //                L1TrackPar *T_3
                         nsL1::vector<L1TrackPar>::TSimd &T_3
@@ -635,12 +872,47 @@ inline void L1Algo::f31(  // input
   for( Tindex i3_V=0; i3_V<n3_V; ++i3_V)
   {
     fvec dz = z_Pos[i3_V] - T_3[i3_V].z;
+    
+    
           
     L1ExtrapolateTime( T_3[i3_V], dz);
     L1ExtrapolateLine( T_3[i3_V], z_Pos[i3_V] );
-    L1Filter( T_3[i3_V], star.frontInfo, u_front_[i3_V] );    // 2.1/100 sec
-    L1Filter( T_3[i3_V], star.backInfo,  u_back_ [i3_V] );   // 2.0/100 sec
-    FilterTime( T_3[i3_V], timeR[i3_V], sqrt(TimePrecision));
+    
+    L1UMeasurementInfo info = star.frontInfo;
+
+    
+#ifdef HitErrors     
+    info.sigma2 = du_[i3_V] * du_[i3_V];   
+#endif    
+
+    
+#if defined(mCBM) || defined(GLOBAL)    
+   if ((&star - vStations)<NFStations)
+      L1Filter( T_3[i3_V], info, u_front_[i3_V] );
+    else  
+    { 
+      L1FilterNoField( T_3[i3_V], info, u_front_[i3_V] );
+    }
+#else   
+    L1Filter( T_3[i3_V], info, u_front_[i3_V] );
+#endif    
+    
+    
+    info = star.backInfo;
+#ifdef HitErrors 
+    info.sigma2 = dv_[i3_V] * dv_[i3_V];
+#endif
+    
+#if defined(mCBM) || defined(GLOBAL)    
+   if ((&star - vStations)<NFStations)
+      L1Filter( T_3[i3_V], info,  u_back_ [i3_V] );
+    else  
+      L1FilterNoField( T_3[i3_V], info,  u_back_ [i3_V] );
+#else   
+    L1Filter( T_3[i3_V], info,  u_back_ [i3_V] );
+#endif 
+    
+    FilterTime( T_3[i3_V], timeR[i3_V], timeER[i3_V]);
   }
 }
 
@@ -830,7 +1102,8 @@ inline void L1Algo::f4(  // input
                        nsL1::vector<L1TrackPar>::TSimd &T_3,
                        vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3,
                        // output
-                       Tindex &nstaltriplets
+                       Tindex &nstaltriplets,
+                       vector<THitI>* hitsn_3, vector<THitI>* hitsr_5
                        )
 {
   THitI ihitl_priv = 0;
@@ -1111,6 +1384,8 @@ inline void L1Algo::DupletsStaPort(  /// creates duplets: input: @istal - start 
     L1HitPoint *vStsHits_m = &((*vStsHitPointsUnused)[0]) + StsHitsUnusedStartIndex[istam];
     
     fvec u_front[Portion/fvecLen], u_back[Portion/fvecLen];
+    fvec dx0[Portion/fvecLen], dy0[Portion/fvecLen], dxy0[Portion/fvecLen];
+    fvec dv0[Portion/fvecLen], du0[Portion/fvecLen];
     fvec zPos[Portion/fvecLen];
     fvec HitTime[Portion/fvecLen];
     fvec HitTimeEr[Portion/fvecLen];
@@ -1123,7 +1398,8 @@ inline void L1Algo::DupletsStaPort(  /// creates duplets: input: @istal - start 
         (ip - portionStopIndex_[istal+1]) * Portion, n1, vStsHits_l,
         // output
         u_front, u_back, zPos,
-        hitsl_1, HitTime, HitTimeEr, Event
+        hitsl_1, HitTime, HitTimeEr, Event,
+        dx0, dy0, dxy0, du0, dv0
         );
     
     for (Tindex i = 0; i < n1; ++i)
@@ -1139,7 +1415,8 @@ inline void L1Algo::DupletsStaPort(  /// creates duplets: input: @istal - start 
         
         u_front, u_back, zPos, HitTime, HitTimeEr,
         // output
-        T_1, fld_1
+        T_1, fld_1,
+        dx0, dy0, dxy0, du0, dv0
         );
     
     /// Find the doublets. Reformat data in the portion of doublets.
@@ -1237,6 +1514,11 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
     nsL1::vector<fvec>::TSimd &u_back3 = fu_back3[Thread];
     nsL1::vector<fvec>::TSimd &z_pos3 = fz_pos3[Thread];
     nsL1::vector<fvec>::TSimd &timeR = fTimeR[Thread];
+    nsL1::vector<fvec>::TSimd &timeER = fTimeER[Thread];
+    nsL1::vector<fvec>::TSimd &dx3 = dx[Thread];
+    nsL1::vector<fvec>::TSimd &dy3 = dy[Thread];
+    nsL1::vector<fvec>::TSimd &du3 = du[Thread];
+    nsL1::vector<fvec>::TSimd &dv3 = dv[Thread];
     
     T_3.clear();
     hitsl_3.clear();
@@ -1245,7 +1527,12 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
     u_front3.clear();
     u_back3.clear();
     z_pos3.clear();
+    dx3.clear();
+    dy3.clear();
+    du3.clear();
+    dv3.clear();
     timeR.clear();
+    timeER.clear();
     
     /// Find the triplets(right hit). Reformat data in the portion of triplets.
     
@@ -1267,7 +1554,8 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
         T_3,
         hitsl_3, hitsm_3, hitsr_3,
         u_front3, u_back3, z_pos3,
-        timeR
+        dx3, dy3, du3, dv3,
+        timeR, timeER
         );
     
 
@@ -1287,7 +1575,8 @@ inline void L1Algo::TripletsStaPort(  /// creates triplets: input: @istal - star
         n3_V,
         star,
         u_front3, u_back3, z_pos3,
-        timeR,
+        dx3, dy3, du3, dv3,
+        timeR, timeER,
         // output
         T_3
         );
@@ -1469,7 +1758,8 @@ void L1Algo::CATrackFinder()
   for(int ist = 0; ist < NStations; ++ist)
     for(THitI ih = StsHitsStartIndex[ist]; ih < StsHitsStopIndex[ist]; ++ih){
       if ((lasttime<(*vStsHits)[ih].t_reco)&&(!isinf((*vStsHits)[ih].t_reco))) lasttime=(*vStsHits)[ih].t_reco;
-      if (ist<NMvdStations) {
+      if (ist<NMvdStations) 
+      {
         L1StsHit &h = *(const_cast<L1StsHit*>(&((*vStsHits)[ih])));
         h.t_reco =0;
         h.t_er=100;  

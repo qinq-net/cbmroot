@@ -264,10 +264,10 @@ void L1Algo::CAMergeClones()
 #endif  
   for(int iTr = 0; iTr < static_cast<unsigned short>(NTracksIsecAll); iTr++)
   {
-    if(static_cast<int>(vTracks[iTr].NHits) > 6) continue;
+    if(static_cast<int>(vTracks[iTr].NHits) > (NStations-3)) continue;
     for(int jTr = 0; jTr < static_cast<unsigned short>(NTracksIsecAll); jTr++)
     {
-      if(static_cast<int>(vTracks[jTr].NHits) > 6) continue;
+      if(static_cast<int>(vTracks[jTr].NHits) > (NStations-3)) continue;
      
       if(iTr == jTr) continue;
     //  if(vTracks[iTr].n != vTracks[jTr].n) continue;
@@ -387,7 +387,7 @@ void L1Algo::CAMergeClones()
 
       if(dist == 0) continue;
       //if(((Tf.qp - Tb.qp)*(Tf.qp - Tb.qp)/(Tb.C44+Tf.C44))[0] > 25*10*7) continue;
-       if (fabs (Tf.t[0] - Tb.t[0]) > sqrt(Tf.C55[0] + Tb.C55[0])) continue;
+       if (fabs (Tf.t[0] - Tb.t[0]) > 3*sqrt(Tf.C55[0] + Tb.C55[0])) continue;
      // if (fabs (Tf.time[0] - Tb.time[0]) > 500000) continue;    
       unsigned short stam;
 

@@ -602,7 +602,8 @@ InitStatus CbmL1::Init()
       
       
       z_average+=z;    
-  }
+  } 
+  z_average = z_average/nrOfCells;
  }  
     
     
@@ -743,49 +744,50 @@ InitStatus CbmL1::Init()
 
       CbmMuchLayer* layer = station->GetLayer((ist - NMvdStations - NStsStations)%3);
          
-      CbmMuchModuleGem* module = (CbmMuchModuleGem*)  CbmMuchGeoScheme::Instance()->GetModule(0,0,0,0);
+    //  CbmMuchModuleGem* module = (CbmMuchModuleGem*)  CbmMuchGeoScheme::Instance()->GetModule(0,0,0,0);
          
-      vector<CbmMuchPad*> pads = module->GetPads();
+     // vector<CbmMuchPad*> pads = module->GetPads();
+      
+      z = layer->GetZ() + 10;
       
       geo.push_back(2);
-      geo.push_back(layer->GetZ());      
+      geo.push_back(z);      
       geo.push_back(layer->GetDz());
-      geo.push_back(station->GetRmin());
-      geo.push_back(station->GetRmax());
+      geo.push_back(0);
+      geo.push_back(100);  //station->GetRmax()
       geo.push_back(0);
 
-      fscal f_phi=0, f_sigma=1*pads[0]->GetDx()/TMath::Sqrt(12), b_phi=3.14159265358/2., b_sigma=1*pads[0]->GetDy()/TMath::Sqrt(12);
+      fscal f_phi=0, f_sigma=0.1, b_phi=3.14159265358/2., b_sigma=0.1;
       geo.push_back(f_phi);
       geo.push_back(f_sigma);
       geo.push_back(b_phi);
       geo.push_back(b_sigma);
-       
-      z = station->GetZ();
 
-      Xmax = station->GetRmax();
-      Ymax = station->GetRmax();
+
+      Xmax = 100;//station->GetRmax();
+      Ymax = 100;//station->GetRmax();
     }
     
 //     int num = 0;
     
     if( (ist < (NMvdStations + NStsStations+NTrdStations+NMuchStations))&& (ist >= (NMvdStations + NStsStations+NMuchStations)) ){
       
+     int num = ist - NMvdStations - NStsStations - NMuchStations;
       
+//       if (num == 0) true_station = 0;
+//       
+//       if (!true_station) continue;
 
-//       if ((ist - NMvdStations - NStsStations-NMuchStations)==0) num = 0;
-//       if ((ist - NMvdStations - NStsStations-NMuchStations)==1) num = 1;
-//       if ((ist - NMvdStations - NStsStations-NMuchStations)==2) num = 2;
-//       if ((ist - NMvdStations - NStsStations-NMuchStations)==3) num = 3;
-//       if ((ist - NMvdStations - NStsStations-NMuchStations)==4) num = 4;
       
-     // if (num==4) continue;
-      
+      Int_t nrModules = fTrdDigiPar->GetNrOfModules();
 
-/*
       int ModuleId = fTrdDigiPar->GetModuleId(num);
+
          
-      CbmTrdModule* module = ( CbmTrdModule*) fTrdDigiPar->GetModule(ModuleId);
+      CbmTrdParModDigi* module = ( CbmTrdParModDigi*) fTrdDigiPar->GetModulePar(ModuleId);
       
+   //   if (!true_station[ist]) continue;
+
       
       if (num==0||num==2||num==4) geo.push_back(3);
       if (num==1||num==3) geo.push_back(6);
@@ -793,7 +795,7 @@ InitStatus CbmL1::Init()
       
       geo.push_back(2*module->GetSizeZ());
       geo.push_back(0);
-      geo.push_back(module->GetSizeX());
+      geo.push_back(2*module->GetSizeX());
       geo.push_back(10);
       
       fscal f_phi=0, f_sigma=1/10000, b_phi=3.14159265358/2., b_sigma=1/10000;
@@ -802,7 +804,6 @@ InitStatus CbmL1::Init()
       geo.push_back(b_phi);
       geo.push_back(b_sigma);
       Xmax = Ymax = 20;
-*/
     }
     
     if( (ist < (NMvdStations + NStsStations+NTrdStations+NMuchStations+NTOFStation))&& (ist >= (NMvdStations + NStsStations+NMuchStations+NTrdStations)) ){
@@ -1024,7 +1025,7 @@ InitStatus CbmL1::Init()
 
         for( int iB = 0; iB < NBins; iB++ ) {
           algo->fRadThick[iSta].table[iB].resize(NBins);
-          float hole = 0;
+          float hole = 0.15;
           for( int iB2 = 0; iB2 < NBins; iB2++ ) {
             algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
             // Correction for holes in material map
@@ -1078,7 +1079,7 @@ InitStatus CbmL1::Init()
 
         for( int iB = 0; iB < NBins; iB++ ) {
           algo->fRadThick[iSta].table[iB].resize(NBins);
-          float hole = 0;
+          float hole = 0.15;
           for( int iB2 = 0; iB2 < NBins; iB2++ ) {
             algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
             // Correction for holes in material map
@@ -1132,7 +1133,7 @@ InitStatus CbmL1::Init()
 
         for( int iB = 0; iB < NBins; iB++ ) {
           algo->fRadThick[iSta].table[iB].resize(NBins);
-          float hole = 0;
+          float hole = 0.0015;
           for( int iB2 = 0; iB2 < NBins; iB2++ ) {
             algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
             // Correction for holes in material map
@@ -1256,14 +1257,16 @@ void CbmL1::Reconstruct(CbmEvent* event)
     for( unsigned int iH = 0; iH < (*algo->vStsHits).size(); ++iH ) 
     { 
       L1StsHit &h = const_cast<L1StsHit &>( (*algo->vStsHits)[iH] );
-      
+#ifdef USE_EVENT_NUMBER      
       h.n = -1;
+#endif      
       if (vStsHits[iH].mcPointIds.size() == 0) continue; 
 
       const CbmL1MCPoint &mcp = vMCPoints[vStsHits[iH].mcPointIds[0]]; 
 
+#ifdef USE_EVENT_NUMBER       
       h.n = mcp.event;
-      
+#endif      
       const int ista = (*algo->vSFlag)[h.f]/4; 
       const L1Station &sta = algo->vStations[ista]; 
       if ( std::find( sF.begin(), sF.end(), h.f ) != sF.end() ) { // separate strips 
@@ -1338,12 +1341,15 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
 
   for( unsigned int iH = 0; iH < (*algo->vStsHits).size(); ++iH ) 
   {   
-    L1StsHit &h = const_cast<L1StsHit &>( (*algo->vStsHits)[iH] );    
+    L1StsHit &h = const_cast<L1StsHit &>( (*algo->vStsHits)[iH] ); 
+#ifdef USE_EVENT_NUMBER     
     h.n = -1;
-
+#endif
     if (vStsHits[iH].mcPointIds.size() == 0) continue; 
     const CbmL1MCPoint &mcp = vMCPoints[vStsHits[iH].mcPointIds[0]]; 
+#ifdef USE_EVENT_NUMBER     
     h.n = mcp.event;
+#endif    
   } 
 
   for( vector<CbmL1MCTrack>::iterator i = vMCTracks.begin(); i != vMCTracks.end(); ++i){
@@ -1644,7 +1650,9 @@ void CbmL1::WriteSTAPAlgoData()  // must be called after ReadEvent
     for (int i = 0; i < n; i++){
       fadata  << static_cast<int>((*algo->vStsHits)[i].f) << " ";
       fadata  << static_cast<int>((*algo->vStsHits)[i].b) << " ";
+#ifdef USE_EVENT_NUMBER        
       fadata  << static_cast<unsigned short int>((*algo->vStsHits)[i].n) << " ";
+#endif      
       fadata  << static_cast<int>((*algo->vStsHits)[i].iz)<< " ";
      // fadata  << (*algo->vStsHits)[i].time << endl;
 

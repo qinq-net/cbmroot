@@ -85,6 +85,12 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
   T.C00 = sta0.XYInfo.C00;
   T.C10 = sta0.XYInfo.C10;
   T.C11 = sta0.XYInfo.C11;
+  
+#ifdef HitErrors       
+  T.C00 = hit0.dx*hit0.dx;
+  T.C10 = hit0.dxy;
+  T.C11 = hit0.dy*hit0.dy; 
+#endif 
 
   T.C20 = T.C21 = 0;
   T.C30 = T.C31 = T.C32 = 0;
@@ -92,7 +98,7 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
   T.C50 = T.C51 = T.C52 = T.C53 = T.C54 = 0;
   T.C22 = T.C33 = vINF;
   T.C44 = 1.;
-  T.C55 = TimePrecision;
+  T.C55 = hit0.t_er*hit0.t_er;
 
   L1FieldValue fB0, fB1, fB2 _fvecalignment;
   L1FieldRegion fld _fvecalignment;
@@ -134,12 +140,21 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
     fvec u = static_cast<fscal>( (*vStsStrips)[hit.f] );
     fvec v = static_cast<fscal>( (*vStsStripsB)[hit.b] );
     
+    L1UMeasurementInfo info = sta.frontInfo;  
+  
+#ifdef HitErrors
+    info.sigma2 = hit.du * hit.du;
+#endif 
+    L1Filter( T, info, u );
     
+    info = sta.backInfo; 
     
-    L1Filter( T, sta.frontInfo, u );
-    L1Filter( T, sta.backInfo,  v );
+#ifdef HitErrors
+    info.sigma2 = hit.dv * hit.dv;
+#endif    
+    L1Filter( T, info,  v );
     
-    FilterTime( T, hit.t_reco, sqrt(TimePrecision));
+    FilterTime( T, hit.t_reco, hit.t_er);
 
     fB0 = fB1;
     fB1 = fB2;
@@ -255,7 +270,7 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
 
       ih += StsHitsUnusedStartIndex[ista];
       const L1StsHit &hit = (*vStsHitsUnused)[ih];
-      if (fabs(hit.t_reco-T.t[0])>sqrt(T.C55[0]+TimePrecision)*3) continue;
+      if (fabs(hit.t_reco-T.t[0])>sqrt(T.C55[0]+hit.t_er)*5) continue;
       
       if( GetFUsed( (*vSFlag)[hit.f] | (*vSFlagB)[hit.b] ) ) continue; // if used
 
@@ -272,13 +287,13 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
       fvec x, C00;
       L1ExtrapolateXC00Line( T, zh, x, C00 );
       
-      fscal dx = xh - x[0];
-      fscal dy = yh - y[0];
-      fscal d2 = dx*dx + dy*dy;
+      fscal d_x = xh - x[0];
+      fscal d_y = yh - y[0];
+      fscal d2 = d_x*d_x + d_y*d_y;
       if( d2 > r2_best ) continue;
       
       fscal dxm_est2 = ( Pick_gather2*(fabs(C00+sta.XYInfo.C00)) )[0];
-      if (dx*dx > dxm_est2) continue;
+      if (d_x*d_x > dxm_est2) continue;
       
       r2_best = d2;
       iHit_best = ih;
@@ -300,10 +315,22 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
       
     L1ExtrapolateLine( T, z );
     L1AddMaterial( T, sta.materialInfo, qp0 );
-    L1Filter( T, sta.frontInfo, u );
-    L1Filter( T, sta.backInfo,  v );
     
-    FilterTime( T, hit.t_reco, sqrt(TimePrecision));
+    L1UMeasurementInfo info = sta.frontInfo;  
+  
+#ifdef HitErrors
+    info.sigma2 = hit.du * hit.du;
+#endif 
+    L1Filter( T, info, u );
+    
+    info = sta.backInfo; 
+    
+#ifdef HitErrors
+    info.sigma2 = hit.dv * hit.dv;
+#endif    
+    L1Filter( T, info,  v );    
+    
+    FilterTime( T, hit.t_reco, hit.t_er);
 
     fB0 = fB1;
     fB1 = fB2;

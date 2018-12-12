@@ -1766,8 +1766,7 @@ void CbmL1::InputPerformance()
       if (h.Det!= 1) continue; // mvd hit
       const CbmStsHit *sh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(h.extIndex) );
 
-    Float_t bestWeight = 0.f;
-    Float_t totalWeight = 0.f;
+
     int iMCPoint = -1;
     CbmLink link;
     CbmStsPoint* pt = 0;
@@ -1796,6 +1795,8 @@ void CbmL1::InputPerformance()
                 bestWeight = stsHitMatch.GetLink(iLink).GetWeight();
                 Int_t iFile  = stsHitMatch.GetLink(iLink).GetFile();
                 Int_t iEvent = stsHitMatch.GetLink(iLink).GetEntry();
+                
+                link = stsHitMatch.GetLink(iLink);
 
                 pt = (CbmStsPoint*) fStsPoints->Get(iFile,iEvent,stsHitMatch.GetLink(iLink).GetIndex());
                 

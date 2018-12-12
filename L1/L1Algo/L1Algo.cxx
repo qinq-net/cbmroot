@@ -45,6 +45,12 @@ void L1Algo::Init( const vector<fscal>& geo )
   NStations = static_cast<int>(geo[ind++]);
   NMvdStations = static_cast<int>(geo[ind++]);
   NStsStations = static_cast<int>(geo[ind++]);
+  
+  NFStations = NStsStations+NMvdStations;
+
+#ifdef mCBM   
+  NFStations = -1;
+#endif 
 
   // cout << "N MVD & STS stations: " << NMvdStations << " " << NStations-NMvdStations << endl;
 #ifndef TBB2
@@ -269,9 +275,8 @@ L1HitPoint L1Algo::CreateHitPoint(const L1StsHit &hit, char ista)
   fscal x, y;
   StripsToCoor( u, v, x, y, sta);
   const float &z = (*vStsZPos)[hit.iz];
-  const int n1 = 0;
   const float &time = hit.t_reco;
-  return  L1HitPoint(x,y,z,v,u, time, n1, hit.t_er);
+  return  L1HitPoint(x,y, hit.dx, hit.dy, hit.dxy,   z, u, v, hit.du, hit.dv, time, hit.t_er);
 }
 
 void L1Algo::CreateHitPoint(const L1StsHit &hit, char ista, L1HitPoint &point)
@@ -284,10 +289,13 @@ void L1Algo::CreateHitPoint(const L1StsHit &hit, char ista, L1HitPoint &point)
     StripsToCoor( u, v, x, y, sta);
     const float &z = (*vStsZPos)[hit.iz];
     const float &time = hit.t_reco;
-    const int n1 = 0;
-   
-    
-     point.Set(x,y,z,v.f,u.f, time, n1, hit.t_er );
+    const float& dx_ = hit.dx;
+    const float& dy_ = hit.dy;
+    const float& du_ = hit.du;
+    const float& dv_ = hit.dv;
+    const float& dxy_ = hit.dxy;
+
+    point.Set(x,y, dx_, dy_, dxy_,  z, u.f, v.f, du_, dv_, time, hit.t_er );
  //   point.Set(x,y,z,v.f,u.f, time, n1, hit.time1, 2.9 ); // TODO put correct time error from the hit
 }
 

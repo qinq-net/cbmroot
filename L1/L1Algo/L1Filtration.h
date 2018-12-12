@@ -145,6 +145,79 @@ inline void L1Filter( L1TrackPar &T, L1UMeasurementInfo &info, fvec u, fvec w = 
 
 }
 
+inline void L1FilterNoField( L1TrackPar &T, L1UMeasurementInfo &info, fvec u, fvec w = 1.)
+{
+  fvec wi, zeta, zetawi, HCH;
+  fvec F0, F1, F2, F3, F4, F5;
+  fvec K1, K2, K3, K4, K5;
+
+  zeta = info.cos_phi*T.x + info.sin_phi*T.y - u;
+
+  // F = CH'
+  F0 = info.cos_phi*T.C00 + info.sin_phi*T.C10;
+  F1 = info.cos_phi*T.C10 + info.sin_phi*T.C11;
+
+  HCH = ( F0*info.cos_phi + F1*info.sin_phi );
+
+  F2 = info.cos_phi*T.C20 + info.sin_phi*T.C21;
+  F3 = info.cos_phi*T.C30 + info.sin_phi*T.C31;
+  F4 = info.cos_phi*T.C40 + info.sin_phi*T.C41;
+  F5 = info.cos_phi*T.C50 + info.sin_phi*T.C51;
+
+#if 0 // use mask
+  const fvec mask = (HCH < info.sigma2 * 16.);
+  wi = w/( (mask & info.sigma2) +HCH );
+  zetawi = zeta *wi;
+  T.chi2 +=  mask & (zeta * zetawi);
+#else
+  wi = w/( info.sigma2 + HCH );
+  zetawi = zeta *wi;
+  
+  T.chi2 +=  zeta * zetawi;
+
+  
+  
+#endif // 0
+  T.NDF += w;
+
+  K1 = F1*wi;
+  K2 = F2*wi;
+  K3 = F3*wi;
+  K4 = F4*wi;
+  K5 = F5*wi;
+
+  T.x  -= F0*zetawi;
+  T.y  -= F1*zetawi;
+  T.tx -= F2*zetawi;
+  T.ty -= F3*zetawi;
+ // T.qp -= F4*zetawi;
+  T.t  -= F5*zetawi;
+  
+  T.C00-= F0*F0*wi;
+  T.C10-= K1*F0;
+  T.C11-= K1*F1;
+  
+  T.C20-= K2*F0;
+  T.C21-= K2*F1;
+  T.C22-= K2*F2;
+  T.C30-= K3*F0;
+  T.C31-= K3*F1;
+  T.C32-= K3*F2;
+  T.C33-= K3*F3;
+//   T.C40-= K4*F0;
+//   T.C41-= K4*F1;
+//   T.C42-= K4*F2;
+//   T.C43-= K4*F3;
+//   T.C44-= K4*F4;
+  T.C50-= K5*F0;
+  T.C51-= K5*F1;
+  T.C52-= K5*F2;
+  T.C53-= K5*F3;
+  T.C54-= K5*F4;
+  T.C55-= K5*F5;
+
+}
+
 inline void L1FilterChi2( const L1UMeasurementInfo &info, const fvec& x, const fvec& y, const fvec& C00, const fvec& C10, const fvec& C11, fvec& chi2, const fvec& u )
 {
   fvec zeta, HCH;

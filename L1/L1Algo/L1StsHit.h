@@ -13,37 +13,26 @@ class L1StsHit
 {
   public:
   TStripI f, b; // front and back strip indices
-  TZPosI iz; // index of z coor. in L1Algo::vStsZPos
-    int n;
-//    std::vector<L1Branch*> CandidatesB;
-//    std::vector<L1Branch*> CandidatesF;
-// short int CandF;
-// short int CandB;
+  TZPosI iz; // index of z coor. in L1Algo::vStsZPos     
+  
     float dx, dy, dxy;
     float du, dv;
     bool used;
     float t_reco;
     float t_er;
-    float t_mc;
     int ista;
-    float time1, time2;
-
-    
+ //   int track, n;
     float x, y;
-   
- // unsigned short int n; // number of event
+
   
   L1StsHit() 
-    : f(0),b(0),iz(0), n(0), dx(0.), dy(0.), dxy(0.), du(0.), dv(0.), 
-      used(false),t_reco(0.f),t_er(0.),t_mc(0.),ista(-1), time1(0.), time2(0.),
-      x(0.), y(0.)
-  {
-//   CandidatesB.resize(0, 0);
-//   CandidatesF.resize(0, 0);
-  }
-  L1StsHit(L1StsHit &h,  /*short*/ int sh, /*short*/ int shB)
-    : f(h.f + sh),b(h.b + shB),iz(0), n(0), dx(0.), dy(0.), dxy(0.), du(0.), dv(0.), 
-      used(false),t_reco(0.f),t_er(0.),t_mc(0.),ista(-1),time1(0.), time2(0.), x(0.), y(0.) 
+    : f(0),b(0),iz(0),      
+      dx(0.), dy(0.), dxy(0.), du(0.), dv(0.), 
+      used(false),t_reco(0.f),t_er(0.),ista(-1), x(0.), y(0.)
+  {}
+  L1StsHit(L1StsHit &h,  /*short*/ int sh, /*short*/ int shB): f(h.f + sh),b(h.b + shB),iz(0),       
+      dx(0.), dy(0.), dxy(0.), du(0.), dv(0.), 
+      used(false),t_reco(0.f),t_er(0.), ista(-1), x(0.), y(0.) 
       {}
 };
 

@@ -15,8 +15,12 @@ class L1AlgoDraw;
 //#define XXX               // time debug
 //#define COUNTERS          // diff counters (hits, doublets, ... )
 
-#define MERGE_CLONES
+//#define MERGE_CLONES
 // #define TRACKS_FROM_TRIPLETS_ITERATION kAllPrimIter
+
+//#define HitErrors
+//#define GLOBAL
+//#define mCBM
 
 #define LAST_ITERATION kAllSecIter
 #define FIND_GAPED_TRACKS // use triplets with gaps
@@ -24,9 +28,9 @@ class L1AlgoDraw;
 #ifndef TRACKS_FROM_TRIPLETS
 #define EXTEND_TRACKS
 #endif
-#define USE_EVENT_NUMBER
+//#define USE_EVENT_NUMBER
 //#endif
-//#define MERGE_CLONES
+#define MERGE_CLONES
 
 
 #include "L1Field.h"
@@ -86,6 +90,7 @@ class L1Algo{
     NStations(0),    // number of all detector stations
     NMvdStations(0), // number of mvd stations
     NStsStations(0),
+    NFStations(0),
     fRadThick(),
     vStsStrips(0),  // strips positions created from hits. Front strips
     vStsStripsB(0), // back strips
@@ -124,9 +129,6 @@ class L1Algo{
     RealIHitPBuf(),
     vStsHitPointsUnused(),
     RealIHit(nullptr),
-    TimePrecision(0.),
-    fMcDataHit2(),
-    fMcDataHit(),
     FIRSTCASTATION(),
     threadNumberToCpuMap(),
     TRACK_CHI2_CUT(10.),
@@ -151,7 +153,7 @@ class L1Algo{
     fTrackingLevel(0), fGhostSuppression(0), // really doesn't used
     fMomentumCutOff(0)// really doesn't used
   {    
-    TimePrecision = 2.9f*2.9f;
+
     n_g1.resize(100000);
     
     for (int i=0; i<fNThreads; i++)
@@ -178,6 +180,11 @@ class L1Algo{
       fu_back3[i].reserve(MaxPortionTriplets/fvecLen);
       fz_pos3[i].reserve(MaxPortionTriplets/fvecLen);
       fTimeR[i].reserve(MaxPortionTriplets/fvecLen);
+      fTimeER[i].reserve(MaxPortionTriplets/fvecLen);
+      dx[i].reserve(MaxPortionTriplets/fvecLen);
+      dy[i].reserve(MaxPortionTriplets/fvecLen);
+      du[i].reserve(MaxPortionTriplets/fvecLen);
+      dv[i].reserve(MaxPortionTriplets/fvecLen);
       
       for (int j=0; j<MaxNStations; j++) TripletsLocal1[j][i].resize(400000);
     }
@@ -296,7 +303,8 @@ class L1Algo{
 
   int NStations,    // number of all detector stations
       NMvdStations, // number of mvd stations
-      NStsStations;
+      NStsStations,
+      NFStations;
   L1Station vStations[MaxNStations] _fvecalignment; // station info
   vector<L1Material> fRadThick; // material for each station
 
@@ -385,8 +393,6 @@ class L1Algo{
 
   
   vector<int> TripForHit[2];
-  
-  float TimePrecision;
 
 
 //  fvec u_front[Portion/fvecLen], u_back[Portion/fvecLen];
@@ -397,9 +403,8 @@ class L1Algo{
     
     vector<THitI> fhitsl_3[nTh], fhitsm_3[nTh], fhitsr_3[nTh];
     
-    nsL1::vector<fvec>::TSimd fu_front3[nTh], fu_back3[nTh], fz_pos3[nTh], fTimeR[nTh];
-         vector< float >  fMcDataHit2;
-    vector< float >  fMcDataHit;
+    nsL1::vector<fvec>::TSimd fu_front3[nTh], fu_back3[nTh], fz_pos3[nTh], fTimeR[nTh], fTimeER[nTh], dx[nTh], dy[nTh], du[nTh], dv[nTh];
+
 
 //   Tindex NHits_l[MaxNStations];
 //   Tindex NHits_l_P[MaxNStations];
@@ -492,7 +497,9 @@ class L1Algo{
                 Tindex start_lh, Tindex n1_l,  L1HitPoint *StsHits_l, 
                   // output
                 fvec *u_front_l, fvec *u_back_l,  fvec *zPos_l,
-                THitI *hitsl, fvec *HitTime_l, fvec *HitTimeEr, fvec *Event_l
+                THitI *hitsl, fvec *HitTime_l, fvec *HitTimeEr, fvec *Event_l,             
+                fvec *d_x, fvec *d_y, fvec *d_xy,
+                fvec *d_u, fvec *d_v
                 );
 
           /// Get the field approximation. Add the target to parameters estimation. Propagate to middle station.
@@ -502,7 +509,9 @@ class L1Algo{
 
                 fvec *u_front_l, fvec *u_back_l,  fvec *zPos_l, fvec *HitTime_l, fvec *HitTimeEr,
                   // output
-                L1TrackPar *T_1, L1FieldRegion *fld_1
+                L1TrackPar *T_1, L1FieldRegion *fld_1,             
+                fvec *d_x, fvec *d_y, fvec *d_xy,
+                fvec *d_u, fvec *d_v
                );
   
           /// Find the doublets. Reformat data in the portion of doublets.
@@ -543,7 +552,9 @@ class L1Algo{
                 nsL1::vector<L1TrackPar>::TSimd &T_3,
                 vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3,
                 nsL1::vector<fvec>::TSimd &u_front_3, nsL1::vector<fvec>::TSimd &u_back_3, nsL1::vector<fvec>::TSimd &z_Pos_3,
-                nsL1::vector<fvec>::TSimd &timeR
+                nsL1::vector<fvec>::TSimd &dx_, nsL1::vector<fvec>::TSimd &dy_,
+                nsL1::vector<fvec>::TSimd &du_, nsL1::vector<fvec>::TSimd &dv_,
+                nsL1::vector<fvec>::TSimd &timeR, nsL1::vector<fvec>::TSimd &timeER
                 );
           
           /// Add the right hits to parameters estimation.
@@ -551,7 +562,9 @@ class L1Algo{
                 Tindex n3_V,  
                 L1Station &star, 
                 nsL1::vector<fvec>::TSimd &u_front_3, nsL1::vector<fvec>::TSimd &u_back_3, nsL1::vector<fvec>::TSimd &z_Pos_3,
-                nsL1::vector<fvec>::TSimd &timeR,
+                nsL1::vector<fvec>::TSimd &dx_, nsL1::vector<fvec>::TSimd &dy_,
+                nsL1::vector<fvec>::TSimd &du_, nsL1::vector<fvec>::TSimd &dv_,
+                nsL1::vector<fvec>::TSimd &timeR, nsL1::vector<fvec>::TSimd &timeER,
                   // output
                 nsL1::vector<L1TrackPar>::TSimd &T_3
                );
@@ -568,9 +581,9 @@ class L1Algo{
   void f4(  // input
                 Tindex n3, int istal, int istam, int istar,
                 nsL1::vector<L1TrackPar>::TSimd &T_3,
-                vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3,
+                vector<THitI> &hitsl_3,  vector<THitI> &hitsm_3,  vector<THitI> &hitsr_3, 
                 // output
-            Tindex &nstaltriplets 
+            Tindex &nstaltriplets, vector<THitI>* hitsn_3 = 0, vector<THitI>* hitsr_5 = 0
               
 // #ifdef XXX                
 //                 ,unsigned int &stat_n_trip      
@@ -677,10 +690,15 @@ class L1Algo{
 #ifdef TRACKS_FROM_TRIPLETS
   enum { fNFindIterations = TRACKS_FROM_TRIPLETS_ITERATION+1 }; // TODO investigate kAllPrimJumpIter & kAllSecJumpIter
 #else
+  
+#if defined(mCBM)  
+  enum { fNFindIterations = 2 };
+#else
   enum { fNFindIterations = 4 }; // TODO investigate kAllPrimJumpIter & kAllSecJumpIter
 #endif
+  
+#endif
 #else
-  enum { fNFindIterations = 4 };
   enum { kFastPrimIter = 0, // primary fast tracks
          kAllPrimIter,      // primary all tracks
          kAllSecIter,       // secondary all tracks

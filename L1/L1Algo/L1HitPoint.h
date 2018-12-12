@@ -1,12 +1,12 @@
 #ifndef _L1HitPoint_h_
 #define _L1HitPoint_h_
 
-		/// contain strips positions and coordinates of hit
+    /// contain strips positions and coordinates of hit
 #if 1
 struct L1HitPoint{
-  L1HitPoint(): x(0.f), y(0.f), z(0.f), u(0.f), v(0.f), time(0.f), timeEv(0.f), timeEr(2.9f), n(-1) {};
-  L1HitPoint(fscal x_, fscal y_, fscal z_, fscal v_, fscal u_, float time_, unsigned short int n_ = 0, float timeEv1_=0, float timeEr_=2.9f):
-    x(x_), y(y_), z(z_), u(u_), v(v_), time(time_), timeEv(timeEv1_), timeEr(timeEr_), n(n_) {};
+  L1HitPoint(): x(0.f), y(0.f), dx(0.f), dy(0.f), dxy(0.f),  u(0.f), v(0.f), du(0.f), dv(0.f), z(0.f), time(0.f), timeEr(2.9f) {};
+  L1HitPoint(fscal x_, fscal y_, fscal dx_, fscal dy_, fscal dxy_, fscal du_, fscal dv_, fscal z_, fscal v_, fscal u_, float time_, float timeEv1_=0, float timeEr_=2.9f):
+    x(x_), y(y_), dx(dx_), dy(dy_), dxy(dxy_),  u(u_), v(v_), du(du_), dv(dv_), z(z_), time(time_), timeEr(timeEr_) {};
     
   //  L1HitPoint(fscal x_, fscal y_, fscal z_, fscal v_, fscal u_, fscal time_, unsigned short int n_ = 0):
   //  x(x_), y(y_), z(z_), u(u_), v(v_), time(time_){};
@@ -16,6 +16,11 @@ struct L1HitPoint{
 
   fscal X() const { return x; }
   fscal Y() const { return y; }
+  fscal dX() const { return dx; }
+  fscal dY() const { return dy; }
+  fscal dXY() const { return dxy; }
+  fscal dU() const { return du; }
+  fscal dV() const { return dv; }
   fscal Z() const { return z; }
   fscal U() const { return u; }
   fscal V() const { return v; }
@@ -27,30 +32,30 @@ struct L1HitPoint{
   void SetU(fscal U1) { u = U1; }
   void SetV(fscal V1) { v = V1; }
     
-  void Set(fscal &x1, fscal &y1, const float &z1, const fscal &v1, const fscal &u1, const float &time1, const short int &n1, float timeEr1) {
+  void Set(fscal &x1, const float &y1, const float &dx1, const float &dy1, const float &xy1,  const float &z1,  const fscal &u1, const fscal &v1, const fscal &du1, const fscal &dv1, const float &time1, float timeEr1) {
       x = x1;
       y = y1;
+      dx = dx1;
+      dy = dy1;
+      du = du1;
+      dxy = xy1;
+      dv = dv1;
       z = z1;
       u = u1;
       v = v1;
       time = time1;
-      n = n1;
       timeEr =timeEr1;
   }
-  void SetN(unsigned short int N1) { n = N1; }
-//  void SetSortIndex(int SortIndex1) { SortIndex = SortIndex1; }
   
  private:
   
-  float x, y;
+  float x, y, dx, dy, dxy, u, v, du, dv;
   float z; // TODO: may be we should use iz
-  float u, v; // x\u, v - front and back strips; x, y, z - coordinates of hits
-        
- 
-//  int SortIndex;
+  // x\u, v - front and back strips; x, y, z - coordinates of hits
+
   public:
-    float time, timeEv, timeEr;
-    short int n; // number of event
+    float time, timeEr;
+   // int track;
 };
 #else
 
@@ -59,7 +64,7 @@ static const float shortPackingConstant = 2 * R / 65535.f;
 static const float MZ = 110;
 static const float shortPackingConstantZ = MZ / 65535.f;
 
-		/// contain strips positions and coordinates of hit
+    /// contain strips positions and coordinates of hit
 struct L1HitPoint{
   L1HitPoint(){};
   L1HitPoint(fscal x_, fscal y_, fscal z_, fscal v_, fscal u_, unsigned short int n_ = 0): x(f2s(x_)), y(f2s(y_)), z(f2sZ(z_)), u(f2s(u_)), v(f2s(v_)), n(n_){};
