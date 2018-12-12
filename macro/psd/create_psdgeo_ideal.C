@@ -33,17 +33,17 @@ TGeoVolume* ConstructIdealPsd(const char* name, Double_t sizeX, Double_t sizeY, 
 void create_psdgeo_ideal()
 {
     // -----   Steering variables   ---------------------------------------------
-    const Double_t psdX       = 10.47;    // x position of PSD in cave (volume center)
-    const Double_t psdY       = 0.;     // y position of PSD in cave (volume center)
-    const Double_t psdZ       = 800.;   // z position of PSD in cave (front side)
-    const Double_t psdRotY    = atan2(psdX, psdZ) * TMath::RadToDeg ();     // Rotation of PSD around y axis [degrees]
-    const Double_t bigModuleSize = 20.;    // Module size [cm]
-    const Double_t holeSize = 0.;      // diagonal size of the square shaped hole 
+    const Double_t psdX       = 9.65;     // x position of PSD in cave (front plane center)
+    const Double_t psdY       = 0.;     // y position of PSD in cave (front plane center)
+    const Double_t psdZ       = 800.;   // z position of PSD in cave (front plane center)
+    const Double_t psdRotY    = 0.01321;     // Rotation of PSD around y axis [rad]
+    const Double_t holeSize = 20.;      // diagonal size of the square shaped hole 
     
+    const Double_t bigModuleSize = 20.;    // Module size [cm]
     const Int_t nModulesX  = 8;      // Number of modules in a row (x direction)
     const Int_t nModulesY  = 6;      // Number of modules in a row (x direction)
 
-    TString geoTag = Form ("1mod_hole%icm_xshift%5.2fcm", (int) holeSize, psdX);  // Geometry tag
+    TString geoTag = Form ("1mod_hole%icm_xshift%4.2fcm", (int) holeSize, psdX);  // Geometry tag
 
     // --------------------------------------------------------------------------
     cout << "Number of modules per row and column = " << nModulesX << " " << nModulesY << endl;
@@ -60,9 +60,9 @@ void create_psdgeo_ideal()
     infoFile << "Number of modules: " << nModulesX << " x " << nModulesY << endl;
     infoFile << "Big module size: " << bigModuleSize << " cm x " << bigModuleSize << " cm"
     << endl;
-    infoFile << "PSD translation in cave: (" << psdX << ", " << psdY << ", "
+    infoFile << "PSD front plane center coordinates: (" << psdX << ", " << psdY << ", "
     << psdZ << ") cm" << endl;
-    infoFile << "PSD rotation around y axis: " << psdRotY << " degrees"
+    infoFile << "PSD rotation around y axis: " << psdRotY * TMath::RadToDeg () << " degrees"
     << endl;
     infoFile << "Diagonal size of the square shaped hole in PSD center: " << holeSize << " cm"
     << endl << endl;
@@ -131,17 +131,29 @@ void create_psdgeo_ideal()
     << " cm x " << 2. * psdSizeZ << " cm" << endl;
     infoFile << endl << "PSD size is " << 2. * psdSizeX << " cm x "
     << 2. * psdSizeY << " cm x " << 2. * psdSizeZ << " cm" << endl;
+    infoFile << "PSD front plane center coordinates: (" << psdX << ", " << psdY << ", "
+    << psdZ << ") cm" << endl;
+    infoFile << "PSD rotation around y axis: " << psdRotY * TMath::RadToDeg () << " degrees"
+    << endl;
+    infoFile << "Diagonal size of the square shaped hole in PSD center: " << holeSize << " cm"
+    << endl << endl;
     // --------------------------------------------------------------------------
     
     psd->AddNode( ConstructIdealPsd( "ideal_psd", psdSizeX, psdSizeY, psdSizeZ, bigModuleSize/2., holeSize/2., &infoFile), 0 );
 
     // --------------------------------------------------------------------------
     
+    
     // -----   Place PSD in top node (cave) -------------------------------------
+    Double_t psdHalfLength = psdSizeZ;
+    Double_t psdVolCenterX = psdX + psdHalfLength * sin (psdRotY);
+    Double_t psdVolCenterY = psdY;
+    Double_t psdVolCenterZ = psdZ + psdHalfLength * cos (psdRotY);
+    infoFile << "PSD volume center coordinates: (" << psdVolCenterX << ", " << psdVolCenterY << ", "
+    << psdVolCenterZ << ") cm" << endl;
     TGeoRotation* psdRot = new TGeoRotation();
-    psdRot->RotateY(psdRotY);
-    TGeoCombiTrans* psdTrans = new TGeoCombiTrans(psdX, psdY, psdZ + psdSizeZ,
-                                                  psdRot);
+    psdRot->RotateY(psdRotY * TMath::RadToDeg ());
+    TGeoCombiTrans* psdTrans = new TGeoCombiTrans(psdVolCenterX, psdVolCenterY, psdVolCenterZ, psdRot);
     top->AddNode(psd, 0, psdTrans);
     cout << endl << "==> PSD position in cave: " << endl;
     psdTrans->Print();
