@@ -1,9 +1,10 @@
-PSD geometry 52mod_hole20cm_xshift10.47cm created with create_psdgeo_with_hole.C
+PSD geometry 52mod_hole20cm_xshift9.65cm created with create_psdgeo_52modules.C
 
 Number of modules: 8 x 6
+Small module size: 10 cm x 10 cm
 Big module size: 20 cm x 20 cm
-PSD translation in cave: (10.47, 0, 800) cm
-PSD rotation around y axis: 0.749816 degrees
+PSD front plane center coordinates: (9.65, 0, 800) cm
+PSD rotation around y axis: 0.756877 degrees
 Size of the square shaped hole in PSD center: 20 cm
 
 Parameters of module module2060: 
@@ -25,5 +26,6 @@ Thickness of iron box: (0.15 / 0.05 / 2) cm
 Height of fibre channel: 0.2 cm
 Distance of channel from edges: left 0.5 cm, right 2 cm
 
-PSD size is 160 cm x 120 cm x 124.8 cm
+PSD size is 160 cm x 120 cm x 140.8 cm
 PSD contains 52 modules.
+PSD volume center coordinates: (10.58, 0, 870.394) cm

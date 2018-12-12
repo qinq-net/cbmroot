@@ -1,11 +1,16 @@
-PSD geometry 1mod_hole20cm_xshift10.47cm created with create_psdgeo_with_hole.C
+PSD geometry 1mod_hole20cm_xshift9.65cm created with create_psdgeo_with_hole.C
 
 Ideal PSD geometry for performance studies - whole volume as a single module
 Number of modules: 8 x 6
 Big module size: 20 cm x 20 cm
-PSD translation in cave: (10.47, 0, 800) cm
-PSD rotation around y axis: 0.749816 degrees
+PSD front plane center coordinates: (9.65, 0, 800) cm
+PSD rotation around y axis: 0.756877 degrees
 Diagonal size of the square shaped hole in PSD center: 20 cm
 
 
 PSD size is 160 cm x 120 cm x 120 cm
+PSD front plane center coordinates: (9.65, 0, 800) cm
+PSD rotation around y axis: 0.756877 degrees
+Diagonal size of the square shaped hole in PSD center: 20 cm
+
+PSD volume center coordinates: (10.4426, 0, 859.995) cm
