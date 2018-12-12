@@ -1,0 +1,17 @@
+PSD geometry 46mod_hole20cm_xshift9.65cm created with create_psdgeo_46modules.C
+
+PSD front plane center coordinates: (9.65, 0, 800) cm
+PSD rotation around y axis: 0.756877 degrees
+Parameters of module module2060: 
+Size: 20 cm x 20 cm
+Number of layers: 60
+Thickness of lead layers: 1.6 cm
+Thickness of scintillators: 0.4 cm
+Thickness of Tyvek wrap: 0.02 cm
+Thickness of iron box: (0.15 / 0.05 / 2) cm
+Height of fibre channel: 0.2 cm
+Distance of channel from edges: left 0.5 cm, right 2 cm
+
+PSD size is 360 cm x 280 cm x 124.8 cm
+PSD contains 46 modules.
+PSD volume center coordinates: (10.58, 0, 870.394) cm
