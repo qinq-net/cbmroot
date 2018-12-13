@@ -4,13 +4,17 @@ GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/C2F/c2f_transport.C)
 GENERATE_CBM_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_digi.C ${MACRO_DIR})
 GENERATE_CBM_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_reco_event.C ${MACRO_DIR})
 GENERATE_CBM_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/analysis/flow/DataTreeCbmInterface/macro/run_treemaker.C ${MACRO_DIR})
+GENERATE_CBM_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/external/DataTreeQA/macro/PopulateQAConfigurations.C ${MACRO_DIR})
+GENERATE_CBM_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/external/DataTreeQA/macro/RunDataTreeQA.C ${MACRO_DIR})
 
 # Put the .rootrc file into the directory from which root is executed.
 # Otherwise the rootalias file is not loaded
-File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINARY_DIR}/macro/C2F)
+File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${MACRO_DIR})
+File(COPY ${CBMROOT_SOURCE_DIR}/macro/C2F/sis100_electron.tree.list DESTINATION ${MACRO_DIR})
+
 
 # Define the number of events to run
-Set(NumEvents 10)
+Set(NumEvents 2)
 
 # Define the different setups to be tested
 If($ENV{ctest_model} MATCHES Nightly)
@@ -59,11 +63,18 @@ If($ENV{ctest_model} MATCHES Nightly)
     set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_c2f_datatree})
   
     # --- DataTreeQA input
-#    Set(testname c2f_datatreeqa_input_${setup})
-#    Add_Test(${testname} ${CBMROOT_SOURCE_DIR}/external/DataTreeQA/macro/PopulateQAConfigurations.py)
-#    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
-#    set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_c2f_datatree})
-#    Set(fixture_c2f_datatreeqa_input fixture_c2f_datatreeqa_input_${testname})
+    Set(testname c2f_datatreeqa_input_${setup})
+    Add_Test(${testname} ${MACRO_DIR}/PopulateQAConfigurations.sh)
+    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
+    set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_c2f_datatree})
+    Set(fixture_c2f_datatreeqa_input fixture_c2f_datatreeqa_input_${testname})
+    set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_c2f_datatreeqa_input})
+
+    # --- DataTreeQA
+    Set(testname c2f_datatreeqa_${setup})
+    Add_Test(${testname} ${MACRO_DIR}/RunDataTreeQA.sh \"${setup}.tree.list\" \"\" \"data/${setup}_test.qa.root\" \"QAConfigurations.root\" \"cbm_12agev_config\" )
+    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
+    set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_c2f_datatreeqa_input})
   
   EndForEach(setup IN LISTS cbm_setup)
   # end of test CBM setups from geometry/setup
