@@ -27,6 +27,7 @@
 
 #include <memory>
 #include <map>
+#include <unordered_set>
 
 class TH1I;
 class TProfile;
@@ -83,8 +84,9 @@ class CbmMcbm2018Source : public FairSource
     TString fHost;
     Int_t   fPort;
 
-    std::map<Int_t, CbmMcbmUnpack*> fUnpackers;
+    std::map<Int_t, CbmMcbmUnpack*> fUnpackers; //! List pairs of system ID and unpacker pointer (unpacker can appear multiple times)
     std::map<Int_t, Int_t> fDetectorSystemMap; //! Map detector system id to flib system id
+    std::unordered_set<CbmMcbmUnpack*> fUnpackersToRun; //! List of all unpackers for which at least one matching container was found
 
 //    CbmTbDaqBuffer* fBuffer;
 
