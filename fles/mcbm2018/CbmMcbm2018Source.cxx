@@ -34,6 +34,7 @@ CbmMcbm2018Source::CbmMcbm2018Source()
     fPort(5556),
     fUnpackers(),
     fDetectorSystemMap(),
+    fUnpackersToRun(),
 //    fBuffer(CbmTbDaqBuffer::Instance()),
     fTSNumber(0),
     fTSCounter(0),
@@ -92,10 +93,13 @@ Bool_t CbmMcbm2018Source::Init()
     } // if( kFALSE == OpenNextFile() )
   }
 
-  for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
-    LOG(INFO) << "Initialize " << it->second->GetName() <<
-      " for systemID 0x" << std::hex << it->first << std::dec << FairLogger::endl;
-    it->second->Init();
+  /// Build list of unpackers without multiples from unpacker dealing with 2 or more detectors
+  for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it)
+    fUnpackersToRun.insert( it->second );
+
+  for( auto itUnp = fUnpackersToRun.begin(); itUnp != fUnpackersToRun.end(); ++ itUnp ) {
+    LOG(INFO) << "Initialize " << (*itUnp)->GetName() << FairLogger::endl;
+    (*itUnp)->Init();
     //    it->second->Register();
   }
 
@@ -120,10 +124,9 @@ Bool_t CbmMcbm2018Source::Init()
 
 void CbmMcbm2018Source::SetParUnpackers()
 {
-	for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
-		LOG(INFO) << "Set parameter container " << it->second->GetName() <<
-				" for systemID 0x" << std::hex << it->first << std::dec << FairLogger::endl;
-	    it->second->SetParContainers();
+	for( auto itUnp = fUnpackersToRun.begin(); itUnp != fUnpackersToRun.end(); ++ itUnp ) {
+		LOG(INFO) << "Set parameter container " << (*itUnp)->GetName() << FairLogger::endl;
+	    (*itUnp)->SetParContainers();
 	  }
 
 }
@@ -131,10 +134,9 @@ void CbmMcbm2018Source::SetParUnpackers()
 Bool_t CbmMcbm2018Source::InitUnpackers()
 {
 	Bool_t result = kTRUE;
-	for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
-		LOG(INFO) << "Initialize parameter container " << it->second->GetName() <<
-				" for systemID 0x" << std::hex << it->first << std::dec << FairLogger::endl;
-	    result = result && it->second->InitContainers();
+	for( auto itUnp = fUnpackersToRun.begin(); itUnp != fUnpackersToRun.end(); ++ itUnp ) {
+		LOG(INFO) << "Initialize parameter container " << (*itUnp)->GetName() << FairLogger::endl;
+	    result = result && (*itUnp)->InitContainers();
 	}
     return result;
 }
@@ -142,10 +144,9 @@ Bool_t CbmMcbm2018Source::InitUnpackers()
 Bool_t CbmMcbm2018Source::ReInitUnpackers()
 {
 	Bool_t result = kTRUE;
-	for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
-		LOG(INFO) << "Initialize parameter container " << it->second->GetName() <<
-				" for systemID 0x" << std::hex << it->first << std::dec << FairLogger::endl;
-	    result = result && it->second->ReInitContainers();
+	for( auto itUnp = fUnpackersToRun.begin(); itUnp != fUnpackersToRun.end(); ++ itUnp ) {
+		LOG(INFO) << "Initialize parameter container " << (*itUnp)->GetName() << FairLogger::endl;
+	    result = result && (*itUnp)->ReInitContainers();
 	}
     return result;
 }
@@ -208,10 +209,10 @@ Bool_t CbmMcbm2018Source::CheckTimeslice(const fles::Timeslice& ts)
 
 void CbmMcbm2018Source::Close()
 {
-  for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
-    LOG(INFO) << "Finish " << it->second->GetName() << " for systemID 0x"
-              << std::hex << it->first << std::dec << FairLogger::endl;
-    it->second->Finish();
+  for( auto itUnp = fUnpackersToRun.begin(); itUnp != fUnpackersToRun.end(); ++ itUnp )
+  {
+    LOG(INFO) << "Finish " << (*itUnp)->GetName() << FairLogger::endl;
+    (*itUnp)->Finish();
   }
   fHistoMissedTS->Write();
   fHistoMissedTSEvo->Write();
@@ -281,9 +282,9 @@ Int_t CbmMcbm2018Source::FillBuffer()
       /// Apply TS throttling as set by user (default = 1 => no throttling)
       if( 0 == tsIndex % fuTsReduction )
       {
-         for( auto itUnp = fUnpackers.begin(); itUnp != fUnpackers.end(); ++ itUnp )
+         for( auto itUnp = fUnpackersToRun.begin(); itUnp != fUnpackersToRun.end(); ++ itUnp )
          {
-            itUnp->second->DoUnpack(ts, 0);
+            (*itUnp)->DoUnpack(ts, 0);
          } // for( auto itUnp = fUnpackers.begin(); itUnp != fUnpackers.end(); ++ itUnp )
       } // if( 0 == tsIndex % fuTsReduction )
 /*
