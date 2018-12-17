@@ -10,9 +10,10 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void McbmSyncMonitor(TString inFile = "",
+void McbmSyncMonitor(TString inFile = "", TString sHostname = "pn05",
+                 Int_t iStartFile = -1, Int_t iStopFile = -1,
                  Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
-                 Int_t iStartFile = -1, Int_t iStopFile = -1 )
+                 TString sFileTag = "" )
 {
 
   // --- Specify number of events to be produced.
@@ -20,8 +21,8 @@ void McbmSyncMonitor(TString inFile = "",
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/pulser_out.root";
-  TString parFile = "data/pulser_param.root";
+  TString outFile = "data/sync_out" + sFileTag + ".root";
+  TString parFile = "data/sync_param" + sFileTag + ".root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -33,11 +34,11 @@ void McbmSyncMonitor(TString inFile = "",
   TList *parFileList = new TList();
   TString paramDir = "./";
 
-  TString paramFileSts = paramDir + "PulserPar.par";
+  TString paramFileSts = paramDir + "mStsMuchPar.par";
   TObjString* tutDetDigiFileSts = new TObjString(paramFileSts);
   parFileList->Add(tutDetDigiFileSts);
 
-  TString paramFileTof = paramDir + "MapTofGbtx.par";
+  TString paramFileTof = paramDir + "mTofPar.par";
   TObjString* tutDetDigiFileTof = new TObjString(paramFileTof);
   parFileList->Add(tutDetDigiFileTof);
 
@@ -55,13 +56,9 @@ void McbmSyncMonitor(TString inFile = "",
 
   // Hodoscopes Monitor
   CbmMcbm2018MonitorMcbmSync* monitorPulser = new CbmMcbm2018MonitorMcbmSync();
-  monitorPulser->SetHistoFileName( "data/PulserHistos.root" );
-//  monitorPulser->SetPrintMessage();
-//  monitorPulser->SetMsOverlap( 1 );
-//  monitorPulser->SetLongDurationLimits( 3600, 10 );
-  monitorPulser->SetLongDurationLimits( 7200, 60 );
-//  monitorPulser->SetCoincidenceBorder(   0.0,  200 );
-  monitorPulser->SetTofFitZoomWidthPs();
+  monitorPulser->SetHistoFileName( "data/McbmSyncHistos" + sFileTag + ".root" );
+  monitorPulser->SetIgnoreMsOverlap();
+  monitorPulser->SetStsTofOffsetNs( 18500 );
 
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();
@@ -80,13 +77,12 @@ void McbmSyncMonitor(TString inFile = "",
   } // if( "" != inFile )
       else
       {
-//         source->SetHostName( "localhost");
-         source->SetHostName( "cbmflib22");
+         source->SetHostName( sHostname );
          source->SetPortNumber( 5556 );
       }
 
-//  source->AddUnpacker(monitorPulser,  0x10, 6); // stsXyter DPBs
-  source->AddUnpacker(monitorPulser,  0x60, 6); // stsXyter DPB
+  source->AddUnpacker(monitorPulser,  0x10, 6); // sDPBs
+  source->AddUnpacker(monitorPulser,  0x60, 6); // gDPB
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();
