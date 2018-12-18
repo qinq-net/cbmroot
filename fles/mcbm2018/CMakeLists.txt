@@ -69,6 +69,7 @@ Set(SRCS
 #   unpacker/CbmMcbm2018UnpackerTrd.cxx
    unpacker/CbmMcbm2018TofUnpacker.cxx
 
+   monitor/CbmMcbm2018MonitorMcbmRate.cxx
    monitor/CbmMcbm2018MonitorMcbmSync.cxx
    monitor/CbmMcbm2018MonitorStsSync.cxx
 #   monitor/CbmMcbm2018MonitorStsPulser.cxx
