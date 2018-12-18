@@ -10,7 +10,7 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void McbmSyncMonitor(TString inFile = "", TString sHostname = "pn05",
+void McbmRateMonitor(TString inFile = "", TString sHostname = "pn05",
                  Int_t iStartFile = -1, Int_t iStopFile = -1,
                  Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
                  TString sFileTag = "" )
@@ -21,8 +21,8 @@ void McbmSyncMonitor(TString inFile = "", TString sHostname = "pn05",
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/sync_out" + sFileTag + ".root";
-  TString parFile = "data/sync_param" + sFileTag + ".root";
+  TString outFile = "data/rate_out" + sFileTag + ".root";
+  TString parFile = "data/rate_param" + sFileTag + ".root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -55,14 +55,9 @@ void McbmSyncMonitor(TString inFile = "", TString sHostname = "pn05",
   std::cout << ">>> Cern2017Monitor: Initialising..." << std::endl;
 
   // Hodoscopes Monitor
-  CbmMcbm2018MonitorMcbmSync* monitorPulser = new CbmMcbm2018MonitorMcbmSync();
-  monitorPulser->SetHistoFileName( "data/McbmSyncHistos" + sFileTag + ".root" );
+  CbmMcbm2018MonitorMcbmRate* monitorPulser = new CbmMcbm2018MonitorMcbmRate();
+  monitorPulser->SetHistoFileName( "data/McbmRateHistos" + sFileTag + ".root" );
   monitorPulser->SetIgnoreMsOverlap();
-  monitorPulser->SetStsTofOffsetNs(  43900 ); // Run 48
-  monitorPulser->SetMuchTofOffsetNs( 12000 ); // Run 48
-//  monitorPulser->SetMuchTofOffsetNs( 18500 ); // Run 52
-//  monitorPulser->SetStsTofOffsetNs( 0 ); // Run 53
-//  monitorPulser->SetMuchTofOffsetNs( 2500 ); // Run 53
 
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();
