@@ -66,6 +66,8 @@ CbmMcbm2018MonitorMcbmSync::CbmMcbm2018MonitorMcbmSync() :
    fuDiamondDpbIdx(2),
    fuTotalNrOfDpb(0),
    fdStsTofOffsetNs(0.0),
+   fdMuchTofOffsetNs(0.0),
+   fbUseBestPair( kFALSE ),
    fsHistoFileFullname( "data/mCBMsyncHistos.root" ),
    fbPrintMessages( kFALSE ),
    fPrintMessCtrlSts( stsxyter::MessagePrintMask::msg_print_Human ),
@@ -572,21 +574,51 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
          Double_t dDiaTime = fvmTofGdpbHitsInMs[ fuDiamondDpbIdx ][ uHitDia ].GetFullTimeNs();
 
       /// Jump Sts has it has far too many hits!!!
-         for( UInt_t uSdpb = 1; uSdpb < fuStsNrOfDpbs; ++uSdpb )
+         for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
          {
             UInt_t uNbHits = fvmStsSdpbHitsInMs[ uSdpb ].size();
+            Double_t dBestDt = 1e9;
+            UInt_t   uNbIncrDt = 0;
+
             for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
             {
-               Double_t dHitTime = stsxyter::kdClockCycleNs * fvmStsSdpbHitsInMs[ uSdpb ][ uHit ].GetTs()
-                                   - fdStsTofOffsetNs;
+               Double_t dHitTime = stsxyter::kdClockCycleNs * fvmStsSdpbHitsInMs[ uSdpb ][ uHit ].GetTs();
+               if( fuMuchDpbIdx == uSdpb )
+                  dHitTime -= fdMuchTofOffsetNs;
+                  else dHitTime -= fdStsTofOffsetNs;
 
                Double_t dDt = dHitTime - dDiaTime;
-               fhMcbmTimeDiffToDiamond->Fill( dDt, uSdpb );
-               fhMcbmTimeDiffToDiamondWide->Fill( dDt / 1000.0, uSdpb );
 
-               fvhMcbmTimeDiffToDiamondEvoDpb[ uSdpb ]->Fill( fulCurrentTsIdx, dDt );
-               fvhMcbmTimeDiffToDiamondWideEvoDpb[ uSdpb ]->Fill( fulCurrentTsIdx, dDt / 1000.0 );
+               if( kTRUE == fbUseBestPair )
+               {
+                  /// Check if this hits is better than the previous ones
+                  if( TMath::Abs( dDt ) < TMath::Abs( dBestDt ) )
+                     dBestDt = dDt;
+                     else if( dBestDt < dDt ) /// Count increasing dt to detect minimum
+                        uNbIncrDt++;
+
+                  /// Stop after 5 increasing dt (hits are time ordered)
+                  if( 5 == dBestDt )
+                     break;
+               } // if( kTRUE == fbUseBestPair )
+                  else
+                  {
+                     fhMcbmTimeDiffToDiamond->Fill( dDt, uSdpb );
+                     fhMcbmTimeDiffToDiamondWide->Fill( dDt / 1000.0, uSdpb );
+
+                     fvhMcbmTimeDiffToDiamondEvoDpb[ uSdpb ]->Fill( fulCurrentTsIdx, dDt );
+                     fvhMcbmTimeDiffToDiamondWideEvoDpb[ uSdpb ]->Fill( fulCurrentTsIdx, dDt / 1000.0 );
+                  } // else of if( kTRUE == fbUseBestPair )
             } // for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
+
+            if( kTRUE == fbUseBestPair )
+            {
+               fhMcbmTimeDiffToDiamond->Fill( dBestDt, uSdpb );
+               fhMcbmTimeDiffToDiamondWide->Fill( dBestDt / 1000.0, uSdpb );
+
+               fvhMcbmTimeDiffToDiamondEvoDpb[ uSdpb ]->Fill( fulCurrentTsIdx, dBestDt );
+               fvhMcbmTimeDiffToDiamondWideEvoDpb[ uSdpb ]->Fill( fulCurrentTsIdx, dBestDt / 1000.0 );
+            } // if( kTRUE == fbUseBestPair )
          } // for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
 
          for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
@@ -595,17 +627,45 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
                continue;
 
             UInt_t uNbHits = fvmTofGdpbHitsInMs[ uGdpb ].size();
+            Double_t dBestDt = 1e9;
+            UInt_t   uNbIncrDt = 0;
+
             for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
             {
                Double_t dHitTime = fvmTofGdpbHitsInMs[ uGdpb ][ uHit ].GetFullTimeNs();
 
                Double_t dDt = dHitTime - dDiaTime;
-               fhMcbmTimeDiffToDiamond->Fill( dDt, uGdpb + fuStsNrOfDpbs );
-               fhMcbmTimeDiffToDiamondWide->Fill( dDt / 1000.0, uGdpb + fuStsNrOfDpbs );
 
-               fvhMcbmTimeDiffToDiamondEvoDpb[ uGdpb + fuStsNrOfDpbs ]->Fill( fulCurrentTsIdx, dDt );
-               fvhMcbmTimeDiffToDiamondWideEvoDpb[ uGdpb + fuStsNrOfDpbs ]->Fill( fulCurrentTsIdx, dDt / 1000.0 );
+               if( kTRUE == fbUseBestPair )
+               {
+                  /// Check if this hits is better than the previous ones
+                  if( TMath::Abs( dDt ) < TMath::Abs( dBestDt ) )
+                     dBestDt = dDt;
+                     else if( dBestDt < dDt ) /// Count increasing dt to detect minimum
+                        uNbIncrDt++;
+
+                  /// Stop after 5 increasing dt (hits are time ordered)
+                  if( 5 == dBestDt )
+                     break;
+               } // if( kTRUE == fbUseBestPair )
+                  else
+                  {
+                     fhMcbmTimeDiffToDiamond->Fill( dDt, uGdpb + fuStsNrOfDpbs );
+                     fhMcbmTimeDiffToDiamondWide->Fill( dDt / 1000.0, uGdpb + fuStsNrOfDpbs );
+
+                     fvhMcbmTimeDiffToDiamondEvoDpb[ uGdpb + fuStsNrOfDpbs ]->Fill( fulCurrentTsIdx, dDt );
+                     fvhMcbmTimeDiffToDiamondWideEvoDpb[ uGdpb + fuStsNrOfDpbs ]->Fill( fulCurrentTsIdx, dDt / 1000.0 );
+                  } // else of if( kTRUE == fbUseBestPair )
             } // for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
+
+            if( kTRUE == fbUseBestPair )
+            {
+               fhMcbmTimeDiffToDiamond->Fill( dBestDt, uGdpb + fuStsNrOfDpbs );
+               fhMcbmTimeDiffToDiamondWide->Fill( dBestDt / 1000.0, uGdpb + fuStsNrOfDpbs );
+
+               fvhMcbmTimeDiffToDiamondEvoDpb[ uGdpb + fuStsNrOfDpbs ]->Fill( fulCurrentTsIdx, dBestDt );
+               fvhMcbmTimeDiffToDiamondWideEvoDpb[ uGdpb + fuStsNrOfDpbs ]->Fill( fulCurrentTsIdx, dBestDt / 1000.0 );
+            } // if( kTRUE == fbUseBestPair )
          } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
       } // for( UInt_t uHitDia = 0; uHitDia < uNbDiaHits; uHitDia++)
 
@@ -614,37 +674,89 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
       for( UInt_t uHitMuch = 0; uHitMuch < uNbMuchHits; uHitMuch++)
       {
          Double_t dMuchTime = stsxyter::kdClockCycleNs * fvmStsSdpbHitsInMs[ fuMuchDpbIdx ][ uHitMuch ].GetTs()
-                              - fdStsTofOffsetNs;
+                              - fdMuchTofOffsetNs;
 
       /// Jump Sts has it has far too many hits!!!
-         for( UInt_t uSdpb = 1; uSdpb < fuStsNrOfDpbs; ++uSdpb )
+         for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
          {
             if( fuMuchDpbIdx == uSdpb )
                continue;
 
             UInt_t uNbHits = fvmStsSdpbHitsInMs[ uSdpb ].size();
+            Double_t dBestDt = 1e9;
+            UInt_t   uNbIncrDt = 0;
+
             for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
             {
-               Double_t dHitTime = stsxyter::kdClockCycleNs * fvmStsSdpbHitsInMs[ uSdpb ][ uHit ].GetTs()
-                                   - fdStsTofOffsetNs;
+               Double_t dHitTime = stsxyter::kdClockCycleNs * fvmStsSdpbHitsInMs[ uSdpb ][ uHit ].GetTs();
+               if( fuMuchDpbIdx == uSdpb )
+                  dHitTime -= fdMuchTofOffsetNs;
+                  else dHitTime -= fdStsTofOffsetNs;
 
                Double_t dDt = dHitTime - dMuchTime;
-               fhMcbmTimeDiffToMuch->Fill( dDt, uSdpb );
-               fhMcbmTimeDiffToMuchWide->Fill( dDt / 1000.0, uSdpb );
+
+               if( kTRUE == fbUseBestPair )
+               {
+                  /// Check if this hits is better than the previous ones
+                  if( TMath::Abs( dDt ) < TMath::Abs( dBestDt ) )
+                     dBestDt = dDt;
+                     else if( dBestDt < dDt ) /// Count increasing dt to detect minimum
+                        uNbIncrDt++;
+
+                  /// Stop after 5 increasing dt (hits are time ordered)
+                  if( 5 == dBestDt )
+                     break;
+               } // if( kTRUE == fbUseBestPair )
+                  else
+                  {
+                     fhMcbmTimeDiffToMuch->Fill( dDt, uSdpb );
+                     fhMcbmTimeDiffToMuchWide->Fill( dDt / 1000.0, uSdpb );
+                  } // else of if( kTRUE == fbUseBestPair )
             } // for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
+
+            if( kTRUE == fbUseBestPair )
+            {
+               fhMcbmTimeDiffToMuch->Fill( dBestDt, uSdpb );
+               fhMcbmTimeDiffToMuchWide->Fill( dBestDt / 1000.0, uSdpb );
+            } // if( kTRUE == fbUseBestPair )
          } // for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
 
          for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
          {
             UInt_t uNbHits = fvmTofGdpbHitsInMs[ uGdpb ].size();
+            Double_t dBestDt = 1e9;
+            UInt_t   uNbIncrDt = 0;
+
             for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
             {
                Double_t dHitTime = fvmTofGdpbHitsInMs[ uGdpb ][ uHit ].GetFullTimeNs();
 
                Double_t dDt = dHitTime - dMuchTime;
-               fhMcbmTimeDiffToMuch->Fill( dDt, uGdpb + fuStsNrOfDpbs );
-               fhMcbmTimeDiffToMuchWide->Fill( dDt / 1000.0, uGdpb + fuStsNrOfDpbs );
+
+               if( kTRUE == fbUseBestPair )
+               {
+                  /// Check if this hits is better than the previous ones
+                  if( TMath::Abs( dDt ) < TMath::Abs( dBestDt ) )
+                     dBestDt = dDt;
+                     else if( dBestDt < dDt ) /// Count increasing dt to detect minimum
+                        uNbIncrDt++;
+
+                  /// Stop after 5 increasing dt (hits are time ordered)
+                  if( 5 == dBestDt )
+                     break;
+               } // if( kTRUE == fbUseBestPair )
+                  else
+                  {
+                     fhMcbmTimeDiffToMuch->Fill( dDt, uGdpb + fuStsNrOfDpbs );
+                     fhMcbmTimeDiffToMuchWide->Fill( dDt / 1000.0, uGdpb + fuStsNrOfDpbs );
+                  } // else of if( kTRUE == fbUseBestPair )
             } // for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
+
+            if( kTRUE == fbUseBestPair )
+            {
+               fhMcbmTimeDiffToMuch->Fill( dBestDt, uGdpb + fuStsNrOfDpbs );
+               fhMcbmTimeDiffToMuchWide->Fill( dBestDt / 1000.0, uGdpb + fuStsNrOfDpbs );
+            } // if( kTRUE == fbUseBestPair )
          } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
       } // for( UInt_t uHitMuch = 0; uHitMuch < uNbDiaHits; uHitMuch++)
 
@@ -853,6 +965,59 @@ void CbmMcbm2018MonitorMcbmSync::FillStsHitInfo( stsxyter::Message mess, const U
    UShort_t usRawTs  = mess.GetHitTime();
 
    UInt_t uAsicIdx = 0; /// Not used here, otherwise should be extracted from eLink mapping
+
+   if( fuCurrDpbIdx == fuMuchDpbIdx )
+   {
+      /// MUCH bad channels
+      switch( usChan )
+      {
+         case 101:
+         case  99:
+         case  91:
+         case  89:
+         case  88:
+         case  86:
+         case  84:
+         case  83:
+         case  80:
+         case  78:
+         case  76:
+         case  50:
+         case  39:
+         case  37:
+         case  35:
+         case  20:
+         {
+            return;
+            break;
+         } // if bad channel
+         default:
+            break;
+      } // switch( usChan )
+   } // if( fuCurrDpbIdx == fuMuchDpbIdx )
+      else
+      {
+         /// STS bad channels
+         uAsicIdx = fUnpackParSts->ElinkIdxToAsicIdx( kFALSE, mess.GetLinkIndex() );
+         UInt_t uChanIdx = usChan + fUnpackParSts->GetNbChanPerAsic() * uAsicIdx;
+         switch( uChanIdx )
+         {
+            case 781:
+            case 270:
+            case 411:
+            case 518:
+            {
+               return;
+               break;
+            } // if bad channel
+            default:
+               break;
+         } // switch( mess.GetLinkIndex() )
+         if( ( 0 == uChanIdx % 2 ) && (543 < uChanIdx ) && ( uChanIdx < 633 ) )
+         {
+            return;
+         } // if bad channel
+      } // else of if( fuCurrDpbIdx == fuMuchDpbIdx )
 
    // Compute the Full time stamp
       // Use TS w/o overlap bits as they will anyway come from the TS_MSB

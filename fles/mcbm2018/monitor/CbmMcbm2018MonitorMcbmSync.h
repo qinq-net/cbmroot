@@ -74,6 +74,8 @@ public:
    inline void SetDiamondDpbIdx( UInt_t uIdx = 2 ) { fuDiamondDpbIdx = uIdx; }
    inline void SetMuchDpbIdx( UInt_t uIdx = 2 ) { fuMuchDpbIdx = uIdx; }
    inline void SetStsTofOffsetNs( Double_t dOffsetIn = 0.0 ) { fdStsTofOffsetNs = dOffsetIn; }
+   inline void SetMuchTofOffsetNs( Double_t dOffsetIn = 0.0 ) { fdMuchTofOffsetNs = dOffsetIn; }
+   inline void SetUseBestPair( Bool_t bInFLag = kTRUE ) { fbUseBestPair = bInFLag; }
 
 private:
    /// Parameters
@@ -96,6 +98,8 @@ private:
       /// Global parameters
    UInt_t                    fuTotalNrOfDpb;
    Double_t                  fdStsTofOffsetNs;
+   Double_t                  fdMuchTofOffsetNs;
+   Bool_t                    fbUseBestPair;
 
    // Constants
    static const UInt_t   kuStsBytesPerMessage = 4; //! TODO => move to the message class!!
