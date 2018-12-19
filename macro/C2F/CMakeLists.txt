@@ -14,7 +14,7 @@ File(COPY ${CBMROOT_SOURCE_DIR}/macro/C2F/sis100_electron.tree.list DESTINATION 
 
 
 # Define the number of events to run
-Set(NumEvents 2)
+Set(NumEvents 20)
 
 # Define the different setups to be tested
 If($ENV{ctest_model} MATCHES Nightly)
@@ -30,7 +30,7 @@ If($ENV{ctest_model} MATCHES Nightly)
     # --- Transport run, using run_transport.C
     Set(testname c2f_transport_${setup})
     Add_Test(${testname} ${MACRO_DIR}/c2f_transport.sh ${NumEvents} \"${setup}\" \"data/${setup}_test\" \"\" \"TGeant4\" false)
-    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "3600")
+    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
     Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
     Set(fixture_c2f_digi fixture_c2f_digi_${testname})
     set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_c2f_digi})
@@ -47,7 +47,7 @@ If($ENV{ctest_model} MATCHES Nightly)
     # --- Reconstruction run, event-by-event
     Set(testname c2f_reco_event_${setup})
     Add_Test(${testname} ${MACRO_DIR}/run_reco_event.sh ${NumEvents} \"data/${setup}_test\" \"${setup}\")
-    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
     Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
     set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_c2f_reco_event})
     Set(fixture_c2f_ana fixture_c2f_ana_${testname})
@@ -56,7 +56,7 @@ If($ENV{ctest_model} MATCHES Nightly)
     # --- DataTree
     Set(testname c2f_treemaker_${setup})
     Add_Test(${testname} ${MACRO_DIR}/run_treemaker.sh ${NumEvents} \"data/${setup}_test\" \"${setup}\")
-    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
     Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
     set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_c2f_ana})
     Set(fixture_c2f_datatree fixture_c2f_datatree_${testname})
@@ -65,7 +65,7 @@ If($ENV{ctest_model} MATCHES Nightly)
     # --- DataTreeQA input
     Set(testname c2f_datatreeqa_input_${setup})
     Add_Test(${testname} ${MACRO_DIR}/PopulateQAConfigurations.sh)
-    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
+    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "10")
     set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_c2f_datatree})
     Set(fixture_c2f_datatreeqa_input fixture_c2f_datatreeqa_input_${testname})
     set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_c2f_datatreeqa_input})
@@ -73,7 +73,7 @@ If($ENV{ctest_model} MATCHES Nightly)
     # --- DataTreeQA
     Set(testname c2f_datatreeqa_${setup})
     Add_Test(${testname} ${MACRO_DIR}/RunDataTreeQA.sh \"${setup}.tree.list\" \"\" \"data/${setup}_test.qa.root\" \"QAConfigurations.root\" \"cbm_12agev_config\" )
-    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
+    Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "30")
     set_tests_properties(${testname} PROPERTIES FIXTURES_REQUIRED ${fixture_c2f_datatreeqa_input})
   
   EndForEach(setup IN LISTS cbm_setup)
