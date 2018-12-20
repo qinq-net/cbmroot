@@ -90,8 +90,8 @@ class CbmStsFindClusters : public FairTask
     Bool_t fLegacy;                   /// Legacy mode for event-by-event
 
     // --- Run counters
-    Int_t     fNofTimeSlices;   ///< Number of processed time slices
-    Int_t     fNofEvents;       ///< Number of processed events
+    Int_t     fNofEntries;      ///< Number of tree entries processed
+    Int_t     fNofUnits;        ///< Number of time slices or events processed
     Double_t  fNofDigis;        ///< Total number of digis processed
     Double_t  fNofClusters;     ///< Total number of clusters produced
     Double_t  fTimeTot;         ///< Total execution time
