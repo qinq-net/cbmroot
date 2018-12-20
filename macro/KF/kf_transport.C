@@ -207,10 +207,11 @@ void kf_transport(Int_t nEvents = 2,
   run->SetGenerator(primGen);
   // ------------------------------------------------------------------------
 
+
   // -----   Register light ions (d, t, He3, He4)   -------------------------
   std::cout << std::endl;
   TString registerLightIonsMacro = gSystem->Getenv("VMCWORKDIR");
-  registerLightIonsMacro += "/macro/run/modules/registerLightIons.C";
+  registerLightIonsMacro += "/macro/KF/registerLightIons.C";
   std::cout << "Loading macro " << registerLightIonsMacro << std::endl;
   gROOT->LoadMacro(registerLightIonsMacro);
   gROOT->ProcessLine("registerLightIons()");
@@ -220,7 +221,7 @@ void kf_transport(Int_t nEvents = 2,
   // -----   Register D0 4 body decays if needed   --------------------------
   std::cout << std::endl;
   TString registerPythiaDecaysMacro = gSystem->Getenv("VMCWORKDIR");
-  registerPythiaDecaysMacro += "/macro/run/modules/registerPythiaDecays.C";
+  registerPythiaDecaysMacro += "/macro/KF/registerPythiaDecays.C";
   std::cout << "Loading macro " << registerPythiaDecaysMacro << std::endl;
   gROOT->LoadMacro(registerPythiaDecaysMacro);
   TString functionPythia = TString("registerPythiaDecays(");
@@ -236,6 +237,18 @@ void kf_transport(Int_t nEvents = 2,
   run->Init();
   // ------------------------------------------------------------------------
 
+
+  // -----   Set decay modes   ----------------------------------------------
+  std::cout << std::endl;
+  TString registerGeantDecaysMacro = gSystem->Getenv("VMCWORKDIR");
+  registerGeantDecaysMacro += "/macro/KF/registerGeantDecays.C";
+  std::cout << "Loading macro " << registerGeantDecaysMacro << std::endl;
+  gROOT->LoadMacro(registerGeantDecaysMacro);
+  TString functionGeant = TString("registerGeantDecays(");
+  functionGeant += iDecay;
+  functionGeant += ")";
+  gROOT->ProcessLine(functionGeant.Data());
+  // ------------------------------------------------------------------------
 
 
   // -----   Set the stack to save all MC particles   -----------------------

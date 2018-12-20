@@ -21,7 +21,7 @@ void registerPythiaDecays(int iDecay)
       FairRunSim::Instance()->AddNewParticle(newParticle);
     }
     TString pythia6Config = gSystem->Getenv("VMCWORKDIR");
-    pythia6Config += "/macro/run/modules/DecayConfig.C()";
+    pythia6Config += "/macro/KF/DecayConfig.C()";
     FairRunSim::Instance()->SetPythiaDecayer(pythia6Config);
   }
 }

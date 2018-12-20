@@ -13,7 +13,7 @@ File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINA
 
 
 # Define the number of signal events to run
-Set(NSignalEvents 1000)
+Set(NSignalEvents 5000)
 
 
 # List of signals to be tested
@@ -103,9 +103,15 @@ ForEach(iSignal RANGE 16)
   set_tests_properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_generator})
   
   # --- Transport run (uses KF/kf_transport.C)
+  # --- For the input, not the files generated in the previous step but those predefined in the
+  # --- reference directory are taken, to provide a better test stability.
   Set(testname KF_transport_${title})
+ # Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/KF/kf_transport.sh ${NSignalEvents} \"${setup}\" 
+ #                      \"${WORKDIR}/${title}_test\" \"${WORKDIR}/${title}_test_Signal.root\" ${id})
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/KF/kf_transport.sh ${NSignalEvents} \"${setup}\" 
-                       \"${WORKDIR}/${title}_test\" \"${WORKDIR}/${title}_test_Signal.root\" ${id})
+                       \"${WORKDIR}/${title}_test\"
+                       \"${CBMROOT_SOURCE_DIR}/macro/KF/reference/input/${title}_test_Signal.root\" 
+                       ${id})
   Set_Tests_Properties(${testname} PROPERTIES WORKING_DIRECTORY ${WORKDIR})
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "1000")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
@@ -144,7 +150,7 @@ ForEach(iSignal RANGE 16)
   Set_Tests_Properties(${testname} PROPERTIES FIXTURES_SETUP ${fixture_kfparticle})
   
  
-EndForEach(iSignal RANGE 16)
+EndForEach(iSignal)
 
 
 Install(FILES .rootrc run_transport.C run_digi.C run_reco_event.C run_thermal_signal_generator.C run_kfparticle.C
