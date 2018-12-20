@@ -13,7 +13,7 @@ File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINA
 
 
 # Define the number of signal events to run
-Set(NSignalEvents 5000)
+Set(NSignalEvents 1000)
 
 
 # List of signals to be tested

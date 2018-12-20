@@ -47,8 +47,8 @@ CbmStsFindClusters::CbmStsFindClusters()
     , fTimer()
     , fEventMode(kFALSE)
     , fLegacy(kFALSE)
-    , fNofEntries(0)
-    , fNofUnits(0)
+    , fNofTimeSlices(0)
+    , fNofEvents(0)
     , fNofDigis(0.)
     , fNofClusters(0.)
     , fTimeTot(0.)
@@ -129,36 +129,30 @@ void CbmStsFindClusters::SetParContainers()
 }
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsFindClusters::Exec(Option_t* /*opt*/) {
-
-  if ( fEventMode && ! fLegacy)
-    LOG(INFO) << GetName() << ": Processing time slice "
-              << fNofEntries << FairLogger::endl;
+void CbmStsFindClusters::Exec(Option_t*) {
 
   // --- Reset output array
   fClusters->Delete();
 
-  // --- In legacy mode: process legacy event
-  if ( fLegacy ) {
-    ProcessLegacyEvent();
-    return;
+  // --- Time-slice mode
+  if ( ! fEventMode ) {
+    LOG(DEBUG) << GetName() << ": Processing time slice "
+                << fNofTimeSlices << FairLogger::endl;
+    ProcessData(nullptr);
   }
 
-  // --- Number of time slices or events
-  Int_t nUnits = ( (fEventMode && !fLegacy) ? fEvents->GetEntriesFast() : 1);
+  // --- Event mode
+  else {
+    Int_t nEvents = fEvents->GetEntriesFast();
+    LOG(INFO) << GetName() << ": Processing time slice " << fNofTimeSlices
+        << " with " << nEvents << " events" << FairLogger::endl;
+    for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+      CbmEvent* event = dynamic_cast<CbmEvent*>(fEvents->At(iEvent));
+      ProcessData(event);
+    } //# Events in time slice
+  } //? Event mode
 
-  // --- Loop over input units
-  for (Int_t iUnit = 0; iUnit < nUnits; iUnit++) {
-    CbmEvent* event = ( (fEventMode && !fLegacy) ?
-        dynamic_cast<CbmEvent*>(fEvents->At(iUnit)) : NULL);
-    ProcessData(event);
-  }
-
-  if ( fEventMode ) LOG(INFO) << GetName() << ": " << nUnits
-      << (nUnits == 1 ? " event" : " events") << " processed in time slice "
-      << fNofEntries << FairLogger::endl;
-
-  fNofEntries++;
+  fNofTimeSlices++;
 }
 // -------------------------------------------------------------------------
 
@@ -171,32 +165,32 @@ void CbmStsFindClusters::Finish() {
   LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
 
   if ( ! fLegacy ) LOG(INFO) << "Time slices           : "
-        << fNofEntries << FairLogger::endl;
+        << fNofTimeSlices << FairLogger::endl;
 
   // --- Time slice mode
   if ( ! fEventMode) {
     LOG(INFO) << "Digis / time slice    : "
-        << fNofDigis / Double_t(fNofEntries) << FairLogger::endl;
+        << fNofDigis / Double_t(fNofTimeSlices) << FairLogger::endl;
     LOG(INFO) << "Clusters / time slice : "
-        << fNofClusters / Double_t(fNofEntries) << FairLogger::endl;
+        << fNofClusters / Double_t(fNofTimeSlices) << FairLogger::endl;
     LOG(INFO) << "Digis per cluster     : "
         << fNofDigis / fNofClusters << FairLogger::endl;
     LOG(INFO) << "Time per time slice   : "
-        << fTimeTot / Double_t(fNofEntries) << " s " << FairLogger::endl;
+        << fTimeTot / Double_t(fNofTimeSlices) << " s " << FairLogger::endl;
   } //? time-based mode
 
-  // --- Event-by-event mode
+  // --- Event mode
   else {
     LOG(INFO) << "Events                : "
-        << fNofUnits << FairLogger::endl;
+        << fNofEvents << FairLogger::endl;
     LOG(INFO) << "Digis / event         : "
-        << fNofDigis / Double_t(fNofUnits) << FairLogger::endl;
+        << fNofDigis / Double_t(fNofEvents) << FairLogger::endl;
     LOG(INFO) << "Clusters / event      : "
-        << fNofClusters / Double_t(fNofUnits) << FairLogger::endl;
+        << fNofClusters / Double_t(fNofEvents) << FairLogger::endl;
     LOG(INFO) << "Digis per cluster     : "
         << fNofDigis / fNofClusters << FairLogger::endl;
     LOG(INFO) << "Time per event        : "
-        << fTimeTot / Double_t(fNofUnits) << " s " << FairLogger::endl;
+        << fTimeTot / Double_t(fNofEvents) << " s " << FairLogger::endl;
   } //? event-by-event mode
 
   LOG(INFO) << "=====================================" << FairLogger::endl;
@@ -219,42 +213,40 @@ InitStatus CbmStsFindClusters::Init()
 
   // --- Something for the screen
   LOG(INFO) << "=========================================================="
-                << FairLogger::endl;
+      << FairLogger::endl;
   LOG(INFO) << GetName() << ": Initialising " << FairLogger::endl;
 
   // --- Check IO-Manager
   FairRootManager* ioman = FairRootManager::Instance();
   assert(ioman);
 
-  // --- In event mode: get input array (CbmEvent)
-  if ( fEventMode ) {
-    LOG(INFO) << GetName() << ": Using event-by-event mode"
-          << FairLogger::endl;
-      fEvents = dynamic_cast<TClonesArray*>(ioman->GetObject("Event"));
-      if ( ! fEvents ) {
-        LOG(WARNING) << GetName()
-            << ": Event mode selected but no event array found! \n"
-            << "           The task will run over the entire input array "
-            << "(legacy mode)." << FairLogger::endl;
-        fLegacy = kTRUE;
-      }
-    }
-    else LOG(INFO) << GetName() << ": Using time-based mode"
-        << FairLogger::endl;
+  // --- Look for the CbmEvent array. If not present, the entire
+  // --- time slice is processed at once.
+  fEvents = dynamic_cast<TClonesArray*>(ioman->GetObject("Event"));
+  if ( fEvents ) {
+    LOG(INFO) << GetName() << ": event branch is found; "
+        << " will run event-by-event." << FairLogger::endl;
+    fEventMode = kTRUE;
+  }
+  else {
+    LOG(INFO) << GetName() << ": no event branch is found; "
+        << " will process entire time slice." << FairLogger::endl;
+    fEventMode = kFALSE;
+  }
 
-    // --- Get input array (StsDigis)
-    fDigis = (TClonesArray*)ioman->GetObject("StsDigi");
-    assert(fDigis);
+  // --- Get input array (StsDigis)
+  fDigis = (TClonesArray*)ioman->GetObject("StsDigi");
+  assert(fDigis);
 
-    // --- Register output array
-    fClusters = new TClonesArray("CbmStsCluster", 1e6);
-    ioman->Register("StsCluster", "Cluster in STS", fClusters, IsOutputBranchPersistent("StsCluster"));
-
+  // --- Register output array
+  fClusters = new TClonesArray("CbmStsCluster", 1e6);
+  ioman->Register("StsCluster", "Cluster in STS", fClusters,
+                  IsOutputBranchPersistent("StsCluster"));
 
   // --- Create modules if digi parameters are present in setup
   // --- This is the case if the digitiser is run in the same run.
   // --- Otherwise, the parameters are read from the parameter container,
-  // --- and the module paramters are created before creating the modules
+  // --- and the module parameters are created before creating the modules
   if ( fSetup->GetDigiParameters() ) {
     LOG(INFO) << GetName() << ": setup contains digi parameters" << FairLogger::endl;
     CreateModules();
@@ -262,11 +254,11 @@ InitStatus CbmStsFindClusters::Init()
     InitSettings();
   }
 
-    LOG(INFO) << GetName() << ": Initialisation successful."
-    		      << FairLogger::endl;
-    LOG(INFO) << "==========================================================\n"
-                  << FairLogger::endl;
-    return kSUCCESS;
+  LOG(INFO) << GetName() << ": Initialisation successful."
+      << FairLogger::endl;
+  LOG(INFO) << "==========================================================\n"
+      << FairLogger::endl;
+  return kSUCCESS;
 }
 // -------------------------------------------------------------------------
 
@@ -292,7 +284,7 @@ void CbmStsFindClusters::InitSettings() {
 void CbmStsFindClusters::ProcessData(CbmEvent* event) {
 
   // --- Event or time slice number
-  Int_t unitId = ( event ? event->GetNumber() : fNofUnits);
+  Int_t unitId = ( event ? event->GetNumber() : fNofTimeSlices);
 
   // --- Reset all cluster finder modules
   fTimer.Start();
@@ -350,13 +342,13 @@ void CbmStsFindClusters::ProcessData(CbmEvent* event) {
   // --- Counters
   Int_t nClusters = indexLast - indexFirst;
   Double_t realTime = time1 + time2 + time3 + time4 + time5;
-  fNofUnits++;
+  fNofEvents++;
   fNofDigis    += nDigis;
   fNofClusters += nClusters;
   fTimeTot     += realTime;
 
   // --- Screen output
-  TString unit = (fEventMode ? " Event " : " Time slice ");
+  TString unit = (fEventMode ? "Event " : "Slice ");
   LOG(DEBUG) << GetName() << ": created " << nClusters << " from index "
       << indexFirst << " to " << indexLast << FairLogger::endl;
   LOG(DEBUG) << GetName() << ": reset " << time1 << ", process digis " << time2
@@ -399,7 +391,7 @@ void CbmStsFindClusters::ProcessDigi(Int_t index) {
 void CbmStsFindClusters::ProcessLegacyEvent() {
 
   // --- Event number. Note that the FairRun counting start with 1.
-  Int_t eventNumber = fNofUnits;
+  Int_t eventNumber = fNofEvents;
   LOG(DEBUG) << GetName() << ": Processing legacy event "
              << eventNumber << FairLogger::endl;
 
@@ -458,7 +450,7 @@ void CbmStsFindClusters::ProcessLegacyEvent() {
   // --- Counters
   Int_t nClusters = indexLast - indexFirst;
   Double_t realTime = time1 + time2 + time3 + time4 + time5;
-  fNofUnits++;
+  fNofEvents++;
   fNofDigis    += nDigis;
   fNofClusters += nClusters;
   fTimeTot     += realTime;

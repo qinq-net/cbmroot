@@ -182,6 +182,16 @@ void run_reco_event(
   // ------------------------------------------------------------------------
 
 
+  // -----   Register light ions (d, t, He3, He4)   -------------------------
+  std::cout << std::endl;
+  TString registerLightIonsMacro = gSystem->Getenv("VMCWORKDIR");
+  registerLightIonsMacro += "/macro/KF/registerLightIons.C";
+  std::cout << "Loading macro " << registerLightIonsMacro << std::endl;
+  gROOT->LoadMacro(registerLightIonsMacro);
+  gROOT->ProcessLine("registerLightIons()");
+  // ------------------------------------------------------------------------
+
+
   // -----   Start run   ----------------------------------------------------
   std::cout << std::endl << std::endl;
   std::cout << "-I- " << myName << ": Starting run" << std::endl;
