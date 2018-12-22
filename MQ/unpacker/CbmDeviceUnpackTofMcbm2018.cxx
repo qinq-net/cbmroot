@@ -482,10 +482,9 @@ Bool_t CbmDeviceUnpackTofMcbm2018::ReInitContainers()
 
 //	 LOG(DEBUG)<<Form("Map Ch %d to Address 0x%08x",iCh,fviRpcChUId[iCh]);
 
-	   iCh++;
-	 }
 	 iCh += iChNext;
        }
+     }
      }else{ // special cases
        switch(fviRpcSide[iGbtx]) {
        case 2:  // HD 2-RPC boxes
