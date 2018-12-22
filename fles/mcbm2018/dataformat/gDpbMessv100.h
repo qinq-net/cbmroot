@@ -47,7 +47,8 @@ namespace gdpbv100 {
 
    const uint32_t kuChipIdMergedEpoch = 255; // 0xFF
 
-   const uint32_t kuFeePulserChannel = 3; // Channel where a pulser can be set ON at 20 ns 500 Hz
+   const uint32_t kuFeePulserChannel     = 3; // Channel where a pulser can be set ON at 20 ns 500 Hz
+   const uint32_t kuFeePulserChannelDiam = 0; // Channel where a pulser can be set ON at 20 ns 500 Hz
 
    enum MessageTypes {
       MSG_HIT        = 0,

@@ -77,6 +77,7 @@ Set(SRCS
 #   monitor/CbmMcbm2018MonitorMuch.cxx
 #   monitor/CbmMcbm2018MonitorTrd.cxx
    monitor/CbmMcbm2018MonitorTof.cxx
+   monitor/CbmMcbm2018MonitorTofPulser.cxx
 )
 
 #Set(NO_DICT_SRCS
