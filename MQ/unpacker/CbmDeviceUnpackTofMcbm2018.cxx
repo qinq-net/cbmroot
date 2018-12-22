@@ -182,14 +182,40 @@ try
     }
 
     if(iNReq == 0) {  // take all defined detectors 
-      for(Int_t iGbtx= 0; iGbtx < fviNrOfRpc.size(); iGbtx+=2)  {
-	for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; iRpc++)  {
-	  Int_t iAddr = CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
-							iRpc,0,0,
-							fviRpcType[iGbtx]);
-	  AddReqDigiAddr(iAddr);
+      for(Int_t iGbtx= 0; iGbtx < fviNrOfRpc.size(); iGbtx++)  {
+	if(fviRpcSide[iGbtx]<2){ // mTof modules 
+	  if(iGbtx%2 == 0) 
+	    for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; iRpc++)  {
+	      Int_t iAddr = CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
+							    iRpc,0,0,
+							    fviRpcType[iGbtx]);
+	      AddReqDigiAddr(iAddr);
+	    }
+	} else { // special cases
+	  switch(fviRpcSide[iGbtx]) {
+	  case 2:  // HD 2-RPC boxes
+	    for(Int_t iRpc= 0; iRpc < 2; iRpc++)  {
+	      Int_t iAddr = CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
+							    iRpc,0,0,
+							    fviRpcType[iGbtx]);
+	      AddReqDigiAddr(iAddr);
+	    }
+	    break;
+	  case 3:  // ceramics
+	    for(Int_t iRpc= 0; iRpc < 8; iRpc++)  {
+	      Int_t iAddr = CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
+							    iRpc,0,0,
+							    fviRpcType[iGbtx]);
+	      AddReqDigiAddr(iAddr);
+	    }
+	    // add single cell RPC
+	    Int_t iAddr = CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
+							  0,0,0,5);
+	    AddReqDigiAddr(iAddr);
+	    break;
+	  }
 	}
-      }
+      }  
     }
 
     LOG(INFO)<<"ReqMode "<<fiReqMode
@@ -431,7 +457,7 @@ Bool_t CbmDeviceUnpackTofMcbm2018::ReInitContainers()
    fviRpcChUId.resize(uNrOfChannels);
    UInt_t iCh= 0;
    for(Int_t iGbtx= 0; iGbtx < uNrOfGbtx; iGbtx++)  {
-     if(fviRpcSide[iGbtx]<2){
+     if(fviRpcSide[iGbtx]<2){ // mTof modules 
      for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; iRpc++)  {
        Int_t iStrMax=32;
        Int_t iChNext=1;
