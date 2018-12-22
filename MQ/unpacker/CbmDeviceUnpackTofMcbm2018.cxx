@@ -48,6 +48,7 @@ CbmDeviceUnpackTofMcbm2018::CbmDeviceUnpackTofMcbm2018()
   , fiReqMode(0)
   , fiReqTint(0)
   , fiReqDigiAddr()
+  , fiPulMulMin(0)
     //  , fAllowedChannels()
     //  , fChannelsToSend()
   , fuMsAcceptsPercent(100)
@@ -162,11 +163,14 @@ try
       }
     }
     InitContainers();
-    fEventHeader.resize(3); // define size of eventheader int[]
-    for(int i=0; i<3; i++) fEventHeader[i]=0;
+    const Int_t iHeaderSize=4;
+    fEventHeader.resize(iHeaderSize); // define size of eventheader int[]
+    for(int i=0; i<iHeaderSize; i++) fEventHeader[i]=0;
 
     fiReqMode = fConfig->GetValue<uint64_t>("ReqMode");
     fiReqTint = fConfig->GetValue<uint64_t>("ReqTint");
+    fiPulMulMin = fConfig->GetValue<uint64_t>("PulMulMin");
+
     Int_t iReqDet=1;
     Int_t iNReq=0;
 
@@ -428,25 +432,33 @@ Bool_t CbmDeviceUnpackTofMcbm2018::ReInitContainers()
    UInt_t iCh= 0;
    for(Int_t iGbtx= 0; iGbtx < uNrOfGbtx; iGbtx++)  {
      if(fviRpcSide[iGbtx]<2){
-       for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; iRpc++)  {
-	 for(Int_t iStr= 0; iStr < 32; iStr++)  {
-	   Int_t iStrMap = iStr;
-	   Int_t iRpcMap = iRpc;
-	   if( fviRpcType[iGbtx] == 5) {  // for Diamond 
-	     iStrMap=iStr+32*iRpc;
-	     iRpcMap=0;
-	   }
-	   if( fviRpcSide[iGbtx] == 1) iStrMap=31-iStr;
-	   fviRpcChUId[iCh]=CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
-							    iRpcMap,iStrMap,
-							    fviRpcSide[iGbtx],
-							    fviRpcType[iGbtx]);
-
+     for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; iRpc++)  {
+       Int_t iStrMax=32;
+       Int_t iChNext=1;
+       if( fviRpcType[iGbtx] == 5) {  // for Diamond
+	 iStrMax=1; 
+       }
+       Int_t DiaMap[10]={32,36,40,24,28,36,32,40,24,32}; // FIXME, empirical constants
+       for(Int_t iStr= 0; iStr < iStrMax; iStr++)  {
+	 Int_t iStrMap = iStr;
+	 Int_t iRpcMap = iRpc;
+	 if( fviRpcType[iGbtx] == 5) {  // for Diamond 
+	   iStrMap=iRpc;
+	   iRpcMap=0;
+	   iChNext=DiaMap[iRpc];
+	   LOG(INFO) << "define Dia UId  " << iStrMap << " for channel " << iCh;
+	 }
+	 if( fviRpcSide[iGbtx] == 1) iStrMap=31-iStr;
+	 fviRpcChUId[iCh]=CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
+							  iRpcMap,iStrMap,
+							  fviRpcSide[iGbtx],
+							  fviRpcType[iGbtx]);
 
 //	 LOG(DEBUG)<<Form("Map Ch %d to Address 0x%08x",iCh,fviRpcChUId[iCh]);
 
 	   iCh++;
 	 }
+	 iCh += iChNext;
        }
      }else{ // special cases
        switch(fviRpcSide[iGbtx]) {
@@ -858,9 +870,8 @@ void CbmDeviceUnpackTofMcbm2018::FillHitInfo( gdpbv100::Message mess )
    UInt_t uGbtxNr         = (uFeeNr / kuNbFeePerGbtx);
    UInt_t uFeeInGbtx      = (uFeeNr % kuNbFeePerGbtx);
    UInt_t uGbtxNrInSys    = fuGdpbNr * kuNbGbtxPerGdpb + uGbtxNr;
-   UInt_t uRemappedChannelNr = fuGdpbNr * fuNrOfChannelsPerGdpb +
-                               uFeeNr * fuNrOfChannelsPerFee
-                             + fvuGet4ToPadi[ uChannelNrInFee ];
+   UInt_t uRemappedChannelNr = fuGdpbNr * fuNrOfChannelsPerGdpb + uFeeNr * fuNrOfChannelsPerFee
+     + ( fviRpcType[uGbtxNrInSys]==5 ? uChannelNrInFee : fvuGet4ToPadi[ uChannelNrInFee ] );
    //   UInt_t uRemappedChannelNr = uFeeNr * fuNrOfChannelsPerFee + uChannelNrInFee;
    /*
    if( fuGdpbNr==2)
@@ -905,10 +916,13 @@ void CbmDeviceUnpackTofMcbm2018::FillHitInfo( gdpbv100::Message mess )
       // UInt_t uChanUId = fUnpackPar->GetChannelToDetUIdMap( uRemappedChannelNr );
       UInt_t uChanUId =  fviRpcChUId[ uRemappedChannelNr ];
       if( 0 == uChanUId ) {
-	if(iWarnMess++ < 10000)
+	if(iWarnMess++ < 1000)
 	{
 	  LOG(WARN) << "Invalid ChanUId for " << uRemappedChannelNr
+		    << ", ChOff "  << fuGdpbNr * fuNrOfChannelsPerGdpb + uFeeNr * fuNrOfChannelsPerFee
+		    << ", ChIF "   << ( fviRpcType[uGbtxNrInSys]==5 ? uChannelNrInFee : fvuGet4ToPadi[ uChannelNrInFee ] ) 
 		    << ", GdpbNr " << fuGdpbNr
+		    << ", GbtxNr " << uGbtxNrInSys
 		    << ", Get4 "   << fuGet4Id
 		    << ", Ch "     << uChannel
 		    << ", ChNr "   << uChannelNr
@@ -1242,11 +1256,14 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 
     Bool_t bDet[fiReqDigiAddr.size()][2];
     for(UInt_t i=0; i<fiReqDigiAddr.size(); i++) for(Int_t j=0; j<2; j++) bDet[i][j]=kFALSE; //initialize
+    Bool_t bPul[fiReqDigiAddr.size()][2];
+    for(UInt_t i=0; i<fiReqDigiAddr.size(); i++) for(Int_t j=0; j<2; j++) bPul[i][j]=kFALSE; //initialize
 
     std::vector<CbmTofDigiExp*> vdigi;
     Int_t nDigi=0;
     const Int_t AddrMask=0x000FFFFF;
     Bool_t bOut=kFALSE;
+
 
     while(digi) { // build digi array
       if (nDigi == vdigi.size()) vdigi.resize(nDigi+100);
@@ -1256,6 +1273,17 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 	  Int_t j = ((CbmTofDigiExp *)digi)->GetSide();
 	  bDet[i][j]=kTRUE;
 	  if (fiReqDigiAddr[i] == 0x00005006) bDet[i][1]=kTRUE; // diamond with pad readout
+	  Int_t str = ((CbmTofDigiExp *)digi)->GetChannel();
+	  switch(j){
+	  case 0:
+	    if (str==0)   bPul[i][0]=kTRUE;
+	    break;
+	  case 1:
+	    if (str==31)  bPul[i][1]=kTRUE;
+	    break;
+	  default:
+	    ;
+	  }
 	}
       //if(bOut) LOG(INFO)<<Form("Found 0x%08x, Req 0x%08x ", digi->GetAddress(), fiReqDigiAddr);
       digi = (CbmTofDigiExp*)fBuffer->GetNextData(dTEnd);
@@ -1279,17 +1307,30 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 	  }
 	if(iDetMul >= fiReqMode) {bOut=kTRUE;}
       }
-
     }
+
     if( fiReqDigiAddr.size() > 1) {
       LOG(DEBUG) << "Found Req coinc in event with " <<nDigi << " digis in "<<iDetMul
 		 <<" detectors, dTEnd = " <<dTEnd;
+    }
+
+    // determine Pulser status
+    Int_t iPulMul=0;  // Count Potential Pulser Signals 
+    for(Int_t i=0; i<fiReqDigiAddr.size(); i++) {
+      if(   ( bPul[i][0]==kTRUE  && bPul[i][1]==kTRUE ) 
+	    ) iPulMul++;
+    }
+
+    if(fiPulMulMin>0 && iPulMul > fiPulMulMin) { //fiReqDigiAddr.size()/2) {
+      LOG(INFO)<<"@Event "<< fEventHeader[0] <<": iPulMul = " << iPulMul;
+      bOut=kTRUE;
     }
     //LOG(DEBUG)<<"Process TInt with iDetMul = "<<iDetMul;
 
     fEventHeader[0]++;
     fEventHeader[1]=iDetMul;
     fEventHeader[2]=fiReqMode;
+    fEventHeader[3]=iPulMul;
 
     if(bOut) {
       vdigi.resize(nDigi);
