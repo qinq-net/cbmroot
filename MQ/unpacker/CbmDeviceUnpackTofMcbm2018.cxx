@@ -427,24 +427,67 @@ Bool_t CbmDeviceUnpackTofMcbm2018::ReInitContainers()
    fviRpcChUId.resize(uNrOfChannels);
    UInt_t iCh= 0;
    for(Int_t iGbtx= 0; iGbtx < uNrOfGbtx; iGbtx++)  {
-     for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; iRpc++)  {
-       for(Int_t iStr= 0; iStr < 32; iStr++)  {
-	 Int_t iStrMap = iStr;
-	 Int_t iRpcMap = iRpc;
-	 if( fviRpcType[iGbtx] == 5) {  // for Diamond 
-	   iStrMap=iStr+32*iRpc;
-	   iRpcMap=0;
-	 }
-	 if( fviRpcSide[iGbtx] == 1) iStrMap=31-iStr;
-	 fviRpcChUId[iCh]=CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
-							  iRpcMap,iStrMap,
-							  fviRpcSide[iGbtx],
-							  fviRpcType[iGbtx]);
+     if(fviRpcSide[iGbtx]<2){
+       for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; iRpc++)  {
+	 for(Int_t iStr= 0; iStr < 32; iStr++)  {
+	   Int_t iStrMap = iStr;
+	   Int_t iRpcMap = iRpc;
+	   if( fviRpcType[iGbtx] == 5) {  // for Diamond 
+	     iStrMap=iStr+32*iRpc;
+	     iRpcMap=0;
+	   }
+	   if( fviRpcSide[iGbtx] == 1) iStrMap=31-iStr;
+	   fviRpcChUId[iCh]=CbmTofAddress::GetUniqueAddress(fviModuleId[iGbtx],
+							    iRpcMap,iStrMap,
+							    fviRpcSide[iGbtx],
+							    fviRpcType[iGbtx]);
 
 
 //	 LOG(DEBUG)<<Form("Map Ch %d to Address 0x%08x",iCh,fviRpcChUId[iCh]);
 
-	 iCh++;
+	   iCh++;
+	 }
+       }
+     }else{ // special cases
+       switch(fviRpcSide[iGbtx]) {
+       case 2:  // HD 2-RPC boxes
+	 {
+	 const Int_t iRpc[5]={0,-1,0,1,1};
+	 const Int_t iSide[5]={0,-1,1,0,1};
+	 for(Int_t iFeet= 0; iFeet <5; iFeet++){
+	   for(Int_t iStr= 0; iStr < 32; iStr++)  {
+	     Int_t iStrMap = iStr;
+	     Int_t iRpcMap = iRpc[iFeet];
+	     Int_t iSideMap = iSide[iFeet];
+	     if(iSideMap == 1) iStrMap=31-iStr;
+	     fviRpcChUId[iCh]=CbmTofAddress::GetUniqueAddress(iGbtx,
+							      iRpcMap,iStrMap,
+							      iSideMap,
+							      fviRpcType[iGbtx]);
+	     iCh++;
+	   }
+	 }
+	 }
+	 break;
+       case 3:  // ceramics
+	 {
+	 Int_t iModuleId=0;
+	 for(Int_t iRpc= 0; iRpc < 8; iRpc++)  {
+	   fviRpcChUId[iCh]=CbmTofAddress::GetUniqueAddress(iModuleId,
+							    7-iRpc,0,0,
+							    fviRpcType[iGbtx]);
+	   iCh++;
+	 }
+	 iCh += 23;
+	 // single cell 
+	 fviRpcChUId[iCh]=CbmTofAddress::GetUniqueAddress(iModuleId,
+							  0,0,0,
+							  5);
+	 }
+	 break;	 
+       default:
+	 LOG(ERROR) << "Invalid Side specifier ";
+	   
        }
      }
    }
