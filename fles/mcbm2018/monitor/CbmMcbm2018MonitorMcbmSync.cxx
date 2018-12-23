@@ -409,7 +409,7 @@ void CbmMcbm2018MonitorMcbmSync::CreateMcbmHistograms()
    sHistName  = "hMcbmTimeDiffToDiamond";
    sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Diamond hit; <tTOF - tSTS> [ns]; DPB []";
    fhMcbmTimeDiffToDiamond = new TH2D( sHistName, sHistTitle,
-                                        2000.0, -1000., 1000.,
+                                        1001, -500.5 * stsxyter::kdClockCycleNs, 500.5 * stsxyter::kdClockCycleNs,
                                         fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
    sHistName  = "hMcbmTimeDiffToDiamondWide";
    sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Diamond hit, wide range; <tTOF - tSTS> [us]; DPB []";
@@ -425,7 +425,7 @@ void CbmMcbm2018MonitorMcbmSync::CreateMcbmHistograms()
    sHistName  = "hMcbmTimeDiffToMuch";
    sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Much hit; <tTOF - tSTS> [ns]; DPB []";
    fhMcbmTimeDiffToMuch = new TH2D( sHistName, sHistTitle,
-                                        2000.0, -1000., 1000.,
+                                        1001, -500.5 * stsxyter::kdClockCycleNs, 500.5 * stsxyter::kdClockCycleNs,
                                         fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
    sHistName  = "hMcbmTimeDiffToMuchWide";
    sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Much hit, wide range; <tTOF - tSTS> [us]; DPB []";
@@ -440,7 +440,7 @@ void CbmMcbm2018MonitorMcbmSync::CreateMcbmHistograms()
       sHistTitle = Form( "Evolution of time difference for STS or TOF hits from DPB %02u against any Diamond hit; TS []; <tTOF - tSTS> [ns]", uDpb );
       fvhMcbmTimeDiffToDiamondEvoDpb.push_back( new TH2D( sHistName, sHistTitle,
                                                          2000.0, 0., 200000.,
-                                                         2000.0, -1000., 1000.) );
+                                                         1001, -500.5 * stsxyter::kdClockCycleNs, 500.5 * stsxyter::kdClockCycleNs) );
 
       sHistName  = Form( "hMcbmTimeDiffToDiamondWideEvoDpb%02u", uDpb );
       sHistTitle = Form( "Evolution of time difference for STS or TOF hits from DPB %02u against any Diamond hit, wide range; TS []; <tTOF - tSTS> [us]", uDpb );
