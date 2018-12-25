@@ -124,7 +124,12 @@ CbmDeviceHitBuilderTof::CbmDeviceHitBuilderTof()
   , fvCPWalk()
   , fvLastHits()
   , fvDeadStrips()
+  , fvPulserOffset()
+  , fvPulserTimes()
   , fhEvDetMul(NULL)
+  , fhPulserTimesRaw() 
+  , fhPulserTimesCor() 
+  , fhDigiTimesRaw() 
   , fhRpcDigiCor()
   , fhRpcCluMul()
   , fhRpcCluRate()
@@ -185,6 +190,8 @@ CbmDeviceHitBuilderTof::CbmDeviceHitBuilderTof()
   , fSel2Sm(0)
   , fSel2Rpc(0)
   , fSel2Addr(0)
+  , fiMode(0)
+  , fiPulserMode(0)
   , fDetIdIndexMap()
   , fviDetId()
   , fPosYMaxScal(0.)
@@ -271,6 +278,8 @@ Bool_t CbmDeviceHitBuilderTof::InitWorkspace()
   fiMaxEvent       = fConfig->GetValue<int64_t>("MaxEvent");
   LOG(INFO)<<"Max number of events to be processed: " << fiMaxEvent; 
   fiRunId          = fConfig->GetValue<int64_t>("RunId");
+  fiMode           = fConfig->GetValue<int64_t>("Mode");
+  fiPulserMode     = fConfig->GetValue<int64_t>("PulserMode");
 
   fTofCalDigisColl     = new TClonesArray("CbmTofDigiExp",100);
   fTofCalDigisCollOut  = new TClonesArray("CbmTofDigiExp",100);
@@ -508,18 +517,36 @@ bool CbmDeviceHitBuilderTof::HandleData(FairMQParts& parts, int /*index*/)
   fiNDigiIn=vdigi.size();
   fvDigiIn.resize(fiNDigiIn);
   for (int iDigi=0; iDigi<fiNDigiIn; iDigi++) fvDigiIn[iDigi] = *vdigi[iDigi];
- 
+  vdigi.clear();
+
+  //  for( Int_t i = 0; i < fTofCalDigisColl->GetEntriesFast(); i++ ) ((CbmTofDigiExp*) fTofCalDigisColl->At(i))->Delete();
   fTofCalDigisColl->Clear("C");
+
+  //  for( Int_t i = 0; i < fTofHitsColl->GetEntriesFast(); i++ ) ((CbmTofHit*) fTofHitsColl->At(i))->Delete();
   fTofHitsColl->Clear("C");
-  fTofDigiMatchColl->Clear("C");
   //fTofHitsColl->Delete(); // Are the elements deleted?
   //fTofHitsColl         = new TClonesArray("CbmTofHit",100);
+
+  //for( Int_t i = 0; i < fTofDigiMatchColl->GetEntriesFast(); i++ ) ((CbmMatch*) fTofDigiMatchColl->At(i))->Delete();
+  fTofDigiMatchColl->Clear("C");
+
   fiNbHits=0;
-  if (fNumMessages%1000 == 0) LOG(INFO)<<"Processed "<<fNumMessages<<" events";
+  if (fNumMessages%10000 == 0) LOG(INFO)<<"Processed "<<fNumMessages<<" messages";
+  if(fEventHeader.size()>3) {
+    if (fEventHeader[3]>10) {
+      //      LOG(INFO) << "Pulser event found, Mul "<< fEventHeader[3];
+      if(!MonitorPulser()) return kFALSE;
+      return kTRUE;
+    }
+  }
+  if(fiPulserMode>0)          // don't process events without valid pulser correction 
+  if(fvPulserTimes[0][0].size()==0) return kTRUE;
 
   fdEvent++;
-  if(!BuildClusters())   return kFALSE;
-  //if(!MergeClusters()) return kFALSE;
+  if(!InspectRawDigis())       return kFALSE;
+  if(!ApplyPulserCorrection()) return kFALSE;
+  if(!BuildClusters())         return kFALSE;
+  //if(!MergeClusters())       return kFALSE;
   if( NULL != fOutRootFile) {  // CbmEvent output to root file 
      rootMgr->FillEventHeader(fEvtHeader);
      //LOG(INFO) << "Fill WriteOutBuffer with rootMgr at " << rootMgr;
@@ -532,8 +559,8 @@ bool CbmDeviceHitBuilderTof::HandleData(FairMQParts& parts, int /*index*/)
        rootMgr->Write();
        WriteHistograms();
        fOutRootFile->Close();
-       LOG(INFO) << "Stopping device after "<<fdEvent<<" events, closing root output file. ";
-       ChangeState(STOP);
+       LOG(INFO) << "File closed after "<<fdEvent<<" events. ";
+       //ChangeState(STOP);
      } 
   }  
   if(!FillHistos())      return kTRUE;   // event not selected for histogramming, skip sending it 
@@ -803,10 +830,52 @@ void    CbmDeviceHitBuilderTof::CreateHistograms()
    TDirectory * oldir = gDirectory; // <= To prevent histos from being sucked in by the param file of the TRootManager!
    gROOT->cd(); // <= To prevent histos from being sucked in by the param file of the TRootManager !
    // process event header info 
-     fhEvDetMul = new TH1F("hEvDetMul",
+   fhEvDetMul = new TH1F("hEvDetMul",
 			   "Detector multiplicity; Mul",
 			   20, 0, 20);
 
+   Int_t iNDet=0;
+   for(Int_t iModTyp=0; iModTyp<10; iModTyp++)
+     iNDet+= fDigiBdfPar->GetNbSm(iModTyp)*fDigiBdfPar->GetNbRpc(iModTyp);
+
+   fhPulserTimesRaw = new TH2F( 
+          Form("hPulserTimesRaw"),
+          Form("Pulser Times uncorrected; Sm+Rpc# []; t - t0 [ns]"),
+          iNDet*2, 0, iNDet*2,
+          999, -10.,10.); 
+
+   fhPulserTimesCor = new TH2F( 
+          Form("hPulserTimesCor"),
+          Form("Pulser Times corrected; Sm+Rpc# []; t - t0 [ns]"),
+          iNDet*2, 0, iNDet*2,
+          999, -10.,10.); 
+
+   fhDigiTimesRaw = new TH2F( 
+          Form("hDigiTimesRaw"),
+          Form("Digi Times uncorrected; Sm+Rpc# []; t - t0 [ns]"),
+          iNDet*2, 0, iNDet*2,
+          999, -100.,100.); 
+
+   Int_t iNbDet=fDigiBdfPar->GetNbDet();
+   fDetIdIndexMap.clear();
+   fhRpcDigiCor.resize( iNbDet  );
+   fviDetId.resize( iNbDet );
+   for(Int_t iDetIndx=0; iDetIndx<iNbDet; iDetIndx++){
+       Int_t iUniqueId = fDigiBdfPar->GetDetUId( iDetIndx );
+       fDetIdIndexMap[iUniqueId]=iDetIndx;
+       fviDetId[iDetIndx]=iUniqueId;
+       Int_t iSmType   = CbmTofAddress::GetSmType( iUniqueId );
+       Int_t iSmId     = CbmTofAddress::GetSmId( iUniqueId );
+       Int_t iRpcId    = CbmTofAddress::GetRpcId( iUniqueId );
+       fhRpcDigiCor[iDetIndx] =  new TH2F(
+          Form("cl_SmT%01d_sm%03d_rpc%03d_DigiCor", iSmType, iSmId, iRpcId ),
+          Form("Digi Correlation of Rpc #%03d in Sm %03d of type %d; digi 0; digi 1", iRpcId, iSmId, iSmType ),
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
+            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId));
+   }
+
+   if(0==fiMode)          return;  // no cluster histograms needed 
+  
    // Sm related distributions 
    fhSmCluPosition.resize( fDigiBdfPar->GetNbSmTypes() );
    fhSmCluTOff.resize( fDigiBdfPar->GetNbSmTypes() );
@@ -910,10 +979,8 @@ void    CbmDeviceHitBuilderTof::CreateHistograms()
    }
 
    // RPC related distributions
-   Int_t iNbDet=fDigiBdfPar->GetNbDet();
    LOG(INFO)<<" Define Clusterizer histos for "<<iNbDet<<" detectors ";
 
-   fhRpcDigiCor.resize( iNbDet  );
    fhRpcCluMul.resize( iNbDet  );
    fhRpcCluRate.resize( iNbDet  );
    fhRpcCluPosition.resize( iNbDet  );
@@ -931,27 +998,20 @@ void    CbmDeviceHitBuilderTof::CreateHistograms()
    fhRpcDTLastHits.resize( iNbDet  );
    fhRpcDTLastHits_Tot.resize( iNbDet  );
    fhRpcDTLastHits_CluSize.resize( iNbDet  );
-   fviDetId.resize(iNbDet);
 
-   fDetIdIndexMap.clear();
 
    if (fTotMax !=0.) fdTOTMax=fTotMax; 
    if (fTotMin !=0.) fdTOTMin=fTotMin;
 
    for(Int_t iDetIndx=0; iDetIndx<iNbDet; iDetIndx++){
        Int_t iUniqueId = fDigiBdfPar->GetDetUId( iDetIndx );
-       fDetIdIndexMap[iUniqueId]=iDetIndx;
-       fviDetId[iDetIndx]=iUniqueId;
-
        Int_t iSmType   = CbmTofAddress::GetSmType( iUniqueId );
        Int_t iSmId     = CbmTofAddress::GetSmId( iUniqueId );
        Int_t iRpcId    = CbmTofAddress::GetRpcId( iUniqueId );
        Int_t iUCellId  = CbmTofAddress::GetUniqueAddress(iSmId,iRpcId,0,0,iSmType);
        fChannelInfo = fDigiPar->GetCell(iUCellId);
        if (NULL==fChannelInfo) {
-         LOG(WARN)<<"No DigiPar for Det "
-                     <<Form("0x%08x", iUCellId)
-                     ;
+         LOG(WARN)<<"No DigiPar for Det "<<Form("0x%08x", iUCellId);
          continue;
        }      
        LOG(INFO) << "DetIndx "<<iDetIndx<<", SmType "<<iSmType<<", SmId "<<iSmId
@@ -971,11 +1031,6 @@ void    CbmDeviceHitBuilderTof::CreateHistograms()
        }
 
        fChannelInfo = fDigiPar->GetCell(iUCellId);
-       fhRpcDigiCor[iDetIndx] =  new TH2F(
-          Form("cl_SmT%01d_sm%03d_rpc%03d_DigiCor", iSmType, iSmId, iRpcId ),
-          Form("Digi Correlation of Rpc #%03d in Sm %03d of type %d; digi 0; digi 1", iRpcId, iSmId, iSmType ),
-            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId),
-            fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,fDigiBdfPar->GetNbChan(iSmType,iRpcId));
 
        fhRpcCluMul[iDetIndx] =  new TH1F(
           Form("cl_SmT%01d_sm%03d_rpc%03d_Mul", iSmType, iSmId, iRpcId ),
@@ -1270,8 +1325,8 @@ void    CbmDeviceHitBuilderTof::WriteHistograms()
 Bool_t   CbmDeviceHitBuilderTof::BuildClusters()
 {
   fiNevtBuild++;
-  if(!InspectRawDigis()) return kFALSE;
   if(!CalibRawDigis())   return kFALSE;
+  if(0==fiMode)          return kTRUE;  // no customer yet 
   if(!FillDigiStor())    return kFALSE;
   if(!BuildHits())       return kFALSE;
   return kTRUE;
@@ -1280,7 +1335,8 @@ Bool_t   CbmDeviceHitBuilderTof::BuildClusters()
 /************************************************************************************/
 Bool_t   CbmDeviceHitBuilderTof::InspectRawDigis()
 {
-Int_t iNbTofDigi=fiNDigiIn;
+  Int_t iNbTofDigi=fiNDigiIn;
+  CbmTofDigiExp *pRef = NULL;
   for( Int_t iDigInd = 0; iDigInd < fiNDigiIn; iDigInd++ ) {
     CbmTofDigiExp *pDigi = &fvDigiIn[iDigInd];
     //LOG(DEBUG)<<iDigInd<<" "<<pDigi;
@@ -1294,7 +1350,14 @@ Int_t iNbTofDigi=fiNDigiIn;
 	      <<" S " << pDigi->GetSide()
     	      <<" : " << pDigi->ToString();
     */
-    Int_t iDetIndx= fDigiBdfPar->GetDetInd( pDigi->GetAddress() );
+    Int_t iAddr =  pDigi->GetAddress();
+    if(iAddr == fiBeamRefAddr ) {
+      if(NULL == pRef) pRef=pDigi;
+      else {
+	if(pDigi->GetTime() < pRef->GetTime()) pRef = pDigi;
+      }
+    }
+    Int_t iDetIndx= fDigiBdfPar->GetDetInd( iAddr );
        
     if (fDigiBdfPar->GetNbDet()-1<iDetIndx || iDetIndx<0){
       LOG(DEBUG)<<Form(" Wrong DetIndx %d >< %d,0 ",iDetIndx,fDigiBdfPar->GetNbDet());
@@ -1310,7 +1373,7 @@ Int_t iNbTofDigi=fiNDigiIn;
     Double_t dTDifMin=dDoubleMax;
     CbmTofDigiExp *pDigi2Min=NULL;
     //       for (Int_t iDigI2 =iDigInd+1; iDigI2<iNbTofDigi;iDigI2++){
-    for (Int_t iDigI2 =0; iDigI2<iNbTofDigi; iDigI2++){
+    for (Int_t iDigI2 =0; iDigI2<iNbTofDigi; iDigI2++) {
       CbmTofDigiExp *pDigi2 =  &fvDigiIn[ iDigI2 ];
       if( iDetIndx == fDigiBdfPar->GetDetInd( pDigi2->GetAddress() )){
 	if(0.==pDigi->GetSide() && 1.==pDigi2->GetSide()){
@@ -1400,11 +1463,18 @@ Int_t iNbTofDigi=fiNDigiIn;
 	}
       }
     }
-
-    pDigi++;
   }       
 
-return kTRUE;
+  if( NULL != pRef) { 
+    for( Int_t iDigInd = 0; iDigInd < fiNDigiIn; iDigInd++ ) {
+      CbmTofDigiExp *pDigi = &fvDigiIn[iDigInd];
+      Int_t iAddr = pDigi->GetAddress() & DetMask;
+      Int_t iDet  = fDetIdIndexMap[iAddr];  // Detector Index
+      Int_t iSide = pDigi->GetSide();
+      fhDigiTimesRaw->Fill(iDet*2+iSide,pDigi->GetTime()-pRef->GetTime());
+    }
+  }
+  return kTRUE;
 }
 
 /************************************************************************************/
@@ -1444,6 +1514,7 @@ Bool_t   CbmDeviceHitBuilderTof::CalibRawDigis()
       */ 
       if( (bValid = (pDigi->GetTime() > mChannelDeadTime[iAddr] + fdChannelDeadtime)) )
 	pCalDigi = new((*fTofCalDigisColl)[++iDigIndCal]) CbmTofDigiExp( *pDigi );
+
     }else {
       pCalDigi = new((*fTofCalDigisColl)[++iDigIndCal]) CbmTofDigiExp( *pDigi );
     }
@@ -1543,8 +1614,10 @@ Bool_t   CbmDeviceHitBuilderTof::CalibRawDigis()
       }
     if(pCalDigi->GetType()==5 || pCalDigi->GetType() == 8) {  // for Pad counters generate fake digi to mockup a strip
       CbmTofDigiExp *pCalDigi2 = new((*fTofCalDigisColl)[++iDigIndCal]) CbmTofDigiExp( *pCalDigi );
-      if(pCalDigi->GetSide()==0) pCalDigi2->SetAddress(pCalDigi->GetSm(),pCalDigi->GetRpc(),pCalDigi->GetChannel(),1,pCalDigi->GetType());
-      else                       pCalDigi2->SetAddress(pCalDigi->GetSm(),pCalDigi->GetRpc(),pCalDigi->GetChannel(),0,pCalDigi->GetType());;
+      if(pCalDigi->GetSide()==0) 
+	pCalDigi2->SetAddress(pCalDigi->GetSm(),pCalDigi->GetRpc(),pCalDigi->GetChannel(),1,pCalDigi->GetType());
+      else 
+	pCalDigi2->SetAddress(pCalDigi->GetSm(),pCalDigi->GetRpc(),pCalDigi->GetChannel(),0,pCalDigi->GetType());
     }
   } // for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
   
@@ -2536,6 +2609,8 @@ Bool_t  CbmDeviceHitBuilderTof::LoadGeometry()
 
    Int_t iNbDet=fDigiBdfPar->GetNbDet();
    fvDeadStrips.resize( iNbDet );
+   fvPulserOffset.resize( iNbDet );
+   fvPulserTimes.resize( iNbDet );
 
    for(Int_t iDetIndx=0; iDetIndx<iNbDet; iDetIndx++){
      Int_t iUniqueId = fDigiBdfPar->GetDetUId( iDetIndx );
@@ -2552,6 +2627,9 @@ Bool_t  CbmDeviceHitBuilderTof::LoadGeometry()
        fChannelInfo = fDigiPar->GetCell(iUCellId);
        if (NULL == fChannelInfo) break;
      }
+
+     fvPulserOffset[iDetIndx].resize( 2 ); // provide vector for both sides
+     fvPulserTimes[iDetIndx].resize( 2 );  // provide vector for both sides
    }
    
    //   return kTRUE;
@@ -2654,7 +2732,7 @@ Bool_t CbmDeviceHitBuilderTof::FillDigiStor() {
   for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ ){
     pDigi = (CbmTofDigiExp*) fTofCalDigisColl->At( iDigInd );
     /*
-    LOG(DEBUG)<<"AC " // After Calibration
+    LOG(INFO)<<"AC " // After Calibration
 	      <<Form("0x%08x",pDigi->GetAddress())<<" TSRC "
 	      <<pDigi->GetType()
 	      <<pDigi->GetSm()
@@ -2663,7 +2741,7 @@ Bool_t CbmDeviceHitBuilderTof::FillDigiStor() {
 	      <<pDigi->GetSide()<<" "
 	      <<Form("%f",pDigi->GetTime())<<" "
 	      <<pDigi->GetTot();
-    */ 
+    */
     if(       fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
 	   && fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
 	   && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()
@@ -3447,6 +3525,129 @@ Bool_t   CbmDeviceHitBuilderTof::FillHistos()
 	}
       }
     }
+  }
+  return kTRUE;
+}
+
+static Int_t iNPulserFound=0;
+Bool_t   CbmDeviceHitBuilderTof::MonitorPulser()
+{
+  iNPulserFound++;
+  const Int_t iDet0=0; // Define reference detector
+  Int_t iDigi0=0;
+  const Double_t Tlim=0.5;
+
+  for (int iDigi=0; iDigi<fiNDigiIn; iDigi++) {
+    Int_t iCh = fvDigiIn[iDigi].GetChannel();
+    if(iCh !=0 && iCh != 31) continue;
+    Int_t iAddr = fvDigiIn[iDigi].GetAddress() & DetMask;
+    Int_t iDet  = fDetIdIndexMap[iAddr];
+    if(iDet == iDet0) {
+      Int_t iSide = fvDigiIn[iDigi].GetSide();
+      if (iSide == 0) {
+	iDigi0=iDigi;
+	break;
+      }
+    } 
+  }
+
+  if(fvPulserTimes[iDet0][0].size()>0)
+  LOG(DEBUG) << fiNDigiIn<< " pulser digis with ref in " 
+	    << Form("0x%08x at %d with deltaT %12.3f",fvDigiIn[iDigi0].GetAddress(),iDigi0,
+		    fvDigiIn[iDigi0].GetTime()-fvPulserTimes[iDet0][0].back());
+
+  for (Int_t iDigi=0; iDigi<fiNDigiIn; iDigi++) {
+    Int_t iCh = fvDigiIn[iDigi].GetChannel();
+    switch(fiPulserMode) {
+    case 1: if(iCh !=0 && iCh != 31) continue;
+      break;
+    case 2: if(iCh !=3 && iCh != 27) continue;
+      break;
+    }
+    Int_t iAddr = fvDigiIn[iDigi].GetAddress() & DetMask;
+    Int_t iDet  = fDetIdIndexMap[iAddr];
+    Int_t iSide = fvDigiIn[iDigi].GetSide();
+    if(fvPulserTimes[iDet][iSide].size() == NPulserTimes ) fvPulserTimes[iDet][iSide].pop_front();
+    if (iDet == iDet0) {
+      // check consistency of latest hit
+      if(fvPulserTimes[iDet][iSide].size()>1){
+	Double_t TDif=(fvPulserTimes[iDet][iSide].back() - fvPulserTimes[iDet][iSide].front())
+	  /(fvPulserTimes[iDet][iSide].size()-1);
+	if(TMath::Abs(fvDigiIn[iDigi].GetTime() - fvPulserTimes[iDet][iSide].back() - TDif) > 10.){
+	  LOG(DEBUG) << Form("Unexpected Pulser Time for event %d, pulser %d: %15.1f instead %15.1f, TDif: %10.1f != %10.1f", 
+			    (int)fdEvent, iNPulserFound, fvDigiIn[iDigi].GetTime(), fvPulserTimes[iDet][iSide].back() + TDif,
+			    fvDigiIn[iDigi].GetTime() - fvPulserTimes[iDet][iSide].back(),TDif);
+	  // action
+	  fvPulserTimes[iDet][iSide].clear();
+	}
+      }
+      // append new entry
+      fvPulserTimes[iDet][iSide].push_back( (Double_t)(fvDigiIn[iDigi].GetTime()) );
+    }
+    else {
+      Double_t dDeltaT0=(Double_t)(fvDigiIn[iDigi].GetTime()-fvDigiIn[iDigi0].GetTime());
+
+      // fill monitoring histo
+      fhPulserTimesRaw->Fill(iDet*2+iSide,dDeltaT0);
+
+      // check consistency of latest hit
+      if(TMath::Abs(dDeltaT0-fvPulserOffset[iDet][iSide])>Tlim) {
+	LOG(INFO) << "ReInit pulser offset at ev "<< fdEvent<<", pulcnt "<< iNPulserFound
+		  <<" for Det " << iDet << Form(", addr 0x%08x",iAddr) 
+		  <<", side " << iSide <<": " << dDeltaT0 - fvPulserOffset[iDet][iSide] 
+		  << " ( "<< fvPulserTimes[iDet][iSide].size() << " ) ";
+	fvPulserTimes[iDet][iSide].clear();
+      }
+
+      // append new entry
+      fvPulserTimes[iDet][iSide].push_back( dDeltaT0 );
+    }
+  }
+
+  for (Int_t iDet=0; iDet<fvPulserTimes.size(); iDet++) {
+    if(iDet != iDet0)
+      for (Int_t iSide=0; iSide<2; iSide++) 
+	if( fvPulserTimes[iDet][iSide].size()>0){
+	  Double_t Tmean=0.;
+	  std::list< Double_t >::iterator it;
+	  for (it=fvPulserTimes[iDet][iSide].begin();it!=fvPulserTimes[iDet][iSide].end(); ++it)  Tmean += *it;
+	  Tmean /= fvPulserTimes[iDet][iSide].size();
+
+	  if(TMath::Abs(Tmean-fvPulserOffset[iDet][iSide])>Tlim)
+	  LOG(INFO) << "New pulser offset at ev "<< fdEvent<<", pulcnt "<< iNPulserFound
+		    <<" for Det " << iDet  
+		    <<", side " << iSide <<": " << Tmean 
+		    << " ( "<< fvPulserTimes[iDet][iSide].size() << " ) ";
+
+	  fvPulserOffset[iDet][iSide]=Tmean;
+	}
+  }
+
+  for (Int_t iDigi=0; iDigi<fiNDigiIn; iDigi++) {
+    Int_t iCh = fvDigiIn[iDigi].GetChannel();
+    if(iCh !=0 && iCh != 31) continue;
+    Int_t iAddr = fvDigiIn[iDigi].GetAddress() & DetMask;
+    Int_t iDet  = fDetIdIndexMap[iAddr];
+    if (iDet != iDet0) {
+      Int_t iSide = fvDigiIn[iDigi].GetSide();
+      Double_t dDeltaT0=(Double_t)(fvDigiIn[iDigi].GetTime()-fvDigiIn[iDigi0].GetTime())
+	               - fvPulserOffset[iDet][iSide];
+
+      // fill monitoring histo
+      fhPulserTimesCor->Fill(iDet*2+iSide,dDeltaT0);
+    }
+  }
+  return kTRUE;
+}
+
+Bool_t   CbmDeviceHitBuilderTof::ApplyPulserCorrection()
+{
+  for (Int_t iDigi=0; iDigi<fiNDigiIn; iDigi++) {
+    Int_t iAddr = fvDigiIn[iDigi].GetAddress() & DetMask;
+    Int_t iDet  = fDetIdIndexMap[iAddr];
+    Int_t iSide = fvDigiIn[iDigi].GetSide();
+
+    fvDigiIn[iDigi].SetTime( fvDigiIn[iDigi].GetTime() - fvPulserOffset[iDet][iSide]);
   }
   return kTRUE;
 }

@@ -89,6 +89,8 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
    void   CreateHistograms();
    void   WriteHistograms();
 
+   Bool_t   MonitorPulser();
+   Bool_t   ApplyPulserCorrection();
    Bool_t   InitCalibParameter();
    Bool_t   BuildClusters();
    Bool_t   InspectRawDigis();
@@ -174,8 +176,17 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
    std::vector< std::vector< std::vector< std::vector< std::list< CbmTofHit * > > > > > fvLastHits;  //[nSMT[nSm][nRpc][nCh][NHits]
    std::vector< Int_t > fvDeadStrips; //[nbDet]
 
+   std::vector< std::vector< Double_t > > fvPulserOffset; //[nbDet][nbSide]
+   const Int_t NPulserTimes=10;
+   std::vector< std::vector< std::list< Double_t > > > fvPulserTimes;  //[nbDet][nbSide][NPulserTimes]
+
+
    // histograms
    TH1* fhEvDetMul;
+   TH2* fhPulserTimesRaw;
+   TH2* fhPulserTimesCor;
+   TH2* fhDigiTimesRaw;
+
    std::vector< TH2* > fhRpcDigiCor;        //[nbDet]
    std::vector< TH1* > fhRpcCluMul;         //[nbDet]
    std::vector< TH1* > fhRpcCluRate;        //[nbDet]
@@ -247,6 +258,8 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
    Int_t    fSel2Sm;
    Int_t    fSel2Rpc;
    Int_t    fSel2Addr;
+   Int_t    fiMode;
+   Int_t    fiPulserMode;
 
    std::map<UInt_t, UInt_t> fDetIdIndexMap;
    std::vector< Int_t >  fviDetId;
