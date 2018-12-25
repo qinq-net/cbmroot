@@ -167,9 +167,10 @@ try
     fEventHeader.resize(iHeaderSize); // define size of eventheader int[]
     for(int i=0; i<iHeaderSize; i++) fEventHeader[i]=0;
 
-    fiReqMode = fConfig->GetValue<uint64_t>("ReqMode");
-    fiReqTint = fConfig->GetValue<uint64_t>("ReqTint");
+    fiReqMode   = fConfig->GetValue<uint64_t>("ReqMode");
+    fiReqTint   = fConfig->GetValue<uint64_t>("ReqTint");
     fiPulMulMin = fConfig->GetValue<uint64_t>("PulMulMin");
+    fdTShiftRef = fConfig->GetValue<double_t>("TShiftRef");
 
     Int_t iReqDet=1;
     Int_t iNReq=0;
@@ -960,7 +961,7 @@ void CbmDeviceUnpackTofMcbm2018::FillHitInfo( gdpbv100::Message mess )
 	}
 	return;   // Hit not mapped to digi
       }
-      if( (uChanUId & DetMask) != 0x00005006 )  dHitTime += fdTShiftRef;
+      if( (uChanUId & DetMask) == 0x00005006 )  dHitTime += fdTShiftRef;
       fdLastDigiTime = dHitTime;
 
       LOG(DEBUG) << Form("Insert 0x%08x digi with time ", uChanUId ) << dHitTime << Form(", Tot %4.0f",dHitTot)
@@ -1347,7 +1348,7 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
     }
 
     if(fiPulMulMin>0 && iPulMul > fiPulMulMin) { //fiReqDigiAddr.size()/2) {
-      LOG(INFO)<<"@Event "<< fEventHeader[0] <<": iPulMul = " << iPulMul;
+      LOG(DEBUG)<<"@Event "<< fEventHeader[0] <<": iPulMul = " << iPulMul;
       bOut=kTRUE;
     }
     //LOG(DEBUG)<<"Process TInt with iDetMul = "<<iDetMul;
