@@ -39,7 +39,7 @@ struct InitTaskError : std::runtime_error { using std::runtime_error::runtime_er
 using namespace std;
 
 static Int_t iMess=0;
-const  Int_t DetMask = 0x0001FFFF;
+const  Int_t DetMask = 0x003FFFFF;
 
 CbmDeviceUnpackTofMcbm2018::CbmDeviceUnpackTofMcbm2018()
   : fNumMessages(0)
@@ -48,6 +48,7 @@ CbmDeviceUnpackTofMcbm2018::CbmDeviceUnpackTofMcbm2018()
   , fiReqMode(0)
   , fiReqTint(0)
   , fiReqDigiAddr()
+  , fiPulserMode(0)
   , fiPulMulMin(0)
     //  , fAllowedChannels()
     //  , fChannelsToSend()
@@ -169,6 +170,7 @@ try
 
     fiReqMode   = fConfig->GetValue<uint64_t>("ReqMode");
     fiReqTint   = fConfig->GetValue<uint64_t>("ReqTint");
+    fiPulserMode= fConfig->GetValue<int64_t>("PulserMode");
     fiPulMulMin = fConfig->GetValue<uint64_t>("PulMulMin");
     fdTShiftRef = fConfig->GetValue<double_t>("TShiftRef");
 
@@ -222,7 +224,9 @@ try
     LOG(INFO)<<"ReqMode "<<fiReqMode
 	     <<" in " << fiReqTint << " ns "
 	     <<" with "<<fiReqDigiAddr.size()
-	     <<" detectors out of " << fviNrOfRpc.size() <<" GBTx ";
+	     <<" detectors out of " << fviNrOfRpc.size() <<" GBTx, PulserMode "
+	     << fiPulserMode << " with Mul " << fiPulMulMin;
+    
 } catch (InitTaskError& e) {
  LOG(ERROR) << e.what();
  ChangeState(ERROR_FOUND);
@@ -1287,7 +1291,7 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 
     std::vector<CbmTofDigiExp*> vdigi;
     Int_t nDigi=0;
-    const Int_t AddrMask=0x000FFFFF;
+    const Int_t AddrMask=0x003FFFFF;
     Bool_t bOut=kFALSE;
 
 
@@ -1298,14 +1302,36 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 	if( (digi->GetAddress() & AddrMask) == fiReqDigiAddr[i]) {
 	  Int_t j = ((CbmTofDigiExp *)digi)->GetSide();
 	  bDet[i][j]=kTRUE;
-	  if (fiReqDigiAddr[i] == 0x00005006) bDet[i][1]=kTRUE; // diamond with pad readout
+	  if (  fiReqDigiAddr[i] == 0x00005006 ) bDet[i][1]=kTRUE; // diamond with pad readout
+	  if ( (fiReqDigiAddr[i] & 0x0000F00F ) == 0x00008006) bDet[i][1]=kTRUE; // ceramic with pad readout
 	  Int_t str = ((CbmTofDigiExp *)digi)->GetChannel();
 	  switch(j){
 	  case 0:
-	    if (str==0)   bPul[i][0]=kTRUE;
+	    switch(fiPulserMode) {
+	    case 1:
+	      if (str==0)   bPul[i][0]=kTRUE;
+	      break;
+	    case 2:
+	      if (str==0)   {
+		bPul[i][0]=kTRUE;
+		if ( (fiReqDigiAddr[i] & 0x000FF00F ) == 0x00078006) bPul[i][1]=kTRUE; // ceramic with pad readout
+	      }
+	    default:
+	      ;
+	    }
 	    break;
+	    
 	  case 1:
-	    if (str==31)  bPul[i][1]=kTRUE;
+	    switch(fiPulserMode) {
+	    case 1:
+	      if (str==31)  bPul[i][1]=kTRUE;
+	      break;
+	    case 2:
+	      if (str==31)  bPul[i][1]=kTRUE;
+	      break;
+	    default:
+	      ;
+	    }
 	    break;
 	  default:
 	    ;
@@ -1343,22 +1369,21 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
     // determine Pulser status
     Int_t iPulMul=0;  // Count Potential Pulser Signals 
     for(Int_t i=0; i<fiReqDigiAddr.size(); i++) {
-      if(   ( bPul[i][0]==kTRUE  && bPul[i][1]==kTRUE ) 
-	    ) iPulMul++;
+      if( bPul[i][0]==kTRUE  && bPul[i][1]==kTRUE ) iPulMul++;
     }
 
-    if(fiPulMulMin>0 && iPulMul > fiPulMulMin) { //fiReqDigiAddr.size()/2) {
+    if(fiPulserMode>0 && iPulMul > fiPulMulMin) { //fiReqDigiAddr.size()/2) {
       LOG(DEBUG)<<"@Event "<< fEventHeader[0] <<": iPulMul = " << iPulMul;
       bOut=kTRUE;
     }
     //LOG(DEBUG)<<"Process TInt with iDetMul = "<<iDetMul;
 
     fEventHeader[0]++;
-    fEventHeader[1]=iDetMul;
-    fEventHeader[2]=fiReqMode;
-    fEventHeader[3]=iPulMul;
 
     if(bOut) {
+      fEventHeader[1]=iDetMul;
+      fEventHeader[2]=fiReqMode;
+      fEventHeader[3]=iPulMul;
       vdigi.resize(nDigi);
       SendDigis(vdigi,0);
     }
@@ -1377,7 +1402,7 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 bool CbmDeviceUnpackTofMcbm2018::SendDigis( std::vector<CbmTofDigiExp*> vdigi, int idx )
 {
   LOG(DEBUG) << "Send Digis for event "<<fNumTint<<" with size "<< vdigi.size()<< Form(" at %p ",&vdigi);
-  LOG(DEBUG) << "EventHeader: "<< fEventHeader[0] << " " << fEventHeader[1] << " " << fEventHeader[2];
+  LOG(DEBUG) << "EventHeader: "<< fEventHeader[0] << " " << fEventHeader[1] << " " << fEventHeader[2] << " " << fEventHeader[3];
 
   Int_t NDigi=vdigi.size();
 

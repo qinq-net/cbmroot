@@ -183,6 +183,7 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
 
    // histograms
    TH1* fhEvDetMul;
+   TH1* fhPulMul;
    TH2* fhPulserTimesRaw;
    TH2* fhPulserTimesCor;
    TH2* fhDigiTimesRaw;
@@ -260,6 +261,8 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
    Int_t    fSel2Addr;
    Int_t    fiMode;
    Int_t    fiPulserMode;
+   uint64_t fiPulMulMin;
+   uint64_t fiPulDetRef;
 
    std::map<UInt_t, UInt_t> fDetIdIndexMap;
    std::vector< Int_t >  fviDetId;

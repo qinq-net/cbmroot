@@ -127,6 +127,7 @@ CbmDeviceHitBuilderTof::CbmDeviceHitBuilderTof()
   , fvPulserOffset()
   , fvPulserTimes()
   , fhEvDetMul(NULL)
+  , fhPulMul(NULL)
   , fhPulserTimesRaw() 
   , fhPulserTimesCor() 
   , fhDigiTimesRaw() 
@@ -192,6 +193,8 @@ CbmDeviceHitBuilderTof::CbmDeviceHitBuilderTof()
   , fSel2Addr(0)
   , fiMode(0)
   , fiPulserMode(0)
+  , fiPulMulMin(0)
+  , fiPulDetRef(0)
   , fDetIdIndexMap()
   , fviDetId()
   , fPosYMaxScal(0.)
@@ -280,6 +283,8 @@ Bool_t CbmDeviceHitBuilderTof::InitWorkspace()
   fiRunId          = fConfig->GetValue<int64_t>("RunId");
   fiMode           = fConfig->GetValue<int64_t>("Mode");
   fiPulserMode     = fConfig->GetValue<int64_t>("PulserMode");
+  fiPulMulMin      = fConfig->GetValue<uint64_t>("PulMulMin");
+  fiPulDetRef      = fConfig->GetValue<uint64_t>("PulDetRef");
 
   fTofCalDigisColl     = new TClonesArray("CbmTofDigiExp",100);
   fTofCalDigisCollOut  = new TClonesArray("CbmTofDigiExp",100);
@@ -533,14 +538,16 @@ bool CbmDeviceHitBuilderTof::HandleData(FairMQParts& parts, int /*index*/)
   fiNbHits=0;
   if (fNumMessages%10000 == 0) LOG(INFO)<<"Processed "<<fNumMessages<<" messages";
   if(fEventHeader.size()>3) {
-    if (fEventHeader[3]>10) {
-      //      LOG(INFO) << "Pulser event found, Mul "<< fEventHeader[3];
+    fhPulMul->Fill((Double_t)fEventHeader[3]);
+    if (fEventHeader[3]>fiPulMulMin) {
+      // LOG(INFO) << "Pulser event found, Mul "<< fEventHeader[3];
       if(!MonitorPulser()) return kFALSE;
-      return kTRUE;
+      return kTRUE;  // separate events
     }
   }
+  
   if(fiPulserMode>0)          // don't process events without valid pulser correction 
-  if(fvPulserTimes[0][0].size()==0) return kTRUE;
+  if(fvPulserTimes[fiPulDetRef][0].size()==0) return kTRUE;
 
   fdEvent++;
   if(!InspectRawDigis())       return kFALSE;
@@ -831,8 +838,11 @@ void    CbmDeviceHitBuilderTof::CreateHistograms()
    gROOT->cd(); // <= To prevent histos from being sucked in by the param file of the TRootManager !
    // process event header info 
    fhEvDetMul = new TH1F("hEvDetMul",
-			   "Detector multiplicity; Mul",
-			   20, 0, 20);
+			 "Detector multiplicity; Mul",
+			 20, 0, 20);
+   fhPulMul = new TH1F("hPulMul",
+		       "Pulser multiplicity; Mul",
+			20, 0, 20);
 
    Int_t iNDet=0;
    for(Int_t iModTyp=0; iModTyp<10; iModTyp++)
@@ -3533,7 +3543,7 @@ static Int_t iNPulserFound=0;
 Bool_t   CbmDeviceHitBuilderTof::MonitorPulser()
 {
   iNPulserFound++;
-  const Int_t iDet0=0; // Define reference detector
+  const Int_t iDet0=fiPulDetRef; // Define reference detector
   Int_t iDigi0=0;
   const Double_t Tlim=0.5;
 
@@ -3561,7 +3571,9 @@ Bool_t   CbmDeviceHitBuilderTof::MonitorPulser()
     switch(fiPulserMode) {
     case 1: if(iCh !=0 && iCh != 31) continue;
       break;
-    case 2: if(iCh !=3 && iCh != 27) continue;
+    case 2:
+      if ( (fvDigiIn[iDigi].GetAddress() & 0x0000F00F) != 0x00008006 );
+      if (iCh !=0 && iCh != 31) continue;
       break;
     }
     Int_t iAddr = fvDigiIn[iDigi].GetAddress() & DetMask;
@@ -3614,10 +3626,10 @@ Bool_t   CbmDeviceHitBuilderTof::MonitorPulser()
 	  Tmean /= fvPulserTimes[iDet][iSide].size();
 
 	  if(TMath::Abs(Tmean-fvPulserOffset[iDet][iSide])>Tlim)
-	  LOG(INFO) << "New pulser offset at ev "<< fdEvent<<", pulcnt "<< iNPulserFound
-		    <<" for Det " << iDet  
-		    <<", side " << iSide <<": " << Tmean 
-		    << " ( "<< fvPulserTimes[iDet][iSide].size() << " ) ";
+	  LOG(DEBUG) << "New pulser offset at ev "<< fdEvent<<", pulcnt "<< iNPulserFound
+		     <<" for Det " << iDet  
+		     <<", side " << iSide <<": " << Tmean 
+		     << " ( "<< fvPulserTimes[iDet][iSide].size() << " ) ";
 
 	  fvPulserOffset[iDet][iSide]=Tmean;
 	}
@@ -3646,7 +3658,12 @@ Bool_t   CbmDeviceHitBuilderTof::ApplyPulserCorrection()
     Int_t iAddr = fvDigiIn[iDigi].GetAddress() & DetMask;
     Int_t iDet  = fDetIdIndexMap[iAddr];
     Int_t iSide = fvDigiIn[iDigi].GetSide();
-
+    if( 2 == fiPulserMode ) { // correct all cer pads by same rpc/side 0
+      if( 0x00008006 == (iAddr & 0x0000F00F) ) {
+	const Int_t iRefAddr=0x00078006;
+	iDet =  fDetIdIndexMap[iRefAddr];
+      }
+    }
     fvDigiIn[iDigi].SetTime( fvDigiIn[iDigi].GetTime() - fvPulserOffset[iDet][iSide]);
   }
   return kTRUE;
