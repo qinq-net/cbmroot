@@ -1386,6 +1386,7 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
       fEventHeader[3]=iPulMul;
       vdigi.resize(nDigi);
       SendDigis(vdigi,0);
+      for(UInt_t iDigi=0; iDigi<nDigi; iDigi++) vdigi[iDigi]->Delete(); 
     }
     else {
       for(UInt_t iDigi=0; iDigi<nDigi; iDigi++){

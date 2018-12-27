@@ -473,11 +473,12 @@ bool CbmDeviceHitBuilderTof::HandleData(FairMQParts& parts, int /*index*/)
   //  LOG(DEBUG) << "Received message # "<<  fNumMessages 
   //	     << " with size " << msg->GetSize()<<" at "<< msg->GetData(); 
 
-  std::vector<CbmTofDigiExp*> vdigi;
   //std::string msgStr(static_cast<char*>(msg->GetData()), msg->GetSize());
   std::string msgStr(static_cast<char*>(parts.At(1)->GetData()), (parts.At(1))->GetSize());
   std::istringstream iss(msgStr);
   boost::archive::binary_iarchive inputArchive(iss);
+
+  std::vector<CbmTofDigiExp*> vdigi;
   inputArchive>>vdigi;
   
   /*  ---- for debugging ----------------
@@ -521,7 +522,10 @@ bool CbmDeviceHitBuilderTof::HandleData(FairMQParts& parts, int /*index*/)
 
   fiNDigiIn=vdigi.size();
   fvDigiIn.resize(fiNDigiIn);
-  for (int iDigi=0; iDigi<fiNDigiIn; iDigi++) fvDigiIn[iDigi] = *vdigi[iDigi];
+  for (int iDigi=0; iDigi<fiNDigiIn; iDigi++) {
+    fvDigiIn[iDigi] = *vdigi[iDigi];
+    vdigi[iDigi]->Delete();
+  }
   vdigi.clear();
 
   //  for( Int_t i = 0; i < fTofCalDigisColl->GetEntriesFast(); i++ ) ((CbmTofDigiExp*) fTofCalDigisColl->At(i))->Delete();
