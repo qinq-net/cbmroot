@@ -8,6 +8,7 @@
 #include "CbmDeviceHitBuilderTof.h"
 
 // TOF Classes and includes
+#include "CbmTofClusterizersDef.h"
 #include "CbmTofPoint.h"      // in cbmdata/tof
 #include "CbmTofDigi.h"       // in cbmdata/tof
 #include "CbmTofDigiExp.h"    // in cbmdata/tof
@@ -61,8 +62,6 @@ struct InitTaskError : std::runtime_error { using std::runtime_error::runtime_er
 using namespace std;
 
 // Constants definitions
-#include "CbmTofClusterizersDef.h"
-
 static Int_t    iMess=0;
 static Int_t    iIndexDut = 0;
 static Double_t StartAnalysisTime = 0.;
@@ -441,7 +440,8 @@ Bool_t CbmDeviceHitBuilderTof::InitContainers()
   fSel2Addr=CbmTofAddress::GetUniqueAddress(fSel2Sm,fSel2Rpc,0,0,fSel2Id);
   fiBeamRefAddr=CbmTofAddress::GetUniqueAddress(fiBeamRefSm,fiBeamRefDet,0,0,fiBeamRefType);
   iIndexDut=fDigiBdfPar->GetDetInd(fDutAddr);
-
+  LOG(INFO) << Form("Use Dut 0x%08x, Sel 0x%08x, Sel2 0x%08x, BRef 0x%08x",
+		    fDutAddr, fSelAddr, fSel2Addr, fiBeamRefAddr);
   return initOK;
 }
 
@@ -1364,8 +1364,9 @@ Bool_t   CbmDeviceHitBuilderTof::InspectRawDigis()
 	      <<" S " << pDigi->GetSide()
     	      <<" : " << pDigi->ToString();
     */
-    Int_t iAddr =  pDigi->GetAddress();
+    Int_t iAddr =  pDigi->GetAddress() & DetMask;
     if(iAddr == fiBeamRefAddr ) {
+      //LOG(DEBUG) << Form("Ref digi found for 0x%08x, Mask  0x%08x ", fiBeamRefAddr, DetMask);
       if(NULL == pRef) pRef=pDigi;
       else {
 	if(pDigi->GetTime() < pRef->GetTime()) pRef = pDigi;
@@ -1479,7 +1480,9 @@ Bool_t   CbmDeviceHitBuilderTof::InspectRawDigis()
     }
   }       
 
-  if( NULL != pRef) { 
+  if( NULL != pRef) {
+    // LOG(DEBUG) << Form("pRef from 0x%08x ",pRef->GetAddress());
+    
     for( Int_t iDigInd = 0; iDigInd < fiNDigiIn; iDigInd++ ) {
       CbmTofDigiExp *pDigi = &fvDigiIn[iDigInd];
       Int_t iAddr = pDigi->GetAddress() & DetMask;
