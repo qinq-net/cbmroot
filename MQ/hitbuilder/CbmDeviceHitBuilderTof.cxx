@@ -856,7 +856,7 @@ void    CbmDeviceHitBuilderTof::CreateHistograms()
           Form("hPulserTimesRaw"),
           Form("Pulser Times uncorrected; Sm+Rpc# []; t - t0 [ns]"),
           iNDet*2, 0, iNDet*2,
-          999, -10.,10.); 
+          999, -100.,100.); 
 
    fhPulserTimesCor = new TH2F( 
           Form("hPulserTimesCor"),
