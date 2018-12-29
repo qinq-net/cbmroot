@@ -400,12 +400,12 @@ Bool_t   CbmTofFindTracks::LoadCalParameter()
 	CbmTofCell* fChannelInfo   = fDigiPar->GetCell(iUniqueId);
 	if(NULL != fChannelInfo) {
           Double_t dVal=1.; // FIXME numeric constant in code, default for cosmic 
-	  if (fiBeamCounter !=-1) 
-	     dVal = fChannelInfo->GetZ() * fTtTarg ; //  use calibration target value
+	  //if (fiBeamCounter !=-1) 
+	  dVal = fChannelInfo->GetZ() * fTtTarg ; //  use calibration target value
 	  fhPullT_Smt_Off->SetBinContent(iDet+1,dVal);
 	  LOG(INFO)<<Form("Initialize det 0x%08x at %d with TOff %6.2f",
-			   iUniqueId,iDet+1,dVal)
-		    <<FairLogger::endl;
+			  iUniqueId,iDet+1,dVal)
+		   <<FairLogger::endl;
 	}
       }
     }
@@ -1134,7 +1134,7 @@ void CbmTofFindTracks::CreateHistograms(){
   fhPullY_Smt = new TH2F( Form("hPullY_Smt"),
 			  Form("Tracklet ResiY vs RpcInd ; RpcInd ; #DeltaY (cm)"),
 			  nSmt, 0, nSmt, 100, -DY0MAX, DY0MAX);
-  Double_t DZ0MAX=5.;
+  Double_t DZ0MAX=20.;
   fhPullZ_Smt = new TH2F( Form("hPullZ_Smt"),
 			  Form("Tracklet ResiZ vs RpcInd ; RpcInd ; #DeltaZ (cm)"),
 			  nSmt, 0, nSmt, 100, -DZ0MAX, DZ0MAX);
@@ -1267,6 +1267,8 @@ void CbmTofFindTracks::FindVertex(){
 
 }
 
+static Int_t iWarnNotDefined=0;
+
 void CbmTofFindTracks::FillHistograms(){
   // Locate reference ("beam counter") hit
   CbmTofHit* pRefHit=NULL;
@@ -1369,7 +1371,7 @@ void CbmTofFindTracks::FillHistograms(){
 	if(pTrk->GetNofHits() < GetNReqStations()) continue;  // fill Pull histos only for complete tracks
 	CbmTofHit* pHit  = (CbmTofHit*)fTofHitArray->At(iH);	
 	
-        if (0 == fMapStationRpcId[iSt]) pHit->SetTime(pTrk->GetT0());  // set time of fake hit  
+        //if (0 == fMapStationRpcId[iSt]) pHit->SetTime(pTrk->GetT0());  // set time of fake hit, abandoned
 	/*
 	cout << " -D- CbmTofFindTracks::FillHistograms: "<< iSt <<", "
 	     <<fMapStationRpcId[iSt]<<", "<< iH <<", "<< iH0 <<", "<<pHit->ToString() << endl; 
@@ -1481,7 +1483,8 @@ void CbmTofFindTracks::FillHistograms(){
 	   //Int_t iChId   = CbmTofAddress::GetUniqueAddress(0,0,0,0,iSmType);
 	   //CbmTofCell* fChannelInfo = fDigiPar->GetCell( iChId );
 	   CbmTofCell* fChannelInfo = fDigiPar->GetCell( iAddr );
-	   if(NULL == fChannelInfo) {
+	   if(NULL == fChannelInfo ) {
+	     if ( iWarnNotDefined++ < 100) 
 	     LOG(WARNING)<<Form("CbmTofFindTracks::FillHistograms: Cell 0x%08x not defined for Station %d", iAddr,iSt)
 			 <<FairLogger::endl;
 	     continue;
