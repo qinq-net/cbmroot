@@ -494,7 +494,7 @@ Bool_t CbmDeviceUnpackTofMcbm2018::ReInitContainers()
        switch(fviRpcSide[iGbtx]) {
        case 2:  // HD 2-RPC boxes
 	 {
-	 const Int_t iRpc[5]={0,-1,0,1,1};
+	 const Int_t iRpc[5]={1,-1,1,0,0};
 	 const Int_t iSide[5]={0,-1,1,0,1};
 	 for(Int_t iFeet= 0; iFeet <5; iFeet++){
 	   for(Int_t iStr= 0; iStr < 32; iStr++)  {
