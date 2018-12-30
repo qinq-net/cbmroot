@@ -575,8 +575,8 @@ bool CbmMQTsaSamplerTof::CheckTimeslice(const fles::Timeslice& ts)
 void CbmMQTsaSamplerTof::SendSysCmdStop()
 {
   if(IsChannelUp("syscmd")){
-    LOG(INFO) << "stop subscribers in 10 sec";
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    LOG(INFO) << "stop subscribers in 100 sec";
+    std::this_thread::sleep_for(std::chrono::milliseconds(100000));
 
     FairMQMessagePtr pub(NewSimpleMessage("STOP"));
     if (Send(pub, "syscmd") < 0) {
