@@ -1467,7 +1467,7 @@ Bool_t   CbmTofEventClusterizer::CreateHistos()
        fhTRpcCluMul[iDetIndx][iSel] =  new TH1F(
           Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Mul", iSmType, iSmId, iRpcId, iSel ),
           Form("Clu multiplicity of Rpc #%03d in Sm %03d of type %d under Selector %02d; M []; cnts", iRpcId, iSmId, iSmType, iSel ),
-	  fDigiBdfPar->GetNbChan(iSmType,iRpcId),0.,fDigiBdfPar->GetNbChan(iSmType,iRpcId));
+	  fDigiBdfPar->GetNbChan(iSmType,iRpcId)+2,0.,fDigiBdfPar->GetNbChan(iSmType,iRpcId)+2);
       
        if (NULL == fhTRpcCluMul[iDetIndx][iSel]) LOG(FATAL)<<" Histo not generated !"<<FairLogger::endl; 
        
