@@ -2653,8 +2653,9 @@ Bool_t  CbmDeviceHitBuilderTof::LoadGeometry()
        if (NULL == fChannelInfo) break;
      }
 
-     fvPulserOffset[iDetIndx].resize( 2 ); // provide vector for both sides
-     fvPulserTimes[iDetIndx].resize( 2 );  // provide vector for both sides
+     fvPulserOffset[iDetIndx].resize( 2 );                     // provide vector for both sides
+     for(Int_t i=0; i<2; i++)  fvPulserOffset[iDetIndx][i]=0.; // initialize
+     fvPulserTimes[iDetIndx].resize( 2 );                      // provide vector for both sides
    }
    
    //   return kTRUE;
@@ -3599,7 +3600,8 @@ Bool_t   CbmDeviceHitBuilderTof::MonitorPulser()
     case 1: if(iCh !=0 && iCh != 31) continue;
       break;
     case 2:
-      if ( (fvDigiIn[iDigi].GetAddress() & 0x0000F00F) != 0x00008006 );
+      if ( fvDigiIn[iDigi].GetType() == 8 ) // ceramic RPC
+	if ( fvDigiIn[iDigi].GetRpc() != 7 ) continue;
       if (iCh !=0 && iCh != 31) continue;
       break;
     }
@@ -3607,7 +3609,7 @@ Bool_t   CbmDeviceHitBuilderTof::MonitorPulser()
     Int_t iDet  = fDetIdIndexMap[iAddr];
     Int_t iSide = fvDigiIn[iDigi].GetSide();
     if(fvPulserTimes[iDet][iSide].size() == NPulserTimes ) fvPulserTimes[iDet][iSide].pop_front();
-    if (iDet == iDet0) {
+    if (iDet == iDet0 && 0 == iSide) {
       // check consistency of latest hit
       if(fvPulserTimes[iDet][iSide].size()>1){
 	Double_t TDif=(fvPulserTimes[iDet][iSide].back() - fvPulserTimes[iDet][iSide].front())
@@ -3644,22 +3646,23 @@ Bool_t   CbmDeviceHitBuilderTof::MonitorPulser()
   }
 
   for (Int_t iDet=0; iDet<fvPulserTimes.size(); iDet++) {
-    if(iDet != iDet0)
-      for (Int_t iSide=0; iSide<2; iSide++) 
-	if( fvPulserTimes[iDet][iSide].size()>0){
-	  Double_t Tmean=0.;
-	  std::list< Double_t >::iterator it;
-	  for (it=fvPulserTimes[iDet][iSide].begin();it!=fvPulserTimes[iDet][iSide].end(); ++it)  Tmean += *it;
-	  Tmean /= fvPulserTimes[iDet][iSide].size();
+    for (Int_t iSide=0; iSide<2; iSide++) { 
+      if(iDet == iDet0 && iSide == 0 ) continue; // skip reference counter
+      if( fvPulserTimes[iDet][iSide].size()>0){
+	Double_t Tmean=0.;
+	std::list< Double_t >::iterator it;
+	for (it=fvPulserTimes[iDet][iSide].begin();it!=fvPulserTimes[iDet][iSide].end(); ++it)  Tmean += *it;
+	Tmean /= fvPulserTimes[iDet][iSide].size();
 
-	  if(TMath::Abs(Tmean-fvPulserOffset[iDet][iSide])>Tlim)
+	if(TMath::Abs(Tmean-fvPulserOffset[iDet][iSide])>Tlim)
 	  LOG(DEBUG) << "New pulser offset at ev "<< fdEvent<<", pulcnt "<< iNPulserFound
 		     <<" for Det " << iDet  
 		     <<", side " << iSide <<": " << Tmean 
 		     << " ( "<< fvPulserTimes[iDet][iSide].size() << " ) ";
 
-	  fvPulserOffset[iDet][iSide]=Tmean;
-	}
+	fvPulserOffset[iDet][iSide]=Tmean;
+      }
+    }
   }
 
   for (Int_t iDigi=0; iDigi<fiNDigiIn; iDigi++) {
@@ -3667,14 +3670,12 @@ Bool_t   CbmDeviceHitBuilderTof::MonitorPulser()
     if(iCh !=0 && iCh != 31) continue;
     Int_t iAddr = fvDigiIn[iDigi].GetAddress() & DetMask;
     Int_t iDet  = fDetIdIndexMap[iAddr];
-    if (iDet != iDet0) {
-      Int_t iSide = fvDigiIn[iDigi].GetSide();
-      Double_t dDeltaT0=(Double_t)(fvDigiIn[iDigi].GetTime()-fvDigiIn[iDigi0].GetTime())
-	               - fvPulserOffset[iDet][iSide];
+    Int_t iSide = fvDigiIn[iDigi].GetSide();
+    Double_t dDeltaT0=(Double_t)(fvDigiIn[iDigi].GetTime()-fvDigiIn[iDigi0].GetTime())
+                     - fvPulserOffset[iDet][iSide];
 
-      // fill monitoring histo
-      fhPulserTimesCor->Fill(iDet*2+iSide,dDeltaT0);
-    }
+    // fill monitoring histo
+    fhPulserTimesCor->Fill(iDet*2+iSide,dDeltaT0);
   }
   return kTRUE;
 }
@@ -3686,7 +3687,7 @@ Bool_t   CbmDeviceHitBuilderTof::ApplyPulserCorrection()
     Int_t iDet  = fDetIdIndexMap[iAddr];
     Int_t iSide = fvDigiIn[iDigi].GetSide();
     if( 2 == fiPulserMode ) { // correct all cer pads by same rpc/side 0
-      if( 0x00008006 == (iAddr & 0x0000F00F) ) {
+      if( 8 == fvDigiIn[iDigi].GetType() ) {
 	const Int_t iRefAddr=0x00078006;
 	iDet =  fDetIdIndexMap[iRefAddr];
       }
