@@ -8,16 +8,18 @@ else
 fi
   
 _reqmod=4
-_reqtint=50 
+_reqtint=50
+_ntimeslices=-1
 _iUnp=16
 _batch=1
-_pulmulmin=10
+_pulmode=1 
+_pulmulmin=15
 _tshiftref=-30.
 
 _dirname=@VMCWORKDIR@/macro/beamtime/mcbm2018/input/$_runname/
 _outdir=@VMCWORKDIR@/macro/beamtime/mcbm2018/data/
 _filename=$_runname_*.tsa
-_digifile=$_runname.$_reqtint.$_reqmod.root
+_digifile=$_runname.$_reqtint.$_reqmod.$_pulmode.root
 
 # ASCII files  
 #_mapfile=@CMAKE_CURRENT_SOURCE_DIR@/MapTofGbtx.par
@@ -59,7 +61,7 @@ fi
 
 SAMPLER="TsaSamplerTof"
 SAMPLER+=" --id sampler1"
-SAMPLER+=" --max-timeslices -1"
+SAMPLER+=" --max-timeslices $_ntimeslices"
 #SAMPLER+=" --max-timeslices 1000000"
 #SAMPLER+=" --flib-port 10"
 SAMPLER+=" --dirname $_dirname"
@@ -94,6 +96,7 @@ UNPACKER+=" --channel-config name=syscmd,type=sub,method=connect,transport=zerom
 UNPACKER+=" --verbosity  INFO"
 UNPACKER+=" --ReqMode $_reqmod"
 UNPACKER+=" --ReqTint $_reqtint"
+UNPACKER+=" --PulserMode $_pulmode"
 UNPACKER+=" --PulMulMin $_pulmulmin"
 UNPACKER+=" --TShiftRef $_tshiftref"
 if  [[ $_batch = 1 ]]; then 
@@ -121,7 +124,8 @@ HITBUILDER+=" --verbosity INFO"
 HITBUILDER+=" --OutRootFile $_outdir$_digifile"
 #HITBUILDER+=" --MaxEvent 10000000"
 HITBUILDER+=" --RunId 1544384489"
-HITBUILDER+=" --PulserMode 1"
+HITBUILDER+=" --PulserMode $_pulmode"
+HITBUILDER+=" --PulMulMin $_pulmulmin"
 HITBUILDER+=" --BRefType  5"
 HITBUILDER+=" --BRefSm    0"
 HITBUILDER+=" --BRefDet   0"
