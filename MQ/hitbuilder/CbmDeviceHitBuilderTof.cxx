@@ -543,21 +543,29 @@ bool CbmDeviceHitBuilderTof::HandleData(FairMQParts& parts, int /*index*/)
   if (fNumMessages%10000 == 0) LOG(INFO)<<"Processed "<<fNumMessages<<" messages";
   if(fEventHeader.size()>3) {
     fhPulMul->Fill((Double_t)fEventHeader[3]);
-    if (fEventHeader[3]>fiPulMulMin) {
+    if (fEventHeader[3]>=fiPulMulMin) {
       // LOG(INFO) << "Pulser event found, Mul "<< fEventHeader[3];
       if(!MonitorPulser()) return kFALSE;
-      return kTRUE;  // separate events
+      return kTRUE;  // separate events from pulser 
     }
   }
   
-  if(fiPulserMode>0)          // don't process events without valid pulser correction 
-  if(fvPulserTimes[fiPulDetRef][0].size()==0) return kTRUE;
+  //LOG(INFO) << " Process msg " << fNumMessages << " at evt " << fdEvent << ", PulMode " <<  fiPulserMode;
+
+  if(fiPulserMode>0) {  // don't process events without valid pulser correction 
+    if(fvPulserTimes[fiPulDetRef][0].size()==0) return kTRUE;
+  }
 
   fdEvent++;
+  fhEvDetMul->Fill((Double_t)fEventHeader[1]);
   if(!InspectRawDigis())       return kFALSE;
+
+  if(fiPulserMode>0)
   if(!ApplyPulserCorrection()) return kFALSE;
+
   if(!BuildClusters())         return kFALSE;
   //if(!MergeClusters())       return kFALSE;
+
   if( NULL != fOutRootFile) {  // CbmEvent output to root file 
      rootMgr->FillEventHeader(fEvtHeader);
      //LOG(INFO) << "Fill WriteOutBuffer with rootMgr at " << rootMgr;
@@ -1458,7 +1466,7 @@ Bool_t   CbmDeviceHitBuilderTof::InspectRawDigis()
       Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
       fChannelInfo = fDigiPar->GetCell( iChId );
       if(NULL == fChannelInfo){
-	LOG(WARN)<<Form("Invalid ChannelInfo for 0x%08x",iChId);
+	LOG(WARN)<<Form("Invalid ChannelInfo for 0x%08x, 0x%08x",iChId,pDigi2Min->GetAddress());
 	continue;
       }
       if(  fDigiBdfPar->GetSigVel(pDigi->GetType(),pDigi->GetSm(),pDigi->GetRpc()) * dTDifMin * 0.5 
@@ -2837,8 +2845,6 @@ Bool_t   CbmDeviceHitBuilderTof::SendAll()
 
 Bool_t   CbmDeviceHitBuilderTof::FillHistos()
 {
-  fhEvDetMul->Fill((Double_t)fEventHeader[1]);
-
   Int_t iNbTofHits  = fTofHitsColl->GetEntries();
   CbmTofHit  *pHit;
   //gGeoManager->SetTopVolume( gGeoManager->FindVolumeFast("tof_v14a") );
@@ -3553,7 +3559,21 @@ Bool_t   CbmDeviceHitBuilderTof::MonitorPulser()
   const Int_t iDet0=fiPulDetRef; // Define reference detector
   Int_t iDigi0=0;
   const Double_t Tlim=0.5;
-
+  switch (fiPulserMode) {
+  case 1:  // mcbm :  
+    if ( fiNDigiIn != fiPulMulMin*2 + 2 ) { // 2 * working RPCs + 1 Diamond 
+      LOG(INFO) << "Incomplete or distorted pulser event " << iNPulserFound << " with " << fiNDigiIn
+		<< " digis instead of " << fiPulMulMin*2 + 2;
+      return kTRUE;
+    }
+    break;
+  case 2: // micro CBM cosmic
+    break;
+    ;
+  default:
+    ;
+  }
+  
   for (int iDigi=0; iDigi<fiNDigiIn; iDigi++) {
     Int_t iCh = fvDigiIn[iDigi].GetChannel();
     if(iCh !=0 && iCh != 31) continue;
