@@ -543,7 +543,7 @@ bool CbmDeviceHitBuilderTof::HandleData(FairMQParts& parts, int /*index*/)
   if (fNumMessages%10000 == 0) LOG(INFO)<<"Processed "<<fNumMessages<<" messages";
   if(fEventHeader.size()>3) {
     fhPulMul->Fill((Double_t)fEventHeader[3]);
-    if (fEventHeader[3]>=fiPulMulMin) {
+    if (fEventHeader[3]>0) {
       // LOG(INFO) << "Pulser event found, Mul "<< fEventHeader[3];
       if(!MonitorPulser()) return kFALSE;
       return kTRUE;  // separate events from pulser 
@@ -851,10 +851,10 @@ void    CbmDeviceHitBuilderTof::CreateHistograms()
    // process event header info 
    fhEvDetMul = new TH1F("hEvDetMul",
 			 "Detector multiplicity; Mul",
-			 20, 0, 20);
+			 50, 0, 50);
    fhPulMul = new TH1F("hPulMul",
 		       "Pulser multiplicity; Mul",
-			20, 0, 20);
+			50, 0, 50);
 
    Int_t iNDet=0;
    for(Int_t iModTyp=0; iModTyp<10; iModTyp++)
@@ -3569,6 +3569,7 @@ Bool_t   CbmDeviceHitBuilderTof::MonitorPulser()
     }
     break;
   case 2: // micro CBM cosmic
+    if(fiNDigiIn < fiPulMulMin*2) return kTRUE; 
     break;
     ;
   default:

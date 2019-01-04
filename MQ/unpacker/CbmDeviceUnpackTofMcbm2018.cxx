@@ -1314,7 +1314,10 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 	    case 2:
 	      if (str==0)   {
 		bPul[i][0]=kTRUE;
-		if ( (fiReqDigiAddr[i] & 0x000FF00F ) == 0x00078006) bPul[i][1]=kTRUE; // ceramic with pad readout
+		if ( (fiReqDigiAddr[i] & 0x000FF00F ) == 0x00078006) {
+		  bPul[i][1]=kTRUE;    // ceramic with pad readout
+		  bDet[i][1]=kFALSE;   // remove Hit flag
+		}
 	      }
 	    default:
 	      ;
