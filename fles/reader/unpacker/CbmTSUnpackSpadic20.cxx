@@ -255,11 +255,13 @@ CbmTSUnpackSpadic20::DoUnpack (const fles::Timeslice& ts, size_t component)
 //changes by J.Beckhoff
 CbmTSUnpackSpadic20::hit_object CbmTSUnpackSpadic20::correct_successor(Int_t link, Int_t addr, Int_t channel, hit_object currHit)
 {
-  Int_t samples_pre = multihit_buffer[std::make_pair(link, addr)][channel].nrSamples;
-  Int_t samples_succ = currHit.nrSamples;  
+  auto oldHit=multihit_buffer[std::make_pair(link, addr)][channel];
+  Int_t samples_pre = oldHit.nrSamples;
+  Int_t samples_succ = currHit.nrSamples;
   if(samples_pre < 6)//multimessage, if predecessor with less than 6 samples    
     {
-      for(Int_t i = currHit.nrSamples-1; i >= 0; i--) //combine pre + succ samples
+      int sum_Samples = std::min((samples_pre + samples_succ), 32);
+      for(int i = sum_Samples-1; i >= 0; i--) //combine pre + succ samples
 	{
 	  if(i >= samples_pre)//predecessor samples
 	    {
@@ -267,14 +269,14 @@ CbmTSUnpackSpadic20::hit_object CbmTSUnpackSpadic20::correct_successor(Int_t lin
 	    }
 	  else //successor samples
 	    {
-	      currHit.samples[i] = multihit_buffer[std::make_pair(link, addr)][channel].samples[i];
+	      currHit.samples[i] = oldHit.samples[i];
 	    }
 	}
       //set hit variables
-      currHit.nrSamples = std::min((samples_pre + samples_succ), 32);
-      currHit.triggerType = multihit_buffer[std::make_pair(link, addr)][channel].triggerType; //time and triggerType of predecessor
-      currHit.time = multihit_buffer[std::make_pair(link, addr)][channel].time;  //time and triggerType of predecessor
-      currHit.fullTime = multihit_buffer[std::make_pair(link, addr)][channel].fullTime;  //time and triggerType of predecessor
+      currHit.nrSamples = sum_Samples;
+      currHit.triggerType = oldHit.triggerType; //time and triggerType of predecessor
+      currHit.time = oldHit.time;  //time and triggerType of predecessor
+      currHit.fullTime = oldHit.fullTime;  //time and triggerType of predecessor
       currHit.b_complete = true;
       currHit.b_multiFlag = true;
       n_multimessage_succ++;
@@ -285,7 +287,7 @@ CbmTSUnpackSpadic20::hit_object CbmTSUnpackSpadic20::correct_successor(Int_t lin
       currHit.b_multiFlag = false;
       n_multihit_succ++;
     }  
-  multihit_buffer[std::make_pair(link,addr)].erase(channel); //delete buffer entry  
+  multihit_buffer[std::make_pair(link,addr)].erase(channel); //delete buffer entry
   return currHit;   
 }
 
