@@ -52,6 +52,7 @@ CbmMcbm2018MonitorTofPulser::CbmMcbm2018MonitorTofPulser() :
     fuNbCoreMsPerTs(0),
     fuNbOverMsPerTs(0),
     fbIgnoreOverlapMs(kFALSE),
+    fsHistoFileFullname( "data/TofPulserHistos.root" ),
     fuMsAcceptsPercent(100),
     fuTotalMsNb(0),
     fuOverlapMsNb(0),
@@ -123,6 +124,7 @@ CbmMcbm2018MonitorTofPulser::CbmMcbm2018MonitorTofPulser() :
     fhTimeRmsPulser(NULL),
     fhTimeRmsZoomFitPuls(NULL),
     fhTimeResFitPuls(NULL),
+    fvhPulserCountEvoPerFeeGdpb(),
     fvhPulserTimeDiffEvoGbtxGbtx(),
     fvvhPulserTimeDiffEvoGdpbGdpb(),
     fvvhPulserTimeDiffEvoFeeFee(),
@@ -483,6 +485,13 @@ void CbmMcbm2018MonitorTofPulser::CreateHistograms()
    fvvhPulserTimeDiffEvoGdpbGdpb.resize( fuNrOfGdpbs );
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
+
+      name = Form("hPulserCountEvoPerFeeGdpb%02u", uGdpb);
+      fvhPulserCountEvoPerFeeGdpb.push_back( new TH2D( name.Data(),
+            Form( "Pulser count per FEE in gDPB %02u; time in run [s]; dt [ps]", uGdpb ),
+            fuHistoryHistoSize, 0, fuHistoryHistoSize,
+            fuNrOfFeePerGdpb, -0.5, fuNrOfFeePerGdpb ) );
+
       for( UInt_t uGbtx = 0; uGbtx < kuNbGbtxPerGdpb - 1; ++uGbtx )
       {
          name = Form("hPulserTimeDiffEvoGdpb%02uGbtx00Gbtx%02u", uGdpb, uGbtx + 1 );
@@ -516,8 +525,8 @@ void CbmMcbm2018MonitorTofPulser::CreateHistograms()
          UInt_t uFeeId = uFee - ( fuNrOfFeePerGdpb * uGdpb );
 
          fvvhPulserTimeDiffEvoFeeFee[uFeeRef][uFee] = new TProfile(
-            Form("hTimeDiffEvoFeeFee_g%02u_f%1u_g%02u_f%1u", uGdpbRef, uFeeIdRef, uGdpb, uFeeId),
-            Form("Time difference for pulser on gDPB %02u FEE %1u and gDPB %02u FEE %1u; time in run [s]; DeltaT [ps]",
+            Form("hTimeDiffEvoFeeFee_g%02u_f%02u_g%02u_f%02u", uGdpbRef, uFeeIdRef, uGdpb, uFeeId),
+            Form("Time difference for pulser on gDPB %02u FEE %1u and gDPB %02u FEE %02u; time in run [s]; DeltaT [ps]",
                   uGdpbRef, uFeeIdRef, uGdpb, uFeeId ),
                fuHistoryHistoSize/2, 0, fuHistoryHistoSize );
       } // for( UInt_t uFee = 0; uFee < fuNrOfFeePerGdpb * fuNrOfGdpbs; uFee++)
@@ -804,7 +813,7 @@ Bool_t CbmMcbm2018MonitorTofPulser::DoUnpack(const fles::Timeslice& ts,
                                static_cast<unsigned int>(msDescriptor.sys_ver), msDescriptor.idx, msDescriptor.crc,
                                msDescriptor.size, msDescriptor.offset )
                        << FairLogger::endl;
-            LOG(FATAL) << "Could not find the gDPB index for AFCK id 0x"
+            LOG(WARNING) << "Could not find the gDPB index for AFCK id 0x"
                       << std::hex << fuGdpbId << std::dec
                       << " in timeslice " << fulCurrentTsIndex
                       << " in microslice " << fdMsIndex
@@ -1175,12 +1184,14 @@ void CbmMcbm2018MonitorTofPulser::FillHitInfo(gdpbv100::Message mess)
       {
          fdTsLastPulserHit[ uFeeNrInSys ] = dHitTime;
          fvuFeeNbHitsLastMs[ uFeeNrInSys ]++;
+         fvhPulserCountEvoPerFeeGdpb[ fuGdpbNr ]->Fill( dHitTime * 1e-9, uFeeNr );
       } // if( gdpbv100::kuFeePulserChannel == uChannelNrInFee )
       /// Diamond FEE have pulser on channel 0!
          else if( fuGdpbNr == fuDiamondDpbIdx && 0 == uChannelNrInFee )
          {
             fdTsLastPulserHit[ uFeeNrInSys ] = dHitTime;
             fvuFeeNbHitsLastMs[ uFeeNrInSys ]++;
+            fvhPulserCountEvoPerFeeGdpb[ fuGdpbNr ]->Fill( dHitTime * 1e-9, uFeeNr );
          } // if( fuGdpbNr == fuDiamondDpbIdx && 0 == uChannelNrInFee )
    } // if( 92 < uTot && uTot < 95 )
 
@@ -1608,8 +1619,8 @@ void CbmMcbm2018MonitorTofPulser::Finish()
    /// Update zoomed RMS and pulser fit plots
    UpdateZoomedFit();
 
+   SaveAllHistos( fsHistoFileFullname );
    SaveAllHistos();
-   SaveAllHistos( "data/histos_tof_pulser.root" );
 }
 
 void CbmMcbm2018MonitorTofPulser::FillOutput(CbmDigi* /*digi*/)
@@ -1635,6 +1646,7 @@ void CbmMcbm2018MonitorTofPulser::SaveAllHistos( TString sFileName )
    fhTimeRmsPulser->Write();
    fhTimeRmsZoomFitPuls->Write();
    fhTimeResFitPuls->Write();
+
    gDirectory->cd("..");
 
 
@@ -1652,6 +1664,7 @@ void CbmMcbm2018MonitorTofPulser::SaveAllHistos( TString sFileName )
    gDirectory->cd("TofDtEvo");
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
+      fvhPulserCountEvoPerFeeGdpb[ uGdpb ]->Write();
       for( UInt_t uGbtx = 0; uGbtx < kuNbGbtxPerGdpb - 1; ++uGbtx )
          fvhPulserTimeDiffEvoGbtxGbtx[ uGdpb * (kuNbGbtxPerGdpb - 1)  + uGbtx ]->Write();
 
@@ -1725,6 +1738,7 @@ void CbmMcbm2018MonitorTofPulser::ResetAllHistos()
 
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {
+      fvhPulserCountEvoPerFeeGdpb[ uGdpb ]->Reset();
       for( UInt_t uGbtx = 0; uGbtx < kuNbGbtxPerGdpb - 1; ++uGbtx )
          fvhPulserTimeDiffEvoGbtxGbtx[ uGdpb * (kuNbGbtxPerGdpb - 1)  + uGbtx ]->Reset();
 

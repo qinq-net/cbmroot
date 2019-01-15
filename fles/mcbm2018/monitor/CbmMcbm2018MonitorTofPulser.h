@@ -77,12 +77,17 @@ class CbmMcbm2018MonitorTofPulser: public CbmMcbmUnpack {
       void UpdateNormedFt();
       void UpdateZoomedFit();
 
+      void SetHistoFileName( TString sFileName = "data/SetupHistos.root" ) { fsHistoFileFullname = sFileName; }
+
    private:
       /// FLES containers
       std::vector< size_t >    fvMsComponentsList; //!
       size_t                   fuNbCoreMsPerTs; //!
       size_t                   fuNbOverMsPerTs; //!
       Bool_t                   fbIgnoreOverlapMs; //! /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
+
+      /// Histo File name and path
+      TString fsHistoFileFullname;
 
       /// OLD, to be cleaned out !!!!!
       size_t   fuMsAcceptsPercent; /** Reject Ms with index inside TS above this, assumes 100 MS per TS **/
@@ -203,6 +208,7 @@ class CbmMcbm2018MonitorTofPulser: public CbmMcbmUnpack {
       TH2 * fhTimeRmsPulser;
       TH2 * fhTimeRmsZoomFitPuls;
       TH2 * fhTimeResFitPuls;
+      std::vector< TH2 * >     fvhPulserCountEvoPerFeeGdpb;
       std::vector< TProfile * >fvhPulserTimeDiffEvoGbtxGbtx;
       std::vector< std::vector< TProfile * > > fvvhPulserTimeDiffEvoGdpbGdpb;
 
