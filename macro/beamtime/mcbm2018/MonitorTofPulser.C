@@ -12,7 +12,8 @@ FairRunOnline *run = NULL;
 
 void MonitorTofPulser(TString inFile = "", TString sHostname = "localhost",
                  Int_t iStartFile = -1, Int_t iStopFile = -1,
-                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080  )
+                 Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
+                 TString sFileTag = ""   )
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
 //  TString inDir  = srcDir + "/input/";
@@ -24,8 +25,8 @@ void MonitorTofPulser(TString inFile = "", TString sHostname = "localhost",
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/tof_pulser.root";
-  TString parFile = "data/tof_pulser_param.root";
+  TString outFile = "data/tof_pulser" + sFileTag + ".root";
+  TString parFile = "data/tof_pulser_param" + sFileTag + ".root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -67,7 +68,7 @@ void MonitorTofPulser(TString inFile = "", TString sHostname = "localhost",
   // Get4 Unpacker
   CbmMcbm2018MonitorTofPulser* test_monitor_tof = new CbmMcbm2018MonitorTofPulser();
   test_monitor_tof->SetFitZoomWidthPs( );
-  test_monitor_tof->SetHistoryHistoSize( 1800 );
+  test_monitor_tof->SetHistoryHistoSize( 4000 );
   test_monitor_tof->SetHistoryHistoSizeLong( 1000. ); // Night: 6 + 10 H
 //  test_monitor_tof->SetHistoryHistoSizeLong( 3840. ); // WE:    6 + 24 + 24 + 10 H
 /*
@@ -77,6 +78,7 @@ void MonitorTofPulser(TString inFile = "", TString sHostname = "localhost",
 */
   test_monitor_tof->SetIgnoreMsOverlap();
   test_monitor_tof->SetDiamondDpbIdx();
+  test_monitor_tof->SetHistoFileName( "data/TofPulserHistos" + sFileTag + ".root" );
 
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();
