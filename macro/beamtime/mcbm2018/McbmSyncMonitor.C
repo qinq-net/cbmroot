@@ -13,8 +13,22 @@ FairRunOnline *run = NULL;
 void McbmSyncMonitor(TString inFile = "", TString sHostname = "pn05",
                  Int_t iStartFile = -1, Int_t iStopFile = -1,
                  Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
-                 TString sFileTag = "" )
+                 UInt_t uRunId = 0, Bool_t bWithOffset = kFALSE,
+                 Bool_t bWithTs = kFALSE, Bool_t bSpillAna = kFALSE )
 {
+   TString sFileTag = "";
+   if( 0 < uRunId )
+      sFileTag = Form("_%u_%s", uRunId, sHostname.Data() );
+   if( kTRUE == bWithOffset )
+      sFileTag += "_Offs";
+
+   if( kTRUE == bSpillAna )
+   {
+      sFileTag += "_Spill";
+      bWithTs = kTRUE;
+   } // if( kTRUE == bSpillAna )
+      else if( kTRUE == bWithTs )
+         sFileTag += "_Ts";
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
@@ -58,11 +72,61 @@ void McbmSyncMonitor(TString inFile = "", TString sHostname = "pn05",
   CbmMcbm2018MonitorMcbmSync* monitorPulser = new CbmMcbm2018MonitorMcbmSync();
   monitorPulser->SetHistoFileName( "data/McbmSyncHistos" + sFileTag + ".root" );
   monitorPulser->SetIgnoreMsOverlap();
-  monitorPulser->SetStsTofOffsetNs(  43900 ); // Run 48
-  monitorPulser->SetMuchTofOffsetNs( 12000 ); // Run 48
-//  monitorPulser->SetMuchTofOffsetNs( 18500 ); // Run 52
-//  monitorPulser->SetStsTofOffsetNs( 0 ); // Run 53
-//  monitorPulser->SetMuchTofOffsetNs( 2500 ); // Run 53
+
+   if( kTRUE == bWithOffset )
+   {
+      switch( uRunId )
+      {
+         case 48:
+            monitorPulser->SetStsTofOffsetNs(   43900 ); // Run 48
+            monitorPulser->SetMuchTofOffsetNs(  12000 ); // Run 48
+            break;
+         case 49:
+            monitorPulser->SetStsTofOffsetNs(   11900 ); // Run 49
+            monitorPulser->SetMuchTofOffsetNs(  -2300 ); // Run 49
+            break;
+         case 51:
+            monitorPulser->SetStsTofOffsetNs(  165450 ); // Run 51, no peak in same MS, peak at ~162 us in same TS
+            monitorPulser->SetMuchTofOffsetNs(    850 ); // Run 51, no peak in same MS for full run, peak around -850 ns in last spills
+            break;
+         case 52:
+            monitorPulser->SetStsTofOffsetNs(  141500 ); // Run 52, no peak in same MS, peak at ~104 us in same TS
+            monitorPulser->SetMuchTofOffsetNs(  18450 ); // Run 52
+            break;
+         case 53:
+            monitorPulser->SetStsTofOffsetNs(  101500 ); // Run 53
+            monitorPulser->SetMuchTofOffsetNs(   2400 ); // Run 53
+            break;
+         default:
+            break;
+      } // switch( uRunId )
+   } // if( kTRUE == bWithOffset )
+
+   monitorPulser->SetTsLevelAna( bWithTs );
+
+   if( kTRUE == bSpillAna )
+   {
+      switch( uRunId )
+      {
+         case 48:
+            break;
+         case 49:
+            break;
+         case 51:
+//            monitorPulser->SetSpillLimits( 29.4, 32.2, 34.8 ); // 51
+            monitorPulser->SetSpillLimits( 3572.3, 3575.0, 3577.8 ); // 51
+            break;
+         case 52:
+            monitorPulser->SetSpillLimits( 58.6, 61.4, 64.1 ); // 52
+            break;
+         case 53:
+//            monitorPulser->SetSpillLimits( 56.7, 59.2, 62.2 ); // 53
+            monitorPulser->SetSpillLimits( 885.6, 888.4, 891.2 ); // 53
+            break;
+         default:
+            break;
+      } // switch( uRunId )
+   } // if( kTRUE == bSpillAna )
 
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();
