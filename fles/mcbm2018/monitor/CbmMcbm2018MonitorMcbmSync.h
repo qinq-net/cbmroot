@@ -76,6 +76,9 @@ public:
    inline void SetStsTofOffsetNs( Double_t dOffsetIn = 0.0 ) { fdStsTofOffsetNs = dOffsetIn; }
    inline void SetMuchTofOffsetNs( Double_t dOffsetIn = 0.0 ) { fdMuchTofOffsetNs = dOffsetIn; }
    inline void SetUseBestPair( Bool_t bInFLag = kTRUE ) { fbUseBestPair = bInFLag; }
+   inline void SetTsLevelAna( Bool_t bInFLag = kTRUE ) { fbTsLevelAna = bInFLag; }
+   inline void SetSpillLimits( Double_t dSpillA, Double_t dSpillB, Double_t dSpillC )
+         { fdSpillStartA = dSpillA; fdSpillStartB = dSpillB; fdSpillStartC = dSpillC; }
 
 private:
    /// Parameters
@@ -100,6 +103,7 @@ private:
    Double_t                  fdStsTofOffsetNs;
    Double_t                  fdMuchTofOffsetNs;
    Bool_t                    fbUseBestPair;
+   Bool_t                    fbTsLevelAna;
 
    // Constants
    static const UInt_t   kuStsBytesPerMessage = 4; //! TODO => move to the message class!!
@@ -190,10 +194,27 @@ private:
 
    TH2 * fhMcbmTimeDiffToMuch;
    TH2 * fhMcbmTimeDiffToMuchWide;
+   TH2 * fhMcbmTimeDiffToMuchTs;
+
+   TH2 * fhMcbmStsTimeDiffToMuchVsAdc;
+   TH2 * fhMcbmStsTimeDiffToMuchWideVsAdc;
+   TH2 * fhMcbmStsTimeDiffToMuchTsVsAdc;
 
    std::vector< TH2 * > fvhMcbmTimeDiffToDiamondEvoDpb;
    std::vector< TH2 * > fvhMcbmTimeDiffToDiamondWideEvoDpb;
    std::vector< TH2 * > fvhMcbmTimeDiffToDiamondTsEvoDpb;
+
+   Double_t fdSpillStartA;
+   Double_t fdSpillStartB;
+   Double_t fdSpillStartC;
+   std::vector< TH1 * > fvhHitsTimeEvoSpillA;
+   std::vector< TH1 * > fvhHitsTimeEvoSpillB;
+
+   std::vector< TH2 * > fvhMcbmTimeDiffToDiamondEvoSpillA;
+   std::vector< TH2 * > fvhMcbmTimeDiffToDiamondEvoSpillB;
+
+   std::vector< TH2 * > fvhMcbmTimeDiffToMuchEvoSpillA;
+   std::vector< TH2 * > fvhMcbmTimeDiffToMuchEvoSpillB;
 
    void CreateMcbmHistograms();
 /****************** mCBM Sync *****************************************/

@@ -68,6 +68,7 @@ CbmMcbm2018MonitorMcbmSync::CbmMcbm2018MonitorMcbmSync() :
    fdStsTofOffsetNs(0.0),
    fdMuchTofOffsetNs(0.0),
    fbUseBestPair( kFALSE ),
+   fbTsLevelAna( kFALSE ),
    fsHistoFileFullname( "data/mCBMsyncHistos.root" ),
    fbPrintMessages( kFALSE ),
    fPrintMessCtrlSts( stsxyter::MessagePrintMask::msg_print_Human ),
@@ -103,9 +104,22 @@ CbmMcbm2018MonitorMcbmSync::CbmMcbm2018MonitorMcbmSync() :
    fhMcbmTimeDiffToDiamondTs(),
    fhMcbmTimeDiffToMuch(),
    fhMcbmTimeDiffToMuchWide(),
+   fhMcbmTimeDiffToMuchTs(),
+   fhMcbmStsTimeDiffToMuchVsAdc(),
+   fhMcbmStsTimeDiffToMuchWideVsAdc(),
+   fhMcbmStsTimeDiffToMuchTsVsAdc(),
    fvhMcbmTimeDiffToDiamondEvoDpb(),
    fvhMcbmTimeDiffToDiamondWideEvoDpb(),
-   fvhMcbmTimeDiffToDiamondTsEvoDpb()
+   fvhMcbmTimeDiffToDiamondTsEvoDpb(),
+   fdSpillStartA(  0.0 ),
+   fdSpillStartB(  0.0 ),
+   fdSpillStartC( -1.0 ),
+   fvhHitsTimeEvoSpillA(),
+   fvhHitsTimeEvoSpillB(),
+   fvhMcbmTimeDiffToDiamondEvoSpillA(),
+   fvhMcbmTimeDiffToDiamondEvoSpillB(),
+   fvhMcbmTimeDiffToMuchEvoSpillA(),
+   fvhMcbmTimeDiffToMuchEvoSpillB()
 {
 }
 
@@ -407,52 +421,115 @@ void CbmMcbm2018MonitorMcbmSync::CreateMcbmHistograms()
                                   fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
 
    sHistName  = "hMcbmTimeDiffToDiamond";
-   sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Diamond hit; <tTOF - tSTS> [ns]; DPB []";
+   sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Diamond hit; <tn - tDia> [ns]; DPB []";
    fhMcbmTimeDiffToDiamond = new TH2D( sHistName, sHistTitle,
                                         1001, -500.5 * stsxyter::kdClockCycleNs, 500.5 * stsxyter::kdClockCycleNs,
                                         fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
    sHistName  = "hMcbmTimeDiffToDiamondWide";
-   sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Diamond hit, wide range; <tTOF - tSTS> [us]; DPB []";
+   sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Diamond hit, wide range; <tn - tDia> [us]; DPB []";
    fhMcbmTimeDiffToDiamondWide = new TH2D( sHistName, sHistTitle,
                                         6000.0, -300., 300.,
                                         fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
    sHistName  = "hMcbmTimeDiffToDiamondTs";
-   sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Diamond hit, TS range; <tTOF - tSTS> [ms]; DPB []";
+   sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Diamond hit, TS range; <tn - tDia> [ms]; DPB []";
    fhMcbmTimeDiffToDiamondTs = new TH2D( sHistName, sHistTitle,
                                         2000.0, -10., 10.,
                                         fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
 
    sHistName  = "hMcbmTimeDiffToMuch";
-   sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Much hit; <tTOF - tSTS> [ns]; DPB []";
+   sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Much hit; <tn - tMuch> [ns]; DPB []";
    fhMcbmTimeDiffToMuch = new TH2D( sHistName, sHistTitle,
                                         1001, -500.5 * stsxyter::kdClockCycleNs, 500.5 * stsxyter::kdClockCycleNs,
                                         fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
    sHistName  = "hMcbmTimeDiffToMuchWide";
-   sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Much hit, wide range; <tTOF - tSTS> [us]; DPB []";
+   sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Much hit, wide range; <tn - tMuch> [us]; DPB []";
    fhMcbmTimeDiffToMuchWide = new TH2D( sHistName, sHistTitle,
                                         6000.0, -300., 300.,
                                         fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
+   sHistName  = "hMcbmTimeDiffToMuchTs";
+   sHistTitle = "Time difference for STS and TOF hits, per DPB, against any Much hit, TS range; <tn - tMuch> [ms]; DPB []";
+   fhMcbmTimeDiffToMuchTs = new TH2D( sHistName, sHistTitle,
+                                        2000.0, -10., 10.,
+                                        fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
+
+   /// For STS debug only
+   sHistName  = "hMcbmStsTimeDiffToMuchVsAdc";
+   sHistTitle = "Time difference for STS hits against any Much hit vs STS hit ADC; <tSts - tMuch> [ns]; ADC Sts [bin]";
+   fhMcbmStsTimeDiffToMuchVsAdc = new TH2D( sHistName, sHistTitle,
+                                        1001, -500.5 * stsxyter::kdClockCycleNs, 500.5 * stsxyter::kdClockCycleNs,
+                                        stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5);
+   sHistName  = "hMcbmStsTimeDiffToMuchWideVsAdc";
+   sHistTitle = "Time difference for STS hits against any Much hit vs STS hit ADC, wide range; <tSts - tMuch> [us]; ADC Sts [bin]";
+   fhMcbmStsTimeDiffToMuchWideVsAdc = new TH2D( sHistName, sHistTitle,
+                                        6000.0, -300., 300.,
+                                        stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5);
+   sHistName  = "hMcbmStsTimeDiffToMuchTsVsAdc";
+   sHistTitle = "Time difference for STS hits against any Much hit vs STS hit ADC, TS range; <tSts - tMuch> [ms]; ADC Sts [bin]";
+   fhMcbmStsTimeDiffToMuchTsVsAdc = new TH2D( sHistName, sHistTitle,
+                                        2000.0, -10., 10.,
+                                        stsxyter::kuHitNbAdcBins, -0.5, stsxyter::kuHitNbAdcBins -0.5);
 
    for( UInt_t uDpb = 0; uDpb < fuTotalNrOfDpb; ++uDpb )
    {
 
       sHistName  = Form( "hMcbmTimeDiffToDiamondEvoDpb%02u", uDpb );
-      sHistTitle = Form( "Evolution of time difference for STS or TOF hits from DPB %02u against any Diamond hit; TS []; <tTOF - tSTS> [ns]", uDpb );
+      sHistTitle = Form( "Evolution of time difference for STS or TOF hits from DPB %02u against any Diamond hit; TS []; <tn - tDia> [ns]", uDpb );
       fvhMcbmTimeDiffToDiamondEvoDpb.push_back( new TH2D( sHistName, sHistTitle,
                                                          2000.0, 0., 200000.,
                                                          1001, -500.5 * stsxyter::kdClockCycleNs, 500.5 * stsxyter::kdClockCycleNs) );
 
       sHistName  = Form( "hMcbmTimeDiffToDiamondWideEvoDpb%02u", uDpb );
-      sHistTitle = Form( "Evolution of time difference for STS or TOF hits from DPB %02u against any Diamond hit, wide range; TS []; <tTOF - tSTS> [us]", uDpb );
+      sHistTitle = Form( "Evolution of time difference for STS or TOF hits from DPB %02u against any Diamond hit, wide range; TS []; <tn - tDia> [us]", uDpb );
       fvhMcbmTimeDiffToDiamondWideEvoDpb.push_back( new TH2D( sHistName, sHistTitle,
                                                          2000.0, 0., 200000.,
                                                          4000.0, -200., 200.) );
 
       sHistName  = Form( "hMcbmTimeDiffToDiamondTsEvoDpb%02u", uDpb );
-      sHistTitle = Form( "Evolution of time difference for STS or TOF hits from DPB %02u against any Diamond hit, TS range; TS []; <tTOF - tSTS> [ms]", uDpb );
+      sHistTitle = Form( "Evolution of time difference for STS or TOF hits from DPB %02u against any Diamond hit, TS range; TS []; <tn - tDia> [ms]", uDpb );
       fvhMcbmTimeDiffToDiamondTsEvoDpb.push_back( new TH2D( sHistName, sHistTitle,
                                                          2000.0, 0., 200000.,
                                                          200.0, -10., 10.) );
+
+      if( fdSpillStartA < fdSpillStartC  )
+      {
+         sHistName  = Form( "hHitsTimeEvoSpillADpb%02u", uDpb );
+         sHistTitle = Form( "Evolution of hit counts VS time for DPB %02u in the first spill; tHit [s]; counts", uDpb );
+         fvhHitsTimeEvoSpillA.push_back( new TH1D( sHistName, sHistTitle,
+                                                   (fdSpillStartB - fdSpillStartA) * 1e5, fdSpillStartA - 0.1, fdSpillStartB ) );
+
+         sHistName  = Form( "hHitsTimeEvoSpillBDpb%02u", uDpb );
+         sHistTitle = Form( "Evolution of hit counts VS time for DPB %02u in the second spill; tHit [s]; counts", uDpb );
+         fvhHitsTimeEvoSpillB.push_back( new TH1D( sHistName, sHistTitle,
+                                                   (fdSpillStartC - fdSpillStartB) * 1e5, fdSpillStartB - 0.1, fdSpillStartC ) );
+
+         sHistName  = Form( "hMcbmTimeDiffToDiamondEvoSpillADpb%02u", uDpb );
+         sHistTitle = Form( "Evolution of Time Diff to diam VS time for DPB %02u in the first spill; tHit [s]; <tn - tDia> [us]", uDpb );
+         fvhMcbmTimeDiffToDiamondEvoSpillA.push_back( new TH2D( sHistName, sHistTitle,
+                                                         (fdSpillStartB - fdSpillStartA) * 1e2, fdSpillStartA - 0.1, fdSpillStartB,
+                                                         6000.0, -300., 300. )
+                                                    );
+
+         sHistName  = Form( "hMcbmTimeDiffToDiamondEvoSpillBDpb%02u", uDpb );
+         sHistTitle = Form( "Evolution of Time Diff to diam VS time for DPB %02u in the second spill; tHit [s]; <tn - tDia> [us]", uDpb );
+         fvhMcbmTimeDiffToDiamondEvoSpillB.push_back( new TH2D( sHistName, sHistTitle,
+                                                         (fdSpillStartC - fdSpillStartB) * 1e2, fdSpillStartB - 0.1, fdSpillStartC,
+                                                         6000.0, -300., 300. )
+                                                    );
+
+         sHistName  = Form( "hMcbmTimeDiffToMuchEvoSpillADpb%02u", uDpb );
+         sHistTitle = Form( "Evolution of Time Diff to MUCH VS time for DPB %02u in the first spill; tHit [s]; <tn - tDia> [us]", uDpb );
+         fvhMcbmTimeDiffToMuchEvoSpillA.push_back( new TH2D( sHistName, sHistTitle,
+                                                         (fdSpillStartB - fdSpillStartA) * 1e2, fdSpillStartA - 0.1, fdSpillStartB,
+                                                         6000.0, -300., 300. )
+                                                    );
+
+         sHistName  = Form( "hMcbmTimeDiffToMuchEvoSpillBDpb%02u", uDpb );
+         sHistTitle = Form( "Evolution of Time Diff to MUCH VS time for DPB %02u in the second spill; tHit [s]; <tn - tDia> [us]", uDpb );
+         fvhMcbmTimeDiffToMuchEvoSpillB.push_back( new TH2D( sHistName, sHistTitle,
+                                                         (fdSpillStartC - fdSpillStartB) * 1e2, fdSpillStartB - 0.1, fdSpillStartC,
+                                                         6000.0, -300., 300. )
+                                                    );
+      } // if( fdSpillStartA < fdSpillStartC  )
    } // for( UInt_t uDpb = 0; uDpb < fuTotalNrOfDpb; ++uDpb )
 #ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
@@ -464,6 +541,11 @@ void CbmMcbm2018MonitorMcbmSync::CreateMcbmHistograms()
 
       server->Register("/mCbmDt", fhMcbmTimeDiffToMuch );
       server->Register("/mCbmDt", fhMcbmTimeDiffToMuchWide );
+      server->Register("/mCbmDt", fhMcbmTimeDiffToMuchTs );
+
+      server->Register("/mCbmDt", fhMcbmStsTimeDiffToMuchVsAdc );
+      server->Register("/mCbmDt", fhMcbmStsTimeDiffToMuchWideVsAdc );
+      server->Register("/mCbmDt", fhMcbmStsTimeDiffToMuchTsVsAdc );
 
       for( UInt_t uDpb = 0; uDpb < fuTotalNrOfDpb; ++uDpb )
       {
@@ -554,6 +636,26 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
             return kFALSE;
       } // for( UInt_t uMsComp = 0; uMsComp < fvMsComponentsListSts.size(); ++uMsComp )
 
+      /// If we are looking for only 2 spills, skip the data which are too far before them
+      if( fdSpillStartA < fdSpillStartC )
+      {
+         if( fulCurrentMsIdx * 1e-9 < fdSpillStartA - 0.2 )
+         {
+            /// Clear buffers
+            for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
+            {
+               fhMcbmHitsNbPerMs->Fill( fvmStsSdpbHitsInMs[ uSdpb ].size(), uSdpb );
+               fvmStsSdpbHitsInMs[ uSdpb ].clear();
+            } // for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
+            for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
+            {
+               fhMcbmHitsNbPerMs->Fill( fvmTofGdpbHitsInMs[ uGdpb ].size(), uGdpb + fuStsNrOfDpbs );
+               fvmTofGdpbHitsInMs[ uGdpb ].clear();
+            } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
+            continue;
+         } // if( fulCurrentMsIdx * 1e-9 < fdSpillStartA - 0.2 )
+      } // if( fdSpillStartA < fdSpillStartC )
+
 /****************** STS Sync ******************************************/
       /// Sort the buffers of hits
       for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
@@ -573,7 +675,12 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
       {
          Double_t dDiaTime = fvmTofGdpbHitsInMs[ fuDiamondDpbIdx ][ uHitDia ].GetFullTimeNs();
 
-      /// Jump Sts has it has far too many hits!!!
+         if( fdSpillStartA < fdSpillStartC  )
+         {
+            fvhHitsTimeEvoSpillA[ fuDiamondDpbIdx + fuStsNrOfDpbs ]->Fill( dDiaTime * 1e-9 );
+            fvhHitsTimeEvoSpillB[ fuDiamondDpbIdx + fuStsNrOfDpbs ]->Fill( dDiaTime * 1e-9 );
+         } // if( fdSpillStartA < fdSpillStartC  )
+
          for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
          {
             UInt_t uNbHits = fvmStsSdpbHitsInMs[ uSdpb ].size();
@@ -586,6 +693,12 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
                if( fuMuchDpbIdx == uSdpb )
                   dHitTime -= fdMuchTofOffsetNs;
                   else dHitTime -= fdStsTofOffsetNs;
+
+               if( fdSpillStartA < fdSpillStartC  )
+               {
+                  fvhHitsTimeEvoSpillA[ uSdpb ]->Fill( dHitTime * 1e-9 );
+                  fvhHitsTimeEvoSpillB[ uSdpb ]->Fill( dHitTime * 1e-9 );
+               } // if( fdSpillStartA < fdSpillStartC  )
 
                Double_t dDt = dHitTime - dDiaTime;
 
@@ -634,6 +747,12 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
             {
                Double_t dHitTime = fvmTofGdpbHitsInMs[ uGdpb ][ uHit ].GetFullTimeNs();
 
+               if( fdSpillStartA < fdSpillStartC  )
+               {
+                  fvhHitsTimeEvoSpillA[ uGdpb + fuStsNrOfDpbs ]->Fill( dHitTime * 1e-9 );
+                  fvhHitsTimeEvoSpillB[ uGdpb + fuStsNrOfDpbs ]->Fill( dHitTime * 1e-9 );
+               } // if( fdSpillStartA < fdSpillStartC  )
+
                Double_t dDt = dHitTime - dDiaTime;
 
                if( kTRUE == fbUseBestPair )
@@ -676,14 +795,14 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
          Double_t dMuchTime = stsxyter::kdClockCycleNs * fvmStsSdpbHitsInMs[ fuMuchDpbIdx ][ uHitMuch ].GetTs()
                               - fdMuchTofOffsetNs;
 
-      /// Jump Sts has it has far too many hits!!!
          for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
          {
             if( fuMuchDpbIdx == uSdpb )
                continue;
 
             UInt_t uNbHits = fvmStsSdpbHitsInMs[ uSdpb ].size();
-            Double_t dBestDt = 1e9;
+            Double_t dBestDt  = 1e9;
+            UInt_t   uBestAdc = 0;
             UInt_t   uNbIncrDt = 0;
 
             for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
@@ -699,7 +818,10 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
                {
                   /// Check if this hits is better than the previous ones
                   if( TMath::Abs( dDt ) < TMath::Abs( dBestDt ) )
+                  {
                      dBestDt = dDt;
+                     uBestAdc = fvmStsSdpbHitsInMs[ uSdpb ][ uHit ].GetAdc();
+                  } // if( TMath::Abs( dDt ) < TMath::Abs( dBestDt ) )
                      else if( dBestDt < dDt ) /// Count increasing dt to detect minimum
                         uNbIncrDt++;
 
@@ -711,6 +833,9 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
                   {
                      fhMcbmTimeDiffToMuch->Fill( dDt, uSdpb );
                      fhMcbmTimeDiffToMuchWide->Fill( dDt / 1000.0, uSdpb );
+
+                     fhMcbmStsTimeDiffToMuchVsAdc->Fill( dDt, fvmStsSdpbHitsInMs[ uSdpb ][ uHit ].GetAdc() );
+                     fhMcbmStsTimeDiffToMuchWideVsAdc->Fill( dDt / 1000.0, fvmStsSdpbHitsInMs[ uSdpb ][ uHit ].GetAdc() );
                   } // else of if( kTRUE == fbUseBestPair )
             } // for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
 
@@ -718,6 +843,9 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
             {
                fhMcbmTimeDiffToMuch->Fill( dBestDt, uSdpb );
                fhMcbmTimeDiffToMuchWide->Fill( dBestDt / 1000.0, uSdpb );
+
+               fhMcbmStsTimeDiffToMuchVsAdc->Fill( dBestDt, uBestAdc );
+               fhMcbmStsTimeDiffToMuchWideVsAdc->Fill( dBestDt / 1000.0, uBestAdc );
             } // if( kTRUE == fbUseBestPair )
          } // for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
 
@@ -758,44 +886,55 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
                fhMcbmTimeDiffToMuchWide->Fill( dBestDt / 1000.0, uGdpb + fuStsNrOfDpbs );
             } // if( kTRUE == fbUseBestPair )
          } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
-      } // for( UInt_t uHitMuch = 0; uHitMuch < uNbDiaHits; uHitMuch++)
+      } // for( UInt_t uHitMuch = 0; uHitMuch < uNbMuchHits; uHitMuch++)
 
       /// Clear buffers
       for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
       {
          fhMcbmHitsNbPerMs->Fill( fvmStsSdpbHitsInMs[ uSdpb ].size(), uSdpb );
-/*
-      /// Jump Sts has it has far too many hits!!!
-         if( 0 < uSdpb )
-         fvmStsSdpbHitsInTs[ uSdpb ].insert( fvmStsSdpbHitsInTs[ uSdpb ].end(),
-                                             fvmStsSdpbHitsInMs[ uSdpb ].begin(),
-                                             fvmStsSdpbHitsInMs[ uSdpb ].end() );
-*/
+
+         if( fbTsLevelAna )
+            fvmStsSdpbHitsInTs[ uSdpb ].insert( fvmStsSdpbHitsInTs[ uSdpb ].end(),
+                                                fvmStsSdpbHitsInMs[ uSdpb ].begin(),
+                                                fvmStsSdpbHitsInMs[ uSdpb ].end() );
+
          fvmStsSdpbHitsInMs[ uSdpb ].clear();
       } // for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
       for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
       {
          fhMcbmHitsNbPerMs->Fill( fvmTofGdpbHitsInMs[ uGdpb ].size(), uGdpb + fuStsNrOfDpbs );
-/*
-         fvmTofGdpbHitsInTs[ uGdpb ].insert( fvmTofGdpbHitsInTs[ uGdpb ].end(),
-                                             fvmTofGdpbHitsInMs[ uGdpb ].begin(),
-                                             fvmTofGdpbHitsInMs[ uGdpb ].end() );
-*/
+
+         if( fbTsLevelAna )
+            fvmTofGdpbHitsInTs[ uGdpb ].insert( fvmTofGdpbHitsInTs[ uGdpb ].end(),
+                                                fvmTofGdpbHitsInMs[ uGdpb ].begin(),
+                                                fvmTofGdpbHitsInMs[ uGdpb ].end() );
+
          fvmTofGdpbHitsInMs[ uGdpb ].clear();
       } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
 /****************** mCBM Sync *****************************************/
+
+      /// If we are looking for only 2 spills, stop after we got them
+      if( fdSpillStartA < fdSpillStartC  )
+      {
+         if( fdSpillStartC < fulCurrentMsIdx * 1e-9 )
+         {
+            SaveAllHistos( fsHistoFileFullname );
+            LOG(FATAL) << "Done with the spills"
+                       << FairLogger::endl;
+         } // if( fdSpillStartC < fulCurrentMsIdx * 1e-9 )
+      } // if( fdSpillStartA < fdSpillStartC )
+
    } // for( UInt_t uMsIdx = 0; uMsIdx < uNbMsLoop; uMsIdx ++ )
 
 /****************** mCBM Sync *****************************************/
-/*
+
    /// Build time differences for each DPB hit against each diamond hit
    UInt_t uNbDiaHits = fvmTofGdpbHitsInTs[ fuDiamondDpbIdx ].size();
    for( UInt_t uHitDia = 0; uHitDia < uNbDiaHits; uHitDia++)
    {
       Double_t dDiaTime = fvmTofGdpbHitsInTs[ fuDiamondDpbIdx ][ uHitDia ].GetFullTimeNs();
 
-      /// Jump Sts has it has far too many hits!!!
-      for( UInt_t uSdpb = 1; uSdpb < fuStsNrOfDpbs; ++uSdpb )
+      for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
       {
          UInt_t uNbHits = fvmStsSdpbHitsInTs[ uSdpb ].size();
          for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
@@ -803,9 +942,24 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
             Double_t dHitTime = stsxyter::kdClockCycleNs * fvmStsSdpbHitsInTs[ uSdpb ][ uHit ].GetTs();
 
             Double_t dDt = dHitTime - dDiaTime;
+
+            /// Limit scan to "reasonnable range" of 300 us
+            if( 300e3 < dDt )
+               break;
+
             fhMcbmTimeDiffToDiamondTs->Fill( dDt / 1e6, uSdpb );
 
             fvhMcbmTimeDiffToDiamondTsEvoDpb[ uSdpb ]->Fill( fulCurrentTsIdx, dDt / 1e6 );
+
+            if( fdSpillStartA < fdSpillStartC )
+            {
+               Double_t dDiaTimeSec = dDiaTime * 1e-9;
+               if( fdSpillStartA - 0.1 < dDiaTimeSec && dDiaTimeSec < fdSpillStartC + 0.1 )
+               {
+                  fvhMcbmTimeDiffToDiamondEvoSpillA[ uSdpb ]->Fill( dDiaTimeSec, dDt / 1e3 );
+                  fvhMcbmTimeDiffToDiamondEvoSpillB[ uSdpb ]->Fill( dDiaTimeSec, dDt / 1e3 );
+               } // if( fdSpillStartA - 0.1 < dDiaTimeSec && dDiaTimeSec < fdSpillStartC + 0.1 )
+            } // if( fdSpillStartA < fdSpillStartC  )
          } // for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
       } // for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
 
@@ -820,12 +974,102 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
             Double_t dHitTime = fvmTofGdpbHitsInTs[ uGdpb ][ uHit ].GetFullTimeNs();
 
             Double_t dDt = dHitTime - dDiaTime;
+
+            /// Limit scan to "reasonnable range" of 300 us
+            if( 300e3 < dDt )
+               break;
+
             fhMcbmTimeDiffToDiamondTs->Fill( dDt / 1e6, uGdpb + fuStsNrOfDpbs );
 
             fvhMcbmTimeDiffToDiamondTsEvoDpb[ uGdpb + fuStsNrOfDpbs ]->Fill( fulCurrentTsIdx, dDt / 1e6 );
+
+            if( fdSpillStartA < fdSpillStartC )
+            {
+               Double_t dDiaTimeSec = dDiaTime * 1e-9;
+               if( fdSpillStartA - 0.1 < dDiaTimeSec && dDiaTimeSec < fdSpillStartC + 0.1 )
+               {
+                  fvhMcbmTimeDiffToDiamondEvoSpillA[ uGdpb + fuStsNrOfDpbs ]->Fill( dDiaTimeSec, dDt / 1e3 );
+                  fvhMcbmTimeDiffToDiamondEvoSpillB[ uGdpb + fuStsNrOfDpbs ]->Fill( dDiaTimeSec, dDt / 1e3 );
+               } // if( fdSpillStartA - 0.1 < dDiaTimeSec && dDiaTimeSec < fdSpillStartC + 0.1 )
+            } // if( fdSpillStartA < fdSpillStartC  )
          } // for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
       } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
    } // for( UInt_t uHitDia = 0; uHitDia < uNbDiaHits; uHitDia++)
+
+   /// Build time differences for each DPB hit against each Much hit
+   UInt_t uNbMuchHits = fvmStsSdpbHitsInTs[ fuMuchDpbIdx ].size();
+   for( UInt_t uHitMuch = 0; uHitMuch < uNbMuchHits; uHitMuch++)
+   {
+      Double_t dMuchTime = stsxyter::kdClockCycleNs * fvmStsSdpbHitsInTs[ fuMuchDpbIdx ][ uHitMuch ].GetTs()
+                           - fdMuchTofOffsetNs;
+
+      for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
+      {
+         if( fuMuchDpbIdx == uSdpb )
+            continue;
+
+         UInt_t uNbHits = fvmStsSdpbHitsInTs[ uSdpb ].size();
+         Double_t dBestDt  = 1e9;
+         UInt_t   uBestAdc = 0;
+         UInt_t   uNbIncrDt = 0;
+
+         for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
+         {
+            Double_t dHitTime = stsxyter::kdClockCycleNs * fvmStsSdpbHitsInTs[ uSdpb ][ uHit ].GetTs();
+            if( fuMuchDpbIdx == uSdpb )
+               dHitTime -= fdMuchTofOffsetNs;
+               else dHitTime -= fdStsTofOffsetNs;
+
+            Double_t dDt = dHitTime - dMuchTime;
+
+            /// Limit scan to "reasonnable range" of 300 us
+            if( 300e3 < dDt )
+               break;
+
+            fhMcbmTimeDiffToMuchTs->Fill( dDt / 1e6, uSdpb );
+            fhMcbmStsTimeDiffToMuchTsVsAdc->Fill( dDt / 1e6, fvmStsSdpbHitsInTs[ uSdpb ][ uHit ].GetAdc() );
+
+            if( fdSpillStartA < fdSpillStartC )
+            {
+               Double_t dMuchTimeSec = dMuchTime * 1e-9;
+               if( fdSpillStartA - 0.1 < dMuchTimeSec && dMuchTimeSec < fdSpillStartC + 0.1 )
+               {
+                  fvhMcbmTimeDiffToMuchEvoSpillA[ uSdpb ]->Fill( dMuchTimeSec, dDt / 1e3 );
+                  fvhMcbmTimeDiffToMuchEvoSpillB[ uSdpb ]->Fill( dMuchTimeSec, dDt / 1e3 );
+               } // if( fdSpillStartA - 0.1 < dDiaTimeSec && dDiaTimeSec < fdSpillStartC + 0.1 )
+            } // if( fdSpillStartA < fdSpillStartC  )
+         } // for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
+      } // for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
+
+      for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
+      {
+         UInt_t uNbHits = fvmTofGdpbHitsInTs[ uGdpb ].size();
+         Double_t dBestDt = 1e9;
+         UInt_t   uNbIncrDt = 0;
+
+         for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
+         {
+            Double_t dHitTime = fvmTofGdpbHitsInTs[ uGdpb ][ uHit ].GetFullTimeNs();
+
+            Double_t dDt = dHitTime - dMuchTime;
+
+            /// Limit scan to "reasonnable range" of 300 us
+            if( 300e3 < dDt )
+               break;
+
+            fhMcbmTimeDiffToMuchTs->Fill( dDt / 1e6, uGdpb + fuStsNrOfDpbs );
+            if( fdSpillStartA < fdSpillStartC )
+            {
+               Double_t dMuchTimeSec = dMuchTime * 1e-9;
+               if( fdSpillStartA - 0.1 < dMuchTimeSec && dMuchTimeSec < fdSpillStartC + 0.1 )
+               {
+                  fvhMcbmTimeDiffToMuchEvoSpillA[ uGdpb + fuStsNrOfDpbs ]->Fill( dMuchTimeSec, dDt / 1e3 );
+                  fvhMcbmTimeDiffToMuchEvoSpillB[ uGdpb + fuStsNrOfDpbs ]->Fill( dMuchTimeSec, dDt / 1e3 );
+               } // if( fdSpillStartA - 0.1 < dDiaTimeSec && dDiaTimeSec < fdSpillStartC + 0.1 )
+            } // if( fdSpillStartA < fdSpillStartC  )
+         } // for( UInt_t uHit = 0; uHit < uNbHits; ++uHit )
+      } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
+   } // for( UInt_t uHitMuch = 0; uHitMuch < uNbMuchHits; uHitMuch++)
 
    /// Clear buffers
    for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
@@ -836,7 +1080,7 @@ Bool_t CbmMcbm2018MonitorMcbmSync::DoUnpack(const fles::Timeslice& ts, size_t co
    {
       fvmTofGdpbHitsInTs[ uGdpb ].clear();
    } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
-*/
+
 /****************** mCBM Sync *****************************************/
 
    if( 0 == ts.index() % 1000 )
@@ -997,6 +1241,10 @@ void CbmMcbm2018MonitorMcbmSync::FillStsHitInfo( stsxyter::Message mess, const U
    } // if( fuCurrDpbIdx == fuMuchDpbIdx )
       else
       {
+         /// Ignore low ADC hits
+         if( usRawAdc < 15 )
+            return;
+
          /// STS bad channels
          uAsicIdx = fUnpackParSts->ElinkIdxToAsicIdx( kFALSE, mess.GetLinkIndex() );
          UInt_t uChanIdx = usChan + fUnpackParSts->GetNbChanPerAsic() * uAsicIdx;
@@ -1308,12 +1556,29 @@ void CbmMcbm2018MonitorMcbmSync::SaveAllHistos( TString sFileName )
 
    fhMcbmTimeDiffToMuch->Write();
    fhMcbmTimeDiffToMuchWide->Write();
+   fhMcbmTimeDiffToMuchTs->Write();
+
+   fhMcbmStsTimeDiffToMuchVsAdc->Write();
+   fhMcbmStsTimeDiffToMuchWideVsAdc->Write();
+   fhMcbmStsTimeDiffToMuchTsVsAdc->Write();
 
    for( UInt_t uDpb = 0; uDpb < fuTotalNrOfDpb; ++uDpb )
    {
       fvhMcbmTimeDiffToDiamondEvoDpb[uDpb]->Write();
       fvhMcbmTimeDiffToDiamondWideEvoDpb[uDpb]->Write();
       fvhMcbmTimeDiffToDiamondTsEvoDpb[uDpb]->Write();
+
+      if( fdSpillStartA < fdSpillStartC  )
+      {
+         fvhHitsTimeEvoSpillA[uDpb]->Write();
+         fvhHitsTimeEvoSpillB[uDpb]->Write();
+
+         fvhMcbmTimeDiffToDiamondEvoSpillA[uDpb]->Write();
+         fvhMcbmTimeDiffToDiamondEvoSpillB[uDpb]->Write();
+
+         fvhMcbmTimeDiffToMuchEvoSpillA[uDpb]->Write();
+         fvhMcbmTimeDiffToMuchEvoSpillB[uDpb]->Write();
+      } // if( fdSpillStartA < fdSpillStartC  )
    } // for( UInt_t uDpb = 0; uDpb < fuTotalNrOfDpb; ++uDpb )
 
    gDirectory->cd("..");
@@ -1344,12 +1609,29 @@ void CbmMcbm2018MonitorMcbmSync::ResetAllHistos()
 
    fhMcbmTimeDiffToMuch->Reset();
    fhMcbmTimeDiffToMuchWide->Reset();
+   fhMcbmTimeDiffToMuchTs->Reset();
+
+   fhMcbmStsTimeDiffToMuchVsAdc->Reset();
+   fhMcbmStsTimeDiffToMuchWideVsAdc->Reset();
+   fhMcbmStsTimeDiffToMuchTsVsAdc->Reset();
 
    for( UInt_t uDpb = 0; uDpb < fuTotalNrOfDpb; ++uDpb )
    {
       fvhMcbmTimeDiffToDiamondEvoDpb[uDpb]->Reset();
       fvhMcbmTimeDiffToDiamondWideEvoDpb[uDpb]->Reset();
       fvhMcbmTimeDiffToDiamondTsEvoDpb[uDpb]->Reset();
+
+      if( fdSpillStartA < fdSpillStartC  )
+      {
+         fvhHitsTimeEvoSpillA[uDpb]->Reset();
+         fvhHitsTimeEvoSpillB[uDpb]->Reset();
+
+         fvhMcbmTimeDiffToDiamondEvoSpillA[uDpb]->Reset();
+         fvhMcbmTimeDiffToDiamondEvoSpillB[uDpb]->Reset();
+
+         fvhMcbmTimeDiffToMuchEvoSpillA[uDpb]->Reset();
+         fvhMcbmTimeDiffToMuchEvoSpillB[uDpb]->Reset();
+      } // if( fdSpillStartA < fdSpillStartC  )
    } // for( UInt_t uDpb = 0; uDpb < fuTotalNrOfDpb; ++uDpb )
 /****************** mCBM Sync *****************************************/
 }
