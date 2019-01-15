@@ -100,7 +100,8 @@ CbmMcbm2018MonitorMcbmRate::CbmMcbm2018MonitorMcbmRate() :
    fhMcbmHitsNbPerTsEvo(),
    fhMcbmHitsNbFineEvo(),
    fhMcbmHitsRateEvo(),
-   fhDiamondHitsRateMapEvo()
+   fhDiamondHitsRateMapEvo(),
+   fhDiamondHitsRateDerivative()
 {
 }
 
@@ -398,26 +399,31 @@ void CbmMcbm2018MonitorMcbmRate::CreateMcbmHistograms()
    sHistName  = "hMcbmHitsNbPerTsEvo";
    sHistTitle = "Nb STS or TOF hits, per DPB and per TS; TS index []; DPB []; Nb Hits []";
    fhMcbmHitsNbPerTsEvo = new TH2D( sHistName, sHistTitle,
-                                        200000.0, 0., 200000.,
+                                        400001, -0.5, 400000.5,
                                         fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
 
    sHistName  = "hMcbmHitsNbFineEvo";
    sHistTitle = "Nb STS or TOF hits, per DPB and per 100 ms; t [s]; DPB []; Hit rate [1/s]";
    fhMcbmHitsNbFineEvo = new TH2D( sHistName, sHistTitle,
-                                        20000.0, 0., 2000.,
+                                        40001, -0.05, 4000.05,
                                         fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
 
    sHistName  = "hMcbmHitsRateEvo";
    sHistTitle = "STS or TOF hits rate per DPB as function of time in run; t [s]; DPB []; Hit rate [1/s]";
    fhMcbmHitsRateEvo = new TH2D( sHistName, sHistTitle,
-                                        2000.0, 0., 2000.,
+                                        4001, -0.5, 4000.5,
                                         fuTotalNrOfDpb, 0., fuTotalNrOfDpb);
 
    sHistName  = "hDiamondHitsRateMapEvo";
    sHistTitle = "Counts per diamond strip and 100 ms as function of time in run; t [s]; strip []; Counts []";
    fhDiamondHitsRateMapEvo = new TH2D( sHistName, sHistTitle,
-                                        20000.0, 0., 2000.,
+                                        40001, -0.05, 4000.05,
                                         8, 0., 8.);
+
+   sHistName  = "hDiamondHitsRateDerivative";
+   sHistTitle = "Variation of the diamond counts per s in 100 ms bins as function of time in run; t [s];  Delta(Counts/s) []";
+   fhDiamondHitsRateDerivative = new TH1D( sHistName, sHistTitle,
+                                        40000, 0., 4000. );
 
 
 #ifdef USE_HTTP_SERVER
@@ -529,43 +535,44 @@ Bool_t CbmMcbm2018MonitorMcbmRate::DoUnpack(const fles::Timeslice& ts, size_t co
       for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
          std::sort( fvmTofGdpbHitsInMs[ uGdpb ].begin(), fvmTofGdpbHitsInMs[ uGdpb ].end() );
 */
-   UInt_t uNbDiaHits = fvmTofGdpbHitsInTs[ fuDiamondDpbIdx ].size();
-   for( UInt_t uHitDia = 0; uHitDia < uNbDiaHits; uHitDia++)
-   {
-      Double_t dDiaTime = fvmTofGdpbHitsInTs[ fuDiamondDpbIdx ][ uHitDia ].GetFullTimeNs() / 1e-9;
-      UInt_t uChan = 8;
-
-      switch( fvmTofGdpbHitsInTs[ fuDiamondDpbIdx ][ uHitDia ].getGdpbHitChanId() )
+      UInt_t uNbDiaHits = fvmTofGdpbHitsInMs[ fuDiamondDpbIdx ].size();
+      for( UInt_t uHitDia = 0; uHitDia < uNbDiaHits; uHitDia++)
       {
-         case   0:
-            uChan = 0;
-            break;
-         case  32:
-            uChan = 1;
-            break;
-         case  64:
-            uChan = 2;
-            break;
-         case  96:
-            uChan = 3;
-            break;
-         case 160:
-            uChan = 4;
-            break;
-         case 192:
-            uChan = 5;
-            break;
-         case 224:
-            uChan = 6;
-            break;
-         case 256:
-            uChan = 7;
-            break;
-      } // switch( fvmTofGdpbHitsInTs[ fuDiamondDpbIdx ][ uHitDia ].GetHitChannel() )
+         Double_t dDiaTime = fvmTofGdpbHitsInMs[ fuDiamondDpbIdx ][ uHitDia ].GetFullTimeNs() / 1e-9;
+         UInt_t uChan = 8;
 
-      if( uChan < 8 )
-         fhDiamondHitsRateMapEvo->Fill( dDiaTime, uChan );
-   } // for( UInt_t uHitDia = 0; uHitDia < uNbDiaHits; uHitDia++)
+         switch( fvmTofGdpbHitsInMs[ fuDiamondDpbIdx ][ uHitDia ].getGdpbHitChanId() )
+         {
+            case   0:
+               uChan = 0;
+               break;
+            case  32:
+               uChan = 1;
+               break;
+            case  64:
+               uChan = 2;
+               break;
+            case  96:
+               uChan = 3;
+               break;
+            case 160:
+               uChan = 4;
+               break;
+            case 192:
+               uChan = 5;
+               break;
+            case 224:
+               uChan = 6;
+               break;
+            case 256:
+               uChan = 7;
+               break;
+         } // switch( fvmTofGdpbHitsInMs[ fuDiamondDpbIdx ][ uHitDia ].GetHitChannel() )
+
+         if( uChan < 8 )
+//            fhDiamondHitsRateMapEvo->Fill( dDiaTime, uChan, 0.1 );
+            fhDiamondHitsRateMapEvo->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx), uChan, 0.1 );
+      } // for( UInt_t uHitDia = 0; uHitDia < uNbDiaHits; uHitDia++)
 /****************** TOF Sync ******************************************/
 
 /****************** mCBM Sync *****************************************/
@@ -575,7 +582,7 @@ Bool_t CbmMcbm2018MonitorMcbmRate::DoUnpack(const fles::Timeslice& ts, size_t co
          fhMcbmHitsNbPerTsEvo->Fill( fulCurrentTsIdx, uSdpb,
                                      fvmStsSdpbHitsInMs[ uSdpb ].size() );
          fhMcbmHitsNbFineEvo->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx), uSdpb,
-                                  fvmStsSdpbHitsInMs[ uSdpb ].size() );
+                                  fvmStsSdpbHitsInMs[ uSdpb ].size() / 0.1);
          fhMcbmHitsRateEvo->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx), uSdpb,
                                   fvmStsSdpbHitsInMs[ uSdpb ].size() );
 /*
@@ -592,9 +599,19 @@ Bool_t CbmMcbm2018MonitorMcbmRate::DoUnpack(const fles::Timeslice& ts, size_t co
          fhMcbmHitsNbPerTsEvo->Fill( fulCurrentTsIdx, uGdpb + fuStsNrOfDpbs,
                                      fvmTofGdpbHitsInMs[ uGdpb ].size() );
          fhMcbmHitsNbFineEvo->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx), uGdpb + fuStsNrOfDpbs,
-                                  fvmTofGdpbHitsInMs[ uGdpb ].size() );
+                                  fvmTofGdpbHitsInMs[ uGdpb ].size() / 0.1 );
          fhMcbmHitsRateEvo->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx), uGdpb + fuStsNrOfDpbs,
                                   fvmTofGdpbHitsInMs[ uGdpb ].size() );
+
+         if( fuDiamondDpbIdx == uGdpb )
+         {
+            /// Add to Previous bin to get N( T + 1 ) - N( T )
+            fhDiamondHitsRateDerivative->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx) - 0.05,
+                                               fvmTofGdpbHitsInMs[ uGdpb ].size() /  0.1 );
+            /// Sub to Next bin to get N( T ) - N( T - 1 )
+            fhDiamondHitsRateDerivative->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx) + 0.05,
+                                               fvmTofGdpbHitsInMs[ uGdpb ].size() / -0.1 );
+         } // if( fuDiamondDpbIdx == uGdpb )
 /*
          fvmTofGdpbHitsInTs[ uGdpb ].insert( fvmTofGdpbHitsInTs[ uGdpb ].end(),
                                              fvmTofGdpbHitsInMs[ uGdpb ].begin(),
@@ -682,7 +699,34 @@ Bool_t CbmMcbm2018MonitorMcbmRate::ProcessStsMs(const fles::Timeslice& ts, size_
               << " has size: " << uSize << FairLogger::endl;
 
    fuCurrDpbId  = static_cast< uint32_t >( fuCurrentEquipmentId & 0xFFFF );
-   fuCurrDpbIdx = fmStsDpbIdIndexMap[ fuCurrDpbId ];
+//   fuCurrDpbIdx = fmStsDpbIdIndexMap[ fuCurrDpbId ];
+
+   /// Check if this sDPB ID was declared in parameter file and stop there if not
+   auto it = fmStsDpbIdIndexMap.find( fuCurrDpbId );
+   if( it == fmStsDpbIdIndexMap.end() )
+   {
+       LOG(INFO) << "---------------------------------------------------------------"
+                 << FairLogger::endl;
+       LOG(INFO) << "hi hv eqid flag si sv idx/start        crc      size     offset"
+                 << FairLogger::endl;
+       LOG(INFO) << Form( "%02x %02x %04x %04x %02x %02x %016lx %08x %08x %016lx",
+                         static_cast<unsigned int>(msDescriptor.hdr_id),
+                         static_cast<unsigned int>(msDescriptor.hdr_ver), msDescriptor.eq_id, msDescriptor.flags,
+                         static_cast<unsigned int>(msDescriptor.sys_id),
+                         static_cast<unsigned int>(msDescriptor.sys_ver), msDescriptor.idx, msDescriptor.crc,
+                         msDescriptor.size, msDescriptor.offset )
+                 << FairLogger::endl;
+      LOG(WARNING) << "Could not find the sDPB index for AFCK id 0x"
+                << std::hex << fuCurrDpbId << std::dec
+                << " in timeslice " << fulCurrentTsIdx
+                << " in microslice " << uMsIdx
+                << " component " << uMsComp
+                << "\n"
+                << "If valid this index has to be added in the STS/MUCH parameter file in the RocIdArray field"
+                << FairLogger::endl;
+      return kFALSE;
+   } // if( it == fmStsDpbIdIndexMap.end() )
+      else fuCurrDpbIdx = fmStsDpbIdIndexMap[ fuCurrDpbId ];
 
    /** Check the current TS_MSb cycle and correct it if wrong **/
    UInt_t uTsMsbCycleHeader = std::floor( fulCurrentMsIdx /
@@ -931,7 +975,34 @@ Bool_t CbmMcbm2018MonitorMcbmRate::ProcessTofMs( const fles::Timeslice& ts, size
 
    // Get the gDPB ID from the MS header
    fuTofGdpbId = fuCurrentEquipmentId;
-   fuTofGdpbNr = fmTofDpbIdIndexMap[fuTofGdpbId];
+//   fuTofGdpbNr = fmTofDpbIdIndexMap[fuTofGdpbId];
+
+   /// Check if this gDPB ID was declared in parameter file and stop there if not
+   auto it = fmTofDpbIdIndexMap.find( fuTofGdpbId );
+   if( it == fmTofDpbIdIndexMap.end() )
+   {
+       LOG(INFO) << "---------------------------------------------------------------"
+                 << FairLogger::endl;
+       LOG(INFO) << "hi hv eqid flag si sv idx/start        crc      size     offset"
+                 << FairLogger::endl;
+       LOG(INFO) << Form( "%02x %02x %04x %04x %02x %02x %016lx %08x %08x %016lx",
+                         static_cast<unsigned int>(msDescriptor.hdr_id),
+                         static_cast<unsigned int>(msDescriptor.hdr_ver), msDescriptor.eq_id, msDescriptor.flags,
+                         static_cast<unsigned int>(msDescriptor.sys_id),
+                         static_cast<unsigned int>(msDescriptor.sys_ver), msDescriptor.idx, msDescriptor.crc,
+                         msDescriptor.size, msDescriptor.offset )
+                 << FairLogger::endl;
+      LOG(WARNING) << "Could not find the gDPB index for AFCK id 0x"
+                << std::hex << fuTofGdpbId << std::dec
+                << " in timeslice " << fulCurrentTsIdx
+                << " in microslice " << uMsIdx
+                << " component " << uMsComp
+                << "\n"
+                << "If valid this index has to be added in the TOF parameter file in the RocIdArray field"
+                << FairLogger::endl;
+      return kFALSE;
+   } // if( it == fmTofDpbIdIndexMap.end() )
+      else fuTofGdpbNr = fmTofDpbIdIndexMap[ fuTofGdpbId ];
 
    // Prepare variables for the loop on contents
    const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>(msContent);
@@ -1124,6 +1195,7 @@ void CbmMcbm2018MonitorMcbmRate::SaveAllHistos( TString sFileName )
    fhMcbmHitsNbFineEvo->Write();
    fhMcbmHitsRateEvo->Write();
    fhDiamondHitsRateMapEvo->Write();
+   fhDiamondHitsRateDerivative->Write();
 
    gDirectory->cd("..");
 /****************** mCBM Sync *****************************************/
@@ -1150,6 +1222,7 @@ void CbmMcbm2018MonitorMcbmRate::ResetAllHistos()
    fhMcbmHitsNbFineEvo->Reset();
    fhMcbmHitsRateEvo->Reset();
    fhDiamondHitsRateMapEvo->Reset();
+   fhDiamondHitsRateDerivative->Reset();
 /****************** mCBM Sync *****************************************/
 }
 

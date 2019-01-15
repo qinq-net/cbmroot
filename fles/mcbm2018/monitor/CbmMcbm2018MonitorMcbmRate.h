@@ -185,6 +185,7 @@ private:
    TH2 * fhMcbmHitsRateEvo;
 
    TH2 * fhDiamondHitsRateMapEvo;
+   TH1 * fhDiamondHitsRateDerivative;
 
    void CreateMcbmHistograms();
 /****************** mCBM Sync *****************************************/
