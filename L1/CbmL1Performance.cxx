@@ -307,6 +307,7 @@ void CbmL1::EfficienciesPerformance()
         ratio_fakes += 1 - rTracks[irt]->GetMaxPurity();
       }
     }
+    
       // number of clones
     int nclones = 0;
     if (reco) nclones = mtra.GetNClones();
@@ -681,8 +682,6 @@ void CbmL1::HistoPerformance() // TODO: check if works correctly. Change vHitRef
 //     float r = sqrt(x*x+y*y);
 //     h_hit_density[hIt->iStation]->Fill(r, 1.0/(2.0*3.1415*r));
 //   }
-cout<<vMCPoints.size()<< " vMCPoints"<<endl;
-cout<<vMCTracks.size()<< " vMCTracks"<<endl;
 
   //
   for (vector<CbmL1Track>::iterator rtraIt = vRTracks.begin(); rtraIt != vRTracks.end(); ++rtraIt){
@@ -1912,8 +1911,9 @@ void CbmL1::InputPerformance()
       const CbmL1StsHit &h = vStsHits[iH];
 
       if (h.Det!= 2) continue; // mvd hit
-      const CbmMuchPixelHit *sh = L1_DYNAMIC_CAST<CbmMuchPixelHit*>( fMuchPixelHits->At(-h.extIndex-1) );
-      CbmMatch *hm = L1_DYNAMIC_CAST<CbmMatch*>( listMuchHitMatches->At(-h.extIndex-1) );
+      
+      const CbmMuchPixelHit *sh = L1_DYNAMIC_CAST<CbmMuchPixelHit*>( fMuchPixelHits->At(h.extIndex) );
+      CbmMatch *hm = L1_DYNAMIC_CAST<CbmMatch*>( listMuchHitMatches->At(h.extIndex) );
       
       
       if(hm -> GetNofLinks() == 0) continue;
@@ -1934,7 +1934,7 @@ void CbmL1::InputPerformance()
       }
     if(bestWeight/totalWeight < 0.7|| iMCPoint < 0) continue;
 
-    CbmMuchPoint* pt = (CbmMuchPoint*) fMuchPoints->Get(hm->GetLink(0).GetFile(),hm->GetLink(0).GetEntry(),hm->GetLink(0).GetIndex());
+    CbmMuchPoint* pt = (CbmMuchPoint*) fMuchPoints->Get(link.GetFile(),link.GetEntry(),link.GetIndex());
     double mcTime = pt->GetTime();
     
     if (fTimesliceMode) 

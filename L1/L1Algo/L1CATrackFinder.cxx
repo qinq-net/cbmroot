@@ -530,15 +530,13 @@ inline void L1Algo::f20(  // input
 #ifdef DOUB_PERFORMANCE
       hitsl_2.push_back(hitsl_1[i1]);
 #endif // DOUB_PERFORMANCE
-      hitsm_2.push_back(imh);
+      hitsm_2.push_back(imh);  
       
-  ///!!!!!!    
+      TripForHit[0][hitsl_1[i1] +  StsHitsUnusedStartIndex[&stam - vStations-1]] = 0;
+      TripForHit[1][hitsl_1[i1] + StsHitsUnusedStartIndex[&stam - vStations-1]] = 0;
       
-//       TripForHit[0][hitsl_1[i1] +  StsHitsUnusedStartIndex[&stam - vStations-1]] = 0;
-//       TripForHit[1][hitsl_1[i1] + StsHitsUnusedStartIndex[&stam - vStations-1]] = 0;
-//       
-//       TripForHit[0][hitsl_1[i1] +  StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
-//       TripForHit[1][hitsl_1[i1] + StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
+      TripForHit[0][hitsl_1[i1] +  StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
+      TripForHit[1][hitsl_1[i1] + StsHitsUnusedStartIndex[&stam - vStations-2]] = 0;
       
       if (n2 > 8000) return;
       
@@ -1324,7 +1322,7 @@ inline void L1Algo::f5(  // input
             L1Triplet &triplet = TripletsLocal1[Station][Thread][Triplet];
 
       //      if (triplet.GetMSta() != istar) continue; // neighbours should have 2 common hits
-            if (triplet.GetMHit() != ihitr) continue;
+      //      if (triplet.GetMHit() != ihitr) continue; //!!!
           
             L1Triplet *tripn = &triplet;
 
@@ -1908,9 +1906,9 @@ void L1Algo::CATrackFinder()
             (isec == kAllPrimIter) || (isec == kAllPrimEIter) || (isec == kAllPrimJumpIter) ){ // target
             targB = vtxFieldValue;
             if ( (isec == kFastPrimIter) || (isec == kAllPrimIter) || (isec == kAllPrimEIter) )
-                SigmaTargetX = SigmaTargetY = 1.0; // target
+                SigmaTargetX = SigmaTargetY = 1; // target
             else
-                SigmaTargetX = SigmaTargetY = 5.0;
+                SigmaTargetX = SigmaTargetY = 5;
         }
         if ( (isec == kAllSecIter) || (isec == kAllSecEIter) || (isec == kAllSecJumpIter) ) { //use outer radius of the 1st station as a constraint
             L1Station &st = vStations[0];
@@ -2771,6 +2769,7 @@ inline void L1Algo::CAFindTrack(int ista,
       Cqp      += new_trip.Cqp;
       
       if ((new_trip.GetMHit() != curr_trip->GetRHit()) )  continue;
+      if ((new_trip.GetLHit() != curr_trip->GetMHit()) )  continue;
       if ( dqp > PickNeighbour * Cqp  ) continue; // bad neighbour // CHECKME why do we need recheck it?? (it really change result)
 
       if ( GetFUsed( (*vSFlag)[(*vStsHitsUnused)[new_trip.GetLHit()].f] | (*vSFlagB)[(*vStsHitsUnused)[new_trip.GetLHit()].b] ))

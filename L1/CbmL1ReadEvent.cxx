@@ -143,8 +143,6 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
     for( DFSET::iterator set_it = vFileEvent.begin(); set_it!=vFileEvent.end(); ++set_it){
       Int_t iFile = set_it->first;
       Int_t iEvent = set_it->second;
-      
-      cout<<iEvent<<" iEvent"<<endl;
 
      
       if(fMvdPoints && listMvdPts)
@@ -591,7 +589,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
         
         CbmMuchPixelHit* mh = static_cast<CbmMuchPixelHit*>(fMuchPixelHits->At(j) );
         
-        th.ExtIndex = -(1+j);
+        th.ExtIndex = j;
         th.Det = 2;
 
         
@@ -725,7 +723,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
         
         
         th.time =  mh->GetTime();
-        th.t_er =  mh->GetTimeError();  
+        th.t_er = 5;// mh->GetTimeError();  
         
      //   th.iSector  = 0;
         th.isStrip  = 0;
@@ -801,7 +799,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
             th.iMC = iMC+nMvdPoints+nStsPoints+nMuchPoints;
       //      th.track = vMCPoints[th.iMC].ID;
             
-//            CbmTrdPoint* pt = (CbmTrdPoint*) fTrdPoints->Get(trdHitMatch->GetLink(0).GetFile(),trdHitMatch->GetLink(0).GetEntry(),trdHitMatch->GetLink(0).GetIndex());
+            CbmTrdPoint* pt = (CbmTrdPoint*) fTrdPoints->Get(trdHitMatch->GetLink(0).GetFile(),trdHitMatch->GetLink(0).GetEntry(),trdHitMatch->GetLink(0).GetIndex());
   
 //            float min = 0.1;
             
@@ -813,7 +811,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
             
 //         th.x = pt->GetXIn();//+ gRandom->Gaus(0,min);
 //         th.y = pt->GetYIn();//+ gRandom->Gaus(0,min);
-//         th.time = pt->GetTime();//+ gRandom->Gaus(0,th.t_er);
+         th.time = pt->GetTime();//+ gRandom->Gaus(0,th.t_er);
 //         
 //         th.dx = min;
 //         th.dy = min;
@@ -1096,7 +1094,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
     //  CbmStsPoint* point = L1_DYNAMIC_CAST<CbmStsPoint*>(listStsPts->At(s.ExtIndex));
    //   z_tmp = 0.5 * ( point->GetZOut() + point->GetZIn() );
 //#else
-      CbmMuchPixelHit* mh = static_cast<CbmMuchPixelHit*>(fMuchPixelHits->At(- s.ExtIndex - 1) );
+      CbmMuchPixelHit* mh = static_cast<CbmMuchPixelHit*>(fMuchPixelHits->At(s.ExtIndex) );
       z_tmp = mh->GetZ()+10;
 //#endif
     }

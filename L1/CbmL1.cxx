@@ -337,7 +337,7 @@ InitStatus CbmL1::Init()
   
 #ifdef mCBM   
   fUseMUCH = 1;
-  fUseTRD = 1;
+  fUseTRD = 0;
   fUseTOF = 1;
 #endif
 
@@ -773,22 +773,18 @@ InitStatus CbmL1::Init()
     if( (ist < (NMvdStations + NStsStations+NTrdStations+NMuchStations))&& (ist >= (NMvdStations + NStsStations+NMuchStations)) ){
       
      int num = ist - NMvdStations - NStsStations - NMuchStations;
-      
-//       if (num == 0) true_station = 0;
-//       
-//       if (!true_station) continue;
 
-      
+    //   if (num == 0) continue;//true_station = 0;      
+    //   if (!true_station) continue;
+
       Int_t nrModules = fTrdDigiPar->GetNrOfModules();
 
       int ModuleId = fTrdDigiPar->GetModuleId(num);
-
          
       CbmTrdParModDigi* module = ( CbmTrdParModDigi*) fTrdDigiPar->GetModulePar(ModuleId);
       
    //   if (!true_station[ist]) continue;
 
-      
       if (num==0||num==2||num==4) geo.push_back(3);
       if (num==1||num==3) geo.push_back(6);
       geo.push_back(module->GetZ());
@@ -1375,7 +1371,7 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
   
   if( fVerbose>1 ) cout<<"L1 Track finder..."<<endl;
   algo->CATrackFinder();
-  //IdealTrackFinder();
+ // IdealTrackFinder();
      
   
   if( fVerbose>1 ) cout<<"L1 Track finder ok"<<endl;
@@ -1540,6 +1536,7 @@ void CbmL1::IdealTrackFinder()
     for (unsigned int iH = 0; iH < MC.StsHits.size(); iH++){
       const int hitI = MC.StsHits[iH];
       const CbmL1StsHit& hit = vStsHits[hitI];
+      
       const int iStation = vMCPoints[hit.mcPointIds[0]].iStation;
 
       hitIndices[iStation] = hitI;

@@ -127,10 +127,11 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
     
     fvec dz = z_sta - T.z;
     
-    
-          
+#if defined(mCBM) || defined(GLOBAL)     
+    L1ExtrapolateLine( T, (*vStsZPos)[hit.iz]);
+#else 
     L1Extrapolate( T, (*vStsZPos)[hit.iz], qp0, fld );
-    
+#endif    
     L1ExtrapolateTime( T, dz);
     
     L1AddMaterial( T, sta.materialInfo, qp0 );
@@ -254,9 +255,13 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
     fvec dz = sta.z - T.z;
     
     L1ExtrapolateTime( T, dz);
-          
-    L1Extrapolate( T, sta.z, qp0, fld );
 
+#if defined(mCBM) || defined(GLOBAL)     
+    L1ExtrapolateLine( T, sta.z);
+#else 
+    L1Extrapolate( T, sta.z, qp0, fld );
+#endif
+    
     fscal r2_best = 1e8; // best distance to hit
     int iHit_best = -1;  // index of the best hit
 
