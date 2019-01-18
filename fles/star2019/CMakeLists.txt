@@ -21,11 +21,12 @@ Set(INCLUDE_DIRECTORIES
 
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/dataformat
+  ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/commonMQ
 
   ${CBMROOT_SOURCE_DIR}/fles/star2019/
   ${CBMROOT_SOURCE_DIR}/fles/star2019/parameter
   ${CBMROOT_SOURCE_DIR}/fles/star2019/commonMQ
-  ${CBMROOT_SOURCE_DIR}/fles/star2019/unpacker
+#  ${CBMROOT_SOURCE_DIR}/fles/star2019/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/star2019/monitor
   ${CBMROOT_SOURCE_DIR}/fles/star2019/eventbuilder
 )
