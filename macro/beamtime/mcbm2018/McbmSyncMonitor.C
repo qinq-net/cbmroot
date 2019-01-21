@@ -109,8 +109,10 @@ void McbmSyncMonitor(TString inFile = "", TString sHostname = "pn05",
       switch( uRunId )
       {
          case 48:
+            monitorPulser->SetSpillLimits( 41.8, 44.6, 47.4 ); // 48
             break;
          case 49:
+            monitorPulser->SetSpillLimits( 48.6, 51.3, 54.1 ); // 49
             break;
          case 51:
 //            monitorPulser->SetSpillLimits( 29.4, 32.2, 34.8 ); // 51
