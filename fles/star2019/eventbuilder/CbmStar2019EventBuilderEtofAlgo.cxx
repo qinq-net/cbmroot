@@ -466,6 +466,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessTs( const fles::Timeslice& ts )
    return kTRUE;
 }
 
+static Int_t iWarn=0;
 Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, size_t uMsCompIdx, size_t uMsIdx )
 {
    UInt_t uMsComp = fvMsComponentsList[ uMsCompIdx ];
@@ -515,12 +516,15 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
    auto it = fGdpbIdIndexMap.find( fuGdpbId );
    if( it == fGdpbIdIndexMap.end() )
    {
-      LOG(FATAL) << "Could not find the gDPB index for AFCK id 0x"
+      iWarn++;
+      LOG(WARNING) << "Could not find the gDPB index for AFCK id 0x"
                 << std::hex << fuGdpbId << std::dec
                 << " in microslice " << fdMsTime
                 << FairLogger::endl
                 << "If valid this index has to be added in the TOF parameter file in the RocIdArray field"
                 << FairLogger::endl;
+      if( iWarn == 100) LOG(FATAL) << "Got max number of Warnings!"
+				   << FairLogger::endl;
       return kFALSE;
    } // if( it == fGdpbIdIndexMap.end() )
       else fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
@@ -621,7 +625,8 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
             } // if this epoch message is a merged one valid for all chips
                else
                {
-                  LOG(ERROR) << "This event builder does not support unmerged epoch messages!!!."
+                  /// Should be checked in monitor task, here we just jump it
+                  LOG(DEBUG2) << "This event builder does not support unmerged epoch messages!!!."
                              << FairLogger::endl;
                   continue;
                } // if single chip epoch message
@@ -679,12 +684,12 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessEpochCycle( uint64_t ulCycleData )
    } // if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
 */
    if( !( ulEpochCycleVal == fvulCurrentEpochCycle[fuGdpbNr] ||
-          ulEpochCycleVal == fvulCurrentEpochCycle[fuGdpbNr] + 1 ) )
-      LOG(FATAL) << "CbmStar2019EventBuilderEtofAlgo::ProcessEpochCycle => "
-                 << " Missmatch in epoch cycles detected, probably fake cycles due to epoch index corruption! "
+          ulEpochCycleVal == fvulCurrentEpochCycle[fuGdpbNr] + 1 ) ) {
+      LOG(WARNING) << "CbmStar2019EventBuilderEtofAlgo::ProcessEpochCycle => "
+                 << " Missmatch in epoch cycles detected for Gdpb " << fuGdpbNr <<", probably fake cycles due to epoch index corruption! "
                  << Form( " Current cycle 0x%09llX New cycle 0x%09llX", fvulCurrentEpochCycle[fuGdpbNr], ulEpochCycleVal )
                  << FairLogger::endl;
-
+   }
    fvulCurrentEpochCycle[fuGdpbNr] = ulEpochCycleVal;
 
    return;
@@ -1044,6 +1049,7 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessSysMess( gdpbv100::Message mess, ui
           || gdpbv100::GET4_V2X_ERR_ADD_RIS_EDG == uData
           || gdpbv100::GET4_V2X_ERR_UNPAIR_FALL == uData
           || gdpbv100::GET4_V2X_ERR_SEQUENCE_ER == uData
+          || gdpbv100::GET4_V2X_ERR_LOST_EVT    == uData
            )
             LOG(DEBUG) << " +++++++ > gDPB: " << std::hex << std::setw(4) << fuGdpbId
                        << std::dec << ", Chip = " << std::setw(2)
