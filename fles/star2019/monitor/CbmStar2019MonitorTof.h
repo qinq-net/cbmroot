@@ -155,6 +155,8 @@ class CbmStar2019MonitorTof: public CbmMcbmUnpack {
         **/
       std::vector< ULong64_t > fvulCurrentEpoch; //!
       std::vector< Bool_t >    fvbFirstEpochSeen; //!
+      std::vector< ULong64_t > fvulCurrentEpochCycle; //! Epoch cycle from the Ms Start message and Epoch counter flip
+      std::vector< ULong64_t > fvulCurrentEpochFull; //! Epoch + Epoch Cycle
 
       ULong64_t fulCurrentEpochTime;     /** Time stamp of current epoch **/
 
@@ -206,6 +208,7 @@ class CbmStar2019MonitorTof: public CbmMcbmUnpack {
             /// Per Gdpb
       TH2* fhGdpbMessType;
       TH2* fhGdpbSysMessType;
+      TH2* fhGdpbSysMessPattType;
       TH2* fhGdpbEpochFlags;
       TH2* fhGdpbEpochSyncEvo;
       TH2* fhGdpbEpochMissEvo;
@@ -213,11 +216,20 @@ class CbmStar2019MonitorTof: public CbmMcbmUnpack {
       std::vector< TH2* > fvhGdpbGet4MessType;
       std::vector< TH2* > fvhGdpbGet4ChanScm;
       std::vector< TH2* > fvhGdpbGet4ChanErrors;
-         // Slow control messages
+            /// Slow control messages
       TH2* fhScmScalerCounters;
       TH2* fhScmDeadtimeCounters;
       TH2* fhScmSeuCounters;
       TH2* fhScmSeuCountersEvo;
+            /// Pattern messages per gDPB
+      TH2* fhPatternMissmatch;
+      TH2* fhPatternEnable;
+      TH2* fhPatternResync;
+            /// Per MS in gDPB
+      std::vector< TH2* > fvhGdpbPatternMissmatchEvo;
+      std::vector< TH2* > fvhGdpbPatternEnableEvo;
+      std::vector< TH2* > fvhGdpbPatternResyncEvo;
+
          // Hit messages
             /// TODO: Channel rate plots!
       std::vector< TH2      * > fvhRawFt_gDPB;
@@ -237,6 +249,10 @@ class CbmStar2019MonitorTof: public CbmMcbmUnpack {
       const UInt_t kuNbFeeSide = 5;
       std::vector< TH2      * > fvhRemapTotSideA_mod;
       std::vector< TH2      * > fvhRemapTotSideB_mod;
+		/// module plots
+      std::vector< TH1      * > fvhModRate;
+      std::vector< TH1      * > fvhModErrorRate;
+      std::vector< TProfile * > fvhModErrorRatio;
 
       ///* STAR TRIGGER detection *///
       std::vector< TH1 *      > fvhTokenMsgType;
@@ -262,10 +278,12 @@ class CbmStar2019MonitorTof: public CbmMcbmUnpack {
 
       void CreateHistograms();
 
+      void ProcessEpochCycle( uint64_t ulCycleData );
       void FillHitInfo(       gdpbv100::Message );
       void FillEpochInfo(     gdpbv100::Message );
       void PrintSlcInfo(      gdpbv100::Message );
       void PrintSysInfo(      gdpbv100::Message );
+      void FillPattInfo(      gdpbv100::Message );
       void PrintGenInfo(      gdpbv100::Message );
       void FillStarTrigInfo(  gdpbv100::Message );
 

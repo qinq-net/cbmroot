@@ -12,7 +12,7 @@
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
-#include "FairRun.h"
+#include "FairRun.h" 
 #include "FairRuntimeDb.h"
 #include "FairRunOnline.h"
 
@@ -69,7 +69,7 @@ CbmStar2019MonitorTof::CbmStar2019MonitorTof() :
     fuNrOfGet4(0),
     fuNrOfGet4PerGdpb(0),
     fuNrOfChannelsPerGdpb(0),
-    fuRawDataPrintMsgNb(100),
+    fuRawDataPrintMsgNb(100000),
     fuRawDataPrintMsgIdx(fuRawDataPrintMsgNb),
     fbPrintAllHitsEnable(kFALSE),
     fbPrintAllEpochsEnable(kFALSE),
@@ -95,6 +95,8 @@ CbmStar2019MonitorTof::CbmStar2019MonitorTof() :
     fvuStarTrigCmdLast(),
     fvulCurrentEpoch(),
     fvbFirstEpochSeen(),
+    fvulCurrentEpochCycle(),
+    fvulCurrentEpochFull(),
     fulCurrentEpochTime(0),
     fGdpbIdIndexMap(),
     fvmEpSupprBuffer(),
@@ -124,6 +126,7 @@ CbmStar2019MonitorTof::CbmStar2019MonitorTof() :
     fhGet4EpochFlags(NULL),
     fhGdpbMessType(NULL),
     fhGdpbSysMessType(NULL),
+    fhGdpbSysMessPattType(NULL),
     fhGdpbEpochFlags(NULL),
     fhGdpbEpochSyncEvo(NULL),
     fhGdpbEpochMissEvo(NULL),
@@ -134,6 +137,12 @@ CbmStar2019MonitorTof::CbmStar2019MonitorTof() :
     fhScmDeadtimeCounters(NULL),
     fhScmSeuCounters(NULL),
     fhScmSeuCountersEvo(NULL),
+    fhPatternMissmatch(NULL),
+    fhPatternEnable(NULL),
+    fhPatternResync(NULL),
+    fvhGdpbPatternMissmatchEvo(),
+    fvhGdpbPatternEnableEvo(),
+    fvhGdpbPatternResyncEvo(),
     fvhRawFt_gDPB(),
     fvhRawTot_gDPB(),
     fvhChCount_gDPB(),
@@ -149,6 +158,9 @@ CbmStar2019MonitorTof::CbmStar2019MonitorTof() :
     fvhFeeErrorRatioLong_gDPB(),
     fvhRemapTotSideA_mod(),
     fvhRemapTotSideB_mod(),
+    fvhModRate(),
+    fvhModErrorRate(),
+    fvhModErrorRatio(),
     fvhTokenMsgType(),
     fvhTriggerRate(),
     fvhCmdDaqVsTrig(),
@@ -206,11 +218,15 @@ Bool_t CbmStar2019MonitorTof::InitContainers()
 
    fvulCurrentEpoch.resize( fuNrOfGdpbs * fuNrOfGet4PerGdpb );
    fvbFirstEpochSeen.resize( fuNrOfGdpbs * fuNrOfGet4PerGdpb );
+   fvulCurrentEpochCycle.resize( fuNrOfGdpbs * fuNrOfGet4PerGdpb );
+   fvulCurrentEpochFull.resize( fuNrOfGdpbs * fuNrOfGet4PerGdpb );
    for( UInt_t i = 0; i < fuNrOfGdpbs; ++i )
    {
       for( UInt_t j = 0; j < fuNrOfGet4PerGdpb; ++j )
       {
          fvulCurrentEpoch[GetArrayIndex(i, j)] = 0;
+         fvulCurrentEpochCycle[GetArrayIndex(i, j)] = 0;
+         fvulCurrentEpochFull[GetArrayIndex(i, j)] = 0;
       } // for( UInt_t j = 0; j < fuNrOfGet4PerGdpb; ++j )
    } // for( UInt_t i = 0; i < fuNrOfGdpbs; ++i )
 
@@ -498,7 +514,7 @@ void CbmStar2019MonitorTof::CreateHistograms()
    fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR,     "GET4 ERROR");
    fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN,     "UNKW GET4 MSG");
    fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_SYNC_MISS, "SYS_GET4_SYNC_MISS");
-   fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_PATTERN,     "PATTERN");
+   fhSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_PATTERN,        "SYS_PATTERN");
 
    /*******************************************************************/
    name = "hGet4MessType";
@@ -583,7 +599,16 @@ void CbmStar2019MonitorTof::CreateHistograms()
    fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_ERROR,     "GET4 ERROR");
    fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GDPB_UNKWN,     "UNKW GET4 MSG");
    fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_GET4_SYNC_MISS, "SYS_GET4_SYNC_MISS");
-   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_PATTERN,     "PATTERN");
+   fhGdpbSysMessType->GetXaxis()->SetBinLabel(1 + gdpbv100::SYS_PATTERN,        "SYS_PATTERN");
+
+   /*******************************************************************/
+   name = "hGdpbSysMessPattType";
+   title = "Nb of pattern message for each type per Gdpb; Pattern Type; Gdpb Idx []";
+   fhGdpbSysMessPattType = new TH2I(name, title, 1 + gdpbv100::PATT_RESYNC, 0., 1 + gdpbv100::PATT_RESYNC,
+                                          fuNrOfGdpbs, -0.5, fuNrOfGdpbs - 0.5 );
+   fhGdpbSysMessPattType->GetXaxis()->SetBinLabel(1 + gdpbv100::PATT_MISSMATCH, "PATT_MISSMATCH");
+   fhGdpbSysMessPattType->GetXaxis()->SetBinLabel(1 + gdpbv100::PATT_ENABLE,    "PATT_ENABLE");
+   fhGdpbSysMessPattType->GetXaxis()->SetBinLabel(1 + gdpbv100::PATT_RESYNC,    "PATT_RESYNC");
 
    /*******************************************************************/
    name = "hGdpbEpochFlags";
@@ -629,6 +654,21 @@ void CbmStar2019MonitorTof::CreateHistograms()
                                                fuHistoryHistoSize, 0., fuHistoryHistoSize);
 
    /*******************************************************************/
+   name = "hPatternMissmatch";
+   title = "Missmatch pattern integral per Gdpb; ASIC Pattern []; Gdpb Idx []";
+   fhPatternMissmatch = new TH2I(name, title, fuNrOfGet4PerGdpb, 0., fuNrOfGet4PerGdpb,
+                                              fuNrOfGdpbs, -0.5, fuNrOfGdpbs - 0.5 );
+   name = "hPatternEnable";
+   title = "Enable pattern integral per Gdpb; ASIC Pattern []; Gdpb Idx []";
+   fhPatternEnable = new TH2I(name, title, fuNrOfGet4PerGdpb, 0., fuNrOfGet4PerGdpb,
+                                              fuNrOfGdpbs, -0.5, fuNrOfGdpbs - 0.5 );
+   name = "hPatternResync";
+   title = "Resync pattern integral per Gdpb; ASIC Pattern []; Gdpb Idx []";
+   fhPatternResync = new TH2I(name, title, fuNrOfGet4PerGdpb, 0., fuNrOfGet4PerGdpb,
+                                              fuNrOfGdpbs, -0.5, fuNrOfGdpbs - 0.5 );
+
+
+   /*******************************************************************/
   for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
   {
 
@@ -658,7 +698,7 @@ void CbmStar2019MonitorTof::CreateHistograms()
       title = Form("Error messages per GET4 channel in gDPB %02u; GET4 channel # ; Error", uGdpb);
       fvhGdpbGet4ChanErrors.push_back( new TH2I(name, title,
                fuNrOfChannelsPerGdpb, 0., fuNrOfChannelsPerGdpb,
-               21, 0., 21.) );
+               22, 0., 22.) );
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 1, "0x00: Readout Init    ");
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 2, "0x01: Sync            ");
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel( 3, "0x02: Epoch count sync");
@@ -672,14 +712,34 @@ void CbmStar2019MonitorTof::CreateHistograms()
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(11, "0x0a: SPI             ");
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(12, "0x0b: DLL Lock error  "); // <- From GET4 v1.2
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(13, "0x0c: DLL Reset invoc."); // <- From GET4 v1.2
-      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(14, "0x11: Overwrite       ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(14, "0x11: Overwrite       "); // <- From GET4 v1.0 to 1.3
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(15, "0x12: ToT out of range");
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(16, "0x13: Event Discarded ");
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(17, "0x14: Add. Rising edge"); // <- From GET4 v1.3
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(18, "0x15: Unpaired Falling"); // <- From GET4 v1.3
       fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(19, "0x16: Sequence error  "); // <- From GET4 v1.3
-      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(20, "0x7f: Unknown         ");
-      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(21, "Corrupt/unsuprtd error");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(20, "0x17: Epoch Overflow  "); // <- From GET4 v2.0
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(21, "0x7f: Unknown         ");
+      fvhGdpbGet4ChanErrors[ uGdpb ]->GetYaxis()->SetBinLabel(22, "Corrupt/unsuprtd error");
+
+      /*******************************************************************/
+      name = Form("hGdpbPatternMissmatchEvo_%02u", uGdpb);
+      title = Form("Missmatch pattern vs TS index in gDPB %02u; TS # ; ASIC Pattern []", uGdpb);
+      fvhGdpbPatternMissmatchEvo.push_back( new TH2I(name, title,
+                                                      10000, 0., 100000,
+                                                      fuNrOfGet4PerGdpb, 0., fuNrOfGet4PerGdpb) );
+
+      name = Form("hGdpbPatternEnableEvo_%02u", uGdpb);
+      title = Form("Enable pattern vs TS index in gDPB %02u; TS # ; ASIC Pattern []", uGdpb);
+      fvhGdpbPatternEnableEvo.push_back( new TH2I(name, title,
+                                                      10000, 0., 100000,
+                                                      fuNrOfGet4PerGdpb, 0., fuNrOfGet4PerGdpb) );
+
+      name = Form("hGdpbPatternResyncEvo%02u", uGdpb);
+      title = Form("Resync pattern vs TS index in gDPB %02u; TS # ; ASIC Pattern []", uGdpb);
+      fvhGdpbPatternResyncEvo.push_back( new TH2I(name, title,
+                                                      10000, 0., 100000,
+                                                      fuNrOfGet4PerGdpb, 0., fuNrOfGet4PerGdpb) );
 
       /**++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++**/
       name = Form("RawFt_gDPB_%02u", uGdpb);
@@ -863,6 +923,18 @@ void CbmStar2019MonitorTof::CreateHistograms()
          new TH2F(name.Data(), title.Data(),
             kuNbFeeSide * fuNrOfChannelsPerFee, 0, kuNbFeeSide * fuNrOfChannelsPerFee,
             256, 0, 256 ) );
+
+      name = Form("ModRate_gDPB_m%02u", uMod);
+      title = Form( "Counts per second in Module %02u; Time[s] ; Counts", uMod);
+      fvhModRate.push_back( new TH1D(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize) );
+
+      name = Form("ModErrorRate_m%02u", uMod);
+      title = Form( "Error Counts per second in Module %02u; Time[s] ; Error Counts", uMod);
+      fvhModErrorRate.push_back( new TH1D(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize) );
+
+      name = Form("ModErrorRatio_m%02u", uMod);
+      title = Form( "Error to data ratio per second in Module %02u; Time[s] ; Error ratio[]", uMod);
+      fvhModErrorRatio.push_back( new TProfile(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize) );
    } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
 
    /*******************************************************************/
@@ -971,6 +1043,7 @@ void CbmStar2019MonitorTof::CreateHistograms()
 
       server->Register("/TofRaw", fhGdpbMessType );
       server->Register("/TofRaw", fhGdpbSysMessType );
+      server->Register("/TofRaw", fhGdpbSysMessPattType );
       server->Register("/TofRaw", fhGdpbEpochFlags );
       server->Register("/TofRaw", fhGdpbEpochSyncEvo );
       server->Register("/TofRaw", fhGdpbEpochMissEvo );
@@ -979,6 +1052,10 @@ void CbmStar2019MonitorTof::CreateHistograms()
       server->Register("/TofRaw", fhScmDeadtimeCounters );
       server->Register("/TofRaw", fhScmSeuCounters );
       server->Register("/TofRaw", fhScmSeuCountersEvo );
+
+      server->Register("/TofRaw", fhPatternMissmatch );
+      server->Register("/TofRaw", fhPatternEnable );
+      server->Register("/TofRaw", fhPatternResync );
 
       for( UInt_t uTotPlot = 0; uTotPlot < fvhRawTot_gDPB.size(); ++uTotPlot )
          server->Register("/TofRaw", fvhRawTot_gDPB[ uTotPlot ] );
@@ -990,6 +1067,9 @@ void CbmStar2019MonitorTof::CreateHistograms()
       {
          server->Register("/TofRaw", fvhRemapTotSideA_mod[ uMod ] );
          server->Register("/TofRaw", fvhRemapTotSideB_mod[ uMod ] );
+         server->Register("/TofMod", fvhModRate[ uMod ] );
+         server->Register("/TofMod", fvhModErrorRate[ uMod ] );
+         server->Register("/TofMod", fvhModErrorRatio[ uMod ] );
 	   } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
 
       for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
@@ -997,6 +1077,11 @@ void CbmStar2019MonitorTof::CreateHistograms()
          server->Register("/TofRaw", fvhGdpbGet4MessType[ uGdpb ] );
          server->Register("/TofRaw", fvhGdpbGet4ChanScm[ uGdpb ] );
          server->Register("/TofRaw", fvhGdpbGet4ChanErrors[ uGdpb ] );
+
+         server->Register("/TofRaw", fvhGdpbPatternMissmatchEvo[ uGdpb ] );
+         server->Register("/TofRaw", fvhGdpbPatternEnableEvo[ uGdpb ] );
+         server->Register("/TofRaw", fvhGdpbPatternResyncEvo[ uGdpb ] );
+
          server->Register("/TofRaw", fvhRawFt_gDPB[ uGdpb ] );
          server->Register("/TofRaw", fvhChCount_gDPB[ uGdpb ] );
          server->Register("/TofRates", fvhChannelRate_gDPB[ uGdpb ] );
@@ -1434,6 +1519,21 @@ void CbmStar2019MonitorTof::CreateHistograms()
       /*****************************/
    } // if( kTRUE == fbPulserModeEnable )
 
+   /** Create Module rates Canvas **/
+   for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
+   {
+      TCanvas* cModRates = new TCanvas( Form("cModRate_m%02u", uMod),
+                                        Form( "Hit and error Rates for module %02u", uMod),
+                                        w, h);
+      cModRates->cd();
+      gPad->SetLogy();
+      fvhModRate[ uMod ]->Draw("hist");
+
+      fvhModErrorRate[ uMod ]->SetLineColor( kRed );
+      fvhModErrorRate[ uMod ]->Draw("same hist");
+   } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
+   /*****************************/
+
    /** Recovers/Create Ms Size Canvas for STAR 2018 **/
    // Try to recover canvas in case it was created already by another monitor
    // If not existing, create it
@@ -1529,6 +1629,26 @@ Bool_t CbmStar2019MonitorTof::DoUnpack(const fles::Timeslice& ts,
       if (fuMsAcceptsPercent < uMsIdx)
          continue;
 
+      fuCurrentMs = uMsIdx;
+
+      if( 0 == fulCurrentTsIndex && 0 == uMsIdx )
+      {
+         for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsList.size(); ++uMsCompIdx )
+         {
+            UInt_t uMsComp = fvMsComponentsList[ uMsCompIdx ];
+            auto msDescriptor = ts.descriptor( uMsComp, uMsIdx );
+            LOG(INFO) << "hi hv eqid flag si sv idx/start        crc      size     offset"
+                      << FairLogger::endl;
+            LOG(INFO) << Form( "%02x %02x %04x %04x %02x %02x %016lx %08x %08x %016lx",
+                            static_cast<unsigned int>(msDescriptor.hdr_id),
+                            static_cast<unsigned int>(msDescriptor.hdr_ver), msDescriptor.eq_id, msDescriptor.flags,
+                            static_cast<unsigned int>(msDescriptor.sys_id),
+                            static_cast<unsigned int>(msDescriptor.sys_ver), msDescriptor.idx, msDescriptor.crc,
+                            msDescriptor.size, msDescriptor.offset )
+                      << FairLogger::endl;
+         } // for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsList.size(); ++uMsCompIdx )
+      } // if( 0 == fulCurrentTsIndex && 0 == uMsIdx )
+
       /// Loop over registered components
       for( UInt_t uMsCompIdx = 0; uMsCompIdx < fvMsComponentsList.size(); ++uMsCompIdx )
       {
@@ -1575,10 +1695,6 @@ Bool_t CbmStar2019MonitorTof::DoUnpack(const fles::Timeslice& ts,
          // Compute the number of complete messages in the input microslice buffer
          uint32_t uNbMessages = (size - (size % kuBytesPerMessage)) / kuBytesPerMessage;
 
-////////////////////////////////////////////////////////////////////////
-//                   FINAL SOLUTION                                   //
-////////////////////////////////////////////////////////////////////////
-
          // Get the gDPB ID from the MS header
          fuGdpbId = fiEquipmentId;
 
@@ -1586,19 +1702,28 @@ Bool_t CbmStar2019MonitorTof::DoUnpack(const fles::Timeslice& ts,
          auto it = fGdpbIdIndexMap.find( fuGdpbId );
          if( it == fGdpbIdIndexMap.end() )
          {
+             LOG(INFO) << "---------------------------------------------------------------"
+                       << FairLogger::endl;
+             LOG(INFO) << "hi hv eqid flag si sv idx/start        crc      size     offset"
+                       << FairLogger::endl;
+             LOG(INFO) << Form( "%02x %02x %04x %04x %02x %02x %016lx %08x %08x %016lx",
+                               static_cast<unsigned int>(msDescriptor.hdr_id),
+                               static_cast<unsigned int>(msDescriptor.hdr_ver), msDescriptor.eq_id, msDescriptor.flags,
+                               static_cast<unsigned int>(msDescriptor.sys_id),
+                               static_cast<unsigned int>(msDescriptor.sys_ver), msDescriptor.idx, msDescriptor.crc,
+                               msDescriptor.size, msDescriptor.offset )
+                       << FairLogger::endl;
             LOG(FATAL) << "Could not find the gDPB index for AFCK id 0x"
                       << std::hex << fuGdpbId << std::dec
+                      << " in timeslice " << fulCurrentTsIndex
                       << " in microslice " << fdMsIndex
-                      << FairLogger::endl
+                      << " component " << uMsCompIdx
+                      << "\n"
                       << "If valid this index has to be added in the TOF parameter file in the RocIdArray field"
                       << FairLogger::endl;
             continue;
          } // if( it == fGdpbIdIndexMap.end() )
             else fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
-
-////////////////////////////////////////////////////////////////////////
-//                   FINAL SOLUTION                                   //
-////////////////////////////////////////////////////////////////////////
 
          // Prepare variables for the loop on contents
          const uint64_t* pInBuff = reinterpret_cast<const uint64_t*>(msContent);
@@ -1606,6 +1731,14 @@ Bool_t CbmStar2019MonitorTof::DoUnpack(const fles::Timeslice& ts,
          {
             // Fill message
             uint64_t ulData = static_cast<uint64_t>(pInBuff[uIdx]);
+
+            /// Catch the Epoch cycle block which is always the first 64b of the MS
+            if( 0 == uIdx && kFALSE == fbOldFwData )
+            {
+               ProcessEpochCycle( ulData );
+               continue;
+            } // if( 0 == uIdx && kFALSE == fbOldFwData )
+
             gdpbv100::Message mess(ulData);
 
             if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
@@ -1613,30 +1746,6 @@ Bool_t CbmStar2019MonitorTof::DoUnpack(const fles::Timeslice& ts,
                mess.printDataCout();
                fuRawDataPrintMsgIdx ++;
             } // if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
-
-////////////////////////////////////////////////////////////////////////
-//                   TEMP SOLUTION                                    //
-////////////////////////////////////////////////////////////////////////
-/*
-         fuGdpbId = mess.getGdpbGenGdpbId();
-
-         /// Check if this gDPB ID was declared in parameter file and stop there if not
-         auto it = fGdpbIdIndexMap.find( fuGdpbId );
-         if( it == fGdpbIdIndexMap.end() )
-         {
-            LOG(FATAL) << "Could not find the gDPB index for AFCK id 0x"
-                      << std::hex << fuGdpbId << std::dec
-                      << " in microslice " << fdMsIndex
-                      << FairLogger::endl
-                      << "If valid this index has to be added in the TOF parameter file in the RocIdArray field"
-                      << FairLogger::endl;
-            continue;
-         } // if( it == fGdpbIdIndexMap.end() )
-            else fuGdpbNr = fGdpbIdIndexMap[ fuGdpbId ];
-*/
-////////////////////////////////////////////////////////////////////////
-//                   TEMP SOLUTION                                    //
-////////////////////////////////////////////////////////////////////////
 
             // Increment counter for different message types
             // and fill the corresponding histogram
@@ -1647,6 +1756,9 @@ Bool_t CbmStar2019MonitorTof::DoUnpack(const fles::Timeslice& ts,
 
    ///         fuGet4Id = mess.getGdpbGenChipId();
             fuGet4Id = ConvertElinkToGet4( mess.getGdpbGenChipId() );
+               /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
+            if( fuGdpbNr == fuDiamondDpbIdx )
+               fuGet4Id = mess.getGdpbGenChipId();
             fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
 
             if( fuNrOfGet4PerGdpb <= fuGet4Id &&
@@ -1724,7 +1836,8 @@ Bool_t CbmStar2019MonitorTof::DoUnpack(const fles::Timeslice& ts,
                   {
                      fhGet4MessType->Fill( fuGet4Nr, 1);
                      fvhGdpbGet4MessType[ fuGdpbNr ]->Fill( fuGet4Id, 1 );
-                     FillEpochInfo(mess);
+                     /// This epoch is corrupt, should be merged, just count how often it happens and ignore it
+//                     FillEpochInfo(mess);
 
                      if( kTRUE == fbPrintAllEpochsEnable )
                      {
@@ -1764,6 +1877,13 @@ Bool_t CbmStar2019MonitorTof::DoUnpack(const fles::Timeslice& ts,
                            1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime));
                         fvhFeeErrorRatio_gDPB[(fuGdpbNr * fuNrOfFeePerGdpb) + uFeeNr]->Fill(
                            1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime), 1, 1 );
+
+                        UInt_t uGbtxNr      = (uFeeNr / kuNbFeePerGbtx);
+                        UInt_t uGbtxNrInSys = fuGdpbNr * kuNbGbtxPerGdpb + uGbtxNr;
+                        fvhModErrorRate[ fviModuleId[ uGbtxNrInSys ] ]->Fill(
+                           1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime));
+                        fvhModErrorRatio[ fviModuleId[ uGbtxNrInSys ] ]->Fill(
+                           1e-9 * (mess.getMsgFullTimeD(fvulCurrentEpoch[fuGet4Nr]) - fdStartTime), 1, 1);
                      } // if (0 <= fdStartTime)
                      if (0 <= fdStartTimeLong)
                      {
@@ -1853,16 +1973,25 @@ Bool_t CbmStar2019MonitorTof::DoUnpack(const fles::Timeslice& ts,
                            fhGet4ChanErrors->Fill(dFullChId, 18);
                            fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 18 );
                            break;
-                        case gdpbv100::GET4_V2X_ERR_UNKNOWN:
+                        case gdpbv100::GET4_V2X_ERR_EPOCH_OVERF:
                            fhGet4ChanErrors->Fill(dFullChId, 19);
                            fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 19 );
                            break;
-                        default: // Corrupt error or not yet supported error
+                        case gdpbv100::GET4_V2X_ERR_UNKNOWN:
                            fhGet4ChanErrors->Fill(dFullChId, 20);
                            fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 20 );
                            break;
+                        default: // Corrupt error or not yet supported error
+                           fhGet4ChanErrors->Fill(dFullChId, 21);
+                           fvhGdpbGet4ChanErrors[ fuGdpbNr ]->Fill( dGdpbChId, 21 );
+                           break;
                      } // Switch( mess.getGdpbSysErrData() )
                   } // if( gdpbv100::SYSMSG_GET4_EVENT == mess.getGdpbSysSubType() )
+                  if( gdpbv100::SYS_PATTERN == mess.getGdpbSysSubType() )
+                  {
+                     fhGdpbSysMessPattType->Fill(mess.getGdpbSysPattType(), fuGdpbNr );
+                     FillPattInfo( mess );
+                  } // if( gdpbv100::SYS_PATTERN == mess.getGdpbSysSubType() )
                   PrintSysInfo(mess);
                   break;
                } // case gdpbv100::MSG_SYST:
@@ -2001,7 +2130,39 @@ Bool_t CbmStar2019MonitorTof::DoUnpack(const fles::Timeslice& ts,
       } // if( 10.0 < dTsStartTime - fdLastRmsUpdateTime )
    } // if( kTRUE == fbPulserModeEnable )
 
+   fulCurrentTsIndex ++;
+
   return kTRUE;
+}
+
+void CbmStar2019MonitorTof::ProcessEpochCycle( uint64_t ulCycleData )
+{
+   uint64_t ulEpochCycleVal = ulCycleData & gdpbv100::kulEpochCycleFieldSz;
+
+   if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
+   {
+      LOG(INFO) << "CbmMcbm2018MonitorTof::ProcessEpochCyle => "
+                 << Form( " TS %5lu MS %3lu In data 0x%016lX Cycle 0x%016lX",
+                           fulCurrentTsIndex, fuCurrentMs, ulCycleData, ulEpochCycleVal )
+                 << FairLogger::endl;
+      fuRawDataPrintMsgIdx ++;
+   } // if( fuRawDataPrintMsgIdx < fuRawDataPrintMsgNb || gLogger->IsLogNeeded(DEBUG2) )
+
+   for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGet4Index ++ )
+   {
+      fuGet4Id = uGet4Index;
+      fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
+/*
+      if( !( ulEpochCycleVal == fvulCurrentEpochCycle[fuGet4Nr] ||
+             ulEpochCycleVal == fvulCurrentEpochCycle[fuGet4Nr] + 1 ) )
+         LOG(ERROR) << "CbmMcbm2018MonitorTof::ProcessEpochCyle => "
+                    << " Missmatch in epoch cycles detected, probably fake cycles due to epoch index corruption! "
+                    << Form( " Current cycle 0x%09X New cycle 0x%09X", fvulCurrentEpochCycle[fuGet4Nr], ulEpochCycleVal )
+                    << FairLogger::endl;
+*/
+      fvulCurrentEpochCycle[fuGet4Nr] = ulEpochCycleVal;
+   } // for( uint32_t uGet4Index = 0; uGet4Index < fuNrOfGet4PerGdpb; uGet4Index ++ )
+   return;
 }
 
 void CbmStar2019MonitorTof::FillHitInfo(gdpbv100::Message mess)
@@ -2166,6 +2327,12 @@ void CbmStar2019MonitorTof::FillHitInfo(gdpbv100::Message mess)
             } // if( NULL != fvhTimeDiffPulser[uFeeNrInSys][uFeeB] )
 */
       } // if( gdpbv100::kuFeePulserChannel == uChannelNrInFee )
+      /// Diamond FEE have pulser on channel 0!
+         else if( fuGdpbNr == fuDiamondDpbIdx && 0 == uChannelNrInFee )
+         {
+            fdTsLastPulserHit[ uFeeNrInSys ] = dHitTime;
+            fvuFeeNbHitsLastMs[ uFeeNrInSys ]++;
+         } // if( fuGdpbNr == fuDiamondDpbIdx && 0 == uChannelNrInFee )
    } // if( kTRUE == fbPulserModeEnable )
 
    /// Coincidence maps
@@ -2181,6 +2348,9 @@ void CbmStar2019MonitorTof::FillHitInfo(gdpbv100::Message mess)
       fvhRemapChRate_gDPB[ fuGdpbNr ]->Fill( 1e-9 * (dHitTime - fdStartTime), uRemappedChannelNr );
       fvhFeeRate_gDPB[(fuGdpbNr * fuNrOfFeePerGdpb) + uFeeNr]->Fill( 1e-9 * (dHitTime - fdStartTime));
       fvhFeeErrorRatio_gDPB[(fuGdpbNr * fuNrOfFeePerGdpb) + uFeeNr]->Fill( 1e-9 * (dHitTime - fdStartTime), 0, 1);
+
+      fvhModRate[ fviModuleId[ uGbtxNrInSys ] ]->Fill( 1e-9 * (dHitTime - fdStartTime));
+      fvhModErrorRatio[ fviModuleId[ uGbtxNrInSys ] ]->Fill( 1e-9 * (dHitTime - fdStartTime), 0, 1);
    } // if (0 <= fdStartTime)
 
    if (0 <= fdStartTimeLong)
@@ -2208,8 +2378,12 @@ void CbmStar2019MonitorTof::FillHitInfo(gdpbv100::Message mess)
 void CbmStar2019MonitorTof::FillEpochInfo(gdpbv100::Message mess)
 {
    ULong64_t ulEpochNr = mess.getGdpbEpEpochNb();
-
+/*
+   if( fvulCurrentEpoch[fuGet4Nr] < ulEpochNr )
+      fvulCurrentEpochCycle[fuGet4Nr]++;
+*/
    fvulCurrentEpoch[fuGet4Nr] = ulEpochNr;
+   fvulCurrentEpochFull[fuGet4Nr] = ulEpochNr + gdpbv100::kulEpochCycleBins * fvulCurrentEpochCycle[fuGet4Nr];
 
    if (1 == mess.getGdpbEpSync())
       fhGet4EpochFlags->Fill(fuGet4Nr, 0);
@@ -2422,7 +2596,7 @@ void CbmStar2019MonitorTof::PrintSysInfo(gdpbv100::Message mess)
       } // case gdpbv100::SYS_GET4_SYNC_MISS:
       case gdpbv100::SYS_PATTERN:
       {
-         LOG(DEBUG) << "Pattern message" << FairLogger::endl;
+         LOG(DEBUG) << "ASIC pattern for missmatch, disable or resync" << FairLogger::endl;
          break;
       } // case gdpbv100::SYS_PATTERN:
       default:
@@ -2434,7 +2608,75 @@ void CbmStar2019MonitorTof::PrintSysInfo(gdpbv100::Message mess)
    } // switch( getGdpbSysSubType() )
 }
 
-void CbmStar2019MonitorTof::FillStarTrigInfo(gdpbv100::Message mess)
+void CbmStar2019MonitorTof::FillPattInfo(gdpbv100::Message mess)
+{
+   uint16_t usType   = mess.getGdpbSysPattType();
+   uint16_t usIndex  = mess.getGdpbSysPattIndex();
+   uint32_t uPattern = mess.getGdpbSysPattPattern();
+
+   switch( usType )
+   {
+      case gdpbv100::PATT_MISSMATCH:
+      {
+         LOG(DEBUG) << Form( "Missmatch pattern message => Type %d, Index %2d, Pattern 0x%08X", usType, usIndex, uPattern )
+                   << FairLogger::endl;
+         for( UInt_t uBit = 0; uBit < 32; ++uBit )
+            if( ( uPattern >> uBit ) & 0x1 )
+            {
+               UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
+                  /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
+               if( fuGdpbNr == fuDiamondDpbIdx )
+                  uBadAsic = 32 * usIndex + uBit;
+               fhPatternMissmatch->Fill( uBadAsic, fuGdpbNr );
+               fvhGdpbPatternMissmatchEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
+            } // if( ( uPattern >> uBit ) & 0x1 )
+
+         break;
+      } // case gdpbv100::PATT_MISSMATCH:
+      case gdpbv100::PATT_ENABLE:
+      {
+         for( UInt_t uBit = 0; uBit < 32; ++uBit )
+            if( ( uPattern >> uBit ) & 0x1 )
+            {
+               UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
+                  /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
+               if( fuGdpbNr == fuDiamondDpbIdx )
+                  uBadAsic = 32 * usIndex + uBit;
+               fhPatternEnable->Fill( uBadAsic, fuGdpbNr );
+               fvhGdpbPatternEnableEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
+            } // if( ( uPattern >> uBit ) & 0x1 )
+
+         break;
+      } // case gdpbv100::PATT_ENABLE:
+      case gdpbv100::PATT_RESYNC:
+      {
+         LOG(DEBUG) << Form( "RESYNC pattern message => Type %d, Index %2d, Pattern 0x%08X", usType, usIndex, uPattern )
+                   << FairLogger::endl;
+
+         for( UInt_t uBit = 0; uBit < 32; ++uBit )
+            if( ( uPattern >> uBit ) & 0x1 )
+            {
+               UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
+                  /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
+               if( fuGdpbNr == fuDiamondDpbIdx )
+                  uBadAsic = 32 * usIndex + uBit;
+               fhPatternResync->Fill( uBadAsic, fuGdpbNr );
+               fvhGdpbPatternResyncEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
+            } // if( ( uPattern >> uBit ) & 0x1 )
+
+         break;
+      } // case gdpbv100::PATT_RESYNC:
+      default:
+      {
+         LOG(DEBUG) << "Crazy pattern message, subtype " << usType << FairLogger::endl;
+         break;
+      } // default
+   } // switch( usType )
+
+   return;
+}
+
+void CbmMcbm2018MonitorTof::FillStarTrigInfo(gdpbv100::Message mess)
 {
    Int_t iMsgIndex = mess.getStarTrigMsgIndex();
 
@@ -2666,6 +2908,7 @@ void CbmStar2019MonitorTof::SaveAllHistos( TString sFileName )
 
    fhGdpbMessType->Write();
    fhGdpbSysMessType->Write();
+   fhGdpbSysMessPattType->Write();
    fhGdpbEpochFlags->Write();
    fhGdpbEpochSyncEvo->Write();
    fhGdpbEpochMissEvo->Write();
@@ -2674,6 +2917,10 @@ void CbmStar2019MonitorTof::SaveAllHistos( TString sFileName )
    fhScmDeadtimeCounters->Write();
    fhScmSeuCounters->Write();
    fhScmSeuCountersEvo->Write();
+
+   fhPatternMissmatch->Write();
+   fhPatternEnable->Write();
+   fhPatternResync->Write();
 
    for( UInt_t uTotPlot = 0; uTotPlot < fvhRawTot_gDPB.size(); ++uTotPlot )
       fvhRawTot_gDPB[ uTotPlot ]->Write();
@@ -2685,6 +2932,10 @@ void CbmStar2019MonitorTof::SaveAllHistos( TString sFileName )
    {
       fvhRemapTotSideA_mod[ uMod ]->Write();
       fvhRemapTotSideB_mod[ uMod ]->Write();
+
+      fvhModRate[ uMod ]->Write();
+      fvhModErrorRate[ uMod ]->Write();
+      fvhModErrorRatio[ uMod ]->Write();
    } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
 
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
@@ -2692,6 +2943,11 @@ void CbmStar2019MonitorTof::SaveAllHistos( TString sFileName )
       fvhGdpbGet4MessType[ uGdpb ]->Write();
       fvhGdpbGet4ChanScm[ uGdpb ]->Write();
       fvhGdpbGet4ChanErrors[ uGdpb ]->Write();
+
+      fvhGdpbPatternMissmatchEvo[ uGdpb ]->Write();
+      fvhGdpbPatternEnableEvo[ uGdpb ]->Write();
+      fvhGdpbPatternResyncEvo[ uGdpb ]->Write();
+
       fvhRawFt_gDPB[ uGdpb ]->Write();
       fvhChCount_gDPB[ uGdpb ]->Write();
       fvhChannelRate_gDPB[ uGdpb ]->Write();
@@ -2820,6 +3076,7 @@ void CbmStar2019MonitorTof::ResetAllHistos()
 
    fhGdpbMessType->Reset();
    fhGdpbSysMessType->Reset();
+   fhGdpbSysMessPattType->Reset();
    fhGdpbEpochFlags->Reset();
    fhGdpbEpochSyncEvo->Reset();
    fhGdpbEpochMissEvo->Reset();
@@ -2828,6 +3085,10 @@ void CbmStar2019MonitorTof::ResetAllHistos()
    fhScmDeadtimeCounters->Reset();
    fhScmSeuCounters->Reset();
    fhScmSeuCountersEvo->Reset();
+
+   fhPatternMissmatch->Reset();
+   fhPatternEnable->Reset();
+   fhPatternResync->Reset();
 
    for( UInt_t uTotPlot = 0; uTotPlot < fvhRawTot_gDPB.size(); ++uTotPlot )
       fvhRawTot_gDPB[ uTotPlot ]->Reset();
@@ -2839,6 +3100,10 @@ void CbmStar2019MonitorTof::ResetAllHistos()
    {
       fvhRemapTotSideA_mod[ uMod ]->Reset();
       fvhRemapTotSideB_mod[ uMod ]->Reset();
+
+      fvhModRate[ uMod ]->Reset();
+      fvhModErrorRate[ uMod ]->Reset();
+      fvhModErrorRatio[ uMod ]->Reset();
    } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
 
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
@@ -2846,6 +3111,11 @@ void CbmStar2019MonitorTof::ResetAllHistos()
       fvhGdpbGet4MessType[ uGdpb ]->Reset();
       fvhGdpbGet4ChanScm[ uGdpb ]->Reset();
       fvhGdpbGet4ChanErrors[ uGdpb ]->Reset();
+
+      fvhGdpbPatternMissmatchEvo[ uGdpb ]->Reset();
+      fvhGdpbPatternEnableEvo[ uGdpb ]->Reset();
+      fvhGdpbPatternResyncEvo[ uGdpb ]->Reset();
+
       fvhRawFt_gDPB[ uGdpb ]->Reset();
       fvhChCount_gDPB[ uGdpb ]->Reset();
       fvhChannelRate_gDPB[ uGdpb ]->Reset();
@@ -2938,6 +3208,13 @@ void CbmStar2019MonitorTof::ResetEvolutionHistograms()
       fvhStarTrigGdpbTsEvo[ uGdpbLoop ]->Reset();
       fvhStarTrigStarTsEvo[ uGdpbLoop ]->Reset();
    } // for( UInt_t uGdpbLoop = 0; uGdpbLoop < fuNrOfGdpbs; ++uGdpbLoop )
+
+   for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
+   {
+      fvhModRate[ uMod ]->Reset();
+      fvhModErrorRate[ uMod ]->Reset();
+      fvhModErrorRatio[ uMod ]->Reset();
+   } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
 
    fdStartTime = -1;
 }
