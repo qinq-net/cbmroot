@@ -197,8 +197,12 @@ void CbmStar2019EventBuilderEtof::AddMsComponentToList( size_t component, UShort
    fEventBuilderAlgo->AddMsComponentToList( component, usDetectorId );
 }
 
+static Double_t dctime=0.;
+
 Bool_t CbmStar2019EventBuilderEtof::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
+   fTimer.Start();
+
    if( 0 == fulTsCounter )
    {
       LOG(INFO) << "FIXME ===> Jumping 1st TS as corrupted with current FW + FLESNET combination"
@@ -262,10 +266,14 @@ Bool_t CbmStar2019EventBuilderEtof::DoUnpack(const fles::Timeslice& ts, size_t c
                          << " object was not set => Do Nothing more with it!!! "
                          << FairLogger::endl;
    } // for( UInt_t uEvent = 0; uEvent < eventBuffer.size(); ++uEvent )
-
-   if( 0 == fulTsCounter % 10000 )
-      LOG(INFO) << "Processed " << fulTsCounter << "TS"
+   fTimer.Stop();
+   dctime += fTimer.CpuTime();
+   
+   if( 0 == fulTsCounter % 10000 ) {
+     LOG(INFO) << "Processed " << fulTsCounter << " TS,  CPUtime: "<< dctime/10. << " ms/TS"
                 << FairLogger::endl;
+     dctime=0.;
+   }
    fulTsCounter++;
 
    return kTRUE;

@@ -11,6 +11,7 @@
 #include "Timeslice.hpp"
 
 #include "CbmMcbmUnpack.h"
+#include "TStopwatch.h"
 
 class CbmStar2019EventBuilderEtofAlgo;
 
@@ -67,6 +68,8 @@ class CbmStar2019EventBuilderEtof : public CbmMcbmUnpack
 
       /// Processing algo
       CbmStar2019EventBuilderEtofAlgo * fEventBuilderAlgo;
+
+      TStopwatch fTimer;
 
       /// Event dump to binary file
       std::fstream * fpBinDumpFile;
