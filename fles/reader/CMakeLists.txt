@@ -93,6 +93,7 @@ Set(SRCS
   tasks/tools/CbmTrdTestBeamTools.cxx
   tasks/tools/CbmTrdTestBeamTools2017DESY.cxx
   tasks/tools/CbmTrdTestBeamTools2017GIF.cxx
+  tasks/tools/CbmTrdTestBeamTools2018GIF.cxx
   tasks/tools/CbmTrdTestBeamToolsBuch2016.cxx
   tasks/tools/CbmTrdLabTools.cxx
 
