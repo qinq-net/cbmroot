@@ -61,6 +61,9 @@ class CbmStar2019EventBuilderEtofAlgo : public CbmStar2019Algo<CbmTofDigiExp>
       Bool_t fbMonitorMode;      //! Switch ON the filling of a minimal set of histograms
       Bool_t fbDebugMonitorMode; //! Switch ON the filling of a additional set of histograms
 
+      /// Constants
+      static const UInt_t kuMaxNbErrorsPerGdpbPerEvent = 500; //! Correspond to ~6000 error messages max per event, leaving 2000 for hits and epoch
+
       /// Settings from parameter file
       CbmStar2019TofPar* fUnpackPar;      //!
          /// Readout chain dimensions and mapping

@@ -960,8 +960,9 @@ void CbmStar2019EventBuilderEtofAlgo::StoreMessageInBuffer( gdpbv100::FullMessag
    uint16_t usG4ErrorType = fullMess.getGdpbSysErrData();
    if( gdpbv100::MSG_SYST == fullMess.getMessageType() &&
        gdpbv100::SYS_GET4_ERROR == fullMess.getGdpbSysSubType() &&
-       ( usG4ErrorType < gdpbv100::GET4_V2X_ERR_TOT_OVERWRT ||
-         usG4ErrorType > gdpbv100::GET4_V2X_ERR_SEQUENCE_ER )
+       ( ( usG4ErrorType < gdpbv100::GET4_V2X_ERR_TOT_OVERWRT &&
+           gdpbv100::GET4_V2X_ERR_LOST_EVT != usG4ErrorType ) ||
+         usG4ErrorType > gdpbv100::GET4_V2X_ERR_SEQUENCE_ER  )
       )
    {
       fvvBufferMajorAsicErrors[fuGdpbNr].push_back( fullMess );
@@ -1234,14 +1235,26 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                               + fdStarTriggerWinSize[ uGdpb ];
             Double_t dDeadEnd = gdpbv100::kdClockCycleSizeNs * (*itTrigger[ uGdpb ]).GetFullGdpbTs()
                                + fdStarTriggerDeadtime[ uGdpb ];
+            Double_t dWinBegErrors = dWinBeg - 2 * gdpbv100::kdEpochInNs;
 
-            /// Loop on important errors buffer and select all from "last event" to "end of trigger window"
+            /// Loop on important errors buffer and select all from "last event" or 2 Epoch before the trigger window to "end of trigger window"
+            UInt_t uNbErrorsInEventGdpb = 0;
+            while( itErrorMessStart[ uGdpb ] != fvvBufferMajorAsicErrors[ uGdpb ].end() &&
+                   (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinBegErrors
+                  )
+            {
+               ++itErrorMessStart[ uGdpb ];
+            } // while( not at buffer end && (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinBeg - 2 * gdpbv100::kdEpochInNs )
             while( itErrorMessStart[ uGdpb ] != fvvBufferMajorAsicErrors[ uGdpb ].end() &&
                    (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd
                   )
             {
-               starSubEvent.AddMsg( (*itErrorMessStart[ uGdpb ]) );
+               /// Add errors to event only until the limit per gDPB
+               if( uNbErrorsInEventGdpb < kuMaxNbErrorsPerGdpbPerEvent )
+                  starSubEvent.AddMsg( (*itErrorMessStart[ uGdpb ]) );
+
                ++itErrorMessStart[ uGdpb ];
+               ++uNbErrorsInEventGdpb;
             } // while( not at buffer end && (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd )
 
             /// Loop on data and select data fitting the trigger window
@@ -1403,13 +1416,25 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::BuildEvents()
                                  + fdStarTriggerWinSize[ uGdpb ];
                Double_t dDeadEnd = gdpbv100::kdClockCycleSizeNs * ulTriggerTime
                                   + fdStarTriggerDeadtime[ uGdpb ];
+               Double_t dWinBegErrors = dWinBeg - 2 * gdpbv100::kdEpochInNs;
 
-               /// Loop on important errors buffer and select all from "last event" to "end of trigger window"
+               /// Loop on important errors buffer and select all from "last event" or 2 Epoch before the trigger window to "end of trigger window"
+               UInt_t uNbErrorsInEventGdpb = 0;
+               while( itErrorMessStart[ uGdpb ] != fvvBufferMajorAsicErrors[ uGdpb ].end() &&
+                      (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinBegErrors
+                     )
+               {
+                  ++itErrorMessStart[ uGdpb ];
+               } // while( not at buffer end && (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinBeg - 2 * gdpbv100::kdEpochInNs )
                while( itErrorMessStart[ uGdpb ] != fvvBufferMajorAsicErrors[ uGdpb ].end() &&
                       (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd )
                {
-                  starSubEvent.AddMsg( (*itErrorMessStart[ uGdpb ]) );
+                  /// Add errors to event only until the limit per gDPB
+                  if( uNbErrorsInEventGdpb < kuMaxNbErrorsPerGdpbPerEvent )
+                     starSubEvent.AddMsg( (*itErrorMessStart[ uGdpb ]) );
+
                   ++itErrorMessStart[ uGdpb ];
+                  ++uNbErrorsInEventGdpb;
                } // while( not at buffer end && (*itErrorMessStart[ uGdpb ]).GetFullTimeNs() < dWinEnd )
 
                /// Loop on data and select data fitting the trigger window
