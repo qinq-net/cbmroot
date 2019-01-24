@@ -9,6 +9,7 @@
 #include "CbmMcbm2018ContFact.h"
 
 #include "CbmMcbm2018StsPar.h"
+#include "CbmMcbm2018MuchPar.h"
 #include "CbmMcbm2018TofPar.h"
 
 #include "FairRuntimeDb.h"
@@ -36,6 +37,14 @@ void CbmMcbm2018ContFact::setAllContainers() {
 
     containers->Add(pSts);
 
+    FairContainer* pMuch= new FairContainer("CbmMcbm2018MuchPar",
+                                          "MUCH at MCBM 2018 Unpack Parameters",
+                                          "TestDefaultContext");
+    pMuch->addContext("TestNonDefaultContext");
+
+    containers->Add(pMuch);
+
+
     FairContainer* pTof= new FairContainer("CbmMcbm2018TofPar",
                                           "TOF at MCBM 2018 Unpack Parameters",
                                           "TestDefaultContext");
@@ -54,7 +63,10 @@ FairParSet* CbmMcbm2018ContFact::createContainer(FairContainer* c) {
   if (strcmp(name,"CbmMcbm2018StsPar")==0) {
       p = new CbmMcbm2018StsPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
   }
-  else if (strcmp(name,"CbmMcbm2018TofPar")==0) {
+  if (strcmp(name,"CbmMcbm2018MuchPar")==0) {
+      p = new CbmMcbm2018MuchPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
+  }
+  if (strcmp(name,"CbmMcbm2018TofPar")==0) {
       p = new CbmMcbm2018TofPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
   }
 
