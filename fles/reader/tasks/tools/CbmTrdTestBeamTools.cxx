@@ -382,12 +382,15 @@ CbmTrdTestBeamTools::GetColumnDisplacement (CbmTrdCluster* Clust)
 	  it++;
 	}
     }
-  Float_t WeightedColumns;
+  if (Digis.size()<=1)
+    return 0.;
+  Float_t WeightedColumns = 0;
   Float_t TotalRowCharge = 0;
-  std::vector<Float_t> Charges;
+  std::vector<Float_t> Charges {{}};
   Float_t Offset = GetCentralColumnID(Clust);
-  Float_t Displacement;
-  if (ClassifyCluster (Clust) != CbmTrdClusterClassification::kInvalidCharge)
+  Float_t Displacement = 0;
+  if (ClassifyCluster (Clust) != CbmTrdClusterClassification::kNormal
+      ||GetColumnWidth(Clust)>4)
     {
       for (UInt_t i = 0; i < Digis.size (); i++)
 	{
@@ -418,7 +421,10 @@ CbmTrdTestBeamTools::GetColumnDisplacement (CbmTrdCluster* Clust)
 	  Double_t TempOffset = CalculateSECHS (Charges[i],
 						Charges[i + 1],
 						Charges[i + 2]);
-
+	  if(GetColumnWidth(Clust)==3)
+	    TempOffset+=0;
+	  else
+	    TempOffset-=0.5;
 	  Offset += TempOffset;
 	}
       Displacement=Offset;
