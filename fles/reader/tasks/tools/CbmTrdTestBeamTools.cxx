@@ -424,10 +424,10 @@ CbmTrdTestBeamTools::GetColumnDisplacement (CbmTrdCluster* Clust)
 	  if(GetColumnWidth(Clust)==3)
 	    TempOffset+=0;
 	  else
-	    TempOffset-=0.5;
+	    TempOffset+=0.5;
 	  Offset += TempOffset;
 	}
-      Displacement=Offset;
+      Displacement=Offset*0.5;
     }
   return Displacement;
 }
