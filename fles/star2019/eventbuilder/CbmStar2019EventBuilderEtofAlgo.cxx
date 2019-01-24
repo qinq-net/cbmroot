@@ -690,6 +690,13 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessEpochCycle( uint64_t ulCycleData )
                  << Form( " Current cycle 0x%09llX New cycle 0x%09llX", fvulCurrentEpochCycle[fuGdpbNr], ulEpochCycleVal )
                  << FairLogger::endl;
    }
+   if( ulEpochCycleVal != fvulCurrentEpochCycle[fuGdpbNr] )
+   {
+      LOG(INFO) << "CbmStar2019EventBuilderEtofAlgo::ProcessEpochCycle => "
+                 << " New epoch cycle for Gdpb " << fuGdpbNr
+                 << Form( ": Current cycle 0x%09llX New cycle 0x%09llX", fvulCurrentEpochCycle[fuGdpbNr], ulEpochCycleVal )
+                 << FairLogger::endl;
+   } // if( ulEpochCycleVal != fvulCurrentEpochCycle[fuGdpbNr] )
    fvulCurrentEpochCycle[fuGdpbNr] = ulEpochCycleVal;
 
    return;
