@@ -141,6 +141,8 @@ Bool_t CbmMcbm2018MuchPar::IsFebActive( UInt_t uFebInSystIdx )
 
    if( uFebInSystIdx < GetNrOfFebs() )
    {
+      /// Always return true for now
+      return kTRUE;
    } // if( uFebInSystIdx < GetNrOfFebs() )
       else
       {

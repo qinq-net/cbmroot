@@ -59,7 +59,7 @@ Set(SRCS
    dataformat/gDpbMessv100.cxx
 
    parameter/CbmMcbm2018StsPar.cxx
-#   parameter/CbmMcbm2018MuchPar.cxx
+   parameter/CbmMcbm2018MuchPar.cxx
    parameter/CbmMcbm2018TofPar.cxx
    parameter/CbmMcbm2018ContFact.cxx
 

@@ -10,7 +10,7 @@
 #pragma link C++ class gdpb::Message;
 
 #pragma link C++ class CbmMcbm2018StsPar;
-//#pragma link C++ class CbmMcbm2018MuchPar;
+#pragma link C++ class CbmMcbm2018MuchPar;
 #pragma link C++ class CbmMcbm2018TofPar;
 #pragma link C++ class CbmMcbm2018ContFact;
 
