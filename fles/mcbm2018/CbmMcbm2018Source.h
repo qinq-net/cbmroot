@@ -17,7 +17,7 @@
 
 #include "FairSource.h"
 #include "CbmMcbmUnpack.h"
-//#include "CbmTbDaqBuffer.h"
+#include "CbmTbDaqBuffer.h"
 
 #include "TString.h"
 #include "TClonesArray.h"
@@ -76,6 +76,8 @@ class CbmMcbm2018Source : public FairSource
 
     void SetDataReductionMuch( UInt_t uTsReduction = 15 ) { fuTsReduction = uTsReduction; }
 
+    void EnableDataOutput( Bool_t bFlagIn = kTRUE ){ fbOutputData = bFlagIn; }
+
   private:
 
     TString fFileName;
@@ -83,12 +85,13 @@ class CbmMcbm2018Source : public FairSource
     Int_t   fFileCounter;
     TString fHost;
     Int_t   fPort;
+    Int_t   fbOutputData;
 
     std::map<Int_t, CbmMcbmUnpack*> fUnpackers; //! List pairs of system ID and unpacker pointer (unpacker can appear multiple times)
     std::map<Int_t, Int_t> fDetectorSystemMap; //! Map detector system id to flib system id
     std::unordered_set<CbmMcbmUnpack*> fUnpackersToRun; //! List of all unpackers for which at least one matching container was found
 
-//    CbmTbDaqBuffer* fBuffer;
+    CbmTbDaqBuffer* fBuffer;
 
     UInt_t fTSNumber;
     UInt_t fTSCounter;

@@ -7,7 +7,7 @@
 
 #include "CbmMcbm2018Source.h"
 
-//#include "CbmTbDaqBuffer.h"
+#include "CbmTbDaqBuffer.h"
 
 #include "TimesliceInputArchive.hpp"
 #include "Timeslice.hpp"
@@ -32,10 +32,11 @@ CbmMcbm2018Source::CbmMcbm2018Source()
     fFileCounter(0),
     fHost("localhost"),
     fPort(5556),
+    fbOutputData( kFALSE ),
     fUnpackers(),
     fDetectorSystemMap(),
     fUnpackersToRun(),
-//    fBuffer(CbmTbDaqBuffer::Instance()),
+    fBuffer(CbmTbDaqBuffer::Instance()),
     fTSNumber(0),
     fTSCounter(0),
     fTimer(),
@@ -55,9 +56,11 @@ CbmMcbm2018Source::CbmMcbm2018Source(const CbmMcbm2018Source& source)
     fFileCounter(0),
     fHost("localhost"),
     fPort(5556),
+    fbOutputData( kFALSE ),
     fUnpackers(),
     fDetectorSystemMap(),
-//    fBuffer(CbmTbDaqBuffer::Instance()),
+    fUnpackersToRun(),
+    fBuffer(CbmTbDaqBuffer::Instance()),
     fTSNumber(0),
     fTSCounter(0),
     fTimer(),
@@ -161,8 +164,8 @@ Int_t CbmMcbm2018Source::ReadEvent(UInt_t)
   }
 //  LOG(INFO) << "After FillBuffer" << FairLogger::endl;
 
-//  retVal = GetNextEvent();
-//  LOG(DEBUG) << "After GetNextEvent: " << retVal << FairLogger::endl;
+  retVal = GetNextEvent();
+  LOG(DEBUG) << "After GetNextEvent: " << retVal << FairLogger::endl;
 
   Int_t bla = 0;
   // If no more data and file mode, try to read next file in List
@@ -285,7 +288,7 @@ Int_t CbmMcbm2018Source::FillBuffer()
          for( auto itUnp = fUnpackersToRun.begin(); itUnp != fUnpackersToRun.end(); ++ itUnp )
          {
             (*itUnp)->DoUnpack(ts, 0);
-         } // for( auto itUnp = fUnpackers.begin(); itUnp != fUnpackers.end(); ++ itUnp )
+         } // for( auto itUnp = fUnpackersToRun.begin(); itUnp != fUnpackersToRun.end(); ++ itUnp )
       } // if( 0 == tsIndex % fuTsReduction )
 /*
       for (size_t c {0}; c < ts.num_components(); c++) {
@@ -313,39 +316,44 @@ Int_t CbmMcbm2018Source::FillBuffer()
 
 Int_t CbmMcbm2018Source::GetNextEvent()
 {
-/*
-  Double_t fTimeBufferOut = fBuffer->GetTimeLast();
-  LOG(DEBUG) << "Timeslice contains data from "
-            << std::setprecision(9) << std::fixed
-            << static_cast<Double_t>(fBuffer->GetTimeFirst()) * 1.e-9 << " to "
-            << std::setprecision(9) << std::fixed
-            << static_cast<Double_t>(fBuffer->GetTimeLast()) * 1.e-9 << " s" << FairLogger::endl;
 
-  LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries." << FairLogger::endl;
+  if( kTRUE == fbOutputData )
+  {
+    Double_t fTimeBufferOut = fBuffer->GetTimeLast();
+    LOG(DEBUG) << "Timeslice contains data from "
+              << std::setprecision(9) << std::fixed
+              << static_cast<Double_t>(fBuffer->GetTimeFirst()) * 1.e-9 << " to "
+              << std::setprecision(9) << std::fixed
+              << static_cast<Double_t>(fBuffer->GetTimeLast()) * 1.e-9 << " s" << FairLogger::endl;
+
+    LOG(DEBUG) << "Buffer has " << fBuffer->GetSize() << " entries." << FairLogger::endl;
 
 
-  CbmDigi* digi = fBuffer->GetNextData(fTimeBufferOut);
+    CbmDigi* digi = fBuffer->GetNextData(fTimeBufferOut);
 
-//  LOG(INFO) << "Before if" << FairLogger::endl;
-  if (NULL == digi) return 1;
-//  LOG(INFO) << "After if" << FairLogger::endl;
+//    LOG(INFO) << "Before if" << FairLogger::endl;
+    if (NULL == digi) return 1;
+//    LOG(INFO) << "After if" << FairLogger::endl;
 
-  while(digi) {
-    Int_t detId = digi->GetSystemId();
-    Int_t flibId = fDetectorSystemMap[detId];
-    LOG(DEBUG) << "Digi has system ID " << detId
-              << " which maps to FlibId "<< flibId << FairLogger::endl;
-    std::map<Int_t, CbmTSUnpack*>::iterator it=fUnpackers.find(flibId);
-    if (it == fUnpackers.end()) {
-      LOG(ERROR) << "Skipping digi with unknown id "
-                 << detId << FairLogger::endl;
-      continue;
-    } else {
-      it->second->FillOutput(digi);
+    while(digi) {
+      Int_t detId = digi->GetSystemId();
+      Int_t flibId = fDetectorSystemMap[detId];
+      LOG(DEBUG) << "Digi has system ID " << detId
+                << " which maps to FlibId "<< flibId << FairLogger::endl;
+      //std::map<Int_t, CbmTSUnpack*>::iterator it=fUnpackers.find(flibId);
+      std::map<Int_t, CbmMcbmUnpack*>::iterator it=fUnpackers.find(flibId);
+
+      if (it == fUnpackers.end()) {
+        LOG(ERROR) << "Skipping digi with unknown id "
+                   << detId << FairLogger::endl;
+        continue;
+      } else {
+        it->second->FillOutput(digi);
+      }
+      digi = fBuffer->GetNextData(fTimeBufferOut);
     }
-    digi = fBuffer->GetNextData(fTimeBufferOut);
-  };
-*/
+  } // if( kTRUE == fbOutputData )
+
   return 0;
 }
 
