@@ -43,7 +43,8 @@ Bool_t CbmTSUnpackTestMiniRich::Init()
 
 Bool_t CbmTSUnpackTestMiniRich::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
-	if (fEventsCounter%100 == 0) {
+	/*if (fEventsCounter%100 == 0)*/
+	{
 		LOG(INFO) << "Processing timeslice " << fEventsCounter << FairLogger::endl;
 	}
 	fEventsCounter++;
@@ -62,10 +63,11 @@ Bool_t CbmTSUnpackTestMiniRich::DoUnpack(const fles::Timeslice& ts, size_t compo
 		const fles::MicrosliceDescriptor& msDesc = mv.desc();
 		const uint8_t* msContent = mv.content();
 		LOG(DEBUG) << "msDesc.size=" << msDesc.size << FairLogger::endl;
+		LOG(DEBUG) << "msDesc.idx=" << msDesc.idx << FairLogger::endl;
 		//PrintRaw(msDesc.size, msContent);
-		LOG(DEBUG) << "=======================================================" << FairLogger::endl;
+		//LOG(DEBUG) << "=======================================================" << FairLogger::endl;
 		ProcessMicroslice(msDesc.size, msContent);
-		LOG(DEBUG) << "=======================================================" << FairLogger::endl;
+		//LOG(DEBUG) << "=======================================================" << FairLogger::endl;
 	}
 }
 
@@ -87,17 +89,35 @@ void CbmTSUnpackTestMiniRich::ProcessMicroslice(size_t const size, uint8_t const
 	Int_t offset; // offset in bytes
 	Int_t* dataPtr;
 	
+	offset = 0; SwapBytes(4, ptr+offset);
+	LOG(DEBUG4) << "[" << fGwordCnt++ << "]\t" << GetWordHexRepr(ptr+offset) << "\t" << "ok" << "\t"
+	            << "Reserved 0000 0000"
+	            << FairLogger::endl;
+	
+	offset = 4; SwapBytes(4, ptr+offset); dataPtr = (Int_t*)(ptr+offset);
+	Int_t mbsNumber = (Int_t)(dataPtr[0] & 0xffffff);
+	LOG(DEBUG4) << "[" << fGwordCnt++ << "]\t" << GetWordHexRepr(ptr+offset) << "\t" << "ok" << "\t"
+	            << "mbsNumber = " << mbsNumber
+	            << FairLogger::endl;
+
+
 	// We suppose that the first word is
 	// "HadesTransportUnitQueue - Length"
-	offset = 0; SwapBytes(4, ptr+offset); dataPtr = (Int_t*)(ptr+offset);
+	offset = 0+8; SwapBytes(4, ptr+offset); dataPtr = (Int_t*)(ptr+offset);
 	fTRBeventSize1 = (Int_t)(dataPtr[0]);
 	LOG(DEBUG4) << "[" << fGwordCnt++ << "]\t" << GetWordHexRepr(ptr+offset) << "\t" << "ok" << "\t"
 	            << "HadesTransportUnitQueue - Length = " << fTRBeventSize1
 	            << FairLogger::endl;
 
+	if (*dataPtr == 0x80030000) {
+		LOG(INFO) << "dataPtr == 0x80030000" << FairLogger::endl;
+		exit(EXIT_FAILURE);
+	}
+
+
 	// We suppose that the second word is
 	// "HadesTransportUnitQueue - Decoder  (Seems to be allways the same)"
-	offset = 4; SwapBytes(4, ptr+offset); dataPtr = (Int_t*)(ptr+offset);
+	offset = 4+8; SwapBytes(4, ptr+offset); dataPtr = (Int_t*)(ptr+offset);
 	Int_t dcdr = (Int_t)(dataPtr[0]);
 	if (dcdr == 0x00030062) {
 		LOG(DEBUG4) << "[" << fGwordCnt++ << "]\t" << GetWordHexRepr(ptr+offset) << "\t" << "ok" << "\t"
@@ -113,7 +133,7 @@ void CbmTSUnpackTestMiniRich::ProcessMicroslice(size_t const size, uint8_t const
 	// We suppose that the third word is
 	// TRB event length (in bytes)
 	// It should be 8 less than the size specified two words ago
-	offset = 8; SwapBytes(4, ptr+offset); dataPtr = (Int_t*)(ptr+offset);
+	offset = 8+8; SwapBytes(4, ptr+offset); dataPtr = (Int_t*)(ptr+offset);
 	fTRBeventSize2 = (Int_t)(dataPtr[0]);
 	if (fTRBeventSize2 == fTRBeventSize1-8) {
 		LOG(DEBUG4) << "[" << fGwordCnt++ << "]\t" << GetWordHexRepr(ptr+offset) << "\t" << "ok" << "\t"
@@ -202,8 +222,9 @@ Int_t CbmTSUnpackTestMiniRich::ProcessTRBevent(size_t const size, uint8_t const 
 					<< "subevent size = " << fSubEvSize
 					<< FairLogger::endl;
 
-		if (fHubId == 0xc001) {
-			fSubSubEvId = 0xc001;
+		//FIXME change from 0xc001 to 0xc000 at some point
+		if ((fHubId == 0xc001) || (fHubId == 0xc000)) {
+			fSubSubEvId = fHubId;
 			offset += (4 + ProcessCTSsubevent(fSubEvSize*4, ptr+offset));
 			// In principle, should be reset here for safety
 			fSubSubEvId = 0;
@@ -307,21 +328,24 @@ Int_t CbmTSUnpackTestMiniRich::ProcessCTSsubevent(size_t const size, uint8_t con
 			break;
 	}
 
-	//LOG(DEBUG) << "CTS information size (extracted from the CTS header): " << CTSinfo_size << FairLogger::endl;
+	LOG(DEBUG) << "CTS information size (extracted from the CTS header): " << CTSinfo_size << FairLogger::endl;
 
 	offset = 8;
 
 	while (offset-8 < CTSinfo_size*4) {
 
 		SwapBytes(4, ptr+offset); dataPtr = (Int_t*)(ptr+offset);
-		LOG(DEBUG4) << "[" << fGwordCnt++ << "]\t" << GetWordHexRepr(ptr+offset) << "\t" << "ok" << "\t"
+		ULong_t MSidx = 102400UL * ((ULong_t)(*dataPtr) - 1);
+		LOG(DEBUG4) << "[" << fGwordCnt++ << "]\t" << GetWordHexRepr(ptr+offset) << "\t" << MSidx << "\t" << "ok" << "\t"
 		            << "CTS information"
 					<< FairLogger::endl;
 
 		offset += 4;
 	}
 
-	offset += (ProcessTRBsubsubevent((size-4), ptr+offset)); // MAIN CALL HERE
+	// size - full size including CTS header word, CTS informations words (CTSinfo_size) and TCD data
+	// Thus TDC data size = full size - 1 word (header) - CTSinfo_size words (CTS informations)
+	offset += (ProcessTRBsubsubevent((size-(1+CTSinfo_size)*4), ptr+offset)); // MAIN CALL HERE
 
 	//TODO implement checks
 	//std::cout << "Done processing CTS subevent. offset=" << offset << "\tsize=" << size << std::endl;

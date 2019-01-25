@@ -1,14 +1,13 @@
-void test_daq(Int_t nEvents = 2)
+void test_daq(Int_t startEvent = 0, Int_t nEvents = 10, TString inFile = "/home/evovch/TSA_files/delay_2_2_0000.tsa", TString outFile = "~/TSA_files/result/delay_2_2_0000.root")
 {
-	TString inFile = "/home/evovch/TSA_files/test60002.tsa";
-	TString outFile = "/home/evovch/TSA_files/result/test60001.root";
+	//Int_t startEvent = 0;
 
 	// --- Specify number of events to be produced.
 	// --- -1 means run until the end of the input file.
-	//Int_t nEvents = 40;
+	//Int_t nEvents = 0;
 
 	// --- Set log output levels
-	FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+	FairLogger::GetLogger()->SetLogScreenLevel("DEBUG4");
 	FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
 	// --- Set debug level
@@ -32,17 +31,17 @@ void test_daq(Int_t nEvents = 2)
 	// --- Run
 	FairRunOnline *run = new FairRunOnline(source);
 	run->SetOutputFile(outFile);
-
+/*
 	CbmTestMiniRichPairBuilder* pairBuilder = new CbmTestMiniRichPairBuilder();
 	run->AddTask(pairBuilder);
-
+*/
 	run->Init();
 
 	// --- Start run
 	TStopwatch timer;
 	timer.Start();
 	std::cout << ">>> test_daq: Starting run..." << std::endl;
-	run->Run(0, nEvents);
+	run->Run(startEvent, startEvent+nEvents);
 	timer.Stop();
 
 	// --- End-of-run info
