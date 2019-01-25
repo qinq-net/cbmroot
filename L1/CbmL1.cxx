@@ -1388,9 +1388,13 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
   
   else algo->L1KFTrackFitterMuch();
   
-#else   
+#else  
   
-  algo->L1KFTrackFitter();
+  L1FieldValue fB0 = algo->GetVtxFieldValue();
+  
+  if ((fabs(fB0.x[0]) < 0.0000001)&&(fabs(fB0.y[0]) < 0.0000001)&&(fabs(fB0.z[0]) < 0.0000001)) algo->KFTrackFitter_simple();
+  
+  else algo->L1KFTrackFitter();
   
 #endif  
   
@@ -1536,7 +1540,6 @@ void CbmL1::IdealTrackFinder()
     for (unsigned int iH = 0; iH < MC.StsHits.size(); iH++){
       const int hitI = MC.StsHits[iH];
       const CbmL1StsHit& hit = vStsHits[hitI];
-      
       const int iStation = vMCPoints[hit.mcPointIds[0]].iStation;
 
       hitIndices[iStation] = hitI;
@@ -1546,8 +1549,17 @@ void CbmL1::IdealTrackFinder()
       const int hitI = hitIndices[iH];
       if(hitI<0) continue;
 
-      algo->vRecoHits.push_back(hitI);
+     // algo->vRecoHits.push_back(hitI);
       algoTr.NHits++;
+    }
+    
+    if (algoTr.NHits<3) continue;
+    
+    for (int iH = 0; iH < algo->NStations; iH++){
+      const int hitI = hitIndices[iH];
+      if(hitI<0) continue;
+      
+      algo->vRecoHits.push_back(hitI);
     }
 
     algoTr.Momentum = MC.p;
