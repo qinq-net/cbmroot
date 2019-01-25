@@ -69,6 +69,9 @@ const  Double_t cLight=29.9792; // in cm/ns
 static FairRootManager* rootMgr = NULL;
 static Int_t iRunId=1;
 
+CbmTofDigiExp *pRef ;
+CbmTofDigiExp *pRefCal ;
+
 CbmDeviceHitBuilderTof::CbmDeviceHitBuilderTof()
   : fNumMessages(0)
   , fDigi(nullptr)
@@ -130,6 +133,7 @@ CbmDeviceHitBuilderTof::CbmDeviceHitBuilderTof()
   , fhPulserTimesRaw() 
   , fhPulserTimesCor() 
   , fhDigiTimesRaw() 
+  , fhDigiTimesCor() 
   , fhRpcDigiCor()
   , fhRpcCluMul()
   , fhRpcCluRate()
@@ -878,6 +882,12 @@ void    CbmDeviceHitBuilderTof::CreateHistograms()
           iNDet*2, 0, iNDet*2,
           999, -100.,100.); 
 
+   fhDigiTimesCor = new TH2F( 
+          Form("hDigiTimesCor"),
+          Form("Digi Times corrected; Sm+Rpc# []; t - t0 [ns]"),
+          iNDet*2, 0, iNDet*2,
+          999, -100.,100.); 
+
    Int_t iNbDet=fDigiBdfPar->GetNbDet();
    fDetIdIndexMap.clear();
    fhRpcDigiCor.resize( iNbDet  );
@@ -1358,7 +1368,7 @@ Bool_t   CbmDeviceHitBuilderTof::BuildClusters()
 Bool_t   CbmDeviceHitBuilderTof::InspectRawDigis()
 {
   Int_t iNbTofDigi=fiNDigiIn;
-  CbmTofDigiExp *pRef = NULL;
+  pRef = NULL;
   for( Int_t iDigInd = 0; iDigInd < fiNDigiIn; iDigInd++ ) {
     CbmTofDigiExp *pDigi = &fvDigiIn[iDigInd];
     //LOG(DEBUG)<<iDigInd<<" "<<pDigi;
@@ -1545,6 +1555,8 @@ Bool_t   CbmDeviceHitBuilderTof::CalibRawDigis()
     }
     mChannelDeadTime[iAddr]=pDigi->GetTime();
     if ( ! bValid ) continue;
+    if (pRef != NULL) 
+      if(pDigi == pRef) pRefCal=pCalDigi;
     /*
     LOG(DEBUG)<<"DC "  // After deadtime check. before Calibration
 	      <<Form("0x%08x",pDigi->GetAddress())<<" TSRC "
@@ -1653,6 +1665,18 @@ Bool_t   CbmDeviceHitBuilderTof::CalibRawDigis()
     fTofCalDigisColl->Sort(iNbTofDigi); // Time order again, in case modified by the calibration 
     if(!fTofCalDigisColl->IsSorted()){
       LOG(WARN)<<"CalibRaw: Sorting not successful ";
+    }
+  }
+
+  if( NULL != pRef) {
+    // LOG(DEBUG) << Form("pRef from 0x%08x ",pRef->GetAddress());
+    
+    for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ ) {
+      pDigi = (CbmTofDigiExp*) fTofCalDigisColl->At( iDigInd );
+      Int_t iAddr = pDigi->GetAddress() & DetMask;
+      Int_t iDet  = fDetIdIndexMap[iAddr];  // Detector Index
+      Int_t iSide = pDigi->GetSide();
+      fhDigiTimesCor->Fill(iDet*2+iSide,pDigi->GetTime()-pRefCal->GetTime());
     }
   }
   return kTRUE;
@@ -3558,12 +3582,12 @@ Bool_t   CbmDeviceHitBuilderTof::MonitorPulser()
 {
   iNPulserFound++;
   const Int_t iDet0=fiPulDetRef; // Define reference detector
-  Int_t iDigi0=0;
   const Double_t Tlim=0.5;
+  Int_t iDigi0=0;
   switch (fiPulserMode) {
   case 1:  // mcbm :  
     if ( fiNDigiIn != fiPulMulMin*2 + 2 ) { // 2 * working RPCs + 1 Diamond 
-      LOG(INFO) << "Incomplete or distorted pulser event " << iNPulserFound << " with " << fiNDigiIn
+      LOG(DEBUG) << "Incomplete or distorted pulser event " << iNPulserFound << " with " << fiNDigiIn
 		<< " digis instead of " << fiPulMulMin*2 + 2;
       return kTRUE;
     }

@@ -187,6 +187,7 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
    TH2* fhPulserTimesRaw;
    TH2* fhPulserTimesCor;
    TH2* fhDigiTimesRaw;
+   TH2* fhDigiTimesCor;
 
    std::vector< TH2* > fhRpcDigiCor;        //[nbDet]
    std::vector< TH1* > fhRpcCluMul;         //[nbDet]
