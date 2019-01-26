@@ -3712,7 +3712,7 @@ Bool_t   CbmDeviceHitBuilderTof::ApplyPulserCorrection()
     Int_t iDet  = fDetIdIndexMap[iAddr];
     Int_t iSide = fvDigiIn[iDigi].GetSide();
     if( 2 == fiPulserMode ) { // correct all cer pads by same rpc/side 0
-      if( 8 == fvDigiIn[iDigi].GetType() ) {
+      if( 8 == fvDigiIn[iDigi].GetType() || 5 == fvDigiIn[iDigi].GetType() ) {
 	const Int_t iRefAddr=0x00078006;
 	iDet =  fDetIdIndexMap[iRefAddr];
       }
