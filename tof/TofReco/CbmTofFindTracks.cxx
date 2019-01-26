@@ -914,22 +914,25 @@ void CbmTofFindTracks::ExecFind(Option_t* /*opt*/)
     CbmTofHit* pHit = (CbmTofHit*) fTofHitArray->At(iHit);
     Int_t iDetId = (pHit->GetAddress() & DetMask);
 
-    // set diamond positions to (0,0,0) to allow inclusion in straight line fit
-    if ( (iDetId & 0x0000F00F) == 0x00005006 )     // modify diamond position 
-    {
-      if(0. != fdBeamMomentumLab)
-      {
-        Double_t dTargetTimeOffset = pHit->GetZ()/fdBeamMomentumLab*TMath::Sqrt(TMath::Power(fdBeamMomentumLab, 2.) + TMath::Power(0.938271998, 2.))/TMath::Ccgs()*1.0e09;
-        pHit->SetTime(pHit->GetTime() - dTargetTimeOffset);
-      }
+    if(fiBeamCounter > -1) {
+      // set diamond positions to (0,0,0) to allow inclusion in straight line fit
+      if ( (iDetId & 0x0000F00F) == 0x00005006 )     // modify diamond position 
+	{
+	  if(0. != fdBeamMomentumLab)
+	    {
+	      Double_t dTargetTimeOffset = pHit->GetZ()/fdBeamMomentumLab*TMath::Sqrt(TMath::Power(fdBeamMomentumLab, 2.) + TMath::Power(0.938271998, 2.))/TMath::Ccgs()*1.0e09;
+	      pHit->SetTime(pHit->GetTime() - dTargetTimeOffset);
+	    }
 
-//      TVector3 hitPos(0.,0.,0.);
-      TVector3 hitPos(pHit->GetX(), pHit->GetY(), 0.);
-//      TVector3 hitPosErr(1.,1.,5.0);  // including positioning uncertainty 
-      pHit->SetPosition(hitPos);
-      TVector3 hitPosErr(1.,1.,1.0);  // including positioning uncertainty 
-      pHit->SetPositionError(hitPosErr); // FIXME: This is overwritten a few lines below!
-    } 
+	  //      TVector3 hitPos(0.,0.,0.);
+	  TVector3 hitPos(pHit->GetX(), pHit->GetY(), 0.);
+	  //      TVector3 hitPosErr(1.,1.,5.0);  // including positioning uncertainty 
+	  pHit->SetPosition(hitPos);
+	  TVector3 hitPosErr(1.,1.,1.0);  // including positioning uncertainty 
+	  pHit->SetPositionError(hitPosErr); // FIXME: This is overwritten a few lines below!
+	} 
+    }
+
     Double_t dSIGX=GetSigX(iDetId);
     if(dSIGX == 0.) dSIGX = fSIGX;
     Double_t dSIGY=GetSigY(iDetId);
