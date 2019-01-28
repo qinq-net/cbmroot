@@ -12,7 +12,7 @@
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
-#include "FairRun.h" 
+#include "FairRun.h"
 #include "FairRuntimeDb.h"
 #include "FairRunOnline.h"
 
@@ -2383,7 +2383,7 @@ void CbmStar2019MonitorTof::FillEpochInfo(gdpbv100::Message mess)
       fvulCurrentEpochCycle[fuGet4Nr]++;
 */
    fvulCurrentEpoch[fuGet4Nr] = ulEpochNr;
-   fvulCurrentEpochFull[fuGet4Nr] = ulEpochNr + gdpbv100::kulEpochCycleBins * fvulCurrentEpochCycle[fuGet4Nr];
+   fvulCurrentEpochFull[fuGet4Nr] = ulEpochNr + gdpbv100::kuEpochCounterSz * fvulCurrentEpochCycle[fuGet4Nr];
 
    if (1 == mess.getGdpbEpSync())
       fhGet4EpochFlags->Fill(fuGet4Nr, 0);
