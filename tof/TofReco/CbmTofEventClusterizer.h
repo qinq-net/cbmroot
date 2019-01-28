@@ -301,6 +301,8 @@ class CbmTofEventClusterizer : public FairTask
       std::vector< TH2* > fhRpcDigiCor;        //[nbDet]
       std::vector< TH1* > fhRpcCluMul;         //[nbDet]
       std::vector< TH1* > fhRpcCluRate;        //[nbDet]
+      std::vector< TH1* > fhRpcCluRate10s;     //[nbDet]
+      std::vector< Double_t > fdStartAna10s;
       std::vector< TH2* > fhRpcCluPosition;    //[nbDet]
       std::vector< TProfile* > fhRpcCluPositionEvol;//[nbDet]
       std::vector< TProfile* > fhRpcCluTimeEvol;    //[nbDet]

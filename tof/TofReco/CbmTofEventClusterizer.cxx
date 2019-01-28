@@ -53,6 +53,7 @@
 #include "TROOT.h"
 #include "TGeoManager.h"
 #include "TMinuit.h"
+#include "TRandom.h"
 
 // Constants definitions
 #include "CbmTofClusterizersDef.h"
@@ -137,6 +138,8 @@ CbmTofEventClusterizer::CbmTofEventClusterizer(const char *name, Int_t verbose, 
    fhRpcDigiCor(),
    fhRpcCluMul(),
    fhRpcCluRate(),
+   fhRpcCluRate10s(),
+   fdStartAna10s(),
    fhRpcCluPosition(),
    fhRpcCluPositionEvol(),
    fhRpcCluTimeEvol(),      
@@ -768,7 +771,7 @@ Bool_t   CbmTofEventClusterizer::InitCalibParameter()
 		  continue; // skip for inspection
 		  }    
 		*/
-                if(5 == iSmType || 8 == iSmType){
+                if(5 == iSmType || 8 == iSmType){ // for PAD counters
                   fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]=fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0];
                   fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1] = fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0];
                   fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]=fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][0];
@@ -1184,6 +1187,8 @@ Bool_t   CbmTofEventClusterizer::CreateHistos()
    fhRpcDigiCor.resize( iNbDet  );
    fhRpcCluMul.resize( iNbDet  );
    fhRpcCluRate.resize( iNbDet  );
+   fhRpcCluRate10s.resize( iNbDet  );
+   fdStartAna10s.resize( iNbDet );
    fhRpcCluPosition.resize( iNbDet  );
    fhRpcCluPositionEvol.resize( iNbDet  );
    fhRpcCluTimeEvol.resize( iNbDet  );
@@ -1252,10 +1257,16 @@ Bool_t   CbmTofEventClusterizer::CreateHistos()
           Form("Clu multiplicity of Rpc #%03d in Sm %03d of type %d; M []; Cnts", iRpcId, iSmId, iSmType ),
 	      2.+2.*fDigiBdfPar->GetNbChan(iSmType,iRpcId),0,2.+2.*fDigiBdfPar->GetNbChan(iSmType,iRpcId));
 
-       fhRpcCluRate[iDetIndx] =  new TH1F(
+       fhRpcCluRate[iDetIndx] =  new TH1D(
           Form("cl_SmT%01d_sm%03d_rpc%03d_rate", iSmType, iSmId, iRpcId ),
           Form("Clu rate of Rpc #%03d in Sm %03d of type %d; Time (s); Rate (Hz)", iRpcId, iSmId, iSmType ),
 	      3600.,0.,3600.); 
+
+       fhRpcCluRate10s[iDetIndx] =  new TH1D(
+          Form("cl_SmT%01d_sm%03d_rpc%03d_rate10s", iSmType, iSmId, iRpcId ),
+          Form("Clu rate of Rpc #%03d in Sm %03d of type %d in last 10s; Time (s); Rate (Hz)", iRpcId, iSmId, iSmType ),
+	      10000,0.,10.); 
+       fdStartAna10s[iDetIndx]=0.;
 
        fhRpcDTLastHits[iDetIndx] =  new TH1F(
           Form("cl_SmT%01d_sm%03d_rpc%03d_DTLastHits", iSmType, iSmId, iRpcId ),
@@ -1284,12 +1295,12 @@ Bool_t   CbmTofEventClusterizer::CreateHistos()
        fhRpcCluPositionEvol[iDetIndx] =  new TProfile( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_PosEvol", iSmType, iSmId, iRpcId ),
           Form("Clu position of Rpc #%03d in Sm %03d of type %d; Analysis Time [s]; ypos [cm]", iRpcId, iSmId, iSmType ),
-            1000,0.,1.E5,-100.,100.); 
+            1000,-1.,1.E4,-100.,100.); 
 
        fhRpcCluTimeEvol[iDetIndx] =  new TProfile( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_TimeEvol", iSmType, iSmId, iRpcId ),
           Form("Clu time of Rpc #%03d in Sm %03d of type %d; Analysis Time [s]; dT [ns]", iRpcId, iSmId, iSmType ),
-            1000,0.,1.E5,-10.,10.); 
+            1000,-1.,1.E4,-10.,10.); 
 
        fhRpcCluDelPos[iDetIndx] =  new TH2F( 
           Form("cl_SmT%01d_sm%03d_rpc%03d_DelPos", iSmType, iSmId, iRpcId ),
@@ -1692,7 +1703,15 @@ Bool_t   CbmTofEventClusterizer::FillHistos()
 
      Double_t dTimeAna=(pHit->GetTime() - StartAnalysisTime)/1.E9;
      LOG(DEBUG)<<"TimeAna "<<StartAnalysisTime<<", "<< pHit->GetTime()<<", "<<dTimeAna<<FairLogger::endl;
-     fhRpcCluRate[iDetIndx]->Fill(dTimeAna);       
+     fhRpcCluRate[iDetIndx]->Fill(dTimeAna); 
+
+     Double_t dTimeAna10s = (pHit->GetTime() - fdStartAna10s[iDetIndx])/1.E9;
+     if ( dTimeAna10s > 10.) {
+       fdStartAna10s[iDetIndx]=pHit->GetTime();
+       fhRpcCluRate10s[iDetIndx]->Reset();
+       dTimeAna10s=0.;
+     }
+     fhRpcCluRate10s[iDetIndx]->Fill(dTimeAna10s,1./fhRpcCluRate10s[iDetIndx]->GetBinWidth(1));       
      
      if(fdMemoryTime>0. && fvLastHits[iSmType][iSm][iRpc][iCh].size()==0)
        LOG(FATAL)<<Form(" <E> hit not stored in memory for TSRC %d%d%d%d",
@@ -2048,12 +2067,19 @@ Bool_t   CbmTofEventClusterizer::FillHistos()
    fhRpcCluPosition[iDetIndx]->Fill((Double_t)iCh,hitpos_local[1]); //pHit->GetY()-fChannelInfo->GetY());
    fhSmCluPosition[iSmType]->Fill((Double_t)(iSm*iNbRpc+iRpc),hitpos_local[1]);
 
+
    for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]) {
-     fhTRpcCluPosition[iDetIndx][iSel]->Fill((Double_t)iCh,hitpos_local[1]);  //pHit->GetY()-fChannelInfo->GetY());
-     fhTSmCluPosition[iSmType][iSel]->Fill((Double_t)(iSm*iNbRpc+iRpc),hitpos_local[1]);
+       fhTRpcCluPosition[iDetIndx][iSel]->Fill((Double_t)iCh,hitpos_local[1]);  //pHit->GetY()-fChannelInfo->GetY());
+       fhTSmCluPosition[iSmType][iSel]->Fill((Double_t)(iSm*iNbRpc+iRpc),hitpos_local[1]);
    }
 
    if(TMath::Abs(hitpos_local[1])>fChannelInfo->GetSizey()*fPosYMaxScal) continue;
+
+   Double_t dTimeAna=(pHit->GetTime() - StartAnalysisTime)/1.E9; 
+   if(dTRef !=0.) fhRpcCluTimeEvol[iDetIndx]->Fill(dTimeAna,pHit->GetTime()-dTRef);
+   fhRpcCluPositionEvol[iDetIndx]->Fill(dTimeAna,hitpos_local[1]);
+   //LOG(INFO) << "Fill TEvol at " << dTimeAna << FairLogger::endl;
+
      LOG(DEBUG1)<<" TofDigiMatchColl entries:"
                 <<fTofDigiMatchColl->GetEntries()
                 <<FairLogger::endl;
@@ -2212,8 +2238,8 @@ Bool_t   CbmTofEventClusterizer::FillHistos()
 	     dZsign[iSel] = 1.;	
 	     if(pHit->GetZ() < pTrig[iSel]->GetZ()) dZsign[iSel]=-1.;           }
 	   //// look for geometrical match  with selector hit
-           //if(  iSmType==fiBeamRefType      // to get entries in diamond/BeamRef histos  
-           if(  iSmType == 5                  // FIXME, to get entries in diamond histos  
+           if(  iSmType==fiBeamRefType      // to get entries in diamond/BeamRef histos  
+	   //if(  iSmType == 5                  // FIXME, to get entries in diamond histos  
              || TMath::Sqrt(TMath::Power(pHit->GetX()-dzscal*pTrig[iSel]->GetX(),2.)
                            +TMath::Power(pHit->GetY()-dzscal*pTrig[iSel]->GetY(),2.))<fdCaldXdYMax)
            {
@@ -4253,6 +4279,10 @@ Bool_t CbmTofEventClusterizer::AddNextChan(Int_t iSmType, Int_t iSm, Int_t iRpc,
   hitpos_local[0] = dLastPosX;
   hitpos_local[1] = dLastPosY;
   hitpos_local[2] = 0.;
+  if( 5 == iSmType || 8 == iSmType) { // for PAD counters
+    hitpos_local[0] = (gRandom->Rndm()-0.5)*fChannelInfo->GetSizex();
+    hitpos_local[1] = (gRandom->Rndm()-0.5)*fChannelInfo->GetSizey();
+  }
   Double_t hitpos[3];
   /*TGeoNode*    cNode   = */gGeoManager->GetCurrentNode();
   /*TGeoHMatrix* cMatrix = */gGeoManager->GetCurrentMatrix();
@@ -4665,7 +4695,10 @@ Bool_t   CbmTofEventClusterizer::BuildHits()
 		       hitpos_local[0] = dWeightedPosX;
 		       hitpos_local[1] = dWeightedPosY;
 		       hitpos_local[2] = dWeightedPosZ;
-
+		       if( 5 == iSmType || 8 == iSmType) { // for PAD counters
+			 hitpos_local[0] = (gRandom->Rndm()-0.5)*fChannelInfo->GetSizex();
+			 hitpos_local[1] = (gRandom->Rndm()-0.5)*fChannelInfo->GetSizey();
+		       }
 		       Double_t hitpos[3];
 		       TGeoNode*         cNode   = gGeoManager->GetCurrentNode();
 		       /*TGeoHMatrix* cMatrix =*/ gGeoManager->GetCurrentMatrix();
@@ -4906,7 +4939,10 @@ Bool_t   CbmTofEventClusterizer::BuildHits()
 	       hitpos_local[0] = dWeightedPosX;
 	       hitpos_local[1] = dWeightedPosY;
 	       hitpos_local[2] = dWeightedPosZ;
-	       
+	       if( 5 == iSmType || 8 == iSmType) { // for PAD counters
+		 hitpos_local[0] = (gRandom->Rndm()-0.5)*fChannelInfo->GetSizex();
+		 hitpos_local[1] = (gRandom->Rndm()-0.5)*fChannelInfo->GetSizey();
+	       }	       
 	       Double_t hitpos[3];
 	       TGeoNode*        cNode= gGeoManager->GetCurrentNode();
 	       /*TGeoHMatrix* cMatrix =*/ gGeoManager->GetCurrentMatrix();
