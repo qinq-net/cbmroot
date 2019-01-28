@@ -716,7 +716,7 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessEpoch( gdpbv100::Message mess )
    } // if( 0 < fvulCurrentEpoch[ fuGdpbNr ] && ulEpochNr < fvulCurrentEpoch[ fuGdpbNr ] )
 */
    fvulCurrentEpoch[ fuGdpbNr ] = ulEpochNr;
-   fvulCurrentEpochFull[ fuGdpbNr ] = ulEpochNr + gdpbv100::kulEpochCycleBins * fvulCurrentEpochCycle[ fuGdpbNr ];
+   fvulCurrentEpochFull[ fuGdpbNr ] = ulEpochNr + gdpbv100::kuEpochCounterSz * fvulCurrentEpochCycle[ fuGdpbNr ];
 
 //   fulCurrentEpochTime = mess.getMsgFullTime(ulEpochNr);
 
@@ -982,6 +982,13 @@ void CbmStar2019EventBuilderEtofAlgo::StoreMessageInBuffer( gdpbv100::FullMessag
 
    if( fbMonitorMode && fbDebugMonitorMode )
       fvhMessDistributionInMs[ fuGdpbNr ]->Fill( (fullMess.GetFullTimeNs() - fdMsTime) / 1000.0 );
+   LOG(INFO) << Form( "Message Full Time ns: %f MS time ns: %f diff: %f Start %f Stop %f",
+                      fullMess.GetFullTimeNs(), fdMsTime, fullMess.GetFullTimeNs() - fdMsTime,
+                      fvdMessCandidateTimeStart[ fuGdpbNr ], fvdMessCandidateTimeStop[ fuGdpbNr ] )
+             << FairLogger::endl;
+   LOG(INFO) << Form( "Current epoch %llu Current cycle %llu Current Full epoch %llu",
+                      fvulCurrentEpoch[ fuGdpbNr ], fvulCurrentEpochCycle[ fuGdpbNr ], fvulCurrentEpochFull[ fuGdpbNr ] )
+             << FairLogger::endl;
 
    if( fvdMessCandidateTimeStart[ fuGdpbNr ] < fullMess.GetFullTimeNs() &&
        fullMess.GetFullTimeNs() < fvdMessCandidateTimeStop[ fuGdpbNr ] )
