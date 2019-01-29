@@ -28,17 +28,11 @@ class CbmTrdTestBeamTools2018GIF: public CbmTrdTestBeamTools
   };
   virtual Int_t GetNrRows(Int_t Layer=0){
     //Get the Number of PadRows in the corresponding Layer
-    if (Layer <2)
-      return 2;
-    else
-      return 2;
+    return 2;
   };
   virtual Int_t GetNrColumns(Int_t Layer=0){
     //Get the Number of active Columns in the corresponding Layer
-    if (Layer <2)
-          return 16;
-        else
-          return 16;
+    return 16;
   }
   virtual Int_t GetNrRobs(){
     //Get the Number of active ROBS in the Setup;
@@ -53,10 +47,6 @@ class CbmTrdTestBeamTools2018GIF: public CbmTrdTestBeamTools
      */
     Int_t Offset=0;
     Int_t SpadicId=GetSpadicID(raw);
-    if(GetLayerID(raw)<2)
-      {
-	return 0;
-      }
     return GetChannelOnPadPlane(raw)/16+Offset;
   };
   virtual Int_t GetRobID(CbmSpadicRawMessage* raw){
@@ -71,27 +61,24 @@ class CbmTrdTestBeamTools2018GIF: public CbmTrdTestBeamTools
      *Lower numbered colums are towards the left side of the module.
      */
     Int_t Offset=0;
-    if(GetSpadicID(raw)>1)
-      return 0;
-    Offset=GetRobID(raw)*16;
     Int_t ColID=(GetChannelOnPadPlane(raw))%16+Offset;
     return ColID;
   };
+  /**Get layer of current message. 
+   *
+   * Returns the layer of the current message. In GIF2018, the third 
+   * Spadic was a Lemo FEB with scintillator / coincidence signals 
+   * connected. Here, all signals of this Spadic are assigned to one 
+   * layer. 
+   */
   virtual Int_t GetLayerID(CbmSpadicRawMessage* raw)
   {
     Int_t SpadicId =GetSpadicID(raw);
-    Int_t AfckId=GetRobID(raw);
-    Int_t ChannelId=GetChannelOnPadPlane(raw);
-    if (SpadicId/2==0)
-      return 2;
-    else{
-      switch(ChannelId){
-      case 31: return 0;
-      case 27: return 1;
-      }
-    }
-    LOG (ERROR) << this->GetName()<< ": Unknown SPADIC on Afck "<< AfckId << "SPADICID "<< SpadicId<<". Unable to find layer."<< FairLogger::endl;
-    return -1;
+    //    Int_t AfckId=GetRobID(raw);
+    //    Int_t ChannelId=GetChannelOnPadPlane(raw);
+    return SpadicId/2;
+    //    LOG (ERROR) << this->GetName()<< ": Unknown SPADIC on Afck "<< AfckId << "SPADICID "<< SpadicId<<". Unable to find layer."<< FairLogger::endl;
+    //    return -1;
   };
   
   CbmTrdTestBeamTools2018GIF(const CbmTrdTestBeamTools2018GIF&);
