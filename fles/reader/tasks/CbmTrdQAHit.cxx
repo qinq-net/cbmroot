@@ -197,11 +197,10 @@ CbmTrdQAHit::Exec (Option_t*)
       if (raw->GetHit () || raw->GetHitAborted ())
 	HistogramArray.at (
 	    GetRobID (raw) * fBT->GetNrSpadics () + GetSpadicID (raw) / 2)->Fill (
-	    GetRobID (raw) * fBT->GetNrSpadics () + GetSpadicID (raw) * 16
-		+ raw->GetChannelID (),
+		(GetSpadicID (raw) % 2) * 16 + raw->GetChannelID (),
 	    raw->GetTriggerType ());
     }
-  LOG(INFO) << this->GetName () << ": Loop for NrOfSamples_vs_TriggerType done"
+  LOG(INFO) << this->GetName () << ": Loop for TriggerType_vs_Channel done"
 	       << FairLogger::endl;
 
   //Loop for NrOfSamples_vs_TriggerType:
