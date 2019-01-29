@@ -44,6 +44,7 @@
 #pragma link C++ class CbmTrdTestBeamTools;
 #pragma link C++ class CbmTrdTestBeamTools2017DESY;
 #pragma link C++ class CbmTrdTestBeamTools2017GIF;
+#pragma link C++ class CbmTrdTestBeamTools2018GIF;
 #pragma link C++ class CbmTrdTestBeamToolsBuch2016;
 #pragma link C++ class CbmTrdLabTools;
 #pragma link C++ class CbmTrdQABase;
