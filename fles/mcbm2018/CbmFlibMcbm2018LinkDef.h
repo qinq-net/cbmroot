@@ -15,8 +15,9 @@
 #pragma link C++ class CbmMcbm2018ContFact;
 
 //#pragma link C++ class CbmMcbm2018UnpackerT0;
-//#pragma link C++ class CbmMcbm2018UnpackerSts;
-//#pragma link C++ class CbmMcbm2018UnpackerMuch;
+#pragma link C++ class CbmMcbm2018UnpackerAlgoSts;
+#pragma link C++ class CbmMcbm2018UnpackerTaskSts;
+//#pragma link C++ class CbmMcbm2018MuchUnpacker;
 //#pragma link C++ class CbmMcbm2018UnpackerTrd;
 //#pragma link C++ class CbmMcbm2018UnpackerTof;
 #pragma link C++ class CbmMcbm2018TofUnpacker;

@@ -22,6 +22,7 @@ Set(INCLUDE_DIRECTORIES
 
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/dataformat
+  ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/commonMQ
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/parameter
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/monitor
@@ -64,8 +65,9 @@ Set(SRCS
    parameter/CbmMcbm2018ContFact.cxx
 
 #   unpacker/CbmMcbm2018UnpackerT0.cxx
-#   unpacker/CbmMcbm2018UnpackerSts.cxx
-#   unpacker/CbmMcbm2018UnpackerMuch.cxx
+   unpacker/CbmMcbm2018UnpackerAlgoSts.cxx
+   unpacker/CbmMcbm2018UnpackerTaskSts.cxx
+#   unpacker/CbmMcbm2018MuchUnpacker.cxx
 #   unpacker/CbmMcbm2018UnpackerTrd.cxx
    unpacker/CbmMcbm2018TofUnpacker.cxx
 
