@@ -105,6 +105,7 @@ private:
   Int_t     fnClusterConst;
   Int_t     fnScanRowConst;
   Int_t     fnScanColConst;
+  Int_t     fAdcNoise;
   Int_t     fDistributionMode;
   Int_t     fLastPoint;
   Int_t     fLastEvent;

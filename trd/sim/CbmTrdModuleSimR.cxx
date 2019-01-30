@@ -73,6 +73,7 @@ CbmTrdModuleSimR::CbmTrdModuleSimR(Int_t mod, Int_t ly, Int_t rot)
 
     fRecoMode(1),
     fEReco(90.623613),        // 2 < i < 8
+    fAdcNoise(1),
     fLastEventTime(-1),
     fEventTime(-1),
     fLastTime(-1),
@@ -168,6 +169,8 @@ void CbmTrdModuleSimR::ProcessBuffer(Int_t address){
   digi->SetCharge(digicharge);
   digi->SetTriggerType(fAnalogBuffer[address][0].first->GetTriggerType());
 
+  //  std::cout<<digicharge<<std::endl;
+  
   if(analog.size()>1)  for (it=analog.begin()+1 ; it != analog.end(); it++) delete it->first;
   
   fDigiMap[address] = make_pair(digi, fAnalogBuffer[address][0].second);
@@ -341,7 +344,7 @@ void CbmTrdModuleSimR::AddDigitoPulseBuffer(Int_t address, Double_t reldrift,Dou
   //  if(fPointId-fLastPoint!=0 && CbmTrdDigitizer::IsTimeBased()){
     Double_t timediff=fCurrentTime-fTimeBuffer[address];
     Double_t dt = TMath::Abs(fTimeBuffer[address] - time);
-    //    CheckMulti(address,fPulseBuffer[address].first);
+    CheckMulti(address,fPulseBuffer[address].first);
     fMultiBuffer.erase(address);
   }
   fMCBuffer.erase(address);
@@ -382,6 +385,7 @@ std::vector<Int_t> CbmTrdModuleSimR::MakePulse(Double_t charge,vector<Int_t> pul
   Double_t timeshift = fRandom->Uniform(0.,CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC));
   for(Int_t i=0;i<32;i++){
     Int_t noise = AddNoiseADC();
+    
     //    Int_t cross = AddCrosstalk(address,i,sec,row,col,ncols);
     if(fTimeShift)     sample[i]=fCalibration*charge*1e6*CalcResponse(i*CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)+timeshift)+noise;
     if(!fTimeShift)    sample[i]=fCalibration*charge*1e6*CalcResponse(i*CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC))+noise;
@@ -1251,9 +1255,11 @@ Double_t CbmTrdModuleSimR::AddNoise(Double_t charge){
 Int_t CbmTrdModuleSimR::AddNoiseADC(){
   
   if (fSigma_noise_keV > 0.0 && CbmTrdDigitizer::AddNoise() && fPulseSwitch){
-    Double_t noise = fRandom->Gaus(0,1);
+    Int_t noise = fRandom->Gaus(0,fAdcNoise);
     return noise;
+    // return 0;
   }
+  else return 0;
 
 }
 
