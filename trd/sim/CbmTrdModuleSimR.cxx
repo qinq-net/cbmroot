@@ -171,7 +171,7 @@ void CbmTrdModuleSimR::ProcessBuffer(Int_t address){
 
   //  std::cout<<digicharge<<std::endl;
   
-  if(analog.size()>1)  for (it=analog.begin()+1 ; it != analog.end(); it++) delete it->first;
+  if(analog.size()>1)  for (it=analog.begin()+1 ; it != analog.end(); it++) if(it->first) delete it->first;
   
   fDigiMap[address] = make_pair(digi, fAnalogBuffer[address][0].second);
 
