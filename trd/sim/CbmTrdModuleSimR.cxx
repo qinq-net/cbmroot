@@ -222,7 +222,8 @@ void CbmTrdModuleSimR::ProcessPulseBuffer(Int_t address, Bool_t FNcall, Bool_t M
     digi->SetTriggerType(CbmTrdDigi::kNeighbor);
   }
   if(trigger==1 && MultiCall){
-    digi->SetTriggerType(CbmTrdDigi::kMulti);
+    //    digi->SetTriggerType(CbmTrdDigi::kMulti);
+    digi->SetTriggerType(CbmTrdDigi::kTrg1);
   }
   
   digi->SetMatch(fPulseBuffer[address].second);
@@ -879,7 +880,7 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
       for (Int_t i = 0; i < 3; i++) cluster_pos[i] = Ionizations[ipoints][i];
       //      DistributeCharge(local_point_in,local_point_out,cluster_delta,cluster_pos,ipoints);
 
-      Int_t relz=239-(cluster_pos[2]-local_point_in[2])/0.005;
+      relz=239-(cluster_pos[2]-local_point_in[2])/0.005;
       reldrift=TMath::Abs(AddDrifttime(relz)-driftcomp)*1000;
       //      cout<< " drift: " << reldrift<< "   adddrifttime: " << AddDrifttime(relz)<<endl;
       if(reldrift<250.)   ScanPadPlane(cluster_pos, reldrift,clusterELoss, clusterELossTR,epoints,ipoints);
