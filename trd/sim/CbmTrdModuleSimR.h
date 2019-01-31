@@ -75,7 +75,7 @@ private:
   Int_t     AddNoiseADC();
   Int_t     AddCrosstalk(Double_t address,Int_t i, Int_t sec,Int_t row,Int_t col,Int_t ncols);
   Double_t  CalcPRF(Double_t x, Double_t W, Double_t h);
-  Double_t  CheckTime(Int_t address);
+  void      CheckTime(Int_t address);
   void      NoiseTime(ULong64_t eventTime);
 
   //general MC data usage - distributing MC charge over the pad plane

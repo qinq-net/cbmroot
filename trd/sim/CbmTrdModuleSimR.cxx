@@ -155,7 +155,8 @@ void CbmTrdModuleSimR::ProcessBuffer(Int_t address){
 
   std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>           analog=fAnalogBuffer[address];
   std::vector<std::pair<CbmTrdDigi*, CbmMatch*>>::         iterator it;
-  CbmTrdDigi *digi = analog.begin()->first; 
+  CbmTrdDigi *digi = analog.begin()->first;
+  CbmMatch *digiMatch = new CbmMatch();
   //printf("CbmTrdModuleSimR::ProcessBuffer(%10d)=%3d\n", address, digi->GetAddressChannel());
 
   Int_t trigger = 0;
@@ -163,7 +164,7 @@ void CbmTrdModuleSimR::ProcessBuffer(Int_t address){
   Float_t digiTRcharge=0;
   for (it=analog.begin() ; it != analog.end(); it++) {
     digicharge+=it->first->GetCharge();
-    if(it == analog.begin()+1) fAnalogBuffer[address][0].second->AddLink(it->second->GetLink(0));
+    digiMatch->AddLink(it->second->GetLink(0));
     //printf("  add charge[%f] trigger[%d]\n", it->first->GetCharge(), it->first->GetTriggerType());
   }
   digi->SetCharge(digicharge);
@@ -173,7 +174,7 @@ void CbmTrdModuleSimR::ProcessBuffer(Int_t address){
   
   //  if(analog.size()>1)  for (it=analog.begin()+1 ; it != analog.end(); it++) if(it->first) delete it->first;
   
-  fDigiMap[address] = make_pair(digi, fAnalogBuffer[address][0].second);
+  fDigiMap[address] = make_pair(digi, digiMatch);
 
   fAnalogBuffer.erase(address);
 }
@@ -644,7 +645,8 @@ Int_t CbmTrdModuleSimR::CheckTrigger(vector<Int_t> pulse){
   if(!trigger && !multihit)  return 0;
   if(trigger && !multihit)   return 1;
   if(trigger && multihit)    return 2;
-  
+
+  return 0;
 }
 
 Int_t CbmTrdModuleSimR::GetMultiBin(vector<Int_t> pulse){
@@ -661,8 +663,7 @@ Int_t CbmTrdModuleSimR::GetMultiBin(vector<Int_t> pulse){
     if(slope>=fTriggerSlope && trigger && falling) {multihit=true;startbin=i;}
   }
 
-  if(trigger && multihit)    return startbin;
-  
+  return startbin;
 }
 
 
@@ -1250,6 +1251,7 @@ Double_t CbmTrdModuleSimR::AddNoise(Double_t charge){
     charge += noise; // resulting charge can be < 0 -> possible  problems with position reconstruction
     return charge;
   }
+  else return 0.;
 }
 
 //_______________________________________________________________________________
@@ -1369,7 +1371,7 @@ void CbmTrdModuleSimR::CleanUp(Bool_t EB=false){
 }
 
 //_______________________________________________________________________________
-Double_t CbmTrdModuleSimR::CheckTime(Int_t address){
+void CbmTrdModuleSimR::CheckTime(Int_t address){
 
   //compare last entry in the actual channel with the current time
   std::map<Int_t,Double_t>::                                  iterator timeit;
