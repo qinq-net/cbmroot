@@ -67,7 +67,7 @@ Set(SRCS
 #   unpacker/CbmMcbm2018UnpackerT0.cxx
    unpacker/CbmMcbm2018UnpackerAlgoSts.cxx
    unpacker/CbmMcbm2018UnpackerTaskSts.cxx
-#   unpacker/CbmMcbm2018MuchUnpacker.cxx
+   unpacker/CbmMcbm2018MuchUnpacker.cxx
 #   unpacker/CbmMcbm2018UnpackerTrd.cxx
    unpacker/CbmMcbm2018TofUnpacker.cxx
 
