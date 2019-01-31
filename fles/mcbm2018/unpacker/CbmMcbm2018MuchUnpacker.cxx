@@ -441,7 +441,8 @@ Bool_t CbmMcbm2018MuchUnpacker::DoUnpack(const fles::Timeslice& ts, size_t compo
          } // loop on time sorted hits and split per asic/feb
 
          // Remove all hits which were already used
-         fvmHitsInMs.erase( fvmHitsInMs.begin(), itA );
+//         fvmHitsInMs.erase( fvmHitsInMs.begin(), itA );
+         fvmHitsInMs.clear();
 
 ///----------------- SXM 2.0 Logic Error Tagging --------------------///
          Bool_t bHitCopyInThisMs[fuNbStsXyters];
@@ -516,6 +517,8 @@ Bool_t CbmMcbm2018MuchUnpacker::DoUnpack(const fles::Timeslice& ts, size_t compo
 
 ///------------------------------------------------------------------///
 
+         for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
+            fvmFebHitsInMs[ uFebIdx ].clear();
       } // if( 0 < fvmHitsInMs.size() )
    } // for( UInt_t uMsIdx = 0; uMsIdx < uNbMsLoop; uMsIdx ++ )
 
@@ -913,8 +916,8 @@ void CbmMcbm2018MuchUnpacker::FillOutput(CbmDigi* digi)
   new( (*fMuchDigi)[fMuchDigi->GetEntriesFast()] ) CbmMuchBeamTimeDigi(*(dynamic_cast<CbmMuchBeamTimeDigi*>(digi)));
 
   // Delete object pointed by digi after using it
-  digi->Delete();
-
+//  digi->Delete();
+  delete digi;
 }
 
 ClassImp(CbmMcbm2018MuchUnpacker)
