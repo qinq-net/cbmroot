@@ -85,7 +85,11 @@ export LABEL=$(echo $LABEL1 | sed -e 's#/#_#g')
 # and information about the host
 if [ "$arch" = "linux" ];
 then
-  export number_of_processors=$(cat /proc/cpuinfo | grep processor | wc -l)
+  if [ -z $NCPU ]; then
+    export number_of_processors=$(cat /proc/cpuinfo | grep processor | wc -l)
+  else
+    export number_of_processors=$NCPU
+  fi  
   if [ -z $SITE ]; then
     export SITE=$(hostname -f)
     if [ -z $SITE ]; then
@@ -94,7 +98,11 @@ then
   fi
 elif [ "$arch" = "darwin" ];
 then
-  export number_of_processors=$(sysctl -n hw.ncpu)
+  if [ -z $NCPU ]; then
+    export number_of_processors=$(sysctl -n hw.ncpu)
+  else
+    export number_of_processors=$NCPU
+  fi  
   if [ -z $SITE ]; then
     export SITE=$(hostname -s)
   fi
