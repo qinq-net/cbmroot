@@ -393,34 +393,40 @@ Int_t CbmStsModule::ProcessAnalogBuffer(Double_t readoutTime) {
   // --- interference of signals can happen.
   Double_t timeLimit = readoutTime - 5. * fTimeResolution - fDeadTime;
 
+  // Create iterators needed for inner loop
+  sigset::iterator sigIt;;
+  sigset::iterator oldIt;
+  sigset::iterator endIt;
+
   // --- Iterate over active channels
-  map<UShort_t, sigset>::iterator chanIt;
-  for (chanIt = fAnalogBuffer.begin();
-      chanIt != fAnalogBuffer.end(); chanIt++) {
+  for(auto& chanIt: fAnalogBuffer) {
 
-    // --- Digitise all signals up to the specified time limit
-    sigset::iterator sigIt = (chanIt->second).begin();
-    sigset::iterator oldIt = sigIt;
-    while ( sigIt != (chanIt->second).end() ) {
-
-      // --- Exit loop if signal time is larger than time limit
-      // --- N.b.: Readout time < 0 means digitise everything
-      if ( readoutTime >= 0. && (*sigIt)->GetTime() > timeLimit ) break;
-
-      // --- Digitise signal
-      Digitize( chanIt->first, (*sigIt) );
-      nDigis++;
-
-      // --- Increment iterator before it becomes invalid
+    // Only do something if there are signals for the channel
+    if ( ! (chanIt.second).empty() ) {
+      // --- Digitise all signals up to the specified time limit
+      sigIt = (chanIt.second).begin();
       oldIt = sigIt;
-      sigIt++;
+      endIt = (chanIt.second).end();
+      while ( sigIt != endIt ) {
 
-      // --- Delete digitised signal
-      delete (*oldIt);
-      (chanIt->second).erase(oldIt);
+        // --- Exit loop if signal time is larger than time limit
+        // --- N.b.: Readout time < 0 means digitise everything
+        if ( readoutTime >= 0. && (*sigIt)->GetTime() > timeLimit ) break;
 
-    } // Iterate over signals in channel
-  }  // Iterate over channels
+        // --- Digitise signal
+        Digitize( chanIt.first, (*sigIt) );
+        nDigis++;
+
+        // --- Increment iterator before it becomes invalid
+        oldIt = sigIt;
+        sigIt++;
+
+        // --- Delete digitised signal
+        delete (*oldIt);
+        (chanIt.second).erase(oldIt);
+      } // Iterate over signals in channel
+    } // if there are signals
+  } // Iterate over channels
 
   return nDigis;
 }
