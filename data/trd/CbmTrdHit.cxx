@@ -16,6 +16,9 @@ CbmTrdHit::CbmTrdHit()
     fELoss(-1.)
 {
   SetType(kTRDHIT);
+  SetTime(-1);
+  SetTimeError(-1);
+
 }
 
 CbmTrdHit::CbmTrdHit(
@@ -26,13 +29,17 @@ CbmTrdHit::CbmTrdHit(
 		Int_t refId,
 		Double_t eLossTR,
 		Double_t eLossdEdx,
-		Double_t eLoss)
+		Double_t eLoss,
+		Double_t time,
+		Double_t timeError)
   : CbmPixelHit(address, pos, dpos, dxy, refId),
     fELossTR(eLossTR),
     fELossdEdx(eLossdEdx),
     fELoss(eLoss)
 {
   SetType(kTRDHIT);
+  SetTime(time);
+  SetTimeError(timeError);
 }
 
 CbmTrdHit::~CbmTrdHit()

@@ -40,7 +40,9 @@ public:
 			Int_t refId,
 			Double_t eLossTR,
 			Double_t eLossdEdx,
-			Double_t eLoss);
+			Double_t eLoss,
+			Double_t time = 0.,
+			Double_t timeError = 0.);
 
 	/**
 	 * \breif Destructor.
@@ -57,15 +59,15 @@ public:
     **/
    virtual std::string ToString() const;
 
-	/** Accessors **/
-	Double_t GetELoss() const { return fELoss; }
-	Double_t GetELossdEdX() const { return fELossdEdx; }
-	Double_t GetELossTR() const { return fELossTR; }
+   /** Accessors **/
+   Double_t GetELoss() const { return fELoss; }
+   Double_t GetELossdEdX() const { return fELossdEdx; }
+   Double_t GetELossTR() const { return fELossTR; }
 
-	/** Setters **/
-	void SetELoss(Double_t loss) { fELoss = loss; }
-	void SetELossTR(Double_t loss) { fELossTR = loss; }
-	void SetELossdEdx(Double_t loss) { fELossdEdx = loss; }
+   /** Setters **/
+   void SetELoss(Double_t loss) { fELoss = loss; }
+   void SetELossTR(Double_t loss) { fELossTR = loss; }
+   void SetELossdEdx(Double_t loss) { fELossdEdx = loss; }
 
 private:
    Double32_t fELossTR; // energy losses of electron via TR
