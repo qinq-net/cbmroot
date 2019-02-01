@@ -223,8 +223,7 @@ void CbmTrdModuleSimR::ProcessPulseBuffer(Int_t address, Bool_t FNcall, Bool_t M
     digi->SetTriggerType(CbmTrdDigi::kNeighbor);
   }
   if(trigger==1 && MultiCall){
-    //    digi->SetTriggerType(CbmTrdDigi::kMulti);
-    digi->SetTriggerType(CbmTrdDigi::kTrg1);
+    digi->SetTriggerType(CbmTrdDigi::kMulti);
   }
   
   digi->SetMatch(fPulseBuffer[address].second);

@@ -16,7 +16,7 @@ public:
   enum CbmTrdTriggerType{
     kSelf = 0
     ,kNeighbor 
-    ,kTrg1 
+    ,kMulti 
     ,kTrg2 
     ,kNTrg 
   };
@@ -156,7 +156,7 @@ public:
   // keep backward compatible compilation of CbmTrdSPADIC
   void SetStopType(Int_t /*stopType*/)  {;}
   Int_t GetStopType() {return 0;}
-  void SetPulseShape(Float_t pulse[45]) {;}
+  void SetPulseShape(Float_t /*pulse*/[45]) {;}
   // keep backward compatible compilation of fles/reader/tasks [/tools]
   Double_t GetChargeTR()  {return 0.;}
   void SetInfoType(Int_t /*infoType*/)  {;}
