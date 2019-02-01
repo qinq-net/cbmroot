@@ -56,7 +56,7 @@ CbmTrdCluster::~CbmTrdCluster(){
 }
 
 //____________________________________________________________________
-void CbmTrdCluster::AddDigi(Int_t idx, Int_t channel, Bool_t terminator)
+void CbmTrdCluster::AddDigi(Int_t idx, Int_t channel, Bool_t /*terminator*/)
 {
 /** Extend basic functionality of CbmCluster::AddDigi(). 
  * If channel>=0 add this info to channel map.
@@ -74,7 +74,7 @@ void CbmTrdCluster::AddDigi(Int_t idx, Int_t channel, Bool_t terminator)
 }
 
 //____________________________________________________________________
-void CbmTrdCluster::Clear()
+void CbmTrdCluster::Clear(Option_t*)
 {
   CbmCluster::ClearDigis();
   fNCols = 0;

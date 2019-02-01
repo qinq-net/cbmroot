@@ -48,7 +48,7 @@ public:
    */
   void      AddDigi(Int_t idx, Int_t channel=-1, Bool_t terminator=kFALSE);
   /** \brief reset cluster data*/
-  void      Clear();
+  void      Clear(Option_t*);
   /** Accessors **/
   UShort_t  GetNCols() const          { return fNCols; }
   UShort_t  GetNRows() const          { return fNRows; }
