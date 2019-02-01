@@ -1288,6 +1288,8 @@ void CbmTrdModuleSimR::CheckBuffer(Bool_t EB=false){
 
   
   std::map<Int_t,Double_t>::                                  iterator timeit;
+  std::vector<Int_t> toBeErased;
+
   Bool_t done = false;
 
   while(!done){
@@ -1297,7 +1299,8 @@ void CbmTrdModuleSimR::CheckBuffer(Bool_t EB=false){
       if(fCurrentTime < fTimeBuffer[add]) continue;
       Double_t dt=fCurrentTime-fTimeBuffer[add];
       if((dt<fCollectTime || dt==fCurrentTime) && !EB) continue;
-      if(!fPulseSwitch)    {ProcessBuffer(add);fTimeBuffer.erase(add);}
+//      if(!fPulseSwitch)    {ProcessBuffer(add);fTimeBuffer.erase(add);}
+      if(!fPulseSwitch)    {ProcessBuffer(add);toBeErased.push_back(add);}
       if(fPulseSwitch)     {
 	vector<Int_t> pulse;  
 	pulse=fPulseBuffer[add].first;
@@ -1314,6 +1317,10 @@ void CbmTrdModuleSimR::CheckBuffer(Bool_t EB=false){
 	if(fPrintPulse)   cout<<endl;
       }
     }
+  }
+
+  for(auto& address: toBeErased) {
+     fTimeBuffer.erase(address);
   }
 }
 
