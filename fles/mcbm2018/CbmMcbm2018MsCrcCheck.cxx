@@ -81,7 +81,7 @@ void CbmMcbm2018MsCrcCheck::Run()
                      LOG(INFO) << Form( "%02x", msContent[ uByte ] );
                      if( 3 == uByte % 4 )
                         LOG(INFO) << " ";
-                     if( 15 != uByte % 16 )
+                     if( 15 == uByte % 16 )
                         LOG(INFO) << FairLogger::endl;
                   } // for( UInt_t uByte = 0; uByte < uSize; ++uByte )
                   if( 0 == uSize % 16 )
