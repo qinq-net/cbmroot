@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                     CbmMcbm2018UnpackerTaskSts                   -----
-// -----               Created 14.11.2018 by P.-A. Loizeau                 -----
+// -----                     CbmMcbm2018UnpackerTaskSts                    -----
+// -----               Created 26.01.2019 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
@@ -41,6 +41,10 @@ class CbmMcbm2018UnpackerTaskSts : public CbmMcbmUnpack
       /// Temp until we change from CbmMcbmUnpack to something else
       void AddMsComponentToList( size_t component, UShort_t usDetectorId );
       void SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb ){};
+
+      void SetIgnoreOverlapMs( Bool_t bFlagIn = kTRUE );
+
+      void SetTimeOffsetNs( Double_t dOffsetIn = 0.0 );
 
    private:
       /// Control flags

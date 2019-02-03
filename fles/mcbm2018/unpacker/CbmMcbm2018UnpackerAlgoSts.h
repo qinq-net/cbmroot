@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                  CbmMcbm2018UnpackerAlgoSts                  -----
-// -----               Created 03.11.2018 by P.-A. Loizeau                 -----
+// -----                  CbmMcbm2018UnpackerAlgoSts                       -----
+// -----               Created 26.01.2019 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
@@ -59,6 +59,8 @@ class CbmMcbm2018UnpackerAlgoSts : public CbmStar2019Algo<CbmStsDigi>
       Bool_t FillHistograms();
       Bool_t ResetHistograms();
 
+      inline void SetTimeOffsetNs( Double_t dOffsetIn = 0.0 ) { fdTimeOffsetNs = dOffsetIn; }
+
    private:
       /// Control flags
       Bool_t fbMonitorMode;      //! Switch ON the filling of a minimal set of histograms
@@ -82,6 +84,9 @@ class CbmMcbm2018UnpackerAlgoSts : public CbmStar2019Algo<CbmStsDigi>
       std::vector< std::vector< std::vector< Double_t > > > fvdFebAdcGain;  //! ADC gain in e-/b, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ]
       std::vector< std::vector< std::vector< Double_t > > > fvdFebAdcOffs;  //! ADC offset in e-, [ NbDpb ][ NbCrobPerDpb ][ NbFebsPerCrob ]
       std::vector< Int_t >     fviFebAddress;  //! STS address for each FEB, [ NbDpb * NbCrobPerDpb * NbFebsPerCrob ]
+
+      /// User settings: Data correction parameters
+      Double_t fdTimeOffsetNs;
 
       /// Constants
       static const Int_t    kiMaxNbFlibLinks = 32;

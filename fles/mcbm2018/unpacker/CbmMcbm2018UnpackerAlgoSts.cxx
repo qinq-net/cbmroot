@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                  CbmMcbm2018UnpackerAlgoSts                  -----
-// -----               Created 03.11.2018 by P.-A. Loizeau                 -----
+// -----                  CbmMcbm2018UnpackerAlgoSts                       -----
+// -----               Created 26.01.2019 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
@@ -51,6 +51,7 @@ CbmMcbm2018UnpackerAlgoSts::CbmMcbm2018UnpackerAlgoSts() :
    fvdFebAdcGain(),
    fvdFebAdcOffs(),
    fviFebAddress(),
+   fdTimeOffsetNs( 0.0 ),
    fulCurrentTsIdx( 0 ),
    fulCurrentMsIdx( 0 ),
    fdTsStartTime( -1.0 ),
@@ -379,7 +380,7 @@ Bool_t CbmMcbm2018UnpackerAlgoSts::ProcessTs( const fles::Timeslice& ts )
          UInt_t uChanInFeb = itHitIn->GetChan()
                             + fUnpackPar->GetNbChanPerAsic() * (itHitIn->GetAsic() % fUnpackPar->GetNbAsicsPerFeb());
 
-         ULong64_t ulTimeInNs = static_cast< ULong64_t >( itHitIn->GetTs() * stsxyter::kdClockCycleNs );
+         ULong64_t ulTimeInNs = static_cast< ULong64_t >( itHitIn->GetTs() * stsxyter::kdClockCycleNs - fdTimeOffsetNs );
 
          fDigiVect.push_back( CbmStsDigi( fviFebAddress[ uFebIdx ], uChanInFeb, ulTimeInNs, itHitIn->GetAdc() ) );
       } // for( auto itHitIn = fvmHitsInMs.begin(); itHitIn < fvmHitsInMs.end(); ++itHitIn )
@@ -452,7 +453,7 @@ Bool_t CbmMcbm2018UnpackerAlgoSts::ProcessMs( const fles::Timeslice& ts, size_t 
                    << " in microslice " << uMsIdx
                    << " component " << uMsCompIdx
                    << "\n"
-                   << "If valid this index has to be added in the STS/MUCH parameter file in the RocIdArray field"
+                   << "If valid this index has to be added in the STS parameter file in the DbpIdArray field"
                    << FairLogger::endl;
          fvbMaskedComponents[ uMsCompIdx ] = kTRUE;
       } // if( kFALSE == fvbMaskedComponents[ uMsComp ] )

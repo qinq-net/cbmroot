@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                     CbmMcbm2018UnpackerTaskSts                   -----
-// -----               Created 14.11.2018 by P.-A. Loizeau                 -----
+// -----                     CbmMcbm2018UnpackerTaskSts                    -----
+// -----               Created 26.01.2019 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
@@ -52,7 +52,7 @@ CbmMcbm2018UnpackerTaskSts::~CbmMcbm2018UnpackerTaskSts()
 Bool_t CbmMcbm2018UnpackerTaskSts::Init()
 {
    LOG(INFO) << "CbmMcbm2018UnpackerTaskSts::Init" << FairLogger::endl;
-   LOG(INFO) << "Initializing STAR eTOF 2018 Event Builder" << FairLogger::endl;
+   LOG(INFO) << "Initializing mCBM STS 2018 Unpacker" << FairLogger::endl;
 
    FairRootManager* ioman = FairRootManager::Instance();
    if( NULL == ioman )
@@ -263,6 +263,16 @@ void CbmMcbm2018UnpackerTaskSts::Finish()
      oldDir->cd();
      histoFile->Close();
    } // if( kTRUE == fbMonitorMode )
+}
+
+void CbmMcbm2018UnpackerTaskSts::SetIgnoreOverlapMs( Bool_t bFlagIn )
+{
+   fUnpackerAlgo->SetIgnoreOverlapMs( bFlagIn );
+}
+
+void CbmMcbm2018UnpackerTaskSts::SetTimeOffsetNs( Double_t dOffsetIn )
+{
+   fUnpackerAlgo->SetTimeOffsetNs( dOffsetIn );
 }
 
 ClassImp(CbmMcbm2018UnpackerTaskSts)
