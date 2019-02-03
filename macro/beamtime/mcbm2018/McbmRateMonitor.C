@@ -13,7 +13,7 @@ FairRunOnline *run = NULL;
 void McbmRateMonitor(TString inFile = "", TString sHostname = "pn05",
                  Int_t iStartFile = -1, Int_t iStopFile = -1,
                  Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
-                 TString sFileTag = "" )
+                 TString sFileTag = "", UInt_t uRunId = 0 )
 {
 
   // --- Specify number of events to be produced.
@@ -58,6 +58,32 @@ void McbmRateMonitor(TString inFile = "", TString sHostname = "pn05",
   CbmMcbm2018MonitorMcbmRate* monitorPulser = new CbmMcbm2018MonitorMcbmRate();
   monitorPulser->SetHistoFileName( "data/McbmRateHistos" + sFileTag + ".root" );
   monitorPulser->SetIgnoreMsOverlap();
+
+  switch( uRunId )
+  {
+     case 48:
+        monitorPulser->SetStsTofOffsetNs(   43900 ); // Run 48
+        monitorPulser->SetMuchTofOffsetNs(  12000 ); // Run 48
+        break;
+     case 49:
+        monitorPulser->SetStsTofOffsetNs(   11900 ); // Run 49
+        monitorPulser->SetMuchTofOffsetNs(  -2300 ); // Run 49
+        break;
+     case 51:
+        monitorPulser->SetStsTofOffsetNs(  165450 ); // Run 51, no peak in same MS, peak at ~162 us in same TS
+        monitorPulser->SetMuchTofOffsetNs(    850 ); // Run 51, no peak in same MS for full run, peak around -850 ns in last spills
+        break;
+     case 52:
+        monitorPulser->SetStsTofOffsetNs(  141500 ); // Run 52, no peak in same MS, peak at ~104 us in same TS
+        monitorPulser->SetMuchTofOffsetNs(  18450 ); // Run 52
+        break;
+     case 53:
+        monitorPulser->SetStsTofOffsetNs(  101500 ); // Run 53
+        monitorPulser->SetMuchTofOffsetNs(   2400 ); // Run 53
+        break;
+     default:
+        break;
+  } // switch( uRunId )
 
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();

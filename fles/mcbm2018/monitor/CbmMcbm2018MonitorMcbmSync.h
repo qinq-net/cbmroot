@@ -72,7 +72,7 @@ public:
    void SetHistoFileName( TString sFileName = "data/SetupHistos.root" ) { fsHistoFileFullname = sFileName; }
 
    inline void SetDiamondDpbIdx( UInt_t uIdx = 2 ) { fuDiamondDpbIdx = uIdx; }
-   inline void SetMuchDpbIdx( UInt_t uIdx = 2 ) { fuMuchDpbIdx = uIdx; }
+   inline void SetMuchDpbIdx( UInt_t uIdx = 1 ) { fuMuchDpbIdx = uIdx; }
    inline void SetStsTofOffsetNs( Double_t dOffsetIn = 0.0 ) { fdStsTofOffsetNs = dOffsetIn; }
    inline void SetMuchTofOffsetNs( Double_t dOffsetIn = 0.0 ) { fdMuchTofOffsetNs = dOffsetIn; }
    inline void SetUseBestPair( Bool_t bInFLag = kTRUE ) { fbUseBestPair = bInFLag; }

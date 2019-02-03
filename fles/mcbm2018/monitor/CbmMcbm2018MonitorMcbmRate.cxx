@@ -97,11 +97,27 @@ CbmMcbm2018MonitorMcbmRate::CbmMcbm2018MonitorMcbmRate() :
    fvmTofEpSupprBuffer(),
    fvmTofGdpbHitsInMs(),
    fvmTofGdpbHitsInTs(),
+   fvuHitsNbInTimeBinSts(  kuNbTimeBins, 0 ),
+   fvuHitsNbInTimeBinMuch( kuNbTimeBins, 0  ),
+   fvuHitsNbInTimeBinTof(  kuNbTimeBins, 0  ),
+   fvuHitsNbInTimeBinDiam( kuNbTimeBins, 0 ),
    fhMcbmHitsNbPerTsEvo(),
    fhMcbmHitsNbFineEvo(),
    fhMcbmHitsRateEvo(),
    fhDiamondHitsRateMapEvo(),
-   fhDiamondHitsRateDerivative()
+   fhDiamondHitsRateDerivative(),
+   fhMuchVsStsHitsNbPerTimeBin(),
+   fhTofVsStsHitsNbPerTimeBin(),
+   fhDiamVsStsHitsNbPerTimeBin(),
+   fhStsVsMuchHitsNbPerTimeBin(),
+   fhTofVsMuchHitsNbPerTimeBin(),
+   fhDiamVsMuchHitsNbPerTimeBin(),
+   fhStsVsTofHitsNbPerTimeBin(),
+   fhMuchVsTofHitsNbPerTimeBin(),
+   fhDiamVsTofHitsNbPerTimeBin(),
+   fhStsVsDiamHitsNbPerTimeBin(),
+   fhTofVsDiamHitsNbPerTimeBin(),
+   fhMuchVsDiamHitsNbPerTimeBin()
 {
 }
 
@@ -425,6 +441,69 @@ void CbmMcbm2018MonitorMcbmRate::CreateMcbmHistograms()
    fhDiamondHitsRateDerivative = new TH1D( sHistName, sHistTitle,
                                         40000, 0., 4000. );
 
+   sHistName  = "hMuchVsStsHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in MUCH vs Sts in time bins of %5u ns; Nb Hits STS [];  Nb Hits TOF []; Time bins []", kuTimeBinSizeNs );
+   fhMuchVsStsHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
+   sHistName  = "hTofVsStsHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in TOF vs Sts in time bins of %5u ns; Nb Hits STS [];  Nb Hits MUCH []; Time bins []", kuTimeBinSizeNs );
+   fhTofVsStsHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
+   sHistName  = "hDiamVsStsHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in Diam vs Sts in time bins of %5u ns; Nb Hits STS [];  Nb Hits Diam []; Time bins []", kuTimeBinSizeNs );
+   fhDiamVsStsHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
+
+   sHistName  = "hStsVsMuchHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in STS vs MUCH in time bins of %5u ns; Nb Hits MUCH [];  Nb Hits STS []; Time bins []", kuTimeBinSizeNs );
+   fhStsVsMuchHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
+   sHistName  = "hTofVsMuchHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in TOF vs MUCH in time bins of %5u ns; Nb Hits MUCH [];  Nb Hits TOF []; Time bins []", kuTimeBinSizeNs );
+   fhTofVsMuchHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
+   sHistName  = "hDiamVsMuchHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in Diam vs MUCH in time bins of %5u ns; Nb Hits MUCH [];  Nb Hits Diam []; Time bins []", kuTimeBinSizeNs );
+   fhDiamVsMuchHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
+
+   sHistName  = "hStsVsTofHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in STS vs TOF in time bins of %5u ns; Nb Hits TOF [];  Nb Hits STS []; Time bins []", kuTimeBinSizeNs );
+   fhStsVsTofHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
+   sHistName  = "hMuchVsTofHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in MUCH vs TOF in time bins of %5u ns; Nb Hits TOF [];  Nb Hits MUCH []; Time bins []", kuTimeBinSizeNs );
+   fhMuchVsTofHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
+   sHistName  = "hDiamVsTofHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in Diam vs TOF in time bins of %5u ns; Nb Hits TOF [];  Nb Hits Diam []; Time bins []", kuTimeBinSizeNs );
+   fhDiamVsTofHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
+
+   sHistName  = "hStsVsDiamHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in STS vs Diam in time bins of %5u ns; Nb Hits Diam [];  Nb Hits STS []; Time bins []", kuTimeBinSizeNs );
+   fhStsVsDiamHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
+   sHistName  = "hTofVsDiamHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in TOF vs Diam in time bins of %5u ns; Nb Hits Diam [];  Nb Hits TOF []; Time bins []", kuTimeBinSizeNs );
+   fhTofVsDiamHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
+   sHistName  = "hMuchVsDiamHitsNbPerTimeBin";
+   sHistTitle = Form( "Nb Hits in MUCH vs Diam in time bins of %5u ns; Nb Hits Diam [];  Nb Hits MUCH []; Time bins []", kuTimeBinSizeNs );
+   fhMuchVsDiamHitsNbPerTimeBin = new TH2D( sHistName, sHistTitle,
+                                          2000, 0., 2000.,
+                                          2000, 0., 2000. );
 
 #ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
@@ -486,6 +565,7 @@ Bool_t CbmMcbm2018MonitorMcbmRate::DoUnpack(const fles::Timeslice& ts, size_t co
    LOG(DEBUG) << "Timeslice contains " << ts.num_microslices(component)
               << "microslices." << FairLogger::endl;
    fulCurrentTsIdx = ts.index();
+   fulCurrentTsStartTime = ts.descriptor( 0, 0 ).idx;
 
    /// Ignore first TS as often data corruption there
    if( 0 == fulCurrentTsIdx )
@@ -579,12 +659,37 @@ Bool_t CbmMcbm2018MonitorMcbmRate::DoUnpack(const fles::Timeslice& ts, size_t co
       /// Fill histos and Clear buffers
       for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
       {
+         UInt_t uNbHitsInMs = fvmStsSdpbHitsInMs[ uSdpb ].size();
          fhMcbmHitsNbPerTsEvo->Fill( fulCurrentTsIdx, uSdpb,
-                                     fvmStsSdpbHitsInMs[ uSdpb ].size() );
+                                     uNbHitsInMs );
          fhMcbmHitsNbFineEvo->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx), uSdpb,
-                                  fvmStsSdpbHitsInMs[ uSdpb ].size() / 0.1);
+                                  uNbHitsInMs / 0.1);
          fhMcbmHitsRateEvo->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx), uSdpb,
-                                  fvmStsSdpbHitsInMs[ uSdpb ].size() );
+                                  uNbHitsInMs );
+
+         for( UInt_t uHit = 0; uHit < uNbHitsInMs; ++uHit )
+         {
+            Double_t dHitTimeInTs =  stsxyter::kdClockCycleNs * fvmStsSdpbHitsInMs[ uSdpb ][ uHit ].GetTs()
+                                   - fulCurrentTsStartTime;
+
+            /// Apply time offset to STS and MUCH
+            if( fuMuchDpbIdx == uSdpb )
+               dHitTimeInTs -= fdMuchTofOffsetNs;
+               else dHitTimeInTs -= fdStsTofOffsetNs;
+
+            Int_t iTimeBin = static_cast< Int_t >( dHitTimeInTs / kuTimeBinSizeNs );
+            if( iTimeBin < 0 || kuNbTimeBins <= iTimeBin )
+            {
+               LOG(DEBUG) << "sDPB hits with time out of the TS!! "
+                            << dHitTimeInTs << " " << iTimeBin
+                            << FairLogger::endl;
+               continue;
+            } // if( iTimeBin < 0 || kuNbTimeBins <= iTimeBin )
+
+            if( fuMuchDpbIdx == uSdpb )
+               fvuHitsNbInTimeBinMuch[ iTimeBin ] ++;
+               else fvuHitsNbInTimeBinSts[  iTimeBin ]++;
+         } // for( UInt_t uHit = 0; uHit < uNbHitsInMs; ++uHit )
 /*
       /// Jump Sts has it has far too many hits!!!
          if( 0 < uSdpb )
@@ -596,12 +701,13 @@ Bool_t CbmMcbm2018MonitorMcbmRate::DoUnpack(const fles::Timeslice& ts, size_t co
       } // for( UInt_t uSdpb = 0; uSdpb < fuStsNrOfDpbs; ++uSdpb )
       for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
       {
+         UInt_t uNbHitsInMs = fvmTofGdpbHitsInMs[ uGdpb ].size();
          fhMcbmHitsNbPerTsEvo->Fill( fulCurrentTsIdx, uGdpb + fuStsNrOfDpbs,
-                                     fvmTofGdpbHitsInMs[ uGdpb ].size() );
+                                     uNbHitsInMs );
          fhMcbmHitsNbFineEvo->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx), uGdpb + fuStsNrOfDpbs,
-                                  fvmTofGdpbHitsInMs[ uGdpb ].size() / 0.1 );
+                                    uNbHitsInMs / 0.1 );
          fhMcbmHitsRateEvo->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx), uGdpb + fuStsNrOfDpbs,
-                                  fvmTofGdpbHitsInMs[ uGdpb ].size() );
+                                    uNbHitsInMs );
 
          if( fuDiamondDpbIdx == uGdpb )
          {
@@ -612,6 +718,27 @@ Bool_t CbmMcbm2018MonitorMcbmRate::DoUnpack(const fles::Timeslice& ts, size_t co
             fhDiamondHitsRateDerivative->Fill( (1e-9) * static_cast<double>(fulCurrentMsIdx) + 0.05,
                                                fvmTofGdpbHitsInMs[ uGdpb ].size() / -0.1 );
          } // if( fuDiamondDpbIdx == uGdpb )
+
+         for( UInt_t uHit = 0; uHit < uNbHitsInMs; ++uHit )
+         {
+            Double_t dHitTimeInTs =  fvmTofGdpbHitsInMs[ uGdpb ][ uHit ].GetFullTimeNs()
+                                   - fulCurrentTsStartTime;
+
+            Int_t iTimeBin = static_cast< Int_t >( dHitTimeInTs / kuTimeBinSizeNs );
+            if( iTimeBin < 0 || kuNbTimeBins <= iTimeBin )
+            {
+               LOG(DEBUG) << "gDPB hits with time out of the TS!! "
+                            << fvmTofGdpbHitsInMs[ uGdpb ][ uHit ].GetFullTimeNs()
+                            << " " << fulCurrentTsStartTime << " " << iTimeBin
+                            << FairLogger::endl;
+               continue;
+            } // if( iTimeBin < 0 || kuNbTimeBins <= iTimeBin )
+
+            if( fuDiamondDpbIdx == uGdpb )
+               fvuHitsNbInTimeBinDiam[ iTimeBin ] ++;
+               else fvuHitsNbInTimeBinTof[  iTimeBin ]++;
+         } // for( UInt_t uHit = 0; uHit < uNbHitsInMs; ++uHit )
+
 /*
          fvmTofGdpbHitsInTs[ uGdpb ].insert( fvmTofGdpbHitsInTs[ uGdpb ].end(),
                                              fvmTofGdpbHitsInMs[ uGdpb ].begin(),
@@ -673,6 +800,54 @@ Bool_t CbmMcbm2018MonitorMcbmRate::DoUnpack(const fles::Timeslice& ts, size_t co
       fvmTofGdpbHitsInTs[ uGdpb ].clear();
    } // for( UInt_t uGdpb = 0; uGdpb < fuTofNrOfDpbs; ++uGdpb )
 */
+
+   for( UInt_t uTimeBin = 0; uTimeBin < kuNbTimeBins; ++uTimeBin )
+   {
+      if( 0 < fvuHitsNbInTimeBinSts[ uTimeBin ] )
+      {
+         if( 0 < fvuHitsNbInTimeBinMuch[ uTimeBin ] )
+            fhMuchVsStsHitsNbPerTimeBin ->Fill( fvuHitsNbInTimeBinSts[ uTimeBin ], fvuHitsNbInTimeBinMuch[ uTimeBin ] );
+         if( 0 < fvuHitsNbInTimeBinTof[ uTimeBin ] )
+            fhTofVsStsHitsNbPerTimeBin  ->Fill( fvuHitsNbInTimeBinSts[ uTimeBin ], fvuHitsNbInTimeBinTof[ uTimeBin ] );
+         if( 0 < fvuHitsNbInTimeBinDiam[ uTimeBin ] )
+            fhDiamVsStsHitsNbPerTimeBin ->Fill( fvuHitsNbInTimeBinSts[ uTimeBin ], fvuHitsNbInTimeBinDiam[ uTimeBin ] );
+      } // if( 0 < fvuHitsNbInTimeBinSts[ uTimeBin ] )
+
+      if( 0 < fvuHitsNbInTimeBinMuch[ uTimeBin ] )
+      {
+         if( 0 < fvuHitsNbInTimeBinSts[ uTimeBin ] )
+            fhStsVsMuchHitsNbPerTimeBin ->Fill( fvuHitsNbInTimeBinMuch[ uTimeBin ], fvuHitsNbInTimeBinSts[ uTimeBin ] );
+         if( 0 < fvuHitsNbInTimeBinTof[ uTimeBin ] )
+            fhTofVsMuchHitsNbPerTimeBin ->Fill( fvuHitsNbInTimeBinMuch[ uTimeBin ], fvuHitsNbInTimeBinTof[ uTimeBin ] );
+         if( 0 < fvuHitsNbInTimeBinDiam[ uTimeBin ] )
+            fhDiamVsMuchHitsNbPerTimeBin->Fill( fvuHitsNbInTimeBinMuch[ uTimeBin ], fvuHitsNbInTimeBinDiam[ uTimeBin ] );
+      } // if( 0 < fvuHitsNbInTimeBinMuch[ uTimeBin ] )
+
+      if( 0 < fvuHitsNbInTimeBinTof[ uTimeBin ] )
+      {
+         if( 0 < fvuHitsNbInTimeBinSts[ uTimeBin ] )
+            fhStsVsTofHitsNbPerTimeBin  ->Fill( fvuHitsNbInTimeBinTof[ uTimeBin ], fvuHitsNbInTimeBinSts[ uTimeBin ] );
+         if( 0 < fvuHitsNbInTimeBinMuch[ uTimeBin ] )
+            fhMuchVsTofHitsNbPerTimeBin ->Fill( fvuHitsNbInTimeBinTof[ uTimeBin ], fvuHitsNbInTimeBinMuch[ uTimeBin ] );
+         if( 0 < fvuHitsNbInTimeBinDiam[ uTimeBin ] )
+            fhDiamVsTofHitsNbPerTimeBin ->Fill( fvuHitsNbInTimeBinTof[ uTimeBin ], fvuHitsNbInTimeBinDiam[ uTimeBin ] );
+      } // if( 0 < fvuHitsNbInTimeBinTof[ uTimeBin ] )
+
+      if( 0 < fvuHitsNbInTimeBinDiam[ uTimeBin ] )
+      {
+         if( 0 < fvuHitsNbInTimeBinSts[ uTimeBin ] )
+            fhStsVsDiamHitsNbPerTimeBin ->Fill( fvuHitsNbInTimeBinDiam[ uTimeBin ], fvuHitsNbInTimeBinSts[ uTimeBin ] );
+         if( 0 < fvuHitsNbInTimeBinMuch[ uTimeBin ] )
+            fhMuchVsDiamHitsNbPerTimeBin->Fill( fvuHitsNbInTimeBinDiam[ uTimeBin ], fvuHitsNbInTimeBinMuch[ uTimeBin ] );
+         if( 0 < fvuHitsNbInTimeBinTof[ uTimeBin ] )
+            fhTofVsDiamHitsNbPerTimeBin ->Fill( fvuHitsNbInTimeBinDiam[ uTimeBin ], fvuHitsNbInTimeBinTof[ uTimeBin ] );
+      } // if( 0 < fvuHitsNbInTimeBinDiam[ uTimeBin ] )
+
+      fvuHitsNbInTimeBinSts[  uTimeBin ] = 0;
+      fvuHitsNbInTimeBinMuch[ uTimeBin ] = 0;
+      fvuHitsNbInTimeBinTof[  uTimeBin ] = 0;
+      fvuHitsNbInTimeBinDiam[ uTimeBin ] = 0;
+   } // for( UInt_t uTimeBin = 0; uTimeBin < kuNbTimeBins; ++uTimeBin )
 /****************** mCBM Sync *****************************************/
 
    if( 0 == ts.index() % 1000 )
@@ -895,7 +1070,6 @@ void CbmMcbm2018MonitorMcbmRate::FillStsHitInfo( stsxyter::Message mess, const U
 
    // Convert the Hit time in bins to Hit time in ns
    Double_t dHitTimeNs = ulStsHitTime * stsxyter::kdClockCycleNs;
-
 
    // Pulser and MS
    fvmStsSdpbHitsInMs[fuCurrDpbIdx].push_back( stsxyter::FinalHit( ulStsHitTime, usRawAdc, uAsicIdx, usChan ) );
@@ -1196,7 +1370,22 @@ void CbmMcbm2018MonitorMcbmRate::SaveAllHistos( TString sFileName )
    fhMcbmHitsRateEvo->Write();
    fhDiamondHitsRateMapEvo->Write();
    fhDiamondHitsRateDerivative->Write();
+   gDirectory->cd("..");
 
+   gDirectory->mkdir("mCbmCounts");
+   gDirectory->cd("mCbmCounts");
+   fhMuchVsStsHitsNbPerTimeBin ->Write();
+   fhTofVsStsHitsNbPerTimeBin  ->Write();
+   fhDiamVsStsHitsNbPerTimeBin ->Write();
+   fhStsVsMuchHitsNbPerTimeBin ->Write();
+   fhTofVsMuchHitsNbPerTimeBin ->Write();
+   fhDiamVsMuchHitsNbPerTimeBin->Write();
+   fhStsVsTofHitsNbPerTimeBin  ->Write();
+   fhMuchVsTofHitsNbPerTimeBin ->Write();
+   fhDiamVsTofHitsNbPerTimeBin ->Write();
+   fhStsVsDiamHitsNbPerTimeBin ->Write();
+   fhTofVsDiamHitsNbPerTimeBin ->Write();
+   fhMuchVsDiamHitsNbPerTimeBin->Write();
    gDirectory->cd("..");
 /****************** mCBM Sync *****************************************/
 
@@ -1223,6 +1412,19 @@ void CbmMcbm2018MonitorMcbmRate::ResetAllHistos()
    fhMcbmHitsRateEvo->Reset();
    fhDiamondHitsRateMapEvo->Reset();
    fhDiamondHitsRateDerivative->Reset();
+
+   fhMuchVsStsHitsNbPerTimeBin ->Reset();
+   fhTofVsStsHitsNbPerTimeBin  ->Reset();
+   fhDiamVsStsHitsNbPerTimeBin ->Reset();
+   fhStsVsMuchHitsNbPerTimeBin ->Reset();
+   fhTofVsMuchHitsNbPerTimeBin ->Reset();
+   fhDiamVsMuchHitsNbPerTimeBin->Reset();
+   fhStsVsTofHitsNbPerTimeBin  ->Reset();
+   fhMuchVsTofHitsNbPerTimeBin ->Reset();
+   fhDiamVsTofHitsNbPerTimeBin ->Reset();
+   fhStsVsDiamHitsNbPerTimeBin ->Reset();
+   fhTofVsDiamHitsNbPerTimeBin ->Reset();
+   fhMuchVsDiamHitsNbPerTimeBin->Reset();
 /****************** mCBM Sync *****************************************/
 }
 

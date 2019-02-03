@@ -72,7 +72,7 @@ public:
    void SetHistoFileName( TString sFileName = "data/SetupHistos.root" ) { fsHistoFileFullname = sFileName; }
 
    inline void SetDiamondDpbIdx( UInt_t uIdx = 2 ) { fuDiamondDpbIdx = uIdx; }
-   inline void SetMuchDpbIdx( UInt_t uIdx = 2 ) { fuMuchDpbIdx = uIdx; }
+   inline void SetMuchDpbIdx( UInt_t uIdx = 1 ) { fuMuchDpbIdx = uIdx; }
    inline void SetStsTofOffsetNs( Double_t dOffsetIn = 0.0 ) { fdStsTofOffsetNs = dOffsetIn; }
    inline void SetMuchTofOffsetNs( Double_t dOffsetIn = 0.0 ) { fdMuchTofOffsetNs = dOffsetIn; }
 
@@ -102,6 +102,9 @@ private:
    // Constants
    static const UInt_t   kuStsBytesPerMessage = 4; //! TODO => move to the message class!!
    static const UInt_t   kuTofBytesPerMessage = 8;
+   static const UInt_t   kuTimeBinSizeNs =    10000;
+   static const UInt_t   kuTsSizeInNs    = 10400000;
+   static const UInt_t   kuNbTimeBins    = kuTsSizeInNs / kuTimeBinSizeNs;
 
    // Internal Control/status of monitor
       // Histo File name and path
@@ -112,6 +115,7 @@ private:
       // TS/MS info
    ULong64_t             fulCurrentTsIdx;
    ULong64_t             fulCurrentMsIdx;
+   ULong64_t             fulCurrentTsStartTime;
       // Current data properties
    std::map< stsxyter::MessType, UInt_t > fmMsgCounter;
    UInt_t                fuCurrentEquipmentId;  //! Current equipment ID, tells from which DPB the current MS is originating
@@ -169,6 +173,11 @@ private:
    std::vector< std::vector< gdpbv100::FullMessage > > fvmTofGdpbHitsInMs;
    std::vector< std::vector< gdpbv100::FullMessage > > fvmTofGdpbHitsInTs;
 
+   std::vector< UInt_t > fvuHitsNbInTimeBinSts;
+   std::vector< UInt_t > fvuHitsNbInTimeBinMuch;
+   std::vector< UInt_t > fvuHitsNbInTimeBinTof;
+   std::vector< UInt_t > fvuHitsNbInTimeBinDiam;
+
    /// Processing methods
    void CreateTofHistograms();
 
@@ -186,6 +195,22 @@ private:
 
    TH2 * fhDiamondHitsRateMapEvo;
    TH1 * fhDiamondHitsRateDerivative;
+
+   TH2 * fhMuchVsStsHitsNbPerTimeBin;
+   TH2 * fhTofVsStsHitsNbPerTimeBin;
+   TH2 * fhDiamVsStsHitsNbPerTimeBin;
+
+   TH2 * fhStsVsMuchHitsNbPerTimeBin;
+   TH2 * fhTofVsMuchHitsNbPerTimeBin;
+   TH2 * fhDiamVsMuchHitsNbPerTimeBin;
+
+   TH2 * fhStsVsTofHitsNbPerTimeBin;
+   TH2 * fhMuchVsTofHitsNbPerTimeBin;
+   TH2 * fhDiamVsTofHitsNbPerTimeBin;
+
+   TH2 * fhStsVsDiamHitsNbPerTimeBin;
+   TH2 * fhTofVsDiamHitsNbPerTimeBin;
+   TH2 * fhMuchVsDiamHitsNbPerTimeBin;
 
    void CreateMcbmHistograms();
 /****************** mCBM Sync *****************************************/
