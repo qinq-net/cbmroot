@@ -6,6 +6,7 @@
 
 #pragma link C++ class CbmMcbmUnpack;
 #pragma link C++ class CbmMcbm2018Source;
+#pragma link C++ class CbmMcbm2018MsCrcCheck;
 
 #pragma link C++ class gdpb::Message;
 
@@ -17,6 +18,8 @@
 //#pragma link C++ class CbmMcbm2018UnpackerT0;
 #pragma link C++ class CbmMcbm2018UnpackerAlgoSts;
 #pragma link C++ class CbmMcbm2018UnpackerTaskSts;
+#pragma link C++ class CbmMcbm2018UnpackerAlgoMuch;
+#pragma link C++ class CbmMcbm2018UnpackerTaskMuch;
 #pragma link C++ class CbmMcbm2018MuchUnpacker;
 //#pragma link C++ class CbmMcbm2018UnpackerTrd;
 //#pragma link C++ class CbmMcbm2018UnpackerTof;

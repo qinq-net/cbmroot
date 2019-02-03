@@ -56,6 +56,7 @@ Link_Directories(
 Set(SRCS
    CbmMcbmUnpack.cxx
    CbmMcbm2018Source.cxx
+   CbmMcbm2018MsCrcCheck.cxx
 
    dataformat/gDpbMessv100.cxx
 
@@ -67,6 +68,8 @@ Set(SRCS
 #   unpacker/CbmMcbm2018UnpackerT0.cxx
    unpacker/CbmMcbm2018UnpackerAlgoSts.cxx
    unpacker/CbmMcbm2018UnpackerTaskSts.cxx
+   unpacker/CbmMcbm2018UnpackerAlgoMuch.cxx
+   unpacker/CbmMcbm2018UnpackerTaskMuch.cxx
    unpacker/CbmMcbm2018MuchUnpacker.cxx
 #   unpacker/CbmMcbm2018UnpackerTrd.cxx
    unpacker/CbmMcbm2018TofUnpacker.cxx
