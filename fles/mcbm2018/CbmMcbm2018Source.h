@@ -63,8 +63,8 @@ class CbmMcbm2018Source : public FairSource
 
     void AddUnpacker(CbmMcbmUnpack* unpacker, Int_t flibId, Int_t detId)
     {
-      fUnpackers.insert ( std::pair<Int_t,CbmMcbmUnpack*>(flibId,unpacker) );
-      fDetectorSystemMap.insert ( std::pair<Int_t,Int_t>(detId,flibId) );
+      fUnpackers.insert( std::pair<Int_t,CbmMcbmUnpack*>(flibId, unpacker) );
+      fDetectorSystemMap.insert( std::pair<Int_t,CbmMcbmUnpack*>(detId, unpacker) );
     }
 
     void AddFile(const char * name) {
@@ -87,8 +87,8 @@ class CbmMcbm2018Source : public FairSource
     Int_t   fPort;
     Int_t   fbOutputData;
 
-    std::map<Int_t, CbmMcbmUnpack*> fUnpackers; //! List pairs of system ID and unpacker pointer (unpacker can appear multiple times)
-    std::map<Int_t, Int_t> fDetectorSystemMap; //! Map detector system id to flib system id
+    std::multimap<Int_t, CbmMcbmUnpack*> fUnpackers; //! List pairs of system ID and unpacker pointer (unpacker can appear multiple times)
+    std::map<Int_t, CbmMcbmUnpack*> fDetectorSystemMap; //! Map detector system id to flib system id
     std::unordered_set<CbmMcbmUnpack*> fUnpackersToRun; //! List of all unpackers for which at least one matching container was found
 
     CbmTbDaqBuffer* fBuffer;

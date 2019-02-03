@@ -265,7 +265,7 @@ Int_t CbmMcbm2018Source::FillBuffer()
 
             LOG(DEBUG) << "Found systemID: " << std::hex
                        << systemID << std::dec << FairLogger::endl;
-
+/*
             auto it=fUnpackers.find(systemID);
             if( it == fUnpackers.end() )
             {
@@ -278,6 +278,24 @@ Int_t CbmMcbm2018Source::FillBuffer()
                   it->second->AddMsComponentToList( c, systemID );
                   it->second->SetNbMsInTs( ts.num_core_microslices(),
                                            ts.num_microslices( c ) - ts.num_core_microslices() );
+               } // else of if( it == fUnpackers.end() )
+*/
+            /// Get range of all unpackers matching this system ID <= Trick for STS + MUCH
+            auto it_list = fUnpackers.equal_range(systemID);
+            if( it_list.first == it_list.second )
+            {
+               LOG(INFO) << "Could not find unpacker for system id 0x"
+                         << std::hex << systemID << std::dec
+                         << FairLogger::endl;
+            } // if( it == fUnpackers.end() )
+               else
+               {
+                  for( auto it = it_list.first; it != it_list.second; ++it )
+                  {
+                     it->second->AddMsComponentToList( c, systemID );
+                     it->second->SetNbMsInTs( ts.num_core_microslices(),
+                                             ts.num_microslices( c ) - ts.num_core_microslices() );
+                  } // for( auto it = it_list.first; it != it_list.second; ++it )
                } // else of if( it == fUnpackers.end() )
          } // for (size_t c {0}; c < ts.num_components(); c++)
       } // if( 1 == fTSCounter )
@@ -337,11 +355,13 @@ Int_t CbmMcbm2018Source::GetNextEvent()
 
     while(digi) {
       Int_t detId = digi->GetSystemId();
+/*
       Int_t flibId = fDetectorSystemMap[detId];
       LOG(DEBUG) << "Digi has system ID " << detId
                 << " which maps to FlibId "<< flibId << FairLogger::endl;
+*/
       //std::map<Int_t, CbmTSUnpack*>::iterator it=fUnpackers.find(flibId);
-      std::map<Int_t, CbmMcbmUnpack*>::iterator it=fUnpackers.find(flibId);
+      std::map<Int_t, CbmMcbmUnpack*>::iterator it=fDetectorSystemMap.find(detId);
 
       if (it == fUnpackers.end()) {
         LOG(ERROR) << "Skipping digi with unknown id "
