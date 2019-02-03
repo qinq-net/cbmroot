@@ -32,9 +32,9 @@ void unpack_tsa_sts(TString inFile = "")
   TObjString* tutDetDigiFile = new TObjString(paramFile);
   parFileList->Add(tutDetDigiFile);
   */
-  TString paramFileTof = paramDir + "mStsPar.par";
-  TObjString* parTofFileName = new TObjString(paramFileTof);
-  parFileList->Add(parTofFileName);
+  TString paramFileSts = paramDir + "mStsPar.par";
+  TObjString* parStsFileName = new TObjString(paramFileSts);
+  parFileList->Add(parStsFileName);
 
   // --- Set debug level
   gDebug = 0;
@@ -49,10 +49,12 @@ void unpack_tsa_sts(TString inFile = "")
 
   CbmMcbm2018UnpackerTaskSts* unpacker_sts = new CbmMcbm2018UnpackerTaskSts();
 
+  unpacker_sts ->SetIgnoreOverlapMs();
+
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();
   source->SetFileName(inFile);
-  source->AddUnpacker(unpacker_sts, 0x10, kSts);//MUCH xyter
+  source->AddUnpacker(unpacker_sts, 0x10, kSts);//STS xyter
   source->EnableDataOutput();
 
   // --- Event header
