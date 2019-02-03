@@ -82,6 +82,9 @@ class CbmStar2019Algo
       void ClearVector() {fDigiVect.clear();}
       std::vector<T> GetVector() {return fDigiVect;}
 
+      /// Control flags
+      void SetIgnoreOverlapMs( Bool_t bFlagIn = kTRUE ) { fbIgnoreOverlapMs = bFlagIn; }
+
    protected:
       /// Parameter management
       TList* fParCList;
