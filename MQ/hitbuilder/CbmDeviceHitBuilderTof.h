@@ -185,10 +185,12 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
    TH1* fhEvDetMul;
    TH1* fhPulMul;
    TH2* fhPulserTimesRaw;
+   std::vector< TProfile* > fhPulserTimeRawEvo;
    TH2* fhPulserTimesCor;
    TH2* fhDigiTimesRaw;
    TH2* fhDigiTimesCor;
 
+   std::vector< TH2* > fhRpcDigiTot;        //[nbDet]
    std::vector< TH2* > fhRpcDigiCor;        //[nbDet]
    std::vector< TH1* > fhRpcCluMul;         //[nbDet]
    std::vector< TH1* > fhRpcCluRate;        //[nbDet]
@@ -264,6 +266,7 @@ class CbmDeviceHitBuilderTof: public FairMQDevice
    Int_t    fiPulserMode;
    uint64_t fiPulMulMin;
    uint64_t fiPulDetRef;
+   uint64_t fiPulTotMin;
 
    std::map<UInt_t, UInt_t> fDetIdIndexMap;
    std::vector< Int_t >  fviDetId;
