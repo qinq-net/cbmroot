@@ -54,6 +54,7 @@ class CbmDeviceUnpackTofMcbm2018: public FairMQDevice
     std::vector< Int_t >  fiReqDigiAddr;
     Int_t    fiPulserMode;
     uint64_t fiPulMulMin;
+    uint64_t fiPulTotMin;
  
     std::vector<std::string> fAllowedChannels
       = {"tofcomponent","parameters","tofdigis","syscmd"};
@@ -117,7 +118,7 @@ class CbmDeviceUnpackTofMcbm2018: public FairMQDevice
 
    Double_t fdMsIndex;
    Double_t fdTShiftRef;
-
+   UInt_t     fuDiamondDpbIdx;
    Bool_t fbEpochSuppModeOn;
    Bool_t fbGet4M24b;
    Bool_t fbGet4v20;

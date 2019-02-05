@@ -50,6 +50,7 @@ CbmDeviceUnpackTofMcbm2018::CbmDeviceUnpackTofMcbm2018()
   , fiReqDigiAddr()
   , fiPulserMode(0)
   , fiPulMulMin(0)
+  , fiPulTotMin(0)
     //  , fAllowedChannels()
     //  , fChannelsToSend()
   , fuMsAcceptsPercent(100)
@@ -90,6 +91,7 @@ CbmDeviceUnpackTofMcbm2018::CbmDeviceUnpackTofMcbm2018()
   , fulCurrentEpochTime(0.)
   , fdMsIndex(0.)
   , fdTShiftRef(0.)
+  , fuDiamondDpbIdx(2)
   , fbEpochSuppModeOn( kTRUE )
   , fbGet4M24b( kFALSE )
   , fbGet4v20( kTRUE )
@@ -172,6 +174,7 @@ try
     fiReqTint   = fConfig->GetValue<uint64_t>("ReqTint");
     fiPulserMode= fConfig->GetValue<int64_t>("PulserMode");
     fiPulMulMin = fConfig->GetValue<uint64_t>("PulMulMin");
+    fiPulTotMin = fConfig->GetValue<uint64_t>("PulTotMin");
     fdTShiftRef = fConfig->GetValue<double_t>("TShiftRef");
 
     Int_t iReqDet=1;
@@ -184,6 +187,7 @@ try
       iNReq++;
     }
 
+    if(fiReqMode > 0)
     if(iNReq == 0) {  // take all defined detectors 
       for(Int_t iGbtx= 0; iGbtx < fviNrOfRpc.size(); iGbtx++)  {
 	if(fviRpcSide[iGbtx]<2){ // mTof modules 
@@ -225,7 +229,7 @@ try
 	     <<" in " << fiReqTint << " ns "
 	     <<" with "<<fiReqDigiAddr.size()
 	     <<" detectors out of " << fviNrOfRpc.size() <<" GBTx, PulserMode "
-	     << fiPulserMode << " with Mul " << fiPulMulMin;
+	     << fiPulserMode << " with Mul " << fiPulMulMin<<", TotMin "<<fiPulTotMin;
     
 } catch (InitTaskError& e) {
  LOG(ERROR) << e.what();
@@ -469,7 +473,8 @@ Bool_t CbmDeviceUnpackTofMcbm2018::ReInitContainers()
        if( fviRpcType[iGbtx] == 5) {  // for Diamond
 	 iStrMax=1; 
        }
-       Int_t DiaMap[10]={32,36,40,24,28,36,32,40,24,32}; // FIXME, empirical constants
+       //       Int_t DiaMap[10]={32,36,40,24,28,36,32,40,24,32}; // FIXME, empirical constants
+       const Int_t DiaMap[10]={32,32,32,32,32,32,32,32,32,32}; 
        for(Int_t iStr= 0; iStr < iStrMax; iStr++)  {
 	 Int_t iStrMap = iStr;
 	 Int_t iRpcMap = iRpc;
@@ -784,6 +789,8 @@ Bool_t CbmDeviceUnpackTofMcbm2018::DoUnpack(const fles::Timeslice& ts, size_t co
          fMsgCounter[ messageType ]++;
 
          fuGet4Id = ConvertElinkToGet4( mess.getGdpbGenChipId() );
+	 if( fuGdpbNr == fuDiamondDpbIdx )
+	   fuGet4Id = mess.getGdpbGenChipId();
          fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
 
 	 if( fuNrOfGet4PerGdpb <= fuGet4Id &&
@@ -900,8 +907,18 @@ void CbmDeviceUnpackTofMcbm2018::FillHitInfo( gdpbv100::Message mess )
    UInt_t uGbtxNr         = (uFeeNr / kuNbFeePerGbtx);
    UInt_t uFeeInGbtx      = (uFeeNr % kuNbFeePerGbtx);
    UInt_t uGbtxNrInSys    = fuGdpbNr * kuNbGbtxPerGdpb + uGbtxNr;
-   UInt_t uRemappedChannelNr = fuGdpbNr * fuNrOfChannelsPerGdpb + uFeeNr * fuNrOfChannelsPerFee
-     + ( fviRpcType[uGbtxNrInSys]==5 ? uChannelNrInFee : fvuGet4ToPadi[ uChannelNrInFee ] );
+   UInt_t uRemappedChannelNr = fuGdpbNr * fuNrOfChannelsPerGdpb 
+                                                        + uFeeNr * fuNrOfChannelsPerFee + fvuGet4ToPadi[ uChannelNrInFee ];
+      /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
+   if(  fviRpcType[uGbtxNrInSys]==5 ) {
+      uRemappedChannelNr = fuGdpbNr * fuNrOfChannelsPerGdpb + uChannelNr;
+   }
+   /*
+   UInt_t uRemappedChannelNr = fuGdpbNr * fuNrOfChannelsPerGdpb +
+                                                       + ( fviRpcType[uGbtxNrInSys]==5 ? uChannelNr // Diamond
+	                                                :  uFeeNr * fuNrOfChannelsPerFee +fvuGet4ToPadi[ uChannelNrInFee ] );
+   */
+   //     + ( fviRpcType[uGbtxNrInSys]==5 ? uChannelNrInFee : fvuGet4ToPadi[ uChannelNrInFee ] );
    //   UInt_t uRemappedChannelNr = uFeeNr * fuNrOfChannelsPerFee + uChannelNrInFee;
    /*
    if( fuGdpbNr==2)
@@ -960,7 +977,8 @@ void CbmDeviceUnpackTofMcbm2018::FillHitInfo( gdpbv100::Message mess )
 		    << ", FiS "    << uFeeNrInSys
                   ;
 	} else {
-	  //LOG(WARN) << "Fix your mapping problem!";
+	  if(iWarnMess==1000)
+	     LOG(WARN) << "No more messages. Fix your mapping problem!";
 	  //FairMQStateMachine::ChangeState(PAUSE);
 	}
 	return;   // Hit not mapped to digi
@@ -979,8 +997,15 @@ void CbmDeviceUnpackTofMcbm2018::FillHitInfo( gdpbv100::Message mess )
       fBuffer->InsertData(fDigi);
 
       // Histograms filling
-      fhRawTotCh[ fuGdpbNr ]->Fill( uRemappedChannelNr, dHitTot);
-      fhChCount[ fuGdpbNr ] ->Fill( uRemappedChannelNr );
+      // fhRawTotCh[ fuGdpbNr ]->Fill( uRemappedChannelNr, dHitTot);
+      // fhChCount[ fuGdpbNr ] ->Fill( uRemappedChannelNr );
+      // for debugging 
+      if(0){
+	if(fuGdpbNr == 2) {
+	  LOG(INFO) << Form("Insert 0x%08x digi at %d with time ", uChanUId, uRemappedChannelNr)
+		              << dHitTime << Form(",  Tot %4.0f",dHitTot);
+	}
+      }
 
    } // if( kTRUE == fvbFirstEpochSeen[ fuGet4Nr ] )
 }
@@ -1309,15 +1334,17 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 	  case 0:
 	    switch(fiPulserMode) {
 	    case 1:
-	      if (str==0)   bPul[i][0]=kTRUE;
+	      if (str==0)  if(digi->GetTot()>fiPulTotMin)  bPul[i][0]=kTRUE;
+	      if (str==31) bPul[i][1]=kFALSE;
 	      break;
 	    case 2:
-	      if (str==0)   {
+	      if (str==0)   if(digi->GetTot()>fiPulTotMin)  {
 		bPul[i][0]=kTRUE;
 		if ( (fiReqDigiAddr[i] & 0x000FF00F ) == 0x00078006) {
 		  bPul[i][1]=kTRUE;    // ceramic with pad readout
 		  bDet[i][1]=kFALSE;   // remove Hit flag
 		}
+		if (str==31) bPul[i][1]=kFALSE;
 	      }
 	    default:
 	      ;
@@ -1327,10 +1354,12 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
 	  case 1:
 	    switch(fiPulserMode) {
 	    case 1:
-	      if (str==31)  bPul[i][1]=kTRUE;
+	      if (str==0)    bPul[i][0]=kFALSE;
+	      if (str==31)  if(digi->GetTot()>fiPulTotMin)  bPul[i][1]=kTRUE;
 	      break;
 	    case 2:
-	      if (str==31)  bPul[i][1]=kTRUE;
+	      if (str==0)    bPul[i][0]=kFALSE;
+	      if (str==31)  if(digi->GetTot()>fiPulTotMin)  bPul[i][1]=kTRUE;
 	      break;
 	    default:
 	      ;
@@ -1388,7 +1417,15 @@ void CbmDeviceUnpackTofMcbm2018::BuildTint( int iMode=0 )
       fEventHeader[2]=fiReqMode;
       fEventHeader[3]=iPulMul;
       vdigi.resize(nDigi);
+      const Int_t NDigiMax=10000;
+      if(nDigi > NDigiMax) {
+	LOG(WARN) << "Oversized event, truncated! ";
+	for(UInt_t iDigi=NDigiMax; iDigi<nDigi; iDigi++) vdigi[iDigi]->Delete();
+	nDigi=NDigiMax; 
+	vdigi.resize(nDigi);
+      }
       SendDigis(vdigi,0);
+
       for(UInt_t iDigi=0; iDigi<nDigi; iDigi++) vdigi[iDigi]->Delete(); 
     }
     else {
