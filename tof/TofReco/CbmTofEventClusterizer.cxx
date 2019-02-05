@@ -66,6 +66,7 @@ static Int_t    iIndexDut = 0;
 static Double_t StartAnalysisTime = 0.;
 const  Double_t cLight=29.9792; // in cm/ns
 static Int_t    SelMask=DetMask;
+static Double_t   fdStartAna10s=0.;
 
 //   std::vector< CbmTofPoint* > vPtsRef;
 
@@ -139,7 +140,6 @@ CbmTofEventClusterizer::CbmTofEventClusterizer(const char *name, Int_t verbose, 
    fhRpcCluMul(),
    fhRpcCluRate(),
    fhRpcCluRate10s(),
-   fdStartAna10s(),
    fhRpcCluPosition(),
    fhRpcCluPositionEvol(),
    fhRpcCluTimeEvol(),      
@@ -1188,7 +1188,6 @@ Bool_t   CbmTofEventClusterizer::CreateHistos()
    fhRpcCluMul.resize( iNbDet  );
    fhRpcCluRate.resize( iNbDet  );
    fhRpcCluRate10s.resize( iNbDet  );
-   fdStartAna10s.resize( iNbDet );
    fhRpcCluPosition.resize( iNbDet  );
    fhRpcCluPositionEvol.resize( iNbDet  );
    fhRpcCluTimeEvol.resize( iNbDet  );
@@ -1264,9 +1263,8 @@ Bool_t   CbmTofEventClusterizer::CreateHistos()
 
        fhRpcCluRate10s[iDetIndx] =  new TH1D(
           Form("cl_SmT%01d_sm%03d_rpc%03d_rate10s", iSmType, iSmId, iRpcId ),
-          Form("Clu rate of Rpc #%03d in Sm %03d of type %d in last 10s; Time (s); Rate (Hz)", iRpcId, iSmId, iSmType ),
+          Form("            Clu rate of Rpc #%03d in Sm %03d of type %d in last 10s; Time (s); Rate (Hz)", iRpcId, iSmId, iSmType ),
 	      10000,0.,10.); 
-       fdStartAna10s[iDetIndx]=0.;
 
        fhRpcDTLastHits[iDetIndx] =  new TH1F(
           Form("cl_SmT%01d_sm%03d_rpc%03d_DTLastHits", iSmType, iSmId, iRpcId ),
@@ -1355,12 +1353,12 @@ Bool_t   CbmTofEventClusterizer::CreateHistos()
        // Walk histos 
        fhRpcCluAvWalk[iDetIndx] = new TH2D( 
                           Form("cl_SmT%01d_sm%03d_rpc%03d_AvWalk", iSmType, iSmId, iRpcId),
-                          Form("Walk in SmT%01d_sm%03d_rpc%03d_AvWalk", iSmType, iSmId, iRpcId),
+                          Form("Walk in SmT%01d_sm%03d_rpc%03d_AvWalk; Tot [a.u.];  #DeltaT [ns]", iSmType, iSmId, iRpcId),
                           nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax);
    
        fhRpcCluAvLnWalk[iDetIndx] = new TH2D( 
                           Form("cl_SmT%01d_sm%03d_rpc%03d_AvLnWalk", iSmType, iSmId, iRpcId),
-                          Form("Walk in SmT%01d_sm%03d_rpc%03d_AvLnWalk", iSmType, iSmId, iRpcId),
+                          Form("Walk in SmT%01d_sm%03d_rpc%03d_AvLnWalk; log_{10}Tot [a.u.];  #DeltaT [ns]", iSmType, iSmId, iRpcId),
                           nbClWalkBinX,TMath::Log10(fdTOTMax/50.),TMath::Log10(fdTOTMax),nbClWalkBinY,-TSumMax,TSumMax);
 
        fhRpcCluWalk[iDetIndx].resize( fDigiBdfPar->GetNbChan(iSmType,iRpcId) );
@@ -1370,7 +1368,7 @@ Bool_t   CbmTofEventClusterizer::CreateHistos()
          {
            fhRpcCluWalk[iDetIndx][iCh][iSide]= new TH2D( 
                           Form("cl_SmT%01d_sm%03d_rpc%03d_Ch%03d_S%01d_Walk", iSmType, iSmId, iRpcId, iCh, iSide ),
-                          Form("Walk in SmT%01d_sm%03d_rpc%03d_Ch%03d_S%01d_Walk", iSmType, iSmId, iRpcId, iCh, iSide ),
+                          Form("Walk in SmT%01d_sm%03d_rpc%03d_Ch%03d_S%01d_Walk; Tot [a.u.];  #DeltaT [ns]", iSmType, iSmId, iRpcId, iCh, iSide ),
                           nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax );
          }
        /*
@@ -1705,9 +1703,9 @@ Bool_t   CbmTofEventClusterizer::FillHistos()
      LOG(DEBUG)<<"TimeAna "<<StartAnalysisTime<<", "<< pHit->GetTime()<<", "<<dTimeAna<<FairLogger::endl;
      fhRpcCluRate[iDetIndx]->Fill(dTimeAna); 
 
-     Double_t dTimeAna10s = (pHit->GetTime() - fdStartAna10s[iDetIndx])/1.E9;
+     Double_t dTimeAna10s = (pHit->GetTime() - fdStartAna10s)/1.E9;
      if ( dTimeAna10s > 10.) {
-       fdStartAna10s[iDetIndx]=pHit->GetTime();
+       fdStartAna10s=pHit->GetTime();
        fhRpcCluRate10s[iDetIndx]->Reset();
        dTimeAna10s=0.;
      }
