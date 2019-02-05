@@ -1,4 +1,4 @@
-set(DATATREEQA_VERSION 1ee104ff02e3a520f515fb628882df26fcc7b30b) # hash is tag 1.0. Needed for test
+set(DATATREEQA_VERSION e549c95c1489012a3fa2c5d0c8908478babd08b7) # hash is tag 1.0. Needed for test
 set(DATATREEQA_SRC_URL "https://cbmgsi.githost.io/pwg-c2f/DataTreeQA.git")
 set(DATATREEQA_DESTDIR "${CMAKE_BINARY_DIR}/external/DATATREEQA-prefix")
 set(DATATREEQA_LIBNAME "${CMAKE_SHARED_LIBRARY_PREFIX}DataTreeQA${CMAKE_SHARED_LIBRARY_SUFFIX}")
