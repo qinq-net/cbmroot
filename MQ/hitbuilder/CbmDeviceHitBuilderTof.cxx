@@ -355,6 +355,7 @@ Bool_t CbmDeviceHitBuilderTof::InitRootOutput()
     fRootEvent->Write();
     */
   }
+  return kTRUE;
 }
 
 
