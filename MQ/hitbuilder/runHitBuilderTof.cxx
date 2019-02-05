@@ -11,7 +11,8 @@ void addCustomOptions(bpo::options_description& options)
   options.add_options() ("Mode",        bpo::value<int64_t>()->default_value(0),"Choose device operation mode");
   options.add_options() ("PulserMode",  bpo::value<int64_t>()->default_value(0),"Choose pulser configuration");
   options.add_options() ("PulMulMin",   bpo::value<uint64_t>()->default_value(0), "Min number of pulsed detectors");
-    options.add_options() ("PulDetRef", bpo::value<uint64_t>()->default_value(0), "Pulser Reference Detector");
+  options.add_options() ("PulDetRef", bpo::value<uint64_t>()->default_value(0), "Pulser Reference Detector");
+  options.add_options() ("PulTotMin",   bpo::value<uint64_t>()->default_value(0), "Min Tot value");
  
   options.add_options() ("DutType", bpo::value<uint64_t>()->default_value(0),"Dut type identifier");
   options.add_options() ("DutSm",   bpo::value<uint64_t>()->default_value(0),"Dut module number");

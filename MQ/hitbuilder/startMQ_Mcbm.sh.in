@@ -7,14 +7,16 @@ else
     _runname=$1
 fi
   
-_reqmod=4
+_reqmod=1
 _reqtint=50
 _ntimeslices=-1
-_iUnp=16
-_batch=1
+_iUnp=4
+_batch=0
 _pulmode=1 
-_pulmulmin=15
-_tshiftref=-30.
+_pulmulmin=25
+_pultotmin=50
+#_tshiftref=0. 
+_tshiftref=-35. 
 
 _dirname=@VMCWORKDIR@/macro/beamtime/mcbm2018/input/$_runname/
 _outdir=@VMCWORKDIR@/macro/beamtime/mcbm2018/data/
@@ -24,6 +26,7 @@ _digifile=$_runname.$_reqtint.$_reqmod.$_pulmode.root
 # ASCII files  
 #_mapfile=@CMAKE_CURRENT_SOURCE_DIR@/MapTofGbtx.par
 _mapfile=@VMCWORKDIR@/macro/beamtime/mcbm2018/mTofPar.par
+#_mapfile=@VMCWORKDIR@/macro/beamtime/mcbm2018/etofPar.par
 #_digibdffile=@VMCWORKDIR@/parameters/tof/v18j_cosmicHD.digibdf.par
 #_digiparfile=@VMCWORKDIR@/parameters/tof/tof_v18j_cosmicHD.digi.par
 _digibdffile=@VMCWORKDIR@/parameters/tof/v18k_mCbm.digibdf.par
@@ -98,6 +101,7 @@ UNPACKER+=" --ReqMode $_reqmod"
 UNPACKER+=" --ReqTint $_reqtint"
 UNPACKER+=" --PulserMode $_pulmode"
 UNPACKER+=" --PulMulMin $_pulmulmin"
+UNPACKER+=" --PulTotMin $_pultotmin"
 UNPACKER+=" --TShiftRef $_tshiftref"
 if  [[ $_batch = 1 ]]; then 
 UNPACKER+=" --control static"
@@ -126,6 +130,7 @@ HITBUILDER+=" --OutRootFile $_outdir$_digifile"
 HITBUILDER+=" --RunId 1544384489"
 HITBUILDER+=" --PulserMode $_pulmode"
 HITBUILDER+=" --PulMulMin $_pulmulmin"
+HITBUILDER+=" --PulTotMin $_pultotmin"
 HITBUILDER+=" --BRefType  5"
 HITBUILDER+=" --BRefSm    0"
 HITBUILDER+=" --BRefDet   0"
