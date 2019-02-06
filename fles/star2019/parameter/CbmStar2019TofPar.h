@@ -98,6 +98,7 @@ class CbmStar2019TofPar : public FairParGenericSet
    static const uint32_t kuNbGet4PerGdpb     = kuNbGet4PerGbtx     * kuNbGbtxPerGdpb;
    static const uint32_t kuNbFeePerGdpb      = kuNbFeePerGbtx      * kuNbGbtxPerGdpb;
       /// Mapping in Readout chain PCBs
+/*
    const UInt_t kuGet4topadi[ kuNbChannelsPerFee ] = {  // provided by Jochen
            4,  3,  2,  1,
          24, 23, 22, 21,
@@ -107,6 +108,17 @@ class CbmStar2019TofPar : public FairParGenericSet
          32, 31, 30, 29,
          16, 15, 14, 13,
          20, 19, 18, 17
+      }; //! Map from GET4 channel to PADI channel
+*/
+   const UInt_t kuGet4topadi[ kuNbChannelsPerFee ] = {  // provided by Jochen
+          4,  3,  2,  1,  // provided by Jochen
+          8,  7,  6,  5,
+         12, 11, 10,  9,
+         16, 15, 14, 13,
+         20, 19, 18, 17,
+         24, 23, 22, 21,
+         28, 27, 26, 25,
+         32, 31, 30, 29
       }; //! Map from GET4 channel to PADI channel
 
    const UInt_t kuPaditoget4[ kuNbChannelsPerFee ] = {  // provided by Jochen
