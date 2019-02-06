@@ -16,7 +16,6 @@
 #include "FairModule.h"
 #include "FairRunSim.h"
 #include "CbmAddress.h"
-#include "CbmModuleList.h"
 #include "CbmSetup.h"
 #include "CbmFieldMap.h"
 #include "CbmFieldMapSym2.h"

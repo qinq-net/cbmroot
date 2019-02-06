@@ -6,6 +6,7 @@
 
 #include "CbmUnigenGenerator.h"
 
+#include <cassert>
 #include "FairMCEventHeader.h"
 
 #include "FairLogger.h"
@@ -72,6 +73,9 @@ CbmUnigenGenerator::CbmUnigenGenerator(TString fileName)
               << FairLogger::endl;
     // store the beam momentum in FairRunSim, it will be transfered to
     // FairBaseParSet in FairRunSim::Init
+    // TODO (VF): I do not like this much (requiring a singleton to be present
+    // in the constructor. Seek for a better solution.
+    assert(FairRunSim::Instance());
     FairRunSim::Instance()->SetBeamMom(plab);
   } else {
     LOG(INFO) << "Input data is in LAB frame" << FairLogger::endl;

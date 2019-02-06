@@ -12,6 +12,7 @@
 #include "TNamed.h"
 #include "TString.h"
 #include "TVector3.h"
+#include "CbmModuleList.h"
 
 #include "Rtypes.h"
 

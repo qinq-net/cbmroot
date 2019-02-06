@@ -26,6 +26,10 @@
 #pragma link C++ class CbmDigitizationSource;
 #pragma link C++ class CbmMCInput;
 #pragma link C++ class CbmMCInputSet;
+#pragma link C++ class CbmRunTransport;
+
+#pragma link C++ enum ECbmEngine;
+#pragma link C++ enum ECbmGenerator;
 
 #endif
 

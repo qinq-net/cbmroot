@@ -30,7 +30,7 @@ ${CBMROOT_SOURCE_DIR}/ecal
 ${CBMROOT_SOURCE_DIR}/psd
 ${CBMROOT_SOURCE_DIR}/passive
 ${CBMROOT_SOURCE_DIR}/field
-
+${CBMROOT_SOURCE_DIR}/generators
 ${CBMROOT_SOURCE_DIR}/run
 )
 
@@ -74,12 +74,13 @@ CbmDigitization.cxx
 CbmDigitizationSource.cxx
 CbmMCInput.cxx
 CbmMCInputSet.cxx
+CbmRunTransport.cxx
 )
 
 set(LINKDEF CbmRunLinkDef.h)
 Set(LIBRARY_NAME CbmRun)
 Set(DEPENDENCIES
-    CbmData CbmBase CbmField CbmMvd CbmSts CbmRich CbmMuch CbmTrd CbmTrdSim CbmTof CbmPsd
+    CbmData CbmBase CbmField CbmGenerators CbmMvd CbmSts CbmRich CbmMuch CbmTrd CbmTrdSim CbmTof CbmPsd
 )
 
 GENERATE_LIBRARY()
