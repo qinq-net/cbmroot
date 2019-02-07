@@ -459,7 +459,10 @@ TString PairAnalysisHelper::GetDetName(ECbmModuleId det)
   //
   // get detector name
   //
+  if(det==9)  return ("");
   TString name = CbmModuleList::GetModuleNameCaps(det);
+  
+  //  TString name = CbmModuleList::GetModuleName(det);
   return (name);
 }
 
