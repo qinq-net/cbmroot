@@ -716,7 +716,7 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessEpoch( gdpbv100::Message mess )
    } // if( 0 < fvulCurrentEpoch[ fuGdpbNr ] && ulEpochNr < fvulCurrentEpoch[ fuGdpbNr ] )
 */
    fvulCurrentEpoch[ fuGdpbNr ] = ulEpochNr;
-   fvulCurrentEpochFull[ fuGdpbNr ] = ulEpochNr + gdpbv100::kuEpochCounterSz * fvulCurrentEpochCycle[ fuGdpbNr ];
+   fvulCurrentEpochFull[ fuGdpbNr ] = ulEpochNr + ( gdpbv100::kuEpochCounterSz + 1 ) * fvulCurrentEpochCycle[ fuGdpbNr ];
 
 //   fulCurrentEpochTime = mess.getMsgFullTime(ulEpochNr);
 
@@ -854,14 +854,15 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessStarTrigger( gdpbv100::Message mess
             {
                LOG(INFO) << Form( "Trigger in wrong MS TS %6llu", fulCurrentTsIndex )
                          << Form( " MS %3u ", fuMsIndex )
+                         << Form( " Sector %3u ", fuGdpbNr + 13 )
                          << Form( " Ttrig %15.2f", dTriggerTime )
                          << Form( " Tms %15.2f", fdMsTime )
                          << Form( " dT %15.5f", ( (dTriggerTime - fdMsTime) / 1000.0 ) )
                          << FairLogger::endl;
-               LOG(INFO) << Form( "Full token, gDPB TS LSB bits: 0x%16lx, STAR TS MSB bits: 0x%16lx",
-                              ulNewGdpbTsFull, ulNewStarTsFull )
+               LOG(INFO) << Form( "Full token, gDPB TS LSB bits: 0x%16lx, STAR TS MSB bits: 0x%16lx, token is %4u",
+                              ulNewGdpbTsFull, ulNewStarTsFull, uNewToken )
                          << FairLogger::endl;
-            }
+            } // if( (dTriggerTime - fdMsTime) / 1000.0 < -1000 )
          } // if( fbMonitorMode && fbDebugMonitorMode )
 
 //         LOG(INFO) << "First full trigger in TS " << fulCurrentTsIndex << FairLogger::endl;
@@ -980,7 +981,7 @@ void CbmStar2019EventBuilderEtofAlgo::StoreMessageInBuffer( gdpbv100::FullMessag
       return;
    } // if GET4 error out of TOT/hit building error range
 
-   if( fbMonitorMode && fbDebugMonitorMode )
+   if( fbMonitorMode && fbDebugMonitorMode && gdpbv100::MSG_HIT == fullMess.getMessageType() )
       fvhMessDistributionInMs[ fuGdpbNr ]->Fill( (fullMess.GetFullTimeNs() - fdMsTime) / 1000.0 );
 /*
    LOG(INFO) << Form( "Message Full Time ns: %f MS time ns: %f diff: %f Start %f Stop %f",
@@ -1045,7 +1046,6 @@ void CbmStar2019EventBuilderEtofAlgo::ProcessHit( gdpbv100::Message mess, uint64
                  << FairLogger::endl;
       return;
    } // if( fUnpackPar->GetNumberOfChannels() < uChanUId )
-
 }
 
 void CbmStar2019EventBuilderEtofAlgo::ProcessSlCtrl( gdpbv100::Message mess, uint64_t ulCurEpochGdpbGet4 )

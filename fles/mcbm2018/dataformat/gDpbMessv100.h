@@ -38,9 +38,9 @@ namespace gdpbv100 {
    // Epoch counter size in epoch
    const uint32_t kuEpochCounterSz  = 0x7FFFFFFF;
    // Epoch counter size in bin
-   const uint64_t kulEpochCycleBins = static_cast<uint64_t>(kuEpochCounterSz)* kuEpochInBins;
+   const uint64_t kulEpochCycleBins = static_cast<uint64_t>(kuEpochCounterSz + 1)* kuEpochInBins;
    // Epoch counter size in s
-   const double   kdEpochCycleInS   = static_cast<double>(kuEpochCounterSz) * (kdEpochInNs/1e9);
+   const double   kdEpochCycleInS   = static_cast<double>(kuEpochCounterSz + 1) * (kdEpochInNs/1e9);
 
    // Epoch Cycle MS start message size in bits
    const uint64_t kulEpochCycleFieldSz = 0x1FFFFF; // 21 bits
