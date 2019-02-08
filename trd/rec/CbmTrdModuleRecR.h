@@ -40,6 +40,7 @@ public:
   virtual Int_t   FindClusters();
   
   Int_t           GetOverThreshold() const  { return fDigiCounter;}
+  Double_t            GetSpaceResolution(Double_t val = 3.0);
   /**
    * \brief Steering routine for building hits
    **/

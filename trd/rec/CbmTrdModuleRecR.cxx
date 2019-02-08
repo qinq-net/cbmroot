@@ -135,7 +135,7 @@ Int_t CbmTrdModuleRecR::FindClusters()
       //      if(timediff < -interval)      start=mainit;
       if(timediff > interval && lasttime > 0)       {start=mainit;}
       //if(timediff > interval)       {start=mainit;stop=mainit;break;}
-      //      if(timediff > interval)       {fDigiMap.erase(fDigiMap.begin(),stop+1);start=mainit;stop=mainit;}
+      if(timediff > interval)       {fDigiMap.erase(fDigiMap.begin(),stop+1);start=mainit;stop=mainit;}
       if(timediff < interval)       stop=mainit;
 
 
@@ -424,7 +424,9 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
   Double_t yVar = 0;
   Double_t totalCharge = 0;
   Double_t totalChargeTR = 0;
+  Double_t momentum = 0.;
   Int_t moduleAddress = 0;
+  Double_t time = 0.;
   for(std::vector<const CbmTrdDigi*>::iterator id = digis->begin(); id!=digis->end(); id++){
     const CbmTrdDigi* digi = (*id);
     if(!digi) {continue;std::cout<<" no digi " << std::endl;}
@@ -438,7 +440,7 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
     Int_t row= digi->GetAddressChannel()/ncols;
     Int_t col= digi->GetAddressChannel()%ncols; 
     Int_t srow, sector= fDigiPar->GetSectorRow(row, srow);
-
+    time += digi->GetTime();
     
     totalCharge += digi->GetCharge();
     //    fDigiPar->GetPadPosition(digi->GetAddress(), local_pad_posV, local_pad_dposV);
@@ -458,6 +460,7 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
     
     
   }
+  time /= digis->size();
   
   if (totalCharge <= 0)   return NULL;
   
@@ -473,7 +476,9 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
   yVar /= totalCharge;
   yVar /= 3;
   yVar -= hit_pos[1] * hit_pos[1];
-    
+
+  Double_t PadSizeX = fDigiPar->GetPadSizeX(1);
+  Double_t PadSizeY = fDigiPar->GetPadSizeY(1);
   TVector3 cluster_pad_dposV(sqrt(xVar), sqrt(yVar), 0);
 	
   // --- If a TGeoNode is attached, transform into global coordinate system
@@ -481,12 +486,51 @@ CbmTrdHit* CbmTrdModuleRecR::MakeHit(Int_t clusterId, const CbmTrdCluster *clust
   LocalToMaster(hit_pos, global);
 
   fDigiPar->TransformHitError(cluster_pad_dposV);
-  
+
+  //TODO: get momentum for more exact spacial error
+  if ((fDigiPar->GetOrientation() == 1) || (fDigiPar->GetOrientation() == 3)){
+    cluster_pad_dposV[0] = fDigiPar->GetPadSizeY(1);
+    //    cluster_pad_dposV[1] = GetSpaceResolution();
+  }
+  else{
+    cluster_pad_dposV[1] = fDigiPar->GetPadSizeY(1);
+    //    cluster_pad_dposV[0] = GetSpaceResolution();
+  }
+      
   Int_t nofHits = fHits->GetEntriesFast();
-  return new ((*fHits)[nofHits]) CbmTrdHit(fModAddress, global, cluster_pad_dposV, 0, clusterId, 0, 0, totalCharge);
-//  return bla;
-//  return new ((*fHits)[nofHits]) CbmTrdHit(fModAddress, global, cluster_pad_dposV, 0, clusterId,0, 0, totalCharge,time,CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC));
+  //return new ((*fHits)[nofHits]) CbmTrdHit(fModAddress, global, cluster_pad_dposV, 0, clusterId, 0, 0, totalCharge);
+
+  //  return bla;
+  return new ((*fHits)[nofHits]) CbmTrdHit(fModAddress, global, cluster_pad_dposV, 0, clusterId,0, 0, totalCharge,time,Double_t(CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)));
   
+}
+
+
+Double_t CbmTrdModuleRecR::GetSpaceResolution(Double_t val){
+
+  std::pair<Double_t,Double_t> res[12] = {
+    make_pair(0.5,0.4),make_pair(1,0.35),make_pair(2,0.3),make_pair(2.5,0.3),make_pair(3.5,0.28),
+    make_pair(4.5,0.26),make_pair(5.5,0.26),make_pair(6.5,0.26),make_pair(7.5,0.26),make_pair(8.5,0.26),
+    make_pair(8.5,0.26),make_pair(9.5,0.26)
+  };
+
+  Double_t selval = 0.;
+  
+  for(Int_t n=0;n<12;n++){
+    if(val < res[0].first)             selval = res[0].second;
+    if(n == 11)                        {selval = res[11].second;break;}
+    if(val >= res[n].first && val <= res[n+1].first){
+      Double_t dx = res[n+1].first - res[n].first;
+      Double_t dy = res[n+1].second - res[n].second;
+      Double_t slope = dy / dx ;
+      selval = (val - res[n].first) * slope + res[n].second;
+      break;
+    }
+  }
+
+  return selval;
+  
+
 }
 
 ClassImp(CbmTrdModuleRecR)
