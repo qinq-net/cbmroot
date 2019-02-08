@@ -10,7 +10,7 @@
 #include "CbmMcbm2018UnpackerAlgoMuch.h"
 #include "CbmMcbm2018MuchPar.h"
 #include "CbmTbDaqBuffer.h"
-#include "CbmMuchDigi.h"
+#include "CbmMuchBeamTimeDigi.h"
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
@@ -60,12 +60,12 @@ Bool_t CbmMcbm2018UnpackerTaskMuch::Init()
       LOG(FATAL) << "No FairRootManager instance" << FairLogger::endl;
    }
 
-   fMuchDigiCloneArray= new TClonesArray("CbmMuchDigi", 10);
+   fMuchDigiCloneArray= new TClonesArray("CbmMuchBeamTimeDigi", 10);
    if( NULL == fMuchDigiCloneArray )
    {
       LOG(FATAL) << "Failed creating the MUCH Digi TClonesarray " << FairLogger::endl;
    }
-   ioman->Register("CbmMuchDigi", "MUCH raw Digi", fMuchDigiCloneArray, kTRUE);
+   ioman->Register("CbmMuchBeamTimeDigi", "MUCH raw Digi", fMuchDigiCloneArray, kTRUE);
 
    return kTRUE;
 }
@@ -136,15 +136,20 @@ Bool_t CbmMcbm2018UnpackerTaskMuch::InitContainers()
 
       /// Register the histos in the HTTP server
       THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-      for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
+      if( nullptr != server )
       {
-         server->Register( Form( "/%s", vHistos[ uHisto ].second.data() ), vHistos[ uHisto ].first );
-      } // for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
+         for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
+         {
+            server->Register( Form( "/%s", vHistos[ uHisto ].second.data() ), vHistos[ uHisto ].first );
+         } // for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
 
-      server->RegisterCommand("/Reset_UnpMuch_Hist", "bMcbm2018UnpackerTaskMuchResetHistos=kTRUE");
-      server->Restrict("/Reset_UnpMuch_Hist", "allow=admin");
+         server->RegisterCommand("/Reset_UnpMuch_Hist", "bMcbm2018UnpackerTaskMuchResetHistos=kTRUE");
+         server->Restrict("/Reset_UnpMuch_Hist", "allow=admin");
+      } // if( nullptr != server )
 
    } // if( kTRUE == fbMonitorMode )
+
+   fUnpackerAlgo->SetMonitorMode( fbMonitorMode );
 
    return initOK;
 }
@@ -181,9 +186,9 @@ Bool_t CbmMcbm2018UnpackerTaskMuch::DoUnpack(const fles::Timeslice& ts, size_t c
    } // if( kFALSE == fUnpackerAlgo->ProcessTs( ts ) )
 
    /// Copy the digis in the DaqBuffer
-   std::vector< CbmMuchDigi > vDigi = fUnpackerAlgo->GetVector();
+   std::vector< CbmMuchBeamTimeDigi > vDigi = fUnpackerAlgo->GetVector();
    for( UInt_t uDigi = 0; uDigi < vDigi.size(); ++uDigi )
-      fBuffer->InsertData( new CbmMuchDigi( vDigi[ uDigi ] ) );
+      fBuffer->InsertData( new CbmMuchBeamTimeDigi( vDigi[ uDigi ] ) );
    fUnpackerAlgo->ClearVector();
 
    if( 0 == fulTsCounter % 10000 )
@@ -209,7 +214,7 @@ void CbmMcbm2018UnpackerTaskMuch::FillOutput(CbmDigi* digi)
 
 
    new( (*fMuchDigiCloneArray)[ fMuchDigiCloneArray->GetEntriesFast() ] )
-      CbmMuchDigi( *( dynamic_cast<CbmMuchDigi*>(digi) ) );
+      CbmMuchBeamTimeDigi( *( dynamic_cast<CbmMuchBeamTimeDigi*>(digi) ) );
 /*
    if( 1 == fMuchDigiCloneArray->GetEntriesFast())
       fdEvTime0=digi->GetTime();

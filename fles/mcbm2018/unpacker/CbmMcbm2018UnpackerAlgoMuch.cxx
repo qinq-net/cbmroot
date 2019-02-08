@@ -59,7 +59,8 @@ CbmMcbm2018UnpackerAlgoMuch::CbmMcbm2018UnpackerAlgoMuch() :
    fdStartTime( 0.0 ),
    fdStartTimeMsSz( 0.0 ),
    ftStartTimeUnix( std::chrono::steady_clock::now() ),
-   fvmHitsInMs()
+   fvmHitsInMs(),
+   fhDigisTimeInRun( nullptr )
 /*
    fvhHitsTimeToTriggerRaw(),
    fvhMessDistributionInMs(),
@@ -305,17 +306,19 @@ Bool_t CbmMcbm2018UnpackerAlgoMuch::ProcessTs( const fles::Timeslice& ts )
 
          //Creating Unique address of the particular channel of GEM
          UInt_t address = CbmMuchAddress::GetAddress(station, layer, layerside, module, sector, channel);
-/*
-         CbmMuchBeamTimeDigi digi(address, usRawAdc, dHitTimeNs);
-         digi.SetPadX(sector);
-         digi.SetPadY(channel);
-         digi.SetRocId(uDpbId);
-         digi.SetNxId( itHitIn->GetAsic() );
-         digi.SetNxCh( itHitIn->GetChan() );
-   */
          ULong64_t ulTimeInNs = static_cast< ULong64_t >( itHitIn->GetTs() * stsxyter::kdClockCycleNs - fdTimeOffsetNs);
 
-         fDigiVect.push_back( CbmMuchDigi( address, itHitIn->GetAdc(), ulTimeInNs ) );
+         /// With Main MUCH digi
+//         fDigiVect.push_back( CbmMuchDigi( address, itHitIn->GetAdc(), ulTimeInNs ) );
+
+         /// With Beamtime MUCH digi
+         CbmMuchBeamTimeDigi digi(address, itHitIn->GetAdc(), ulTimeInNs);
+         digi.SetPadX(sector);
+         digi.SetPadY(channel);
+         digi.SetRocId( itHitIn->GetDpb() );
+         digi.SetNxId( itHitIn->GetAsic() );
+         digi.SetNxCh( itHitIn->GetChan() );
+         fDigiVect.push_back( digi );
       } // for( auto itHitIn = fvmHitsInMs.begin(); itHitIn < fvmHitsInMs.end(); ++itHitIn )
 
       /// Clear the buffer of hits
@@ -720,6 +723,12 @@ void CbmMcbm2018UnpackerAlgoMuch::ProcessStatusInfo( stsxyter::Message mess )
 
 Bool_t CbmMcbm2018UnpackerAlgoMuch::CreateHistograms()
 {
+   /// Create General unpacking histograms
+   fhDigisTimeInRun = new TH1I( "hDigisTimeInRun",
+      "Digis Nb vs Time in Run; Time in run [s]; Digis Nb []",
+      36000 , 0, 3600 );
+   AddHistoToVector( fhDigisTimeInRun, "" );
+
 /*
    /// Create sector related histograms
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
@@ -960,34 +969,15 @@ Bool_t CbmMcbm2018UnpackerAlgoMuch::CreateHistograms()
 }
 Bool_t CbmMcbm2018UnpackerAlgoMuch::FillHistograms()
 {
-/*
-   UInt_t uNbEvents = fvEventsBuffer.size();
-   fhEventNbPerTs->Fill( uNbEvents );
-
-   for( UInt_t uEvent = 0; uEvent < uNbEvents; ++uEvent )
+   for( auto itHit = fDigiVect.begin(); itHit != fDigiVect.end(); ++itHit)
    {
-      UInt_t uEventSize       = fvEventsBuffer[ uEvent ].GetEventSize();
-      Double_t dEventTimeSec  = fvEventsBuffer[ uEvent ].GetEventTimeSec();
-      Double_t dEventTimeMin  = dEventTimeSec / 60.0;
-
-      fhEventSizeDistribution->Fill( uEventSize );
-      fhEventSizeEvolution->Fill( dEventTimeMin, uEventSize );
-      fhEventNbEvolution->Fill( dEventTimeMin );
-
-      if( kTRUE == fbDebugMonitorMode )
-      {
-         Double_t dEventTimeInTs = ( fvEventsBuffer[ uEvent ].GetTrigger().GetFullGdpbTs() * gdpbv100::kdClockCycleSizeNs
-                                    - fdTsStartTime ) / 1000.0;
-
-         fhEventNbDistributionInTs->Fill( dEventTimeInTs  );
-         fhEventSizeDistributionInTs->Fill( dEventTimeInTs, uEventSize );
-      } // if( kTRUE == fbDebugMonitorMode )
-   } // for( UInt_t uEvent = 0; uEvent < uNbEvents; ++uEvent )
-*/
+      fhDigisTimeInRun->Fill( itHit->GetTime() * 1e-9  );
+   } // for( auto itHit = fDigiVect.begin(); itHit != fDigiVect.end(); ++itHit)
    return kTRUE;
 }
 Bool_t CbmMcbm2018UnpackerAlgoMuch::ResetHistograms()
 {
+   fhDigisTimeInRun->Reset();
 /*
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {

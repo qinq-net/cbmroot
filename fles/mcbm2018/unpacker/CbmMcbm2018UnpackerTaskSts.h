@@ -42,6 +42,7 @@ class CbmMcbm2018UnpackerTaskSts : public CbmMcbmUnpack
       void AddMsComponentToList( size_t component, UShort_t usDetectorId );
       void SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb ){};
 
+      inline void SetMonitorMode( Bool_t bFlagIn = kTRUE ) { fbMonitorMode = bFlagIn; }
       void SetIgnoreOverlapMs( Bool_t bFlagIn = kTRUE );
 
       void SetTimeOffsetNs( Double_t dOffsetIn = 0.0 );

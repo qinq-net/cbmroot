@@ -7,6 +7,10 @@
  ** Convert data into cbmroot format.
  ** Uses CbmMcbm2018Source as source task.
  */
+
+// In order to call later Finish, we make this global
+FairRunOnline *run = NULL;
+
 void unpack_tsa_sts_much(TString inFile = "", UInt_t uRunId = 0)
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
@@ -54,6 +58,9 @@ void unpack_tsa_sts_much(TString inFile = "", UInt_t uRunId = 0)
   CbmMcbm2018UnpackerTaskSts  * unpacker_sts  = new CbmMcbm2018UnpackerTaskSts();
   CbmMcbm2018UnpackerTaskMuch * unpacker_much = new CbmMcbm2018UnpackerTaskMuch();
 
+  unpacker_sts ->SetMonitorMode();
+  unpacker_much->SetMonitorMode();
+
   unpacker_sts ->SetIgnoreOverlapMs();
   unpacker_much->SetIgnoreOverlapMs();
 
@@ -95,10 +102,10 @@ void unpack_tsa_sts_much(TString inFile = "", UInt_t uRunId = 0)
   event->SetRunId(1);
 
   // --- Run
-  FairRunOnline *run = new FairRunOnline(source);
+  run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
-  //  run->SetEventHeader(event);
-
+  run->SetEventHeader(event);
+  run->SetAutoFinish(kFALSE);
 
   // -----   Runtime database   ---------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
@@ -118,6 +125,8 @@ void unpack_tsa_sts_much(TString inFile = "", UInt_t uRunId = 0)
   std::cout << ">>> unpack_tsa_sts: Starting run..." << std::endl;
   run->Run(nEvents, 0); // run until end of input file
   //run->Run(0, nEvents); // process nEvents
+
+  run->Finish();
 
   timer.Stop();
 

@@ -68,7 +68,8 @@ CbmMcbm2018UnpackerAlgoSts::CbmMcbm2018UnpackerAlgoSts() :
    fdStartTime( 0.0 ),
    fdStartTimeMsSz( 0.0 ),
    ftStartTimeUnix( std::chrono::steady_clock::now() ),
-   fvmHitsInMs()
+   fvmHitsInMs(),
+   fhDigisTimeInRun( nullptr )
 /*
    fvhHitsTimeToTriggerRaw(),
    fvhMessDistributionInMs(),
@@ -787,6 +788,11 @@ void CbmMcbm2018UnpackerAlgoSts::ProcessStatusInfo( stsxyter::Message mess )
 
 Bool_t CbmMcbm2018UnpackerAlgoSts::CreateHistograms()
 {
+   /// Create General unpacking histograms
+   fhDigisTimeInRun = new TH1I( "hDigisTimeInRun",
+      "Digis Nb vs Time in Run; Time in run [s]; Digis Nb []",
+      36000 , 0, 3600 );
+   AddHistoToVector( fhDigisTimeInRun, "" );
 /*
    /// Create sector related histograms
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
@@ -1027,34 +1033,15 @@ Bool_t CbmMcbm2018UnpackerAlgoSts::CreateHistograms()
 }
 Bool_t CbmMcbm2018UnpackerAlgoSts::FillHistograms()
 {
-/*
-   UInt_t uNbEvents = fvEventsBuffer.size();
-   fhEventNbPerTs->Fill( uNbEvents );
-
-   for( UInt_t uEvent = 0; uEvent < uNbEvents; ++uEvent )
+   for( auto itHit = fDigiVect.begin(); itHit != fDigiVect.end(); ++itHit)
    {
-      UInt_t uEventSize       = fvEventsBuffer[ uEvent ].GetEventSize();
-      Double_t dEventTimeSec  = fvEventsBuffer[ uEvent ].GetEventTimeSec();
-      Double_t dEventTimeMin  = dEventTimeSec / 60.0;
-
-      fhEventSizeDistribution->Fill( uEventSize );
-      fhEventSizeEvolution->Fill( dEventTimeMin, uEventSize );
-      fhEventNbEvolution->Fill( dEventTimeMin );
-
-      if( kTRUE == fbDebugMonitorMode )
-      {
-         Double_t dEventTimeInTs = ( fvEventsBuffer[ uEvent ].GetTrigger().GetFullGdpbTs() * gdpbv100::kdClockCycleSizeNs
-                                    - fdTsStartTime ) / 1000.0;
-
-         fhEventNbDistributionInTs->Fill( dEventTimeInTs  );
-         fhEventSizeDistributionInTs->Fill( dEventTimeInTs, uEventSize );
-      } // if( kTRUE == fbDebugMonitorMode )
-   } // for( UInt_t uEvent = 0; uEvent < uNbEvents; ++uEvent )
-*/
+      fhDigisTimeInRun->Fill( itHit->GetTime() * 1e-9 );
+   } // for( auto itHit = fDigiVect.begin(); itHit != fDigiVect.end(); ++itHit)
    return kTRUE;
 }
 Bool_t CbmMcbm2018UnpackerAlgoSts::ResetHistograms()
 {
+   fhDigisTimeInRun->Reset();
 /*
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    {

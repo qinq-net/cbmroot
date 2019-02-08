@@ -96,7 +96,6 @@ void CbmMcbm2018UnpackerTaskSts::SetParContainers()
       fParCList->AddAt(newObj, iparC);
 //      delete tempObj;
    } // for( Int_t iparC = 0; iparC < fParCList->GetEntries(); ++iparC )
-
 }
 
 Bool_t CbmMcbm2018UnpackerTaskSts::InitContainers()
@@ -136,15 +135,20 @@ Bool_t CbmMcbm2018UnpackerTaskSts::InitContainers()
 
       /// Register the histos in the HTTP server
       THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-      for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
+      if( nullptr != server )
       {
-         server->Register( Form( "/%s", vHistos[ uHisto ].second.data() ), vHistos[ uHisto ].first );
-      } // for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
+         for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
+         {
+            server->Register( Form( "/%s", vHistos[ uHisto ].second.data() ), vHistos[ uHisto ].first );
+         } // for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
 
-      server->RegisterCommand("/Reset_UnpSts_Hist", "bMcbm2018UnpackerTaskStsResetHistos=kTRUE");
-      server->Restrict("/Reset_UnpSts_Hist", "allow=admin");
+         server->RegisterCommand("/Reset_UnpSts_Hist", "bMcbm2018UnpackerTaskStsResetHistos=kTRUE");
+         server->Restrict("/Reset_UnpSts_Hist", "allow=admin");
+      } // if( nullptr != server )
 
    } // if( kTRUE == fbMonitorMode )
+
+   fUnpackerAlgo->SetMonitorMode( fbMonitorMode );
 
    return initOK;
 }

@@ -59,6 +59,7 @@ class CbmMcbm2018UnpackerAlgoSts : public CbmStar2019Algo<CbmStsDigi>
       Bool_t FillHistograms();
       Bool_t ResetHistograms();
 
+      inline void SetMonitorMode( Bool_t bFlagIn = kTRUE ) { fbMonitorMode = bFlagIn; }
       inline void SetTimeOffsetNs( Double_t dOffsetIn = 0.0 ) { fdTimeOffsetNs = dOffsetIn; }
 
    private:
@@ -119,6 +120,7 @@ class CbmMcbm2018UnpackerAlgoSts : public CbmStar2019Algo<CbmStsDigi>
       std::vector< stsxyter::FinalHit > fvmHitsInMs; //! All hits (time in bins, ADC in bins, asic, channel) in last MS, sorted with "<" operator
 
       /// Histograms
+      TH1 *               fhDigisTimeInRun;                //!
 /*
       std::vector< TH1* > fvhHitsTimeToTriggerRaw;       //! [sector]
       std::vector< TH1* > fvhMessDistributionInMs;       //! [sector], extra monitor for debug
