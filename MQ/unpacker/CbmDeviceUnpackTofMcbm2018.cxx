@@ -466,7 +466,8 @@ Bool_t CbmDeviceUnpackTofMcbm2018::ReInitContainers()
    fviRpcChUId.resize(uNrOfChannels);
    UInt_t iCh= 0;
    for(Int_t iGbtx= 0; iGbtx < uNrOfGbtx; iGbtx++)  {
-     if(fviRpcSide[iGbtx]<2){ // mTof modules 
+     if(fviRpcSide[iGbtx]<2){ // mTof modules
+     const Int_t RpcMap[5]={4,2,0,3,1}; 
      for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; iRpc++)  {
        Int_t iStrMax=32;
        Int_t iChNext=1;
@@ -477,7 +478,7 @@ Bool_t CbmDeviceUnpackTofMcbm2018::ReInitContainers()
        const Int_t DiaMap[10]={32,32,32,32,32,32,32,32,32,32}; 
        for(Int_t iStr= 0; iStr < iStrMax; iStr++)  {
 	 Int_t iStrMap = iStr;
-	 Int_t iRpcMap = iRpc;
+	 Int_t iRpcMap = RpcMap[iRpc];
 	 if( fviRpcType[iGbtx] == 5) {  // for Diamond 
 	   iStrMap=iRpc;
 	   iRpcMap=0;
