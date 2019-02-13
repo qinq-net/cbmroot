@@ -3,14 +3,30 @@
 # This library provides the interface to the FLIB board or to files in tca
 # format written by the FLIB
 
-download_project_if_needed(PROJECT            fles_ipc
+download_project_if_needed(PROJECT         fles_ipc
                            GIT_REPOSITORY  "https://github.com/cbm-fles/flesnet"
-                           GIT_TAG         "21d9038ff9c97188499b6225da6971b42336e349"
+                           GIT_TAG         "e04f05269a459bd3a72eb4e32451b82d97f6e37b"
+                           GIT_STASH       TRUE
                            SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/ipc
                            TEST_FILE       CMakeLists.txt
                            )
 
 file(COPY Timeslice.hpp DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/ipc/lib/fles_ipc)
+file(COPY TimesliceMultiInputArchive.hpp DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/ipc/lib/fles_ipc)
+file(COPY TimesliceMultiInputArchive.cpp DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/ipc/lib/fles_ipc)
+
+# Create the logging library
+add_library(fles_logging SHARED ipc/lib/logging/log.cpp ipc/lib/logging/log.hpp)
+
+target_compile_definitions(fles_logging
+  PUBLIC BOOST_LOG_DYN_LINK
+  PUBLIC BOOST_LOG_USE_NATIVE_SYSLOG
+)
+
+target_include_directories(fles_logging PUBLIC ipc/lib/logging/)
+
+target_include_directories(fles_logging SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
+
 
 Set(INCLUDE_DIRECTORIES
 )
@@ -20,6 +36,7 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${ZMQ_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/external/cppzmq
   ${CMAKE_SOURCE_DIR}/external/ipc/ipc
+  ${CMAKE_SOURCE_DIR}/external/ipc/ipc/lib/logging
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -45,15 +62,16 @@ ipc/lib/fles_ipc/TimeslicePublisher.cpp
 ipc/lib/fles_ipc/TimesliceReceiver.cpp
 ipc/lib/fles_ipc/TimesliceSubscriber.cpp
 ipc/lib/fles_ipc/TimesliceView.cpp
+ipc/lib/fles_ipc/TimesliceMultiInputArchive.cpp
 )
 
 Set_Source_Files_Properties(${SRCS} COMPILE_FLAGS "-std=c++11 -O3 -ggdb -msse4.2 -Wall -Wpedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor -fno-omit-frame-pointer")
 
 Set(LIBRARY_NAME fles_ipc)
 If(UNIX AND NOT APPLE)
-  Set(DEPENDENCIES boost_thread boost_system boost_serialization zmq rt)
+  Set(DEPENDENCIES boost_thread boost_system boost_serialization boost_log fles_logging zmq rt)
 Else()
-  Set(DEPENDENCIES boost_thread boost_system boost_serialization zmq)
+  Set(DEPENDENCIES boost_thread boost_system boost_serialization boost_log fles_logging zmq)
 EndIf()
 
 

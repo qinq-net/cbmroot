@@ -1,6 +1,6 @@
 // Copyright 2019 Florian Uhlig <f.uhlig@gsi.de>
 
-#include "TimesliceInputArchiveInterface.hpp"
+#include "TimesliceMultiInputArchive.hpp"
 
 #include "TimesliceInputArchive.hpp"
 #include "StorableTimeslice.hpp"
@@ -11,7 +11,9 @@
 
 namespace filesys = boost::filesystem;
 
-TimesliceInputArchiveInterface::TimesliceInputArchiveInterface(std::string inputString)
+namespace fles {
+  
+TimesliceMultiInputArchive::TimesliceMultiInputArchive(const std::string& inputString)
 {
   if (!inputString.empty()) {
     CreateInputFileList(inputString);
@@ -19,23 +21,18 @@ TimesliceInputArchiveInterface::TimesliceInputArchiveInterface(std::string input
       std::string file = stream.at(0);
       stream.erase(stream.begin());
       source_.push_back(
-        std::unique_ptr<fles::TimesliceInputArchive>(
-          new fles::TimesliceInputArchive(file)));
+        std::unique_ptr<TimesliceInputArchive>(
+          new TimesliceInputArchive(file)));
       L_(info) << " Open file: " << file;
     }
   } else {
     L_(fatal) << "No input files defined";
     exit(1);
   }
-  InitTimesliceArchiveInterface(); 
+  InitTimesliceArchive(); 
 }
 
-TimesliceInputArchiveInterface::~TimesliceInputArchiveInterface()
-{
-}
-
-
-void TimesliceInputArchiveInterface::CreateInputFileList(std::string inputString)
+void TimesliceMultiInputArchive::CreateInputFileList(std::string inputString)
 {
   
   // split the input string at the character ";" which devides the string
@@ -97,7 +94,7 @@ void TimesliceInputArchiveInterface::CreateInputFileList(std::string inputString
 }
 
 
-void TimesliceInputArchiveInterface::InitTimesliceArchiveInterface()
+void TimesliceMultiInputArchive::InitTimesliceArchive()
 {
   timesliceCont.resize(source_.size());
   
@@ -111,10 +108,15 @@ void TimesliceInputArchiveInterface::InitTimesliceArchiveInterface()
       L_(fatal) << "Could not read a timeslice from input stream " << element;
       exit(1);
     }  
-  } 
+  }
 }
 
-std::unique_ptr<const fles::Timeslice> TimesliceInputArchiveInterface::GetNextTimeslice()
+ Timeslice* TimesliceMultiInputArchive::do_get()
+ {
+   return GetNextTimeslice().release();
+ }
+
+  std::unique_ptr<Timeslice> TimesliceMultiInputArchive::GetNextTimeslice() 
 {
 
   if (sortedSource_.size()>0) {
@@ -126,7 +128,7 @@ std::unique_ptr<const fles::Timeslice> TimesliceInputArchiveInterface::GetNextTi
     int currentSource  = (*(sortedSource_.begin())).second;
     sortedSource_.erase(sortedSource_.begin());
   
-    std::unique_ptr<const fles::Timeslice> retTimeslice = std::move(timesliceCont.at(currentSource));
+    std::unique_ptr<Timeslice> retTimeslice = std::move(timesliceCont.at(currentSource));
   
     if (auto timeslice = source_.at(currentSource)->get()) {
       sortedSource_.insert({timeslice->index(), currentSource});
@@ -134,7 +136,7 @@ std::unique_ptr<const fles::Timeslice> TimesliceInputArchiveInterface::GetNextTi
     } else {
       if (!OpenNextFile(currentSource)) {
         // if the first file reaches the end stop reading
-      //return std::unique_ptr<const fles::Timeslice>(nullptr);
+      //return std::unique_ptr<const Timeslice>(nullptr);
       } else {
         if ( (timeslice = source_.at(currentSource)->get()) ) {
           sortedSource_.insert({timeslice->index(), currentSource});
@@ -145,11 +147,11 @@ std::unique_ptr<const fles::Timeslice> TimesliceInputArchiveInterface::GetNextTi
 
     return retTimeslice;
   } else {
-    return std::unique_ptr<const fles::Timeslice>(nullptr);
+    return std::unique_ptr<Timeslice>(nullptr);
   }  
 }    
 
-bool TimesliceInputArchiveInterface::OpenNextFile(int element) 
+bool TimesliceMultiInputArchive::OpenNextFile(int element) 
 { 
   // First Close and delete existing source
   if( nullptr != source_.at(element) ) {
@@ -159,8 +161,8 @@ bool TimesliceInputArchiveInterface::OpenNextFile(int element)
   if (InputFileList.at(element).size() > 0) {
     std::string file = InputFileList.at(element).at(0);
     InputFileList.at(element).erase(InputFileList.at(element).begin());
-    source_.at(element) = std::unique_ptr<fles::TimesliceInputArchive>(
-        new fles::TimesliceInputArchive(file));
+    source_.at(element) = std::unique_ptr<TimesliceInputArchive>(
+        new TimesliceInputArchive(file));
     L_(info) << " Open file: " << file;
   } else {
     L_(info) << "End of files list reached.";
@@ -169,3 +171,4 @@ bool TimesliceInputArchiveInterface::OpenNextFile(int element)
   return true;
 }
                                                                                     
+}

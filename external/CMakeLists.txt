@@ -16,6 +16,7 @@ download_project_if_needed(PROJECT         flib_dpb_20
 
 
 Set(IPC_INCLUDE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ipc/ipc/lib/fles_ipc PARENT_SCOPE)
+Set(IPCLOG_INCLUDE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ipc/ipc/lib/logging PARENT_SCOPE)
 
 Add_Subdirectory(ipc)
 Add_Subdirectory(ipc_legacy)
