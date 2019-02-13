@@ -70,9 +70,9 @@ Set_Source_Files_Properties(${SRCS} COMPILE_FLAGS "-std=c++11 -O3 -ggdb -msse4.2
 
 Set(LIBRARY_NAME fles_ipc)
 If(UNIX AND NOT APPLE)
-  Set(DEPENDENCIES boost_thread boost_system boost_serialization boost_log fles_logging zmq rt)
+  Set(DEPENDENCIES boost_thread boost_system boost_serialization boost_log boost_regex fles_logging zmq rt)
 Else()
-  Set(DEPENDENCIES boost_thread boost_system boost_serialization boost_log fles_logging zmq)
+  Set(DEPENDENCIES boost_thread boost_system boost_serialization boost_log boost_regex fles_logging zmq)
 EndIf()
 
 
