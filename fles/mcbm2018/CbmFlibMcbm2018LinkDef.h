@@ -20,9 +20,10 @@
 #pragma link C++ class CbmMcbm2018UnpackerTaskSts;
 #pragma link C++ class CbmMcbm2018UnpackerAlgoMuch;
 #pragma link C++ class CbmMcbm2018UnpackerTaskMuch;
+#pragma link C++ class CbmMcbm2018UnpackerAlgoTof;
+#pragma link C++ class CbmMcbm2018UnpackerTaskTof;
 #pragma link C++ class CbmMcbm2018MuchUnpacker;
 //#pragma link C++ class CbmMcbm2018UnpackerTrd;
-//#pragma link C++ class CbmMcbm2018UnpackerTof;
 #pragma link C++ class CbmMcbm2018TofUnpacker;
 
 #pragma link C++ class CbmMcbm2018MonitorMcbmRate;

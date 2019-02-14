@@ -5,6 +5,8 @@
 
 #include "CbmMcbm2018TofPar.h"
 
+#include "gDpbMessv100.h"
+
 #include "FairParamList.h"
 #include "FairDetParIo.h"
 #include "FairParIo.h"
@@ -98,7 +100,7 @@ Bool_t CbmMcbm2018TofPar::getParams(FairParamList* l) {
    if ( ! l->fill("NrOfChannelsPerGet4", &fiNrOfChannelsPerGet4) ) return kFALSE;
 
    if ( ! l->fill("NrOfGbtx", &fiNrOfGbtx) ) return kFALSE;
-   
+
    if ( ! l->fill("NrOfModule", &fiNrOfModule) ) return kFALSE;
 
    fiNrOfRpc.Set(fiNrOfGbtx);
@@ -127,6 +129,65 @@ Bool_t CbmMcbm2018TofPar::getParams(FairParamList* l) {
 
    return kTRUE;
 }
+// -------------------------------------------------------------------------
+Int_t CbmMcbm2018TofPar::Get4ChanToPadiChan( UInt_t uChannelInFee )
+{
+   if( uChannelInFee < kuNbChannelsPerFee )
+      return kuGet4topadi[ uChannelInFee ];
+      else
+      {
+         LOG(FATAL) << "CbmMcbm2018TofPar::Get4ChanToPadiChan => Index out of bound, "
+                    << uChannelInFee << " vs " << kuNbChannelsPerFee
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uChannelInFee < kuNbChannelsPerFee )
+}
+Int_t CbmMcbm2018TofPar::PadiChanToGet4Chan( UInt_t uChannelInFee )
+{
+   if( uChannelInFee < kuNbChannelsPerFee )
+      return kuPaditoget4[ uChannelInFee ];
+      else
+      {
+         LOG(FATAL) << "CbmMcbm2018TofPar::PadiChanToGet4Chan => Index out of bound, "
+                    << uChannelInFee << " vs " << kuNbChannelsPerFee
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uChannelInFee < kuNbChannelsPerFee )
+}
+// -------------------------------------------------------------------------
+Int_t CbmMcbm2018TofPar::ElinkIdxToGet4Idx( UInt_t uElink )
+{
+   if( gdpbv100::kuChipIdMergedEpoch == uElink  )
+      return uElink;
+   else if( uElink < kuNbGet4PerGdpb )
+      return kuElinkToGet4[ uElink % kuNbGet4PerGbtx ] + kuNbGet4PerGbtx * ( uElink / kuNbGet4PerGbtx );
+      else
+      {
+         LOG(FATAL) << "CbmMcbm2018TofPar::ElinkIdxToGet4Idx => Index out of bound, "
+                    << uElink << " vs " << kuNbGet4PerGdpb
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uElink < kuNbGet4PerGbtx )
+}
+Int_t CbmMcbm2018TofPar::Get4IdxToElinkIdx( UInt_t uGet4 )
+{
+   if( gdpbv100::kuChipIdMergedEpoch == uGet4  )
+      return uGet4;
+   else if( uGet4 < kuNbGet4PerGdpb )
+      return kuGet4ToElink[ uGet4 % kuNbGet4PerGbtx ] + kuNbGet4PerGbtx * ( uGet4 / kuNbGet4PerGbtx );
+      else
+      {
+         LOG(FATAL) << "CbmMcbm2018TofPar::Get4IdxToElinkIdx => Index out of bound, "
+                    << uGet4 << " vs " << kuNbGet4PerGdpb
+                    << ", returning crazy value!"
+                    << FairLogger::endl;
+         return -1;
+      } // else of if( uElink < kuNbGet4PerGbtx )
+}
+// -------------------------------------------------------------------------
 
 
 ClassImp(CbmMcbm2018TofPar)

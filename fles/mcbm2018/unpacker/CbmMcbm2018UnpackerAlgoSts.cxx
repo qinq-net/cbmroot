@@ -8,7 +8,6 @@
 #include "CbmMcbm2018UnpackerAlgoSts.h"
 
 #include "CbmMcbm2018StsPar.h"
-#include "CbmHistManager.h"
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
@@ -93,7 +92,7 @@ CbmMcbm2018UnpackerAlgoSts::~CbmMcbm2018UnpackerAlgoSts()
 // -------------------------------------------------------------------------
 Bool_t CbmMcbm2018UnpackerAlgoSts::Init()
 {
-   LOG(INFO) << "Initializing STAR eTOF 2019 event builder algo" << FairLogger::endl;
+   LOG(INFO) << "Initializing mCBM STS 2019 unpacker algo" << FairLogger::endl;
 
    return kTRUE;
 }

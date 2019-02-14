@@ -1,16 +1,16 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                     CbmMcbm2018UnpackerTaskMuch                   -----
-// -----               Created 02.02.2019 by P.-A. Loizeau                 -----
+// -----                     CbmMcbm2018UnpackerTaskTof                    -----
+// -----               Created 10.02.2019 by P.-A. Loizeau                 -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#include "CbmMcbm2018UnpackerTaskMuch.h"
+#include "CbmMcbm2018UnpackerTaskTof.h"
 
-#include "CbmMcbm2018UnpackerAlgoMuch.h"
-#include "CbmMcbm2018MuchPar.h"
+#include "CbmMcbm2018UnpackerAlgoTof.h"
+#include "CbmMcbm2018TofPar.h"
 #include "CbmTbDaqBuffer.h"
-#include "CbmMuchBeamTimeDigi.h"
+#include "CbmTofDigiExp.h"
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
@@ -30,29 +30,32 @@
 #include <fstream>
 #include <chrono>
 
-Bool_t bMcbm2018UnpackerTaskMuchResetHistos = kFALSE;
+Bool_t bMcbm2018UnpackerTaskTofResetHistos = kFALSE;
 
-CbmMcbm2018UnpackerTaskMuch::CbmMcbm2018UnpackerTaskMuch( UInt_t uNbGdpb )
+CbmMcbm2018UnpackerTaskTof::CbmMcbm2018UnpackerTaskTof( UInt_t uNbGdpb )
   : CbmMcbmUnpack(),
     fbMonitorMode( kFALSE ),
+    fbDebugMonitorMode( kFALSE ),
+    fbSeparateArrayT0( kFALSE ),
     fParCList( nullptr ),
     fulTsCounter( 0 ),
     fBuffer( CbmTbDaqBuffer::Instance() ),
-    fMuchDigiCloneArray(),
-    fUnpackerAlgo( nullptr )
+    fTofDigiCloneArray(),
+    fUnpackerAlgo( nullptr ),
+    fT0DigiCloneArray( nullptr )
 {
-   fUnpackerAlgo = new CbmMcbm2018UnpackerAlgoMuch();
+   fUnpackerAlgo = new CbmMcbm2018UnpackerAlgoTof();
 }
 
-CbmMcbm2018UnpackerTaskMuch::~CbmMcbm2018UnpackerTaskMuch()
+CbmMcbm2018UnpackerTaskTof::~CbmMcbm2018UnpackerTaskTof()
 {
    delete fUnpackerAlgo;
 }
 
-Bool_t CbmMcbm2018UnpackerTaskMuch::Init()
+Bool_t CbmMcbm2018UnpackerTaskTof::Init()
 {
-   LOG(INFO) << "CbmMcbm2018UnpackerTaskMuch::Init" << FairLogger::endl;
-   LOG(INFO) << "Initializing mCBM MUCH 2018 Unpacker" << FairLogger::endl;
+   LOG(INFO) << "CbmMcbm2018UnpackerTaskTof::Init" << FairLogger::endl;
+   LOG(INFO) << "Initializing mCBM TOF 2018 Unpacker" << FairLogger::endl;
 
    FairRootManager* ioman = FairRootManager::Instance();
    if( NULL == ioman )
@@ -60,17 +63,27 @@ Bool_t CbmMcbm2018UnpackerTaskMuch::Init()
       LOG(FATAL) << "No FairRootManager instance" << FairLogger::endl;
    }
 
-   fMuchDigiCloneArray= new TClonesArray("CbmMuchBeamTimeDigi", 10);
-   if( NULL == fMuchDigiCloneArray )
+   fTofDigiCloneArray= new TClonesArray("CbmTofDigiExp", 10);
+   if( NULL == fTofDigiCloneArray )
    {
-      LOG(FATAL) << "Failed creating the MUCH Digi TClonesarray " << FairLogger::endl;
+      LOG(FATAL) << "Failed creating the TOF Digi TClonesarray " << FairLogger::endl;
    }
-   ioman->Register("CbmMuchBeamTimeDigi", "MUCH raw Digi", fMuchDigiCloneArray, kTRUE);
+   ioman->Register("CbmTofDigi", "Tof raw Digi", fTofDigiCloneArray, kTRUE);
+
+   if( kTRUE == fbSeparateArrayT0 )
+   {
+      fT0DigiCloneArray= new TClonesArray("CbmTofDigiExp", 10);
+      if( NULL == fT0DigiCloneArray )
+      {
+         LOG(FATAL) << "Failed creating the T0 Digi TClonesarray " << FairLogger::endl;
+      }
+      ioman->Register("CbmT0Digi", "T0 raw Digi", fT0DigiCloneArray, kTRUE);
+   } // if( kTRUE == fbSeparateArrayT0 )
 
    return kTRUE;
 }
 
-void CbmMcbm2018UnpackerTaskMuch::SetParContainers()
+void CbmMcbm2018UnpackerTaskTof::SetParContainers()
 {
    LOG(INFO) << "Setting parameter containers for " << GetName()
              << FairLogger::endl;
@@ -98,16 +111,16 @@ void CbmMcbm2018UnpackerTaskMuch::SetParContainers()
    } // for( Int_t iparC = 0; iparC < fParCList->GetEntries(); ++iparC )
 }
 
-Bool_t CbmMcbm2018UnpackerTaskMuch::InitContainers()
+Bool_t CbmMcbm2018UnpackerTaskTof::InitContainers()
 {
    LOG(INFO) << "Init parameter containers for " << GetName()
                << FairLogger::endl;
 
    /// Control flags
-   CbmMcbm2018MuchPar * pUnpackPar = dynamic_cast<CbmMcbm2018MuchPar*>( FairRun::Instance()->GetRuntimeDb()->getContainer( "CbmMcbm2018MuchPar" ) );
+   CbmMcbm2018TofPar * pUnpackPar = dynamic_cast<CbmMcbm2018TofPar*>( FairRun::Instance()->GetRuntimeDb()->getContainer( "CbmMcbm2018TofPar" ) );
    if( nullptr == pUnpackPar )
    {
-      LOG(ERROR) << "Failed to obtain parameter container CbmMcbm2018MuchPar"
+      LOG(ERROR) << "Failed to obtain parameter container CbmMcbm2018TofPar"
                  << FairLogger::endl;
       return kFALSE;
    } // if( nullptr == pUnpackPar )
@@ -142,8 +155,8 @@ Bool_t CbmMcbm2018UnpackerTaskMuch::InitContainers()
             server->Register( Form( "/%s", vHistos[ uHisto ].second.data() ), vHistos[ uHisto ].first );
          } // for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
 
-         server->RegisterCommand("/Reset_UnpMuch_Hist", "bMcbm2018UnpackerTaskMuchResetHistos=kTRUE");
-         server->Restrict("/Reset_UnpMuch_Hist", "allow=admin");
+      server->RegisterCommand("/Reset_UnpTof_Hist", "bMcbm2018UnpackerTaskTofResetHistos=kTRUE");
+      server->Restrict("/Reset_UnpTof_Hist", "allow=admin");
       } // if( nullptr != server )
 
    } // if( kTRUE == fbMonitorMode )
@@ -153,7 +166,7 @@ Bool_t CbmMcbm2018UnpackerTaskMuch::InitContainers()
    return initOK;
 }
 
-Bool_t CbmMcbm2018UnpackerTaskMuch::ReInitContainers()
+Bool_t CbmMcbm2018UnpackerTaskTof::ReInitContainers()
 {
    LOG(INFO) << "ReInit parameter containers for " << GetName()
              << FairLogger::endl;
@@ -162,19 +175,19 @@ Bool_t CbmMcbm2018UnpackerTaskMuch::ReInitContainers()
    return initOK;
 }
 
-void CbmMcbm2018UnpackerTaskMuch::AddMsComponentToList( size_t component, UShort_t usDetectorId )
+void CbmMcbm2018UnpackerTaskTof::AddMsComponentToList( size_t component, UShort_t usDetectorId )
 {
    fUnpackerAlgo->AddMsComponentToList( component, usDetectorId );
 }
 
-Bool_t CbmMcbm2018UnpackerTaskMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
+Bool_t CbmMcbm2018UnpackerTaskTof::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
-   if( fbMonitorMode && bMcbm2018UnpackerTaskMuchResetHistos )
+   if( fbMonitorMode && bMcbm2018UnpackerTaskTofResetHistos )
    {
-      LOG(INFO) << "Reset MUCH unpacker histos " << FairLogger::endl;
+      LOG(INFO) << "Reset TOF unpacker histos " << FairLogger::endl;
       fUnpackerAlgo->ResetHistograms();
-      bMcbm2018UnpackerTaskMuchResetHistos = kFALSE;
-   } // if( fbMonitorMode && bMcbm2018UnpackerTaskMuchResetHistos )
+      bMcbm2018UnpackerTaskTofResetHistos = kFALSE;
+   } // if( fbMonitorMode && bMcbm2018UnpackerTaskTofResetHistos )
 
    if( kFALSE == fUnpackerAlgo->ProcessTs( ts ) )
    {
@@ -185,9 +198,16 @@ Bool_t CbmMcbm2018UnpackerTaskMuch::DoUnpack(const fles::Timeslice& ts, size_t c
    } // if( kFALSE == fUnpackerAlgo->ProcessTs( ts ) )
 
    /// Copy the digis in the DaqBuffer
-   std::vector< CbmMuchBeamTimeDigi > vDigi = fUnpackerAlgo->GetVector();
+   std::vector< CbmTofDigiExp > vDigi = fUnpackerAlgo->GetVector();
    for( UInt_t uDigi = 0; uDigi < vDigi.size(); ++uDigi )
-      fBuffer->InsertData( new CbmMuchBeamTimeDigi( vDigi[ uDigi ] ) );
+   {
+      LOG(DEBUG) << Form("Insert 0x%08x digi with time ", vDigi[ uDigi ].GetAddress() ) << vDigi[ uDigi ].GetTime()
+                 << Form(", Tot %4.0f", vDigi[ uDigi ].GetCharge())
+                 << " into buffer with " << fBuffer->GetSize() << " data from "
+                 << Form("%11.1f to %11.1f ", fBuffer->GetTimeFirst(), fBuffer->GetTimeLast())
+                 << FairLogger::endl;
+      fBuffer->InsertData( new CbmTofDigiExp( vDigi[ uDigi ] ) );
+   }
    fUnpackerAlgo->ClearVector();
 
    if( 0 == fulTsCounter % 10000 )
@@ -198,24 +218,44 @@ Bool_t CbmMcbm2018UnpackerTaskMuch::DoUnpack(const fles::Timeslice& ts, size_t c
    return kTRUE;
 }
 
-void CbmMcbm2018UnpackerTaskMuch::Reset()
+void CbmMcbm2018UnpackerTaskTof::Reset()
 {
-   fMuchDigiCloneArray->Clear();
+   fTofDigiCloneArray->Clear();
+
+   if( kTRUE == fbSeparateArrayT0 )
+   {
+      fT0DigiCloneArray->Clear();
+   } // if( kTRUE == fbSeparateArrayT0 )
 }
 
-void CbmMcbm2018UnpackerTaskMuch::FillOutput(CbmDigi* digi)
+void CbmMcbm2018UnpackerTaskTof::FillOutput(CbmDigi* digi)
 {
-   /// Insert data in output container
-   LOG(DEBUG) << "Fill digi TClonesarray with "
-              << Form("0x%08x", digi->GetAddress())
-              << " at " << static_cast<Int_t>( fMuchDigiCloneArray->GetEntriesFast() )
-              << FairLogger::endl;
+   /// FIXME: remove T0 address hardcoding!!!
+   if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi->GetAddress() & 0x00000FFF ) )
+   {
+      /// Insert data in TOF output container
+      LOG(DEBUG) << "Fill digi TClonesarray with "
+                 << Form("0x%08x", digi->GetAddress())
+                 << " at " << static_cast<Int_t>( fT0DigiCloneArray->GetEntriesFast() )
+                 << FairLogger::endl;
 
+      new( (*fT0DigiCloneArray)[ fT0DigiCloneArray->GetEntriesFast() ] )
+         CbmTofDigiExp( *( dynamic_cast<CbmTofDigiExp*>(digi) ) );
+   } // if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi->GetAddress() & 0x00000FFF ) )
+      else
+      {
+         /// Insert data in TOF output container
+         LOG(DEBUG) << "Fill digi TClonesarray with "
+                    << Form("0x%08x", digi->GetAddress())
+                    << " at " << static_cast<Int_t>( fTofDigiCloneArray->GetEntriesFast() )
+                    << FairLogger::endl;
 
-   new( (*fMuchDigiCloneArray)[ fMuchDigiCloneArray->GetEntriesFast() ] )
-      CbmMuchBeamTimeDigi( *( dynamic_cast<CbmMuchBeamTimeDigi*>(digi) ) );
+         new( (*fTofDigiCloneArray)[ fTofDigiCloneArray->GetEntriesFast() ] )
+            CbmTofDigiExp( *( dynamic_cast<CbmTofDigiExp*>(digi) ) );
+      } // else of if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi->GetAddress() & 0x00000FFF ) )
+
 /*
-   if( 1 == fMuchDigiCloneArray->GetEntriesFast())
+   if( 1 == fTofDigiCloneArray->GetEntriesFast())
       fdEvTime0=digi->GetTime();
       else fhRawTDigEvT0->Fill( digi->GetTime() - fdEvTime0 );
 
@@ -233,7 +273,7 @@ void CbmMcbm2018UnpackerTaskMuch::FillOutput(CbmDigi* digi)
    digi->Delete();
 }
 
-void CbmMcbm2018UnpackerTaskMuch::Finish()
+void CbmMcbm2018UnpackerTaskTof::Finish()
 {
    /// If monitor mode enabled, trigger histos creation, obtain pointer on them and add them to the HTTP server
    if( kTRUE == fbMonitorMode )
@@ -247,7 +287,7 @@ void CbmMcbm2018UnpackerTaskMuch::Finish()
       // Store current directory position to allow restore later
       oldDir = gDirectory;
       // open separate histo file in recreate mode
-      histoFile = new TFile( "data/HistosUnpackerMuch.root" , "RECREATE");
+      histoFile = new TFile( "data/HistosUnpackerTof.root" , "RECREATE");
       histoFile->cd();
 
       /// Register the histos in the HTTP server
@@ -269,14 +309,18 @@ void CbmMcbm2018UnpackerTaskMuch::Finish()
    } // if( kTRUE == fbMonitorMode )
 }
 
-void CbmMcbm2018UnpackerTaskMuch::SetIgnoreOverlapMs( Bool_t bFlagIn )
+void CbmMcbm2018UnpackerTaskTof::SetIgnoreOverlapMs( Bool_t bFlagIn )
 {
    fUnpackerAlgo->SetIgnoreOverlapMs( bFlagIn );
 }
 
-void CbmMcbm2018UnpackerTaskMuch::SetTimeOffsetNs( Double_t dOffsetIn )
+void CbmMcbm2018UnpackerTaskTof::SetTimeOffsetNs( Double_t dOffsetIn )
 {
    fUnpackerAlgo->SetTimeOffsetNs( dOffsetIn );
 }
+void CbmMcbm2018UnpackerTaskTof::SetDiamondDpbIdx( UInt_t uIdx )
+{
+   fUnpackerAlgo->SetDiamondDpbIdx( uIdx );
+}
 
-ClassImp(CbmMcbm2018UnpackerTaskMuch)
+ClassImp(CbmMcbm2018UnpackerTaskTof)
