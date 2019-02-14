@@ -496,6 +496,12 @@ Bool_t CbmMcbm2018TofUnpacker::DoUnpack(const fles::Timeslice& ts, size_t compon
          uint64_t ulData = static_cast<uint64_t>( pInBuff[uIdx] );
          gdpbv100::Message mess( ulData );
 
+         /// Catch the Epoch cycle block which is always the first 64b of the MS
+         if( 0 == uIdx )
+         {
+            continue;
+         } // if( 0 == uIdx )
+
          if( gLogger->IsLogNeeded(DEBUG2) )
          {
             mess.printDataCout();

@@ -562,7 +562,7 @@ Bool_t CbmStar2019EventBuilderEtofAlgo::ProcessMs( const fles::Timeslice& ts, si
       {
 //         std::cout << Form( "gDPB %2d", fuGdpbNr) << " Epoch cycle " << Form( "0x%012lx", ulData ) << std::endl;
          ProcessEpochCycle( ulData );
-//         continue;
+         continue;
       } // if( 0 == uIdx )
 
       gdpbv100::Message mess(ulData);
