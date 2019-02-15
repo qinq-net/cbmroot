@@ -123,9 +123,10 @@ class CbmTofDigiBdfPar : public FairParGenericSet
 
     // Fee properties
     Double_t               fdFeeGainSigma;   // -> 0 makes gain 1 for all channels
-    Double_t               fdFeeTotThr;      //
-    Double_t               fdTimeResElec;    //
+    Double_t               fdFeeTotThr;           //
+    Double_t               fdTimeResElec;       //
     Double_t               fdTimeResStart;    //
+    Double_t               fdDeadtime;            //
 
     // Geometry variables, text to be generated in the CreateGeometry macros
     Double_t               fdSignalPropSpeed;//  -> in parameter?

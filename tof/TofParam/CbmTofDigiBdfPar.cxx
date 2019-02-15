@@ -36,6 +36,7 @@ CbmTofDigiBdfPar::CbmTofDigiBdfPar( const char* name,
   fdFeeTotThr(0.0),
   fdTimeResElec(0.0),
   fdTimeResStart(0.0),
+  fdDeadtime(5.0),
   fdSignalPropSpeed(0.0),
   fiNbSmTypes(0),
   fiNbSm(),
@@ -97,9 +98,10 @@ void CbmTofDigiBdfPar::putParams(FairParamList* l)
    l->add("UseOnlyPrim",        (Int_t)fbUseOnlyPrim);
    l->add("ClusterModel",       fiClusterModel);
    l->add("FeeGainSigma",       fdFeeGainSigma);
-   l->add("FeeTotThr",          fdFeeTotThr);
-   l->add("TimeResElec",        fdTimeResElec);
+   l->add("FeeTotThr",             fdFeeTotThr);
+   l->add("TimeResElec",         fdTimeResElec);
    l->add("TimeResStart",       fdTimeResStart);
+   l->add("Deadtime",                fdDeadtime);
    l->add("SignalPropSpeed",    fdSignalPropSpeed);
    l->add("NbSmTypes",          fiNbSmTypes);
    l->add("NbSm",               fiNbSm);
@@ -151,9 +153,11 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
 
    if ( ! l->fill("ClusterModel",       &fiClusterModel) ) return kFALSE;
    if ( ! l->fill("FeeGainSigma",       &fdFeeGainSigma) ) return kFALSE;
-   if ( ! l->fill("FeeTotThr",          &fdFeeTotThr) ) return kFALSE;
+   if ( ! l->fill("FeeTotThr",            &fdFeeTotThr) ) return kFALSE;
    if ( ! l->fill("TimeResElec",        &fdTimeResElec) ) return kFALSE;
    if ( ! l->fill("TimeResStart",       &fdTimeResStart) ) return kFALSE;
+   if ( ! l->fill("Deadtime",               &fdDeadtime) ) 
+     LOG(DEBUG) <<  "Use default FEE deadtime of "<<fdDeadtime<<" ns "<<FairLogger::endl;
    if ( ! l->fill("SignalPropSpeed",    &fdSignalPropSpeed) ) return kFALSE;
    if ( ! l->fill("NbSmTypes",          &fiNbSmTypes) ) return kFALSE;
 
@@ -682,6 +686,7 @@ void CbmTofDigiBdfPar::printParams()
    LOG(INFO)<<"  FEE Threshold on ToT:               "<<fdFeeTotThr<<"[ns]"<<FairLogger::endl;
    LOG(INFO)<<"  FEE channel time resolution:        "<<fdTimeResElec<<"[ns]"<<FairLogger::endl;
    LOG(INFO)<<"  Start channel time resolution:      "<<fdTimeResStart<<"[ns]"<<FairLogger::endl;
+   LOG(INFO)<<"  FEE deadtime:      "<<fdDeadtime<<"[ns]"<<FairLogger::endl;
 
    // Geometry variables
    LOG(INFO)<<"=> Geometry variables: "<<FairLogger::endl;
