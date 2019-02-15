@@ -335,17 +335,21 @@ InitStatus CbmL1::Init()
   
   // turn on reconstruction in sub-detectors
   
+  fUseMUCH = 0;
+  fUseTRD = 0;
+  fUseTOF = 0;
+  
 #ifdef mCBM   
   fUseMUCH = 1;
   fUseTRD = 0;
   fUseTOF = 1;
 #endif
-
-#ifndef mCBM  
-  fUseMUCH = 0;
+  
+#ifdef GLOBAL   
+  fUseMUCH = 1;
   fUseTRD = 0;
   fUseTOF = 0;
-#endif
+#endif  
 
   
   
@@ -748,7 +752,7 @@ InitStatus CbmL1::Init()
          
      // vector<CbmMuchPad*> pads = module->GetPads();
       
-      z = layer->GetZ() + 10;
+      z = layer->GetZ();
       
       geo.push_back(2);
       geo.push_back(z);      
@@ -1376,8 +1380,6 @@ const_cast<L1Strip &> ((*algo->vStsStripsB)[h.b]) = idet * ( - sta.yInfo.cos_phi
   
   if( fVerbose>1 ) cout<<"L1 Track finder ok"<<endl;
 //  algo->L1KFTrackFitter( fExtrapolateToTheEndOfSTS );
-
- 
    
   
 #if defined(mCBM) || defined(GLOBAL)      
@@ -1535,6 +1537,7 @@ void CbmL1::IdealTrackFinder()
         
     L1Track algoTr;
     algoTr.NHits = 0;
+
     vector<int> hitIndices(algo->NStations, -1);
 
     for (unsigned int iH = 0; iH < MC.StsHits.size(); iH++){
@@ -1542,8 +1545,9 @@ void CbmL1::IdealTrackFinder()
       const CbmL1StsHit& hit = vStsHits[hitI];
       const int iStation = vMCPoints[hit.mcPointIds[0]].iStation;
 
-      hitIndices[iStation] = hitI;
+      if (iStation>=0) hitIndices[iStation] = hitI;
     }
+
 
     for (int iH = 0; iH < algo->NStations; iH++){
       const int hitI = hitIndices[iH];
@@ -1552,6 +1556,7 @@ void CbmL1::IdealTrackFinder()
      // algo->vRecoHits.push_back(hitI);
       algoTr.NHits++;
     }
+
     
     if (algoTr.NHits<3) continue;
     
@@ -1561,6 +1566,7 @@ void CbmL1::IdealTrackFinder()
       
       algo->vRecoHits.push_back(hitI);
     }
+
 
     algoTr.Momentum = MC.p;
     algoTr.TFirst[0] = MC.x;

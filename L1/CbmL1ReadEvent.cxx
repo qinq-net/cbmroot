@@ -220,7 +220,6 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
             for(Int_t iSt=0; iSt < NMuchStations; iSt++)
               MC.iStation = (MC.z > sta[iSt].z[0] - 2.5) ? (NMvdStations+ NStsStations + iSt) : MC.iStation;
 
-
             Double_t dtrck =dFEI(iFile, iEvent, MC.ID);
             DFEI2I::iterator trk_it = dFEI2vMCTracks.find(dtrck);
             if (trk_it==dFEI2vMCTracks.end()) continue;
@@ -618,7 +617,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
 
         th.x = mh->GetX();
         th.y = mh->GetY();
-        th.z = mh->GetZ()+10;
+        th.z = mh->GetZ();
         
         th.dx = mh->GetDx();
         th.dy = mh->GetDy();
@@ -640,25 +639,28 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
       {
       if( listMuchHitMatches ){
         CbmMatch *matchHitMatch = L1_DYNAMIC_CAST<CbmMatch*>( listMuchHitMatches->At(j) );
-        
 
-        
-        if( matchHitMatch->GetNofLinks() > 0 )
-          if( matchHitMatch->GetLink(0).GetIndex() < nMuchPoints )
+
+        for(Int_t iLink=0; iLink < matchHitMatch->GetNofLinks(); iLink++){
+          if( matchHitMatch->GetLink(iLink).GetIndex() < nMuchPoints )
           {
-            iMC = matchHitMatch->GetLink(0).GetIndex();
-            th.iMC = iMC+nMvdPoints+nStsPoints;
-//             th.track = vMCPoints[th.iMC].ID;
-//              th.qp = vMCPoints[iMC].p;
+            iMC = matchHitMatch->GetLink(iLink).GetIndex();
+            Int_t iIndex = iMC+nMvdPoints+nStsPoints;
             
-
-      
-      
-      if(matchHitMatch -> GetNofLinks() == 0) continue;
+            Int_t iFile  = matchHitMatch->GetLink(0).GetFile();
+            Int_t iEvent = matchHitMatch->GetLink(0).GetEntry();
+            
+            Double_t dtrck =dFEI(iFile, iEvent, iIndex);
+            DFEI2I::iterator trk_it = dFEI2vMCPoints.find(dtrck);
+            if (trk_it==dFEI2vMCPoints.end()) continue;
+            th.iMC = trk_it->second;
+//             th.track = vMCPoints[th.iMC].ID;
+//              th.qp = vMCPoints[iMC].p;  
+  //    if(matchHitMatch -> GetNofLinks() == 0) continue;
 //      Float_t bestWeight = 0.f;
 //      Float_t totalWeight = 0.f;
  //     int iMCPoint = -1;
-      CbmLink link;
+   //   CbmLink link;
 
 //    CbmMuchPoint* pt = (CbmMuchPoint*) fMuchPoints->Get(matchHitMatch->GetLink(0).GetFile(),matchHitMatch->GetLink(0).GetEntry(),matchHitMatch->GetLink(0).GetIndex());
    // double mom = sqrt(pt->GetPxOut()*pt->GetPxOut()+pt->GetPyOut()*pt->GetPyOut()+pt->GetPzOut()*pt->GetPzOut());
@@ -677,21 +679,14 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
                 L1Station &st = algo->vStations[th.iStation];
         th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
         th.u_back  = th.x* st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];*/
-             
+          }  
           }
-          
-
+      }
       }
 
-      
-      
-      }
-      
-
-      {
         tmpHits.push_back(th);
         nMuchHits++;
-      }
+      
     } // for j
   } // if listMvdHits
   
@@ -948,7 +943,6 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
   
   if (fVerbose >= 10) cout << "ReadEvent: sts hits are gotten." << endl;
 
-
     // sort hits
   int nHits = nMvdHits + nStsHits + nMuchHits+nTrdHits+nTofHits;
 
@@ -1095,7 +1089,7 @@ void CbmL1::ReadEvent(L1AlgoInputData* fData_, CbmEvent* event)
    //   z_tmp = 0.5 * ( point->GetZOut() + point->GetZIn() );
 //#else
       CbmMuchPixelHit* mh = static_cast<CbmMuchPixelHit*>(fMuchPixelHits->At(s.ExtIndex) );
-      z_tmp = mh->GetZ()+10;
+      z_tmp = mh->GetZ();
 //#endif
     }
     
