@@ -7,26 +7,31 @@
 #include "FairDetector.h"
 #include "FairMCPoint.h"
 #include "CbmMCTrack.h"
+
 #include "FairRootManager.h"
 
 #include "TLorentzVector.h"
 #include "TClonesArray.h"
 #include "TParticle.h"
 #include "TRefArray.h"
+#include "CbmStackFilter.h"
 
 #include <list>
+#include <cassert>
 
+
+using std::make_pair;
 using std::pair;
+using std::vector;
 
 
 // -----   Default constructor   -------------------------------------------
 CbmStack::CbmStack(Int_t size)
   : FairGenericStack(),
     fStack(),
+    fFilter(new CbmStackFilter),
     fParticles(new TClonesArray("TParticle", size)),
     fTracks(new TClonesArray("CbmMCTrack", size)),
-    fStoreMap(),
-    fStoreIter(),
     fIndexMap(),
     fIndexIter(),
     fPointsMap(),
@@ -206,48 +211,50 @@ void CbmStack::AddParticle(TParticle* oldPart)
 
 
 
-// -----   Public method FillTrackArray   ----------------------------------
-void CbmStack::FillTrackArray()
-{
+// -----   Fill the output MCTrack array   ---------------------------------
+void CbmStack::FillTrackArray() {
 
-  LOG(DEBUG) << "Filling MCTrack array..." << FairLogger::endl;
+  // Call the stack filter
+  assert(fFilter);
+  vector<Bool_t> store = fFilter->Select(*fParticles, fPointsMap);
+  assert( store.size() == fParticles->GetEntriesFast() );
 
-  // --> Reset index map and number of output tracks
+  // Reset index map
   fIndexMap.clear();
-  fNTracks = 0;
+  fIndexMap[-1] = -1; // Map index for primary mothers
 
-  // --> Check tracks for selection criteria
-  SelectTracks();
+  // Copy selected particles to the output
+  for (Int_t indexP = 0; indexP < fParticles->GetEntriesFast(); indexP++) {
 
-  // --> Loop over fParticles array and copy selected tracks
-  for (Int_t iPart=0; iPart<fNParticles; iPart++) {
+    if ( store[indexP]) {
 
-    fStoreIter = fStoreMap.find(iPart);
-    if (fStoreIter == fStoreMap.end() ) {
-      LOG(FATAL) << "Particle " << iPart
-                 << " not found in storage map!" << FairLogger::endl;
-    }
-    Bool_t store = (*fStoreIter).second;
-
-    if (store) {
+      // Create a new MCTrack in the output from the particle
+      Int_t indexT = fTracks->GetEntriesFast();
       CbmMCTrack* track =
-        new( (*fTracks)[fNTracks]) CbmMCTrack(GetParticle(iPart));
-      fIndexMap[iPart] = fNTracks;
-      // --> Set the number of points in the detectors for this track
-      for (Int_t iDet=kRef; iDet<=kPsd; iDet++) {
-        pair<Int_t, Int_t> a(iPart, iDet);
-        track->SetNPoints(iDet, fPointsMap[a]);
-      }
-      fNTracks++;
-    } else { fIndexMap[iPart] = -2; }
+        new( (*fTracks)[indexT] ) CbmMCTrack(GetParticle(indexP));
 
-  }
+      // Map the particle index to the track index
+      fIndexMap[indexP] = indexT;
 
-  // --> Map index for primary mothers
-  fIndexMap[-1] = -1;
+      // Set the number of points in the detectors for this track
+      for (Int_t detector = kRef; detector <= kPsd; detector++) {
+        auto it = fPointsMap.find(make_pair(indexP, detector));
+        if ( it != fPointsMap.end() ) track->SetNPoints(detector, it->second);
+      } //# detectors
 
-  // --> Screen output
-  Print();
+    } //? store particle
+
+    // For particles discarded from storage, the index is set to -2.
+    else {
+      fIndexMap[indexP] = -2;
+    } //? do not store particle
+
+  } //# stack particles
+
+  fNTracks = fTracks->GetEntriesFast();
+  LOG(INFO) << "CbmStack: " << fParticles->GetEntriesFast()
+      << " particles, " << fNTracks << " written to output."
+      << FairLogger::endl;
 
 }
 // -------------------------------------------------------------------------
@@ -406,67 +413,6 @@ TParticle* CbmStack::GetParticle(Int_t trackID) const
 // -------------------------------------------------------------------------
 
 
-
-// -----   Private method SelectTracks   -----------------------------------
-void CbmStack::SelectTracks()
-{
-
-  // --> Clear storage map
-  fStoreMap.clear();
-
-  // --> Check particles in the fParticle array
-  for (Int_t i=0; i<fNParticles; i++) {
-
-    TParticle* thisPart = GetParticle(i);
-    Bool_t store = kTRUE;
-
-    // --> Get track parameters
-    Int_t iMother   = thisPart->GetMother(0);
-    TLorentzVector p;
-    thisPart->Momentum(p);
-    Double_t energy = p.E();
-    Double_t mass   = p.M();
-//    Double_t mass   = thisPart->GetMass();
-    Double_t eKin = energy - mass;
-    if(eKin < 0.0) { eKin=0.0; }
-    // --> Calculate number of points
-    Int_t nPoints = 0;
-    for (Int_t iDet=kMvd; iDet<kNofSystems; iDet++) {
-      pair<Int_t, Int_t> a(i, iDet);
-      if ( fPointsMap.find(a) != fPointsMap.end() ) {
-        nPoints += fPointsMap[a];
-      }
-    }
-
-    // --> Check for cuts (store primaries in any case)
-    if (iMother < 0 || thisPart->GetUniqueID()==kPPrimary) { store = kTRUE; }
-    else {
-      if (!fStoreSecondaries) { store = kFALSE; }
-      if (nPoints < fMinPoints) { store = kFALSE; }
-      if (eKin < fEnergyCut) { store = kFALSE; }
-    }
-
-    // --> Set storage flag
-    fStoreMap[i] = store;
-
-
-  }
-
-  // --> If flag is set, flag recursively mothers of selected tracks
-  if (fStoreMothers) {
-    for (Int_t i=0; i<fNParticles; i++) {
-      if (fStoreMap[i]) {
-        Int_t iMother = GetParticle(i)->GetMother(0);
-        while(iMother >= 0) {
-          fStoreMap[iMother] = kTRUE;
-          iMother = GetParticle(iMother)->GetMother(0);
-        }
-      }
-    }
-  }
-
-}
-// -------------------------------------------------------------------------
 
 
 

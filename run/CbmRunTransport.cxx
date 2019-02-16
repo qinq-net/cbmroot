@@ -5,13 +5,20 @@
 
 #include "CbmRunTransport.h"
 
+
 #include <cassert>
 #include <iostream>
 #include <string>
+#include "TG4RunConfiguration.h"
+#include "TGeant3.h"
+#include "TGeant3TGeo.h"
+#include "TGeant4.h"
 #include "TGeoManager.h"
+#include "TPythia6Decayer.h"
 #include "TROOT.h"
 #include "TStopwatch.h"
 #include "TSystem.h"
+#include "TVirtualMC.h"
 #include "FairLogger.h"
 #include "FairMonitor.h"
 #include "FairParRootFileIo.h"
@@ -24,8 +31,10 @@
 #include "CbmFieldPar.h"
 #include "CbmPlutoGenerator.h"
 #include "CbmSetup.h"
+#include "CbmStack.h"
 #include "CbmTarget.h"
 #include "CbmUnigenGenerator.h"
+
 
 
 
@@ -44,7 +53,8 @@ CbmRunTransport::CbmRunTransport() :
   fRealTimeRun(0.),
   fCpuTime(0.),
   fVertexSmearZ(kTRUE),
-  fEngine(kGEANT3),
+  fEngine(kGeant3),
+  fStackFilter(new CbmStackFilter()),
   fGenerateRunInfo(kFALSE)
 {
   // TODO: I do not like instantiating FairRunSim from this constructor;
@@ -59,8 +69,8 @@ CbmRunTransport::CbmRunTransport() :
 // -----   Destructor   -----------------------------------------------------
 CbmRunTransport::~CbmRunTransport() {
   LOG(DEBUG) << GetName() << ": Destructing" << FairLogger::endl;
-  if ( fRun ) delete fRun;
-  LOG(DEBUG) << GetName() << ": Destructing finshed." << FairLogger::endl;
+  //if ( fRun ) delete fRun;
+  LOG(DEBUG) << GetName() << ": Destructing finished." << FairLogger::endl;
 }
 // --------------------------------------------------------------------------
 
@@ -101,8 +111,115 @@ void CbmRunTransport::AddInput(FairGenerator* generator) {
 
 
 
+// -----   Configure the TVirtualMC   ---------------------------------------
+void CbmRunTransport::ConfigureVMC() {
+
+  std::cout << std::endl;
+  LOG(INFO) << GetName() << ": Configuring VMC..." << FairLogger::endl;
+  TVirtualMC* vmc = nullptr;
+
+  if ( fEngine == kGeant3 ) {
+    TString* gModel = fRun->GetGeoModel();
+    if ( strncmp(gModel->Data(), "TGeo", 4) == 0 ) {
+      LOG(INFO) << GetName() << ": Create TGeant3TGeo" << FairLogger::endl;
+      vmc = new TGeant3TGeo("C++ Interface to Geant3 with TGeo");
+    } //? Geant3 with TGeo
+    else {
+      LOG(INFO) << GetName() << ": Create TGeant3" << FairLogger::endl;
+      vmc = new TGeant3("C++ Interface to Geant3");
+    } //? Native Geant3
+    Geant3Settings(dynamic_cast<TGeant3*>(vmc));
+  } //? Geant3
+
+  else if ( fEngine == kGeant4 ) {
+    LOG(INFO) << GetName() << ": Create TGeant4" << FairLogger::endl;
+    TG4RunConfiguration* runConfig
+            = new TG4RunConfiguration("geomRoot", "QGSP_BERT_EMV+optical",
+                                      "stepLimiter+specialCuts");
+    vmc = new TGeant4("TGeant4", "C++ Interface to Geant4", runConfig);
+    Geant4Settings(dynamic_cast<TGeant4*>(vmc));
+  } //? Geant4
+
+  else {
+    LOG(FATAL) << GetName() << ": unknown transport engine!"
+        << FairLogger::endl;
+  }
+
+  // Common VMC settings
+  if ( vmc ) VMCSettings(vmc);
+
+  // Create stack
+  std::unique_ptr<CbmStack> stack(new CbmStack());
+  stack->SetFilter(fStackFilter);
+  if ( vmc ) vmc->SetStack(stack.release());
+
+}
+// --------------------------------------------------------------------------
+
+
+
+// -----   Specific settings for GEANT3   -----------------------------------
+void CbmRunTransport::Geant3Settings(TGeant3* vmcg3) {
+
+  assert(vmcg3);
+  LOG(INFO) << GetName() << ": Configuring Geant3" << FairLogger::endl;
+
+  // TODO: These settings were taken from g3config.C. Their meanings will
+  // have to be looked up and documented.
+  vmcg3->SetTRIG(1);         //Number of events to be processed
+  vmcg3->SetSWIT(4, 100);
+  vmcg3->SetDEBU(0, 0, 1);
+  vmcg3->SetRAYL(1);
+  vmcg3->SetSTRA(0);
+  vmcg3->SetAUTO(1);         //Select automatic STMIN etc... calc. (AUTO 1) or manual (AUTO 0)
+  vmcg3->SetABAN(2);         //Restore 3.16 behaviour for abandoned tracks
+  vmcg3->SetOPTI(2);         //Select optimisation level for GEANT geometry searches (0,1,2)
+  vmcg3->SetERAN(5.e-7);
+  vmcg3->SetCKOV(1);        // cerenkov photons
+
+}
+// --------------------------------------------------------------------------
+
+
+
+// -----   Specific settings for GEANT4   -----------------------------------
+void CbmRunTransport::Geant4Settings(TGeant4* vmc) {
+
+  assert(vmc);
+
+  // TODO: These settings were taken over from g4Config.C. To be documented.
+
+  // --- Set external decayer (Pythia) if required
+  if(FairRunSim::Instance()->IsExtDecayer()){
+     TVirtualMCDecayer* decayer = TPythia6Decayer::Instance();
+     vmc->SetExternalDecayer(decayer);
+     LOG(INFO) << GetName() << ": Using Phythia6 decayer"
+         << FairLogger::endl;
+  }
+
+  // --- Random seed and maximum number of steps
+  Text_t buffer[50];
+  sprintf(buffer,"/random/setSeeds %i  %i ",gRandom->GetSeed(), gRandom->GetSeed());
+  vmc->ProcessGeantCommand(buffer);
+  vmc->SetMaxNStep(10000);  // default is 30000
+
+  // --- Execute Geant4 configuration macro
+  TString configMacro(gSystem->Getenv("VMCWORKDIR"));
+  configMacro += "/gconfig/g4config.in";
+  LOG(INFO) << GetName() << ": Using Geant4 configuration from "
+      << configMacro << FairLogger::endl;
+  vmc->ProcessGeantMacro(configMacro.Data());
+
+}
+// --------------------------------------------------------------------------
+
+
+
+
 // -----   Load a standard setup   ------------------------------------------
 void CbmRunTransport::LoadSetup(const char* setupName) {
+
+  // TODO: The macro code should be transferred into compiled code.
 
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
   TString setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
@@ -117,6 +234,8 @@ void CbmRunTransport::LoadSetup(const char* setupName) {
       << FairLogger::endl;
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunc);
+
+  //LOG(INFO) << fSetup->ToString() << FairLogger::endl;
 
 }
 // --------------------------------------------------------------------------
@@ -137,6 +256,9 @@ void CbmRunTransport::Run(Int_t nEvents) {
   // --- Timer
   TStopwatch timer;
 
+  //LOG(INFO) << "geant321  " << gSystem->Load("libgeant321.so") << FairLogger::endl;;
+
+
   // --- Check presence of required requisites
   if ( fOutFileName.IsNull() ) {
     LOG(FATAL) << GetName() << ": No output file specified!"
@@ -148,11 +270,12 @@ void CbmRunTransport::Run(Int_t nEvents) {
   }
   std::cout << std::endl << std::endl;
 
+
   // --- Set transport engine
   const char* engineName = "";
   switch(fEngine) {
-    case kGEANT3: engineName = "TGeant3"; break;
-    case kGEANT4: engineName = "TGeant4"; break;
+    case kGeant3: engineName = "TGeant3"; break;
+    case kGeant4: engineName = "TGeant4"; break;
     default: {
       LOG(WARNING) << GetName() << ": Unknown transport engine "
           << FairLogger::endl;
@@ -164,18 +287,22 @@ void CbmRunTransport::Run(Int_t nEvents) {
       << FairLogger::endl;
   fRun->SetName(engineName);
 
+
   // --- Set output file name
   fRun->SetOutputFile(fOutFileName);
 
+
   // --- Set media file
-  LOG(INFO) << GetName() << ": Media file is media.geo" << FairLogger::endl;
-  fRun->SetMaterials("media.geo");
+   LOG(INFO) << GetName() << ": Media file is media.geo" << FairLogger::endl;
+   fRun->SetMaterials("media.geo");
+
 
   // --- Create and register the setup modules
   TString macroName = gSystem->Getenv("VMCWORKDIR");
   macroName += "/macro/run/modules/registerSetup.C";
   gROOT->LoadMacro(macroName);
   gROOT->ProcessLine("registerSetup()");
+
 
   // --- Create and register the target
   if ( fTarget ) {
@@ -184,6 +311,7 @@ void CbmRunTransport::Run(Int_t nEvents) {
   }
   else LOG(WARNING) << GetName() << ": No target defined!"
       << FairLogger::endl;
+
 
   // --- Create the magnetic field
   LOG(INFO) << GetName() << ": Register magnetic field" << FairLogger::endl;
@@ -235,8 +363,15 @@ void CbmRunTransport::Run(Int_t nEvents) {
   fRun->SetGenerateRunInfo(fGenerateRunInfo);
 
 
+  // --- Set VMC configuration
+  // This will work only with FairRoot v18 and later
+  //std::function<void()> f = std::bind(&CbmRunTransport::ConfigureVMC, this);
+  //fRun->SetSimSetup(f);
+
+
   // --- Initialise run
   fRun->Init();
+
 
   // --- Runtime database
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
@@ -250,9 +385,11 @@ void CbmRunTransport::Run(Int_t nEvents) {
   rtdb->saveOutput();
   rtdb->print();
 
+
   // --- Measure time for initialisation
   timer.Stop();
   fRealTimeInit = timer.RealTime();
+
 
   // --- Start run
   timer.Start(kFALSE);  // without reset
@@ -261,8 +398,10 @@ void CbmRunTransport::Run(Int_t nEvents) {
   fRealTimeRun = timer.RealTime() - fRealTimeInit;
   fCpuTime = timer.CpuTime();
 
+
   // --- Create a geometry file if required
   if ( ! fGeoFileName.IsNull() ) fRun->CreateGeometryFile(fGeoFileName);
+
 
   // --- Screen log
   std::cout << std::endl << std::endl;
@@ -290,8 +429,10 @@ void CbmRunTransport::Run(Int_t nEvents) {
     delete gGeoManager;
   }
 
+
 }
 // --------------------------------------------------------------------------
+
 
 
 
@@ -431,6 +572,50 @@ void CbmRunTransport::SetVertexSmearXY(Bool_t choice) {
 }
 // --------------------------------------------------------------------------
 
+
+
+// -----   VMC settings   ---------------------------------------------------
+void CbmRunTransport::VMCSettings(TVirtualMC* vmc) {
+
+  LOG(INFO) << GetName() << ": Configuring VMC" << FairLogger::endl;
+  assert(vmc);
+
+  // TODO: These settings were taken over from SetCuts.C. Their meanings
+  // will have to be looked up and documented.
+
+  // Processes
+  vmc->SetProcess("PAIR",1); // pair production
+  vmc->SetProcess("COMP",1); // Compton scattering
+  vmc->SetProcess("PHOT",1); // photo electric effect
+  vmc->SetProcess("PFIS",0); // photofission
+  vmc->SetProcess("DRAY",1); // delta-ray
+  vmc->SetProcess("ANNI",1); // annihilation
+  vmc->SetProcess("BREM",1); // bremsstrahlung
+  vmc->SetProcess("HADR",1); // hadronic process
+  vmc->SetProcess("MUNU",1); // muon nuclear interaction
+  vmc->SetProcess("DCAY",1); // decay
+  vmc->SetProcess("LOSS",1); // energy loss
+  vmc->SetProcess("MULS",1); // multiple scattering
+  Double_t cut1=1.0E-3; //GeV
+  Double_t tofmax = 1.0; //seconds
+
+  // Cuts
+  Double_t energyCut = 1.e-3; // GeV
+  Double_t tofCut = 1.0; // s
+  vmc->SetCut("CUTGAM", energyCut);   // gammas (GeV)
+  vmc->SetCut("CUTELE", energyCut);   // electrons (GeV)
+  vmc->SetCut("CUTNEU", energyCut);   // neutral hadrons (GeV)
+  vmc->SetCut("CUTHAD", energyCut);   // charged hadrons (GeV)
+  vmc->SetCut("CUTMUO", energyCut);   // muons (GeV)
+  vmc->SetCut("BCUTE",  energyCut);   // electron bremsstrahlung (GeV)
+  vmc->SetCut("BCUTM",  energyCut);   // muon and hadron bremsstrahlung(GeV)
+  vmc->SetCut("DCUTE",  energyCut);   // delta-rays by electrons (GeV)
+  vmc->SetCut("DCUTM",  energyCut);   // delta-rays by muons (GeV)
+  vmc->SetCut("PPCUTM", energyCut);   // direct pair production by muons (GeV)
+  vmc->SetCut("TOFMAX", tofCut);      // time of flight cut in seconds
+
+}
+// --------------------------------------------------------------------------
 
 
 

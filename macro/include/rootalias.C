@@ -32,26 +32,44 @@ TString Remove_CTest_Dependency_File(TString outDir, TString macroName, const ch
   return depFile;
 }
 
+
+// -----   Check for presence of FairMonitor  ----------------------------------
+/** @function Has_Fair_Monitor
+ ** @brief Checks presence of the FairMonitor class
+ ** @author F. Uhlig <f.uhlig@gsi.de>
+ ** @date 16.02.2019 (V. Friese)
+ ** @value kTRUE if FairMonitor is available.
+ **
+ ** FairMonitor is part of FairSoft since v-15.11
+ **/
 Bool_t Has_Fair_Monitor()
 {
-  // Extract major and minor version from version string
-  TString version=gSystem->GetFromPipe("$FAIRROOTPATH/bin/fairroot-config --version");
+  // FairMonitor is part of FairSoft since v-15.11
+  TString version =
+      gSystem->GetFromPipe("$FAIRROOTPATH/bin/fairroot-config --version");
+
+  // 2018 and later. FairRoot version name is v[year].[major].[minor].
+  if ( version(1) != '-') return kTRUE;
+
+  // Before 2017. FairRoot version name is v-[major].[minor]
   Size_t start = version.First("-") + 1;
   TString major = version(start,2);
   TString minor = version(start+3,2);
 
-  // FairMonitor is part of FairSoft since v-15.11
   if (major.Atoi() >= 15) {
     if (major.Atoi() > 15) {
       return kTRUE;
     } else {
       if (minor.Atoi() >= 11) {
         return kTRUE;
-      } 
-    }
-  }
+      } //? minor version >= 11
+    } //? major version = 15
+  } //? major version >= 15
+
   return kFALSE;
 }
+// -----------------------------------------------------------------------------
+
 
 /**
  * \file determine setup.C

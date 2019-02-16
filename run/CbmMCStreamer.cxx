@@ -7,7 +7,6 @@
 
 #include "CbmMCStreamer.h"
 
-#include "CbmMCEpoch.h"
 #include "CbmRunAna.h"
 
 #include "FairRootManager.h"

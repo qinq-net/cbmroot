@@ -4,6 +4,10 @@
 
 void Config()
 {
+
+  std::cout << std::endl << std::endl;
+  std::cout << "====  G3 Config macro  ===== " << std::endl;
+  std::cout << std::endl << std::endl;
   FairRunSim *fRun = FairRunSim::Instance();
   TString* gModel = fRun->GetGeoModel();
   TGeant3* geant3 = NULL;

@@ -14,6 +14,7 @@
 
 #include "sts/CbmStsPoint.h"
 #include "much/CbmMuchPoint.h"
+#include "CbmMCEpoch.h"
 
 #include "FairTask.h"
 
@@ -21,7 +22,6 @@
 
 
 class TClonesArray;
-class CbmMCEpoch;
 
 
 class CbmMCStreamer : public FairTask

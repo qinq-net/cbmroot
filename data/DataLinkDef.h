@@ -12,6 +12,7 @@
 #pragma link C++ class CbmMCTrack+;
 #pragma link C++ class CbmPixelHit+;
 #pragma link C++ class CbmStack+;
+#pragma link C++ class CbmStackFilter;
 #pragma link C++ class CbmStripHit+;
 #pragma link C++ class CbmTrack+;
 #pragma link C++ class CbmTrackParam;

@@ -39,6 +39,7 @@ CbmHit.cxx
 CbmDigi.cxx
 CbmPixelHit.cxx
 CbmStack.cxx
+CbmStackFilter.cxx
 CbmStripHit.cxx
 CbmTrack.cxx
 CbmTrackMatch.cxx

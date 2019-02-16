@@ -14,11 +14,13 @@
 #include "TVector3.h"
 #include "CbmModuleList.h"
 
-#include "Rtypes.h"
-
 class FairModule;
 class FairRunSim;
 class CbmFieldMap;
+
+// TODO: This class is a singleton, so it can be used when including
+// a ROOT macro from another one. Since this is the only reason,
+// the singleton nature shall be removed once not needed any longer.
 
 class CbmSetup : public TNamed
 {
@@ -101,8 +103,10 @@ class CbmSetup : public TNamed
     Bool_t IsEmpty() const { return (GetNofModules() == 0); }
 
 
-    /** Output to screen  **/
-    virtual void Print(Option_t* opt = "") const;
+    /** @brief Info to screen **/
+    virtual void Print(Option_t* opt = "") const {
+      LOG(INFO) << ToString() << FairLogger::endl;
+    }
 
 
     /** Remove a module from the current setup
@@ -176,6 +180,10 @@ class CbmSetup : public TNamed
     	fPsdPositionZ       = zPos;
     	fPsdPositionX       = xPos;
     }
+
+
+    /** @brief Info to string **/
+    std::string ToString() const;
 
 
 

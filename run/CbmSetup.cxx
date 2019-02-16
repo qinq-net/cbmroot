@@ -343,29 +343,6 @@ Bool_t CbmSetup::IsActive(Int_t moduleId) {
 
 
 
-// -----   Print setup   ---------------------------------------------------
-void CbmSetup::Print(Option_t*) const {
-  map<Int_t, TString>::const_iterator it;
-  LOG(INFO) << "CBM setup: " << GetTitle() << ", " << GetNofModules()
-  		      << " modules " << FairLogger::endl;
-  for ( it = fGeoTags.begin(); it != fGeoTags.end(); it++ ) {
-    LOG(INFO) << "  " << setw(8)
-    		      << CbmModuleList::GetModuleNameCaps(it->first)
-              << ":  " << setw(8) << it->second;
-    if ( fActive.at(it->first) ) LOG(INFO) << "  *ACTIVE*  ";
-    else                      LOG(INFO) << "            ";
-    LOG(INFO) << " using " << fGeoFileNames.at(it->first);
-    LOG(INFO) << FairLogger::endl;
-  }
-  LOG(INFO) << "  Field   :  " << fFieldTag << ", Position ( "
-  		      << fFieldPosition.X() << ", " << fFieldPosition.Y()
-  		      << ", " << fFieldPosition.Z() << " ), scaling "
-  		      << fFieldScale << FairLogger::endl;
-}
-// -------------------------------------------------------------------------
-
-
-
 // -----   Read setup   ----------------------------------------------------
 void CbmSetup::ReadSetup(const char* setupName) {
 
@@ -533,3 +510,29 @@ void CbmSetup::SetModule(Int_t moduleId, const char* geoTag,
 // -------------------------------------------------------------------------
 
 
+
+// -----   Info to string   ------------------------------------------------
+string CbmSetup::ToString() const {
+
+  stringstream ss;
+  ss << std::left << "CBM setup: " << GetTitle() << ", " << GetNofModules()
+                   << " modules \n";
+  for ( auto& it : fGeoTags ) {
+    ss << "       " << setw(8)
+                    << CbmModuleList::GetModuleNameCaps(it.first)
+    << ":  " << setw(8) << it.second;
+    if ( fActive.at(it.first) ) ss << "  *ACTIVE*  ";
+    else                        ss << "            ";
+    ss << " using " << fGeoFileNames.at(it.first) << "\n";
+  }
+  ss << "       Field   :  " << fFieldTag << ", Position ( "
+      << fFieldPosition.X() << ", " << fFieldPosition.Y()
+      << ", " << fFieldPosition.Z() << " ) cm, scaling "
+      << fFieldScale << "\n";
+
+  return ss.str();
+}
+// -------------------------------------------------------------------------
+
+
+ClassImp(CbmSetup)

@@ -3,6 +3,9 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
+${SIMPATH}/include/Geant4
+${SIMPATH}/include/geant4vmc
+${SIMPATH}/include/TGeant3
 ${CBMROOT_SOURCE_DIR}/base
 
 ${CBMROOT_SOURCE_DIR}/data
@@ -39,6 +42,7 @@ Include_Directories( ${INCLUDE_DIRECTORIES})
 set(SYSTEM_INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
 )
+message("System includes: " ${SYSTEM_INCLUDE_DIRECTORIES})
 
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
@@ -48,39 +52,42 @@ ${FAIRROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
 ${Vc_LIB_DIR}
 ${KFParticle_LIB_DIR}
+${SIMPATH}/lib
 )
  
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
 
-CbmBuildEventsSimple.cxx
 CbmBuildEventsIdeal.cxx
 CbmBuildEventsQA.cxx
-#CbmEvBuildSource.cxx
+CbmBuildEventsSimple.cxx
 CbmDaq.cxx
-#CbmDaqQa.cxx
-CbmMCBuffer.cxx
-CbmMCTimeSim.cxx
-
-CbmMCStreamer.cxx
-CbmRunAna.cxx
-#CbmRunOnline.cxx
-CbmMCStreamerQa.cxx
-
-CbmSetup.cxx
-CbmDigitizeInfo.cxx
 CbmDigitization.cxx
 CbmDigitizationSource.cxx
+CbmDigitizeInfo.cxx
+CbmMCBuffer.cxx
 CbmMCInput.cxx
 CbmMCInputSet.cxx
+CbmMCStreamer.cxx
+CbmMCStreamerQa.cxx
+CbmMCTimeSim.cxx
+CbmRunAna.cxx
 CbmRunTransport.cxx
+CbmSetup.cxx
+
+# De-activated
+#CbmDaqQa.cxx
+#CbmEvBuildSource.cxx
+#CbmRunOnline.cxx
+
 )
 
 set(LINKDEF CbmRunLinkDef.h)
 Set(LIBRARY_NAME CbmRun)
-Set(DEPENDENCIES
-    CbmData CbmBase CbmField CbmGenerators CbmMvd CbmSts CbmRich CbmMuch CbmTrd CbmTrdSim CbmTof CbmPsd
-)
+Set(DEPENDENCIES CbmData CbmBase CbmField CbmGenerators CbmMvd CbmSts CbmRich 
+CbmMuch CbmTrd CbmTrdSim CbmTof CbmPsd geant321 geant4vmc)
+
+
 
 GENERATE_LIBRARY()

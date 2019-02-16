@@ -33,11 +33,13 @@
 
 #include "CbmDefs.h"
 #include "FairGenericStack.h"
+#include "CbmStackFilter.h"
 
 #include <map>
 #include <stack>
 
 class TClonesArray;
+
 
 class CbmStack : public FairGenericStack
 {
@@ -168,6 +170,13 @@ class CbmStack : public FairGenericStack
   void StoreMothers(Bool_t choice = kTRUE)     { fStoreMothers     = choice; }
 
 
+  /** @brief Set the stack filter class **/
+  void SetFilter(std::unique_ptr<CbmStackFilter>& filter) {
+    fFilter.reset();
+    fFilter = std::move(filter);
+  }
+
+
   /** Increment number of points for the current track in a given detector
    *@param iDet  Detector unique identifier
    **/
@@ -196,6 +205,9 @@ class CbmStack : public FairGenericStack
   std::stack<TParticle*>  fStack;           //!
 
 
+  std::unique_ptr<CbmStackFilter> fFilter;  //! Stack filter class
+
+
   /** Array of TParticles (contains all TParticles put into or created
    ** by the transport 
    **/
@@ -204,11 +216,6 @@ class CbmStack : public FairGenericStack
 
   /** Array of CbmMCTracks containg the tracks written to the output **/
   TClonesArray* fTracks;
-
-
-  /** STL map from particle index to storage flag  **/
-  std::map<Int_t, Bool_t>           fStoreMap;        //!
-  std::map<Int_t, Bool_t>::iterator fStoreIter;       //!
 
 
   /** STL map from particle index to track index  **/
@@ -236,9 +243,6 @@ class CbmStack : public FairGenericStack
 
   /** go to tracking  */
   Bool_t fdoTracking; //! global switch for geant propagation
-
-  /** Mark tracks for output using selection criteria  **/
-  void SelectTracks();
 
   CbmStack(const CbmStack&);
   CbmStack& operator=(const CbmStack&);

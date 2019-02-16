@@ -6,13 +6,21 @@
 #define CBMRUNTRANSPORT_H 1
 
 
+#include <functional>
+#include <iostream>
 #include "TNamed.h"
 #include "TString.h"
+#include "CbmStackFilter.h"
+#include "CbmSetup.h"
 
+
+class TGeant3;
+class TGeant4;
+class TVirtualMC;
 class FairGenerator;
 class FairPrimaryGenerator;
 class FairRunSim;
-class CbmSetup;
+//class CbmSetup;
 class CbmTarget;
 
 
@@ -21,7 +29,7 @@ enum ECbmGenerator {
 };
 
 enum ECbmEngine {
-  kGEANT3, kGEANT4
+  kGeant3, kGeant4
 };
 
 
@@ -49,6 +57,10 @@ class CbmRunTransport : public TNamed
      ** @param Pointer to generator instance
      **/
     void AddInput(FairGenerator* generator);
+
+
+    /** @brief Set the parameters for the TVirtualMC **/
+    void ConfigureVMC();
 
 
     /** @brief Trigger generation of a run info file
@@ -90,8 +102,8 @@ class CbmRunTransport : public TNamed
      **
      ** Without using this method, the default beam is always in z direction.
      **/
-    void SetBeamAngle(Double_t x0, Double_t y0,
-                      Double_t sigmaX, Double_t sigmaY);
+     void SetBeamAngle(Double_t x0, Double_t y0,
+                       Double_t sigmaX, Double_t sigmaY);
 
 
     /** @brief Set the beam position
@@ -136,6 +148,20 @@ class CbmRunTransport : public TNamed
      ** If the parameter file does not exist, it will be created.
      **/
     void SetParFileName(TString name);
+
+
+    /** @brief Set a user-defined stack filter class
+     ** @param filter Pointer to CbmStackFilter class
+     **
+     ** The filter class has to be derived from CbmStackFilter.
+     ** It will be used instead of the default CbmStackFilter class
+     ** for filtering MCTracks before writing to the output.
+     **/
+    void SetStackFilter(std::unique_ptr<CbmStackFilter>& filter) {
+      fStackFilter.reset();
+      fStackFilter = std::move(filter);
+    }
+
 
 
     /** @brief Define the target
@@ -218,14 +244,26 @@ class CbmRunTransport : public TNamed
     Double_t fCpuTime;
     Bool_t fVertexSmearZ;
     ECbmEngine fEngine;
+    std::unique_ptr<CbmStackFilter> fStackFilter;
     Bool_t fGenerateRunInfo;
+    std::function<void()> fSimSetup;
 
 
+
+    /** @brief Specific settings for GEANT3 **/
+    void Geant3Settings(TGeant3* vmcg3);
+
+
+    /** @brief Specific settings for GEANT4 **/
+    void Geant4Settings(TGeant4* vmcg4);
 
 
     /** @brief Create and register the setup modules **/
     void RegisterSetup();
 
+
+    /** @brief Settings for VMC **/
+    void VMCSettings(TVirtualMC* vmc);
 
 
     ClassDef(CbmRunTransport, 1);
