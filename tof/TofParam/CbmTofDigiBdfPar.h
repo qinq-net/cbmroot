@@ -51,6 +51,8 @@ class CbmTofDigiBdfPar : public FairParGenericSet
        { return fdTimeResElec;};
     Double_t GetStartTimeRes()       const
        { return fdTimeResStart;};
+    Double_t GetDeadtime()       const
+       { return fdDeadtime;};
 
 
     // Geometry variables
