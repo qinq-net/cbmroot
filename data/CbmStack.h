@@ -36,6 +36,7 @@
 #include "CbmStackFilter.h"
 
 #include <map>
+#include <memory>
 #include <stack>
 
 class TClonesArray;
