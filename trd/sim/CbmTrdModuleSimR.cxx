@@ -211,6 +211,7 @@ void CbmTrdModuleSimR::ProcessPulseBuffer(Int_t address, Bool_t FNcall, Bool_t M
   //  if(digicharge > 1000.) {  fPulseBuffer.erase(address);  fTimeBuffer.erase(address);  return;}
   //  if(digicharge > 100.)   cout<<digicharge<<"   "<<fTimeBuffer[address]/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)<<endl;
   //  cout<<digicharge<<"   "<<fTimeBuffer[address]/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)<<endl;
+  CbmMatch *digiMatch = new CbmMatch();
   CbmTrdDigi* digi= new CbmTrdDigi(channel, digicharge, ULong64_t(fTimeBuffer[address]/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)), 0, 0);
 
   digi->SetAddressModule(fModAddress);//module);
@@ -226,15 +227,19 @@ void CbmTrdModuleSimR::ProcessPulseBuffer(Int_t address, Bool_t FNcall, Bool_t M
     digi->SetTriggerType(CbmTrdDigi::kMulti);
   }
   
-  digi->SetMatch(fPulseBuffer[address].second);
-
+  //  digi->SetMatch(fPulseBuffer[address].second);
+  vector<CbmLink> links = fPulseBuffer[address].second->GetLinks();
+  for(Int_t iLinks=0; iLinks < links.size() ; iLinks++){
+    digiMatch->AddLink(links[iLinks]);
+  }
+  digi->SetMatch(digiMatch);
   if(!FNcall && fPrintPulse)  cout<<"main call    charge: "<<digi->GetCharge()<<"   col : " << col<<"   lay : " << CbmTrdAddress::GetLayerId(address)<<"   trigger: " << trigger<<"    time: " << digi->GetTime()<<endl;
   if(FNcall && fPrintPulse)   cout<<"FN call     charge: "<<digi->GetCharge()<<"   col : " << col<<"   lay : " << CbmTrdAddress::GetLayerId(address)<< "   trigger: " << trigger<<"    time: " << digi->GetTime()<<endl;
 
   // if(!FNcall && MultiCall)  cout<<"main call    charge: "<<digi->GetCharge()<<"   col : " << col<<"   lay : " << CbmTrdAddress::GetLayerId(address)<<"   trigger: " << trigger<<"    time: " << digi->GetTime()<<endl;
   // if(FNcall && MultiCall)   cout<<"FN call     charge: "<<digi->GetCharge()<<"   col : " << col<<"   lay : " << CbmTrdAddress::GetLayerId(address)<< "   trigger: " << trigger<<"    time: " << digi->GetTime()<<endl;
 
-  fDigiMap[address] = make_pair(digi, fPulseBuffer[address].second);
+  fDigiMap[address] = make_pair(digi, digiMatch);
 
   fPulseBuffer.erase(address);  
 
@@ -707,7 +712,7 @@ Double_t CbmTrdModuleSimR::DistributeCharge(Double_t pointin[3],Double_t pointou
     //    cout<< "last x: "<<lastpos[0]<< " y: "<<lastpos[1]<< " z: "<<lastpos[2]<<endl;    
     Double_t roll = gRandom->Integer(100);
     Double_t s = GetStep(fRandom->Gaus(4,2),dist_gas,roll)/dist_gas; 
-    //    cout<<" dist gas: " << dist_gas<<" roll: "<< roll << "  s: "<<s<<endl;
+    //    cout<<" dist gas: " << dist_gas<<" roll: "<< roll << "  s * weg: "<<s<<endl;
     if( (lastpos[0] + s * delta[0]) >  pointout[0] || (lastpos[1] + s * delta[1]) >  pointout[1] || (lastpos[2] + s * delta[2]) >  pointout[2]){
       for (Int_t i = 0; i < 3; i++){
 	pos[i] = pointin[i] +  (0.95) * delta[i];
@@ -715,7 +720,7 @@ Double_t CbmTrdModuleSimR::DistributeCharge(Double_t pointin[3],Double_t pointou
       //      cout<< " x: "<<pos[0]<< " y: "<<pos[1]<< " z: "<<pos[2]<<endl;      
     }
     for (Int_t i = 0; i < 3; i++)    pos[i] = lastpos[i] +  s * delta[i];
-    
+    //    cout<< " x: "<<pos[0]<< " y: "<<pos[1]<< " z: "<<pos[2]<<endl;      
   }
 
   return 0.;
@@ -750,8 +755,7 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
 
   
   // General processing on the MC point
-  Double_t  ELoss(0.), ELossTR(0.),
-    ELossdEdX(point->GetEnergyLoss());
+  Double_t  ELoss(0.), ELossTR(0.),ELossdEdX(point->GetEnergyLoss());
   if (fRadiator && TR){
     nofElectrons++;
     if (fRadiator->LatticeHit(point)){  // electron has passed lattice grid (or frame material) befor reaching the gas volume -> TR-photons have been absorbed by the lattice grid
@@ -830,13 +834,14 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
 	fCurrentTime=simtime;
       }
 
-      //      cout<< " x: "<<cluster_pos[0]<< " y: "<<cluster_pos[1]<< " z: "<<cluster_pos[2]<<endl;
+      //      cout<< " x: "<<cluster_pos[0]<< " y: "<<cluster_pos[1]<< " z: "<<cluster_pos[2]<<endl<<endl;;
       
       //      fDigiPar->ProjectPositionToNextAnodeWire(cluster_pos);
       //      std::cout<<cluster_pos[0]<<std::endl;
       ScanPadPlane(cluster_pos, 0.,clusterELoss, clusterELossTR,epoints,ipoints);
 
     }
+    //    std::cout<<std::endl;
   }
   
   Double_t driftcomp=10000;
@@ -1223,6 +1228,7 @@ void CbmTrdModuleSimR::SetPulsePars(Int_t mode)
     
 }
 
+
 //_______________________________________________________________________________
 void CbmTrdModuleSimR::SetPulseMode(Bool_t pulsed = true)     
 { 
@@ -1481,16 +1487,6 @@ Double_t CbmTrdModuleSimR::GetStep(Double_t gamma,Double_t dist,Int_t roll)
   }
   
 
-}
-
-
-//_______________________________________________________________________________
-Double_t CbmTrdModuleSimR::GetBetheBloch(Double_t gamma)
-{
-  Int_t index = gamma;
-  Double_t BB[10]={1.,1.,1.,1.,1.,1.,1.,1.,1.,1.};
-
-  return BB[index];
 }
 
 ClassImp(CbmTrdModuleSimR)
