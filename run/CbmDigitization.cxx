@@ -26,7 +26,6 @@
 #include "CbmSetup.h"
 #include "CbmTofDigitize.h"
 #include "CbmTrdDigitizer.h"
-#include "CbmTrdRadiator.h"
 
 
 
@@ -171,11 +170,9 @@ Int_t CbmDigitization::CreateDefaultDigitizers() {
      case kMuch:
         fDigitizers[system]->SetDigitizer(new CbmMuchDigitizeGem());
         LOG(INFO) << "MUCH "; nDigis++; break;
-      case kTrd: {
-        CbmTrdRadiator *radiator = new CbmTrdRadiator(kTRUE,"K++");
-        fDigitizers[system]->SetDigitizer(new CbmTrdDigitizer(radiator));
+      case kTrd:
+        fDigitizers[system]->SetDigitizer(new CbmTrdDigitizer());
         LOG(INFO) << "TRD "; nDigis++; break;
-      }
       case kTof:
         fDigitizers[system]->SetDigitizer(new CbmTofDigitize());
         LOG(INFO) << "TOF "; nDigis++; break;
