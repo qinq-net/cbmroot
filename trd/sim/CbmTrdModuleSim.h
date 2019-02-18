@@ -59,6 +59,7 @@ public:
   virtual void    SetEventId(Int_t id)  { fEventId = id; }
   virtual void    SetInputId(Int_t id)  { fInputId = id; }
   virtual void    SetPointId(Int_t id)  { fPointId = id; }
+  virtual void    SetRadiator(CbmTrdRadiator *radiator = NULL) = 0;
   virtual void    SetPositionMC(Double_t pos[3])  { memcpy(fXYZ, pos, 3*sizeof(Double_t)); }
   virtual void    SetLinkId(Int_t input, Int_t event=-1, Int_t point=-1)  
                     { fInputId=input; fEventId=event; fPointId = point; }  

@@ -34,7 +34,8 @@ public:
    **/
   Bool_t  MakeDigi(CbmTrdPoint *p, Double_t time, Bool_t TR);
   Bool_t  MakeRaw(/*CbmTrdPoint *p*/)  {return kTRUE;}
-
+  void      SetRadiator(CbmTrdRadiator *radiator) {fRadiator = radiator;}
+  
   void    SetAsic(Bool_t set)     {;}
   void    SetAsicPar(CbmTrdParSetAsic *p=NULL);
 

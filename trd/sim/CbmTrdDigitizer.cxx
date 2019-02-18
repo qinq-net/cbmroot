@@ -70,6 +70,7 @@ CbmTrdDigitizer::CbmTrdDigitizer(CbmTrdRadiator* radiator)
   ,fModuleMap()
   ,fDigiMap()
 {
+  if(fRadiator == NULL) fRadiator = new CbmTrdRadiator(kTRUE,"K++");
 }
 
 //________________________________________________________________________________________
@@ -107,7 +108,7 @@ InitStatus CbmTrdDigitizer::Init()
   fTracks = (TClonesArray*)ioman->GetObject("MCTrack");
   if (!fTracks) LOG(FATAL) << "CbmTrdDigitizer::Init(): No MCTrack array!" << FairLogger::endl;
 
-  //if (fRadiator) fRadiator->Init();
+  if (fRadiator)  fRadiator->Init();    
 
   // Set time-based mode if appropriate
   SetTimeBased(fEventMode ? kFALSE : kTRUE);
@@ -326,6 +327,8 @@ CbmTrdModuleSim* CbmTrdDigitizer::AddModule(Int_t detId)
     LOG(DEBUG) << GetName() << "::AddModule : No Gain params for module @ "<< path <<". Using default."<< FairLogger::endl;
   } else module->SetGainPar(pGain);
 
+  if(fRadiator) module->SetRadiator(fRadiator);
+  
   return module;
 }
 
