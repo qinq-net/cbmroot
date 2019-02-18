@@ -12,6 +12,7 @@
 #include "TString.h"
 #include "CbmStackFilter.h"
 #include "CbmSetup.h"
+#include <memory>
 
 
 class TGeant3;
