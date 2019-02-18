@@ -137,7 +137,7 @@ void CbmTrdModuleSimR::AddDigi(Int_t address, Double_t charge, Double_t chargeTR
   if (it == fDigiMap.end()) { // Pixel not yet in map -> Add new pixel
     CbmMatch* digiMatch = new CbmMatch();
     digiMatch->AddLink(CbmLink(weighting, fPointId, fEventId, fInputId));
-    fDigiMap[address] = make_pair(new CbmTrdDigi(channel, charge*1e6, ULong64_t(time/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)), 0, 0), digiMatch);
+    fDigiMap[address] = make_pair(new CbmTrdDigi(channel, charge*1e6, ULong64_t(ULong64_t(time/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC))*CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)), 0, 0), digiMatch);
     //  std::cout<<"  digimap: " << fDigiMap.size()<<std::endl;
     it = fDigiMap.find(address);
     it->second.first->SetAddressModule(fModAddress);//module);
@@ -212,7 +212,7 @@ void CbmTrdModuleSimR::ProcessPulseBuffer(Int_t address, Bool_t FNcall, Bool_t M
   //  if(digicharge > 100.)   cout<<digicharge<<"   "<<fTimeBuffer[address]/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)<<endl;
   //  cout<<digicharge<<"   "<<fTimeBuffer[address]/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)<<endl;
   CbmMatch *digiMatch = new CbmMatch();
-  CbmTrdDigi* digi= new CbmTrdDigi(channel, digicharge, ULong64_t(fTimeBuffer[address]/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)), 0, 0);
+  CbmTrdDigi* digi= new CbmTrdDigi(channel, digicharge, ULong64_t(ULong64_t(fTimeBuffer[address]/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC))*CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)), 0, 0);
 
   digi->SetAddressModule(fModAddress);//module);
 
@@ -312,7 +312,7 @@ void CbmTrdModuleSimR::AddDigitoBuffer(Int_t address, Double_t charge, Double_t 
   channel += ncols * row + col;
 
   //  cout<<charge*1e6<<"   "<<fTimeBuffer[address]/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)<<endl;
-  CbmTrdDigi* digi= new CbmTrdDigi(channel, charge*1e6, ULong64_t(time/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)), 0, 0);
+  CbmTrdDigi* digi= new CbmTrdDigi(channel, charge*1e6, ULong64_t(ULong64_t(time/CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC))*CbmTrdDigi::Clk(CbmTrdDigi::kSPADIC)), 0, 0);
   digi->SetAddressModule(fModAddress);//module);
   if(trigger==1)  digi->SetTriggerType(CbmTrdDigi::kSelf);
   if(trigger==2)  digi->SetTriggerType(CbmTrdDigi::kNeighbor);
