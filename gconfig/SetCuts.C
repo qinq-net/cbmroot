@@ -6,6 +6,8 @@
 void SetCuts()
 {
   
+  std::cout << "----  Execute macro SetCuts.C  -----" << std::endl;
+
   gMC->SetProcess("PAIR",1); /** pair production*/
   gMC->SetProcess("COMP",1); /**Compton scattering*/
   gMC->SetProcess("PHOT",1); /** photo electric effect */

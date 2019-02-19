@@ -2,6 +2,8 @@ void registerGeantDecays(int iDecay)
 {
   KFPartEfficiencies eff;
   
+  std::cout << "---- Executing macro registerGeantDecays -----" << std::endl;
+
   if(iDecay > -1)
   {
     Double_t lifetime = eff.partLifeTime[iDecay]; // lifetime

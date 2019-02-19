@@ -40,22 +40,22 @@
 
 // -----   Constructor   ----------------------------------------------------
 CbmRunTransport::CbmRunTransport() :
-  TNamed("CbmRunTransport", "Transport Run"),
-  fSetup(CbmSetup::Instance()),
-  fTarget(nullptr),
-  fEventGen(new FairPrimaryGenerator),
-  fRun(new FairRunSim()),
-  fOutFileName(),
-  fParFileName(),
-  fGeoFileName(),
-  fGenerators(),
-  fRealTimeInit(0.),
-  fRealTimeRun(0.),
-  fCpuTime(0.),
-  fVertexSmearZ(kTRUE),
-  fEngine(kGeant3),
-  fStackFilter(new CbmStackFilter()),
-  fGenerateRunInfo(kFALSE)
+TNamed("CbmRunTransport", "Transport Run"),
+fSetup(CbmSetup::Instance()),
+fTarget(nullptr),
+fEventGen(new FairPrimaryGenerator),
+fRun(new FairRunSim()),
+fOutFileName(),
+fParFileName(),
+fGeoFileName(),
+fGenerators(),
+fRealTimeInit(0.),
+fRealTimeRun(0.),
+fCpuTime(0.),
+fVertexSmearZ(kTRUE),
+fEngine(kGeant3),
+fStackFilter(new CbmStackFilter()),
+fGenerateRunInfo(kFALSE)
 {
   // TODO: I do not like instantiating FairRunSim from this constructor;
   // It should be done in Run(). However, the presence of a FairRunSim
@@ -134,8 +134,8 @@ void CbmRunTransport::ConfigureVMC() {
   else if ( fEngine == kGeant4 ) {
     LOG(INFO) << GetName() << ": Create TGeant4" << FairLogger::endl;
     TG4RunConfiguration* runConfig
-            = new TG4RunConfiguration("geomRoot", "QGSP_BERT_EMV+optical",
-                                      "stepLimiter+specialCuts");
+    = new TG4RunConfiguration("geomRoot", "QGSP_BERT_EMV+optical",
+                              "stepLimiter+specialCuts");
     vmc = new TGeant4("TGeant4", "C++ Interface to Geant4", runConfig);
     Geant4Settings(dynamic_cast<TGeant4*>(vmc));
   } //? Geant4
@@ -191,10 +191,10 @@ void CbmRunTransport::Geant4Settings(TGeant4* vmc) {
 
   // --- Set external decayer (Pythia) if required
   if(FairRunSim::Instance()->IsExtDecayer()){
-     TVirtualMCDecayer* decayer = TPythia6Decayer::Instance();
-     vmc->SetExternalDecayer(decayer);
-     LOG(INFO) << GetName() << ": Using Phythia6 decayer"
-         << FairLogger::endl;
+    TVirtualMCDecayer* decayer = TPythia6Decayer::Instance();
+    vmc->SetExternalDecayer(decayer);
+    LOG(INFO) << GetName() << ": Using Phythia6 decayer"
+        << FairLogger::endl;
   }
 
   // --- Random seed and maximum number of steps
@@ -242,8 +242,101 @@ void CbmRunTransport::LoadSetup(const char* setupName) {
 
 
 
+// -----   Register radiation length   --------------------------------------
+void CbmRunTransport::RegisterRadLength(Bool_t choice) {
+  assert(fRun);
+  fRun->SetRadLenRegister(choice);
+  LOG(INFO) << GetName() << ": Radiation length register is enabled"
+      << FairLogger::endl;
+}
+// --------------------------------------------------------------------------
+
+
+
 // -----   Create and register the setup modules   --------------------------
 void CbmRunTransport::RegisterSetup() {
+
+}
+// --------------------------------------------------------------------------
+
+
+
+// -----   Set correct decay modes for pi0 and eta   ------------------------
+void CbmRunTransport::PiAndEtaDecay(TVirtualMC* vmc) {
+
+  assert(vmc);
+  LOG(INFO) << GetName() << ": Set decay modes for pi0 and eta"
+      << FairLogger::endl;
+
+  // Decay modes for eta mesons (PDG 2016)
+  Int_t modeEta[6][3];    // decay modes
+  Float_t brEta[6];       // branching ratios in %
+
+  // --- eta -> gamma gamma
+  modeEta[0][0] = 22;
+  modeEta[0][1] = 22;
+  modeEta[0][2] =  0;
+  brEta[0] = 39.41;
+
+  // --- eta -> pi0 pi0 pi0
+  modeEta[1][0] = 111;
+  modeEta[1][1] = 111;
+  modeEta[1][2] = 111;
+  brEta[1] = 32.68;
+
+  // --- eta -> pi+ pi- pi0
+  modeEta[2][0] =  211;
+  modeEta[2][1] = -211;
+  modeEta[2][2] =  111;
+  brEta[2] = 22.92;
+
+  // --- eta -> pi+ pi- gamma
+  modeEta[3][0] =  211;
+  modeEta[3][1] = -211;
+  modeEta[3][2] =   22;
+  brEta[3] = 4.22;
+
+  // --- eta -> e+ e- gamma
+  modeEta[4][0] =  11;
+  modeEta[4][1] = -11;
+  modeEta[4][2] =  22;
+  brEta[4] = 0.69;
+
+  // --- eta -> pi0 gamma gamma
+  modeEta[5][0] = 111;
+  modeEta[5][1] =  22;
+  modeEta[5][2] =  22;
+  brEta[5] = 2.56e-2;
+
+  // --- Set the eta decays
+  vmc->SetDecayMode(221, brEta, modeEta);
+
+  // --- Decay modes for pi0
+  Int_t modePi[6][3];    // decay modes
+  Float_t brPi[6];       // branching ratios in %
+
+  // --- pi0 -> gamma gamma
+  modePi[0][0] = 22;
+  modePi[0][1] = 22;
+  modePi[0][2] =  0;
+  brPi[0] = 98.823;
+
+  // --- pi0 -> e+ e- gamma
+  modePi[1][0] =  11;
+  modePi[1][1] = -11;
+  modePi[1][2] =  22;
+  brPi[1] = 1.174;
+
+  // --- No other channels for pi0
+  for (Int_t iMode = 2; iMode < 6; iMode++) {
+    modePi[iMode][0] = 0;
+    modePi[iMode][1] = 0;
+    modePi[iMode][2] = 0;
+    brPi[iMode] = 0.;
+  }
+
+  // --- Set the pi0 decays
+  vmc->SetDecayMode(111, brPi, modePi);
 
 }
 // --------------------------------------------------------------------------
@@ -279,8 +372,8 @@ void CbmRunTransport::Run(Int_t nEvents) {
     default: {
       LOG(WARNING) << GetName() << ": Unknown transport engine "
           << FairLogger::endl;
-        engineName = "TGeant3";
-        break;
+      engineName = "TGeant3";
+      break;
     }
   } //? engine
   LOG(INFO) << GetName() << ": Using engine " << engineName
@@ -293,8 +386,8 @@ void CbmRunTransport::Run(Int_t nEvents) {
 
 
   // --- Set media file
-   LOG(INFO) << GetName() << ": Media file is media.geo" << FairLogger::endl;
-   fRun->SetMaterials("media.geo");
+  LOG(INFO) << GetName() << ": Media file is media.geo" << FairLogger::endl;
+  fRun->SetMaterials("media.geo");
 
 
   // --- Create and register the setup modules
@@ -340,8 +433,8 @@ void CbmRunTransport::Run(Int_t nEvents) {
       fEventGen->SetTarget(0., 0.);
       fEventGen->SmearVertexZ(kFALSE);
       LOG(INFO) << GetName()
-          << ": No target; event vertex z will be fixed at 0."
-          << FairLogger::endl;
+              << ": No target; event vertex z will be fixed at 0."
+              << FairLogger::endl;
     } //? No target present
 
   } //? Vertex smearing enabled
@@ -350,8 +443,8 @@ void CbmRunTransport::Run(Int_t nEvents) {
     fEventGen->SetTarget(0., 0.);
     fEventGen->SmearVertexZ(kFALSE);
     LOG(INFO) << GetName()
-        << ": Event vertex z will be fixed at 0."
-        << FairLogger::endl;
+            << ": Event vertex z will be fixed at 0."
+            << FairLogger::endl;
   } //? Vertex smearing disabled
 
 
@@ -365,12 +458,16 @@ void CbmRunTransport::Run(Int_t nEvents) {
 
   // --- Set VMC configuration
   // This will work only with FairRoot v18 and later
-  //std::function<void()> f = std::bind(&CbmRunTransport::ConfigureVMC, this);
+  std::function<void()> f = std::bind(&CbmRunTransport::ConfigureVMC, this);
   //fRun->SetSimSetup(f);
 
 
   // --- Initialise run
   fRun->Init();
+
+
+  // --- Set correct decay modes for pi0 and eta
+  PiAndEtaDecay(gMC);
 
 
   // --- Runtime database
@@ -545,7 +642,7 @@ void CbmRunTransport::SetTarget(const char* medium, Double_t thickness,
 void CbmRunTransport::SetTargetPosition(Double_t x, Double_t y, Double_t z) {
 
   if ( ! fTarget ) LOG(ERROR) << GetName()
-      << ": No target defined; statement ignored!" << FairLogger::endl;
+          << ": No target defined; statement ignored!" << FairLogger::endl;
   else fTarget->SetPosition(x, y, z);
 
 }
@@ -557,7 +654,7 @@ void CbmRunTransport::SetTargetPosition(Double_t x, Double_t y, Double_t z) {
 void CbmRunTransport::SetTargetRotation(Double_t angle) {
 
   if ( ! fTarget )  LOG(ERROR) << GetName()
-      << ": No target defined; statement ignored!" << FairLogger::endl;
+          << ": No target defined; statement ignored!" << FairLogger::endl;
   else fTarget->SetRotation(angle);
 
 }

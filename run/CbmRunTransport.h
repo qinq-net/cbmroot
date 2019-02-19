@@ -84,6 +84,17 @@ class CbmRunTransport : public TNamed
     void LoadSetup(const char* setupName);
 
 
+    /** @brief Enable registration of radiation length
+     ** @param choice If kTRUE, registration is enabled.
+     **
+     ** If this method is used, an array of FairRadLenPoint will be created
+     ** in the output tree. This is needed to analyse the material budget
+     ** of the setup. It should not be used for standard transport,
+     ** since it creates a lot of additional output.
+     **/
+    void RegisterRadLength(Bool_t choice = kTRUE);
+
+
     /** @brief Execute transport run
      ** @param nEvents  Number of events to process
      **/
@@ -162,7 +173,6 @@ class CbmRunTransport : public TNamed
       fStackFilter.reset();
       fStackFilter = std::move(filter);
     }
-
 
 
     /** @brief Define the target
@@ -249,6 +259,9 @@ class CbmRunTransport : public TNamed
     Bool_t fGenerateRunInfo;
     std::function<void()> fSimSetup;
 
+
+    /** @brief Correct decay modes for pi0 and eta **/
+    void PiAndEtaDecay(TVirtualMC* vmc);
 
 
     /** @brief Specific settings for GEANT3 **/
