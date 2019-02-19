@@ -1,12 +1,16 @@
 // -------------------------------------------------------------------------
-// -----                  following FairMCTracks source file                  -----
+// -----                  following FairMCTracks source file           -----
 // -----                  Created 10/12/07  by M. Al-Turany            -----
 // -------------------------------------------------------------------------
+#define TOFDisplay 1                    // =1 means active, other: without Label and not relying on TEvePointSet
+#define TOFTtErr 1                      // =1 means active, other: not relying on VelocityError of CbmTofTracklet
+
 #include "CbmEvDisTracks.h"
 
 #include "FairEventManager.h"           // for FairEventManager
 #include "FairRootManager.h"            // for FairRootManager
 
+//#include "Riosfwd.h"                    // for ostream
 #include "TClonesArray.h"               // for TClonesArray
 #include "TEveManager.h"                // for TEveManager, gEve
 #include "TEvePathMark.h"               // for TEvePathMark
@@ -17,12 +21,13 @@
 #include "TMathBase.h"                  // for Max, Min
 #include "TObjArray.h"                  // for TObjArray
 #include "TParticle.h"                  // for TParticle
+#include "TEvePointSet.h"               // for TEvePointSetArray
+#include "TMath.h"                      // for Power, Abs and Sqrt
 
 #include "CbmTofTracklet.h"             // for reconstructed Tof Tracks
 
 #include <string.h>                     // for NULL, strcmp
 #include <iostream>                     // for operator<<, basic_ostream, etc
-#include <iosfwd>                       // for ostream
 
 using std::cout;
 using std::endl;
@@ -37,11 +42,15 @@ CbmEvDisTracks::CbmEvDisTracks()
     fTrPr(NULL),
     fEventManager(NULL),
     fEveTrList(NULL),
+    fEvePSList(NULL),
     fEvent(""),
     fTrList(NULL),
+    fPSList(NULL),
     MinEnergyLimit(-1.),
     MaxEnergyLimit(-1.),
-    PEnergy(-1.)
+    PEnergy(-1.),
+    fRenderP(kFALSE),
+    fRenderT(kTRUE)
 {
   if( !fInstance ) fInstance = this;
 }
@@ -49,17 +58,21 @@ CbmEvDisTracks::CbmEvDisTracks()
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmEvDisTracks::CbmEvDisTracks(const char* name, Int_t iVerbose)
+CbmEvDisTracks::CbmEvDisTracks(const char* name, Int_t iVerbose, Bool_t renderP, Bool_t renderT)
   : FairTask(name, iVerbose),
     fTrackList(NULL),
     fTrPr(NULL),
     fEventManager(NULL),
     fEveTrList(new TObjArray(16)),
+    fEvePSList(new TObjArray(8)),
     fEvent(""),
     fTrList(NULL),
+    fPSList(NULL),
     MinEnergyLimit(-1.),
     MaxEnergyLimit(-1.),
-    PEnergy(-1.)
+    PEnergy(-1.),
+    fRenderP(renderP),
+    fRenderT(renderT)
 {
   if( !fInstance ) fInstance = this;
 }
@@ -94,6 +107,7 @@ void CbmEvDisTracks::Exec(Option_t* option)
 			  << " and option "<<option<< endl; }
     CbmTofTracklet* tr;
     const Double_t* point;
+    CbmTofHit* hit;
 
     Reset();
 
@@ -105,7 +119,12 @@ void CbmEvDisTracks::Exec(Option_t* option)
       tr=(CbmTofTracklet *)fTrackList->At(i);
       if(NULL == tr) continue;
       Int_t Np=tr->GetNofHits();
-      fTrList= GetTrGroup(tr->GetNofHits(),iOpt);
+
+      #if TOFDisplay ==1         //List for TEvePointSets
+      fPSList= GetPSGroup(Np,iOpt);
+      #endif
+
+      fTrList= GetTrGroup(tr->GetNofHits(),iOpt);      
       TParticle* P=new TParticle();
       TEveTrack* track= new TEveTrack(P, tr->GetPidHypo(), fTrPr);
       Int_t iCol=Np;
@@ -114,7 +133,7 @@ void CbmEvDisTracks::Exec(Option_t* option)
       track->SetLineColor(iCol);
       track->SetMarkerColor(iCol);
       track->SetMarkerSize(2.);
-      //track->SetMarkerDraw(kTRUE);
+      //track->SetMarkerDraw(kTRUE);  
 
       track->SetPoint(0,tr->GetFitX(0.),tr->GetFitY(0.),0.); //insert starting point 
       TEveVector pos0= TEveVector(tr->GetFitX(0.),tr->GetFitY(0.),0.);
@@ -134,17 +153,56 @@ void CbmEvDisTracks::Exec(Option_t* option)
       vbuf[2]=0.;
       rt.fV.Set(vbuf);
       track->SetName(Form("TEveTrack %d", rt.fIndex));
-      track->SetStdTitle();
+      
+      //track->SetStdTitle();
+      Double_t beta, beta_err, res_x, res_y, res_z, res_t;
+      switch(iOpt){
+        case 0:
+          track->SetStdTitle();
+          break;
+        case 1:
+          #if TOFDisplay ==1           //setting content of label depending on available information
+           beta=(1/tr->GetTt())/29.98;
+           #if TOFTtErr ==1
+            beta_err=beta*(tr->GetTtErr()/tr->GetTt());
+            track->SetTitle(Form("%s\nChiSqDoF = %2.2f\nbeta = %1.3f +/- %1.3f",track->GetName(),tr->GetChiSq(),beta,beta_err));
+           #else
+            track->SetTitle(Form("%s\nChiSqDoF = %2.2f\nbeta = %1.3f",track->GetName(),tr->GetChiSq(),beta));
+           #endif       
+          #else
+           track->SetStdTitle();
+          #endif
+          break;
+      }
+
+      #if TOFDisplay ==1
+      // initialize TEvePointSet to show Datapoints belonging to track
+      TEvePointSetArray* psa= new TEvePointSetArray(Form("TEveTrack Points %d",i),"");
+      psa->SetMarkerColor(iCol);
+      psa->SetMarkerSize(2.0);
+      psa->SetMarkerStyle(4);
+      psa->InitBins("Hits",Np,0.5,Np+0.5);
+      #endif
 
       for (Int_t n=0; n<Np; n++) {
 	switch(iOpt){
 	case 0:
-	  point=tr->GetPoint(n);
+	  point=tr->GetPoint(n); //pointer to membervaribale so GetFitPoint() would also change GetPoint()
+          #if TOFDisplay ==1
+          // follwing belongs to filling and labeling of PointSetArray
+          psa->Fill(point[0],point[1],point[2],n+1);
+          hit=tr->GetTofHitPointer(n);
+          res_x=(point[0]-tr->GetFitX(point[2]))/hit->GetDx();
+          res_y=(point[1]-tr->GetFitY(point[2]))/hit->GetDy();
+          res_t=(point[3]-tr->GetFitT(point[2]))/hit->GetTimeError();
+          res_z=0;
+          psa->GetBin(n+1)->SetTitle(Form("%s\nPointId = %d\nResiduals:\nX = %1.3f\nY = %1.3f\nT = %1.3f",track->GetName(),tr->GetHitIndex(n),res_x,res_y,res_t));
+          #endif
 	  break;
 	case 1:
 	  point=tr->GetFitPoint(n);
 	  break;
-	}
+	}        
         track->SetPoint(n+1,point[0],point[1],point[2]);
         if(fVerbose>5) 
 	  { cout <<Form("   CbmEvDisTracks::Exec SetPoint %d, %6.2f, %6.2f, %6.2f, %6.2f ",
@@ -164,6 +222,11 @@ void CbmEvDisTracks::Exec(Option_t* option)
 
         if(fVerbose>5) { cout << "Path marker added " << path << endl; }
       }
+      #if TOFDisplay ==1
+      if (iOpt==0){
+        fPSList->AddElement(psa);
+      }
+      #endif
       track->SortPathMarksByTime();
       fTrList->AddElement(track);
       if(fVerbose>3) { cout << i<<". track added: " << track->GetName() << endl; }
@@ -202,6 +265,13 @@ void CbmEvDisTracks::Reset()
     gEve->RemoveElement(ele,fEventManager);
   }
   fEveTrList->Clear();
+  #if TOFDisplay ==1
+  for (Int_t i=0; i<fEvePSList->GetEntriesFast(); i++) {
+    TEveElementList*  ele=( TEveElementList*) fEvePSList->At(i);
+    gEve->RemoveElement(ele,fEventManager);
+  }
+  fEvePSList->Clear();
+  #endif
 }
 
 Char_t *gr;
@@ -229,17 +299,25 @@ TEveTrackList* CbmEvDisTracks::GetTrGroup(Int_t ihmul,Int_t iOpt)
     Int_t iCol=ihmul; if(iCol>4) iCol++;
     fTrList->SetMainColor(iCol);
     fEveTrList->Add(fTrList);
-    gEve->AddElement( fTrList ,fEventManager );
+    #if TOFDisplay ==1
+    if(iOpt==1){  // delete if-condition to return to old code
+      gEve->AddElement( fTrList ,fEventManager );
+    }
+    #else
+    gEve->AddElement(fTrList, fEventManager );
+    #endif
     fTrList->SetRecurse(kTRUE);
     switch(iOpt){
     case 0: //  display points
       fTrList->SetRnrPoints(kTRUE);
       fTrList->SetRnrLine(kFALSE);
       fTrList->SetMarkerSize(2.);
+      fTrList->SetRnrChildren(fRenderP); // default not shown
       break;
     case 1:  //display fit line
       fTrList->SetRnrLine(kTRUE);
       fTrList->SetLineWidth(2.);
+      fTrList->SetRnrChildren(fRenderT); // default not shown
       break;
     default:
       ;
@@ -247,6 +325,29 @@ TEveTrackList* CbmEvDisTracks::GetTrGroup(Int_t ihmul,Int_t iOpt)
   }
   return fTrList;
 }
+#if TOFDisplay ==1
+TEveElementList* CbmEvDisTracks::GetPSGroup(Int_t ihmul,Int_t iOpt)
+{
+  gr=Form("PTrkl_hmul%d",ihmul);
+  fPSList=0;
+  for (Int_t i=0; i<fEvePSList->GetEntriesFast(); i++) {
+    TEveElementList* l=( TEveElementList*) fEvePSList->At(i);
+    if ( strcmp(l->GetName(),gr)==0 ) {
+      fPSList= l;
+      break;
+    }
+  }
+  if(fPSList ==0) {
+    fPSList= new TEveElementList(gr);
+    Int_t iCol=ihmul; if(iCol>4) iCol++;
+    fPSList->SetMainColor(iCol);
+    fEvePSList->Add(fPSList);
+    gEve->AddElement(fPSList,fEventManager);
+    fPSList->SetRnrChildren(fRenderP);
+  }
+  return fPSList;
+}
+#endif
 
 ClassImp(CbmEvDisTracks)
 

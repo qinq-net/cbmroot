@@ -8,6 +8,7 @@ ${CBMROOT_SOURCE_DIR}/base
 ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/data/sts
 ${CBMROOT_SOURCE_DIR}/data/trd
+${CBMROOT_SOURCE_DIR}/data/tof
 ${CBMROOT_SOURCE_DIR}/tof/TofData
 ${CBMROOT_SOURCE_DIR}/data/global
 ${CBMROOT_SOURCE_DIR}/trd/base
@@ -35,6 +36,9 @@ CbmTrdDigiDraw.cxx
 CbmPixelHitSetDraw.cxx
 CbmEvDisTracks.cxx
 CbmRecoTracks.cxx
+CbmPointSetArray.cxx
+CbmPointSetArrayDraw.cxx
+CbmPointSetArrayEditor.cxx
 )
 
 set(LINKDEF  CbmDisplayLinkDef.h)

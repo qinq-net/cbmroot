@@ -10,6 +10,7 @@
  *   MVD event display object
  **
  **/
+#define TOFDisplay 1                    // =1 means active, other: without Label and not relying on TEvePointSet
 
 #ifndef CBMEVDISTRACKS_H
 #define CBMEVDISTRACKS_H
@@ -25,6 +26,8 @@ class TClonesArray;
 class TEveTrackList;
 class TObjArray;
 class TParticle;
+class TEvePointSetArray;
+class TEveElementList;
 
 class CbmEvDisTracks : public FairTask
 {
@@ -39,7 +42,7 @@ class CbmEvDisTracks : public FairTask
     *@param name        Name of task
     *@param iVerbose    Verbosity level
     **/
-    CbmEvDisTracks(const char* name, Int_t iVerbose = 1);
+    CbmEvDisTracks(const char* name, Int_t iVerbose = 1, Bool_t renderP = kFALSE, Bool_t renderT = kTRUE);
 
     /** Destructor **/
     virtual ~CbmEvDisTracks();
@@ -48,6 +51,8 @@ class CbmEvDisTracks : public FairTask
 
     /** Set verbosity level. For this task and all of the subtasks. **/
     void SetVerbose(Int_t iVerbose) {fVerbose = iVerbose;}
+    void SetRenderP(Bool_t render) {fRenderP=render;}
+    void SetRenderT(Bool_t render) {fRenderT=render;}
     /** Executed task **/
     virtual void Exec(Option_t* option);
     virtual InitStatus Init();
@@ -57,6 +62,9 @@ class CbmEvDisTracks : public FairTask
     virtual void Finish();
     void Reset();
     TEveTrackList* GetTrGroup(Int_t ihmul, Int_t iOpt);
+    #if TOFDisplay ==1  //List for TEvePointSets
+    TEveElementList* GetPSGroup(Int_t ihuml, Int_t iOpt);
+    #endif
 
   protected:
 
@@ -66,8 +74,12 @@ class CbmEvDisTracks : public FairTask
     TObjArray* fEveTrList;
     TString fEvent; //!
     TEveTrackList* fTrList;  //!
+    TObjArray* fEvePSList;
+    TEveElementList* fPSList;
     //TEveElementList *fTrackCont;
 
+    Bool_t fRenderP;
+    Bool_t fRenderT;
     Double_t MinEnergyLimit;
     Double_t MaxEnergyLimit;
     Double_t PEnergy;

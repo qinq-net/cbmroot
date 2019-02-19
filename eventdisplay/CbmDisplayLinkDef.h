@@ -10,5 +10,8 @@
 #pragma link C++ class CbmPixelHitSetDraw;
 #pragma link C++ class CbmEvDisTracks+;
 #pragma link C++ class CbmRecoTracks;
+#pragma link C++ class CbmPointSetArray;
+#pragma link C++ class CbmPointSetArrayDraw;
+#pragma link C++ class CbmPointSetArrayEditor;
 
 #endif
