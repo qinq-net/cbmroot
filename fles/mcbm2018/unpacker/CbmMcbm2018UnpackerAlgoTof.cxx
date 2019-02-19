@@ -929,7 +929,7 @@ void CbmMcbm2018UnpackerAlgoTof::ProcessSysMess( gdpbv100::FullMessage mess )
       } // case gdpbv100::SYSMSG_GET4_EVENT
       case gdpbv100::SYS_GDPB_UNKWN:
       {
-         LOG(INFO) << "Unknown GET4 message, data: " << std::hex << std::setw(8)
+         LOG(DEBUG) << "Unknown GET4 message, data: " << std::hex << std::setw(8)
                     << mess.getGdpbSysUnkwData() << std::dec
                     <<" Full message: " << std::hex << std::setw(16)
                     << mess.getData() << std::dec
