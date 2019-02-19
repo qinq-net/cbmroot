@@ -45,7 +45,7 @@ void setup_sis18_mcbm_25deg_long()
   TString muchGeoTag      = "v18g_mcbm";    // 11 o'clock, Mv2 size
   TString trdGeoTag       = "v18o_mcbm";    // long, with mBUCH
   //  TString trdGeoTag       = "v18n_mcbm";    // long, without mBUCH
-  TString tofGeoTag       = "v18k_mcbm";    // long distance
+  TString tofGeoTag       = "v18j_mcbm";    // long distance
   TString richGeoTag      = "v18h_mcbm";    // long distance
   TString psdGeoTag       = "v18d_mcbm";    // at 25 degree, below the beampipe
   // ------------------------------------------------------------------------
