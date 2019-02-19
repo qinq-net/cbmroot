@@ -13,7 +13,7 @@ If($ENV{ctest_model} MATCHES Continuous)
 EndIf($ENV{ctest_model} MATCHES Continuous)
 
 Set(BUILD_COMMAND "make")
-Set(CTEST_BUILD_COMMAND "${BUILD_COMMAND} -j$ENV{number_of_processors}")
+Set(CTEST_BUILD_COMMAND "${BUILD_COMMAND} -i -k -j$ENV{number_of_processors}")
 
 # Extract the FairRoot version from fairroot-config
 # The version info is of the form Major.Minor.Patch e.g. 15.11.1 and
@@ -77,7 +77,7 @@ Ctest_Read_Custom_Files("${CTEST_BINARY_DIRECTORY}")
 Ctest_Start($ENV{ctest_model})
 
 If(NOT $ENV{ctest_model} MATCHES Experimental)
-  Ctest_Update(SOURCE "${CTEST_SOURCE_DIRECTORY}")
+#  Ctest_Update(SOURCE "${CTEST_SOURCE_DIRECTORY}")
 EndIf()
 
 Ctest_Configure(BUILD "${CTEST_BINARY_DIRECTORY}"
