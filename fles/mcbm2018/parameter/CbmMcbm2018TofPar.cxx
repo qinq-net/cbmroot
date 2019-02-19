@@ -137,7 +137,7 @@ Int_t CbmMcbm2018TofPar::Get4ChanToPadiChan( UInt_t uChannelInFee )
       else
       {
          LOG(FATAL) << "CbmMcbm2018TofPar::Get4ChanToPadiChan => Index out of bound, "
-                    << uChannelInFee << " vs " << kuNbChannelsPerFee
+                    << uChannelInFee << " vs " << static_cast< const uint32_t >( kuNbChannelsPerFee )
                     << ", returning crazy value!"
                     << FairLogger::endl;
          return -1;
@@ -150,7 +150,7 @@ Int_t CbmMcbm2018TofPar::PadiChanToGet4Chan( UInt_t uChannelInFee )
       else
       {
          LOG(FATAL) << "CbmMcbm2018TofPar::PadiChanToGet4Chan => Index out of bound, "
-                    << uChannelInFee << " vs " << kuNbChannelsPerFee
+                    << uChannelInFee << " vs " << static_cast< const uint32_t >( kuNbChannelsPerFee )
                     << ", returning crazy value!"
                     << FairLogger::endl;
          return -1;
@@ -166,7 +166,7 @@ Int_t CbmMcbm2018TofPar::ElinkIdxToGet4Idx( UInt_t uElink )
       else
       {
          LOG(FATAL) << "CbmMcbm2018TofPar::ElinkIdxToGet4Idx => Index out of bound, "
-                    << uElink << " vs " << kuNbGet4PerGdpb
+                    << uElink << " vs " << static_cast< const uint32_t >( kuNbGet4PerGdpb )
                     << ", returning crazy value!"
                     << FairLogger::endl;
          return -1;
@@ -181,7 +181,7 @@ Int_t CbmMcbm2018TofPar::Get4IdxToElinkIdx( UInt_t uGet4 )
       else
       {
          LOG(FATAL) << "CbmMcbm2018TofPar::Get4IdxToElinkIdx => Index out of bound, "
-                    << uGet4 << " vs " << kuNbGet4PerGdpb
+                    << uGet4 << " vs " << static_cast< const uint32_t >( kuNbGet4PerGdpb )
                     << ", returning crazy value!"
                     << FairLogger::endl;
          return -1;
