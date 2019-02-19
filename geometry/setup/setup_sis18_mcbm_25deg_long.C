@@ -7,6 +7,7 @@
  **
  **/
 
+// 2019-02-19 - DE - add mTOF v18k with 2- and 3-stack configuration as well as T0
 // 2019-02-11 - DE - used vertial mRICH v18h with 6x 3x2 PMT array as new default
 // 2018-11-22 - DE - set mRICH v18g with 6x 3x2 PMT array as new default
 // 2018-06-27 - DE - set flipped mTOF v18j geometry as new default
@@ -44,7 +45,7 @@ void setup_sis18_mcbm_25deg_long()
   TString muchGeoTag      = "v18g_mcbm";    // 11 o'clock, Mv2 size
   TString trdGeoTag       = "v18o_mcbm";    // long, with mBUCH
   //  TString trdGeoTag       = "v18n_mcbm";    // long, without mBUCH
-  TString tofGeoTag       = "v18j_mcbm";    // long distance
+  TString tofGeoTag       = "v18k_mcbm";    // long distance
   TString richGeoTag      = "v18h_mcbm";    // long distance
   TString psdGeoTag       = "v18d_mcbm";    // at 25 degree, below the beampipe
   // ------------------------------------------------------------------------
