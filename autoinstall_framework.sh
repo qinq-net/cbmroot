@@ -26,7 +26,6 @@
 
 # choose your root verion
 export ROOTVER=6
-#export ROOTVER=5
 
 # put your desired variants here:
 export FSOFTDEV=may18p1
