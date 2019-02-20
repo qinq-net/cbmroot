@@ -1,4 +1,4 @@
-#/*
+/*
  * CbmRichPmt.h
  *
  *  Created on: Dec 16, 2015
@@ -17,14 +17,6 @@ using namespace std;
 
 class CbmRichPmtQEData {
 public:
-    CbmRichPmtQEData() = default;
-/*
-     : fDetectorType()
-     , fLambdaMin(0.)
-     , fLambdaMax(0.)
-     , fLambdaStep(0.)
-     , fEfficiency()
-*/
 
     CbmRichPmtTypeEnum fDetectorType; // pmt type
     Double_t fLambdaMin; // minimum wavelength in QE table

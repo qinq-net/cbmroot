@@ -48,7 +48,6 @@ Link_Directories(
 Set(SRCS
   unpacker/CbmCosy2018MonitorSts.cxx
   unpacker/CbmCosy2018MonitorHodo.cxx
-  unpacker/CbmCosy2018Monitor.cxx
   unpacker/CbmCosy2018MonitorSetup.cxx
   unpacker/CbmCosy2018MonitorDupli.cxx
   unpacker/CbmCosy2018MonitorSetupGood.cxx
