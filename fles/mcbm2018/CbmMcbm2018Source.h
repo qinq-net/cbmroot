@@ -33,7 +33,10 @@ class CbmMcbm2018Source : public FairSource
 {
   public:
     CbmMcbm2018Source();
-    CbmMcbm2018Source(const CbmMcbm2018Source& source);
+
+    CbmMcbm2018Source(const CbmMcbm2018Source& source) = delete;
+    CbmMcbm2018Source operator=(const CbmMcbm2018Source&) = delete;
+
     virtual ~CbmMcbm2018Source();
 
     Bool_t Init();
@@ -98,15 +101,13 @@ class CbmMcbm2018Source : public FairSource
 
     UInt_t fuTsReduction;
 
-    fles::TimesliceSource* fSource; //!
+    std::unique_ptr<fles::TimesliceSource> fSource; //!
+
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
 
     Int_t FillBuffer();
     Int_t GetNextEvent();
-    Bool_t OpenNextFile();
-
-    CbmMcbm2018Source operator=(const CbmMcbm2018Source&);
 
     ClassDef(CbmMcbm2018Source, 1)
 };
