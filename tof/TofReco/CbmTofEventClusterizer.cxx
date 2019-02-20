@@ -1706,7 +1706,8 @@ Bool_t   CbmTofEventClusterizer::FillHistos()
      Double_t dTimeAna10s = (pHit->GetTime() - fdStartAna10s)/1.E9;
      if ( dTimeAna10s > 10.) {
        fdStartAna10s=pHit->GetTime();
-       fhRpcCluRate10s[iDetIndx]->Reset();
+       for(Int_t iDet=0; iDet<fDigiBdfPar->GetNbDet(); iDet++)
+	     fhRpcCluRate10s[iDet]->Reset();
        dTimeAna10s=0.;
      }
      fhRpcCluRate10s[iDetIndx]->Fill(dTimeAna10s,1./fhRpcCluRate10s[iDetIndx]->GetBinWidth(1));       
@@ -2280,7 +2281,7 @@ Bool_t   CbmTofEventClusterizer::FillHistos()
                  dTcor[iSel]=pHit->GetTime()-dDelTof-dTTrig[iSel];  
 		 Double_t dAvTot=0.5*(pDig0->GetTot()+pDig1->GetTot());
 	       } // if(iLink==0)
-
+	       if ( dTcor[iSel]==0. ) continue;
                LOG(DEBUG)<<Form(" TRpcCluWalk for Ev %d, Link %d(%d), Sel %d, TSR %d%d%d, Ch %d,%d, S %d,%d T %f, DelTof %6.1f, W-ent:  %6.0f,%6.0f",
 			 fiNevtBuild, iLink,(Int_t)digiMatch->GetNofLinks(),iSel,iSmType,iSm,iRpc,
 				iCh0, iCh1, iS0, iS1, dTTrig[iSel], dDelTof,
@@ -2896,8 +2897,8 @@ Bool_t   CbmTofEventClusterizer::WriteHistos()
          Double_t TWidth=((TProfile *)hAvTOff_pfx)->GetBinError(iB+1);
          Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) ;
 
-
-         if (fiBeamRefType == iSmType && fiBeamRefSm == iSm && fiBeamRefDet == iRpc) TMean=0.; // don't shift reference counter
+	 if (fiBeamRefAddr == iUniqueId ) TMean=0.;  // don't shift reference counter
+	//  if (fiBeamRefType == iSmType && fiBeamRefSm == iSm && fiBeamRefDet == iRpc) TMean=0.; // don't shift reference counter
          
          LOG(DEBUG)<<Form("<ICor> Correct %d %d %d by TMean=%8.2f, TYOff=%8.2f, TWidth=%8.2f, ",iSmType,iSm,iRpc,TMean,dTYOff,TWidth)
                   <<FairLogger::endl;
@@ -3077,6 +3078,7 @@ Bool_t   CbmTofEventClusterizer::WriteHistos()
 	   }
 	 }
 	 Double_t dYShift = dYMeanFit - dYMeanAv;
+	 Double_t TWMean=0.; // weighted mean of all channels BeamRef counter channels
 
          for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // update Offset and Gain 
          {
@@ -3141,16 +3143,34 @@ Bool_t   CbmTofEventClusterizer::WriteHistos()
           Double_t TMean=((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1);
           Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iSm,iRpc) ;
 
-	  if (fiBeamRefType == iSmType && fiBeamRefSm == iSm && fiBeamRefDet == iRpc) {
+	  if (fiBeamRefAddr == iUniqueId ) {  // don't shift reference counter
+	    // if (fiBeamRefType == iSmType && fiBeamRefSm == iSm && fiBeamRefDet == iRpc) {
 	    // don't shift reference counter on average
-            TMean-=((TProfile *)hAvTOff_pfx)->GetBinContent(iSm*iNbRpc+iRpc+1); 
+	    if(iCh==0) {
+	      Double_t dW=0.;
+	      for( Int_t iRefCh = 0; iRefCh < iNbCh; iRefCh++ ) {
+		if( 0 != ((TH1 *)htempTOff_px)->GetBinContent(iCh+1)) {
+		   dW+=  ((TH1 *)htempTOff_px)->GetBinContent(iCh+1);
+		  TWMean+= ((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1) * ((TH1 *)htempTOff_px)->GetBinContent(iCh+1);
+		}
+	      }
+	      TWMean /= dW;
+	    }   
+	    LOG(DEBUG) <<Form("Calib %2d: TSRC %d%d%d%d, hits %6.0f, dTY  %8.3f, TM %8.3f , TAV  %8.3f, TWM %8.3f, TOff %8.3f ",
+			    fTRefMode,iSmType,iSm,iRpc,iCh,htempTOff_px->GetBinContent(iCh+1),
+			    dTYOff,TMean,
+			     ((TProfile *)hAvTOff_pfx)->GetBinContent(iSm*iNbRpc+iRpc+1), TWMean, fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] )
+		      <<FairLogger::endl;
+	    //            TMean-=((TProfile *)hAvTOff_pfx)->GetBinContent(iSm*iNbRpc+iRpc+1); 
+            TMean-=TWMean; 
           }
+	 
 
           if(htempTOff_px->GetBinContent(iCh+1)>WalkNHmin){
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean;
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean;
-	    LOG(DEBUG)<<Form("Calib: TSRC %d%d%d%d, hits %6.0f, dTY  %8.3f, TM %8.3f -> new Off %8.3f,%8.3f ",
-			  iSmType,iSm,iRpc,iCh,htempTOff_px->GetBinContent(iCh+1),
+	    LOG(DEBUG)<<Form("Calib %2d: TSRC %d%d%d%d, hits %6.0f, dTY  %8.3f, TM %8.3f -> new Off %8.3f,%8.3f ",
+			    fTRefMode,iSmType,iSm,iRpc,iCh,htempTOff_px->GetBinContent(iCh+1),
 			  dTYOff,TMean,
 			  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
 			  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1])
@@ -3693,10 +3713,14 @@ Bool_t   CbmTofEventClusterizer::BuildClusters()
 
    fTRefHits=0.;
 
-   // Duplicate type "5" - digis 
    Int_t iNbTofDigi = fTofDigisColl->GetEntries();
+   if (iNbTofDigi > 100000) {
+     LOG(WARNING) << "Too many digis in event " << fiNevtBuild << FairLogger::endl;
+     return kFALSE;
+   }
    if( kFALSE )
    {
+     // Duplicate type "5" - digis 
      Int_t iNbDigi=iNbTofDigi;
      for( Int_t iDigInd = 0; iDigInd < iNbTofDigi; iDigInd++ )
      {
@@ -4855,7 +4879,7 @@ Bool_t   CbmTofEventClusterizer::BuildHits()
 		     } // else of if current Digis compatible with last fired chan
 		   } // if( 0 < iNbChanInHit)
 		   else {
-		     LOG(DEBUG)<<Form("1.Hit on channel %d, time: %f, PosY %f",iCh,dTime,dPosY) 
+		     LOG(DEBUG)<<Form("1.Hit on TSRC %d%d%d%d, time: %f, PosY %f",iSmType,iSm,iRpc,iCh,dTime,dPosY) 
 			       <<FairLogger::endl;
 		     
 		     // first fired strip in this RPC
