@@ -8,11 +8,9 @@
 #ifndef CbmTofStarMonitor2018_H
 #define CbmTofStarMonitor2018_H
 
-#ifndef __CINT__
 #include "Timeslice.hpp"
 #include "rocMess_wGet4v1.h"
 #include "CbmTofStarData.h"
-#endif
 
 #include "CbmTSUnpack.h"
 #include "CbmHistManager.h"
@@ -35,9 +33,7 @@ class CbmTofStarMonitor2018: public CbmTSUnpack {
 
     virtual Bool_t Init();
 
-#ifndef __CINT__
     virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
 
     virtual void Reset();
 
@@ -121,9 +117,7 @@ class CbmTofStarMonitor2018: public CbmTSUnpack {
     UInt_t fSpillIdx;
 
     Bool_t fbEpochSuppModeOn;
-#ifndef __CINT__
     std::vector< std::vector < ngdpb::Message > > fvmEpSupprBuffer;
-#endif
 
     UInt_t fGdpbId; // Id (hex number)of the GDPB which is read from the message
     UInt_t fGdpbNr; // running number (0 to fNrOfGdpbs) of the GDPB in the
@@ -272,7 +266,6 @@ class CbmTofStarMonitor2018: public CbmTSUnpack {
 
     void CreateHistograms();
 
-#ifndef __CINT__
     void FillHitInfo(ngdpb::Message);
     void FillEpochInfo(ngdpb::Message);
     void PrintSlcInfo(ngdpb::Message);
@@ -280,7 +273,6 @@ class CbmTofStarMonitor2018: public CbmTSUnpack {
     void PrintGenInfo(ngdpb::Message);
     void FillStarTrigInfo(ngdpb::Message);
     void FillTrigEpochInfo(ngdpb::Message);
-#endif
 
     inline Int_t GetArrayIndex(Int_t gdpbId, Int_t get4Id) {
       return gdpbId * fNrOfGet4PerGdpb + get4Id;

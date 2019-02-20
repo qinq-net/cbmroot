@@ -1,9 +1,7 @@
 #ifndef CBMTSUNPACKSTSXYTER_H
 #define CBMTSUNPACKSTSXYTER_H
 
-#ifndef __CINT__
 #include "Timeslice.hpp"
-#endif
 
 #include "CbmTSUnpack.h"
 #include "TClonesArray.h"
@@ -24,9 +22,9 @@ public:
     virtual ~CbmTSUnpackStsxyter();
 
     virtual Bool_t Init();
-#ifndef __CINT__
+
     virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
     virtual void Reset();
 
     virtual void Finish() {;}

@@ -8,10 +8,8 @@
 #ifndef CbmUnpackTofStar2018_H
 #define CbmUnpackTofStar2018_H
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-  #include "rocMess_wGet4v1.h"
-#endif
+#include "Timeslice.hpp"
+#include "rocMess_wGet4v1.h"
 
 #include "CbmTSUnpack.h"
 #include "CbmHistManager.h"
@@ -35,9 +33,9 @@ public:
    virtual ~CbmUnpackTofStar2018();
 
    virtual Bool_t Init();
-#ifndef __CINT__
+
    virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
    virtual void Reset();
 
    virtual void Finish();
@@ -129,7 +127,6 @@ private:
    Bool_t fbDetChanThere[64];
    TH2*   fhDetChanCoinc;
 
-#ifndef __CINT__
    std::vector< std::vector < ngdpb::Message > > fvmEpSupprBuffer;
 
    void FillHitInfo(ngdpb::Message);
@@ -138,7 +135,7 @@ private:
    void PrintSlcInfo(ngdpb::Message);
    void PrintSysInfo(ngdpb::Message);
    void PrintGenInfo(ngdpb::Message);
-#endif
+
    inline Int_t GetArrayIndex(Int_t gdpbId, Int_t get4Id)
    {
       return gdpbId * fuNrOfGet4PerGdpb + get4Id;

@@ -9,9 +9,7 @@
 #ifndef CBMTSUNPACKNXYTER_H
 #define CBMTSUNPACKNXYTER_H
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-#endif
+#include "Timeslice.hpp"
 
 #include "CbmTSUnpack.h"
 
@@ -34,9 +32,9 @@ public:
   virtual ~CbmTSUnpackNxyter();
     
   virtual Bool_t Init();
-#ifndef __CINT__
+
   virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
   virtual void Reset();
 
   virtual void Finish() {;}

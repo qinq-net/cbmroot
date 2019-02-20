@@ -25,14 +25,12 @@
 #include "StorableTimeslice.hpp"
 #include "CbmDataConverterTask.h"
 
-#ifndef __CINT__
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
-#endif //__CINT__
 
 #include "FairMQLogger.h"
 
@@ -64,10 +62,8 @@ class CbmMQFileSink: public FairMQDevice
     // Duration of time slice [ns] 
     Double_t fDuration;
     
-    #ifndef __CINT__ // for BOOST serialization
     friend class boost::serialization::access;
     fles::StorableTimeslice fFlesTimeSlices{1,1};
-    #endif // for BOOST serialization
 
     CbmMQFileSink(const CbmMQFileSink&);
     CbmMQFileSink operator=(const CbmMQFileSink&);

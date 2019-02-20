@@ -39,9 +39,7 @@ class CbmMcbm2018MonitorTofPulser: public CbmMcbmUnpack {
 
       virtual Bool_t Init();
 
-#ifndef __CINT__
       virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
 
       virtual void Reset();
 

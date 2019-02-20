@@ -8,12 +8,9 @@
 #ifndef CBMTSUNPACKTRB_H
 #define CBMTSUNPACKTRB_H
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-  #include "Message.hpp"
-  #include "TrbBridge.hpp"
-#endif
-
+#include "Timeslice.hpp"
+#include "Message.hpp"
+#include "TrbBridge.hpp"
 
 #include "CbmTSUnpack.h"
 #include "CbmBeamDefaults.h"
@@ -38,9 +35,9 @@ class CbmTSUnpackTrb : public CbmTSUnpack
   virtual ~CbmTSUnpackTrb();
     
   virtual Bool_t Init();
-#ifndef __CINT__
+
   virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
   virtual void Reset();
 
   virtual void Finish();
@@ -52,12 +49,10 @@ class CbmTSUnpackTrb : public CbmTSUnpack
  private:
 
   TClonesArray* fTrbRaw;
-#ifndef __CINT__
   TrbBridge* fTrbBridge;
   std::list<std::vector<uint32_t>> fTrbEventList;
   std::vector<uint32_t> fData;
   size_t fDataSize;
-#endif
 
   Double_t fSynchRefTime; // Reference time for synchronization
   std::map<UInt_t, Double_t> fSynchOffsetTimeMap; // first - TDCId, second - time offeset in ns

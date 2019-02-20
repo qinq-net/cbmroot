@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <iostream>
 
-//#ifndef __CINT__
 namespace get4v2x {
    // Size of one clock cycle (=1 coarse bin)
    const double   kdClockCycleSize    = 6250.0; //[ps]
@@ -40,7 +39,6 @@ namespace get4v2x {
 
    const uint32_t kuFeePulserChannel = 3; // Channel where a pulser can be set ON at 20 ns 500 Hz
 }
-//#endif
 
 namespace gdpb {
 

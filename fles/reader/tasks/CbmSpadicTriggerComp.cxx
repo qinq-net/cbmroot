@@ -194,9 +194,7 @@ void CbmSpadicTriggerComp::Exec (Option_t*)
 	  else
 	    return false;
       };
-#ifndef __CINT__
   std::sort(processedMessages.begin(),processedMessages.end(),CompareSpadicMessages);
-#endif //__CINT__
   for (UInt_t i =0; i<processedMessages.size();i++){
       CbmSpadicRawMessage* currentMessage = processedMessages.at (i);
       new ((*fProcSpadic)[fProcSpadic->GetEntriesFast ()]) CbmSpadicRawMessage (

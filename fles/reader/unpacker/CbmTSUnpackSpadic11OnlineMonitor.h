@@ -8,11 +8,8 @@
 #ifndef CBMTSUNPACKSPADIC11ONLINEMONITOR_H
 #define CBMTSUNPACKSPADIC11ONLINEMONITOR_H
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-  #include "Message.hpp"
-#endif
-
+#include "Timeslice.hpp"
+#include "Message.hpp"
 
 #include "CbmTSUnpack.h"
 #include "CbmBeamDefaults.h"
@@ -28,10 +25,10 @@ class CbmTSUnpackSpadic11OnlineMonitor : public CbmTSUnpack
   virtual ~CbmTSUnpackSpadic11OnlineMonitor();
     
   virtual Bool_t Init();
-#ifndef __CINT__
+
   virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
   void print_message(const spadic::Message& m);
-#endif
+
   virtual void Reset();
 
   virtual void Finish();

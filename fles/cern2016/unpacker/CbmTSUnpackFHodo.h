@@ -8,10 +8,8 @@
 #ifndef CBMTSUNPACKTEST_H
 #define CBMTSUNPACKTEST_H
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-  #include "rocMess_wGet4v1.h"
-#endif
+#include "Timeslice.hpp"
+#include "rocMess_wGet4v1.h"
 
 #include "CbmTSUnpack.h"
 #include "CbmHistManager.h"
@@ -35,9 +33,9 @@ public:
   virtual ~CbmTSUnpackFHodo();
     
   virtual Bool_t Init();
-#ifndef __CINT__
+
   virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
   virtual void Reset();
 
   virtual void Finish();
@@ -83,10 +81,8 @@ private:
 
   void CreateHistograms();
 
-#ifndef __CINT__
   void FillHitInfo(ngdpb::Message);
   void FillEpochInfo(ngdpb::Message);
-#endif
 
   CbmTSUnpackFHodo(const CbmTSUnpackFHodo&);
   CbmTSUnpackFHodo operator=(const CbmTSUnpackFHodo&);

@@ -8,9 +8,7 @@
 #ifndef CbmTofStarData2019_H
 #define CbmTofStarData2019_H
 
-//#ifndef __CINT__
-  #include "gDpbMessv100.h"
-//#endif
+#include "gDpbMessv100.h"
 
 #include "Rtypes.h"
 
@@ -98,9 +96,7 @@ class CbmTofStarSubevent2019
       inline void SetIncompleteEventFlag(  Bool_t bFlagState = kTRUE ){
                         bFlagState ? (fulEventStatusFlags |= kulFlagIncompleteEvt) :
                                      (fulEventStatusFlags &= ~(kulFlagIncompleteEvt) ); }
-//#ifndef __CINT__
       inline void AddMsg( gdpbv100::FullMessage & msgIn){ fvMsgBuffer.push_back( msgIn ); fuEventSizeBytes += 2 * sizeof( ULong64_t ); }
-//#endif
 
       // Accessors
       inline CbmTofStarTrigger2019 GetTrigger() const { return fTrigger;}
@@ -112,13 +108,9 @@ class CbmTofStarSubevent2019
       inline Bool_t            GetEndBorderEventFlag()   const { return 0 < (fulEventStatusFlags & kulFlagEndBorderEvt); }
       inline Bool_t            GetIncompleteEventFlag()  const { return 0 < (fulEventStatusFlags & kulFlagIncompleteEvt); }
       inline Int_t             GetEventSize()            const { return fuEventSizeBytes; }
-//#ifndef __CINT__
       inline gdpbv100::Message     GetMsg( UInt_t uMsgIdx ) const;
-//#endif
       inline UInt_t            GetMsgBuffSize() const { return fvMsgBuffer.size();}
-//#ifndef __CINT__
       inline static uint32_t   GetMaxOutputSize() { return kuMaxOutputSize;}
-//#endif
       inline Double_t          GetEventTimeSec() const { return (1e-9) * gdpbv100::kdClockCycleSizeNs * fTrigger.GetFullGdpbTs(); }
 
       // Content clearing
@@ -137,7 +129,6 @@ class CbmTofStarSubevent2019
       void   PrintSubEvent();
 
    private:
-//#ifndef __CINT__
       static const uint32_t         kuMaxOutputSize       =     131072; // 2^17
       static const uint32_t         kuMaxNbMsgs           =       8190; // 4 * 64b in header => floor( (2^17 / 8 ) - 4) / 2
       static const uint64_t         kulFlagBadEvt         =   0x1 << 0; //! General flag for bad event
@@ -150,17 +141,14 @@ class CbmTofStarSubevent2019
       static const uint64_t         kulSourceIdMask       =     0xFFFF;
       static const uint64_t         kulEventSizeOffset    =         32;
       static const uint64_t         kulEventSizeMask      = 0xFFFFFFFF;
-//#endif
 
       Bool_t                        fbTriggerSet;
       CbmTofStarTrigger2019         fTrigger;
       UShort_t                      fusSourceId;
       ULong64_t                     fulEventStatusFlags;
       UInt_t                        fuEventSizeBytes;
-//#ifndef __CINT__
       std::vector< gdpbv100::FullMessage > fvMsgBuffer;
       ULong64_t                     fpulBuff[kuMaxOutputSize];
-//#endif
 
 
 //   ClassDef(CbmTofStarSubevent2019, 1)

@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <iostream>
 
-//#ifndef __CINT__
 namespace gdpbv100 {
    // Size of one clock cycle (=1 coarse bin)
    const double   kdClockCycleSize    = 6250.0; //[ps]

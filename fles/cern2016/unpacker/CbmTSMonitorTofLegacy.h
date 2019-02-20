@@ -8,10 +8,8 @@
 #ifndef CbmTSMonitorTofLegacy_H
 #define CbmTSMonitorTofLegacy_H
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-  #include "rocMess_wGet4v1.h"
-#endif
+#include "Timeslice.hpp"
+#include "rocMess_wGet4v1.h"
 
 #include "CbmTSUnpack.h"
 #include "CbmHistManager.h"
@@ -34,9 +32,7 @@ public:
 
    virtual Bool_t Init();
 
-#ifndef __CINT__
    virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
 
    virtual void Reset();
 
@@ -103,7 +99,6 @@ private:
 
    void CreateHistograms();
 
-#ifndef __CINT__
    void FillHitInfo(ngdpb::Message, std::vector<TH2*>,
                     std::vector<TH1*>, std::vector<TH2*>,
                     std::vector<TH1*>, TH2*
@@ -112,7 +107,6 @@ private:
    void PrintSlcInfo(ngdpb::Message);
    void PrintSysInfo(ngdpb::Message);
    void PrintGenInfo(ngdpb::Message);
-#endif
 
    CbmTSMonitorTofLegacy(const CbmTSMonitorTofLegacy&);
    CbmTSMonitorTofLegacy operator=(const CbmTSMonitorTofLegacy&);

@@ -11,14 +11,12 @@
 #include <iostream>
 #include <sstream>
 
-#ifndef __CINT__ // Boost serialization 
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
-#endif //__CINT__
 
 #include "CbmDetectorList.h"
 #include "CbmDataConverterTask.h"
@@ -99,10 +97,8 @@ private:
     uint64_t fMSCounter_sts;
     uint64_t fMSCounter_much;
     std::vector<CbmMicroSlice> fDigiVector;
-    #ifndef __CINT__ 
     friend class boost::serialization::access;
     fles::StorableTimeslice fFlesTimeSlices{1, 1};
-    #endif
 
     CbmMicroSliceMergerTask(const CbmMicroSliceMergerTask&);
     CbmMicroSliceMergerTask& operator=(const CbmMicroSliceMergerTask&);

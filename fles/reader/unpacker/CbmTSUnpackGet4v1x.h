@@ -10,9 +10,7 @@
 #ifndef CBMTSUNPACKGET4V1X_H
 #define CBMTSUNPACKGET4V1X_H
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-#endif
+#include "Timeslice.hpp"
 
 // Specific headers
 #include "CbmGet4v1xHackDef.h"
@@ -44,9 +42,9 @@ public:
   virtual ~CbmTSUnpackGet4v1x();
 
   virtual Bool_t Init();
-#ifndef __CINT__
+
   virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
   virtual void Reset();
 
   virtual void Finish();

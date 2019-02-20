@@ -8,9 +8,7 @@
 #ifndef CBMCOSY2018MONITORSCAN_H
 #define CBMCOSY2018MONITORSCAN_H
 
-#ifndef __CINT__
-    #include "Timeslice.hpp"
-#endif
+#include "Timeslice.hpp"
 
 // Data
 #include "StsXyterMessage.h"
@@ -40,9 +38,9 @@ public:
    virtual ~CbmCosy2018MonitorScan();
 
    virtual Bool_t Init();
-#ifndef __CINT__
+
    virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
    virtual void Reset();
 
    virtual void Finish();

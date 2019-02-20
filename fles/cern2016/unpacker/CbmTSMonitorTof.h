@@ -8,10 +8,8 @@
 #ifndef CbmTSMonitorTof_H
 #define CbmTSMonitorTof_H
 
-#ifndef __CINT__
 #include "Timeslice.hpp"
 #include "rocMess_wGet4v1.h"
-#endif
 
 #include "CbmTSUnpack.h"
 #include "CbmHistManager.h"
@@ -33,9 +31,7 @@ class CbmTSMonitorTof: public CbmTSUnpack {
 
     virtual Bool_t Init();
 
-#ifndef __CINT__
     virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
 
     virtual void Reset();
 
@@ -111,9 +107,8 @@ class CbmTSMonitorTof: public CbmTSUnpack {
     Bool_t fbBeamTuningMode;
 
     Bool_t fbEpochSuppModeOn;
-#ifndef __CINT__
+
     std::vector< std::vector < ngdpb::Message > > fvmEpSupprBuffer;
-#endif
 
     UInt_t fGdpbId; // Id (hex number)of the GDPB which is read from the message
     UInt_t fGdpbNr; // running number (0 to fNrOfGdpbs) of the GDPB in the
@@ -170,13 +165,11 @@ class CbmTSMonitorTof: public CbmTSUnpack {
 
     void CreateHistograms();
 
-#ifndef __CINT__
     void FillHitInfo(ngdpb::Message);
     void FillEpochInfo(ngdpb::Message);
     void PrintSlcInfo(ngdpb::Message);
     void PrintSysInfo(ngdpb::Message);
     void PrintGenInfo(ngdpb::Message);
-#endif
 
     inline Int_t GetArrayIndex(Int_t gdpbId, Int_t get4Id) {
       return gdpbId * fNrOfGet4PerGdpb + get4Id;

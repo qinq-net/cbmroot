@@ -27,9 +27,7 @@
 // Symbols from ControlClient.hpp are in libcbmnetcntlclientroot.so, loaded in rootlogon.C
 // This is to let your IDE know about CbmNet::ControlClient class, and thus make
 // autocompletion possible
-#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "fles/ctrl/control/libclient/ControlClient.hpp"
-#endif
 
 using std::ostringstream;
 

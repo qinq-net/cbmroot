@@ -20,9 +20,9 @@ class CbmMcbmUnpack : public CbmTSUnpack
   virtual ~CbmMcbmUnpack();
 
   virtual Bool_t Init() = 0;
-#ifndef __CINT__
+
   virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component) = 0;
-#endif
+
   virtual void Reset() = 0;
 
   virtual void Finish() = 0;

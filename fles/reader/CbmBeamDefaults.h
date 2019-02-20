@@ -44,13 +44,11 @@ static const std::map<Int_t, Int_t> groupToExpMap
       std::make_pair(Bucarest,2)
 };
 */
-#ifndef __CINT__
 static const std::map<Int_t, Int_t> groupToExpMap = {
   {kFlesRich,0},
   {kFlesMuenster,1},
   {kFlesFrankfurt,2},
   {kFlesBucarest,3}
 };
-#endif
 
 #endif

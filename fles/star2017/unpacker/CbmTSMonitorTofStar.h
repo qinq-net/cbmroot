@@ -8,11 +8,9 @@
 #ifndef CbmTSMonitorTofStar_H
 #define CbmTSMonitorTofStar_H
 
-#ifndef __CINT__
 #include "Timeslice.hpp"
 #include "rocMess_wGet4v1.h"
 #include "CbmTofStarData.h"
-#endif
 
 #include "CbmTSUnpack.h"
 #include "CbmHistManager.h"
@@ -45,9 +43,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
 
     virtual Bool_t Init();
 
-#ifndef __CINT__
     virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
 
     virtual void Reset();
 
@@ -133,9 +129,7 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     UInt_t fSpillIdx;
 
     Bool_t fbEpochSuppModeOn;
-#ifndef __CINT__
     std::vector< std::vector < ngdpb::Message > > fvmEpSupprBuffer;
-#endif
 
     UInt_t fGdpbId; // Id (hex number)of the GDPB which is read from the message
     UInt_t fGdpbNr; // running number (0 to fNrOfGdpbs) of the GDPB in the
@@ -295,12 +289,10 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     std::vector< Int_t >     fiStarBuffIdxCurr;
     std::vector< Int_t >     fiStarBuffIdxNext;
     std::vector< ULong64_t > fuLastTriggerFullTs;
-#ifndef __CINT__
     std::vector< std::vector< std::vector < ngdpb::Message > > >    fvGdpbEpMsgBuffer; //! Dims: [gDPB][buffer][msgs], 1 buff. for Prev, Curr and Next
     std::vector< std::vector< std::vector < ngdpb::Message > > >    fvGdpbEpHitBuffer; //! Dims: [gDPB][buffer][msgs], 1 buff. for Prev, Curr and Next
     std::vector< std::vector< std::vector < CbmTofStarTrigger > > > fvGdpbEpTrgBuffer; //! Dims: [gDPB][buffer][trig], 1 buff. for Prev, Curr and Next
     CbmTofStarSubevent      fStarSubEvent;
-#endif
     std::vector<TH2*> fhStarEpToTrig_gDPB;
     std::vector<TH1*> fhStarHitToTrigAll_gDPB;
     std::vector<TH1*> fhStarHitToTrigWin_gDPB;
@@ -309,7 +301,6 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
 
     void CreateHistograms();
 
-#ifndef __CINT__
     void FillHitInfo(ngdpb::Message);
     void FillEpochInfo(ngdpb::Message);
     void PrintSlcInfo(ngdpb::Message);
@@ -317,7 +308,6 @@ class CbmTSMonitorTofStar: public CbmTSUnpack {
     void PrintGenInfo(ngdpb::Message);
     void FillStarTrigInfo(ngdpb::Message);
     void FillTrigEpochInfo(ngdpb::Message);
-#endif
 
     Bool_t StarSort( Int_t iGdpbIdx );
     Bool_t StarSelect( Int_t iGdpbIdx );

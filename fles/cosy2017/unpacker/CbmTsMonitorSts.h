@@ -8,10 +8,8 @@
 #ifndef CbmTsMonitorSts_H
 #define CbmTsMonitorSts_H
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-  #include "rocMess_wGet4v1.h"
-#endif
+#include "Timeslice.hpp"
+#include "rocMess_wGet4v1.h"
 
 #include "CbmTSUnpack.h"
 #include "CbmHistManager.h"
@@ -30,9 +28,9 @@ public:
    virtual ~CbmTsMonitorSts();
     
    virtual Bool_t Init();
-#ifndef __CINT__
+
    virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
    virtual void Reset();
 
    virtual void Finish();
@@ -103,10 +101,8 @@ private:
   
    void CreateHistograms();
 
-#ifndef __CINT__
    void FillHitInfo(ngdpb::Message, UInt_t uNdpbIdx, UInt_t uFebBase);
    void FillEpochInfo(ngdpb::Message, UInt_t uNdpbIdx, UInt_t uFebBase);
-#endif
 
    Int_t CreateAddress(Int_t febBase, Int_t febId, Int_t stationId, Int_t layerId, Int_t sideId,
 		  Int_t moduleId, Int_t channelId);

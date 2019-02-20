@@ -1,12 +1,10 @@
 #ifndef CBMNXFLIBFILESOURCE_H
 #define CBMNXFLIBFILESOURCE_H 
 
-#ifndef __CINT__
-  #include "TimesliceSource.hpp"
-  #include "Timeslice.hpp"
-  #include "MicrosliceDescriptor.hpp"
-  #include "Message.hpp"
-#endif
+#include "TimesliceSource.hpp"
+#include "Timeslice.hpp"
+#include "MicrosliceDescriptor.hpp"
+#include "Message.hpp"
 
 #include "FairSource.h"
 
@@ -39,12 +37,10 @@ class CbmNxFlibFileSource : public FairSource
     // --- Output arrays
     TClonesArray* fNxyterRaw;         ///< Output array of CbmNxyterRawMessage
 
-#ifndef __CINT__
     fles::TimesliceSource* fSource; //!
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
     void UnpackNxyterCbmNetMessage(const fles::Timeslice& ts, size_t component);
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
-#endif
 
     CbmNxFlibFileSource operator=(const CbmNxFlibFileSource&);
 

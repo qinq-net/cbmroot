@@ -8,12 +8,9 @@
 #ifndef CBMMCBM2018SOURCE_H
 #define CBMMCBM2018SOURCE_H
 
-#ifndef __CINT__
-  #include "TimesliceSource.hpp"
-  #include "Timeslice.hpp"
-  #include "MicrosliceDescriptor.hpp"
-//  #include "Message.hpp"
-#endif
+#include "TimesliceSource.hpp"
+#include "Timeslice.hpp"
+#include "MicrosliceDescriptor.hpp"
 
 #include "FairSource.h"
 #include "CbmMcbmUnpack.h"
@@ -101,11 +98,9 @@ class CbmMcbm2018Source : public FairSource
 
     UInt_t fuTsReduction;
 
-#ifndef __CINT__
     fles::TimesliceSource* fSource; //!
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
-#endif
 
     Int_t FillBuffer();
     Int_t GetNextEvent();

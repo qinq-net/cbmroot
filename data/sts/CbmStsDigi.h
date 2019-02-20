@@ -11,10 +11,8 @@
 #include "CbmDefs.h"
 #include "CbmDigi.h"
 
-#ifndef __CINT__
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
-#endif //__CINT__
 
 /** @class CbmStsDigi
  ** @brief Data class for a single-channel message in the STS
@@ -101,9 +99,7 @@ class CbmStsDigi : public CbmDigi
 
  private:
 
-#ifndef __CINT__ // for BOOST serialization
   friend class boost::serialization::access;
-#endif // for BOOST serialization
 
   Int_t     fAddress;     ///< Unique element address
   UShort_t  fChannel;     ///< Channel number

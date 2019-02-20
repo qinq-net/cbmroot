@@ -8,12 +8,10 @@
 #ifndef CBMFLIBFILESOURCENEW_H
 #define CBMFLIBFILESOURCENEW_H
 
-#ifndef __CINT__
-  #include "TimesliceSource.hpp"
-  #include "Timeslice.hpp"
-  #include "MicrosliceDescriptor.hpp"
-  #include "Message.hpp"
-#endif
+#include "TimesliceSource.hpp"
+#include "Timeslice.hpp"
+#include "MicrosliceDescriptor.hpp"
+#include "Message.hpp"
 
 #include "FairSource.h"
 #include "CbmTSUnpack.h"
@@ -78,11 +76,9 @@ class CbmFlibFileSourceNew : public FairSource
     UInt_t fTSCounter;
     TStopwatch fTimer;
 
-#ifndef __CINT__
     fles::TimesliceSource* fSource; //!
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
-#endif
 
     CbmFlibFileSourceNew operator=(const CbmFlibFileSourceNew&);
 

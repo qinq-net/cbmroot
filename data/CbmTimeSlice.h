@@ -12,11 +12,9 @@
 #include "CbmMatch.h"
 
 
-#ifndef __CINT__ // for BOOST serialization
 // boost
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
-#endif 
 
 
 /** @class CbmTimeSlice
@@ -155,9 +153,7 @@ class CbmTimeSlice : public TNamed
 
     
 
-    #ifndef __CINT__ // for BOOST serialization
     friend class boost::serialization::access;
-    #endif // for BOOST serialization
 
     ClassDef(CbmTimeSlice, 5)
 };

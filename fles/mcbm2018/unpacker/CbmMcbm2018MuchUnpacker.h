@@ -9,9 +9,7 @@
 #ifndef CBMMCBM2018MUCHUNPACKER_H
 #define CBMMCBM2018MUCHUNPACKER_H
 
-#ifndef __CINT__
-    #include "Timeslice.hpp"
-#endif
+#include "Timeslice.hpp"
 
 // Data
 #include "StsXyterMessage.h"
@@ -43,9 +41,9 @@ public:
    virtual ~CbmMcbm2018MuchUnpacker();
 
    virtual Bool_t Init();
-#ifndef __CINT__
+
    virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
    virtual void Reset();
 
    virtual void Finish();

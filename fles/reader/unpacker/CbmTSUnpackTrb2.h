@@ -12,11 +12,9 @@
 
 #include "TH1.h"
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-  #include "Message.hpp"
-  #include "TrbBridge.hpp"
-#endif
+#include "Timeslice.hpp"
+#include "Message.hpp"
+#include "TrbBridge.hpp"
 
 class CbmTrbIterator;
 class CbmRawEvent;
@@ -28,9 +26,8 @@ public:
 	virtual ~CbmTSUnpackTrb2();
 
 	virtual Bool_t Init();
-#ifndef __CINT__
+
 	virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
 
 	void UnpackTrbEvents();
 
@@ -42,12 +39,10 @@ private:
 
 	Int_t fLink;
 
-#ifndef __CINT__
 	TrbBridge* fTrbBridge;
 	std::list<std::vector<uint32_t>> fTrbEventList;
 	std::vector<uint32_t> fData;
 	size_t fDataSize;
-#endif
 
 	CbmTrbIterator* fTrbIter; //!
 	CbmRawEvent* fRawEvent;  //!

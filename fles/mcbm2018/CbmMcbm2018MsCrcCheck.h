@@ -12,9 +12,7 @@
 #include "TList.h"
 #include "TObjString.h"
 
-#ifndef __CINT__
-   #include "TimesliceSubscriber.hpp"
-#endif
+#include "TimesliceSubscriber.hpp"
 
 class CbmMcbm2018MsCrcCheck
 {
@@ -38,9 +36,7 @@ class CbmMcbm2018MsCrcCheck
     UInt_t fTSNumber;
     UInt_t fTSCounter;
 
-#ifndef __CINT__
     fles::TimesliceSource* fSource; //!
-#endif
 
     Bool_t OpenNextFile();
 

@@ -8,9 +8,7 @@
 #ifndef CBMCERN2017MONITORRAWSTS_H
 #define CBMCERN2017MONITORRAWSTS_H
 
-#ifndef __CINT__
-    #include "Timeslice.hpp"
-#endif
+#include "Timeslice.hpp"
 
 // Data
 #include "StsXyterRawMessage.h"
@@ -37,9 +35,9 @@ public:
    virtual ~CbmCern2017MonitorRawSts();
 
    virtual Bool_t Init();
-#ifndef __CINT__
+
    virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
    virtual void Reset();
 
    virtual void Finish();

@@ -8,10 +8,8 @@
 #ifndef CBMTSUNPACKSPADICONLINEFEX_H
 #define CBMTSUNPACKSPADICONLINEFEX_H
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-  #include "Message.hpp"
-#endif
+#include "Timeslice.hpp"
+#include "Message.hpp"
 
 
 #include "CbmTSUnpack.h"
@@ -28,10 +26,10 @@ class CbmTSUnpackSpadicOnlineFex : public CbmTSUnpack
   virtual ~CbmTSUnpackSpadicOnlineFex();
     
   virtual Bool_t Init();
-#ifndef __CINT__
+
   virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
   void print_message(const spadic::Message& m);
-#endif
+
   virtual void Reset();
 
   virtual void Finish();

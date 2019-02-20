@@ -8,12 +8,10 @@
 #ifndef CBMFLIBFILESOURCE_H
 #define CBMFLIBFILESOURCE_H
 
-#ifndef __CINT__
-  #include "TimesliceSource.hpp"
-  #include "Timeslice.hpp"
-  #include "MicrosliceDescriptor.hpp"
-  #include "Message.hpp"
-#endif
+#include "TimesliceSource.hpp"
+#include "Timeslice.hpp"
+#include "MicrosliceDescriptor.hpp"
+#include "Message.hpp"
 
 #include "FairSource.h"
 
@@ -58,13 +56,11 @@ class CbmFlibFileSource : public FairSource
 
     Int_t fTSCounter;
 
-#ifndef __CINT__
     fles::TimesliceSource* fSource; //!
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
     void UnpackSpadicCbmNetMessage(const fles::Timeslice& ts, size_t component);
     void print_message(const spadic::Message& m);
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
-#endif
 
     CbmFlibFileSource operator=(const CbmFlibFileSource&);
     CbmFlibFileSource(const CbmFlibFileSource& source);

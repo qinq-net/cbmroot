@@ -22,10 +22,8 @@
 #include "CbmMuchAddress.h"
 
 
-#ifndef __CINT__
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/base_object.hpp>
-#endif //__CINT__
 
 
 class CbmMuchDigi : public CbmDigi{
@@ -85,9 +83,7 @@ class CbmMuchDigi : public CbmDigi{
 
  	private:
 
-	#ifndef __CINT__ // for BOOST serialization
-  		friend class boost::serialization::access;
-	#endif
+	friend class boost::serialization::access;
 
 	UInt_t		fAddress; // Unique detector address
  	ULong64_t	fTime;	  // Absolute Time Stamp[ns]

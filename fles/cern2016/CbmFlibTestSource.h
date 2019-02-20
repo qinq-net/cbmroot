@@ -8,12 +8,9 @@
 #ifndef CBMFLIBTESTSOURCE_H
 #define CBMFLIBTESTSOURCE_H
 
-#ifndef __CINT__
-  #include "TimesliceSource.hpp"
-  #include "Timeslice.hpp"
-  #include "MicrosliceDescriptor.hpp"
-//  #include "Message.hpp"
-#endif
+#include "TimesliceSource.hpp"
+#include "Timeslice.hpp"
+#include "MicrosliceDescriptor.hpp"
 
 #include "FairSource.h"
 #include "CbmTSUnpack.h"
@@ -96,11 +93,9 @@ class CbmFlibTestSource : public FairSource
 
     Bool_t fBufferFillNeeded; /** True if the input buffer has to be filled again **/  
 
-#ifndef __CINT__
     fles::TimesliceSource* fSource; //!
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
-#endif
 
     Int_t FillBuffer();
     Int_t GetNextEvent();

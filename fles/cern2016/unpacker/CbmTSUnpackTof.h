@@ -1,4 +1,3 @@
-// -----------------------------------------------------------------------------
 // -----                                                                   -----
 // -----                        CbmTSUnpackTof                             -----
 // -----               Created 27.10.2016 by P.-A. Loizeau                 -----
@@ -8,10 +7,8 @@
 #ifndef CbmTSUnpackTof_H
 #define CbmTSUnpackTof_H
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-  #include "rocMess_wGet4v1.h"
-#endif
+#include "Timeslice.hpp"
+#include "rocMess_wGet4v1.h"
 
 #include "CbmTSUnpack.h"
 #include "CbmHistManager.h"
@@ -36,9 +33,9 @@ public:
   virtual ~CbmTSUnpackTof();
     
   virtual Bool_t Init();
-#ifndef __CINT__
+
   virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
   virtual void Reset();
 
   virtual void Finish();
@@ -95,7 +92,6 @@ private:
     
   Bool_t fbEpochSuppModeOn;
 
-#ifndef __CINT__
   std::vector< std::vector< std::vector < ngdpb::Message > > > fvmEpSupprBuffer;
 
   void FillHitInfo(ngdpb::Message);
@@ -104,7 +100,6 @@ private:
   void PrintSlcInfo(ngdpb::Message);
   void PrintSysInfo(ngdpb::Message);
   void PrintGenInfo(ngdpb::Message);
-#endif
 
   CbmTSUnpackTof(const CbmTSUnpackTof&);
   CbmTSUnpackTof operator=(const CbmTSUnpackTof&);

@@ -234,7 +234,6 @@ struct LxTbLayer
     scaltype z;
 };
 
-#ifndef __CINT__
 
 #define LXTB_ITERATE_LAYER_BEGIN  if (maxX > layer.minX && minX < layer.maxX && maxY > layer.minY && minY < layer.maxY && maxT > layer.minT && minT < layer.maxT) \
     { \
@@ -322,7 +321,6 @@ struct LxTbLayer
     } \
 } \
 
-#endif// __CINT__
 
 template <class HandlePoint> void IterateLayer(LxTbLayer& layer, HandlePoint& handlePoint)
 {

@@ -26,10 +26,6 @@
 #define LX_DYNAMIC_CAST dynamic_cast
 #endif// FAST_CODE
 
-#ifdef __CINT__
-typedef long off_t;
-#endif//__CINT__
-
 class LxHitFile
 {
 public:

@@ -9,10 +9,6 @@
 #ifndef CBMGET4EVENTBUILDER_H
 #define CBMGET4EVENTBUILDER_H
 
-#ifndef __CINT__
-//  #include "Timeslice.hpp"
-#endif
-
 // Specific headers
 #include "CbmGet4v1xHackDef.h"
 

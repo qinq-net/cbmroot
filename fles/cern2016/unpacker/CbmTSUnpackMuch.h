@@ -8,10 +8,8 @@
 #ifndef CBMTSUNPACKMUCH_H
 #define CBMTSUNPACKMUCH_H
 
-#ifndef __CINT__
 #include "Timeslice.hpp"
 #include "rocMess_wGet4v1.h"
-#endif
 
 #include "CbmTSUnpack.h"
 #include "CbmNxyterRawMessage.h"
@@ -37,9 +35,9 @@ class CbmTSUnpackMuch: public CbmTSUnpack
   virtual ~CbmTSUnpackMuch();
   
   virtual Bool_t Init();
-#ifndef __CINT__
+
   virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
-#endif
+
   virtual void Reset();
   
   virtual void Finish();
@@ -89,10 +87,8 @@ class CbmTSUnpackMuch: public CbmTSUnpack
   
   CbmMuchUnpackPar* fUnpackPar;    //!
   
-#ifndef __CINT__
   void FillHitInfo(ngdpb::Message);
   void FillEpochInfo(ngdpb::Message);
-#endif
   
   CbmTSUnpackMuch(const CbmTSUnpackMuch&);
   CbmTSUnpackMuch operator=(const CbmTSUnpackMuch&);

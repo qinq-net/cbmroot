@@ -8,9 +8,7 @@
 #ifndef CbmTofStarData_H
 #define CbmTofStarData_H
 
-#ifndef __CINT__
 #include "rocMess_wGet4v1.h"
-#endif
 
 #include "Rtypes.h"
 
@@ -82,22 +80,16 @@ class CbmTofStarSubevent
       inline void SetEmptyEventFlag(  Bool_t bFlagState = kTRUE ){
                         bFlagState ? (fulEventStatusFlags |= kulFlagEmptyEvt) :
                                      (fulEventStatusFlags &= ~(kulFlagEmptyEvt) ); }
-#ifndef __CINT__
       inline void AddMsg( ngdpb::Message & msgIn){ fvMsgBuffer.push_back( msgIn ); }
-#endif
 
       // Accessors
       inline CbmTofStarTrigger GetTrigger()  const { return fTrigger;}
       inline Bool_t            GetBadEventFlag() const { return (fulEventStatusFlags & kulFlagBadEvt); }
       inline Bool_t            GetOverlapEventFlag() const { return (fulEventStatusFlags & kulFlagOverlapEvt); }
       inline Bool_t            GetEmptyEventFlag() const { return (fulEventStatusFlags & kulFlagEmptyEvt); }
-#ifndef __CINT__
       inline ngdpb::Message    GetMsg( UInt_t uMsgIdx ) const;
-#endif
       inline UInt_t            GetMsgBuffSize() const { return fvMsgBuffer.size();}
-#ifndef __CINT__
       inline static uint32_t   GetMaxOutputSize() { return kuMaxOutputSize;}
-#endif
 
       // Content clearing
       void   ClearSubEvent();
@@ -109,21 +101,17 @@ class CbmTofStarSubevent
       Bool_t LoadInput( void * pBuff, Int_t iInputSizeBytes );
 
    private:
-#ifndef __CINT__
       static const uint32_t         kuMaxOutputSize   = 131072; // 2^17
       static const uint32_t         kuMaxNbMsgs       =  16380; // 4 * 64b in header => floor( (2^17 / 8 ) - 4)
       static const uint64_t         kulFlagBadEvt     = 0x1 << 0;
       static const uint64_t         kulFlagOverlapEvt = 0x1 << 1;
       static const uint64_t         kulFlagEmptyEvt   = 0x1 << 2;
-#endif
 
       Bool_t                        fbTriggerSet;
       CbmTofStarTrigger             fTrigger;
       ULong64_t                     fulEventStatusFlags;
-#ifndef __CINT__
       std::vector< ngdpb::Message > fvMsgBuffer;
       ULong64_t                     fpulBuff[kuMaxOutputSize];
-#endif
 
 
       CbmTofStarSubevent(const CbmTofStarSubevent&);

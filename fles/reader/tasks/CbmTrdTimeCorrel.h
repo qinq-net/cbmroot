@@ -128,7 +128,6 @@ class CbmTrdTimeCorrel : public FairTask
   void FillSignalShape(CbmSpadicRawMessage* message){
 	  FillSignalShape(*message);
   }
-#ifndef __CINT__
 	std::vector<std::pair<TString, TString> > fCorrmaps = { std::make_pair(
 			GetSpadicName(0, 2, kDirectOutput, kFullSpadic),
 			GetSpadicName(1, 2, kDirectOutput, kFullSpadic)), std::make_pair(
@@ -138,7 +137,6 @@ class CbmTrdTimeCorrel : public FairTask
 			GetSpadicName(3, 1, kDirectOutput, kFullSpadic)), std::make_pair(
 			GetSpadicName(0, 2, kDirectOutput, kFullSpadic),
 			GetSpadicName(3, 2, kDirectOutput, kFullSpadic))};
-#endif // __CINT__
 
   void CreateHistograms();
   void FitBaseline();

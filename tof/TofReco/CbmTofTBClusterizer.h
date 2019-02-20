@@ -79,7 +79,6 @@ private:
     TClonesArray* fTofHits;
     TClonesArray* fTofDigiMatchs;
     //std::vector<std::vector<std::vector<std::list<CbmTofDigiExp*> > > > fStorDigiExp; //[nbType][nbSm*nbRpc][nbCh]{nDigis}
-#ifndef __CINT__
     
     
     std::vector<std::vector<std::vector<ChannelDigis> > > fStorDigiExp;
@@ -108,7 +107,7 @@ private:
       >
      >
     > > > fStorDigiExpOld;//[nbType][nbSm*nbRpc][nbCh]<[->|nTopDigis][->|nBottomDigis]>
-#endif//__CINT__
+
     Double_t fOutTimeFactor;
     
     /** Make copy constructor and copy operator private to avoid warning due to pointer members **/

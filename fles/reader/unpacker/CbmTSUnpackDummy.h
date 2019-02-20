@@ -8,9 +8,7 @@
 #ifndef CBMTSUNPACKDUMMY_H
 #define CBMTSUNPACKDUMMY_H
 
-#ifndef __CINT__
-  #include "Timeslice.hpp"
-#endif
+#include "Timeslice.hpp"
 
 
 #include "CbmTSUnpack.h"
@@ -23,10 +21,10 @@ class CbmTSUnpackDummy : public CbmTSUnpack
   virtual ~CbmTSUnpackDummy();
     
   virtual Bool_t Init() { return kTRUE; }
-#ifndef __CINT__
+
   virtual Bool_t DoUnpack(const fles::Timeslice& /*ts*/, size_t /*component*/) 
   { return kTRUE; }
-#endif
+
   virtual void Reset() { return; }
 
   virtual void Finish() { return; }
