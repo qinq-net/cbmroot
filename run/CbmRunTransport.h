@@ -34,6 +34,11 @@ enum ECbmEngine {
 };
 
 
+/** @class CbmRunTransport
+ ** @brief User interface class for transport simulation
+ ** @author Volker Friese <v.friese@gsi.de>
+ ** @date 31 January 2019
+ **/
 class CbmRunTransport : public TNamed
 {
 
@@ -76,6 +81,14 @@ class CbmRunTransport : public TNamed
      ** @value Pointer to CbmSetup class
      **/
     CbmSetup* GetSetup() const { return fSetup; }
+
+
+    /** @brief Access to stack filter object
+     ** @value Pointer to stack filter object
+     **/
+    std::unique_ptr<CbmStackFilter>& GetStackFilter() {
+      return fStackFilter;
+    }
 
 
     /** @brief Use a standard setup

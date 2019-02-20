@@ -19,13 +19,13 @@ using std::vector;
 
 // -----   Constructor   ----------------------------------------------------
 CbmStackFilter::CbmStackFilter() :
-        fStoreAllPrimaries(kTRUE),
-        fStoreAllMothers(kTRUE),
-        fMinNofPointsGlobal(1),
-        fMinNofPoints(),
-        fMinEkin(0.),
-        fStore()
-{
+   fStoreAllPrimaries(kTRUE),
+   fStoreAllMothers(kTRUE),
+   fStoreAllDecays(kFALSE),
+   fMinNofPointsGlobal(1),
+   fMinNofPoints(),
+   fMinEkin(0.),
+   fStore() {
 }
 // --------------------------------------------------------------------------
 
@@ -100,6 +100,34 @@ const vector<Bool_t>& CbmStackFilter::Select(const TClonesArray& particles,
     nSelected++;
 
   } //# particles
+
+
+  // Mark all decay daughters of primaries for storage
+  TParticle* particle = nullptr;
+  if ( fStoreAllDecays) {
+    for (UInt_t index = 0; index < particles.GetEntriesFast(); index++) {
+      if ( fStore[index] ) continue;  // already selected
+      particle = dynamic_cast<TParticle*>(particles.At(index));
+      assert(particle);
+
+      // Follow the mother chain up to the primary.
+      Bool_t store = kTRUE;
+      UInt_t process = particle->GetUniqueID();
+      while ( process != kPPrimary ) {
+        if ( process != kPDecay ) {
+          store = kFALSE;
+          break;  // not a decay
+        } //? not a decay
+        Int_t iMother = particle->GetMother(0);  // mother index
+        particle = dynamic_cast<TParticle*>(particles.At(iMother));
+        assert(particle);
+        process = particle->GetUniqueID();
+      } //? not a primary
+
+      fStore[index] = store;
+
+    } //# particles
+  } //? store all decays
 
 
   // Mark recursively all mothers of already selected tracks for storage

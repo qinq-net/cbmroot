@@ -95,8 +95,8 @@ FairRootVersion()
 
 # Since 23.06.2016 CbmRoot need at least FairRoot v-15.11 f
 # Check if the FairRoot version has at least this version 
-If(FairRoot_VERSION VERSION_LESS 15.11.0)
-  Message(FATAL_ERROR "\n CbmRoot needs at least FairRoot version v-15.11 (15.11.0).\n You use FairRoot ${FairRoot_VERSION}. Please upgrade your FairRoot version.") 
+If(FairRoot_VERSION VERSION_LESS 18.0.5)
+  Message(FATAL_ERROR "\n CbmRoot needs at least FairRoot version v18.0.5. \n You use FairRoot ${FairRoot_VERSION}. Please upgrade your FairRoot version.") 
 EndIf()
 
 Execute_process(COMMAND $ENV{FAIRROOTPATH}/bin/fairroot-config --fairsoft_path OUTPUT_VARIABLE _simpath OUTPUT_STRIP_TRAILING_WHITESPACE)

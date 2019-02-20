@@ -74,8 +74,8 @@ class CbmStackFilter
      ** the detector identifier (EcbmModuleId).
      ** The return vector must have the same size as the TClonesArray.
      **/
-    const std::vector<Bool_t>& Select(const TClonesArray& particles,
-                                      const PointMap& points);
+    virtual const std::vector<Bool_t>& Select(const TClonesArray& particles,
+                                              const PointMap& points);
 
 
     /** @brief Set the minimum kinetic energy
@@ -148,10 +148,25 @@ class CbmStackFilter
     }
 
 
+    /** @brief Set the storage of all decay daughters of primaries
+     ** @param choice  If kTRUE, all daughters will be stored.
+     **
+     ** If activated, all particles in the decay chain of a primary
+     ** particle will be stored, irrespective of any other selection
+     ** criteria.
+     **
+     ** By default, storage of decay daughters is deactivated.
+     **/
+    void SetStoreAllPrimaryDecays(Bool_t choice = kTRUE) {
+      fStoreAllDecays = choice;
+    }
+
+
   private:
 
     Bool_t fStoreAllPrimaries;   /// Flag for storage of primaries
     Bool_t fStoreAllMothers;     /// Flag for storage of mothers
+    Bool_t fStoreAllDecays;      /// Flag for storage of all primary decay daughters
     UInt_t fMinNofPointsGlobal;  /// Cut on global number of points
     std::map<ECbmModuleId, UInt_t> fMinNofPoints; /// Cuts on local number of points
     Double_t fMinEkin;           /// Cut on kinetic energy

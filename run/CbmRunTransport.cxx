@@ -459,7 +459,7 @@ void CbmRunTransport::Run(Int_t nEvents) {
   // --- Set VMC configuration
   // This will work only with FairRoot v18 and later
   std::function<void()> f = std::bind(&CbmRunTransport::ConfigureVMC, this);
-  //fRun->SetSimSetup(f);
+  fRun->SetSimSetup(f);
 
 
   // --- Initialise run

@@ -112,6 +112,9 @@ void CbmStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
 					    vx, vy, vz, time);
   particle->SetPolarisation(polx, poly, polz);
   particle->SetWeight(weight);
+  // We use the TObject unique ID to store the creation process of a particle.
+  // According to the ROOT talk, the unique ID can be used at will if the object
+  // is not used via TRef or TRefArray.
   particle->SetUniqueID(proc);
 
   // --> Increment counter
