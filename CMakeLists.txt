@@ -90,13 +90,18 @@ EndIf()
 
 # Extract the FairRoot version from fairroot-config
 # The version info is of the form Major.Minor.Patch e.g. 15.11.1 and
-# is stored in the variable FairRoot_VERSION
+# is stored in the variable FairRoot_VERSION and FairSoft_VERSION 
 FairRootVersion()
+FairSoftVersion()
 
-# Since 23.06.2016 CbmRoot need at least FairRoot v-15.11 f
-# Check if the FairRoot version has at least this version 
+# Since 20.02.2019 CbmRoot need at least FairRoot v18.0.5 and FairSoft may18
+# Check if FairRoot and FairSoft have at least this versions 
 If(FairRoot_VERSION VERSION_LESS 18.0.5)
   Message(FATAL_ERROR "\n CbmRoot needs at least FairRoot version v18.0.5. \n You use FairRoot ${FairRoot_VERSION}. Please upgrade your FairRoot version.") 
+EndIf()
+# FairSoft version 18.5.0 means may18
+If(FairSoft_VERSION VERSION_LESS 18.5.0)
+  Message(FATAL_ERROR "\n CbmRoot needs at least FairSoft version may18. \n You use FairSoft ${_fairsoft_version}. Please upgrade your FairSoft version.") 
 EndIf()
 
 Execute_process(COMMAND $ENV{FAIRROOTPATH}/bin/fairroot-config --fairsoft_path OUTPUT_VARIABLE _simpath OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -116,6 +121,8 @@ EndIf()
 Check_Compiler()
 #Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -Weffc++ -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-ignored-qualifiers -Wno-overloaded-virtual")
 #Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Wno-padded -Wno-global-constructors")
+#Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-documentation -Wno-padded -Wno-global-constructors -Wno-exit-time-destructors -Wno-extra-semi -Wno-weak-vtables -Wno-unused-member-function")
+#Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdeprecated -Wunused-exception-parameter -Wconversion -Wsign-conversion -Wold-style-cast -Wshorten-64-to-32 -Wswitch-enum -Wfloat-equal -Wunreachable-code")
 #Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast")
 
 Set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
