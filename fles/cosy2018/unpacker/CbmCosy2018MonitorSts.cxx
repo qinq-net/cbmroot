@@ -720,7 +720,6 @@ void CbmCosy2018MonitorSts::CreateHistograms()
    } // for( Int_t component = 0; component < kiMaxNbFlibLinks; component ++ )
 
    // Online histo browser commands
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
 
    if( server )
@@ -810,7 +809,6 @@ void CbmCosy2018MonitorSts::CreateHistograms()
       server->Restrict("/Reset_All_Sts", "allow=admin");
       server->Restrict("/Write_All_Sts", "allow=admin");
    } // if( server )
-#endif
 
    /** Create summary Canvases for CERN 2017 **/
    Double_t w = 10;
@@ -1026,9 +1024,7 @@ void CbmCosy2018MonitorSts::CreateHistograms()
 
 Bool_t CbmCosy2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
    if( bCosy2018ResetStsHistos )
    {
@@ -1051,16 +1047,12 @@ Bool_t CbmCosy2018MonitorSts::DoUnpack(const fles::Timeslice& ts, size_t compone
          TString sMsSzTitle = Form("Size of MS for nDPB of link %02lu; Ms Size [bytes]", component);
          fhMsSz[ component ] = new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 160000, 0., 20000. );
          fHM->Add(sMsSzName.Data(), fhMsSz[ component ] );
-#ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", fhMsSz[ component ] );
-#endif
          sMsSzName = Form("MsSzTime_link_%02lu", component);
          sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
          fhMsSzTime[ component ] =  new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 15000, 0., 300. );
          fHM->Add( sMsSzName.Data(), fhMsSzTime[ component ] );
-#ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", fhMsSzTime[ component ] );
-#endif
          if( NULL != fcMsSizeAll )
          {
             fcMsSizeAll->cd( 1 + component );

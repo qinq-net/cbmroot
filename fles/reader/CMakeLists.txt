@@ -52,17 +52,6 @@ Link_Directories(
   ${LINK_DIRECTORIES}
 )
 
-If(FairRoot_VERSION VERSION_EQUAL 15.11.2)
-  Set(FLES_TOF_BEAM_SOURCES
-    get4/CbmGet4EventDumper.cxx
-#    get4/CbmGet4EventMonitor.cxx
-  )
-  Set(FLES_TOF_BEAM_DEPEND
-    CbmTofUnpack
-  )
-  Set(DEFINITIONS ${DEFINITIONS} BUILD_TOF_BEAMTIME)
-EndIf()
-
 Set(SRCS
   CbmFlibFileSource.cxx
 #  CbmNxFlibFileSource.cxx
@@ -135,15 +124,6 @@ If(_UINT8_T_EXIST)
   Add_Definitions(-DHAVE_UINT8_T_HEADER_FILE)
   Set(DEFINITIONS HAVE_UINT8_T_HEADER_FILE)
 EndIf()
-
-If(FairRoot_VERSION VERSION_LESS 15.11.2)
-  ADD_DEFINITIONS(-DVERSION_LESS_151102)
-  Set(DEFINITIONS ${DEFINITIONS} VERSION_LESS_151102)
-  Message("FairRoot Version less 15.11.2")
-Else()
-  Message("FairRoot Version at least 15.11.2")
-EndIf()
-
 
 Set(LINKDEF  CbmFlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)

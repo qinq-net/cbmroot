@@ -205,10 +205,8 @@ Bool_t CbmTSMonitorTof::ReInitContainers()
 
 void CbmTSMonitorTof::CreateHistograms()
 {
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
 //  server->SetJSROOT("https://root.cern.ch/js/latest");
-#endif
 
   TString name { "" };
   TString title { "" };
@@ -235,10 +233,8 @@ void CbmTSMonitorTof::CreateHistograms()
   hMessageType->GetXaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP, "NOP");
   fHM->Add(name.Data(), hMessageType);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hSysMessType";
   title = "Nb of system message for each type; System Type";
@@ -271,10 +267,8 @@ void CbmTSMonitorTof::CreateHistograms()
       "UNKW GET4 MSG");
   hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
   fHM->Add(name.Data(), hSysMessType);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hGet4MessType";
   title = "Nb of message for each type per GET4; GET4 chip # ; Type";
@@ -288,10 +282,8 @@ void CbmTSMonitorTof::CreateHistograms()
   hGet4MessType->GetYaxis()->SetBinLabel(1 + ngdpb::GET4_32B_DATA + 1,
       "DATA 24b");
   fHM->Add(name.Data(), hGet4MessType);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hGet4ChanErrors";
   title = "Error messages per GET4 channel; GET4 channel # ; Error";
@@ -319,10 +311,8 @@ void CbmTSMonitorTof::CreateHistograms()
   hGet4ChanErrors->GetYaxis()->SetBinLabel(18,
       "Corrupt error or unsupported yet");
   fHM->Add(name.Data(), hGet4ChanErrors);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hGet4EpochFlags";
   title = "Epoch flags per GET4; GET4 chip # ; Type";
@@ -334,10 +324,8 @@ void CbmTSMonitorTof::CreateHistograms()
   hGet4EpochFlags->GetYaxis()->SetBinLabel(3, "Da LOSS");
   hGet4EpochFlags->GetYaxis()->SetBinLabel(4, "MISSMAT");
   fHM->Add(name.Data(), hGet4EpochFlags);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   if (fUnpackPar->IsChannelRateEnabled()) {
     for (UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; uGdpb++) {
@@ -354,10 +342,8 @@ void CbmTSMonitorTof::CreateHistograms()
       fHM->Add(name.Data(),
           new TH2F(name.Data(), title.Data(), iNbBinsRate - 1, dBinsRate, 96, 0,
               96));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
       LOG(INFO) << "Adding the rate histos" << FairLogger::endl;
     } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
   }
@@ -367,19 +353,15 @@ void CbmTSMonitorTof::CreateHistograms()
     title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
     fHM->Add(name.Data(),
         new TH2F(name.Data(), title.Data(), 96, 0, 96, 256, 0, 256));
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
     name = Form("ChCount_gDPB_%02u", uGdpb);
     title = Form("Channel counts gDPB %02u; channel; Hits", uGdpb);
     fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 96, 0, 96));
 
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
       name = Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
@@ -387,10 +369,8 @@ void CbmTSMonitorTof::CreateHistograms()
           "Counts per second in Feet %1u of gDPB %02u; Time[s] ; Counts", uFeet,
           uGdpb);
       fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), 1800, 0, 1800));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
       if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
         name = Form("FeetRateDate_gDPB_g%02u_f%1u", uGdpb, uFeet);
         title = Form(
@@ -399,10 +379,8 @@ void CbmTSMonitorTof::CreateHistograms()
         fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), (5400 / fiBinSizeDatePlots), -10, 5400 - 10));
         ( fHM->H1(name.Data()) )->GetXaxis()->SetTimeDisplay(1);
         ( fHM->H1(name.Data()) )->GetXaxis()->SetTimeOffset( fiRunStartDateTimeSec );
-#ifdef USE_HTTP_SERVER
         if (server)
           server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
       } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
@@ -411,53 +389,41 @@ void CbmTSMonitorTof::CreateHistograms()
   title = "Counts per diamond in last 10s; X [pad]; Y [pad]; Counts";
   TH2I* hDiamond = new TH2I(name, title, 2, 0., 2, 2, 0., 2.);
   fHM->Add(name.Data(), hDiamond);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hDiamondSpill";
   title = "Counts per diamond in Current Spill; X [pad]; Y [pad]; Counts";
   TH2I* hDiamondSpill = new TH2I(name, title, 2, 0., 2, 2, 0., 2.);
   fHM->Add(name.Data(), hDiamondSpill);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hDiamondSpillLength";
   title = "Length of spill interval as found from diamond; Length [s]; Counts";
   TH1* hDiamondSpillLength = new TH1F(name, title, 3000, 0., 300.);
   fHM->Add(name.Data(), hDiamondSpillLength);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hDiamondSpillCount";
   title = "Total counts in diamond in each spill; Spill; Counts";
   TH1* hDiamondSpillCount = new TH1F(name, title, 300, 0., 300.);
   fHM->Add(name.Data(), hDiamondSpillCount);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hDiamondSpillQA";
   title = "Total counts in diamond per spill VS Spill length; Length [s]; Counts";
   TH2* hDiamondSpillQA = new TH2F(name, title, 120, 0., 120., 150, 0., 150000.);
   fHM->Add(name.Data(), hDiamondSpillQA);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
-#ifdef USE_HTTP_SERVER
   if (server)
     server->RegisterCommand("/Reset_All_TOF", "bResetTofHistos=kTRUE");
   if (server)
     server->Restrict("/Reset_All_TOF", "allow=admin");
-#endif
 
   /** Create summary Canvases for CERN 2016 **/
   Double_t w = 10;
@@ -587,9 +553,7 @@ void CbmTSMonitorTof::CreateHistograms()
 Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
     size_t component)
 {
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
   if (bResetTofHistos) {
     ResetAllHistos();
@@ -620,10 +584,8 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
     fHM->Add(sMsSzName.Data(),
         new TH1F(sMsSzName.Data(), sMsSzTitle.Data(), 160000, 0., 20000.));
     hMsSz = fHM->H1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/FlibRaw", hMsSz);
-#endif
     sMsSzName = Form("MsSzTime_link_%02lu", component);
     sMsSzTitle = Form(
         "Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]",
@@ -631,10 +593,8 @@ Bool_t CbmTSMonitorTof::DoUnpack(const fles::Timeslice& ts,
     fHM->Add(sMsSzName.Data(),
         new TProfile(sMsSzName.Data(), sMsSzTitle.Data(), 15000, 0., 300.));
     hMsSzTime = fHM->P1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/FlibRaw", hMsSzTime);
-#endif
     if( NULL != fcMsSizeAll )
     {
       fcMsSizeAll->cd( 1 + component );

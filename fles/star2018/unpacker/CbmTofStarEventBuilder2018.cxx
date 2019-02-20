@@ -414,9 +414,7 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
    LOG(INFO) << "create Histos for " << fuNrOfGdpbs <<" gDPBs "
 	          << FairLogger::endl;
 
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
    TString name { "" };
    TString title { "" };
@@ -430,10 +428,8 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
          new TH1I( name.Data(), title.Data(),
                    5000, -100000.0, 50000.0) ); // TODO make offset parameter
 //                   4000, -800000.0, 0.0) ); // TODO make offset parameter
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhStarHitToTrigAll_gDPB[ uGdpb ] );
-#endif
 
       name = Form("StarHitToTrigWin_gDPB_%02u", uGdpb);
       title = Form("Time to trigger for hits in trigger window gDPB %02u; t(Hit) - t(Trigg) [ns]", uGdpb);
@@ -443,10 +439,8 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       fhStarHitToTrigWin_gDPB.push_back(
          new TH1I( name.Data(), title.Data(),
                    uNbBins, dLowBin, dHighBin) ); // TODO make size parameter
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhStarHitToTrigWin_gDPB[ uGdpb ] );
-#endif
 
       name = Form("StarHitToTrigAllTime_gDPB_%02u", uGdpb);
       title = Form("Time to trigger for all hits gDPB %02u; Time in run [s]; t(Hit) - t(Trigg) [ns]", uGdpb);
@@ -476,7 +470,6 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
                    fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong,
                    uNbBins/10.0, dLowBin, dHighBin) ); // TODO make size parameter
 
-#ifdef USE_HTTP_SERVER
       if( server )
       {
          server->Register("/StarRaw", fhStarHitToTrigAllTime_gDPB[ uGdpb ] );
@@ -484,7 +477,6 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
          server->Register("/StarRaw", fhStarHitToTrigAllTimeLong_gDPB[ uGdpb ] );
          server->Register("/StarRaw", fhStarHitToTrigWinTimeLong_gDPB[ uGdpb ] );
       } //
-#endif
 
       /// STAR Trigger decoding and monitoring
       name = Form( "hTokenMsgType_gDPB_%02u", uGdpb);
@@ -494,26 +486,20 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       fhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 2, "B"); // gDPB TS low, STAR TS high
       fhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 3, "C"); // STAR TS mid
       fhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 4, "D"); // STAR TS low, token, CMDs
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhTokenMsgType[ uGdpb ] );
-#endif
 
       name = Form( "hTriggerRate_gDPB_%02u", uGdpb);
       title = Form( "STAR trigger signals per second gDPB %02u; Time[s] ; Counts", uGdpb);
       fhTriggerRate[ uGdpb ] =  new TH1F(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize);
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhTriggerRate[ uGdpb ] );
-#endif
 
       name = Form( "hTriggerRateLong_gDPB_%02u", uGdpb);
       title = Form( "STAR trigger signals per minute gDPB %02u; Time[min] ; Counts", uGdpb);
       fhTriggerRateLong[ uGdpb ] =  new TH1F(name, title, fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong);
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhTriggerRateLong[ uGdpb ] );
-#endif
 
       name = Form( "hCmdDaqVsTrig_gDPB_%02u", uGdpb);
       title = Form( "STAR daq command VS STAR trigger command gDPB %02u; DAQ ; TRIGGER", uGdpb);
@@ -550,34 +536,26 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(14, "0xD: 13"); // To be filled at STAR
       fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(15, "0xE: 14"); // To be filled at STAR
       fhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(16, "0xF: 15"); // To be filled at STAR
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhCmdDaqVsTrig[ uGdpb ] );
-#endif
 
       name = Form( "hStarTokenEvo_gDPB_%02u", uGdpb);
       title = Form( "STAR token value VS time gDPB %02u; Time in Run [s] ; STAR Token; Counts", uGdpb);
       fhStarTokenEvo[ uGdpb ] =  new TH2I(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize, 410, 0, 4100 ); // 4096
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhStarTokenEvo[ uGdpb ] );
-#endif
 
       name = Form( "hStarTrigGdpbTsEvo_gDPB_%02u", uGdpb);
       title = Form( "gDPB TS in STAR triger tokens for gDPB %02u; Time in Run [s] ; gDPB TS;", uGdpb);
       fhStarTrigGdpbTsEvo[ uGdpb ] =  new TProfile(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize );
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhStarTrigGdpbTsEvo[ uGdpb ] );
-#endif
 
       name = Form( "hStarTrigStarTsEvo_gDPB_%02u", uGdpb);
       title = Form( "STAR TS in STAR triger tokens for gDPB %02u; Time in Run [s] ; STAR TS;", uGdpb);
       fhStarTrigStarTsEvo[ uGdpb ] =  new TProfile(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize );
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhStarTrigStarTsEvo[ uGdpb ] );
-#endif
 
       /// Check if we are in "single link per sub-event" building mode
       if( kFALSE == fbEventBuilding )
@@ -588,10 +566,8 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
          fhStarEventSize_gDPB.push_back(
             new TH1I( name.Data(), title.Data(),
                       uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) );
-#ifdef USE_HTTP_SERVER
          if (server)
             server->Register("/StarRaw", fhStarEventSize_gDPB[ uGdpb ] );
-#endif
 
          name = Form("StarEventSizeTime_gDPB_%02u", uGdpb);
          title = Form("STAR SubEvent size gDPB %02u; run time [s]; SubEvent size [bytes]", uGdpb);
@@ -601,10 +577,8 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
             new TH2I( name.Data(), title.Data(),
                       fuHistoryHistoSize, 0.0, fuHistoryHistoSize,
                       uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) );
-#ifdef USE_HTTP_SERVER
          if (server)
             server->Register("/StarRaw", fhStarEventSizeTime_gDPB[ uGdpb ] );
-#endif
 
          name = Form("StarEventSizeTimeLong_gDPB_%02u", uGdpb);
          title = Form("STAR SubEvent size gDPB %02u; run time [min]; SubEvent size [bytes]", uGdpb);
@@ -614,10 +588,8 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
             new TH2I( name.Data(), title.Data(),
                       fuHistoryHistoSizeLong, 0.0, fuHistoryHistoSizeLong,
                       uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() ) );
-#ifdef USE_HTTP_SERVER
          if (server)
             server->Register("/StarRaw", fhStarEventSizeTimeLong_gDPB[ uGdpb ] );
-#endif
       } // if( kFALSE == fbEventBuilding )
          else
          {
@@ -629,10 +601,8 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
             fhStarTrigTimeToMeanTrig_gDPB.push_back(
                new TH1I( name.Data(), title.Data(),
                          625, -312.5, 312.5 ) );
-#ifdef USE_HTTP_SERVER
             if (server)
                server->Register("/StarRaw", fhStarTrigTimeToMeanTrig_gDPB[ uGdpb ] );
-#endif
          } // else of if( kFALSE == fbEventBuilding )
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
 
@@ -643,10 +613,8 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       title = "STAR SubEvent size for all gDPBs; SubEvent size [bytes]";
       UInt_t uNbBins = static_cast< UInt_t >( CbmTofStarSubevent::GetMaxOutputSize() / 8 ); // 1 bin = 1 long 64b uint
       fhStarEventSize = new TH1I( name.Data(), title.Data(), uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() );
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhStarEventSize );
-#endif
 
       name = "StarEventSizeTime";
       title = "STAR SubEvent size for all gDPBS; run time [s]; SubEvent size [bytes]";
@@ -655,10 +623,8 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       fhStarEventSizeTime = new TH2I( name.Data(), title.Data(),
                    fuHistoryHistoSize, 0.0, fuHistoryHistoSize,
                    uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() );
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhStarEventSizeTime );
-#endif
 
       name = "StarEventSizeTimeLong";
       title = "STAR SubEvent size for all gDPB; run time [min]; SubEvent size [bytes]";
@@ -667,10 +633,8 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
       fhStarEventSizeTimeLong = new TH2I( name.Data(), title.Data(),
                    fuHistoryHistoSizeLong, 0.0, fuHistoryHistoSizeLong,
                    uNbBins, 0.0, CbmTofStarSubevent::GetMaxOutputSize() );
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fhStarEventSizeTimeLong );
-#endif
    } // if( kFALSE == fbEventBuilding )
 
    /// Monitoring of the processing time
@@ -680,28 +644,22 @@ void CbmTofStarEventBuilder2018::CbmTofStarEventBuilder2018::CreateHistograms()
    fhStarTsProcessTime = new TH2I( name.Data(), title.Data(),
                 fuHistoryHistoSizeLong, 0.0, dTsEvoLongMax,
                 250, 0.0, 5.0 );
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/StarRaw", fhStarTsProcessTime );
-#endif
    name = "fhStarTsProcessTimeShort";
    title = "Ratio of processing time per TS to TS size VS TS index; TS index []; Ratio  []";
    Double_t dTsEvoShortMax = 500 / (fdTsCoreSizeInNs * 1e-9);
    fhStarTsProcessTimeShort = new TH2I( name.Data(), title.Data(),
                 500, 0.0, dTsEvoShortMax,
                 250, 0.0, 5.0 );
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/StarRaw", fhStarTsProcessTimeShort );
-#endif
    name = "fhStarTsInterprocessTime";
    title = "Ratio of time between TS processing to TS size VS TS index; Ratio tInterprocess / tTS  []";
    fhStarTsInterprocessTime = new TH1D( name.Data(), title.Data(),
                 2000, 0.0, 200.0 );
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/StarRaw", fhStarTsInterprocessTime );
-#endif
 
    /** Create summary Canvases for STAR 2017 **/
    Double_t w = 10;

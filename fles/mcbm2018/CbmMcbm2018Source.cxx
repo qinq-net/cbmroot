@@ -106,20 +106,16 @@ Bool_t CbmMcbm2018Source::Init()
     //    it->second->Register();
   }
 
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
   fHistoMissedTS = new TH1I("Missed_TS", "Missed TS", 2, 0., 2.);
   fHistoMissedTSEvo  = new TProfile("Missed_TS_Evo", "Missed TS evolution; TS Idx []", 100000, 0., 10000000.);
 
-#ifdef USE_HTTP_SERVER
   if (server)
   {
     server->Register("/TofRaw", fHistoMissedTS);
     server->Register("/TofRaw", fHistoMissedTSEvo);
   } // if (server)
-#endif
 
 
   return kTRUE;

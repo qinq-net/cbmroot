@@ -315,9 +315,7 @@ Bool_t CbmCern2017MonitorHodo::ReInitContainers()
 
 void CbmCern2017MonitorHodo::CreateHistograms()
 {
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
    TString sHistName{""};
    TString title{""};
@@ -338,9 +336,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
    fhHodoMessType->GetXaxis()->SetBinLabel(1 + stsxyter::BetaMessType::Ack,         "Ack");
 */
    fHM->Add(sHistName.Data(), fhHodoMessType);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoMessType );
-#endif
 
    sHistName = "hStsSysMessType";
    title = "Nb of system message for each type; System Type";
@@ -351,9 +347,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
    hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
 */
    fHM->Add(sHistName.Data(), fhHodoSysMessType);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSysMessType );
-#endif
 
    sHistName = "hStsMessageTypePerDpb";
    title = "Nb of message of each type for each DPB; DPB; Type";
@@ -371,9 +365,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
    fhHodoMessType->GetYaxis()->SetBinLabel(1 + stsxyter::BetaMessType::Ack,         "Ack");
 */
    fHM->Add(sHistName.Data(), fhHodoMessTypePerDpb);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoMessTypePerDpb );
-#endif
 
    sHistName = "hStsSysMessTypePerDpb";
    title = "Nb of system message of each type for each DPB; DPB; System Type";
@@ -384,9 +376,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
    hSysMessType->GetYaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
 */
    fHM->Add(sHistName.Data(), fhHodoSysMessTypePerDpb);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSysMessTypePerDpb );
-#endif
 
    sHistName = "hStsMessageTypePerElink";
    title = "Nb of message of each type for each eLink; eLink; Type";
@@ -404,9 +394,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
    fhHodoMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::BetaMessType::Ack,         "Ack");
 */
    fHM->Add(sHistName.Data(), fhHodoMessTypePerElink);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoMessTypePerElink );
-#endif
 
    sHistName = "hStsSysMessTypePerElink";
    title = "Nb of system message of each type for each eLink; eLink; System Type";
@@ -417,9 +405,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
    fhHodoSysMessTypePerElink->GetYaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
 */
    fHM->Add(sHistName.Data(), fhHodoSysMessTypePerElink);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSysMessTypePerElink );
-#endif
 
    // Number of rate bins =
    //      9 for the sub-unit decade
@@ -463,9 +449,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
       fhHodoChanCntRaw.push_back( new TH1I(sHistName, title,
                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
       fHM->Add(sHistName.Data(), fhHodoChanCntRaw[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhHodoChanCntRaw[ uXyterIdx ] );
-#endif
 
       // Raw Adc Distribution
       sHistName = Form( "hHodoChanAdcRaw_%03u", uXyterIdx );
@@ -474,9 +458,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                                  stsxyter::kuBetaHitNbAdcBins, -0.5, stsxyter::kuBetaHitNbAdcBins -0.5 ) );
       fHM->Add(sHistName.Data(), fhHodoChanAdcRaw[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhHodoChanAdcRaw[ uXyterIdx ] );
-#endif
 
       // Raw Adc Distribution profile
       sHistName = Form( "hHodoChanAdcRawProfc_%03u", uXyterIdx );
@@ -484,9 +466,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
       fhHodoChanAdcRawProf.push_back( new TProfile(sHistName, title,
                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
       fHM->Add(sHistName.Data(), fhHodoChanAdcRawProf[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhHodoChanAdcRawProf[ uXyterIdx ] );
-#endif
 
       // Raw Ts Distribution
       sHistName = Form( "hHodoChanRawTs_%03u", uXyterIdx );
@@ -495,9 +475,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                                  stsxyter::kuBetaHitNbTsBins, -0.5, stsxyter::kuBetaHitNbTsBins -0.5 ) );
       fHM->Add(sHistName.Data(), fhHodoChanRawTs[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhHodoChanRawTs[ uXyterIdx ] );
-#endif
 
       // Missed event flag
       sHistName = Form( "hHodoChanMissEvt_%03u", uXyterIdx );
@@ -506,9 +484,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                                  2, -0.5, 1.5 ) );
       fHM->Add(sHistName.Data(), fhHodoChanMissEvt[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhHodoChanMissEvt[ uXyterIdx ] );
-#endif
 
       // Hit rates evo per channel
       sHistName = Form( "hStsChanRateEvo_%03u", uXyterIdx );
@@ -517,18 +493,14 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                                 1800, 0, 1800,
                                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
       fHM->Add(sHistName.Data(), fhHodoChanHitRateEvo[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhHodoChanHitRateEvo[ uXyterIdx ] );
-#endif
 
       // Hit rates evo per StsXyter
       sHistName = Form( "hHodoFebRateEvo_%03u", uXyterIdx );
       title = Form( "Hits per second in StsXyter #%03u; Time [s]; Hits []", uXyterIdx );
       fhHodoFebRateEvo.push_back( new TH1I(sHistName, title, 1800, 0, 1800 ) );
       fHM->Add(sHistName.Data(), fhHodoFebRateEvo[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhHodoFebRateEvo[ uXyterIdx ] );
-#endif
 
       // Hit rates evo per channel, 1 minute bins, 24h
       sHistName = Form( "hStsChanRateEvoLong_%03u", uXyterIdx );
@@ -537,18 +509,14 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                                 1440, 0, 1440,
                                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
       fHM->Add(sHistName.Data(), fhHodoChanHitRateEvoLong[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhHodoChanHitRateEvoLong[ uXyterIdx ] );
-#endif
 
       // Hit rates evo per StsXyter, 1 minute bins, 24h
       sHistName = Form( "hHodoFebRateEvoLong_%03u", uXyterIdx );
       title = Form( "Hits per second in StsXyter #%03u; Time [min]; Hits []", uXyterIdx );
       fhHodoFebRateEvoLong.push_back( new TH1D(sHistName, title, 1440, 0, 1440 ) );
       fHM->Add(sHistName.Data(), fhHodoFebRateEvoLong[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhHodoFebRateEvoLong[ uXyterIdx ] );
-#endif
 /*
       if( kTRUE == fbLongHistoEnable )
       {
@@ -560,9 +528,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
          fhFebRateEvoLong.push_back( new TH1D( sHistName, title,
                                                    fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5) );
          fHM->Add(sHistName.Data(), fhFebRateEvoLong[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
          if( server ) server->Register("/StsRaw", fhFebRateEvoLong[ uXyterIdx ] );
-#endif
 
          sHistName = Form( "hFebChRateEvoLong_%03u", uXyterIdx );
          title = Form( "Mean rate per channel VS run time in StsXyter #%03u; Time in run [s]; Channel []; Rare [1/s]", uXyterIdx );
@@ -570,9 +536,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                                    fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5,
                                                    fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
          fHM->Add(sHistName.Data(), fhFebChRateEvoLong[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
          if( server ) server->Register("/StsRaw", fhFebChRateEvoLong[ uXyterIdx ] );
-#endif
       } // if( kTRUE == fbLongHistoEnable )
 */
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
@@ -582,30 +546,22 @@ void CbmCern2017MonitorHodo::CreateHistograms()
    title = "Channel counts for hodoscope 1 axis X; X channel []; Hits []";
    fhHodoChanCounts1X = new TH1I( sHistName, title,  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanCounts1X );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanCounts1X );
-#endif
    sHistName = "hHodoChanCounts1Y";
    title = "Channel counts for hodoscope 1 axis Y; Y channel []; Hits []";
    fhHodoChanCounts1Y = new TH1I( sHistName, title,  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanCounts1Y );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanCounts1Y );
-#endif
    sHistName = "hHodoChanCounts2X";
    title = "Channel counts for hodoscope 2 axis X; X channel []; Hits []";
    fhHodoChanCounts2X = new TH1I( sHistName, title,  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanCounts2X );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanCounts2X );
-#endif
    sHistName = "hHodoChanCounts2Y";
    title = "Channel counts for hodoscope 2 axis Y; Y channel []; Hits []";
    fhHodoChanCounts2Y = new TH1I( sHistName, title,  fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanCounts2Y );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanCounts2Y );
-#endif
 
    // Raw ADC distributions for each of the hodoscope planes
    sHistName = "hHodoChanAdcRaw1X";
@@ -614,36 +570,28 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   stsxyter::kuBetaHitNbAdcBins, -0.5, stsxyter::kuBetaHitNbAdcBins -0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanAdcRaw1X );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanAdcRaw1X );
-#endif
    sHistName = "hHodoChanAdcRaw1Y";
    title = "Raw ADC distributions for hodoscope 1 axis Y; Y channel []; ADC [bin]; Hits []";
    fhHodoChanAdcRaw1Y = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   stsxyter::kuBetaHitNbAdcBins, -0.5, stsxyter::kuBetaHitNbAdcBins -0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanAdcRaw1Y );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanAdcRaw1Y );
-#endif
    sHistName = "hHodoChanAdcRaw2X";
    title = "Raw ADC distributions for hodoscope 2 axis X; X channel []; ADC [bin]; Hits []";
    fhHodoChanAdcRaw2X = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   stsxyter::kuBetaHitNbAdcBins, -0.5, stsxyter::kuBetaHitNbAdcBins -0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanAdcRaw2X );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanAdcRaw2X );
-#endif
    sHistName = "hHodoChanAdcRaw2Y";
    title = "Raw ADC distributions for hodoscope 2 axis Y; Y channel []; ADC [bin]; Hits []";
    fhHodoChanAdcRaw2Y = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   stsxyter::kuBetaHitNbAdcBins, -0.5, stsxyter::kuBetaHitNbAdcBins -0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanAdcRaw2Y );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanAdcRaw2Y );
-#endif
 
    // Hit rate Evo for each channel of each of the hodoscope planes
    sHistName = "hHodoChanHitRateEvo1X";
@@ -652,66 +600,50 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                       1800, 0, 1800,
                                       fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanHitRateEvo1X );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanHitRateEvo1X );
-#endif
    sHistName = "hHodoChanHitRateEvo1Y";
    title = "Hits per second & channel in Hodo 1 Y axis; Time [s]; Channel []; Hits []";
    fhHodoChanHitRateEvo1Y = new TH2I( sHistName, title,
                                       1800, 0, 1800,
                                       fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanHitRateEvo1Y );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanHitRateEvo1Y );
-#endif
    sHistName = "hHodoChanHitRateEvo2X";
    title = "Hits per second & channel in Hodo 2 X axis; Time [s]; Channel []; Hits []";
    fhHodoChanHitRateEvo2X = new TH2I( sHistName, title,
                                       1800, 0, 1800,
                                       fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanHitRateEvo2X );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanHitRateEvo2X );
-#endif
    sHistName = "hHodoChanHitRateEvo2Y";
    title = "Hits per second & channel in Hodo 2 Y axis; Time [s]; Channel []; Hits []";
    fhHodoChanHitRateEvo2Y = new TH2I( sHistName, title,
                                       1800, 0, 1800,
                                       fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoChanHitRateEvo2Y );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoChanHitRateEvo2Y );
-#endif
 
    // Hit rate Evo for each channel of each of the hodoscope planes
    sHistName = "fhHodoRateEvo1X";
    title = "Hits per second in Hodoscope 1 X axis; Time [s]; Hits []";
    fhHodoRateEvo1X = new TH1I(sHistName, title, 1800, 0, 1800 );
    fHM->Add(sHistName.Data(), fhHodoRateEvo1X );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoRateEvo1X );
-#endif
    sHistName = "hHodoRateEvo1Y";
    title = "Hits per second in Hodoscope 1 Y axis; Time [s]; Hits []";
    fhHodoRateEvo1Y = new TH1I(sHistName, title, 1800, 0, 1800 );
    fHM->Add(sHistName.Data(), fhHodoRateEvo1Y );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoRateEvo1Y );
-#endif
    sHistName = "fhHodoRateEvo2X";
    title = "Hits per second in Hodoscope 2 X axis; Time [s]; Hits []";
    fhHodoRateEvo2X = new TH1I(sHistName, title, 1800, 0, 1800 );
    fHM->Add(sHistName.Data(), fhHodoRateEvo2X );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoRateEvo2X );
-#endif
    sHistName = "hHodoRateEvo2Y";
    title = "Hits per second in Hodoscope 2 Y axis; Time [s]; Hits []";
    fhHodoRateEvo2Y = new TH1I(sHistName, title, 1800, 0, 1800 );
    fHM->Add(sHistName.Data(), fhHodoRateEvo2Y );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoRateEvo2Y );
-#endif
 
    // Coincidence map for each hodoscope
    sHistName = "hHodoSameMs1XY";
@@ -720,18 +652,14 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSameMs1XY );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMs1XY );
-#endif
    sHistName = "hHodoSameMs2XY";
    title = "MS with hits in both channels for hodoscope 2 axis X and Y; X channel []; Y channel []; MS []";
    fhHodoSameMs2XY = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSameMs2XY );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMs2XY );
-#endif
 
    // Coincidence map between some axis of the hodoscopes
    sHistName = "hHodoSameMsX1X2";
@@ -740,93 +668,71 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSameMsX1X2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMsX1X2 );
-#endif
    sHistName = "fhHodoSameMsY1Y2";
    title = "MS with hits in both channels for hodoscope 1 and 2 axis Y; Y channel Hodo 1 []; Y channel Hodo 2 []; MS []";
    fhHodoSameMsY1Y2 = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSameMsY1Y2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMsY1Y2 );
-#endif
    sHistName = "hHodoSameMsX1Y2";
    title = "MS with hits in both channels for hodoscope 1 axis X and 2 axis Y; X channel Hodo 1 []; Y channel Hodo 2 []; MS []";
    fhHodoSameMsX1Y2 = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSameMsX1Y2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMsX1Y2 );
-#endif
    sHistName = "fhHodoSameMsY1X2";
    title = "MS with hits in both channels for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
    fhHodoSameMsY1X2 = new TH2I( sHistName, title,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSameMsY1X2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMsY1X2 );
-#endif
 
    // Coincidence counts evolution between some axis of the hodoscopes
    sHistName = "hHodoSameMsCntEvoX1Y1";
    title = "Nb of MS with hits in both X1 and Y1 per s; Time [s]; MS with both []";
    fhHodoSameMsCntEvoX1Y1 = new TH1I(sHistName, title, 1800, 0, 1800 );
    fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoX1Y1 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMsCntEvoX1Y1 );
-#endif
 
    sHistName = "hHodoSameMsCntEvoX2Y2";
    title = "Nb of MS with hits in both X2 and Y2 per s; Time [s]; MS with both []";
    fhHodoSameMsCntEvoX2Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
    fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoX2Y2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMsCntEvoX2Y2 );
-#endif
 
    sHistName = "fhHodoSameMsCntEvoX1X2";
    title = "Nb of MS with hits in both X1 and X2 per s; Time [s]; MS with both []";
    fhHodoSameMsCntEvoX1X2 = new TH1I(sHistName, title, 1800, 0, 1800 );
    fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoX1X2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMsCntEvoX1X2 );
-#endif
 
    sHistName = "fhHodoSameMsCntEvoY1Y2";
    title = "Nb of MS with hits in both Y1 and Y2 per s; Time [s]; MS with both []";
    fhHodoSameMsCntEvoY1Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
    fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoY1Y2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMsCntEvoY1Y2 );
-#endif
 
    sHistName = "hHodoSameMsCntEvoX1Y2";
    title = "Nb of MS with hits in both X1 and Y2 per s; Time [s]; MS with both []";
    fhHodoSameMsCntEvoX1Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
    fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoX1Y2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMsCntEvoX1Y2 );
-#endif
 
    sHistName = "hHodoSameMsCntEvoY1X2";
    title = "Nb of MS with hits in both Y1 and X2 per s; Time [s]; MS with both []";
    fhHodoSameMsCntEvoY1X2 = new TH1I(sHistName, title, 1800, 0, 1800 );
    fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoY1X2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMsCntEvoY1X2 );
-#endif
 
    sHistName = "hHodoSameMsCntEvoX1Y1X2Y2";
    title = "Nb of MS with hits in both X1, Y1, X2 and Y2 per s; Time [s]; MS with both []";
    fhHodoSameMsCntEvoX1Y1X2Y2 = new TH1I(sHistName, title, 1800, 0, 1800 );
    fHM->Add(sHistName.Data(), fhHodoSameMsCntEvoX1Y1X2Y2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSameMsCntEvoX1Y1X2Y2 );
-#endif
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
@@ -839,49 +745,37 @@ void CbmCern2017MonitorHodo::CreateHistograms()
    title =  "Time diff for hits Hodo 1 X and Hodo 1 Y; tY1 - tX1 [ns]; Counts";
    fhHodoSortedDtX1Y1 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
    fHM->Add(sHistName.Data(), fhHodoSortedDtX1Y1);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedDtX1Y1 );
-#endif
 
    sHistName = "fhHodoSortedDtX2Y2";
    title =  "Time diff for hits Hodo 2 X and Hodo 2 Y; tY2 - tX2 [ns]; Counts";
    fhHodoSortedDtX2Y2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
    fHM->Add(sHistName.Data(), fhHodoSortedDtX2Y2);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedDtX2Y2 );
-#endif
 
    sHistName = "fhHodoSortedDtX1X2";
    title =  "Time diff for hits Hodo 1 X and Hodo 2 X; tX2 - tX1 [ns]; Counts";
    fhHodoSortedDtX1X2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
    fHM->Add(sHistName.Data(), fhHodoSortedDtX1X2);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedDtX1X2 );
-#endif
 
    sHistName = "fhHodoSortedDtY1Y2";
    title =  "Time diff for hits Hodo 1 Y and Hodo 2 Y; tY2 - tY1 [ns]; Counts";
    fhHodoSortedDtY1Y2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
    fHM->Add(sHistName.Data(), fhHodoSortedDtY1Y2);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedDtY1Y2 );
-#endif
 
    sHistName = "fhHodoSortedDtX1Y2";
    title =  "Time diff for hits Hodo 1 X and Hodo 2 Y; tY2 - tX1 [ns]; Counts";
    fhHodoSortedDtX1Y2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
    fHM->Add(sHistName.Data(), fhHodoSortedDtX1Y2);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedDtX1Y2 );
-#endif
 
    sHistName = "fhHodoSortedDtY1X2";
    title =  "Time diff for hits Hodo 1 Y and Hodo 2 X; tY2 - tY1 [ns]; Counts";
    fhHodoSortedDtY1X2 = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
    fHM->Add(sHistName.Data(), fhHodoSortedDtY1X2);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedDtY1X2 );
-#endif
 
    sHistName = "fhHodoSortedMapX1Y1";
    title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
@@ -889,9 +783,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSortedMapX1Y1 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedMapX1Y1 );
-#endif
 
    sHistName = "fhHodoSortedMapX2Y2";
    title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
@@ -899,9 +791,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSortedMapX2Y2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedMapX2Y2 );
-#endif
 
    sHistName = "fhHodoSortedMapX1X2";
    title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
@@ -909,9 +799,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSortedMapX1X2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedMapX1X2 );
-#endif
 
    sHistName = "fhHodoSortedMapY1Y2";
    title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
@@ -919,9 +807,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSortedMapY1Y2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedMapY1Y2 );
-#endif
 
    sHistName = "fhHodoSortedMapX1Y2";
    title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
@@ -929,9 +815,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSortedMapX1Y2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedMapX1Y2 );
-#endif
 
    sHistName = "fhHodoSortedMapY1X2";
    title = "Sorted hits in coincidence for hodoscope 1 axis Y and 2 axis X; Y channel Hodo 1 []; X channel Hodo 2 []; MS []";
@@ -939,9 +823,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5,
                                   fuNbChanPerAsic/2, -0.5, fuNbChanPerAsic/2 - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoSortedMapY1X2 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoSortedMapY1X2 );
-#endif
 
 ///++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++///
 
@@ -951,9 +833,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
    fhHodoFebTsMsb = new TH2I( sHistName, title, stsxyter::kuBetaTsMsbNbTsBins, -0.5,   stsxyter::kuBetaTsMsbNbTsBins - 0.5,
                                                 fuNbStsXyters, -0.5, fuNbStsXyters - 0.5 );
    fHM->Add(sHistName.Data(), fhHodoFebTsMsb );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoFebTsMsb );
-#endif
 
    // Miscroslice properties histos
    for( Int_t component = 0; component < kiMaxNbFlibLinks; component ++ )
@@ -963,7 +843,6 @@ void CbmCern2017MonitorHodo::CreateHistograms()
    } // for( Int_t component = 0; component < kiMaxNbFlibLinks; component ++ )
 
    // Online histo browser commands
-#ifdef USE_HTTP_SERVER
    if( server )
    {
       server->RegisterCommand("/Reset_All_Hodo", "bCern2017ResetHodoHistos=kTRUE");
@@ -972,7 +851,6 @@ void CbmCern2017MonitorHodo::CreateHistograms()
       server->Restrict("/Reset_All_Hodo", "allow=admin");
       server->Restrict("/Write_All_Hodo", "allow=admin");
    } // if( server )
-#endif
 
    /** Create summary Canvases for CERN 2017 **/
    Double_t w = 10;
@@ -1259,9 +1137,7 @@ void CbmCern2017MonitorHodo::CreateHistograms()
 
 Bool_t CbmCern2017MonitorHodo::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
    if( bCern2017ResetHodoHistos )
    {
@@ -1284,16 +1160,12 @@ Bool_t CbmCern2017MonitorHodo::DoUnpack(const fles::Timeslice& ts, size_t compon
          TString sMsSzTitle = Form("Size of MS for nDPB of link %02lu; Ms Size [bytes]", component);
          fhMsSz[ component ] = new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 160000, 0., 20000. );
          fHM->Add(sMsSzName.Data(), fhMsSz[ component ] );
-#ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", fhMsSz[ component ] );
-#endif
          sMsSzName = Form("MsSzTime_link_%02lu", component);
          sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
          fhMsSzTime[ component ] =  new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 15000, 0., 300. );
          fHM->Add( sMsSzName.Data(), fhMsSzTime[ component ] );
-#ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", fhMsSzTime[ component ] );
-#endif
          if( NULL != fcMsSizeAll )
          {
             fcMsSizeAll->cd( 1 + component );

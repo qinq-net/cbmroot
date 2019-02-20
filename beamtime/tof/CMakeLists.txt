@@ -188,14 +188,6 @@ If(_UINT8_T_EXIST)
   Set(DEFINITIONS HAVE_UINT8_T_HEADER_FILE)
 EndIf()
 
-#If(FairRoot_VERSION VERSION_LESS 15.11.2)
-#  ADD_DEFINITIONS(-DVERSION_LESS_151102)
-#  Set(DEFINITIONS ${DEFINITIONS} VERSION_LESS_151102)
-#  Message("FairRoot Version less 15.11.2")
-#Else()
-#  Message("FairRoot Version at least 15.11.2")
-#EndIf()
-
 
 #If(BUILD_BEAMTIME)
 #  Set_Source_Files_Properties(PROPERTIES tdc/get4/TTofGet4Unpacker.cxx PROPERTIES
@@ -229,18 +221,4 @@ Set(DEPENDENCIES
     ${ROC_DEPENDENCIES}
 )
 
-#If(FairRoot_VERSION VERSION_EQUAL 15.11.2)
-#  Message("FairRoot Version equal 15.11.2")
-#  Message(STATUS "Correct FairRoot version found. Build full tof beamtime library.")
-#  set(SRCS ${SRCS}
-#     hadaq/CbmHldSource.cxx
-#  )
-#  set(HEADERS ${HEADERS}
-#     hadaq/CbmHldSource.h
-#  )
-#  Set(DEFINITIONS ${DEFINITIONS} BUILD_TOF_BEAMTIME)
-  GENERATE_LIBRARY()
-#Else()
-#  Message(STATUS "No correct FairRoot version found. Build tof beamtime library without HLD unpack support.")
-#  GENERATE_LIBRARY()
-#EndIf()
+GENERATE_LIBRARY()

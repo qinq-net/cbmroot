@@ -483,14 +483,12 @@ void CbmMcbm2018MonitorSts::AddMsComponentToList( size_t component, UShort_t usD
       LOG(INFO) << "Added MS size histo for component: " << component
                 << " (DPB)" << FairLogger::endl;
 
-#ifdef USE_HTTP_SERVER
       THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
       if( server )
       {
          server->Register("/FlibRaw", fhMsSz[ component ] );
          server->Register("/FlibRaw", fhMsSzTime[ component ] );
       } // if( server )
-#endif
    } // if( NULL == fhMsSz[ component ] )
 }
 void CbmMcbm2018MonitorSts::SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb )
@@ -954,7 +952,6 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
    } // for( Int_t component = 0; component < kiMaxNbFlibLinks; component ++ )
 
    // Online histo browser commands
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
    if( server )
    {
@@ -1027,7 +1024,6 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       server->Restrict("/Write_All", "allow=admin");
       server->Restrict("/ScanNoisyCh", "allow=admin");
    } // if( server )
-#endif
 
    /** Create summary Canvases for CERN 2017 **/
    Double_t w = 10;

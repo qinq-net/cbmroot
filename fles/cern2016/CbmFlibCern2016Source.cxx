@@ -113,17 +113,13 @@ Bool_t CbmFlibCern2016Source::Init()
     //    it->second->Register();
   }
 
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
 //  server->SetJSROOT("https://root.cern.ch/js/latest");
-#endif
 
   fHistoMissedTS = new TH1I("Missed_TS", "Missed TS", 2, 0., 2.);
 
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHistoMissedTS);
-#endif
 
 
   return kTRUE;

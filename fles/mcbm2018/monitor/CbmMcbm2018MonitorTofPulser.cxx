@@ -399,14 +399,12 @@ void CbmMcbm2018MonitorTofPulser::AddMsComponentToList( size_t component, UShort
       sMsSzTitle = Form( "Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
       fvhMsSzTimePerLink[ component ] =  new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
                                                        100 * fuHistoryHistoSize, 0., 2 * fuHistoryHistoSize );
-#ifdef USE_HTTP_SERVER
       THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
       if( server )
       {
          server->Register("/FlibRaw", fvhMsSzPerLink[ component ]);
          server->Register("/FlibRaw", fvhMsSzTimePerLink[ component ]);
       } // if( server )
-#endif
       if( NULL != fcMsSizeAll )
       {
          fcMsSizeAll->cd( 1 + component );
@@ -430,9 +428,7 @@ void CbmMcbm2018MonitorTofPulser::CreateHistograms()
    LOG(INFO) << "create Histos for " << fuNrOfGdpbs <<" gDPBs "
 	          << FairLogger::endl;
 
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
    TString name { "" };
    TString title { "" };
@@ -545,7 +541,6 @@ void CbmMcbm2018MonitorTofPulser::CreateHistograms()
       } // for( UInt_t uFee = 0; uFee < fuNrOfFeePerGdpb * fuNrOfGdpbs; uFee++)
    } // for( UInt_t uFeeRef = 0; uFeeRef < kuNbRefFeeEvo; ++uFeeRef )
 
-#ifdef USE_HTTP_SERVER
    if( server )
    {
       for( UInt_t uFeeA = 0; uFeeA < fuNrOfFeePerGdpb * fuNrOfGdpbs; uFeeA++)
@@ -583,7 +578,6 @@ void CbmMcbm2018MonitorTofPulser::CreateHistograms()
       server->Restrict("/Print_AllHits",  "allow=admin");
       server->Restrict("/Print_AllEps",   "allow=admin");
    } // if( server )
-#endif
 
    /*****************************/
    Double_t w = 10;

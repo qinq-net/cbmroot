@@ -154,9 +154,7 @@ Bool_t CbmTsMonitorSts::ReInitContainers()
 
 void CbmTsMonitorSts::CreateHistograms()
 {
-#ifdef USE_HTTP_SERVER
     THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
    TString sHistName{""};
    TString title{""};
@@ -178,9 +176,7 @@ void CbmTsMonitorSts::CreateHistograms()
    hMessageType->GetXaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
    hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP,      "NOP");
    fHM->Add(sHistName.Data(), hMessageType);
-#ifdef USE_HTTP_SERVER
    if (server) server->Register("/StsRaw", fHM->H1(sHistName.Data()));
-#endif
 
    sHistName = "hSysMessTypeSts";
    title = "Nb of system message for each type; System Type";
@@ -201,9 +197,7 @@ void CbmTsMonitorSts::CreateHistograms()
    hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_GDPB_UNKWN,        "UNKW GET4 MSG");
    hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
    fHM->Add(sHistName.Data(), hSysMessType);
-#ifdef USE_HTTP_SERVER
    if (server) server->Register("/StsRaw", fHM->H1(sHistName.Data()));
-#endif
 
    // Number of rqte bins =
    //      9 for the sub-unit decade
@@ -265,55 +259,41 @@ void CbmTsMonitorSts::CreateHistograms()
          title = Form("Channel counts Sts nDPB %s FEB %02u; channel; Counts",
                      sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), kiNbChanFebF, 0, kiNbChanFebF) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/StsRaw", fHM->H1(sHistName.Data()));
-#endif
 
         sHistName = Form("Raw_ADC_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("Raw ADC Sts nDPB %s FEB %02u; channel; ADC value",
                sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(),
                                               kiNbChanFebF, 0, kiNbChanFebF, 4096, 0, 4096) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/StsRaw", fHM->H2(sHistName.Data()));
-#endif
 
         sHistName = Form("ADC_Mean_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("ADC Mean Sts nDPB %s FEB %02u; channel; ADC Mean value",
                sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), kiNbChanFebF, 0, kiNbChanFebF ) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/StsRaw", fHM->H1(sHistName.Data()));
-#endif
         sHistName = Form("ADC_Rms_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("ADC RMS Sts nDPB %s FEB %02u; channel; ADC RMS value",
                sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), kiNbChanFebF, 0, kiNbChanFebF ) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/StsRaw", fHM->H1(sHistName.Data()));
-#endif
         sHistName = Form("ADC_Skew_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("ADC Skewness Sts nDPB %s FEB %02u; channel; ADC Skewness value",
                sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), kiNbChanFebF, 0, kiNbChanFebF ) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/StsRaw", fHM->H1(sHistName.Data()));
-#endif
         sHistName = Form("ADC_Kurt_Sts_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("ADC Kurtosis Sts nDPB %s FEB %02u; channel; ADC Kurtosis value",
                sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), kiNbChanFebF, 0, kiNbChanFebF ) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/StsRaw", fHM->H1(sHistName.Data()));
-#endif
 
         sHistName = Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("Counts per second in nDPB %s FEB %02u; Time[s] ; Counts",
                         sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/StsRaw", fHM->H1(sHistName.Data()));
-#endif
 
         if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
           sDateHistName = Form("FebRateDate_n%s_f%1u", sNdpbTag.Data(), febId);
@@ -321,10 +301,8 @@ void CbmTsMonitorSts::CreateHistograms()
                         (5400 / fiBinSizeDatePlots),
                         fiRunStartDateTimeSec -10, fiRunStartDateTimeSec + 5400 - 10));
           ( fHM->H1(sDateHistName.Data()) )->GetXaxis()->SetTimeDisplay(1);
-#ifdef USE_HTTP_SERVER
           if (server)
             server->Register("/StsRaw", fHM->H1(sDateHistName.Data()));
-#endif
 
           sHistName = Form("HitDtDate_n%s_f%1u", sNdpbTag.Data(), febId );
           title = Form("Inverse Hit distance VS time in second in nDPB %s FEB %02u; Time[s] ; F [Hz]; Counts",
@@ -334,29 +312,23 @@ void CbmTsMonitorSts::CreateHistograms()
                         fiRunStartDateTimeSec -10, fiRunStartDateTimeSec + 5400 - 10,
                         iNbBinsRate - 1, dBinsRate ));
           ( fHM->H2(sHistName.Data()) )->GetXaxis()->SetTimeDisplay(1);
-#ifdef USE_HTTP_SERVER
           if (server)
             server->Register("/StsRaw", fHM->H2(sHistName.Data()));
-#endif
 
           sHistName = Form("HitDt_n%s_f%1u", sNdpbTag.Data(), febId );
           title = Form("Hit distance in nDPB %s FEB %02u; dT [ns]; Counts",
                      sNdpbTag.Data(), febId );
           fHM->Add(sHistName.Data(), new TH1F(sHistName.Data(), title.Data(),
                         iNbBinsRate - 1, dBinsDt )); // 1ns to 10s
-#ifdef USE_HTTP_SERVER
           if (server)
             server->Register("/StsRaw", fHM->H1(sHistName.Data()));
-#endif
         } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
 
         sHistName = Form("HitMissEvo_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("Minimal hit loss per second in nDPB %s FEB %02u; Time[s] ; Min Loss",
                         sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/StsRaw", fHM->H1(sHistName.Data()));
-#endif
 
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
@@ -364,11 +336,8 @@ void CbmTsMonitorSts::CreateHistograms()
 	sHistName = "Pad_Distribution";
 	title = "Pad_Distribution; Sectors in Horizontal Direction; Channels in Vertical Direction";
 	fHM->Add( sHistName.Data(), new TH2F(sHistName.Data(), title.Data(), 79, -0.5, 78.5, 23, -0.5, 22.5) );
-#ifdef USE_HTTP_SERVER
    if (server) server->Register("/StsRaw", fHM->H2(sHistName.Data()));
-#endif
 
-#ifdef USE_HTTP_SERVER
    if (server)
    {
       server->RegisterCommand("/Reset_All_Sts", "bResetStsHistos=kTRUE");
@@ -380,7 +349,6 @@ void CbmTsMonitorSts::CreateHistograms()
       server->RegisterCommand("/Updt_Adc_Sts", "bUpdateAdcHistosSts=kTRUE");
       server->Restrict("/Updt_Adc_Sts", "allow=admin");
    } // if (server)
-#endif
 
    /** Create summary Canvases for CERN 2016 **/
    Double_t w = 10;
@@ -566,9 +534,7 @@ void CbmTsMonitorSts::CreateHistograms()
 
 Bool_t CbmTsMonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
    if( bResetStsHistos )
    {
@@ -602,17 +568,13 @@ Bool_t CbmTsMonitorSts::DoUnpack(const fles::Timeslice& ts, size_t component)
       fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(),
                                     160000, 0., 20000. ) );
       fhMsSz[ component ] = fHM->H1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
       if (server) server->Register("/FlibRaw", fhMsSz[ component ] );
-#endif
       sMsSzName = Form("MsSzTime_link_%02lu", component);
       sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
       fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
                                     15000, 0., 300. ) );
       fhMsSzTime[ component ] = fHM->P1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
       if (server) server->Register("/FlibRaw", fhMsSzTime[ component ] );
-#endif
       if( NULL != fcMsSizeAll )
       {
          fcMsSizeAll->cd( 1 + component );

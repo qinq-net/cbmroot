@@ -41,10 +41,6 @@ class CbmTofStar2018Source : public FairSource
     Bool_t Init();
     Int_t ReadEvent(UInt_t);
 
-#ifdef VERSION_LESS_151102
-    enum Source_Type {kONLINE, kFILE};
-#endif
-
     Source_Type GetSourceType() {return kONLINE;}
 
     virtual void SetParUnpackers();

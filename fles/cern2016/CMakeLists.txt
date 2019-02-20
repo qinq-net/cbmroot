@@ -68,20 +68,6 @@ If(_UINT8_T_EXIST)
   Set(DEFINITIONS HAVE_UINT8_T_HEADER_FILE)
 EndIf()
 
-If(FairRoot_VERSION VERSION_LESS 15.11.2)
-  ADD_DEFINITIONS(-DVERSION_LESS_151102)
-  Set(DEFINITIONS ${DEFINITIONS} VERSION_LESS_151102)
-  Message("FairRoot Version less 15.11.2")
-Else()
-  Message("FairRoot Version at least 15.11.2")
-EndIf()
-
-If(FairRoot_VERSION VERSION_GREATER 16.06.1)
-  Add_Definitions(-DUSE_HTTP_SERVER)
-  Message("Found FairRoot version larger 16.06.1")
-EndIf()
-
-
 Set(LINKDEF CbmFlibCern2016LinkDef.h )
 Set(LIBRARY_NAME CbmFlibCern2016)
 Set(DEPENDENCIES

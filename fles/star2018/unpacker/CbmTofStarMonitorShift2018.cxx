@@ -315,9 +315,7 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
    LOG(INFO) << "create Histos for " << fuNrOfGdpbs <<" gDPBs "
 	          << FairLogger::endl;
 
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
    TString name { "" };
    TString title { "" };
@@ -591,18 +589,14 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
       fvhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 2, "B"); // gDPB TS low, STAR TS high
       fvhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 3, "C"); // STAR TS mid
       fvhTokenMsgType[ uGdpb ]->GetXaxis()->SetBinLabel( 4, "D"); // STAR TS low, token, CMDs
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fvhTokenMsgType[ uGdpb ] );
-#endif
 
       name = Form( "hTriggerRate_gDPB_%02u", uGdpb);
       title = Form( "STAR trigger signals per second gDPB %02u; Time[s] ; Counts", uGdpb);
       fvhTriggerRate.push_back(  new TH1F(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize) );
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fvhTriggerRate[ uGdpb ] );
-#endif
 
       name = Form( "hCmdDaqVsTrig_gDPB_%02u", uGdpb);
       title = Form( "STAR daq command VS STAR trigger command gDPB %02u; DAQ ; TRIGGER", uGdpb);
@@ -639,10 +633,8 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
       fvhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(14, "0xD: 13"); // To be filled at STAR
       fvhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(15, "0xE: 14"); // To be filled at STAR
       fvhCmdDaqVsTrig[ uGdpb ]->GetYaxis()->SetBinLabel(16, "0xF: 15"); // To be filled at STAR
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/StarRaw", fvhCmdDaqVsTrig[ uGdpb ] );
-#endif
 
       name = Form( "hStarTokenEvo_gDPB_%02u", uGdpb);
       title = Form( "STAR token value VS time gDPB %02u; Time in Run [s] ; STAR Token; Counts", uGdpb);
@@ -700,7 +692,6 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
          fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1, -0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1.5,
          fuNrOfFeetPerGdpb * fuNrOfGdpbs - 1,  0.5, fuNrOfFeetPerGdpb * fuNrOfGdpbs - 0.5 );
 
-#ifdef USE_HTTP_SERVER
    if( server )
    {
       server->Register("/TofRaw", fhMessType );
@@ -764,7 +755,6 @@ void CbmTofStarMonitorShift2018::CreateHistograms()
       server->Restrict("/Save_All_eTof",  "allow=admin");
       server->Restrict("/Update_PulsFit", "allow=admin");
    } // if( server )
-#endif
 
    /** Create summary Canvases for STAR 2018 **/
    Double_t w = 10;
@@ -1073,14 +1063,12 @@ Bool_t CbmTofStarMonitorShift2018::DoUnpack(const fles::Timeslice& ts,
       sMsSzTitle = Form( "Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
       fvhMsSzTimePerLink[ component ] =  new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
                                                        100 * fuHistoryHistoSize, 0., 2 * fuHistoryHistoSize );
-#ifdef USE_HTTP_SERVER
       THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
       if( server )
       {
          server->Register("/FlibRaw", fvhMsSzPerLink[ component ]);
          server->Register("/FlibRaw", fvhMsSzTimePerLink[ component ]);
       } // if( server )
-#endif
       if( NULL != fcMsSizeAll )
       {
          fcMsSizeAll->cd( 1 + component );

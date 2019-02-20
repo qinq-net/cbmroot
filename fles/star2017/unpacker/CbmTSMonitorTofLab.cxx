@@ -272,13 +272,11 @@ Bool_t CbmTSMonitorTofLab::ReInitContainers()
 
 void CbmTSMonitorTofLab::CreateHistograms()
 {
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
 //  server->SetJSROOT("https://root.cern.ch/js/latest");
   LOG(INFO) << "Using Http Server " << server
             << "with JSROOT = "
             << FairLogger::endl;
-#endif
 
   TString name { "" };
   TString title { "" };
@@ -307,10 +305,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
   hMessageType->GetXaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP, "NOP");
   fHM->Add(name.Data(), hMessageType);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hSysMessType";
   title = "Nb of system message for each type; System Type";
@@ -343,10 +339,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
       "UNKW GET4 MSG");
   hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
   fHM->Add(name.Data(), hSysMessType);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hGet4MessType";
   title = "Nb of message for each type per GET4; GET4 chip # ; Type";
@@ -360,10 +354,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
   hGet4MessType->GetYaxis()->SetBinLabel(1 + ngdpb::GET4_32B_DATA + 1,
       "DATA 24b");
   fHM->Add(name.Data(), hGet4MessType);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hGet4ChanErrors";
   title = "Error messages per GET4 channel; GET4 channel # ; Error";
@@ -422,10 +414,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
         hGet4ChanErrors->GetYaxis()->SetBinLabel(17, "0x7f: Unknown         ");
      } // else of if( kTRUE == fbGet4v20 )
   fHM->Add(name.Data(), hGet4ChanErrors);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hGet4EpochFlags";
   title = "Epoch flags per GET4; GET4 chip # ; Type";
@@ -437,10 +427,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
   hGet4EpochFlags->GetYaxis()->SetBinLabel(3, "Da LOSS");
   hGet4EpochFlags->GetYaxis()->SetBinLabel(4, "MISSMAT");
   fHM->Add(name.Data(), hGet4EpochFlags);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
    // Prepare storing of hit time info
    if( fUnpackPar->IsChannelRateEnabled() || fbPulserMode )
@@ -473,10 +461,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
       fHM->Add(name.Data(),
           new TH2F( name.Data(), title.Data(), iNbBinsRate - 1, dBinsRate,
                     uNbFeetPlot*fNrOfChannelsPerFeet, 0, uNbFeetPlot*fNrOfChannelsPerFeet));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
       if( uNbFeetPlot < fNrOfFebsPerGdpb  )
       {
          name = Form("ChannelRate_gDPB_%02u_1", uGdpb);
@@ -486,10 +472,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
                         uNbFeetPlot*fNrOfChannelsPerFeet,
                         uNbFeetPlot*fNrOfChannelsPerFeet,
                         2*uNbFeetPlot*fNrOfChannelsPerFeet));
-#ifdef USE_HTTP_SERVER
          if (server)
            server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
       } // if( uNbFeetPlot < fNrOfFebsPerGdpb  )
       if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
       {
@@ -500,10 +484,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
                         uNbFeetPlot*fNrOfChannelsPerFeet,
                         2*uNbFeetPlot*fNrOfChannelsPerFeet,
                         3*uNbFeetPlot*fNrOfChannelsPerFeet));
-#ifdef USE_HTTP_SERVER
          if (server)
            server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
       } // if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
 
       LOG(INFO) << "Adding the rate histos" << FairLogger::endl;
@@ -536,10 +518,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
                Form("Time difference for selected channels %03u and %03u in the first gDPB; DeltaT [ps]; Counts",
                      fuPulserChan[uChan], fuPulserChan[uChan+1]),
                uNbBinsDt, dMinDt, dMaxDt);
-#ifdef USE_HTTP_SERVER
          if (server)
            server->Register("/TofRaw", fhTimeDiffPulserChosenChPairs[uChan] );
-#endif
       } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
 
       name = "hTimeRmsPulserChosenFee";
@@ -548,20 +528,16 @@ void CbmTSMonitorTofLab::CreateHistograms()
             fNrOfChannelsPerFeet - 1, -0.5, fNrOfChannelsPerFeet - 1.5,
             fNrOfChannelsPerFeet - 1,  0.5, fNrOfChannelsPerFeet - 0.5);
       fHM->Add( name.Data(), fhTimeRmsPulserChosenFee);
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H2( name.Data() ) );
-#endif
 
       name = "hTimeRmsPulserChosenChPairs";
       fhTimeRmsPulserChosenChPairs = new TH1D( name.Data(),
             "Time difference RMS for chosen channels pairs; Pair # ; [ps]",
             kuNbChanTest - 1, -0.5, kuNbChanTest - 1.5);
       fHM->Add( name.Data(), fhTimeRmsPulserChosenChPairs);
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1( name.Data() ) );
-#endif
   } // if( fbPulserMode )
 
   if( fbGet4M24b )
@@ -579,10 +555,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
         new TH2F(name.Data(), title.Data(),
                  uNbFeetPlot*fNrOfChannelsPerFeet, 0, uNbFeetPlot*fNrOfChannelsPerFeet,
                  256, 0, 256));
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
     if( uNbFeetPlot < fNrOfFebsPerGdpb )
     {
       name = Form("Raw_Tot_gDPB_%02u_1", uGdpb);
@@ -593,10 +567,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
                   uNbFeetPlot*fNrOfChannelsPerFeet,
                   2*uNbFeetPlot*fNrOfChannelsPerFeet,
                   256, 0, 256));
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
     } // if( uNbFeetPlot < fNrOfFebsPerGdpb  )
     if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
     {
@@ -608,10 +580,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
                   2*uNbFeetPlot*fNrOfChannelsPerFeet,
                   3*uNbFeetPlot*fNrOfChannelsPerFeet,
                   256, 0, 256));
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
     } // if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
 
     name = Form("ChCount_gDPB_%02u", uGdpb);
@@ -619,10 +589,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
     fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(),
              fNrOfFebsPerGdpb*fNrOfChannelsPerFeet, 0, fNrOfFebsPerGdpb*fNrOfChannelsPerFeet));
 
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
       name = Form("FeetRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
@@ -630,40 +598,32 @@ void CbmTSMonitorTofLab::CreateHistograms()
           "Counts per second in Feet %1u of gDPB %02u; Time[s] ; Counts", uFeet,
           uGdpb);
       fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), 1800, 0, 1800));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
       name = Form("FeetErrorRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
       title = Form(
           "Error Counts per second in Feet %1u of gDPB %02u; Time[s] ; Error Counts", uFeet,
           uGdpb);
       fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), 1800, 0, 1800));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
       /// Long duration rate plots: 1 minute binning, 5 days range
       name = Form("FeetRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet);
       title = Form(
           "Counts per minute in Feet %1u of gDPB %02u; Time[min] ; Counts", uFeet,
           uGdpb);
       fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), 5*24*60, 0, 5*24*60));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
       name = Form("FeetErrorRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet);
       title = Form(
           "Error Counts per minute in Feet %1u of gDPB %02u; Time[min] ; Error Counts", uFeet,
           uGdpb);
       fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), 5*24*60, 0, 5*24*60));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
       if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
         name = Form("FeetRateDate_gDPB_g%02u_f%1u", uGdpb, uFeet);
@@ -673,10 +633,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
         fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), (5400 / fiBinSizeDatePlots), -10, 5400 - 10));
         ( fHM->H1(name.Data()) )->GetXaxis()->SetTimeDisplay(1);
         ( fHM->H1(name.Data()) )->GetXaxis()->SetTimeOffset( fiRunStartDateTimeSec );
-#ifdef USE_HTTP_SERVER
         if (server)
           server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
       } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
 
       name = Form("FtDistribPerCh_gDPB_g%02u_f%1u", uGdpb, uFeet);
@@ -686,10 +644,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
       fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet,
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
       if( fbGet4M24b )
       {
@@ -697,10 +653,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
           title = Form("Channel falling edge counts gDPB %02u; channel; Hits", uGdpb);
           fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(),
                    fNrOfFebsPerGdpb*fNrOfChannelsPerFeet, 0, fNrOfFebsPerGdpb*fNrOfChannelsPerFeet));
-#ifdef USE_HTTP_SERVER
           if (server)
             server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
          name = Form("FtDistribPerChFall_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -709,10 +663,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
          fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet,
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
         fviFtLastRise24b[ uGdpb * fNrOfFebsPerGdpb + uFeet ].resize( fNrOfChannelsPerFeet, -1 );
         fviFtLastFall24b[ uGdpb * fNrOfFebsPerGdpb + uFeet ].resize( fNrOfChannelsPerFeet, -1 );
@@ -726,10 +678,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
          fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
          name = Form("FtCurrRiseLastFall_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -738,10 +688,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
          fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
          name = Form("FtLastRiseDistRise_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -750,10 +698,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
          fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
                                       500, 0.0, 25.0 ));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
          name = Form("FtLastRiseDistFall_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -762,10 +708,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
          fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
                                       500, 0.0, 25.0 ));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
       } // if( fbGet4M24b )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
@@ -788,10 +732,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
          fvhCoincOffsetEpochGet4.push_back( ph2 );
 
          fHM->Add( name.Data(), ph2 );
-#ifdef USE_HTTP_SERVER
          if (server)
             server->Register("/TofCoinc", fHM->H2(name.Data()));
-#endif
      } // for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
   } // if( fbEnableCoincMap )
 
@@ -799,37 +741,29 @@ void CbmTSMonitorTofLab::CreateHistograms()
   title = "Counts per channel in Current Spill; X [Strip]; Y [End]; Counts";
   TH2I* hSpill = new TH2I(name, title, fNrOfChannelsPerFeet, 0., fNrOfChannelsPerFeet, 2, 0., 2.);
   fHM->Add(name.Data(), hSpill);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hSpillLength";
   title = "Length of spill interval as found from detectors; Length [s]; Counts";
   TH1* hSpillLength = new TH1F(name, title, 3000, 0., 300.);
   fHM->Add(name.Data(), hSpillLength);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hSpillCount";
   title = "Total counts in detector in each spill; Spill; Counts";
   TH1* hSpillCount = new TH1F(name, title, 300, 0., 300.);
   fHM->Add(name.Data(), hSpillCount);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hSpillQA";
   title = "Total counts in detector per spill VS Spill length; Length [s]; Counts";
   TH2* hSpillQA = new TH2F(name, title, 120, 0., 120., 150, 0., 150000.);
   fHM->Add(name.Data(), hSpillQA);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hTokenMsgType";
   title = "STAR trigger Messages type; Type ; Counts";
@@ -839,19 +773,15 @@ void CbmTSMonitorTofLab::CreateHistograms()
   fhTokenMsgType->GetXaxis()->SetBinLabel( 3, "C"); // STAR TS mid
   fhTokenMsgType->GetXaxis()->SetBinLabel( 4, "D"); // STAR TS low, token, CMDs
   fHM->Add(name.Data(), fhTokenMsgType);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/StarRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hTriggerRate";
   title = "STAR trigger signals per second; Time[s] ; Counts";
   fhTriggerRate = new TH1F(name, title, 1800, 0, 1800);
   fHM->Add(name.Data(), fhTriggerRate);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/StarRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hCmdDaqVsTrig";
   title = "STAR daq command VS STAR trigger command; DAQ ; TRIGGER";
@@ -889,28 +819,22 @@ void CbmTSMonitorTofLab::CreateHistograms()
   fhCmdDaqVsTrig->GetYaxis()->SetBinLabel(15, "0xE: 14"); // To be filled at STAR
   fhCmdDaqVsTrig->GetYaxis()->SetBinLabel(16, "0xF: 15"); // To be filled at STAR
   fHM->Add(name.Data(), fhCmdDaqVsTrig);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/StarRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hStarTokenEvo";
   title = "STAR token value VS time; Time in Run [s] ; STAR Token; Counts";
   fhStarTokenEvo = new TH2I(name, title, 1800, 0, 1800, 410, 0, 4100 ); // 4096
   fHM->Add(name.Data(), fhStarTokenEvo);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/StarRaw", fHM->H2(name.Data()));
-#endif
 
-#ifdef USE_HTTP_SERVER
   if (server)
     server->RegisterCommand("/Reset_All_TOF", "bResetTofLabHistos=kTRUE");
   if (server)
     server->RegisterCommand("/Cycle_Pulser_FEE", "bTofLabCyclePulserFee=kTRUE");
   if (server)
     server->Restrict("/Reset_All_TOF", "allow=admin");
-#endif
 
    LOG(INFO) << "Done with histo creation, now doing canvases" << FairLogger::endl;
 
@@ -996,10 +920,8 @@ void CbmTSMonitorTofLab::CreateHistograms()
       stackLong[uGdpb][uFeet]->Add(histPnt);
 //      stackLong[uGdpb][uFeet]->Draw("nostack");
 
-#ifdef USE_HTTP_SERVER
        if (server)
          server->Register("/TofStacks", stackLong[uGdpb][uFeet]);
-#endif
     } // for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; ++uFeet )
   } // for( UInt_t uGdpb = 0; uGdpb < fNrOfGdpbs; ++uGdpb )
   /*****************************/
@@ -1224,9 +1146,7 @@ void CbmTSMonitorTofLab::CreateHistograms()
 Bool_t CbmTSMonitorTofLab::DoUnpack(const fles::Timeslice& ts,
     size_t component)
 {
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
   if (bResetTofLabHistos) {
     ResetAllHistos();
@@ -1307,10 +1227,8 @@ Bool_t CbmTSMonitorTofLab::DoUnpack(const fles::Timeslice& ts,
     fHM->Add(sMsSzName.Data(),
         new TH1F(sMsSzName.Data(), sMsSzTitle.Data(), 160000, 0., 20000.));
     hMsSz = fHM->H1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/FlibRaw", hMsSz);
-#endif
     sMsSzName = Form("MsSzTime_link_%02lu", component);
     sMsSzTitle = Form(
         "Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]",
@@ -1318,10 +1236,8 @@ Bool_t CbmTSMonitorTofLab::DoUnpack(const fles::Timeslice& ts,
     fHM->Add(sMsSzName.Data(),
         new TProfile(sMsSzName.Data(), sMsSzTitle.Data(), 180000, 0., 3600.));
     hMsSzTime = fHM->P1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/FlibRaw", hMsSzTime);
-#endif
     if( NULL != fcMsSizeAll )
     {
       fcMsSizeAll->cd( 1 + component );

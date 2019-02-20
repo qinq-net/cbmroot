@@ -280,7 +280,6 @@ void CbmMcbm2018MonitorMcbmSync::CreateStsHistograms()
    fhStsMessType->GetXaxis()->SetBinLabel( 5, "Empty");
 
    // Online histo browser commands
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
    if( server )
    {
@@ -292,7 +291,6 @@ void CbmMcbm2018MonitorMcbmSync::CreateStsHistograms()
       server->Restrict("/Reset_All_Pulser", "allow=admin");
       server->Restrict("/Write_All_Pulser", "allow=admin");
    } // if( server )
-#endif
 */
    /** Create summary Canvases for CERN 2017 **/
 /*
@@ -352,7 +350,6 @@ void CbmMcbm2018MonitorMcbmSync::CreateTofHistograms()
 */
    /*******************************************************************/
 /*
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
    if( server )
    {
@@ -366,7 +363,6 @@ void CbmMcbm2018MonitorMcbmSync::CreateTofHistograms()
       server->Restrict("/Save_All_Tof",  "allow=admin");
       server->Restrict("/Update_PulsFit", "allow=admin");
    } // if( server )
-#endif
 */
    /** Create summary Canvases for STAR 2018 **/
 /*
@@ -531,7 +527,6 @@ void CbmMcbm2018MonitorMcbmSync::CreateMcbmHistograms()
                                                     );
       } // if( fdSpillStartA < fdSpillStartC  )
    } // for( UInt_t uDpb = 0; uDpb < fuTotalNrOfDpb; ++uDpb )
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
    if( server )
    {
@@ -560,7 +555,6 @@ void CbmMcbm2018MonitorMcbmSync::CreateMcbmHistograms()
       server->Restrict("/Reset_All", "allow=admin");
       server->Restrict("/Save_All",  "allow=admin");
    } // if( server )
-#endif
 
    Double_t w = 10;
    Double_t h = 10;

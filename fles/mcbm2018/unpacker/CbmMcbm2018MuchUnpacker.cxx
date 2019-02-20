@@ -316,14 +316,12 @@ void CbmMcbm2018MuchUnpacker::AddMsComponentToList( size_t component, UShort_t u
       LOG(INFO) << "Added MS size histo for component: " << component
                 << " (DPB)" << FairLogger::endl;
 
-#ifdef USE_HTTP_SERVER
       THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
       if( server )
       {
          server->Register("/FlibRaw", fhMsSz[ component ] );
          server->Register("/FlibRaw", fhMsSzTime[ component ] );
       } // if( server )
-#endif
    } // if( NULL == fhMsSz[ component ] )
 }
 void CbmMcbm2018MuchUnpacker::SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb )

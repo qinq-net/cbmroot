@@ -298,10 +298,8 @@ Bool_t CbmTofStarMonitor2018::ReInitContainers()
 
 void CbmTofStarMonitor2018::CreateHistograms()
 {
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
 //  server->SetJSROOT("https://root.cern.ch/js/latest");
-#endif
 
   TString name { "" };
   TString title { "" };
@@ -330,10 +328,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
   hMessageType->GetXaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP, "NOP");
   fHM->Add(name.Data(), hMessageType);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hSysMessType";
   title = "Nb of system message for each type; System Type";
@@ -366,10 +362,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
       "UNKW GET4 MSG");
   hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
   fHM->Add(name.Data(), hSysMessType);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hGet4MessType";
   title = "Nb of message for each type per GET4; GET4 chip # ; Type";
@@ -383,10 +377,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
   hGet4MessType->GetYaxis()->SetBinLabel(1 + ngdpb::GET4_32B_DATA + 1,
       "DATA 24b");
   fHM->Add(name.Data(), hGet4MessType);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hGet4ChanScm";
   title = "SC messages per GET4 channel; GET4 channel # ; SC type";
@@ -394,10 +386,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
       2 * fNrOfGet4 * fNrOfChannelsPerGet4, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
       4, 0., 4.);
     fHM->Add(name.Data(), hGet4ChanScm);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hGet4ChanErrors";
   title = "Error messages per GET4 channel; GET4 channel # ; Error";
@@ -456,10 +446,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
         hGet4ChanErrors->GetYaxis()->SetBinLabel(17, "0x7f: Unknown         ");
      } // else of if( kTRUE == fbGet4v20 )
   fHM->Add(name.Data(), hGet4ChanErrors);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hGet4EpochFlags";
   title = "Epoch flags per GET4; GET4 chip # ; Type";
@@ -471,10 +459,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
   hGet4EpochFlags->GetYaxis()->SetBinLabel(3, "Da LOSS");
   hGet4EpochFlags->GetYaxis()->SetBinLabel(4, "MISSMAT");
   fHM->Add(name.Data(), hGet4EpochFlags);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
    // Slow control messages analysis
    name = "hScmScalerCounters";
@@ -482,58 +468,46 @@ void CbmTofStarMonitor2018::CreateHistograms()
    fhScmScalerCounters = new TH2I(name, title, fNrOfGet4 * fNrOfChannelsPerGet4 * 2, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
                                                8192, 0., 8192.);
    fHM->Add(name.Data(), fhScmScalerCounters);
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/TofRaw", fhScmScalerCounters );
-#endif
 
    name = "hScmDeadtimeCounters";
    title = "Content of Deadtime counter SC messages; Deadtime [Clk Cycles]; Channel []";
    fhScmDeadtimeCounters = new TH2I(name, title, fNrOfGet4 * fNrOfChannelsPerGet4 * 2, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
                                                8192, 0., 8192.);
    fHM->Add(name.Data(), fhScmDeadtimeCounters);
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/TofRaw", fhScmDeadtimeCounters );
-#endif
 
    name = "hScmSeuCounters";
    title = "Content of SEU counter SC messages; SEU []; Channel []";
    fhScmSeuCounters = new TH2I(name, title, fNrOfGet4 * fNrOfChannelsPerGet4 * 2, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
                                                8192, 0., 8192.);
    fHM->Add(name.Data(), fhScmSeuCounters);
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/TofRaw", fhScmSeuCounters );
-#endif
 
    name = "hScmSeuCountersEvo";
    title = "SEU counter rate from SC messages; Time in Run [s]; Channel []; SEU []";
    fhScmSeuCountersEvo = new TH2I(name, title, fNrOfGet4 * fNrOfChannelsPerGet4 * 2, 0., fNrOfGet4 * fNrOfChannelsPerGet4,
                                                fuHistoryHistoSize, 0., fuHistoryHistoSize);
    fHM->Add(name.Data(), fhScmSeuCountersEvo);
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/TofRaw", fhScmSeuCountersEvo );
-#endif
 
    name = "hScmStartMessDist";
    title = "Start message time interval distribution for GET4 #0; Time interval [s]; Counts []";
    fhScmStartMessDist = new TH1I(name, title, 10000, 0., 10.);
    fHM->Add(name.Data(), fhScmStartMessDist);
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/TofRaw", fhScmStartMessDist );
-#endif
 
    name = "hScmStartMessEvo";
    title = "Start message rate for GET4 #0; Time in Run [s]; Start Mess []";
    fhScmStartMessEvo = new TH1I(name, title, fuHistoryHistoSize, 0., fuHistoryHistoSize);
    fHM->Add(name.Data(), fhScmStartMessEvo);
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/TofRaw", fhScmStartMessEvo );
-#endif
 
    // Prepare storing of hit time info
    if( fUnpackPar->IsChannelRateEnabled() || fbPulserMode )
@@ -566,10 +540,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
       fHM->Add(name.Data(),
           new TH2F( name.Data(), title.Data(), iNbBinsRate - 1, dBinsRate,
                     uNbFeetPlot*fNrOfChannelsPerFeet, 0, uNbFeetPlot*fNrOfChannelsPerFeet));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
       if( uNbFeetPlot < fNrOfFebsPerGdpb  )
       {
          name = Form("ChannelRate_gDPB_%02u_1", uGdpb);
@@ -579,10 +551,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
                         uNbFeetPlot*fNrOfChannelsPerFeet,
                         uNbFeetPlot*fNrOfChannelsPerFeet,
                         2*uNbFeetPlot*fNrOfChannelsPerFeet));
-#ifdef USE_HTTP_SERVER
          if (server)
            server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
       } // if( uNbFeetPlot < fNrOfFebsPerGdpb  )
       if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
       {
@@ -593,10 +563,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
                         uNbFeetPlot*fNrOfChannelsPerFeet,
                         2*uNbFeetPlot*fNrOfChannelsPerFeet,
                         3*uNbFeetPlot*fNrOfChannelsPerFeet));
-#ifdef USE_HTTP_SERVER
          if (server)
            server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
       } // if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
 
       LOG(INFO) << "Adding the rate histos" << FairLogger::endl;
@@ -625,10 +593,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
                   Form("Time difference for channels %03u and %03u in chosen Fee; DeltaT [ps]; Counts",
                         uChanFeeA, uChanFeeB),
                   uNbBinsDt, dMinDt, dMaxDt) );
-#ifdef USE_HTTP_SERVER
             if (server)
                server->Register("/TofFt", fhTimeDiffPulserChosenFee[ fhTimeDiffPulserChosenFee.size() - 1] );
-#endif
          } // for any unique pair of channel in chosen Fee
       } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
 
@@ -641,10 +607,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
                Form("Time difference for selected channels %03u and %03u in the first gDPB; DeltaT [ps]; Counts",
                      fuPulserChan[uChan], fuPulserChan[uChan+1]),
                uNbBinsDt, dMinDt, dMaxDt);
-#ifdef USE_HTTP_SERVER
          if (server)
            server->Register("/TofRaw", fhTimeDiffPulserChosenChPairs[uChan] );
-#endif
       } // for( UInt_t uChan = 0; uChan < kuNbChanTest - 1; uChan++)
 
       name = "hTimeRmsPulserChosenFee";
@@ -653,20 +617,16 @@ void CbmTofStarMonitor2018::CreateHistograms()
             fNrOfChannelsPerFeet - 1, -0.5, fNrOfChannelsPerFeet - 1.5,
             fNrOfChannelsPerFeet - 1,  0.5, fNrOfChannelsPerFeet - 0.5);
       fHM->Add( name.Data(), fhTimeRmsPulserChosenFee);
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H2( name.Data() ) );
-#endif
 
       name = "hTimeRmsPulserChosenChPairs";
       fhTimeRmsPulserChosenChPairs = new TH1D( name.Data(),
             "Time difference RMS for chosen channels pairs; Pair # ; [ps]",
             kuNbChanTest - 1, -0.5, kuNbChanTest - 1.5);
       fHM->Add( name.Data(), fhTimeRmsPulserChosenChPairs);
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1( name.Data() ) );
-#endif
 
       name = "hTimeRmsZoomPulsChosenFee";
       fhTimeRmsZoomPulsChosenFee = new TH2D( name.Data(),
@@ -674,20 +634,16 @@ void CbmTofStarMonitor2018::CreateHistograms()
             fNrOfChannelsPerFeet - 1, -0.5, fNrOfChannelsPerFeet - 1.5,
             fNrOfChannelsPerFeet - 1,  0.5, fNrOfChannelsPerFeet - 0.5);
       fHM->Add( name.Data(), fhTimeRmsZoomPulsChosenFee);
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H2( name.Data() ) );
-#endif
 
       name = "hTimeRmsZoomFitPulsChosenChPairs";
       fhTimeRmsZoomFitPulsChosenChPairs = new TH1D( name.Data(),
             "Time difference RMS after zoom for chosen channels pairs; Pair # ; RMS [ps]",
             kuNbChanTest - 1, -0.5, kuNbChanTest - 1.5);
       fHM->Add( name.Data(), fhTimeRmsZoomFitPulsChosenChPairs);
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1( name.Data() ) );
-#endif
 
       name = "hTimeResFitPulsChosenFee";
       fhTimeResFitPulsChosenFee = new TH2D( name.Data(),
@@ -695,20 +651,16 @@ void CbmTofStarMonitor2018::CreateHistograms()
             fNrOfChannelsPerFeet - 1, -0.5, fNrOfChannelsPerFeet - 1.5,
             fNrOfChannelsPerFeet - 1,  0.5, fNrOfChannelsPerFeet - 0.5);
       fHM->Add( name.Data(), fhTimeResFitPulsChosenFee);
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H2( name.Data() ) );
-#endif
 
       name = "hTimeResFitPulsChosenChPairs";
       fhTimeResFitPulsChosenChPairs = new TH1D( name.Data(),
             "Time difference Res from fit for chosen channels pairs; Pair # ; Sigma [ps]",
             kuNbChanTest - 1, -0.5, kuNbChanTest - 1.5);
       fHM->Add( name.Data(), fhTimeResFitPulsChosenChPairs);
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1( name.Data() ) );
-#endif
   } // if( fbPulserMode )
 
   if( fbGet4M24b )
@@ -728,10 +680,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
 		 0*uNbFeetPlot*fNrOfChannelsPerFeet,
 		 1*uNbFeetPlot*fNrOfChannelsPerFeet,
                  256, 0, 256));
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
     if( uNbFeetPlot < fNrOfFebsPerGdpb )
     {
@@ -743,10 +693,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
                   1*uNbFeetPlot*fNrOfChannelsPerFeet,
                   2*uNbFeetPlot*fNrOfChannelsPerFeet,
                   256, 0, 256));
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
     } // if( uNbFeetPlot < fNrOfFebsPerGdpb  )
 
     if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
@@ -759,10 +707,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
                   2*uNbFeetPlot*fNrOfChannelsPerFeet,
                   3*uNbFeetPlot*fNrOfChannelsPerFeet,
                   256, 0, 256));
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
     } // if( 2 * uNbFeetPlot < fNrOfFebsPerGdpb )
 
     name = Form("ChCount_gDPB_%02u", uGdpb);
@@ -770,10 +716,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
     fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(),
              fNrOfFebsPerGdpb*fNrOfChannelsPerFeet, 0, fNrOfFebsPerGdpb*fNrOfChannelsPerFeet));
 
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
     if( fbGet4M24b )
     {
@@ -781,10 +725,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
           title = Form("Channel falling edge counts gDPB %02u; channel; Hits", uGdpb);
           fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(),
                    fNrOfFebsPerGdpb*fNrOfChannelsPerFeet, 0, fNrOfFebsPerGdpb*fNrOfChannelsPerFeet));
-#ifdef USE_HTTP_SERVER
           if (server)
             server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
     } // if( fbGet4M24b )
 
     for (UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet++) {
@@ -793,40 +735,32 @@ void CbmTofStarMonitor2018::CreateHistograms()
           "Counts per second in Feet %1u of gDPB %02u; Time[s] ; Counts", uFeet,
           uGdpb);
       fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
       name = Form("FeetErrorRate_gDPB_g%02u_f%1u", uGdpb, uFeet);
       title = Form(
           "Error Counts per second in Feet %1u of gDPB %02u; Time[s] ; Error Counts", uFeet,
           uGdpb);
       fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), fuHistoryHistoSize, 0, fuHistoryHistoSize));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
       name = Form("FeetRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet);
       title = Form(
           "Counts per minutes in Feet %1u of gDPB %02u; Time[min] ; Counts", uFeet,
           uGdpb);
       fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
       name = Form("FeetErrorRateLong_gDPB_g%02u_f%1u", uGdpb, uFeet);
       title = Form(
           "Error Counts per minutes in Feet %1u of gDPB %02u; Time[min] ; Error Counts", uFeet,
           uGdpb);
       fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), fuHistoryHistoSizeLong, 0, fuHistoryHistoSizeLong));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
       if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
         name = Form("FeetRateDate_gDPB_g%02u_f%1u", uGdpb, uFeet);
@@ -836,10 +770,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
         fHM->Add(name.Data(), new TH1F(name.Data(), title.Data(), (5400 / fiBinSizeDatePlots), -10, 5400 - 10));
         ( fHM->H1(name.Data()) )->GetXaxis()->SetTimeDisplay(1);
         ( fHM->H1(name.Data()) )->GetXaxis()->SetTimeOffset( fiRunStartDateTimeSec );
-#ifdef USE_HTTP_SERVER
         if (server)
           server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
       } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
 
       name = Form("FtDistribPerCh_gDPB_g%02u_f%1u", uGdpb, uFeet);
@@ -849,10 +781,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
       fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet,
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
       if (server)
         server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
 
       name = Form("SelChFtNormDnlRise_g%02u_f%1u", uGdpb, uFeet);
@@ -861,10 +791,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
        uGdpb);
       fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
       if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
       name = Form("FtNormDnlMinRise_g%02u_f%1u", uGdpb, uFeet);
       title = Form(
@@ -872,10 +800,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
        uGdpb);
       fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                       fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
-#ifdef USE_HTTP_SERVER
       if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
       name = Form("FtNormDnlMaxRise_g%02u_f%1u", uGdpb, uFeet);
       title = Form(
@@ -883,10 +809,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
        uGdpb);
       fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                       fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
-#ifdef USE_HTTP_SERVER
       if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
 /// ----------------------> INL plots
       name = Form("SelChFtNormInlRise_g%02u_f%1u", uGdpb, uFeet);
@@ -895,10 +819,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
        uGdpb);
       fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
       if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
       name = Form("FtNormInlMinRise_g%02u_f%1u", uGdpb, uFeet);
       title = Form(
@@ -906,10 +828,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
        uGdpb);
       fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                       fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
-#ifdef USE_HTTP_SERVER
       if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
       name = Form("FtNormInlMaxRise_g%02u_f%1u", uGdpb, uFeet);
       title = Form(
@@ -917,10 +837,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
        uGdpb);
       fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                       fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
-#ifdef USE_HTTP_SERVER
       if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 /// <--------------------------------
 
       if( fbGet4M24b )
@@ -932,10 +850,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
          fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet,
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
          name = Form("SelChFtNormDnlFall_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -943,10 +859,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
           uGdpb);
          fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
          name = Form("FtNormDnlMinFall_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -954,10 +868,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
           uGdpb);
          fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                          fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
          name = Form("FtNormDnlMaxFall_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -965,10 +877,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
           uGdpb);
          fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                          fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
 /// ----------------------> INL plots
          name = Form("SelChFtNormInlFall_g%02u_f%1u", uGdpb, uFeet);
@@ -977,10 +887,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
           uGdpb);
          fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
          name = Form("FtNormInlMinFall_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -988,10 +896,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
           uGdpb);
          fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                          fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
          name = Form("FtNormInlMaxFall_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -999,10 +905,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
           uGdpb);
          fHM->Add(name.Data(), new TH1D( name.Data(), title.Data(),
                                          fNrOfChannelsPerFeet, 0, fNrOfChannelsPerFeet ));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 /// <--------------------------------
 
         fviFtLastRise24b[ uGdpb * fNrOfFebsPerGdpb + uFeet ].resize( fNrOfChannelsPerFeet, -1 );
@@ -1017,10 +921,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
          fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
          name = Form("FtCurrRiseLastFall_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -1029,10 +931,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
          fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
          name = Form("FtLastRiseDistRise_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -1041,10 +941,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
          fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
                                       500, 0.0, 25.0 ));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
          name = Form("FtLastRiseDistFall_gDPB_g%02u_f%1u", uGdpb, uFeet);
          title = Form(
@@ -1053,10 +951,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
          fHM->Add(name.Data(), new TH2I( name.Data(), title.Data(),
                                       get4v1x::kuFineCounterSize, 0, get4v1x::kuFineCounterSize,
                                       500, 0.0, 25.0 ));
-#ifdef USE_HTTP_SERVER
          if (server)
          server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
       } // if( fbGet4M24b )
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
@@ -1068,28 +964,22 @@ void CbmTofStarMonitor2018::CreateHistograms()
    title = Form("QA check of epoch index in Real MS for gDPB %02u; Ms Idx []; 1st Ep Idx / MS Idx []", uGdpb);
    fRealMsFineQa_gDPB.push_back( new TH1D(name.Data(), title.Data(), 10000, -0.5, 10000.0 - 0.5 ) );
    fHM->Add(name.Data(), fRealMsFineQa_gDPB[uGdpb] );
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
    name = Form("fRealMsMidQa_gDPB_%02u", uGdpb);
    title = Form("QA check of epoch index in Real MS for gDPB %02u, Mid range; Ms Idx []; 1st Ep Idx / MS Idx []", uGdpb);
    fRealMsMidQa_gDPB.push_back( new TProfile(name.Data(), title.Data(), 10000, -0.5, 1e6 - 0.5 ) );
    fHM->Add(name.Data(), fRealMsMidQa_gDPB[uGdpb] );
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
    name = Form("fRealMsCoarseQa_gDPB_%02u", uGdpb);
    title = Form("QA check of epoch index in Real MS for gDPB %02u, Coarse range; Ms Idx []; 1st Ep Idx / MS Idx []", uGdpb);
    fRealMsCoarseQa_gDPB.push_back( new TProfile(name.Data(), title.Data(), 10000, -0.5, 1e9 - 0.5 ) );
    fHM->Add(name.Data(), fRealMsCoarseQa_gDPB[uGdpb] );
-#ifdef USE_HTTP_SERVER
    if (server)
       server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
   fhTempHistInlRise = new TH1D( "TempHistInlRise",
                                 "Temp holder for INL distribution in current channel, rising edge; FT Rise [bin]; INL []",
@@ -1115,10 +1005,8 @@ void CbmTofStarMonitor2018::CreateHistograms()
       fvhCoincOffsetEpochGet4.push_back( ph2 );
 
       fHM->Add( name.Data(), ph2 );
-#ifdef USE_HTTP_SERVER
       if (server)
          server->Register("/TofCoinc", fHM->H2(name.Data()));
-#endif
   } // for( UInt_t uAsicA = 0; uAsicA < fNrOfGet4 - 1; uAsicA ++ )
 */
 
@@ -1126,37 +1014,29 @@ void CbmTofStarMonitor2018::CreateHistograms()
   title = "Counts per channel in Current Spill; X [Strip]; Y [End]; Counts";
   TH2I* hSpill = new TH2I(name, title, fNrOfChannelsPerFeet, 0., fNrOfChannelsPerFeet, 2, 0., 2.);
   fHM->Add(name.Data(), hSpill);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hSpillLength";
   title = "Length of spill interval as found from detectors; Length [s]; Counts";
   TH1* hSpillLength = new TH1F(name, title, 3000, 0., 300.);
   fHM->Add(name.Data(), hSpillLength);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hSpillCount";
   title = "Total counts in detector in each spill; Spill; Counts";
   TH1* hSpillCount = new TH1F(name, title, 300, 0., 300.);
   fHM->Add(name.Data(), hSpillCount);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hSpillQA";
   title = "Total counts in detector per spill VS Spill length; Length [s]; Counts";
   TH2* hSpillQA = new TH2F(name, title, 120, 0., 120., 150, 0., 150000.);
   fHM->Add(name.Data(), hSpillQA);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hTokenMsgType";
   title = "STAR trigger Messages type; Type ; Counts";
@@ -1166,19 +1046,15 @@ void CbmTofStarMonitor2018::CreateHistograms()
   fhTokenMsgType->GetXaxis()->SetBinLabel( 3, "C"); // STAR TS mid
   fhTokenMsgType->GetXaxis()->SetBinLabel( 4, "D"); // STAR TS low, token, CMDs
   fHM->Add(name.Data(), fhTokenMsgType);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/StarRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hTriggerRate";
   title = "STAR trigger signals per second; Time[s] ; Counts";
   fhTriggerRate = new TH1F(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize);
   fHM->Add(name.Data(), fhTriggerRate);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/StarRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hCmdDaqVsTrig";
   title = "STAR daq command VS STAR trigger command; DAQ ; TRIGGER";
@@ -1216,21 +1092,16 @@ void CbmTofStarMonitor2018::CreateHistograms()
   fhCmdDaqVsTrig->GetYaxis()->SetBinLabel(15, "0xE: 14"); // To be filled at STAR
   fhCmdDaqVsTrig->GetYaxis()->SetBinLabel(16, "0xF: 15"); // To be filled at STAR
   fHM->Add(name.Data(), fhCmdDaqVsTrig);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/StarRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hStarTokenEvo";
   title = "STAR token value VS time; Time in Run [s] ; STAR Token; Counts";
   fhStarTokenEvo = new TH2I(name, title, fuHistoryHistoSize, 0, fuHistoryHistoSize, 410, 0, 4100 ); // 4096
   fHM->Add(name.Data(), fhStarTokenEvo);
-#ifdef USE_HTTP_SERVER
   if (server)
     server->Register("/StarRaw", fHM->H2(name.Data()));
-#endif
 
-#ifdef USE_HTTP_SERVER
   if (server)
   {
     server->RegisterCommand("/Reset_All_TOF", "bResetTofStarMoniHistos=kTRUE");
@@ -1245,7 +1116,6 @@ void CbmTofStarMonitor2018::CreateHistograms()
     server->Restrict("/Reset_All_TOF", "allow=admin");
     server->Restrict("/Save_All_Tof", "allow=admin");
   } // if (server)
-#endif
 
    LOG(INFO) << "Done with histo creation, now doing canvases" << FairLogger::endl;
 
@@ -1751,9 +1621,7 @@ void CbmTofStarMonitor2018::CreateHistograms()
 Bool_t CbmTofStarMonitor2018::DoUnpack(const fles::Timeslice& ts,
     size_t component)
 {
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
   if (bResetTofStarMoniHistos) {
     LOG(INFO) << "Reset TOF STAR histos " << FairLogger::endl;
@@ -1824,10 +1692,8 @@ Bool_t CbmTofStarMonitor2018::DoUnpack(const fles::Timeslice& ts,
     fHM->Add(sMsSzName.Data(),
         new TH1F(sMsSzName.Data(), sMsSzTitle.Data(), 160000, 0., 20000.));
     hMsSz = fHM->H1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/FlibRaw", hMsSz);
-#endif
     sMsSzName = Form("MsSzTime_link_%02lu", component);
     sMsSzTitle = Form(
         "Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]",
@@ -1836,10 +1702,8 @@ Bool_t CbmTofStarMonitor2018::DoUnpack(const fles::Timeslice& ts,
         new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
                       100 * fuHistoryHistoSize, 0., 2 * fuHistoryHistoSize ) );
     hMsSzTime = fHM->P1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
     if (server)
       server->Register("/FlibRaw", hMsSzTime);
-#endif
     if( NULL != fcMsSizeAll )
     {
       fcMsSizeAll->cd( 1 + component );

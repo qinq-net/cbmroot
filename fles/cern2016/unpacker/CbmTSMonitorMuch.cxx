@@ -171,9 +171,7 @@ Bool_t CbmTSMonitorMuch::ReInitContainers()
 
 void CbmTSMonitorMuch::CreateHistograms()
 {
-#ifdef USE_HTTP_SERVER
     THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
 	TString sHistName{""};
     	TString title{""};
@@ -195,9 +193,7 @@ void CbmTSMonitorMuch::CreateHistograms()
   hMessageType->GetXaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP,      "NOP");
   fHM->Add(sHistName.Data(), hMessageType);
-#ifdef USE_HTTP_SERVER
       if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
-#endif
 
   sHistName = "hSysMessTypeMuch";
   title = "Nb of system message for each type; System Type";
@@ -218,9 +214,7 @@ void CbmTSMonitorMuch::CreateHistograms()
   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_GDPB_UNKWN,        "UNKW GET4 MSG");
   hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
   fHM->Add(sHistName.Data(), hSysMessType);
-#ifdef USE_HTTP_SERVER
   if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
-#endif
 
    // Number of rqte bins =
    //      9 for the sub-unit decade
@@ -276,25 +270,19 @@ void CbmTSMonitorMuch::CreateHistograms()
          title = Form("Channel counts Much nDPB %s FEB %02u; channel; Counts",
                      sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 128, 0, 128) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
-#endif
 
         sHistName = Form("Raw_ADC_Much_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("Raw ADC Much nDPB %s FEB %02u; channel; ADC value",
                sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH2F( sHistName.Data(), title.Data(), 128, 0, 128, 4096, 0, 4096) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
-#endif
 
         sHistName = Form("FebRate_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("Counts per second in nDPB %s FEB %02u; Time[s] ; Counts",
                         sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
-#endif
 
         if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec ) {
           sDateHistName = Form("FebRateDate_n%s_f%1u", sNdpbTag.Data(), febId);
@@ -302,10 +290,8 @@ void CbmTSMonitorMuch::CreateHistograms()
                         (5400 / fiBinSizeDatePlots),
                         fiRunStartDateTimeSec -10, fiRunStartDateTimeSec + 5400 - 10));
           ( fHM->H1(sDateHistName.Data()) )->GetXaxis()->SetTimeDisplay(1);
-#ifdef USE_HTTP_SERVER
           if (server)
             server->Register("/MuchRaw", fHM->H1(sDateHistName.Data()));
-#endif
 
           sHistName = Form("HitDtDate_n%s_f%1u", sNdpbTag.Data(), febId );
           title = Form("Inverse Hit distance VS time in second in nDPB %s FEB %02u; Time[s] ; F [Hz]; Counts",
@@ -315,19 +301,15 @@ void CbmTSMonitorMuch::CreateHistograms()
                         fiRunStartDateTimeSec -10, fiRunStartDateTimeSec + 5400 - 10,
                         iNbBinsRate - 1, dBinsRate ));
           ( fHM->H2(sHistName.Data()) )->GetXaxis()->SetTimeDisplay(1);
-#ifdef USE_HTTP_SERVER
           if (server)
             server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
-#endif
         } // if( 0 < fiBinSizeDatePlots && 0 < fiRunStartDateTimeSec )
 
         sHistName = Form("HitMissEvo_n%s_f%1u", sNdpbTag.Data(), febId);
         title = Form("Minimal hit loss per second in nDPB %s FEB %02u; Time[s] ; Min Loss",
                         sNdpbTag.Data(), febId);
 		  fHM->Add( sHistName.Data(), new TH1F( sHistName.Data(), title.Data(), 1800, 0, 1800 ) );
-#ifdef USE_HTTP_SERVER
         if (server) server->Register("/MuchRaw", fHM->H1(sHistName.Data()));
-#endif
 
       } // for( Int_t febId = 0; febId < fNrOfFebsPerNdpb; febId++)
    } // for( Int_t dpbId = 0; dpbId < fNrOfNdpbs; dpbId++)
@@ -351,16 +333,12 @@ void CbmTSMonitorMuch::CreateHistograms()
 //	Int_t iFeb = 3, iChan =32;
 
 */
-#ifdef USE_HTTP_SERVER
     if (server) server->Register("/MuchRaw", fHM->H2(sHistName.Data()));
-#endif
 
-#ifdef USE_HTTP_SERVER
   if (server)
     server->RegisterCommand("/Reset_All_MUCH", "bResetMuchHistos=kTRUE");
   if (server)
     server->Restrict("/Reset_All_Much", "allow=admin");
-#endif
 
   /** Create summary Canvases for CERN 2016 **/
   Double_t w = 10;
@@ -505,9 +483,7 @@ void CbmTSMonitorMuch::CreateHistograms()
 
 Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
-#ifdef USE_HTTP_SERVER
 	  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
   if (bResetMuchHistos) {
     ResetAllHistos();
@@ -525,17 +501,13 @@ Bool_t CbmTSMonitorMuch::DoUnpack(const fles::Timeslice& ts, size_t component)
       fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(),
                                     160000, 0., 20000. ) );
       fhMsSz[ component ] = fHM->H1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
       if (server) server->Register("/FlibRaw", fhMsSz[ component ] );
-#endif
       sMsSzName = Form("MsSzTime_link_%02lu", component);
       sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
       fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
                                     15000, 0., 300. ) );
       fhMsSzTime[ component ] = fHM->P1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
       if (server) server->Register("/FlibRaw", fhMsSzTime[ component ] );
-#endif
       if( NULL != fcMsSizeAll )
       {
          fcMsSizeAll->cd( 1 + component );

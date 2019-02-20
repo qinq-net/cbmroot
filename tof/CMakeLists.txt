@@ -46,9 +46,6 @@ ${Boost_LIBRARY_DIRS}
 
 link_directories( ${LINK_DIRECTORIES})
 
-# For the time being compile tof beamtime related software only if the
-# FairRoot version is v-15.11b => 15.11.2 
-#If(FairRoot_VERSION VERSION_EQUAL 15.11.2)
   Set(TOF_BEAM_SOURCES 
     TofReco/CbmTofTestBeamClusterizer.cxx 
     TofReco/CbmTofCosmicClusterizer.cxx 
@@ -59,7 +56,6 @@ link_directories( ${LINK_DIRECTORIES})
     CbmTofUnpack
   )
   Set(DEFINITIONS ${DEFINITIONS} BUILD_TOF_BEAMTIME)
-#EndIf()
 
 set(SRCS
 TofMC/CbmGeoTof.cxx 

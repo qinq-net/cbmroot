@@ -2078,9 +2078,7 @@ void CbmCosy2018MonitorEfficiency::CreateHistograms()
    title = "Raw Timestamp Msb distribution per StsXyter; Ts MSB []; StsXyter []; Hits []";
    fhHodoFebTsMsb = new TH2I( sHistName, title, stsxyter::kuTsMsbNbTsBins, -0.5,   stsxyter::kuTsMsbNbTsBins - 0.5,
                                                 fuNbStsXyters, -0.5, fuNbStsXyters - 0.5 );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhHodoFebTsMsb );
-#endif
 */
    // Miscroslice properties histos
    for( Int_t component = 0; component < kiMaxNbFlibLinks; component ++ )
@@ -2090,7 +2088,6 @@ void CbmCosy2018MonitorEfficiency::CreateHistograms()
    } // for( Int_t component = 0; component < kiMaxNbFlibLinks; component ++ )
 
    // Online histo browser commands
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
    if( server )
    {
@@ -2341,7 +2338,6 @@ void CbmCosy2018MonitorEfficiency::CreateHistograms()
       server->Restrict("/Reset_All_Hodo", "allow=admin");
       server->Restrict("/Write_All_Hodo", "allow=admin");
    } // if( server )
-#endif
 
    /** Create summary Canvases for CERN 2017 **/
    Double_t w = 10;
@@ -2927,9 +2923,7 @@ void CbmCosy2018MonitorEfficiency::CreateHistograms()
 
 Bool_t CbmCosy2018MonitorEfficiency::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
    if( bCosy2018ResetEfficiency )
    {
@@ -2952,16 +2946,12 @@ Bool_t CbmCosy2018MonitorEfficiency::DoUnpack(const fles::Timeslice& ts, size_t 
          TString sMsSzTitle = Form("Size of MS for nDPB of link %02lu; Ms Size [bytes]", component);
          fhMsSz[ component ] = new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 160000, 0., 20000. );
          fHM->Add(sMsSzName.Data(), fhMsSz[ component ] );
-#ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", fhMsSz[ component ] );
-#endif
          sMsSzName = Form("MsSzTime_link_%02lu", component);
          sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
          fhMsSzTime[ component ] =  new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 15000, 0., 300. );
          fHM->Add( sMsSzName.Data(), fhMsSzTime[ component ] );
-#ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", fhMsSzTime[ component ] );
-#endif
          if( NULL != fcMsSizeAll )
          {
             fcMsSizeAll->cd( 1 + component );

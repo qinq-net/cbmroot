@@ -156,9 +156,7 @@ Bool_t CbmTSMonitorTofLegacy::ReInitContainers()
 
 void CbmTSMonitorTofLegacy::CreateHistograms()
 {
-#ifdef USE_HTTP_SERVER
-	  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
+  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
 
   TString name{""};
   TString title{""};
@@ -182,9 +180,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
   hMessageType->GetXaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
   hMessageType->GetXaxis()->SetBinLabel(1 + ngdpb::MSG_NOP,      "NOP");
   fHM->Add(name.Data(), hMessageType);
-#ifdef USE_HTTP_SERVER
-      if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
+  if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
 
   name = "hSysMessType";
   title = "Nb of system message for each type; System Type";
@@ -206,9 +202,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
   hSysMessType->GetXaxis()->SetBinLabel(1 + ngdpb::SYSMSG_GDPB_UNKWN,        "UNKW GET4 MSG");
   hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
   fHM->Add(name.Data(), hSysMessType);
-#ifdef USE_HTTP_SERVER
   if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
   name = "hGet4MessType";
   title = "Nb of message for each type per GET4; GET4 chip # ; Type";
@@ -220,9 +214,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
   hGet4MessType->GetYaxis()->SetBinLabel(1 + ngdpb::GET4_32B_DATA,  "DATA 32b");
   hGet4MessType->GetYaxis()->SetBinLabel(1 + ngdpb::GET4_32B_DATA+1,"DATA 24b");
   fHM->Add(name.Data(), hGet4MessType);
-#ifdef USE_HTTP_SERVER
   if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hGet4ChanErrors";
   title = "Error messages per GET4 channel; GET4 channel # ; Error";
@@ -247,9 +239,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
   hGet4ChanErrors->GetYaxis()->SetBinLabel(17, "0x7f: Unknown         ");
   hGet4ChanErrors->GetYaxis()->SetBinLabel(18, "Corrupt error or unsupported yet");
   fHM->Add(name.Data(), hGet4ChanErrors);
-#ifdef USE_HTTP_SERVER
   if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   name = "hGet4EpochFlags";
   title = "Epoch flags per GET4; GET4 chip # ; Type";
@@ -260,9 +250,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
   hGet4EpochFlags->GetYaxis()->SetBinLabel(3,       "Da LOSS");
   hGet4EpochFlags->GetYaxis()->SetBinLabel(4,       "MISSMAT");
   fHM->Add(name.Data(), hGet4EpochFlags);
-#ifdef USE_HTTP_SERVER
   if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
   Double_t w = 10;
   Double_t h = 10;
@@ -348,9 +336,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
 	  title = Form("Channel instant rate gDPB %02u; Dist[ns] ; Channel", uGdpb);
 	  fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(),
 			   iNbBinsRate-1, dBinsRate, 96, 0, 96) );
-#ifdef USE_HTTP_SERVER
 	  if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 	  LOG(INFO) << "Adding the rate histos" << FairLogger::endl;
 	} // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
   }
@@ -360,17 +346,13 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
     name = Form("Raw_Tot_gDPB_%02u", uGdpb);
     title = Form("Raw TOT gDPB %02u; channel; TOT [bin]", uGdpb);
     fHM->Add(name.Data(), new TH2F(name.Data(), title.Data(), 96, 0, 96, 256, 0, 256) );
-#ifdef USE_HTTP_SERVER
     if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
     name = Form("ChCount_gDPB_%02u", uGdpb);
     title = Form("Channel counts gDPB %02u; channel; Hits", uGdpb);
     fHM->Add(name.Data(), new TH1I(name.Data(), title.Data(), 96, 0, 96 ) );
 
-#ifdef USE_HTTP_SERVER
     if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
 
     for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
     {
@@ -378,18 +360,14 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
        title = Form("Counts per second in Feet %1u of gDPB %02u; Time[s] ; Counts", uFeet, uGdpb);
        fHM->Add(name.Data(), new TH1F( name.Data(), title.Data(),
                                        1800, 0, 1800 ) );
-#ifdef USE_HTTP_SERVER
       if (server) server->Register("/TofRaw", fHM->H1(name.Data()));
-#endif
     } // for( UInt_t uFeet = 0; uFeet < fNrOfFebsPerGdpb; uFeet ++)
   } // for( UInt_t uGdpb = 0; uGdpb < fuMinNbGdpb; uGdpb ++)
 
-#ifdef USE_HTTP_SERVER
       if (server) server->RegisterCommand( "/Reset_ChCount_gDPB_00", "/TofRaw/ChCount_gDPB_00/->Reset()" );
       if (server) server->Restrict("/Reset_ChCount_gDPB_00","allow=admin");
       if (server) server->RegisterCommand( "/Reset_All_TOF", "ResetAllHistos()" );
       if (server) server->Restrict("/Reset_All_TOF","allow=admin");
-#endif
 
 
    /** Create summary Canvases for CERN 2016 **/
@@ -402,9 +380,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
    fHM->H1( "FeetRate_gDPB_g00_f2" )->SetLineColor( kBlue ); // => Make stack + color!
    stackRateA->Add( fHM->H1( "FeetRate_gDPB_g00_f2" ) );
   fHM->Add(name.Data(), stackRateA);
-#ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateA);
-#endif
 
    name = "stackRate_g01";
    THStack * stackRateB = new THStack( name, "Sum of counts vs Time per FEET for gDPB 2");
@@ -415,9 +391,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
    fHM->H1( "FeetRate_gDPB_g01_f2" )->SetLineColor( kBlue ); // => Make stack + color!
    stackRateB->Add( fHM->H1( "FeetRate_gDPB_g01_f2" ) );
   fHM->Add(name.Data(), stackRateB);
-#ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateB);
-#endif
 
   TCanvas* cSummary = new TCanvas("cSummary", "gDPB Monitoring Summary", w, h);
   cSummary->Divide( 4, 3 );
@@ -472,9 +446,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
    stackRateC->Add( fHM->H1( "FeetRate_gDPB_g02_f2" ) );
    stackRateC->Draw("nostack");
   fHM->Add(name.Data(), stackRateC);
-#ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateC);
-#endif
 
   cSummary->cd(8);
   gPad->SetLogy();
@@ -488,9 +460,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
    stackRateD->Add( fHM->H1( "FeetRate_gDPB_g03_f2" ) );
    stackRateD->Draw("nostack");
   fHM->Add(name.Data(), stackRateD);
-#ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateD);
-#endif
 
   cSummary->cd(11);
   gPad->SetLogy();
@@ -504,9 +474,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
    stackRateE->Add( fHM->H1( "FeetRate_gDPB_g04_f2" ) );
    stackRateE->Draw("nostack");
   fHM->Add(name.Data(), stackRateE);
-#ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateE);
-#endif
 
   cSummary->cd(12);
   gPad->SetLogy();
@@ -520,17 +488,13 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
    stackRateF->Add( fHM->H1( "FeetRate_gDPB_g05_f2" ) );
    stackRateF->Draw("nostack");
   fHM->Add(name.Data(), stackRateF);
-#ifdef USE_HTTP_SERVER
    if (server) server->Register("/TofRaw", stackRateF);
-#endif
 
   name = "hDiamond";
   title = "Counts per diamond in last 10s; X [pad]; Y [pad]; Counts";
   TH2I* hDiamond = new TH2I(name, title, 2, 0., 2, 2 , 0., 2.);
   fHM->Add(name.Data(), hDiamond);
-#ifdef USE_HTTP_SERVER
   if (server) server->Register("/TofRaw", fHM->H2(name.Data()));
-#endif
 
    /*****************************/
 
@@ -539,9 +503,7 @@ void CbmTSMonitorTofLegacy::CreateHistograms()
 
 Bool_t CbmTSMonitorTofLegacy::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
-#ifdef USE_HTTP_SERVER
-	  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
+  THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
 
    LOG(DEBUG1) << "Timeslice contains " << ts.num_microslices(component)
                << "microslices." << FairLogger::endl;
@@ -598,17 +560,13 @@ Bool_t CbmTSMonitorTofLegacy::DoUnpack(const fles::Timeslice& ts, size_t compone
          fHM->Add(sMsSzName.Data(), new TH1F( sMsSzName.Data(), sMsSzTitle.Data(),
                                        160000, 0., 20000. ) );
          hMsSz = fHM->H1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", hMsSz );
-#endif
          sMsSzName = Form("MsSzTime_link_%02lu", component);
          sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
          fHM->Add(sMsSzName.Data(), new TProfile( sMsSzName.Data(), sMsSzTitle.Data(),
                                        15000, 0., 300. ) );
          hMsSzTime = fHM->P1(sMsSzName.Data());
-#ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", hMsSzTime );
-#endif
          LOG(INFO) << "Added MS size histo for component: " << component
                 << " (gDPB)" << FairLogger::endl;
       } // else of if( fHM->Exists(sMsSzName.Data() ) )

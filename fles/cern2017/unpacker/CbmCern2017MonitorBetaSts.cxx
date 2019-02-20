@@ -273,9 +273,7 @@ Bool_t CbmCern2017MonitorBetaSts::ReInitContainers()
 
 void CbmCern2017MonitorBetaSts::CreateHistograms()
 {
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
    TString sHistName{""};
    TString title{""};
@@ -296,9 +294,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
    fhStsMessType->GetXaxis()->SetBinLabel(1 + stsxyter::BetaMessType::Ack,         "Ack");
 */
    fHM->Add(sHistName.Data(), fhStsMessType);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsMessType );
-#endif
 
    sHistName = "hStsSysMessType";
    title = "Nb of system message for each type; System Type";
@@ -309,9 +305,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
    hSysMessType->GetXaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
 */
    fHM->Add(sHistName.Data(), fhStsSysMessType);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsSysMessType );
-#endif
 
    sHistName = "hStsMessageTypePerDpb";
    title = "Nb of message of each type for each DPB; DPB; Type";
@@ -329,9 +323,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
    fhStsMessType->GetYaxis()->SetBinLabel(1 + stsxyter::BetaMessType::Ack,         "Ack");
 */
    fHM->Add(sHistName.Data(), fhStsMessTypePerDpb);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsMessTypePerDpb );
-#endif
 
    sHistName = "hStsSysMessTypePerDpb";
    title = "Nb of system message of each type for each DPB; DPB; System Type";
@@ -342,9 +334,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
    hSysMessType->GetYaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
 */
    fHM->Add(sHistName.Data(), fhStsSysMessTypePerDpb);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsSysMessTypePerDpb );
-#endif
 
    sHistName = "hStsMessageTypePerElink";
    title = "Nb of message of each type for each eLink; eLink; Type";
@@ -362,9 +352,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
    fhStsMessTypePerElink->GetYaxis()->SetBinLabel(1 + stsxyter::BetaMessType::Ack,         "Ack");
 */
    fHM->Add(sHistName.Data(), fhStsMessTypePerElink);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsMessTypePerElink );
-#endif
 
    sHistName = "hStsSysMessTypePerElink";
    title = "Nb of system message of each type for each eLink; eLink; System Type";
@@ -375,9 +363,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
    fhStsSysMessTypePerElink->GetYaxis()->SetBinLabel(1 + 16, "GET4 Hack 32B");
 */
    fHM->Add(sHistName.Data(), fhStsSysMessTypePerElink);
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsSysMessTypePerElink );
-#endif
 
    // Number of rate bins =
    //      9 for the sub-unit decade
@@ -421,9 +407,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
       fhStsChanCounts.push_back( new TH1I(sHistName, title,
                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
       fHM->Add(sHistName.Data(), fhStsChanCounts[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanCounts[ uXyterIdx ] );
-#endif
 
       // Raw Adc Distribution
       sHistName = Form( "hStsChanRawAdc_%03u", uXyterIdx );
@@ -432,9 +416,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                                  stsxyter::kuBetaHitNbAdcBins, -0.5, stsxyter::kuBetaHitNbAdcBins -0.5 ) );
       fHM->Add(sHistName.Data(), fhStsChanRawAdc[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanRawAdc[ uXyterIdx ] );
-#endif
 
       // Raw Adc Distribution profile
       sHistName = Form( "hStsChanRawAdcProfc_%03u", uXyterIdx );
@@ -442,9 +424,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
       fhStsChanRawAdcProf.push_back( new TProfile(sHistName, title,
                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
       fHM->Add(sHistName.Data(), fhStsChanRawAdcProf[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanRawAdcProf[ uXyterIdx ] );
-#endif
 
       // Raw Ts Distribution
       sHistName = Form( "hStsChanRawTs_%03u", uXyterIdx );
@@ -453,9 +433,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                                  stsxyter::kuBetaHitNbTsBins, -0.5, stsxyter::kuBetaHitNbTsBins -0.5 ) );
       fHM->Add(sHistName.Data(), fhStsChanRawTs[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanRawTs[ uXyterIdx ] );
-#endif
 
       // Missed event flag
       sHistName = Form( "hStsChanMissEvt_%03u", uXyterIdx );
@@ -464,9 +442,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                                  2, -0.5, 1.5 ) );
       fHM->Add(sHistName.Data(), fhStsChanMissEvt[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanMissEvt[ uXyterIdx ] );
-#endif
 
       // MSB correction from Overlap difference
       sHistName = Form( "hStsChanOverDiff_%03u", uXyterIdx );
@@ -475,9 +451,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                  fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                                  stsxyter::kuBetaHitNbOverBins, -0.5, stsxyter::kuBetaHitNbOverBins - 0.5 ) );
       fHM->Add(sHistName.Data(), fhStsChanOverDiff[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanOverDiff[ uXyterIdx ] );
-#endif
 
       // Hit rates evo per channel
       sHistName = Form( "hStsChanRateEvo_%03u", uXyterIdx );
@@ -486,18 +460,14 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                                 1800, 0, 1800,
                                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
       fHM->Add(sHistName.Data(), fhStsChanHitRateEvo[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanHitRateEvo[ uXyterIdx ] );
-#endif
 
       // Hit rates evo per StsXyter
       sHistName = Form( "hStsXyterRateEvo_%03u", uXyterIdx );
       title = Form( "Hits per second in StsXyter #%03u; Time [s]; Hits []", uXyterIdx );
       fhStsXyterRateEvo.push_back( new TH1I(sHistName, title, 1800, 0, 1800 ) );
       fHM->Add(sHistName.Data(), fhStsXyterRateEvo[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsXyterRateEvo[ uXyterIdx ] );
-#endif
 
       // Hit rates evo per channel, 1 minute bins, 24h
       sHistName = Form( "hStsChanRateEvoLong_%03u", uXyterIdx );
@@ -506,18 +476,14 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                                 1440, 0, 1440,
                                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
       fHM->Add(sHistName.Data(), fhStsChanHitRateEvoLong[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanHitRateEvoLong[ uXyterIdx ] );
-#endif
 
       // Hit rates evo per StsXyter, 1 minute bins, 24h
       sHistName = Form( "hStsXyterRateEvoLong_%03u", uXyterIdx );
       title = Form( "Hits per second in StsXyter #%03u; Time [min]; Hits []", uXyterIdx );
       fhStsXyterRateEvoLong.push_back( new TH1D(sHistName, title, 1440, 0, 1440 ) );
       fHM->Add(sHistName.Data(), fhStsXyterRateEvoLong[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsXyterRateEvoLong[ uXyterIdx ] );
-#endif
 
       // Hit distance in time for each channel
       if( fbChanHitDtEna )
@@ -528,18 +494,14 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                                    iNbBinsRate - 1, dBinsRate,
                                                    fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
          fHM->Add(sHistName.Data(), fhStsChanHitDt[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
          if( server ) server->Register("/StsRaw", fhStsChanHitDt[ uXyterIdx ] );
-#endif
          sHistName = Form( "hStsChanHitDtNeg_%03u", uXyterIdx );
          title = Form( "Time diff between hits on same channel in StsXyter #%03u; t_prev - t_hit [ns]; Channel []; Hits []", uXyterIdx );
          fhStsChanHitDtNeg.push_back( new TH2I( sHistName, title,
                                                    iNbBinsRate - 1, dBinsRate,
                                                    fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
          fHM->Add(sHistName.Data(), fhStsChanHitDtNeg[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
          if( server ) server->Register("/StsRaw", fhStsChanHitDtNeg[ uXyterIdx ] );
-#endif
 
       } // if( fbChanHitDtEna )
 
@@ -549,9 +511,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                                 100, -0.5, 99.5,
                                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
       fHM->Add(sHistName.Data(), fhStsChanHitsPerMs[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanHitsPerMs[ uXyterIdx ] );
-#endif
 
       sHistName = Form( "hStsChanSameMs_%03u", uXyterIdx );
       title = Form( "Nb of MS with hits in both channels in StsXyter #%03u; Channel A []; Channel B []; Coinc. MS []", uXyterIdx );
@@ -559,9 +519,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
       fHM->Add(sHistName.Data(), fhStsChanHitsPerMs[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanSameMs[ uXyterIdx ] );
-#endif
 
       sHistName = Form( "pStsChanSameMsTimeDiff_%03u", uXyterIdx );
       title = Form( "Mean Time difference of channels when hits in same MS in StsXyter #%03u; Channel A []; Channel B []; Mean time diff [bins]", uXyterIdx );
@@ -575,9 +533,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5,
                                                 fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
       fHM->Add(sHistName.Data(), fhStsChanSameMsTimeDiff[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsChanSameMsTimeDiff[ uXyterIdx ] );
-#endif
 
       if( kTRUE == fbLongHistoEnable )
       {
@@ -589,9 +545,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
          fhFebRateEvoLong.push_back( new TH1D( sHistName, title,
                                                    fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5) );
          fHM->Add(sHistName.Data(), fhFebRateEvoLong[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
          if( server ) server->Register("/StsRaw", fhFebRateEvoLong[ uXyterIdx ] );
-#endif
 
          sHistName = Form( "hFebChRateEvoLong_%03u", uXyterIdx );
          title = Form( "Mean rate per channel VS run time in StsXyter #%03u; Time in run [s]; Channel []; Rare [1/s]", uXyterIdx );
@@ -599,9 +553,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                                    fuLongHistoBinNb, -0.5, uAlignedLimit - 0.5,
                                                    fuNbChanPerAsic, -0.5, fuNbChanPerAsic - 0.5 ) );
          fHM->Add(sHistName.Data(), fhFebChRateEvoLong[ uXyterIdx ] );
-#ifdef USE_HTTP_SERVER
          if( server ) server->Register("/StsRaw", fhFebChRateEvoLong[ uXyterIdx ] );
-#endif
       } // if( kTRUE == fbLongHistoEnable )
 
    } // for( UInt_t uXyterIdx = 0; uXyterIdx < fuNbStsXyters; ++uXyterIdx )
@@ -632,9 +584,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
             TH1 * pHist = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
 
             fHM->Add(sHistName.Data(), pHist);
-#ifdef USE_HTTP_SERVER
             if( server ) server->Register("/StsRaw", pHist );
-#endif
             fhStsPulserChansTimeDiff.push_back( pHist );
 
             sHistName = Form( "hStsPulserChansSortedTimeDiff_%02u_%03u_%02u_%03u",
@@ -647,9 +597,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
             pHist = new TH1I(sHistName, title, uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
 
             fHM->Add(sHistName.Data(), pHist);
-#ifdef USE_HTTP_SERVER
             if( server ) server->Register("/StsRaw", pHist );
-#endif
             fhStsPulserChansSortedTimeDiff[ uChA ][ uChB ] = pHist;
 
             if( kTRUE == fbLongHistoEnable )
@@ -666,9 +614,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                        uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
 
                fHM->Add(sHistName.Data(), pHistEvo);
-#ifdef USE_HTTP_SERVER
                if( server ) server->Register("/StsRaw", pHistEvo );
-#endif
                fhStsPulserChansTimeDiffEvo.push_back( pHistEvo );
 
                sHistName = Form( "hStsPulserChansSortedTimeDiffEvo_%02u_%03u_%02u_%03u",
@@ -682,9 +628,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
                                        uNbBinEvo, dMinEdgeEvo, dMaxEdgeEvo );
 
                fHM->Add(sHistName.Data(), pHistEvo);
-#ifdef USE_HTTP_SERVER
                if( server ) server->Register("/StsRaw", pHistEvo );
-#endif
                fhStsPulserChansSortedTimeDiffEvo[ uChA ][ uChB ] = pHistEvo;
             } // if( kTRUE == fbLongHistoEnable )
          } // for( UInt_t uChB = uChA + 1; uChB < uNbPulserChans; ++uChB )
@@ -697,9 +641,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
    fhStsAsicTsMsb = new TH2I( sHistName, title, stsxyter::kuBetaTsMsbNbTsBins, -0.5,   stsxyter::kuBetaTsMsbNbTsBins - 0.5,
                                                 fuNbStsXyters, -0.5, fuNbStsXyters - 0.5 );
    fHM->Add(sHistName.Data(), fhStsAsicTsMsb );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsAsicTsMsb );
-#endif
 
    // Nb values in agreement in TS MSB messages, per StsXyter
    sHistName = "hStsAsicTsMsbMaj";
@@ -707,9 +649,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
    fhStsAsicTsMsbMaj = new TH2I( sHistName, title, fuNbStsXyters, -0.5, fuNbStsXyters - 0.5,
                                                    3, 0.5, 3.5);
    fHM->Add(sHistName.Data(), fhStsAsicTsMsbMaj );
-#ifdef USE_HTTP_SERVER
    if( server ) server->Register("/StsRaw", fhStsAsicTsMsbMaj );
-#endif
 
    for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
    {
@@ -719,9 +659,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
       fhStsElinkTsMsbCrc.push_back( new TH2I( sHistName, title, fuNbElinksPerDpb, -0.5, fuNbElinksPerDpb - 0.5,
                                                                 2, -0.5, 1.5) );
       fHM->Add(sHistName.Data(), fhStsElinkTsMsbCrc[ uDpb ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsElinkTsMsbCrc[ uDpb ] );
-#endif
 
       // Nb values in agreement in TS MSB messages, per (DPB, eLink) pairs
       sHistName = Form( "hStsElinkTsMsbMaj_d%02u", uDpb );
@@ -729,9 +667,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
       fhStsElinkTsMsbMaj.push_back( new TH2I( sHistName, title, fuNbElinksPerDpb, -0.5, fuNbElinksPerDpb - 0.5,
                                                                 3, 0.5, 3.5) );
       fHM->Add(sHistName.Data(), fhStsElinkTsMsbMaj[ uDpb ] );
-#ifdef USE_HTTP_SERVER
       if( server ) server->Register("/StsRaw", fhStsElinkTsMsbMaj[ uDpb ] );
-#endif
    } // for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
 
    // Miscroslice properties histos
@@ -742,7 +678,6 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
    } // for( Int_t component = 0; component < kiMaxNbFlibLinks; component ++ )
 
    // Online histo browser commands
-#ifdef USE_HTTP_SERVER
    if( server )
    {
       server->RegisterCommand("/Reset_All_Sts", "bCern2017ResetStsHistosBeta=kTRUE");
@@ -751,7 +686,6 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
       server->Restrict("/Reset_All_Sts", "allow=admin");
       server->Restrict("/Write_All_Sts", "allow=admin");
    } // if( server )
-#endif
 
    /** Create summary Canvases for CERN 2017 **/
    Double_t w = 10;
@@ -916,9 +850,7 @@ void CbmCern2017MonitorBetaSts::CreateHistograms()
 
 Bool_t CbmCern2017MonitorBetaSts::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
-#ifdef USE_HTTP_SERVER
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
 
    if( bCern2017ResetStsHistosBeta )
    {
@@ -941,16 +873,12 @@ Bool_t CbmCern2017MonitorBetaSts::DoUnpack(const fles::Timeslice& ts, size_t com
          TString sMsSzTitle = Form("Size of MS for nDPB of link %02lu; Ms Size [bytes]", component);
          fhMsSz[ component ] = new TH1F( sMsSzName.Data(), sMsSzTitle.Data(), 160000, 0., 20000. );
          fHM->Add(sMsSzName.Data(), fhMsSz[ component ] );
-#ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", fhMsSz[ component ] );
-#endif
          sMsSzName = Form("MsSzTime_link_%02lu", component);
          sMsSzTitle = Form("Size of MS vs time for gDPB of link %02lu; Time[s] ; Ms Size [bytes]", component);
          fhMsSzTime[ component ] =  new TProfile( sMsSzName.Data(), sMsSzTitle.Data(), 15000, 0., 300. );
          fHM->Add( sMsSzName.Data(), fhMsSzTime[ component ] );
-#ifdef USE_HTTP_SERVER
          if (server) server->Register("/FlibRaw", fhMsSzTime[ component ] );
-#endif
          if( NULL != fcMsSizeAll )
          {
             fcMsSizeAll->cd( 1 + component );
@@ -1748,9 +1676,7 @@ void CbmCern2017MonitorBetaSts::SetPulserChannels( UInt_t uAsicA, UInt_t uChanA,
                                                UInt_t uMaxNbMicroslices )
 {
 /*
-#ifdef USE_HTTP_SERVER
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
-#endif
    TString sHistName{""};
    TString title{""};
 */
@@ -1787,9 +1713,7 @@ void CbmCern2017MonitorBetaSts::SetPulserChannels( UInt_t uAsicA, UInt_t uChanA,
          TH1 * pHist = new TH1I(sHistName, title, 16385, -51203.125, 51203.125);
 
          fHM->Add(sHistName.Data(), pHist);
-#ifdef USE_HTTP_SERVER
          if( server ) server->Register("/StsRaw", pHist );
-#endif
          fhStsPulserChansTimeDiff.push_back( pHist );
       } // Loop on pairs of channels
 */
