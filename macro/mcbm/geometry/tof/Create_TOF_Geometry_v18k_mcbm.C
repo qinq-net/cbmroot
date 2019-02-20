@@ -34,9 +34,9 @@
 const TString geoVersion = "tof_v14a"; // do not change
 //
 const TString fileTag    = "tof_v18k";
-const TString FileNameSim  = fileTag + "_mcbm.root";
-const TString FileNameGeo  = fileTag + "_mcbm.geo.root";
-const TString FileNameInfo = fileTag + "_mcbm.info";
+const TString FileNameSim  = fileTag + "_mcbm.geo.root";
+const TString FileNameGeo  = fileTag + "_mcbm_geo.root";
+const TString FileNameInfo = fileTag + "_mcbm.geo.info";
 
 // TOF_Z_Front corresponds to front cover of outer super module towers
 const Float_t TOF_Z_Front =  203;  // = z=298 mCBM@SIS18
