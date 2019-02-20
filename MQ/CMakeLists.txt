@@ -16,7 +16,7 @@ If( (FairRoot_VERSION VERSION_LESS 17.10.99 AND FairSoft_VERSION VERSION_LESS 17
   add_subdirectory(source)
   add_subdirectory(sink)
   add_subdirectory(unpacker)
-  add_subdirectory(parmq)
+#  add_subdirectory(parmq)
   If(FairRoot_VERSION VERSION_LESS 17.10.99 AND FairSoft_VERSION VERSION_LESS 17.11.0)
     add_subdirectory(hitbuilder)
   EndIf()
