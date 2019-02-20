@@ -56,7 +56,8 @@ void HodoMonitor(TString inFile = "",
   std::cout << ">>> Cern2017Monitor: Initialising..." << std::endl;
 
   // Hodoscopes Monitor
-  CbmCosy2018MonitorHodo* monitorHodo = new CbmCosy2018MonitorHodo();
+  CbmCosy2018Monitor* monitorHodo = new CbmCosy2018Monitor();
+//  CbmCosy2018MonitorHodo* monitorHodo = new CbmCosy2018MonitorHodo();
 //  monitorHodo->SetPrintMessage();
   monitorHodo->SetMsOverlap();
   monitorHodo->SetLongDurationLimits( 3600, 10 );
@@ -113,6 +114,7 @@ void HodoMonitor(TString inFile = "",
   timer.Start();
   std::cout << ">>> Cern2017Monitor: Starting run..." << std::endl;
   run->Run(nEvents, 0); // run until end of input file
+//  run->Run(0, 10); // run until end of input file
   timer.Stop();
 
   std::cout << "Processed " << std::dec << source->GetTsCount() << " timeslices" << std::endl;
