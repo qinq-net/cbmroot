@@ -44,6 +44,7 @@ reco/CbmStsClusterFinderModule.cxx
 reco/CbmStsFindClusters.cxx
 reco/CbmStsFindHits.cxx
 reco/CbmStsFindHitsEvents.cxx
+reco/CbmStsFindHitsSingleCluster.cxx
 reco/CbmStsFindTracksEvents.cxx
 reco/CbmStsMatchReco.cxx
 reco/CbmStsRecoQa.cxx

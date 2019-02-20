@@ -53,6 +53,51 @@ CbmStsSensorDssdStereo::CbmStsSensorDssdStereo(Double_t dy, Int_t nStrips,
 
 
 
+// -----   Create a hit from a single cluster   ----------------------------
+void CbmStsSensorDssdStereo::CreateHitFromCluster(CbmStsCluster* cluster) {
+
+  // --- Calculate cluster centre position on readout edge
+  Int_t side  = -1;
+  Double_t xHit = -1.;
+  GetClusterPosition(cluster->GetPosition(), xHit, side);
+  assert( side == 0 || side == 1);
+  Double_t dxHit = cluster->GetPositionError() * fPitch;
+  Double_t stereo = ( side == 0 ? fStereoF : fStereoB );
+
+  // --- Set correct cluster pointer for the hit
+  CbmStsCluster* clusterF = ( side == 0 ? cluster : nullptr);
+  CbmStsCluster* clusterB = ( side == 0 ? nullptr : cluster);
+
+  // --- y coordinate is defined as sensor centre in y
+  Double_t yHit = fDy / 2.;
+
+  // --- Error in y is length of sensor divided by sqrt(12)
+  Double_t dyHit = fDy / 3.4641;
+
+  // --- Case: vertical strip (stereo angle = 0)
+  if ( TMath::Abs(stereo) < 0.001 ) {
+    CreateHit(xHit, yHit, dxHit*dxHit, dyHit*dyHit, 0.,
+              clusterF, clusterB, dxHit, dyHit);
+  } //? vertical strips
+
+  // --- Case: stereo strips. Project along the strips to sensor y centre.
+  else {
+    xHit += 0.5 * fDy * fTanStereo[side];
+    // Account for cross-connection
+    while ( xHit > fDx ) xHit -= fDx;
+    while ( xHit < 0. ) xHit += fDx;
+    // Errors across / along the strips
+    Double_t du = dxHit / TMath::Cos(stereo * TMath::DegToRad());
+    Double_t dv = dyHit / TMath::Cos(stereo * TMath::DegToRad());
+    CreateHit(xHit, yHit, dxHit*dxHit, dyHit*dyHit, 0.,
+              clusterF, clusterB, du, dv);
+  } //? stereo strips
+
+
+}
+// -------------------------------------------------------------------------
+
+
 // -----   Diffusion   -----------------------------------------------------
 void CbmStsSensorDssdStereo::Diffusion(Double_t x, Double_t y,
                                        Double_t sigma, Int_t side,

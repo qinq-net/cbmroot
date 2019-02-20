@@ -122,6 +122,7 @@ class CbmStsModule : public CbmStsElement
     Int_t FindHits(TClonesArray* hitArray, CbmEvent* event = NULL);
 
 
+
     /** @brief Get the address from the module name (static)
      ** @param name Name of module
      ** @value Unique element address
@@ -205,6 +206,16 @@ class CbmStsModule : public CbmStsElement
      ** @value kTRUE if parameters are set
      **/
     Bool_t IsSet() const { return fIsSet; }
+
+
+    /** Create hits from single clusters
+     ** @param hitArray  Array where hits shall be registered
+     ** @param event     Pointer to current event for registering of hits
+     ** @return Number of created hits
+     **
+     ** This method will create one hit per cluster.
+     **/
+    Int_t MakeHitsFromClusters(TClonesArray* hitArray, CbmEvent* event = NULL);
 
 
     /** Digitise signals in the analogue buffer

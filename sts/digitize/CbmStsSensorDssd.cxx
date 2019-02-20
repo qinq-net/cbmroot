@@ -236,6 +236,19 @@ Double_t CbmStsSensorDssd::LorentzShift(Double_t z, Int_t chargeType,
 
 
 
+// -----  Hit creation from single clusters   ------------------------------
+Int_t CbmStsSensorDssd::MakeHitsFromClusters(std::vector<CbmStsCluster*>& clusters,
+                                 TClonesArray* hitArray, CbmEvent* event) {
+  fHits = hitArray;
+  fEvent = event;
+  Int_t nHits = 0;
+  for (auto& cluster : clusters) CreateHitFromCluster(cluster);
+  return clusters.size();;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Print charge status   -------------------------------------------
 void CbmStsSensorDssd::PrintChargeStatus() const {
   LOG(INFO) << GetName() << ": Charge status: \n";

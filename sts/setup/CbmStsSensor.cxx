@@ -56,20 +56,8 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal, Double_t varX,
 		                     CbmStsCluster* clusterF, CbmStsCluster* clusterB,
 		                     Double_t du, Double_t dv) {
 
-  // ---  Check clusters and output array
-	if ( ! fHits ) {
-		LOG(FATAL) << GetName() << ": Hit output array not set!"
-				       << FairLogger::endl;
-		return;
-	}
-	if ( ! clusterF ) {
-		LOG(FATAL) << GetName() << ": Invalid pointer to front cluster!"
-				       << FairLogger::endl;
-	}
-	if ( ! clusterB ) {
-		LOG(FATAL) << GetName() << ": Invalid pointer to back cluster!"
-				       << FairLogger::endl;
-	}
+  // ---  Check output array
+  assert(fHits);
 
 	// --- If a TGeoNode is attached, transform into global coordinate system
 	Double_t local[3] = { xLocal, yLocal, 0.};
@@ -79,7 +67,7 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal, Double_t varX,
 		global[0] = local[0];
 		global[1] = local[1];
 		global[2] = local[2];
-	}
+	} //? no TGeoNode available
 
 	// We assume here that the local-to-global transformations is only translation
 	// plus maybe rotation upside down or front-side back. In that case, the
@@ -88,20 +76,24 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal, Double_t varX,
 
 
 	// --- Calculate hit time (average of cluster times)
-	Double_t hitTime = 0.5 * ( clusterF->GetTime() + clusterB->GetTime());
-	Double_t etF = clusterF->GetTimeError();
-	Double_t etB = clusterB->GetTimeError();
+	Double_t fTime = ( clusterF ? clusterF->GetTime() : 0. );
+    Double_t bTime = ( clusterB ? clusterB->GetTime() : 0. );
+    Double_t hitTime = 0.5 * ( fTime + bTime);
+	Double_t etF = ( clusterF ? clusterF->GetTimeError() : 0. );
+	Double_t etB = ( clusterB ? clusterB->GetTimeError() : 0. );
 	Double_t hitTimeError = 0.5 * TMath::Sqrt( etF*etF + etB*etB );
 
 	// --- Create hit
 	Int_t index = fHits->GetEntriesFast();
+	Int_t indexF = ( clusterF ? clusterF->GetIndex() : -1 );
+    Int_t indexB = ( clusterB ? clusterB->GetIndex() : -1 );
 	new ( (*fHits)[index] )
-			CbmStsHit(GetAddress(),          // address
+			CbmStsHit(GetAddress(),              // address
 					      global,                // coordinates
 					      error,                 // coordinate error
 					      varXY,                 // covariance xy
-					      clusterF->GetIndex(),  // front cluster index
-					      clusterB->GetIndex(),  // back cluster index
+					      indexF,                // front cluster index
+					      indexB,                // back cluster index
 					      hitTime,               // hit time
 					      hitTimeError,          // hit time error
 					      du, dv);               // errors in u and v

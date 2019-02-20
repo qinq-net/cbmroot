@@ -92,6 +92,17 @@ class CbmStsSensorDssd : public CbmStsSensor
     virtual Double_t GetPitch(Int_t side) const = 0;
 
 
+    /** Make hits from single clusters in the sensor
+     ** @param clusters  Vector of clusters
+     ** @param hitArray  TClonesArray to store the hits in
+     ** @param event     Pointer to current event for registering of hits
+     ** @return Number of created hits
+     **/
+    virtual Int_t MakeHitsFromClusters(std::vector<CbmStsCluster*>& clusters,
+                                       TClonesArray* hitArray,
+                                       CbmEvent* event);
+
+
     /** @brief Modify the strip pitch
      ** @param New strip pitch [cm]
      **
@@ -133,6 +144,14 @@ class CbmStsSensorDssd : public CbmStsSensor
      ** The method shall create charges in the internal arrays fStripCharge.
      **/
     virtual Int_t CalculateResponse(CbmStsSensorPoint* point);
+
+
+    /** @brief Create a hit from a single cluster
+     ** @param cluster Pointer to CbmStsCluster object
+     **
+     ** Pure virtual; to be implemented in derived classes.
+     **/
+    virtual void CreateHitFromCluster(CbmStsCluster* cluster) = 0;
 
 
     /** Cross talk

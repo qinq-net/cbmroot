@@ -133,6 +133,17 @@ class CbmStsSensor : public CbmStsElement
       return CbmStsAddress::GetElementId(fAddress, kStsSensor); }
 
 
+    /** Make hits from single clusters in the sensor
+     ** @param clusters  Vector of clusters
+     ** @param hitArray  TClonesArray to store the hits in
+     ** @param event     Pointer to current event for registering of hits
+     ** @return Number of created hits
+     **/
+    virtual Int_t MakeHitsFromClusters(std::vector<CbmStsCluster*>& clusters,
+                                       TClonesArray* hitArray,
+                                       CbmEvent* event) = 0;
+
+
     /** Process one MC Point
      ** @param point  Pointer to CbmStsPoint object
      ** @return  Status variable, depends on sensor type

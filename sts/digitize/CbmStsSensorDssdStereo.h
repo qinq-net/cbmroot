@@ -69,6 +69,10 @@ class CbmStsSensorDssdStereo : public CbmStsSensorDssd
     virtual ~CbmStsSensorDssdStereo() { };
 
 
+    /** @brief Create a hit from a single cluster **/
+    virtual void CreateHitFromCluster(CbmStsCluster* cluster);
+
+
     /** @brief Number of strips (same for front and back side)
      ** @param side  Not used
      ** @value Number of strips

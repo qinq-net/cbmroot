@@ -263,6 +263,25 @@ Int_t CbmStsModule::FindHits(TClonesArray* hitArray, CbmEvent* event) {
 // -------------------------------------------------------------------------
 
 
+// -----   Find hits   -----------------------------------------------------
+Int_t CbmStsModule::MakeHitsFromClusters(TClonesArray* hitArray,
+                                         CbmEvent* event) {
+
+  // --- Call MakeHits method in each daughter sensor
+  Int_t nHits = 0;
+  for (Int_t iSensor = 0; iSensor < GetNofDaughters(); iSensor++) {
+    CbmStsSensor* sensor = dynamic_cast<CbmStsSensor*>(GetDaughter(iSensor));
+    nHits += sensor->MakeHitsFromClusters(fClusters, hitArray, event);
+  }
+
+  LOG(DEBUG2) << GetName() << ": Clusters " << fClusters.size()
+                        << ", sensors " << GetNofDaughters() << ", hits "
+                        << nHits << FairLogger::endl;
+  return nHits;
+}
+// -------------------------------------------------------------------------
+
+
 
 // -----   Generate noise   ------------------------------------------------
 Int_t CbmStsModule::GenerateNoise(Double_t t1, Double_t t2) {
