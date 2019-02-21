@@ -56,47 +56,90 @@ class CbmStack : public FairGenericStack
   /** Destructor  **/
   virtual ~CbmStack();
 
-  virtual void PushTrack(Int_t toBeDone, Int_t parentID, Int_t pdgCode,
-			 Double_t px, Double_t py, Double_t pz,
-			 Double_t e, Double_t vx, Double_t vy, 
-			 Double_t vz, Double_t time, Double_t polx, 
-			 Double_t poly, Double_t polz, TMCProcess proc, 
-			 Int_t& ntr, Double_t weight, Int_t is);
-  /** Add a TParticle to the stack.
-   ** Declared in TVirtualMCStack
-   *@param toBeDone  Flag for tracking
-   *@param parentID  Index of mother particle
-   *@param pdgCode   Particle type (PDG encoding)
-   *@param px,py,pz  Momentum components at start vertex [GeV]
-   *@param e         Total energy at start vertex [GeV]
-   *@param vx,vy,vz  Coordinates of start vertex [cm]
-   *@param time      Start time of track [s]
-   *@param polx,poly,polz Polarisation vector
-   *@param proc      Production mechanism (VMC encoding)
-   *@param ntr       Track number (filled by the stack)
-   *@param weight    Particle weight
-   *@param is        Generation status code (whatever that means)
+
+  /** @brief Add a track to the stack (TVirtualMCStack)
+   ** @param toBeDone  Flag for putting the track on the internal stack
+   ** @param parentId  Index of parent track
+   ** @param pdgCode   PDG particle code
+   ** @param px        Momentum x component [GeV]
+   ** @param py        Momentum y component [GeV]
+   ** @param pz        Momentum z component [GeV]
+   ** @param e         Energy [GeV]
+   ** @param vx        Start vertex x coordinate [cm]
+   ** @param vy        Start vertex y coordinate [cm]
+   ** @param vz        Start vertex z coordinate [cm]
+   ** @param polx      Polarisation in x
+   ** @param poly      Polarisation in y
+   ** @param polz      Polarisation in z
+   ** @param process   Generation process
+   ** @param weight    Weight factor
+   ** @param status    "Generation status code" - no idea what that means
+   ** @param[out] ntr  Track index
+   **
+   ** This method is pure virtual in TVirtualMCStack. It is called by the
+   ** by the transport engine for tracks generated during the transport.
    **/
-  virtual void PushTrack(Int_t toBeDone, Int_t parentID, Int_t pdgCode,
-			 Double_t px, Double_t py, Double_t pz,
-			 Double_t e, Double_t vx, Double_t vy, 
-			 Double_t vz, Double_t time, Double_t polx, 
-			 Double_t poly, Double_t polz, TMCProcess proc, 
-			 Int_t& ntr, Double_t weight, Int_t is,Int_t secondparentID);
+  virtual void PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
+                         Double_t px, Double_t py, Double_t pz,
+                         Double_t e, Double_t vx, Double_t vy,
+                         Double_t vz, Double_t time, Double_t polx,
+                         Double_t poly, Double_t polz, TMCProcess process,
+                         Int_t& ntr, Double_t weight, Int_t status);
+
+
+  /** @brief Add a track to the stack (FairGenericStack)
+   ** @param toBeDone  Flag for putting the track on the internal stack
+   ** @param parentId  Index of parent track
+   ** @param pdgCode   PDG particle code
+   ** @param px        Momentum x component [GeV]
+   ** @param py        Momentum y component [GeV]
+   ** @param pz        Momentum z component [GeV]
+   ** @param e         Energy [GeV]
+   ** @param vx        Start vertex x coordinate [cm]
+   ** @param vy        Start vertex y coordinate [cm]
+   ** @param vz        Start vertex z coordinate [cm]
+   ** @param polx      Polarisation in x
+   ** @param poly      Polarisation in y
+   ** @param polz      Polarisation in z
+   ** @param process   Generation process
+   ** @param weight    Weight factor
+   ** @param status    "Generation status code" - no idea what that means
+   ** @param generatorParentId  Index of the mother track on generator level
+   ** @param[out] ntr  Track index
+   **
+   ** This method is pure virtual in FairGenericStack. It is called by
+   ** FairPrimaryGenerator::AddTrack for primary tracks.
+   **
+   ** The meaning of generatorParentId is that a mother-daughter relationship
+   ** may be present already at generator level - usually, when a particle
+   ** decay is done in the generator itself. An example is the CbmPlutoGenerator.
+   ** This parental relationship is preserved for the particles during transport.
+   **/
+  virtual void PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
+                         Double_t px, Double_t py, Double_t pz,
+                         Double_t e, Double_t vx, Double_t vy,
+                         Double_t vz, Double_t time, Double_t polx,
+                         Double_t poly, Double_t polz, TMCProcess proc,
+                         Int_t& ntr, Double_t weight, Int_t is,
+                         Int_t generatorParentID);
 
 
   /** Get next particle for tracking from the stack.
    ** Declared in TVirtualMCStack
-   *@param  iTrack  index of popped track (return)
-   *@return Pointer to the TParticle of the track
+   ** @param  iTrack  index of popped track (return)
+   ** @return Pointer to the TParticle of the track
+   **
+   ** This method is called when using TGeant3.
    **/
   virtual TParticle* PopNextTrack(Int_t& iTrack);
 
 
   /** Get primary particle by index for tracking from stack
    ** Declared in TVirtualMCStack
-   *@param  iPrim   index of primary particle
-   *@return Pointer to the TParticle of the track
+   ** @param  iPrim   index of primary particle
+   ** @return Pointer to the TParticle of the track
+   **
+   ** This method is called when using TGeant4.
    **/
   virtual TParticle* PopPrimaryForTracking(Int_t iPrim); 
 

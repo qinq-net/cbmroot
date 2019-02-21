@@ -67,49 +67,57 @@ CbmStack::~CbmStack()
 }
 // -------------------------------------------------------------------------
 
+
+
+// -----   Push track (pure virtual from TVirtualMCStack)   ----------------
 void CbmStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
                          Double_t px, Double_t py, Double_t pz,
                          Double_t e, Double_t vx, Double_t vy, Double_t vz,
                          Double_t time, Double_t polx, Double_t poly,
                          Double_t polz, TMCProcess proc, Int_t& ntr,
-                         Double_t weight, Int_t is)
-{
+                         Double_t weight, Int_t is) {
 
+
+  // Channel all arguments to the method declared in FairGenericStack.
+  // Generator parent ID is set to -1.
   PushTrack( toBeDone, parentId, pdgCode,
              px,  py,  pz,
              e,  vx,  vy,  vz,
              time,  polx,  poly,
              polz, proc, ntr,
              weight, is, -1);
+
 }
+// -------------------------------------------------------------------------
 
 
-// -----   Virtual public method PushTrack   -------------------------------
+
+// -----   PushTrack (pure virtual from FairGenericStack   -----------------
 void CbmStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
                          Double_t px, Double_t py, Double_t pz,
                          Double_t e, Double_t vx, Double_t vy, Double_t vz,
                          Double_t time, Double_t polx, Double_t poly,
                          Double_t polz, TMCProcess proc, Int_t& ntr,
-                         Double_t weight, Int_t /*is*/, Int_t secondparentID)
-{
+                         Double_t weight, Int_t /*status*/,
+                         Int_t generatorParentId) {
 
-  // --> Get TParticle array
-  TClonesArray& partArray = *fParticles;
+  // --> If primary, increment counter
+  if (parentId < 0) fNPrimaries++;
 
-  // change parentId (was forces as a dummyparent of -1)
-  if(parentId==-1 && secondparentID<fNParticles) parentId = secondparentID;
+  // ---> Set parent ID to the generator parent ID for primaries
+  if( parentId == -1 && generatorParentId < fNParticles)
+    parentId = generatorParentId;
 
   // --> Create new TParticle and add it to the TParticle array
   Int_t trackId = fNParticles;
   Int_t nPoints = 0;
   Int_t daughter1Id = -1;
   Int_t daughter2Id = -1;
-
   TParticle* particle =
-    new(partArray[fNParticles++]) TParticle(pdgCode, trackId, parentId,
-					    nPoints, daughter1Id,
-					    daughter2Id, px, py, pz, e,
-					    vx, vy, vz, time);
+      new((*fParticles)[fNParticles++]) TParticle(pdgCode, trackId, parentId,
+                                                  nPoints, daughter1Id,
+                                                  daughter2Id, px, py, pz, e,
+                                                  vx, vy, vz, time);
   particle->SetPolarisation(polx, poly, polz);
   particle->SetWeight(weight);
   // We use the TObject unique ID to store the creation process of a particle.
@@ -117,16 +125,14 @@ void CbmStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
   // is not used via TRef or TRefArray.
   particle->SetUniqueID(proc);
 
-  // --> Increment counter
-  if (parentId < 0) { fNPrimaries++; }
-
-  // --> Set argument variable
+  // --> Set return argument
   ntr = trackId;
 
   // --> Push particle on the stack if toBeDone is set
-  if (fdoTracking && toBeDone) {
-    fStack.push(particle);
-  }
+  // Note that for particles created by TGeant4, toBeDone is kFALSE,
+  // meaning that particles will not be put onto the internal stack.
+  // Geant4 seems to have a separate, internal stack administration.
+  if (fdoTracking && toBeDone) fStack.push(particle);
 
 }
 // -------------------------------------------------------------------------
@@ -168,19 +174,12 @@ TParticle* CbmStack::PopPrimaryForTracking(Int_t iPrim)
 
   // Get the iPrimth particle from the fStack TClonesArray. This
   // should be a primary (if the index is correct).
-
-  // Test for index
-  if (iPrim < 0 || iPrim >= fNPrimaries) {
-    LOG(FATAL) << "Primary index out of range! " << iPrim << FairLogger::endl;
-  }
+  assert( iPrim >= 0 && iPrim < fNPrimaries );
 
   // Return the iPrim-th TParticle from the fParticle array. This should be
   // a primary.
   TParticle* part = (TParticle*)fParticles->At(iPrim);
-  if ( ! (part->GetMother(0) < 0) ) {
-    LOG(FATAL) << "Not a primary track! " << iPrim << FairLogger::endl;
-  }
-
+  assert( part->GetUniqueID() == kPPrimary );
   return part;
 
 }
