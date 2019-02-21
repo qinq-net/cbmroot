@@ -109,11 +109,16 @@ void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0)
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();
-  event->SetRunId(1);
+  event->SetRunId(uRunId);
+
+  // --- RootFileSink
+  // --- Open next outputfile after 4GB
+  FairRootFileSink* sink = new FairRootFileSink(outFile);
+  sink->GetOutTree()->SetMaxTreeSize(4294967295LL);
 
   // --- Run
   run = new FairRunOnline(source);
-  run->SetOutputFile(outFile);
+  run->SetSink(sink);            
   run->SetEventHeader(event);
   run->SetAutoFinish(kFALSE);
 
