@@ -38,6 +38,7 @@ public:
   void      SetPulsePars(Int_t mode);
   void      SetPulseMode(Bool_t pulsed);
   void      SetRadiator(CbmTrdRadiator *radiator) {fRadiator = radiator;}
+  void      SetGamma(Double_t gamma) {fGamma = gamma;}
   void      SetTriggerThreshold(Double_t minCharge) { fMinimumChargeTH = minCharge;} 
   void      SetPadPlaneScanArea(Int_t column, Int_t row);
   void      ResetCounters() {nofElectrons=0; nofLatticeHits=0; nofPointsAboveThreshold=0;}
@@ -68,10 +69,10 @@ private:
   void     CleanUp(Bool_t EB);
 
   //general tools
-  Double_t  DistributeCharge(Double_t pointin[3],Double_t pointout[3],Double_t delta[3],Double_t pos[3],Int_t ipoints);
-  Double_t  AddDrifttime(Double_t x);
+  Bool_t    DistributeCharge(Double_t pointin[3],Double_t pointout[3],Double_t delta[3],Double_t pos[3],Int_t ipoints);
+  Double_t  AddDrifttime(Int_t x);
   Double_t  AddNoise(Double_t charge);
-  Double_t  GetStep(Double_t gamma, Double_t dist, Int_t roll);
+  Double_t  GetStep(Double_t dist, Int_t roll);
   Int_t     AddNoiseADC();
   Int_t     AddCrosstalk(Double_t address,Int_t i, Int_t sec,Int_t row,Int_t col,Int_t ncols);
   Double_t  CalcPRF(Double_t x, Double_t W, Double_t h);
@@ -100,6 +101,7 @@ private:
   Double_t  fLastTime;
   Double_t  fCollectTime;
   Double_t  fCrosstalkLevel;
+  Double_t  fGamma;
 
   Int_t     fepoints;
   Int_t     fnClusterConst;

@@ -62,14 +62,14 @@ CbmTrdModuleSimR::CbmTrdModuleSimR(Int_t mod, Int_t ly, Int_t rot)
     fAddress(-1.),
     fPulseSwitch(false),
     fPrintPulse(false), //only for debugging
-    fTimeShift(false),    //for pulsed mode
+    fTimeShift(true),    //for pulsed mode
     fAddCrosstalk(false), //for pulsed mode
-    fClipping(false),     //for pulsed mode
-    fepoints(1),
+    fClipping(true),     //for pulsed mode
+    fepoints(7),
     fCalibration(35./1.1107/0.8), 
     fTau(120.0),
     fTriggerSlope(7.0),
-    fDistributionMode(1),
+    fDistributionMode(2),
 
     fRecoMode(1),
     fEReco(90.623613),        // 2 < i < 8
@@ -84,6 +84,7 @@ CbmTrdModuleSimR::CbmTrdModuleSimR(Int_t mod, Int_t ly, Int_t rot)
   
     frecostart(2),
     frecostop(8),
+    fGamma(0.),
     fLastPoint(0),
     fLastEvent(0),
     nofElectrons(0),
@@ -695,7 +696,7 @@ Double_t CbmTrdModuleSimR::CalcResponse(Double_t t)
 }
 
 //_______________________________________________________________________________
-Double_t CbmTrdModuleSimR::DistributeCharge(Double_t pointin[3],Double_t pointout[3], Double_t delta[3],Double_t pos[3],Int_t ipoints)
+Bool_t CbmTrdModuleSimR::DistributeCharge(Double_t pointin[3],Double_t pointout[3], Double_t delta[3],Double_t pos[3],Int_t ipoints)
 {
   if(fDistributionMode == 1){
     for (Int_t i = 0; i < 3; i++){
@@ -709,21 +710,18 @@ Double_t CbmTrdModuleSimR::DistributeCharge(Double_t pointin[3],Double_t pointou
   Double_t dist_gas = TMath::Sqrt(delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]);
   if(fDistributionMode == 2){
     if(ipoints > 0)       for (Int_t i = 0; i < 3; i++) lastpos[i] = pos[i];
-    //    cout<< "last x: "<<lastpos[0]<< " y: "<<lastpos[1]<< " z: "<<lastpos[2]<<endl;    
     Double_t roll = gRandom->Integer(100);
-    Double_t s = GetStep(fRandom->Gaus(4,2),dist_gas,roll)/dist_gas; 
-    //    cout<<" dist gas: " << dist_gas<<" roll: "<< roll << "  s * weg: "<<s<<endl;
-    if( (lastpos[0] + s * delta[0]) >  pointout[0] || (lastpos[1] + s * delta[1]) >  pointout[1] || (lastpos[2] + s * delta[2]) >  pointout[2]){
+    Double_t s = GetStep(dist_gas,roll)/dist_gas; 
+    if( TMath::Abs(lastpos[0] + s * delta[0]) >  fDigiPar->GetSizeX() || TMath::Abs(lastpos[1] + s * delta[1]) >  fDigiPar->GetSizeY() || (lastpos[2] + s * delta[2]) >=  pointout[2]){
       for (Int_t i = 0; i < 3; i++){
-	pos[i] = pointin[i] +  (0.95) * delta[i];
+      	pos[i] = lastpos[i];
       }
-      //      cout<< " x: "<<pos[0]<< " y: "<<pos[1]<< " z: "<<pos[2]<<endl;      
+      return true;
     }
     for (Int_t i = 0; i < 3; i++)    pos[i] = lastpos[i] +  s * delta[i];
-    //    cout<< " x: "<<pos[0]<< " y: "<<pos[1]<< " z: "<<pos[2]<<endl;      
   }
 
-  return 0.;
+  return true;
 }
 
 //_______________________________________________________________________________
@@ -811,9 +809,8 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
 
   if(!fPulseSwitch){
     for (Int_t ipoints = 0; ipoints < epoints; ipoints++){
-      DistributeCharge(local_point_in,local_point_out,cluster_delta,cluster_pos,ipoints);
-
-      //      cout<< " x: "<<cluster_pos[0]<< " y: "<<cluster_pos[1]<< " z: "<<cluster_pos[2]<<endl;
+      Bool_t dist = DistributeCharge(local_point_in,local_point_out,cluster_delta,cluster_pos,ipoints);
+      if(!dist) break;
       
       if ( fDigiPar->GetSizeX() < fabs(cluster_pos[0]) || fDigiPar->GetSizeY() < fabs(cluster_pos[1])){
 	printf("->    nC %i/%i x: %7.3f y: %7.3f \n",ipoints,nCluster-1,cluster_pos[0],cluster_pos[1]);
@@ -834,25 +831,19 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
 	fCurrentTime=simtime;
       }
 
-      //      cout<< " x: "<<cluster_pos[0]<< " y: "<<cluster_pos[1]<< " z: "<<cluster_pos[2]<<endl<<endl;;
-      
       //      fDigiPar->ProjectPositionToNextAnodeWire(cluster_pos);
-      //      std::cout<<cluster_pos[0]<<std::endl;
       ScanPadPlane(cluster_pos, 0.,clusterELoss, clusterELossTR,epoints,ipoints);
 
     }
-    //    std::cout<<std::endl;
   }
   
   Double_t driftcomp=10000;
-  Int_t    start=0;
+  Int_t    start=-1;
   Double_t Ionizations[epoints][3];
   if(fPulseSwitch){
-    //    cout<<" in x: " << local_point_in[0]<<" y: " << local_point_in[1]<<" z: " << local_point_in[2]<<endl;
     for (Int_t ipoints = 0; ipoints < epoints; ipoints++){
-      DistributeCharge(local_point_in,local_point_out,cluster_delta,cluster_pos,ipoints);
-
-      //      if(ipoints == epoints-1 && cluster_pos[2] > local_point_out[2])  cout<< " x: "<<cluster_pos[0]<< " y: "<<cluster_pos[1]<< " z: "<<cluster_pos[2]<<endl;
+      Bool_t dist = DistributeCharge(local_point_in,local_point_out,cluster_delta,cluster_pos,ipoints);
+      if(!dist) break;
       
       for (Int_t i = 0; i < 3; i++)  Ionizations[ipoints][i]=cluster_pos[i];
       
@@ -863,19 +854,16 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
     
       fDigiPar->ProjectPositionToNextAnodeWire(cluster_pos);
       Int_t relz=239-(cluster_pos[2]-local_point_in[2])/0.005;
+      if(relz > 239 || relz < 0) relz = 239;
       if(TMath::Abs(AddDrifttime(relz)) < driftcomp && TMath::Abs(AddDrifttime(relz)) > 0.)     {driftcomp=TMath::Abs(AddDrifttime(relz));start=ipoints;}
       //      cout<< " reldrift: " << driftcomp<< endl;
     }
 
-    //    cout<<" out x: " << local_point_out[0]<<" y: " << local_point_out[1]<<" z: " << local_point_out[2]<<endl<<endl;;
-    //    cout<<endl;
-    
-    //    DistributeCharge(local_point_in,local_point_out,cluster_delta,cluster_pos,start);
+    if(start == -1) return false;
     for (Int_t i = 0; i < 3; i++) cluster_pos[i] = Ionizations[start][i];
     
     Int_t relz=239-(cluster_pos[2]-local_point_in[2])/0.005;
     Double_t reldrift=TMath::Abs(AddDrifttime(relz)-driftcomp)*1000;
-    //    cout<<" relz: "<<relz<< " drift: " << reldrift<< "   adddrifttime: " << AddDrifttime(relz)<<endl;
     if(reldrift < 250.)  ScanPadPlane(cluster_pos, 0.,clusterELoss, clusterELossTR,epoints,start);
     if(fPrintPulse)  cout<<endl;
 
@@ -883,11 +871,9 @@ Bool_t CbmTrdModuleSimR::MakeDigi(CbmTrdPoint *point, Double_t time, Bool_t TR)
     for (Int_t ipoints = 0; ipoints < epoints; ipoints++){
       if(ipoints==start) continue;
       for (Int_t i = 0; i < 3; i++) cluster_pos[i] = Ionizations[ipoints][i];
-      //      DistributeCharge(local_point_in,local_point_out,cluster_delta,cluster_pos,ipoints);
 
       relz=239-(cluster_pos[2]-local_point_in[2])/0.005;
       reldrift=TMath::Abs(AddDrifttime(relz)-driftcomp)*1000;
-      //      cout<< " drift: " << reldrift<< "   adddrifttime: " << AddDrifttime(relz)<<endl;
       if(reldrift<250.)   ScanPadPlane(cluster_pos, reldrift,clusterELoss, clusterELossTR,epoints,ipoints);
       if(fPrintPulse)  cout<<endl;
     }
@@ -1411,9 +1397,9 @@ void CbmTrdModuleSimR::NoiseTime(ULong64_t eventTime)
 }
 
 //_______________________________________________________________________________
-Double_t CbmTrdModuleSimR::AddDrifttime(Double_t x)
+Double_t CbmTrdModuleSimR::AddDrifttime(Int_t x)
 {
-  Double_t drifttime[240]={0.11829,0.11689,0.11549,0.11409,0.11268,0.11128,0.10988,0.10847,0.10707,0.10567,
+  Double_t drifttime[241]={0.11829,0.11689,0.11549,0.11409,0.11268,0.11128,0.10988,0.10847,0.10707,0.10567,
 			   0.10427,0.10287,0.10146,0.10006,0.09866,0.09726,0.095859,0.094459,0.09306,0.091661,
 			   0.090262,0.088865,0.087467,0.086072,0.084677,0.083283,0.08189,0.080499,0.07911,0.077722,
 			   0.076337,0.074954,0.073574,0.072197,0.070824,0.069455,0.06809,0.066731,0.065379,0.064035,
@@ -1436,22 +1422,22 @@ Double_t CbmTrdModuleSimR::AddDrifttime(Double_t x)
 			   0.18715,0.18841,0.18966,0.19092,0.19218,0.19343,0.19469,0.19595,0.19721,0.19846,
 			   0.19972,0.20098,0.20223,0.20349,0.20475,0.20601,0.20726,0.20852,0.20978,0.21103,
 			   0.21229,0.21355,0.2148,0.21606,0.21732,0.21857,0.21983,0.22109,0.22234,0.2236,
-			   0.22486,0.22612,0.22737,0.22863,0.22989,0.23114,0.2324,0.23366,0.23491,0.23617};
+			   0.22486,0.22612,0.22737,0.22863,0.22989,0.23114,0.2324,0.23366,0.23491,0.23617,
+			   0.2363};
 
   
   Int_t xindex=0;
-
+  
   return drifttime[Int_t(x)];
 }
 
 
 //_______________________________________________________________________________
-Double_t CbmTrdModuleSimR::GetStep(Double_t gamma,Double_t dist,Int_t roll)
+Double_t CbmTrdModuleSimR::GetStep(Double_t dist,Int_t roll)
 {
   Double_t prob = 0.;
-  //  Double_t dist_gas = TMath::Sqrt(delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2])/10;
   Int_t steps = 1000;
-  Double_t fgamma = 0.;
+  Double_t CalcGamma = 0.;
 
   std::pair<Double_t,Double_t> bethe[12] = {
     make_pair(1.5,1.5),make_pair(2,1.1),make_pair(3,1.025),make_pair(4,1),make_pair(10,1.1),
@@ -1460,29 +1446,22 @@ Double_t CbmTrdModuleSimR::GetStep(Double_t gamma,Double_t dist,Int_t roll)
   };
 
   for(Int_t n=0;n<12;n++){
-    //    cout<< n <<endl;
-    //    continue;
-    //    cout<<gamma<<"  n: "<<bethe[n].first<< "   n+1: " << bethe[n+1].first<<endl;
-    if(gamma < bethe[0].first)             fgamma = bethe[0].second;
-    if(n == 11)                            {fgamma = bethe[11].second;break;}
+    if(fGamma < bethe[0].first)             CalcGamma = bethe[0].second;
+    if(n == 11)                            {CalcGamma = bethe[11].second;break;}
 
-    if(gamma >= bethe[n].first && gamma <= bethe[n+1].first){
+    if(fGamma >= bethe[n].first && fGamma <= bethe[n+1].first){
       Double_t dx = bethe[n+1].first - bethe[n].first;
       Double_t dy = bethe[n+1].second - bethe[n].second;
       Double_t slope = dy / dx ;
-      //      cout<<"  dx: " << dx  << "  dy: " << dy << "   slope: " << slope<<endl;
-      fgamma = (gamma - bethe[n].first) * slope + bethe[n].second;
+      CalcGamma = (fGamma - bethe[n].first) * slope + bethe[n].second;
       break;
     }
   }
   
-  //  cout<< " gamma : " << gamma<< "  f: "<<fgamma<<endl;
-  Double_t D = 1/(20.5 * fgamma);
-  //  cout<< " gamma : " << gamma<< "  f: "<<fgamma<<"  D: " << D<<endl;
+  Double_t D = 1/(20.5 * CalcGamma);
   for(Int_t i = 1; i<steps ; i++){
     Double_t s = (dist/steps)*i;
     prob = (1 - TMath::Exp(-s/D)) * 100;
-    //    cout<<" s: " << s<<"  exp: " << TMath::Exp(-s/D)<<" prob: " << prob<<"  roll: "<< roll<<endl;
     if(prob >= roll)  return s;
   }
   
