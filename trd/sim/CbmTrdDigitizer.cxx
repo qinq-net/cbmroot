@@ -176,6 +176,8 @@ void CbmTrdDigitizer::Exec(Option_t*)
       mod = AddModule(point->GetDetectorID());
     } else mod = imod->second;
     mod->SetLinkId(fCurrentInput, fCurrentMCEntry, iPoint);
+    Double_t gamma = TMath::Sqrt(1+TMath::Power(track->GetP()/(3.e8*track->GetMass()),2));
+    mod->SetGamma(gamma);
     mod->MakeDigi(point, fCurrentEventTime, TMath::Abs(track->GetPdgCode()) == 11);
   }
 
