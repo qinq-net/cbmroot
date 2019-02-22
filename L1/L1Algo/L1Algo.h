@@ -299,7 +299,7 @@ class L1Algo{
 
   void SetNThreads(int n=1) {fNThreads = n;}
       
-  enum{ MaxNStations = 20 };
+  enum{ MaxNStations = 25 };
 
   int NStations,    // number of all detector stations
       NMvdStations, // number of mvd stations
