@@ -61,6 +61,23 @@ public:
   virtual void Init();
 
 
+  /** Initialisation with arrays. To be used e.g.for reading from ASCII.
+   ** @param xMin  Minimum x coordinate
+   ** @param xMax  Maximum x coordinate
+   ** @param yMin  Minimum y coordinate
+   ** @param yMax  Maximum y coordinate
+   ** @param zMin  Minimum z coordinate
+   ** @param zMax  Maximum z coordinate
+   ** @param bx    Pointer to array with Bx values [T]
+   ** @param by    Pointer to array with By values [T]
+   ** @param bz    Pointer to array with Bz values [T]
+   **/
+  virtual void Init(Int_t nX, Double_t xMin, Double_t xMax,
+                    Int_t nY, Double_t yMin, Double_t yMax,
+                    Int_t nZ, Double_t zMin, Double_t zMax,
+                    TArrayF* bx, TArrayF* by, TArrayF* bz);
+
+
   /** Get the field components at a certain point 
    ** @param x,y,z     Point coordinates (global) [cm]
    ** @value Bx,By,Bz  Field components [kG]

@@ -128,6 +128,7 @@ CbmFieldMap::CbmFieldMap(const char* mapName, const char* fileType)
     fFileName += ".dat";
   }
   fType = 1;
+  LOG(INFO) << "Filename is " << fFileName << FairLogger::endl;
 }
 // ------------------------------------------------------------------------
 
@@ -279,7 +280,7 @@ CbmFieldMap::~CbmFieldMap() {
 // -----------   Intialisation   ------------------------------------------
 void CbmFieldMap::Init() {
   if      (fFileName.EndsWith(".root")) ReadRootFile(fFileName, fName);
-  else if (fFileName.EndsWith(".dat"))  ReadAsciiFile2018(fFileName);
+  else if (fFileName.EndsWith(".dat"))  ReadAsciiFile(fFileName);
   else {
     cerr << "-E- CbmFieldMap::Init: No proper file name defined! ("
 	 << fFileName << ")" << endl;
@@ -291,6 +292,60 @@ void CbmFieldMap::Init() {
   fByOrigin = GetBy(0.,0.,0.);
   fBzOrigin = GetBz(0.,0.,0.);
 
+  Print();
+}
+// ------------------------------------------------------------------------
+
+
+
+// ----- Initialisation from arrays   -------------------------------------
+void CbmFieldMap::Init(Int_t nX, Double_t xMin, Double_t xMax,
+                       Int_t nY, Double_t yMin, Double_t yMax,
+                       Int_t nZ, Double_t zMin, Double_t zMax,
+                       TArrayF* bx, TArrayF* by, TArrayF* bz) {
+
+  Reset();
+  fNx = nX;
+  fXmin = xMin;
+  fXmax = xMax;
+  fNy = nY;
+  fYmin = yMin;
+  fYmax = yMax;
+  fNz = nZ;
+  fZmin = zMin;
+  fZmax = zMax;
+  Int_t nPoints = nX * nY * nZ;
+  assert( bx->GetSize() == by->GetSize() );
+  assert( bz->GetSize() == bx->GetSize() );
+  if ( bx->GetSize() != nPoints ) {
+    LOG(ERROR) << "CbmFieldMap: array size " << bx->GetSize()
+            << " does not match number of grid points." << FairLogger::endl;
+    return;
+  }
+  fBx = new TArrayF(nPoints);
+  fBy = new TArrayF(nPoints);
+  fBz = new TArrayF(nPoints);
+  Int_t index = 0;
+  for (Int_t ix = 0; ix < fNx; ix++) {
+    for (Int_t iy = 0; iy < fNy; iy++) {
+      for (Int_t iz = 0; iz < fNz; iz++) {
+        index = ix*fNy*fNz + iy*fNz + iz;
+        (*fBx)[index] = (*bx)[index];
+        (*fBy)[index] = (*by)[index];
+        (*fBz)[index] = (*bz)[index];
+      } //# iz
+    } //# iy
+  } //# ix
+
+  fXstep = ( fXmax - fXmin ) / Double_t( fNx - 1 );
+  fYstep = ( fYmax - fYmin ) / Double_t( fNy - 1 );
+  fZstep = ( fZmax - fZmin ) / Double_t( fNz - 1 );
+  fBxOrigin = GetBx(0.,0.,0.);
+  fByOrigin = GetBy(0.,0.,0.);
+  fBzOrigin = GetBz(0.,0.,0.);
+
+  LOG(INFO) << "CbmFieldMap: Initialised from " << nPoints << " grid points"
+      << FairLogger::endl;
   Print();
 }
 // ------------------------------------------------------------------------
@@ -645,76 +700,6 @@ void CbmFieldMap::ReadAsciiFile(const char* fileName) {
 // ------------------------------------------------------------------------
 
 
-void CbmFieldMap::ReadAsciiFile2018(const char* fileName) {
-
-    Double_t bx=0., by=0., bz=0.;
-
-    // Open file
-    LOG(INFO) << "CbmFieldMap: Reading field map from ASCII file " << fileName << FairLogger::endl;
-    std::ifstream mapFile(fileName);
-    if ( ! mapFile.is_open() ) {
-        LOG(ERROR) << "CbmFieldMap:ReadAsciiFile2018: Could not open file!" << FairLogger::endl;
-        LOG(FATAL) << "CbmFieldMap:ReadAsciiFile2018: Could not open file!" << FairLogger::endl;
-    }
-
-    Double_t step;
-    mapFile >> fNz >> fNy >> fNx >> step;
-
-    std::string line;
-    for (int i = 0; i < 8; i++){
-        getline(mapFile, line);
-    }
-
-    // Create field arrays
-    fBx = new TArrayF(fNx * fNy * fNz);
-    fBy = new TArrayF(fNx * fNy * fNz);
-    fBz = new TArrayF(fNx * fNy * fNz);
-
-    Double_t factor = fScale * 10.;  // Factor 10 for T -> kG
-
-    fXmin = 999999.;
-    fXmax = -999999.;
-    fYmin = 999999.;
-    fYmax = -999999.;
-    fZmin = 999999.;
-    fZmax = -999999.;
-
-    for (Int_t ix = 0; ix < fNx; ix++) {
-        for (Int_t iy = 0; iy < fNy; iy++) {
-            for (Int_t iz = 0; iz < fNz; iz++) {
-                if (!mapFile.good()) cerr << "-E- CbmFieldMap::ReadAsciiFile2018: "<< "I/O Error at " << ix << " "<< iy << " " << iz << endl;
-                Int_t index = ix*fNy*fNz + iy*fNz + iz;
-                Double_t x, y, z;
-                mapFile >> x >> y >> z >> bx >> by >> bz;
-                //cout << x << " " << y <<  " " << z << " " << bx << " " << by << " " << bz << endl;
-                x = x / 10.; // mm -> cm
-                y = y / 10.;
-                z = z / 10.;
-                if (x < fXmin) fXmin = x;
-                if (x > fXmax) fXmax = x;
-                if (y < fYmin) fYmin = y;
-                if (y > fYmax) fYmax = y;
-                if (z < fZmin) fZmin = z;
-                if (z > fZmax) fZmax = z;
-                fBx->AddAt(factor*bx, index);
-                fBy->AddAt(factor*by, index);
-                fBz->AddAt(factor*bz, index);
-                if ( mapFile.eof() ) {
-                    cerr << endl << "-E- CbmFieldMap::ReadAsciiFile2018: EOF" << " reached at " << ix << " " << iy << " " << iz << endl;
-                    mapFile.close();
-                    break;
-                }
-            }
-        }
-    }
-
-    fXstep = ( fXmax - fXmin ) / Double_t( fNx - 1 );
-    fYstep = ( fYmax - fYmin ) / Double_t( fNy - 1 );
-    fZstep = ( fZmax - fZmin ) / Double_t( fNz - 1 );
-
-    mapFile.close();
-
-}
 
 // -------------   Read field map from ROOT file (private)  ---------------
 void CbmFieldMap::ReadRootFile(const char* fileName, 
