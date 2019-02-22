@@ -101,6 +101,10 @@ void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0)
 
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();
+
+  Bool_t _usedaqbuffer = kFALSE; 
+  source->UseDaqBuffer(_usedaqbuffer);
+
   source->SetFileName(inFile);
   source->AddUnpacker(unpacker_sts,  0x10, kSts  );//STS xyter
   source->AddUnpacker(unpacker_much, 0x10, kMuch );//MUCH xyter
@@ -140,7 +144,7 @@ void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0)
   timer.Start();
   std::cout << ">>> unpack_tsa_sts: Starting run..." << std::endl;
   run->Run(nEvents, 0); // run until end of input file
-  //run->Run(0, nEvents); // process nEvents
+//  run->Run(0, 2000); // process  2000 Events
 
   run->Finish();
 

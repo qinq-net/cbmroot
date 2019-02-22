@@ -47,10 +47,12 @@ class CbmMcbm2018UnpackerTaskSts : public CbmMcbmUnpack
 
       void SetTimeOffsetNs( Double_t dOffsetIn = 0.0 );
 
+      void UseDaqBuffer (Bool_t val) {fUseDaqBuffer = val;}
    private:
       /// Control flags
       Bool_t fbMonitorMode;  //! Switch ON the filling of a minimal set of histograms
       Bool_t fbDebugMonitorMode; //! Switch ON the filling of a additional set of histograms
+      Bool_t fUseDaqBuffer; //! Switch OFF the usage of the DaqBuffer
 
       /// Parameters management
       TList* fParCList;

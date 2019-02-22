@@ -78,6 +78,7 @@ public:
    inline void SetSpillLimits( Double_t dSpillA, Double_t dSpillB, Double_t dSpillC )
          { fdSpillStartA = dSpillA; fdSpillStartB = dSpillB; fdSpillStartC = dSpillC; }
 
+   void UseDaqBuffer(Bool_t) {};   
 private:
    /// Parameters
       /// FLES containers

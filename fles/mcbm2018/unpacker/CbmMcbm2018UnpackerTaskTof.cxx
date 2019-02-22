@@ -37,6 +37,7 @@ CbmMcbm2018UnpackerTaskTof::CbmMcbm2018UnpackerTaskTof( UInt_t uNbGdpb )
     fbMonitorMode( kFALSE ),
     fbDebugMonitorMode( kFALSE ),
     fbSeparateArrayT0( kFALSE ),
+    fUseDaqBuffer( kTRUE ),
     fParCList( nullptr ),
     fulTsCounter( 0 ),
     fBuffer( CbmTbDaqBuffer::Instance() ),
@@ -199,14 +200,44 @@ Bool_t CbmMcbm2018UnpackerTaskTof::DoUnpack(const fles::Timeslice& ts, size_t co
 
    /// Copy the digis in the DaqBuffer
    std::vector< CbmTofDigiExp > vDigi = fUnpackerAlgo->GetVector();
-   for( UInt_t uDigi = 0; uDigi < vDigi.size(); ++uDigi )
-   {
-      LOG(DEBUG) << Form("Insert 0x%08x digi with time ", vDigi[ uDigi ].GetAddress() ) << vDigi[ uDigi ].GetTime()
-                 << Form(", Tot %4.0f", vDigi[ uDigi ].GetCharge())
-                 << " into buffer with " << fBuffer->GetSize() << " data from "
-                 << Form("%11.1f to %11.1f ", fBuffer->GetTimeFirst(), fBuffer->GetTimeLast())
-                 << FairLogger::endl;
-      fBuffer->InsertData( new CbmTofDigiExp( vDigi[ uDigi ] ) );
+
+   if ( fUseDaqBuffer ) {
+     for( UInt_t uDigi = 0; uDigi < vDigi.size(); ++uDigi )
+     {
+        LOG(DEBUG) << Form("Insert 0x%08x digi with time ", vDigi[ uDigi ].GetAddress() ) << vDigi[ uDigi ].GetTime()
+                   << Form(", Tot %4.0f", vDigi[ uDigi ].GetCharge())
+                   << " into buffer with " << fBuffer->GetSize() << " data from "
+                   << Form("%11.1f to %11.1f ", fBuffer->GetTimeFirst(), fBuffer->GetTimeLast())
+                   << FairLogger::endl;
+        fBuffer->InsertData( new CbmTofDigiExp( vDigi[ uDigi ] ) );
+     }
+   } else {
+     for( auto digi: vDigi) {
+       /// FIXME: remove T0 address hardcoding!!!
+       if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi.GetAddress() & 0x00000FFF ) )
+       {
+         /// Insert data in TOF output container
+         LOG(DEBUG) << "Fill digi TClonesarray with "
+                    << Form("0x%08x", digi.GetAddress())
+                    << " at " << static_cast<Int_t>( fT0DigiCloneArray->GetEntriesFast() )
+                    << FairLogger::endl;
+
+         new( (*fT0DigiCloneArray)[ fT0DigiCloneArray->GetEntriesFast() ] )
+            CbmTofDigiExp( digi ) ;
+       } // if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi.GetAddress() & 0x00000FFF ) )
+       else
+       {    
+         /// Insert data in TOF output container
+         LOG(DEBUG) << "Fill digi TClonesarray with "
+                    << Form("0x%08x", digi.GetAddress())
+                    << " at " << static_cast<Int_t>( fTofDigiCloneArray->GetEntriesFast() )
+                    << FairLogger::endl;
+
+         new( (*fTofDigiCloneArray)[ fTofDigiCloneArray->GetEntriesFast() ] )
+            CbmTofDigiExp( digi ) ;
+       } // else of if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi->GetAddress() & 0x00000FFF ) )
+     }      
+     vDigi.clear();
    }
    fUnpackerAlgo->ClearVector();
 

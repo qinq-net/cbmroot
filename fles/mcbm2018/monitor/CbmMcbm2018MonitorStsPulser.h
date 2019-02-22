@@ -69,6 +69,7 @@ public:
    void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
    void SetCoincidenceBorder( Double_t dCenterPos, Double_t dBorderVal );
 
+   void UseDaqBuffer(Bool_t) {};
 private:
    size_t fuOverlapMsNb;      /** Ignore Overlap Ms: all fuOverlapMsNb MS at the end of timeslice **/
 

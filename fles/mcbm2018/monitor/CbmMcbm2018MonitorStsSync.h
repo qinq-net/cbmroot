@@ -72,6 +72,7 @@ public:
    void SetLongDurationLimits( UInt_t uDurationSeconds = 3600, UInt_t uBinSize = 1 );
    void SetCoincidenceBorder( Double_t dCenterPos, Double_t dBorderVal );
 
+   void UseDaqBuffer(Bool_t) {};
 private:
    // Parameters
       // FLES containers

@@ -63,6 +63,7 @@ public:
    void CreateRawMessageOutput(Bool_t val) {fCreateRawMessage=val;}
    void SetMuchMode( Bool_t bMuchMode = kTRUE ) { fbMuchMode = bMuchMode; }
 
+   void UseDaqBuffer(Bool_t) {};
 private:
    // Parameters
       // Control flags

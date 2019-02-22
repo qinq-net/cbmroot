@@ -53,6 +53,7 @@ class CbmStar2019EventBuilderEtof : public CbmMcbmUnpack
       void AddMsComponentToList( size_t component, UShort_t usDetectorId );
       void SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb ){};
 
+      void UseDaqBuffer(Bool_t) {};
    private:
       /// Control flags
       Bool_t fbMonitorMode;  //! Switch ON the filling of a minimal set of histograms

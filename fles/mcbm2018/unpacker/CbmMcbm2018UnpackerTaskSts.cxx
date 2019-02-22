@@ -35,6 +35,7 @@ Bool_t bMcbm2018UnpackerTaskStsResetHistos = kFALSE;
 CbmMcbm2018UnpackerTaskSts::CbmMcbm2018UnpackerTaskSts( UInt_t uNbGdpb )
   : CbmMcbmUnpack(),
     fbMonitorMode( kFALSE ),
+    fUseDaqBuffer( kTRUE),
     fParCList( nullptr ),
     fulTsCounter( 0 ),
     fBuffer( CbmTbDaqBuffer::Instance() ),
@@ -186,8 +187,22 @@ Bool_t CbmMcbm2018UnpackerTaskSts::DoUnpack(const fles::Timeslice& ts, size_t co
 
    /// Copy the digis in the DaqBuffer
    std::vector< CbmStsDigi > vDigi = fUnpackerAlgo->GetVector();
-   for( UInt_t uDigi = 0; uDigi < vDigi.size(); ++uDigi )
-      fBuffer->InsertData( new CbmStsDigi( vDigi[ uDigi ] ) );
+   if ( fUseDaqBuffer ) {
+     for( UInt_t uDigi = 0; uDigi < vDigi.size(); ++uDigi )
+        fBuffer->InsertData( new CbmStsDigi( vDigi[ uDigi ] ) );
+   } else {
+     for( auto digi: vDigi) {
+       /// Insert data in output container
+       LOG(DEBUG) << "Fill digi TClonesarray with "
+                  << Form("0x%08x", digi.GetAddress())
+                  << " at " << static_cast<Int_t>( fStsDigiCloneArray->GetEntriesFast() )
+                  << FairLogger::endl;
+ 
+       new( (*fStsDigiCloneArray)[ fStsDigiCloneArray->GetEntriesFast() ] )
+         CbmStsDigi( digi) ;
+     }
+     vDigi.clear();
+   }
    fUnpackerAlgo->ClearVector();
 
    if( 0 == fulTsCounter % 10000 )

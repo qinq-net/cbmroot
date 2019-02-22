@@ -77,6 +77,7 @@ public:
 
    void SetMuchMode( Bool_t bMuchMode = kTRUE ) { fbMuchMode = bMuchMode; }
 
+   void UseDaqBuffer(Bool_t) {};
 private:
    // Parameters
       // Control flags

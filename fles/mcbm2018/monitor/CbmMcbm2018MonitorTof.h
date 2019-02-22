@@ -80,6 +80,7 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
       void UpdateNormedFt();
       void UpdateZoomedFit();
 
+      void UseDaqBuffer(Bool_t) {};
    private:
       /// FLES containers
       std::vector< size_t >    fvMsComponentsList; //!

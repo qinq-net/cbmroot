@@ -46,35 +46,10 @@ CbmMcbm2018Source::CbmMcbm2018Source()
     fHistoMissedTSEvo(nullptr),
     fNofTSSinceLastTS(0),
     fuTsReduction(1),
-    fSource(nullptr)
+    fSource(nullptr),
+    fUseDaqBuffer( kTRUE )
 {
 }
-
-/*
-CbmMcbm2018Source::CbmMcbm2018Source(const CbmMcbm2018Source& source)
-  : FairSource(source),
-    fFileName(""),
-    fInputFileList(),
-    fFileCounter(0),
-    fHost("localhost"),
-    fPort(5556),
-    fbOutputData( kFALSE ),
-    fUnpackers(),
-    fDetectorSystemMap(),
-    fUnpackersToRun(),
-    fBuffer(CbmTbDaqBuffer::Instance()),
-    fTSNumber(0),
-    fTSCounter(0),
-    fTimer(),
-    fBufferFillNeeded(kTRUE),
-    fHistoMissedTS(nullptr),
-    fHistoMissedTSEvo(nullptr),
-    fNofTSSinceLastTS(0),
-    fuTsReduction(1),
-    fSource(nullptr)
-{
-}
-*/
 
 CbmMcbm2018Source::~CbmMcbm2018Source()
 {
@@ -112,6 +87,10 @@ Bool_t CbmMcbm2018Source::Init()
     LOG(INFO) << "Initialize " << (*itUnp)->GetName() << FairLogger::endl;
     (*itUnp)->Init();
     //    it->second->Register();
+  }
+
+  for (auto unpacker: fUnpackersToRun) {
+     unpacker->UseDaqBuffer(fUseDaqBuffer);
   }
 
   THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
@@ -172,7 +151,12 @@ Int_t CbmMcbm2018Source::ReadEvent(UInt_t)
   }
 //  LOG(INFO) << "After FillBuffer" << FairLogger::endl;
 
-  retVal = GetNextEvent();
+  if (fUseDaqBuffer) {  
+    retVal = GetNextEvent();
+  } else {
+    retVal = 0;
+  }
+
   LOG(DEBUG) << "After GetNextEvent: " << retVal << FairLogger::endl;
 
 /*

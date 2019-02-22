@@ -50,11 +50,14 @@ class CbmMcbm2018UnpackerTaskTof : public CbmMcbmUnpack
 
       /// Task settings
       void SetSeparateArrayT0( Bool_t bFlagIn = kTRUE ) { fbSeparateArrayT0 = bFlagIn; }
+
+      void UseDaqBuffer(Bool_t val) {fUseDaqBuffer = val;} 
    private:
       /// Control flags
       Bool_t fbMonitorMode;  //! Switch ON the filling of a minimal set of histograms
       Bool_t fbDebugMonitorMode; //! Switch ON the filling of a additional set of histograms
       Bool_t fbSeparateArrayT0; //! If ON, T0 digis are saved in separate TClonesArray
+      Bool_t fUseDaqBuffer; //! Switch OFF the usage of the DaqBuffer
 
       /// Parameters management
       TList* fParCList;

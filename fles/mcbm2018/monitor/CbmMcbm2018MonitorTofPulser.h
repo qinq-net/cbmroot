@@ -77,6 +77,7 @@ class CbmMcbm2018MonitorTofPulser: public CbmMcbmUnpack {
 
       void SetHistoFileName( TString sFileName = "data/SetupHistos.root" ) { fsHistoFileFullname = sFileName; }
 
+      void UseDaqBuffer(Bool_t) {};
    private:
       /// FLES containers
       std::vector< size_t >    fvMsComponentsList; //!

@@ -74,6 +74,7 @@ public:
    inline void SetStsTofOffsetNs( Double_t dOffsetIn = 0.0 ) { fdStsTofOffsetNs = dOffsetIn; }
    inline void SetMuchTofOffsetNs( Double_t dOffsetIn = 0.0 ) { fdMuchTofOffsetNs = dOffsetIn; }
 
+   void UseDaqBuffer(Bool_t) {};
 private:
    /// Parameters
       /// FLES containers

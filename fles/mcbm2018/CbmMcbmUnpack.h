@@ -40,6 +40,8 @@ class CbmMcbmUnpack : public CbmTSUnpack
   virtual void AddMsComponentToList( size_t component, UShort_t usDetectorId ) = 0;
   virtual void SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb ) = 0;
 
+  virtual void UseDaqBuffer(Bool_t) = 0;
+  
   ClassDef(CbmMcbmUnpack, 0)
 };
 

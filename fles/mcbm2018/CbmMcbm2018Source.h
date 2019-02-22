@@ -74,6 +74,8 @@ class CbmMcbm2018Source : public FairSource
 
     void EnableDataOutput( Bool_t bFlagIn = kTRUE ){ fbOutputData = bFlagIn; }
 
+    void UseDaqBuffer(Bool_t val) {fUseDaqBuffer = val;}
+
   private:
 
     TString fFileName;
@@ -102,6 +104,8 @@ class CbmMcbm2018Source : public FairSource
     UInt_t fuTsReduction;
 
     std::unique_ptr<fles::TimesliceSource> fSource; //!
+   
+    Bool_t fUseDaqBuffer;
 
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
