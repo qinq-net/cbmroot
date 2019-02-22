@@ -313,9 +313,12 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
   run->SetGenerateRunInfo(fGenerateRunInfo);
   if ( fGenerateRunInfo ) LOG(INFO) << fName
       << ": Run info will be generated." << FairLogger::endl;
-  FairMonitor::GetMonitor()->EnableMonitor(fMonitor);
+
+  TString monitorFile{fOutFile};
+  monitorFile.ReplaceAll("raw","raw.monitor");
+  FairMonitor::GetMonitor()->EnableMonitor(fMonitor, monitorFile);
   if ( fMonitor ) LOG(INFO) << fName << ": Monitor is enabled."
-      << FairLogger::endl;
+      << " OutputFile is " <<  monitorFile << FairLogger::endl;
 
 
   // --- Register source

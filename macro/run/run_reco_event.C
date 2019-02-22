@@ -117,8 +117,11 @@ void run_reco_event(
   run->SetSource(inputSource);
   run->SetOutputFile(outFile);
   run->SetGenerateRunInfo(kTRUE);
-  Bool_t hasFairMonitor = Has_Fair_Monitor();
-  if (hasFairMonitor) FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
+  
+  // Define output file for FairMonitor histograms
+  TString monitorFile{outFile};
+  monitorFile.ReplaceAll("rec","rec.monitor");
+  FairMonitor::GetMonitor()->EnableMonitor(kTRUE, monitorFile);
   // ------------------------------------------------------------------------
 
 
@@ -200,7 +203,7 @@ void run_reco_event(
 
 
   // -----   Finish   -------------------------------------------------------
-  if (hasFairMonitor) FairMonitor::GetMonitor()->Print();
+  FairMonitor::GetMonitor()->Print();
   timer.Stop();
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
@@ -217,20 +220,18 @@ void run_reco_event(
 
 
   // -----   Resource monitoring   ------------------------------------------
-  if ( Has_Fair_Monitor() ) {      // FairRoot Version >= 15.11
-    // Extract the maximal used memory an add is as Dart measurement
-    // This line is filtered by CTest and the value send to CDash
-    FairSystemInfo sysInfo;
-    Float_t maxMemory=sysInfo.GetMaxMemory();
-    std::cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
-    std::cout << maxMemory;
-    std::cout << "</DartMeasurement>" << std::endl;
+  // Extract the maximal used memory an add is as Dart measurement
+  // This line is filtered by CTest and the value send to CDash
+  FairSystemInfo sysInfo;
+  Float_t maxMemory=sysInfo.GetMaxMemory();
+  std::cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+  std::cout << maxMemory;
+  std::cout << "</DartMeasurement>" << std::endl;
 
-    Float_t cpuUsage=ctime/rtime;
-    std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
-    std::cout << cpuUsage;
-    std::cout << "</DartMeasurement>" << std::endl;
-  }
+  Float_t cpuUsage=ctime/rtime;
+  std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+  std::cout << cpuUsage;
+  std::cout << "</DartMeasurement>" << std::endl;
   // ------------------------------------------------------------------------
 
 

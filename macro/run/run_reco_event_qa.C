@@ -46,14 +46,6 @@ void run_reco_event_qa(
   // ------------------------------------------------------------------------
 
 
-  // -----   Remove old CTest runtime dependency file  ----------------------
-  TString dataDir  = gSystem->DirName(dataset);
-  TString dataName = gSystem->BaseName(dataset);
-  TString depFile = Remove_CTest_Dependency_File(dataDir, "run_reco_event",
-                                                 dataName);
-  // ------------------------------------------------------------------------
-
-
   // -----   Load the geometry setup   -------------------------------------
   std::cout << std::endl;
   TString setupFile = srcDir + "/geometry/setup/setup_" + setup + ".C";
@@ -202,24 +194,18 @@ void run_reco_event_qa(
   std::cout << " All ok " << std::endl;
   // ------------------------------------------------------------------------
 
-  // -----   Resource monitoring   ------------------------------------------
-  if ( Has_Fair_Monitor() ) {      // FairRoot Version >= 15.11
-    // Extract the maximal used memory an add is as Dart measurement
-    // This line is filtered by CTest and the value send to CDash
-    FairSystemInfo sysInfo;
-    Float_t maxMemory=sysInfo.GetMaxMemory();
-    std::cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
-    std::cout << maxMemory;
-    std::cout << "</DartMeasurement>" << std::endl;
+  // Extract the maximal used memory an add is as Dart measurement
+  // This line is filtered by CTest and the value send to CDash
+  FairSystemInfo sysInfo;
+  Float_t maxMemory=sysInfo.GetMaxMemory();
+  std::cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+  std::cout << maxMemory;
+  std::cout << "</DartMeasurement>" << std::endl;
 
-    Float_t cpuUsage=ctime/rtime;
-    std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
-    std::cout << cpuUsage;
-    std::cout << "</DartMeasurement>" << std::endl;
-  }
-  // ------------------------------------------------------------------------
+  Float_t cpuUsage=ctime/rtime;
+  std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+  std::cout << cpuUsage;
+  std::cout << "</DartMeasurement>" << std::endl;
 
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
   RemoveGeoManager();
 }

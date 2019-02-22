@@ -58,10 +58,10 @@ void run_qa(Int_t nEvents = 1, const char* setupName = "sis100_electron")
 //  fRun->SetInputFile(recFile);
 //  fRun->AddFriend(simFile);
   fRun->SetOutputFile(outFile);
-  Bool_t hasFairMonitor = Has_Fair_Monitor();
-  if (hasFairMonitor) {
-    FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
-  }
+  // Define output file for FairMonitor histograms
+  TString monitorFile{outFile};
+  monitorFile.ReplaceAll("qa","qa.monitor");
+  FairMonitor::GetMonitor()->EnableMonitor(kTRUE, monitorFile);
   // ------------------------------------------------------------------------
 
 
@@ -98,24 +98,21 @@ void run_qa(Int_t nEvents = 1, const char* setupName = "sis100_electron")
   cout << endl;
   // ------------------------------------------------------------------------
 
-  if (hasFairMonitor) {
-    // Extract the maximal used memory an add is as Dart measurement
-    // This line is filtered by CTest and the value send to CDash
-    FairSystemInfo sysInfo;
-    Float_t maxMemory=sysInfo.GetMaxMemory();
-    cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
-    cout << maxMemory;
-    cout << "</DartMeasurement>" << endl;
+  // Extract the maximal used memory an add is as Dart measurement
+  // This line is filtered by CTest and the value send to CDash
+  FairSystemInfo sysInfo;
+  Float_t maxMemory=sysInfo.GetMaxMemory();
+  cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+  cout << maxMemory;
+  cout << "</DartMeasurement>" << endl;
 
-    Float_t cpuUsage=ctime/rtime;
-    cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
-    cout << cpuUsage;
-    cout << "</DartMeasurement>" << endl;
+  Float_t cpuUsage=ctime/rtime;
+  cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+  cout << cpuUsage;
+  cout << "</DartMeasurement>" << endl;
 
-    FairMonitor* tempMon = FairMonitor::GetMonitor();
-    tempMon->Print();
-  }
-  //  delete run;
+  FairMonitor* tempMon = FairMonitor::GetMonitor();
+  tempMon->Print();
 
   RemoveGeoManager();
   cout << " Test passed" << endl;

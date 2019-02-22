@@ -57,10 +57,11 @@ void run_reco_tb_track(TString dataSet = "test", Int_t nSlices = -1)
   run->SetSource(inputSource);
   run->SetOutputFile(outFile);
   run->SetGenerateRunInfo(kTRUE);
-  Bool_t hasFairMonitor = Has_Fair_Monitor();
-  if (hasFairMonitor) {
-    FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
-  }
+
+  // Define output file for FairMonitor histograms
+  TString monitorFile{outFile};
+  monitorFile.ReplaceAll("rec","rec.monitor");
+  FairMonitor::GetMonitor()->EnableMonitor(kTRUE, monitorFile);
   // ------------------------------------------------------------------------
 
 

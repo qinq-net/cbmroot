@@ -49,12 +49,6 @@ void run_reco_new(Int_t nEvents = 2,
   TString parFile = outDir + setupName + "_params.root";    // Parameter file
   // ------------------------------------------------------------------------
 
-
-  // -----   Remove old CTest runtime dependency file  ----------------------
-  TString depFile = Remove_CTest_Dependency_File(outDir, "run_reco" , setupName);
-  // ------------------------------------------------------------------------
-
-
   // -----   Load the geometry setup   -------------------------------------
   std::cout << std::endl;
   TString setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
@@ -129,8 +123,11 @@ void run_reco_new(Int_t nEvents = 2,
   run->SetSource(inputSource);
   run->SetOutputFile(outFile);
   run->SetGenerateRunInfo(kTRUE);
-  Bool_t hasFairMonitor = Has_Fair_Monitor();
-  if (hasFairMonitor) FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
+
+  // Define output file for FairMonitor histograms
+  TString monitorFile{outFile};
+  monitorFile.ReplaceAll("eds","eds.monitor");
+  FairMonitor::GetMonitor()->EnableMonitor(kTRUE, monitorFile);
   // ------------------------------------------------------------------------
 
 
@@ -217,25 +214,21 @@ void run_reco_new(Int_t nEvents = 2,
   // ------------------------------------------------------------------------
 
   // -----   Resource monitoring   ------------------------------------------
-  if ( Has_Fair_Monitor() ) {      // FairRoot Version >= 15.11
-    // Extract the maximal used memory an add is as Dart measurement
-    // This line is filtered by CTest and the value send to CDash
-    FairSystemInfo sysInfo;
-    Float_t maxMemory=sysInfo.GetMaxMemory();
-    std::cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
-    std::cout << maxMemory;
-    std::cout << "</DartMeasurement>" << std::endl;
+  // Extract the maximal used memory an add is as Dart measurement
+  // This line is filtered by CTest and the value send to CDash
+  FairSystemInfo sysInfo;
+  Float_t maxMemory=sysInfo.GetMaxMemory();
+  std::cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+  std::cout << maxMemory;
+  std::cout << "</DartMeasurement>" << std::endl;
 
-    Float_t cpuUsage=ctime/rtime;
-    std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
-    std::cout << cpuUsage;
-    std::cout << "</DartMeasurement>" << std::endl;
+  Float_t cpuUsage=ctime/rtime;
+  std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+  std::cout << cpuUsage;
+  std::cout << "</DartMeasurement>" << std::endl;
 
-    FairMonitor* tempMon = FairMonitor::GetMonitor();
-    tempMon->Print();
-  }
+  FairMonitor* tempMon = FairMonitor::GetMonitor();
+  tempMon->Print();
 
-  // Function needed for CTest runtime dependency
-  Generate_CTest_Dependency_File(depFile);
   RemoveGeoManager();
 }
