@@ -63,6 +63,12 @@ class CbmMcbm2018MuchPar : public FairParGenericSet
    UInt_t GetNrOfCrobs()      { return fuNrOfDpbs * kuNbCrobsPerDpb; }
    UInt_t GetNrOfFebs()       { return GetNrOfCrobs() * kuNbFebsPerCrob; }
    UInt_t GetNrOfAsics()      { return GetNrOfFebs()  * kuNbAsicsPerFeb; }
+   //inline Int_t GetFebsIdsFromArray(Int_t i) { return fnFebsIdsArray[i]; }
+
+   Int_t GetNrOfChannels() {return kuNbChanPerAsic;}
+
+   Short_t GetPadX(Short_t febid, Short_t channelid);
+   Short_t GetPadY(Short_t febid, Short_t channelid);
 
    Bool_t IsCrobActive( UInt_t uDpbIdx, UInt_t uCrobIdx );
    Bool_t IsFebActive( UInt_t uFebInSystIdx );
@@ -73,7 +79,7 @@ class CbmMcbm2018MuchPar : public FairParGenericSet
    /// Constants
    static const UInt_t  kuNbCrobsPerDpb   =   2; // Number of CROBs possible per DPB
    static const UInt_t  kuNbElinksPerCrob =  42; // Number of elinks in each CROB ?
-   static const UInt_t  kuNbFebsPerCrob   =   6; // Number of FEBs  connected to each CROB
+   static const UInt_t  kuNbFebsPerCrob   =   6; // Number of FEBs  connected to each CROB for mMuch 2019
    static const UInt_t  kuNbAsicsPerFeb   =   1; // Number of ASICs connected in each FEB for MUCH
    static const UInt_t  kuNbChanPerAsic   = 128; // Number of channels in each ASIC
 //   static constexpr UInt_t  kuCrobMapElinkFebA[ kuNbElinksPerCrob ] = {
@@ -89,13 +95,13 @@ class CbmMcbm2018MuchPar : public FairParGenericSet
          }; //! Map from eLink index to ASIC index within CROB ( 0 to kuNbFebsPerCrob * kuNbAsicPerFeb )
 */
    const UInt_t  kuCrobMapElinkFebMuch[ kuNbElinksPerCrob ] = {
-            0x0006, 0x0006, 0x0006, 0x0006, 0x0006, 0x0007,
-            0x0007, 0x0007, 0x0007, 0x0007, 0x0008, 0x0008,
-            0x0008, 0x0008, 0x0003, 0x0003, 0x0003, 0x0003,
+            0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001,
+            0x0001, 0x0001, 0x0001, 0x0001, 0x0002, 0x0002,
+            0x0002, 0x0002, 0x0003, 0x0003, 0x0003, 0x0003,
             0x0003, 0x0004, 0x0004, 0x0004, 0x0004, 0x0004,
-            0x0005, 0x0005, 0x0005, 0x0005, 0x0000, 0x0000,
-            0x0000, 0x0000, 0x0000, 0x0001, 0x0001, 0x0001,
-            0x0001, 0x0001, 0x0002, 0x0002, 0x0002, 0x0002
+            0x0005, 0x0005, 0x0005, 0x0005, 0x0006, 0x0006,
+            0x0006, 0x0006, 0x0006, 0x0007, 0x0007, 0x0007,
+            0x0007, 0x0007, 0x0008, 0x0008, 0x0008, 0x0008
          }; //! Map from eLink index to ASIC index within CROB ( 0 to kuNbFebsPerCrob * kuNbAsicPerFeb )
 /*
    const UInt_t  kuCrobMapElinkFebMuch[ kuNbElinksPerCrob ] = {
@@ -124,6 +130,9 @@ class CbmMcbm2018MuchPar : public FairParGenericSet
    UInt_t  fuNrOfDpbs;       // Total number of MUCH DPBs in system
    TArrayI fiDbpIdArray;     // Array to hold the unique IDs (equipment ID) for all MUCH DPBs
    TArrayI fiCrobActiveFlag; // Array to hold the active flag for all CROBs, [ NbDpb * kuNbCrobPerDpb ]
+   //TArrayI fnFebsIdsArray; // Array to hold FEB IDs connected to 1 nDPB
+   TArrayI fChannelsToPadX; // Array which stores the corresponding x position of PAD of entire module A 
+   TArrayI fChannelsToPadY; // Array which stores the corresponding y position of PAD of entire module A
 
   ClassDef(CbmMcbm2018MuchPar,1);
 };

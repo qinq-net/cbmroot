@@ -23,7 +23,11 @@ CbmMcbm2018MuchPar::CbmMcbm2018MuchPar(const char* name,
    FairParGenericSet(name, title, context),
    fuNrOfDpbs( 0 ),
    fiDbpIdArray(),
-   fiCrobActiveFlag()
+   fiCrobActiveFlag(),
+   //fnFebsIdsArray(),
+   fChannelsToPadX(),
+   fChannelsToPadY()
+
 {
   detName="Much";
 }
@@ -55,7 +59,10 @@ void CbmMcbm2018MuchPar::putParams(FairParamList* l)
    l->add("NrOfDpbs",       fuNrOfDpbs );
    l->add("DbpIdArray",     fiDbpIdArray );
    l->add("CrobActiveFlag", fiCrobActiveFlag);
-
+   //l->add("nFebsIdsArray",  fnFebsIdsArray);
+   l->add("ChannelsToPadX", fChannelsToPadX);
+   l->add("ChannelsToPadY", fChannelsToPadY);
+ 
 }
 
 // -------------------------------------------------------------------------
@@ -71,6 +78,15 @@ Bool_t CbmMcbm2018MuchPar::getParams(FairParamList* l) {
 
    fiCrobActiveFlag.Set( fuNrOfDpbs * kuNbCrobsPerDpb );
    if ( ! l->fill("CrobActiveFlag", &fiCrobActiveFlag ) ) return kFALSE;
+
+/*   fnFebsIdsArray.Set(GetNrOfFebs());
+   if ( ! l->fill("nFebsIdsArray", &fnFebsIdsArray) ) return kFALSE;
+*/  
+   fChannelsToPadX.Set(GetNrOfFebs()*kuNbChanPerAsic);
+   if ( ! l->fill("ChannelsToPadX", &fChannelsToPadX) ) return kFALSE;
+  
+   fChannelsToPadY.Set(GetNrOfFebs()*kuNbChanPerAsic);
+   if ( ! l->fill("ChannelsToPadY", &fChannelsToPadY) ) return kFALSE;
 
   return kTRUE;
 }
@@ -187,5 +203,33 @@ Bool_t CbmMcbm2018MuchPar::IsFebActive( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t 
          return kFALSE;
       } // else of if( uDpbIdx < fuNrOfDpbs )
 }
+Short_t CbmMcbm2018MuchPar::GetPadX(Short_t febid, Short_t channelid)
+{
+  if( fChannelsToPadX.GetSize () <= (febid*kuNbChanPerAsic)+channelid )
+  {
+    LOG(DEBUG) << "CbmMcbm2018MuchPar::GetPadX => Index out of bounds: " 
+	       << ((febid*kuNbChanPerAsic)+channelid) << " VS " << fChannelsToPadX.GetSize()
+	       << " (" << febid << " and " << channelid << ")"
+	       << FairLogger::endl;
+    return -2;
+  } // if( fChannelsToPadX.GetSize () <= (febid*kuNbChanPerAsic)+channelid )
+  
+  
+  return fChannelsToPadX[(febid*kuNbChanPerAsic)+channelid];
+}
+Short_t CbmMcbm2018MuchPar::GetPadY(Short_t febid, Short_t channelid)
+{
+  if( fChannelsToPadY.GetSize() <= (febid*kuNbChanPerAsic)+channelid )
+  {
+      LOG(DEBUG) << "CbmMcbm2018MuchPar::GetPadY => Index out of bounds: " 
+                 << ((febid*kuNbChanPerAsic)+channelid) << " VS " << fChannelsToPadY.GetSize()
+                 << " (" << febid << " and " << channelid << ")"
+                 << FairLogger::endl;
+    return -2;
+  } // if( fChannelsToPadY.GetSize () <= (febid*kuNbChanPerAsic)+channelid )
+   
+   return fChannelsToPadY[(febid*kuNbChanPerAsic)+channelid];
+}
+
 
 ClassImp(CbmMcbm2018MuchPar)
