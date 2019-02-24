@@ -49,15 +49,15 @@ void MonitorMuch(TString inFile = "", TString sHostname = "en02",
   std::cout << std::endl;
   std::cout << ">>> Cern2017Monitor: Initialising..." << std::endl;
 
-  // Hodoscopes Monitor
-  CbmMcbm2018MonitorSts* monitorSts = new CbmMcbm2018MonitorSts();
-  monitorSts->SetHistoFileName( "data/MuchHistos.root" );
+  // MUCH Gem Monitor
+  CbmMcbm2018MonitorMuch* monitorMuch = new CbmMcbm2018MonitorMuch();
+  monitorMuch->SetHistoFileName( "data/MuchHistos.root" );
 //  monitorSts->SetPrintMessage();
-  monitorSts->SetMsOverlap( 1 );
+  monitorMuch->SetMsOverlap( 1 );
 //  monitorSts->SetLongDurationLimits( 3600, 10 );
-  monitorSts->SetLongDurationLimits( 7200, 60 );
+ //  monitorSts->SetLongDurationLimits( 7200, 60 );
 //  monitorSts->SetEnableCoincidenceMaps();
-  monitorSts->SetCoincidenceBorder(   0.0,  200 );
+ // monitorSts->SetCoincidenceBorder(   0.0,  200 );
 //  monitorSts->SetMuchMode();
 
   // --- Source task
@@ -81,7 +81,8 @@ void MonitorMuch(TString inFile = "", TString sHostname = "en02",
          source->SetPortNumber( 5556 );
       }
 
-  source->AddUnpacker(monitorSts,  0x10, 6); // stsXyter DPBs
+  //source->AddUnpacker(monitorMuch,  0x10, 6); // stsXyter DPBs
+  source->AddUnpacker(monitorMuch,  0x10, kMuch); // stsXyter DPBs
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();
