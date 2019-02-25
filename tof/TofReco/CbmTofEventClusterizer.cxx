@@ -3156,7 +3156,8 @@ Bool_t   CbmTofEventClusterizer::WriteHistos()
 		  TWMean+= ((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1) * ((TH1 *)htempTOff_px)->GetBinContent(iCh+1);
 		}
 	      }
-	      TWMean /= dW;
+	      if(dW >0.) TWMean /= dW;
+	      else           TWMean=0.;
 	    }   
 	    LOG(DEBUG) <<Form("Calib %2d: TSRC %d%d%d%d, hits %6.0f, dTY  %8.3f, TM %8.3f , TAV  %8.3f, TWM %8.3f, TOff %8.3f ",
 			    fTRefMode,iSmType,iSm,iRpc,iCh,htempTOff_px->GetBinContent(iCh+1),
