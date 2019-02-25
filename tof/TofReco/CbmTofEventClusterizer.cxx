@@ -33,6 +33,7 @@
 
 // FAIR classes and includes
 #include "FairRootManager.h"
+#include "FairRootFileSink.h"
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 #include "FairLogger.h"
@@ -397,7 +398,7 @@ void CbmTofEventClusterizer::ExecEvent(Option_t* /*option*/)
    //fTofDigiMatchColl->Clear("C+L");  // leads to memory leak
    fTofDigiMatchColl->Delete();
 
-   fiOutputTreeEntry = FairRootManager::Instance()->GetOutTree()->GetEntries();
+   fiOutputTreeEntry = ((FairRootFileSink *)FairRootManager::Instance()->GetSink())->GetOutTree()->GetEntries();
 
    fiNbHits = 0;
 
@@ -458,8 +459,9 @@ Bool_t   CbmTofEventClusterizer::RegisterInputs()
       return kFALSE;
    } // if( NULL == fMcTracksColl)
    */
-   fEventsColl = dynamic_cast<TClonesArray*>(fManager->GetObject("Event"));
 
+   fEventsColl = dynamic_cast<TClonesArray*>(fManager->GetObject("Event"));
+   if(NULL ==  fEventsColl) 
      LOG(INFO) << "CbmEvent not found in input file, assume eventwise input" << FairLogger::endl;
 
 
@@ -497,13 +499,15 @@ Bool_t   CbmTofEventClusterizer::RegisterInputs()
 Bool_t   CbmTofEventClusterizer::RegisterOutputs()
 {
    FairRootManager* rootMgr = FairRootManager::Instance();
+   FairRunAna* ana = FairRunAna::Instance();
+
+   rootMgr->InitSink();
 
    fTofCalDigisColl = new TClonesArray("CbmTofDigiExp");
 
    fTofHitsColl = new TClonesArray("CbmTofHit");
 
    fTofDigiMatchColl = new TClonesArray("CbmMatch",100);
-
 
    TString tHitBranchName;
    TString tHitDigiMatchBranchName;
@@ -518,7 +522,6 @@ Bool_t   CbmTofEventClusterizer::RegisterOutputs()
      tHitBranchName          = "TofHit";
      tHitDigiMatchBranchName = "TofDigiMatch";
    }
-
 
    if (NULL == fEventsColl) {
      // Flag check to control whether digis are written in output root file
@@ -535,9 +538,8 @@ Bool_t   CbmTofEventClusterizer::RegisterOutputs()
      rootMgr->Register( "TofCalDigi","Tof", fTofCalDigisCollOut, fbWriteDigisInOut);
      rootMgr->Register(tHitBranchName,"Tof", fTofHitsCollOut, fbWriteHitsInOut);
      rootMgr->Register(tHitDigiMatchBranchName,"Tof", fTofDigiMatchCollOut, fbWriteHitsInOut);
-   }
+   } 
    return kTRUE;
-
 }
 Bool_t   CbmTofEventClusterizer::InitParameters()
 {

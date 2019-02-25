@@ -214,6 +214,8 @@ InitStatus CbmTofFindTracks::Init()
     return kFATAL;
   }
 
+   ioman->InitSink();
+
   fEventsColl = dynamic_cast<TClonesArray*>(ioman->GetObject("Event"));
   if( ! fEventsColl ) {
      LOG(INFO) << "CbmEvent not found in input file, assume eventwise input" << FairLogger::endl;
