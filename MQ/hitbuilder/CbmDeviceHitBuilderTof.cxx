@@ -28,6 +28,7 @@
 #include "FairRuntimeDb.h"
 #include "FairGeoParSet.h"
 #include "FairRootManager.h"
+#include "FairRootFileSink.h"
 #include "FairRunOnline.h"
 #include "FairFileHeader.h"
 
@@ -304,7 +305,15 @@ Bool_t CbmDeviceHitBuilderTof::InitWorkspace()
 
     FairRunOnline*   fRun    = new FairRunOnline(0);
     rootMgr = FairRootManager::Instance();
-    fOutRootFile = rootMgr->OpenOutFile(fOutRootFileName);
+    //fOutRootFile = rootMgr->OpenOutFile(fOutRootFileName);
+    if( rootMgr->InitSink() ) {
+	fRun->SetSink(new FairRootFileSink(fOutRootFileName));
+	fOutRootFile=rootMgr->GetOutFile();
+	if ( NULL == fOutRootFile ) 
+	  LOG(FATAL)<<"could not open root file";
+
+    } else
+	LOG(FATAL)<<"could not init Sink";
   }
 
   // steering variables
@@ -331,20 +340,24 @@ Bool_t CbmDeviceHitBuilderTof::InitRootOutput()
 {
   if(NULL != fOutRootFile) {
     LOG(INFO) << "Init Root Output to " << fOutRootFile->GetName();
-  /*
+
+    /*
     fFileHeader->SetRunId(iRunId);
     rootMgr->WriteFileHeader(fFileHeader);
-  */
+    */
+    rootMgr->InitSink();
     fEvtHeader = new FairEventHeader();
-    rootMgr->Register("EventHeader.", "Event", fEvtHeader, kTRUE);
     fEvtHeader->SetRunId(iRunId);
-
-    rootMgr->Register( "CbmTofDigi","Tof raw Digi", fTofCalDigisColl, kTRUE);
+    rootMgr->Register("EventHeader.", "Event", fEvtHeader, kTRUE);
     rootMgr->FillEventHeader(fEvtHeader);
-    fOutRootFile->cd();
+    
+    rootMgr->Register( "CbmTofDigi","Tof raw Digi", fTofCalDigisColl, kTRUE);
+    //    fOutRootFile->cd();
     TTree* outTree =new TTree(FairRootManager::GetTreeName(), "/cbmout", 99);
-    rootMgr->TruncateBranchNames(outTree, "cbmout");
-    rootMgr->SetOutTree(outTree);
+    LOG(INFO) << "define Tree " << outTree->GetName();
+    //rootMgr->TruncateBranchNames(outTree, "cbmout");
+    //rootMgr->SetOutTree(outTree);
+    rootMgr->GetSink()->SetOutTree(outTree);
     rootMgr->WriteFolder();
     LOG(INFO) << "Initialized outTree with rootMgr at " << rootMgr;
     /*
@@ -561,7 +574,7 @@ bool CbmDeviceHitBuilderTof::HandleData(FairMQParts& parts, int /*index*/)
   
   //LOG(INFO) << " Process msg " << fNumMessages << " at evt " << fdEvent << ", PulMode " <<  fiPulserMode;
 
-  if(0) {  //fiPulserMode>0) {  // don't process events without valid pulser correction 
+  if(fiPulserMode>0) {  // don't process events without valid pulser correction 
     if(fvPulserTimes[fiPulDetRef][0].size()==0) return kTRUE;
   }
 
