@@ -31,7 +31,7 @@
 #include <iostream>
 
 // Name of geometry version and output file
-const TString geoVersion = "tof_v14a"; // do not change
+const TString geoVersion = "tof_v18k_mcbm"; // do not change
 //
 const TString fileTag    = "tof_v18k";
 const TString FileNameSim  = fileTag + "_mcbm.geo.root";
