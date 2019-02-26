@@ -217,6 +217,9 @@ class CbmTofDigitize : public CbmDigitize
                                         Double_t dBaseXa, Double_t dBaseYa,
                                         Double_t dBaseXb, Double_t dBaseYb );
 
+      Bool_t CompareTimes(CbmTofDigiExp* p1, CbmTofDigiExp* p2);
+      Bool_t CompareTimes(CbmTofDigi* p1, CbmTofDigi* p2);
+
       /** Get event information     (Is now in base class)
        ** @param[out]  eventNumber  Number of MC event
        ** @param[out]  inputNumber  Number of input

@@ -8,6 +8,7 @@
 // C++ includes
 #include <cassert>
 #include <iomanip>
+#include <algorithm>
 
 // ROOT includes
 #include "TClonesArray.h"
@@ -58,11 +59,37 @@ using std::setw;
 // Gauss Integration Constants
 const Int_t    kiNbIntPts = 2;
 
+/************************************************************************************/
+struct CompTimes {  
+  bool operator() (CbmTofDigi* pDigi1, CbmTofDigi* pDigi2){
+    Bool_t bOK=(pDigi1->GetTime() < pDigi2->GetTime());
+    if(!bOK) {
+      LOG(DEBUG) << Form(" ReSort digis 0x%08x ,  %f, %f", pDigi1->GetAddress(), pDigi1->GetTime(), pDigi2->GetTime() )
+		 <<FairLogger::endl;
+    }
+    return bOK;
+  }
+} CompT;
+
+struct CompTimesExp {  
+  bool operator() (CbmTofDigiExp* pDigi1, CbmTofDigiExp* pDigi2){
+    Bool_t bOK=(pDigi1->GetTime() < pDigi2->GetTime());
+    /*
+    if(!bOK) {
+      LOG(DEBUG) << Form(" ReSort digis 0x%08x ,  %f, %f", pDigi1->GetAddress(), pDigi1->GetTime(), pDigi2->GetTime() )
+		 <<FairLogger::endl;
+    }
+    */
+    return bOK;
+  }
+} CompTExp;
+
 // If enabled add an offset depending on the strip length by making the full propagation time
 // to each strips end
 // If disabled just the time to the center is used
 // TODO: Add this as parameter
 //#define FULL_PROPAGATION_TIME
+Int_t fCurrentMCEntry;
 
 /************************************************************************************/
 CbmTofDigitize::CbmTofDigitize():
@@ -395,6 +422,8 @@ Bool_t   CbmTofDigitize::RegisterInputs()
 Bool_t   CbmTofDigitize::RegisterOutputs()
 {
    FairRootManager* rootMgr = FairRootManager::Instance();
+   rootMgr->InitSink();
+
    if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    {
       fTofDigisColl = new TClonesArray("CbmTofDigiExp");
@@ -1174,8 +1203,25 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                      std::vector<Int_t> vPrevTrackIdList;
                      if( 0 < iNbDigis )
                      {
-                        if(fbMonitorHistos)
-                        {
+		       CbmMatch* digiMatch;
+		       for(Int_t iDigi=0; iDigi<iNbDigis; iDigi++) { //store matches with digis 
+			 LOG( DEBUG) << Form(" Create match for Digi %d(%d), addr 0x%08x; %d", iDigi, iNbDigis,
+					    fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetAddress(),
+					    fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi])
+				    << FairLogger::endl;
+			 
+			 digiMatch = new CbmMatch();
+			 digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fCurrentMCEntry,fCurrentInput));
+			 
+			 fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->SetMatch( digiMatch );
+		       }
+		       if(1 < iNbDigis) { // time sort digis  			 
+			 std::sort(fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].begin(), 
+				         fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].end(), CompTExp); 
+		       }
+
+		        if(fbMonitorHistos)
+			{
                           fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
 
                           fhDigiNbElecCh->Fill(iNbDigis);
@@ -1191,92 +1237,104 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                            break;
                         }
 
-                        Int_t iChosenDigi = -1;
-                        Double_t dMinTime = 1e18;
-//                        Int_t    ivDigiInd[iNbDigis]; // Never used?
-//                        Double_t dvDigiTime[iNbDigis]; // Never used?
-                        CbmMatch* digiMatch = new CbmMatch();
+			Int_t iDigi0=0;
+			digiMatch=fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]->GetMatch();
+			if( iNbDigis > 1) {
+			  LOG(DEBUG)<<Form("Now apply deadtime %f for %d digis, digi0=%d for adress 0x%08x ",
+					   fDigiBdfPar->GetDeadtime(), iNbDigis,iDigi0,fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]->GetAddress())
+				    << FairLogger::endl;
+			  Double_t fdDeadtime =  fDigiBdfPar->GetDeadtime(); 
+			  for( Int_t iDigi = 1; iDigi < iNbDigis; iDigi++) {
+			    // find Digis in deadtime of first Digi 
+			    if( ( fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime() 
+				 -fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]->GetTime() )< fdDeadtime )
+			    {    // Store Link with weight 0 to have a trace of MC tracks firing the channel
+                                 // but whose Digi is not propagated to next stage
+			      digiMatch=fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]->GetMatch();
+			      Int_t nL=(fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetMatch())->GetNofLinks();
+			      if (nL != 1) LOG(FATAL)<<"Invalid number of Links " << nL << FairLogger::endl; 
+			      
+			      CbmLink L0 = (fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetMatch())->GetLink(0);
+			      digiMatch->AddLink(CbmLink(0.,L0.GetIndex(),fCurrentMCEntry,fCurrentInput ));
 
-                        for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
-                        {
-                           // Store Link with weight 0 to have a trace of MC tracks firing the channel
-                           // but whose Digi is not propagated to next stage
-                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fCurrentMCEntry,fCurrentInput ));
+			      // cleanup of obsolete digis, matches and links done below
+			    } else {  // new digi found 
+			      // new digi  will be created and later deleted by CbmDaq.
+			      // The original digi will be deleted below, together with the unused digis from the buffer.
+			      CbmTofDigiExp* digi = new CbmTofDigiExp(*(fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]));
+			      digi->SetTime(digi->GetTime() * fdDigiTimeConvFactor + fCurrentEventTime);  // ns->ps
+			      SendDigi(digi);                        // Send digi to DAQ
+			      fiNbDigis++;
 
-                          if( fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
-                                                                                          < dMinTime )
-                          {
-                              iChosenDigi = iDigi;
-                              dMinTime = fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime();
-
-                              // TOF QA: monitor number of tracks leading to digi before merging them
-                              Bool_t bTrackFound = kFALSE;
-                              for( UInt_t uTrkId = 0; uTrkId < vPrevTrackIdList.size(); uTrkId++ )
-                                 if( vPrevTrackIdList[uTrkId] ==
-                                     ((CbmTofPoint*) fTofPointsColl->At(
-                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]
-                                                ))->GetTrackID() )
-                                 {
-                                    bTrackFound = kTRUE;
-                                    break;
-                                 } // If TrackId already found for this Elec. Chan in this event
-                              if( kFALSE ==  bTrackFound )
-                              {
-                                 // New track or first track
-                                 iNbTracks++;
-                                 vPrevTrackIdList.push_back(
-                                    ((CbmTofPoint*) fTofPointsColl->At(
-                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]
-                                                ))->GetTrackID() );
-                              }  // if( kFALSE ==  bTrackFound )
-                          } // if fastest digi on this side of the channel
-                        } // for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
-
-                        if(fbMonitorHistos)
-                        {
+			      // TOF QA 
+			      if(fbMonitorHistos && NULL != digiMatch ){	
+				Int_t nL=digiMatch->GetNofLinks();
+				for( Int_t iL = 0; iL < nL; iL++) {
+				  // TOF QA: monitor number of tracks leading to digi before merging them
+				  CbmLink L = digiMatch->GetLink(iL);
+				  Bool_t bTrackFound = kFALSE;
+				  for( UInt_t uTrkId = 0; uTrkId < vPrevTrackIdList.size(); uTrkId++ )
+				    if( vPrevTrackIdList[uTrkId] == ((CbmTofPoint*) fTofPointsColl->At( L.GetIndex()  ))->GetTrackID() )
+				    {
+				      bTrackFound = kTRUE;
+				      break;
+				    } // If TrackId already found for this Elec. Chan in this event
+				  if( kFALSE ==  bTrackFound )
+				  {
+				    // New track or first track
+				    iNbTracks++;
+				    vPrevTrackIdList.push_back(  ((CbmTofPoint*) fTofPointsColl->At( L.GetIndex()  ))->GetTrackID() ); 
+				  }  // if( kFALSE ==  bTrackFound )
+				} // 	for( Int_t iL = 0; iL < nL; iL++
+				vPrevTrackIdList.clear();
+				// TOF QA: monitor number of tracks leading to digi before merging them
+				fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
+			      }   // if(fbMonitorHistos)
+			      
+			      iDigi0=iDigi;
+			    }
+			  }
+			} // 	if( iNbDigis > 1)  end 
+			// assemble and send last digi
+			// new digi  will be created and later deleted by CbmDaq.
+			// The original digi will be deleted below, together with the unused digis from the buffer.
+			CbmTofDigiExp* digi = new CbmTofDigiExp(*(fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]));
+			digi->SetTime(digi->GetTime() * fdDigiTimeConvFactor + fCurrentEventTime);  // ns->ps
+			SendDigi(digi);                        // Send digi to DAQ
+                        fiNbDigis++;
+			
+                        if(fbMonitorHistos){	
+			  Int_t nL=digiMatch->GetNofLinks();
+			  for( Int_t iL = 0; iL < nL; iL++) {
+			    // TOF QA: monitor number of tracks leading to digi before merging them
+			    CbmLink L = digiMatch->GetLink(iL);
+			    Bool_t bTrackFound = kFALSE;
+			    for( UInt_t uTrkId = 0; uTrkId < vPrevTrackIdList.size(); uTrkId++ )
+			      if( vPrevTrackIdList[uTrkId] == ((CbmTofPoint*) fTofPointsColl->At( L.GetIndex()  ))->GetTrackID() )
+			      {
+				bTrackFound = kTRUE;
+				break;
+			      } // If TrackId already found for this Elec. Chan in this event
+			    if( kFALSE ==  bTrackFound )
+                            {
+			      // New track or first track
+			      iNbTracks++;
+			      vPrevTrackIdList.push_back(  ((CbmTofPoint*) fTofPointsColl->At( L.GetIndex()  ))->GetTrackID() ); 
+			    }  // if( kFALSE ==  bTrackFound )
+			  } // 	for( Int_t iL = 0; iL < nL; iL++
+			  vPrevTrackIdList.clear();
                           // TOF QA: monitor number of tracks leading to digi before merging them
                           fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
-                        }
+                        }   // if(fbMonitorHistos)
 
-                        // I have to create a new digi here because of the strange way the buffers are constructed.
-                        // This digi will be deleted by CbmDaq.
-                        // The original digi will be deleted below, together with the unused digis from the buffer.
-                        CbmTofDigiExp* digi = new CbmTofDigiExp(*(fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]));
-                        digi->SetTime(digi->GetTime() * fdDigiTimeConvFactor + fCurrentEventTime);  // ns->ps
-                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fCurrentMCEntry,fCurrentInput));
-                        digi->SetMatch(digiMatch);
-
-                        CbmLink LP = digiMatch->GetMatchedLink();
-                        Int_t lp=LP.GetIndex();
-
-                        LOG(DEBUG1)<<Form("Add digi %d (%zu) match of (%d,%d,%d,%d,%d) at pos %d",
-                              iChosenDigi, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size(),
-                              iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
-
-                        // Send digi to DAQ
-                        SendDigi(digi);
-
-                        LOG(DEBUG1)<<"CbmTofDigitize:: TofDigiMatchColl entry "
-                             <<fTofDigiMatchPointsColl->GetEntries()
-                             <<", Poi: "<<fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]
-                             <<", lp: "<<lp
-                             <<", MCt: "<<((CbmTofPoint*) fTofPointsColl->At(lp))->GetTrackID()
-                             <<FairLogger::endl;
-
-                        if(lp != fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] )
-                          LOG(ERROR)<<Form("CbmTofDigitize::MergeSameChanDigis inconsistent links: %d <-> %d for (%d,%d,%d,%d,%d)",
-                               lp, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],
-                               iSmType,iSm,iRpc,iCh,iSide)<<FairLogger::endl;
-
-                        fiNbDigis++;
                         for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++){
                            delete fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
-                           //delete fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
-                        }
+                           // delete fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
+                        } // 
+			
                         fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                         fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                      } // if( 0 < iNbDigis )
-                     vPrevTrackIdList.clear();
                   } // for each (Ch, Side) pair
             } // for each (Sm, rpc) pair
       } // for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
@@ -1297,15 +1355,34 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                for( Int_t iCh = 0; iCh < iNbCh; iCh++ )
                   for( Int_t iSide = 0; iSide < iNbSides; iSide++ )
                   {
-                     Int_t iNbDigis = fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size();
+		    
+		    //// insert here 
+                    Int_t iNbDigis = fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size();
 
                      // TOF QA: monitor number of tracks leading to digi before merging them
                      Int_t iNbTracks = 0;
                      std::vector<Int_t> vPrevTrackIdList;
                      if( 0 < iNbDigis )
                      {
-                        if(fbMonitorHistos)
-                        {
+		       CbmMatch* digiMatch;
+		       for(Int_t iDigi=0; iDigi<iNbDigis; iDigi++) { //store matches with digis 
+			 LOG( DEBUG) << Form(" Create match for Digi %d(%d), addr 0x%08x; %d", iDigi, iNbDigis,
+					    fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetAddress(),
+					    fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi])
+				    << FairLogger::endl;
+			 
+			 digiMatch = new CbmMatch();
+			 digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fCurrentMCEntry,fCurrentInput));
+			 
+			 fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->SetMatch( digiMatch );
+		       }
+		       if(1 < iNbDigis) { // time sort digis  			 
+			 //	 std::sort(fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].begin(), 
+			 //	         fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].end(), CompT); 
+		       }
+
+		        if(fbMonitorHistos)
+			{
                           fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
 
                           fhDigiNbElecCh->Fill(iNbDigis);
@@ -1315,88 +1392,113 @@ Bool_t   CbmTofDigitize::MergeSameChanDigis()
                              fhMultiDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
                         }
 
-                        Int_t iChosenDigi = -1;
-                        Double_t dMinTime = 1e18;
-                        CbmMatch* digiMatch = new CbmMatch();
-                        for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
-                        {
-                           // Store Link with weight 0 to have a trace of MC tracks firing the channel
-                           // but whose Digi is not propagated to next stage
-                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi],fCurrentMCEntry,fCurrentInput ));
-
-                           if( fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
-                                                                                          < dMinTime )
-                           {
-                              iChosenDigi = iDigi;
-                              dMinTime = fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime();
-
-                              // TOF QA: monitor number of tracks leading to digi before merging them
-                              Bool_t bTrackFound = kFALSE;
-                              for( UInt_t uTrkId = 0; uTrkId < vPrevTrackIdList.size(); uTrkId++ )
-                                 if( vPrevTrackIdList[uTrkId] ==
-                                     ((CbmTofPoint*) fTofPointsColl->At(
-                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]
-                                                ))->GetTrackID() )
-                                 {
-                                    bTrackFound = kTRUE;
-                                    break;
-                                 } // If TrackId already found for this Elec. Chan in this event
-                              if( kFALSE ==  bTrackFound )
-                              {
-                                 // New track or first track
-                                 iNbTracks++;
-                                 vPrevTrackIdList.push_back(
-                                    ((CbmTofPoint*) fTofPointsColl->At(
-                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]
-                                                ))->GetTrackID() );
-                              }  // if( kFALSE ==  bTrackFound )
-                           } // if fastest digi on this side of the channel
-                        } // for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
-
-                        if(fbMonitorHistos)
-                        {
-                          // TOF QA: monitor number of tracks leading to digi before merging them
-                          fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
+                        if (0 == fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size()){
+                           LOG(ERROR)<<Form(" cannot add digiMatch for (%d,%d,%d,%d,%d) at pos  %d",
+                              iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
+                           break;
                         }
 
-                        LOG(DEBUG1)<<Form(" New Tof Digi %d %d %d %d %d %d",iSmType,iSm,iRpc,iCh,iSide,iChosenDigi)<<FairLogger::endl;
+			Int_t iDigi0=0;
 
-                        // I have to create a new digi here because of the strange way the buffers are constructed.
-                        // This digi will be deleted by CbmDaq.
-                        // The original digi will be deleted below, together with the unused digis from the buffer.
- 			            CbmTofDigi* digi = new CbmTofDigi(*(fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]));
-			            digi->SetTime(digi->GetTime()*fdDigiTimeConvFactor + fCurrentEventTime); // ns -> ps
-                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],fCurrentMCEntry,fCurrentInput ));
-			            digi->SetMatch(digiMatch);
+			LOG(DEBUG)<<Form("Now apply deadtime %f for %d digis, digi0=%d for adress 0x%08x ",
+					 fDigiBdfPar->GetDeadtime(), iNbDigis,iDigi0,fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]->GetAddress())
+				       << FairLogger::endl;
 
-                        CbmLink LP = digiMatch->GetMatchedLink();
-                        Int_t lp=LP.GetIndex();
+			digiMatch=fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]->GetMatch();
+			if( iNbDigis > 1) {
+			  Double_t fdDeadtime =  fDigiBdfPar->GetDeadtime(); 
+			  for( Int_t iDigi = 1; iDigi < iNbDigis; iDigi++) {
+			    // find Digis in deadtime of first Digi 
+			    if( ( fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime() 
+				 -fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]->GetTime() )< fdDeadtime )
+			    {    // Store Link with weight 0 to have a trace of MC tracks firing the channel
+                                 // but whose Digi is not propagated to next stage
+			      digiMatch=fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]->GetMatch();
+			      Int_t nL=(fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetMatch())->GetNofLinks();
+			      if (nL != 1) LOG(FATAL)<<"Invalid number of Links " << nL << FairLogger::endl; 
+			      
+			      CbmLink L0 = (fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetMatch())->GetLink(0);
+			      digiMatch->AddLink(CbmLink(0.,L0.GetIndex(),fCurrentMCEntry,fCurrentInput ));
 
-                        // Send digi to DAQ
-                        SendDigi(digi);
+			      // cleanup of obsolete digis, matches and links done below
+			    } else {  // new digi found 
+			      // new digi  will be created and later deleted by CbmDaq.
+			      // The original digi will be deleted below, together with the unused digis from the buffer.
+			      CbmTofDigi* digi = new CbmTofDigi(*(fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]));
+			      digi->SetTime(digi->GetTime() * fdDigiTimeConvFactor + fCurrentEventTime);  // ns->ps
+			      SendDigi(digi);                        // Send digi to DAQ
+			      fiNbDigis++;
 
-                        LOG(DEBUG1)<<"CbmTofDigitize:: TofDigiMatchColl entry "
-                             <<fTofDigiMatchPointsColl->GetEntries()
-                             <<", Poi: "<<fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]
-                             <<", lp: "<<lp
-                             <<", MCt: "<<((CbmTofPoint*) fTofPointsColl->At(lp))->GetTrackID()
-                             <<FairLogger::endl;
-
-                        if(lp != fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] )
-                          LOG(ERROR)<<Form("CbmTofDigitize::MergeSameChanDigis inconsistent links: %d <-> %d for (%d,%d,%d,%d,%d)",
-                               lp, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],
-                               iSmType,iSm,iRpc,iCh,iSide)<<FairLogger::endl;
-
+			      // TOF QA 
+			      if(fbMonitorHistos && NULL != digiMatch ){	
+				Int_t nL=digiMatch->GetNofLinks();
+				for( Int_t iL = 0; iL < nL; iL++) {
+				  // TOF QA: monitor number of tracks leading to digi before merging them
+				  CbmLink L = digiMatch->GetLink(iL);
+				  Bool_t bTrackFound = kFALSE;
+				  for( UInt_t uTrkId = 0; uTrkId < vPrevTrackIdList.size(); uTrkId++ )
+				    if( vPrevTrackIdList[uTrkId] == ((CbmTofPoint*) fTofPointsColl->At( L.GetIndex()  ))->GetTrackID() )
+				    {
+				      bTrackFound = kTRUE;
+				      break;
+				    } // If TrackId already found for this Elec. Chan in this event
+				  if( kFALSE ==  bTrackFound )
+				  {
+				    // New track or first track
+				    iNbTracks++;
+				    vPrevTrackIdList.push_back(  ((CbmTofPoint*) fTofPointsColl->At( L.GetIndex()  ))->GetTrackID() ); 
+				  }  // if( kFALSE ==  bTrackFound )
+				} // 	for( Int_t iL = 0; iL < nL; iL++
+				vPrevTrackIdList.clear();
+				// TOF QA: monitor number of tracks leading to digi before merging them
+				fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
+			      }   // if(fbMonitorHistos)
+			      
+			      iDigi0=iDigi;
+			    }
+			  }
+			} // 	if( iNbDigis > 1)  end 
+			// assemble and send last digi
+			// new digi  will be created and later deleted by CbmDaq.
+			// The original digi will be deleted below, together with the unused digis from the buffer.
+			CbmTofDigi* digi = new CbmTofDigi(*(fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi0]));
+			digi->SetTime(digi->GetTime() * fdDigiTimeConvFactor + fCurrentEventTime);  // ns->ps
+			SendDigi(digi);                        // Send digi to DAQ
                         fiNbDigis++;
+			
+                        if(fbMonitorHistos){	
+			  Int_t nL=digiMatch->GetNofLinks();
+			  for( Int_t iL = 0; iL < nL; iL++) {
+			    // TOF QA: monitor number of tracks leading to digi before merging them
+			    CbmLink L = digiMatch->GetLink(iL);
+			    Bool_t bTrackFound = kFALSE;
+			    for( UInt_t uTrkId = 0; uTrkId < vPrevTrackIdList.size(); uTrkId++ )
+			      if( vPrevTrackIdList[uTrkId] == ((CbmTofPoint*) fTofPointsColl->At( L.GetIndex()  ))->GetTrackID() )
+			      {
+				bTrackFound = kTRUE;
+				break;
+			      } // If TrackId already found for this Elec. Chan in this event
+			    if( kFALSE ==  bTrackFound )
+                            {
+			      // New track or first track
+			      iNbTracks++;
+			      vPrevTrackIdList.push_back(  ((CbmTofPoint*) fTofPointsColl->At( L.GetIndex()  ))->GetTrackID() ); 
+			    }  // if( kFALSE ==  bTrackFound )
+			  } // 	for( Int_t iL = 0; iL < nL; iL++
+			  vPrevTrackIdList.clear();
+                          // TOF QA: monitor number of tracks leading to digi before merging them
+                          fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
+                        }   // if(fbMonitorHistos)
 
                         for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++){
                            delete fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
-//                           delete fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
-                        }
+                           // delete fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
+                        } // 
+			
                         fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                         fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                      } // if( 0 < iNbDigis )
-                     vPrevTrackIdList.clear();
+		    
                   } // for each (Ch, Side) pair
             } // for each (Sm, rpc) pair
       } // for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
@@ -1852,7 +1954,7 @@ Bool_t   CbmTofDigitize::DigitizeDirectClusterSize()
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( iPntInd );
 
-		     LOG(INFO)<<Form("Digimatch (%d,%d,%d,%d): size %zu, valA %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, valA %d, MCt %d",
 				iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                   } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -4644,6 +4746,14 @@ Double_t  CbmTofDigitize::DistanceCircleToBase(
                    <<FairLogger::endl;
          return 0.0;
       } // else of if( 0.0 <= dRoot )
+}
+
+Bool_t  CbmTofDigitize::CompareTimes(CbmTofDigiExp* pDigi1, CbmTofDigiExp* pDigi2){
+  return (pDigi1->GetTime() < pDigi2->GetTime());
+}
+
+Bool_t  CbmTofDigitize::CompareTimes(CbmTofDigi* pDigi1, CbmTofDigi* pDigi2){
+  return (pDigi1->GetTime() < pDigi2->GetTime());
 }
 
 /** Now in base class
