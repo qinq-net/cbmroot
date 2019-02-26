@@ -85,15 +85,6 @@ void mcbm_digi(
   CbmDigitize* muchDigi = new CbmMuchDigitizeGem(muchParFile.Data(),muchFlag);
   run.SetDigitizer(kMuch, muchDigi);
 
-  // --- The parameter files TOF have to be added by hand
-  // --- since the TOF geometry node do not follow the naming convention.
-  // --- The geometry tag is taken from the setup sis18_mcbm_25deg_long.
-  TString tofGeoTag = "v18i_mcbm";
-  TString tofFile1 = srcDir + "/parameters/tof/tof_" + tofGeoTag + ".digi.par";
-  run.AddParameterAsciiFile(tofFile1.Data());
-  TString tofFile2 = srcDir + "/parameters/tof/tof_" + tofGeoTag + ".digibdf.par";
-  run.AddParameterAsciiFile(tofFile2.Data());
-
   run.Run(nEvents);
   // ------------------------------------------------------------------------
 
