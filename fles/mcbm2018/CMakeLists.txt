@@ -26,6 +26,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/parameter
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/monitor
+  ${CBMROOT_SOURCE_DIR}/fles/mcbm2018/tasks
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -85,11 +86,9 @@ Set(SRCS
 #   monitor/CbmMcbm2018MonitorTrd.cxx
    monitor/CbmMcbm2018MonitorTof.cxx
    monitor/CbmMcbm2018MonitorTofPulser.cxx
-)
 
-#Set(NO_DICT_SRCS
-#  unpacker/rocMess_wGet4v1.cxx
-#)
+   tasks/CbmCheckTimesorting.cxx
+)
 
 If(_UINT8_T_EXIST)
   Add_Definitions(-DHAVE_UINT8_T_HEADER_FILE)

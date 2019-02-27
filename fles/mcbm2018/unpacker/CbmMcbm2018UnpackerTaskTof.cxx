@@ -212,6 +212,11 @@ Bool_t CbmMcbm2018UnpackerTaskTof::DoUnpack(const fles::Timeslice& ts, size_t co
         fBuffer->InsertData( new CbmTofDigiExp( vDigi[ uDigi ] ) );
      }
    } else {
+     sort(vDigi.begin(), vDigi.end(), 
+        [](const CbmTofDigiExp & a, const CbmTofDigiExp & b) -> bool
+        { 
+          return a.GetTime() < b.GetTime(); 
+        });
      for( auto digi: vDigi) {
        /// FIXME: remove T0 address hardcoding!!!
        if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi.GetAddress() & 0x00000FFF ) )
