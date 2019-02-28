@@ -18,6 +18,7 @@ void registerPythiaDecays(int iDecay)
     
       FairParticle* newParticle = new FairParticle(PDG, eff.partTitle[iPall].data(), kPTHadron, mass, charge,
                                                    lifetime, "hadron", 0.0, 1, 1, 0, 1, 1, 0, 0, 1, kFALSE);
+      newParticle->Print();
       FairRunSim::Instance()->AddNewParticle(newParticle);
     }
     TString pythia6Config = gSystem->Getenv("VMCWORKDIR");
