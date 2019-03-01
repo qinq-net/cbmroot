@@ -101,9 +101,9 @@ const Double_t gdCounterXPosition[giNModuleTypes][giMaxNCountersInModule] = { { 
 const Double_t gdCounterYPosition[giNModuleTypes][giMaxNCountersInModule] = { { 0., 0. }, { 0., 0. }, {  0.,  0. }, {  0.,  0. }, {  0.,  0. }, {  0., 0. } };
 const Double_t gdCounterZPosition[giNModuleTypes][giMaxNCountersInModule] = { { 0., 0. }, { 0., 0. }, { -2.,  2. }, { -2.,  2. }, { -2.,  2. }, { 2.5, 0. } };
 
-const Double_t gdCounterXRotation[giNModuleTypes][giMaxNCountersInModule] = { { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, {   0., 0. } };
-const Double_t gdCounterYRotation[giNModuleTypes][giMaxNCountersInModule] = { { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, {   0., 0. } };
-const Double_t gdCounterZRotation[giNModuleTypes][giMaxNCountersInModule] = { { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, { -90., 0. } };
+const Double_t gdCounterXRotation[giNModuleTypes][giMaxNCountersInModule] = { { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, {  0., 0. } };
+const Double_t gdCounterYRotation[giNModuleTypes][giMaxNCountersInModule] = { { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, {  0., 0. } };
+const Double_t gdCounterZRotation[giNModuleTypes][giMaxNCountersInModule] = { { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, { 0., 0. }, { 90., 0. } };
 
 
 // placement of modules in the setup
@@ -114,9 +114,9 @@ const Double_t gdModuleXPosition[giNModuleTypes][giMaxNModulesInSetup] = { {  0.
 const Double_t gdModuleYPosition[giNModuleTypes][giMaxNModulesInSetup] = { {  0.,  0. }, {  39.7, 0. }, {  41.5, 0. }, {  44. , 0. }, {  46.5, 0. }, {  53. , 0. } };
 const Double_t gdModuleZPosition[giNModuleTypes][giMaxNModulesInSetup] = { { -3., -5. }, { 359. , 0. }, { 376. , 0. }, { 399.8, 0. }, { 423.6, 0. }, { 440.5, 0. } };
 
-const Double_t gdModuleXRotation[giNModuleTypes][giMaxNModulesInSetup] = { { 0.,   0. }, { -6.3, 0. }, { -6.3, 0. }, { -6.3, 0. }, { -6.3, 0. }, { -6.3, 0. } };
-const Double_t gdModuleYRotation[giNModuleTypes][giMaxNModulesInSetup] = { { 0.,   0. }, {  0. , 0. }, {  0. , 0. }, {  0. , 0. }, {   0., 0. }, {   0., 0. } };
-const Double_t gdModuleZRotation[giNModuleTypes][giMaxNModulesInSetup] = { { 0., -90. }, {  0. , 0. }, {  0. , 0. }, {  0. , 0. }, {   0., 0. }, {   0., 0. } };
+const Double_t gdModuleXRotation[giNModuleTypes][giMaxNModulesInSetup] = { { 0.,  0. }, { -6.3, 0. }, { -6.3, 0. }, { -6.3, 0. }, { -6.3, 0. }, { -6.3, 0. } };
+const Double_t gdModuleYRotation[giNModuleTypes][giMaxNModulesInSetup] = { { 0.,  0. }, {  0. , 0. }, {  0. , 0. }, {  0. , 0. }, {   0., 0. }, {   0., 0. } };
+const Double_t gdModuleZRotation[giNModuleTypes][giMaxNModulesInSetup] = { { 0., 90. }, {  0. , 0. }, {  0. , 0. }, {  0. , 0. }, {   0., 0. }, {   0., 0. } };
 
 const Int_t giModuleTypeIdentifier[giNModuleTypes][giMaxNModulesInSetup] =  { {5, 5}, {4, -1}, {9, -1}, {9, -1}, {9, -1}, {3, -1} };
 const Int_t giModuleIndexIdentifier[giNModuleTypes][giMaxNModulesInSetup] = { {1, 2}, {0, -1}, {0, -1}, {1, -1}, {2, -1}, {0, -1} };
