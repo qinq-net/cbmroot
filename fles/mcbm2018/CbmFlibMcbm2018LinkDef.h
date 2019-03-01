@@ -36,5 +36,5 @@
 #pragma link C++ class CbmMcbm2018MonitorTof;
 #pragma link C++ class CbmMcbm2018MonitorTofPulser;
 
-#pragma link C++ class CbmCheckTimesorting;
+#pragma link C++ class CbmCheckTiming;
 #endif

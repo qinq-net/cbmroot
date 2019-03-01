@@ -5,29 +5,32 @@
  *              GNU Lesser General Public Licence (LGPL) version 3,             *  
  *                  copied verbatim in the file "LICENSE"                       *
  ********************************************************************************/
-#ifndef CBMCHECKTIMESORTING_H
-#define CBMCHECKTIMESORTING_H
+#ifndef CBMCHECKTIMING_H
+#define CBMCHECKTIMING_H
 
 #include "FairTask.h"
 
-class TClonesArray;
+#include "TString.h"
 
-class CbmCheckTimesorting : public FairTask
+class TClonesArray;
+class TH1;
+
+class CbmCheckTiming : public FairTask
 {
   public:
 
     /** Default constructor **/
-    CbmCheckTimesorting();
+    CbmCheckTiming();
 
-    CbmCheckTimesorting(const CbmCheckTimesorting&) = delete;
-    CbmCheckTimesorting operator=(const CbmCheckTimesorting&) = delete;
+    CbmCheckTiming(const CbmCheckTiming&) = delete;
+    CbmCheckTiming operator=(const CbmCheckTiming&) = delete;
 
     /** Constructor with parameters (Optional) **/
-    //  CbmCheckTimesorting(Int_t verbose);
+    //  CbmCheckTiming(Int_t verbose);
 
 
     /** Destructor **/
-    ~CbmCheckTimesorting();
+    ~CbmCheckTiming();
 
 
     /** Initiliazation of task at the beginning of a run **/
@@ -38,7 +41,7 @@ class CbmCheckTimesorting : public FairTask
 
 
     /** Executed for each event. **/
-    virtual void Exec(Option_t* opt);
+    virtual void Exec(Option_t*);
 
     /** Load the parameter container from the runtime database **/
     virtual void SetParContainers();
@@ -46,15 +49,32 @@ class CbmCheckTimesorting : public FairTask
     /** Finish task called at the end of the run **/
     virtual void Finish();
 
+    /** Switch OFF check for correct time order of the digis **/
+    void SetCheckTimeOrder(Bool_t val = kFALSE) { fCheckTimeOrdering = val; }
+
+    /** Switch ON check for inter system offsets **/
+    void SetCheckInterSystemOffset(Bool_t val = kTRUE)
+       { fCheckInterSystemOffset = val; }
+
+    void SetOffsetSearchRange(Int_t val = 1000)
+       { fOffsetRange = val; }
+    
   private:
 
-    Int_t CheckIfSorted(TClonesArray* array, Double_t& prevTime, TString detector);
+    void CheckTimeOrder();
+    Int_t CheckIfSorted(TClonesArray*, TH1*, Double_t&, TString);
+
+    void CheckInterSystemOffset();
+    void FillSystemOffsetHistos(TClonesArray*, TH1*, const Double_t);
+    void CreateHistos();
+    void WriteHistos();
+    
 
     /** Input array from previous already existing data level **/
-    TClonesArray* fT0Digis;
-    TClonesArray* fStsDigis;
-    TClonesArray* fMuchDigis;
-    TClonesArray* fTofDigis;
+    TClonesArray* fT0Digis = nullptr;
+    TClonesArray* fStsDigis = nullptr;
+    TClonesArray* fMuchDigis = nullptr;
+    TClonesArray* fTofDigis = nullptr;
 
     // Variables to store the previous digi time
     Double_t fPrevTimeT0 = 0.;
@@ -74,11 +94,24 @@ class CbmCheckTimesorting : public FairTask
     Int_t fNrOfTofErrors = 0;
     Int_t fNrOfTofDigis = 0;
     
-    /** Output array to  new data level**/
-    //  TClonesArray* <OutputDataLevel>;
+    Bool_t fCheckTimeOrdering = kTRUE;
+    Bool_t fCheckInterSystemOffset = kTRUE;
 
+    Int_t fOffsetRange = 1000;
+    Int_t fBinWidth = 1;
 
-    ClassDef(CbmCheckTimesorting,1);
+    TH1* fT0StsDiff = nullptr;
+    TH1* fT0MuchDiff = nullptr;
+    TH1* fT0TofDiff = nullptr;
+
+    TH1* fT0T0Diff = nullptr;
+    TH1* fStsStsDiff = nullptr;
+    TH1* fMuchMuchDiff = nullptr;
+    TH1* fTofTofDiff = nullptr;
+
+    TString fOutFileName{"test.root"};
+    
+    ClassDef(CbmCheckTiming,1);
 };
 
 #endif

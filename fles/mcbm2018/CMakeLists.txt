@@ -87,7 +87,7 @@ Set(SRCS
    monitor/CbmMcbm2018MonitorTof.cxx
    monitor/CbmMcbm2018MonitorTofPulser.cxx
 
-   tasks/CbmCheckTimesorting.cxx
+   tasks/CbmCheckTiming.cxx
 )
 
 If(_UINT8_T_EXIST)
