@@ -17,7 +17,9 @@ void check_timing(Int_t nEvents = 1, TString fileName="")
   // ------------------------------------------------------------------------
 
   // -----  Analysis run   --------------------------------------------------
-  FairRunAna *fRun= new FairRunAna();
+  FairRunOnline *fRun= new FairRunOnline();
+  fRun->ActivateHttpServer( 100, 8080 ); // refresh each 100 events
+
   FairFileSource* inputSource = new FairFileSource(fileName);
   fRun->SetSource(inputSource);
 

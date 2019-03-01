@@ -11,9 +11,11 @@
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
+#include "FairRunOnline.h"
 
 #include "TClonesArray.h"
 #include "TH1.h"
+#include "THttpServer.h"
 
 #include <iomanip> 
 using std::fixed;
@@ -120,6 +122,21 @@ void CbmCheckTiming::CreateHistos()
   // Tof vs. Tof
   fTofTofDiff = new TH1F("fTofTofDiff","Tof-Tof_prev;time diff [ns];Counts",
 		       2100, -100.5, 1999.5);
+	
+  /// Register the histos in the HTTP server
+  FairRunOnline* run = FairRunOnline::Instance();
+  if (run) {
+    THttpServer* server = run->GetHttpServer();
+    if( nullptr != server ) {
+      server->Register("CheckTiming", fT0StsDiff);
+      server->Register("CheckTiming", fT0MuchDiff);
+      server->Register("CheckTiming", fT0TofDiff);
+      server->Register("CheckTiming", fT0T0Diff);
+      server->Register("CheckTiming", fStsStsDiff);
+      server->Register("CheckTiming", fMuchMuchDiff);
+      server->Register("CheckTiming", fTofTofDiff);
+    }
+  }
 }  
 // ---- ReInit  -------------------------------------------------------
 InitStatus CbmCheckTiming::ReInit()
