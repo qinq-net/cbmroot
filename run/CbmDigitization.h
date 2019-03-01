@@ -61,7 +61,7 @@ class CbmDigitization : public TNamed
 
     /** @brief Add an ASCII parameter file
      ** @param fileName  Name of parameter file
-     ** @value kTRUE is file is found
+     ** @return kTRUE is file is found
      **
      ** All ASCII parameter files will be concatenated and used
      ** as second input to the runtime database.
@@ -82,8 +82,13 @@ class CbmDigitization : public TNamed
     /** @brief Enable resource monitoring (default is kTRUE)
      ** @param choice If kTRUE, resources will be monitored
      **/
+    // TODO: With FairRoot 18.0.5, usage of FairMonitor will lead
+    // to a segmentation fault. It is thus disabled until this issue
+    // is fixed in FairRoot.
     void EnableMonitor(Bool_t choice = kTRUE) {
-      fMonitor = choice;
+      LOG(WARNING) << GetName() << ": Usage of FairMonitor is disabled "
+          << " because of malfunctioning in FairRoot." << FairLogger::endl;
+      //fMonitor = choice;
     }
 
 
@@ -224,7 +229,7 @@ class CbmDigitization : public TNamed
 
 
     /** @brief Check the presence of input branches.
-     ** @value Number of required branches (MCPoint) found in the tree.
+     ** @return Number of required branches (MCPoint) found in the tree.
      **
      ** The branch list is searched for the input branches (MCPoint)
      ** required by the digitizers. For each present input branch,
@@ -235,7 +240,7 @@ class CbmDigitization : public TNamed
 
 
     /** @brief Instantiate the default digitisers for the active systems
-     ** @value Number of instantiated digitisers
+     ** @return Number of instantiated digitisers
      **
      ** For systems not having explicitly defined their digitizers,
      ** the default digitisers are instantiated.
@@ -246,7 +251,7 @@ class CbmDigitization : public TNamed
     /** @brief Get the geometry tag of a system from a TGeoManager
      ** @param system  Detector system (ECbmModuleId)
      ** @param geo     Pointer to TGeoManager
-     ** @value Geometry tag
+     ** @return Geometry tag
      **
      ** The implementation assumes that the top-level volume name of each
      ** system in the geometry contains the geometry tag in the form of

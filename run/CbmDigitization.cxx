@@ -41,7 +41,7 @@ CbmDigitization::CbmDigitization() :
   fParAsciiFiles(),
   fOverwriteOutput(kFALSE),
   fGenerateRunInfo(kTRUE),
-  fMonitor(kTRUE),
+  fMonitor(kFALSE),
   fRun(0)
 {
   SetDefaultBranches();

@@ -56,9 +56,11 @@ void run_reco_tb_digi(TString dataSet = "test", Int_t nSlices = -1)
   run->SetGenerateRunInfo(kTRUE);
 
   // Define output file for FairMonitor histograms
+  /*
   TString monitorFile{outFile};
   monitorFile.ReplaceAll("rec","rec.monitor");
   FairMonitor::GetMonitor()->EnableMonitor(kTRUE, monitorFile);
+  */
   // ------------------------------------------------------------------------
 
 
