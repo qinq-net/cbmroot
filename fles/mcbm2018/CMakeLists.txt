@@ -82,7 +82,7 @@ Set(SRCS
    monitor/CbmMcbm2018MonitorStsSync.cxx
 #   monitor/CbmMcbm2018MonitorStsPulser.cxx
    monitor/CbmMcbm2018MonitorSts.cxx
-#   monitor/CbmMcbm2018MonitorMuch.cxx
+   monitor/CbmMcbm2018MonitorMuch.cxx
 #   monitor/CbmMcbm2018MonitorTrd.cxx
    monitor/CbmMcbm2018MonitorTof.cxx
    monitor/CbmMcbm2018MonitorTofPulser.cxx

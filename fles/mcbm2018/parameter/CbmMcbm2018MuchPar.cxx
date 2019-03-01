@@ -24,10 +24,14 @@ CbmMcbm2018MuchPar::CbmMcbm2018MuchPar(const char* name,
    fuNrOfDpbs( 0 ),
    fiDbpIdArray(),
    fiCrobActiveFlag(),
-   //fnFebsIdsArray(),
+   fuFebsInGemA(0),
+   fnFebsIdsArrayGemA(),   
+   fuFebsInGemB(0),
+   fnFebsIdsArrayGemB(),
    fChannelsToPadX(),
-   fChannelsToPadY()
-
+   fChannelsToPadY(),
+   fRealX(),
+   fRealPadSize()
 {
   detName="Much";
 }
@@ -59,10 +63,14 @@ void CbmMcbm2018MuchPar::putParams(FairParamList* l)
    l->add("NrOfDpbs",       fuNrOfDpbs );
    l->add("DbpIdArray",     fiDbpIdArray );
    l->add("CrobActiveFlag", fiCrobActiveFlag);
-   //l->add("nFebsIdsArray",  fnFebsIdsArray);
+   l->add("NrOfFebsInGemA", fuFebsInGemA);
+   l->add("nFebsIdsArrayA", fnFebsIdsArrayGemA);
+   l->add("NrOfFebsInGemB", fuFebsInGemB);
+   l->add("nFebsIdsArrayB", fnFebsIdsArrayGemB);
    l->add("ChannelsToPadX", fChannelsToPadX);
    l->add("ChannelsToPadY", fChannelsToPadY);
- 
+   l->add("RealX",          fRealX);
+   l->add("PadSize",        fRealPadSize);
 }
 
 // -------------------------------------------------------------------------
@@ -79,16 +87,29 @@ Bool_t CbmMcbm2018MuchPar::getParams(FairParamList* l) {
    fiCrobActiveFlag.Set( fuNrOfDpbs * kuNbCrobsPerDpb );
    if ( ! l->fill("CrobActiveFlag", &fiCrobActiveFlag ) ) return kFALSE;
 
-/*   fnFebsIdsArray.Set(GetNrOfFebs());
-   if ( ! l->fill("nFebsIdsArray", &fnFebsIdsArray) ) return kFALSE;
-*/  
+   if ( ! l->fill("NrOfFebsInGemA", &fuFebsInGemA ) ) return kFALSE;
+
+   fnFebsIdsArrayGemA.Set(GetNrOfFebsInGemA());
+   if ( ! l->fill("nFebsIdsArrayA", &fnFebsIdsArrayGemA) ) return kFALSE;
+
+   if ( ! l->fill("NrOfFebsInGemB", &fuFebsInGemB ) ) return kFALSE;
+
+   fnFebsIdsArrayGemB.Set(GetNrOfFebsInGemB());
+   if ( ! l->fill("nFebsIdsArrayB", &fnFebsIdsArrayGemB) ) return kFALSE;
+ 
    fChannelsToPadX.Set(GetNrOfFebs()*kuNbChanPerAsic);
    if ( ! l->fill("ChannelsToPadX", &fChannelsToPadX) ) return kFALSE;
   
    fChannelsToPadY.Set(GetNrOfFebs()*kuNbChanPerAsic);
    if ( ! l->fill("ChannelsToPadY", &fChannelsToPadY) ) return kFALSE;
 
-  return kTRUE;
+   fRealX.Set(97); // Number of Sectors in one GEM Module
+   if ( ! l->fill("RealX", &fRealX) ) return kFALSE;
+  
+   fRealPadSize.Set(97); // Number of Sectors in one GEM Module
+   if ( ! l->fill("PadSize", &fRealPadSize) ) return kFALSE;
+     
+   return kTRUE;
 }
 // -------------------------------------------------------------------------
 Int_t CbmMcbm2018MuchPar::ElinkIdxToFebIdx( UInt_t uElink )
@@ -219,6 +240,7 @@ Short_t CbmMcbm2018MuchPar::GetPadX(Short_t febid, Short_t channelid)
 }
 Short_t CbmMcbm2018MuchPar::GetPadY(Short_t febid, Short_t channelid)
 {
+//LOG(INFO)<<" fChannelsToPadY.GetSize() "<<fChannelsToPadY.GetSize()<<" fChannelsToPadX.GetSize() "<<fChannelsToPadX.GetSize()<< FairLogger::endl; 
   if( fChannelsToPadY.GetSize() <= (febid*kuNbChanPerAsic)+channelid )
   {
       LOG(DEBUG) << "CbmMcbm2018MuchPar::GetPadY => Index out of bounds: " 
@@ -231,5 +253,48 @@ Short_t CbmMcbm2018MuchPar::GetPadY(Short_t febid, Short_t channelid)
    return fChannelsToPadY[(febid*kuNbChanPerAsic)+channelid];
 }
 
+
+UInt_t CbmMcbm2018MuchPar::GetFebId(Int_t uAsicIdx)
+{
+//LOG(INFO)<<" fnFebsIdsArrayGemA.GetSize() "<<fnFebsIdsArrayGemA.GetSize()<<" fnFebsIdsArrayGemB.GetSize()"<<fnFebsIdsArrayGemB.GetSize()<<FairLogger::endl; 
+   if(uAsicIdx >= fnFebsIdsArrayGemA.GetSize())
+   {return fnFebsIdsArrayGemB[uAsicIdx%fnFebsIdsArrayGemA.GetSize()];}
+   else return fnFebsIdsArrayGemA[uAsicIdx];
+}
+
+UInt_t CbmMcbm2018MuchPar::GetModule(Int_t uAsicIdx)
+{
+   if(uAsicIdx >= fnFebsIdsArrayGemA.GetSize())
+   {return 1;}
+   else return 0;
+}
+
+Double_t CbmMcbm2018MuchPar::GetRealX(Int_t SectorIndex)
+{
+	
+  //LOG(INFO)<<" fChannelsToPadX.GetSize() "<<fChannelsToPadX.GetSize()<< FairLogger::endl; 
+  if( SectorIndex <= 97 )
+  {
+      LOG(DEBUG) << "CbmMcbm2018MuchPar::GetRealX => Index out of bounds: " 
+                 << FairLogger::endl;
+    return -2;
+  } // if( fChannelsToPadY.GetSize () <= (febid*kuNbChanPerAsic)+channelid )
+   
+   return fRealX[SectorIndex];
+}
+
+Double_t CbmMcbm2018MuchPar::GetRealPadSize(Int_t SectorIndex)
+{
+	
+  //LOG(INFO)<<" fChannelsToPadX.GetSize() "<<fChannelsToPadX.GetSize()<< FairLogger::endl; 
+  if( SectorIndex <= 97 )
+  {
+      LOG(DEBUG) << "CbmMcbm2018MuchPar::GetRealX => Index out of bounds: " 
+                 << FairLogger::endl;
+    return -2;
+  } // if( fChannelsToPadY.GetSize () <= (febid*kuNbChanPerAsic)+channelid )
+   
+   return fRealPadSize[SectorIndex];
+}
 
 ClassImp(CbmMcbm2018MuchPar)

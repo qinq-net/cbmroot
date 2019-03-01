@@ -81,7 +81,7 @@ public:
    void SetMuchMode( Bool_t bMuchMode = kTRUE ) { fbMuchMode = bMuchMode; }
 
 //   void SetTimeBin( size_t uTimeBin );
-
+   void UseDaqBuffer(Bool_t) {}; //Virtual function in Mother Class, Need to update accordingly. VS
 private:
    // Parameters
       // Control flags
@@ -187,6 +187,10 @@ private:
 
       /// Plots per FEB-8
 //   UInt_t   kuNbAsicPerFeb = 8;
+
+   std::vector<TH2 *>  fHistPadDistr;
+   std::vector<TH2 *>  fRealHistPadDistr;
+
    Double_t fdFebChanCoincidenceLimit; // ns
    std::vector<TH1 *>     fhStsFebChanCntRaw;
    std::vector<TH1 *>     fhStsFebChanCntRawGood;

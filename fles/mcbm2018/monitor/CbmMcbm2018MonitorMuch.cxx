@@ -130,6 +130,8 @@ CbmMcbm2018MonitorMuch::CbmMcbm2018MonitorMuch() :
    fhStsFebChanAdcCal(),
    fhStsFebChanAdcCalProf(),
    fhStsFebChanRawTs(),
+   fHistPadDistr(),
+   fRealHistPadDistr(),
    fhStsFebChanMissEvt(),
    fhStsFebChanMissEvtEvo(),
    fhStsFebAsicMissEvtEvo(),
@@ -509,6 +511,26 @@ void CbmMcbm2018MonitorMuch::CreateHistograms()
    fhStsMessType->GetYaxis()->SetBinLabel(1 + stsxyter::MessType::Ack,         "Ack");
 */
 
+
+   for( UInt_t uModuleId = 0; uModuleId < 2; ++uModuleId )
+   {
+      /// Raw Ts Distribution
+      sHistName = Form( "HistPadDistr_Module_%01u", uModuleId );
+      title = Form( "Pad distribution for, Module #%01u; ", uModuleId );
+     
+      //Below for Rectangular Module shape VS
+      fHistPadDistr.push_back( new TH2I(sHistName, title,
+                                 23, -0.5, 22.5,
+                                 97, -0.5, 96.5 ) );
+
+      sHistName = Form( "RealHistPadDistr_Module_%01u", uModuleId );
+      title = Form( "Progressive Pad distribution for, Module #%01u; ", uModuleId );
+      //Below for Progressive Geometry Module shape VS
+      fRealHistPadDistr.push_back( new TH2D(sHistName, title,
+                                500,-0.5,499.5,   
+			        1000, -0.5, 999.5) );
+   }
+
    sHistName = "hRate";
    title = "Rate in kHz";
    fhRate = new TH1I(sHistName, title, 10000, -0.5, 9999.5);
@@ -835,6 +857,12 @@ void CbmMcbm2018MonitorMuch::CreateHistograms()
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
    if( server )
    {
+     for( UInt_t uModuleId = 0; uModuleId < 2; ++uModuleId )
+     {
+      server->Register("/StsRaw", fHistPadDistr[uModuleId] );
+      server->Register("/StsRaw", fRealHistPadDistr[uModuleId] );
+     }
+
       server->Register("/StsRaw", fhRate );
       server->Register("/StsRaw", fhRateAdcCut );
       server->Register("/StsRaw", fhStsMessType );
@@ -1536,10 +1564,22 @@ void CbmMcbm2018MonitorMuch::FillHitInfo( stsxyter::Message mess, const UShort_t
    fhStsChanRawTs[   uAsicIdx ]->Fill( usChan, usRawTs );
    fhStsChanMissEvt[ uAsicIdx ]->Fill( usChan, mess.IsHitMissedEvts() );
 */
-   UInt_t uCrobIdx   = usElinkIdx / fUnpackParMuch->GetNbElinkPerCrob();
+   //LOG(INFO) <<" uAsicIdx "<<uAsicIdx<<" usChan "<<usChan<<FairLogger::endl;
+   Int_t FebId = fUnpackParMuch->GetFebId(uAsicIdx);
+
    UInt_t uFebIdx    = uAsicIdx / fUnpackParMuch->GetNbAsicsPerFeb();
+   UInt_t uCrobIdx   = usElinkIdx / fUnpackParMuch->GetNbElinkPerCrob();
    UInt_t uAsicInFeb = uAsicIdx % fUnpackParMuch->GetNbAsicsPerFeb();
    UInt_t uChanInFeb = usChan + fUnpackParMuch->GetNbChanPerAsic() * (uAsicIdx % fUnpackParMuch->GetNbAsicsPerFeb());
+   Int_t sector  = fUnpackParMuch->GetPadX(FebId, usChan);
+   Int_t channel = fUnpackParMuch->GetPadY(FebId, usChan);
+   //Convert into Real X Y Position
+   Double_t ActualX = (fUnpackParMuch->GetRealPadSize(channel)*sector);
+   Double_t ActualY = fUnpackParMuch->GetRealX(channel);
+   //LOG(INFO) <<" sector "<<sector<<" channel "<<channel<<" FebId "<<FebId<<" usChan "<<usChan<<FairLogger::endl;
+   Int_t ModuleNr = fUnpackParMuch->GetModule(uAsicIdx);
+   fHistPadDistr[ModuleNr]->Fill(sector, channel);
+   fRealHistPadDistr[ModuleNr]->Fill(ActualY, ActualX);
 
    //LOG(INFO) <<" usElinkIdx "<<usElinkIdx<<" uAsicIdx "<<uAsicIdx<<" uMsIdx "<<uMsIdx<<" uCrobIdx "<<uCrobIdx<<" uFebIdx "<<uFebIdx<<" uAsicInFeb "<<uAsicInFeb<<" uChanInFeb "<<uChanInFeb<<" usChan "<<usChan<< FairLogger::endl; 
 
@@ -1780,6 +1820,11 @@ void CbmMcbm2018MonitorMuch::SaveAllHistos( TString sFileName )
    gDirectory->mkdir("Sts_Raw");
    gDirectory->cd("Sts_Raw");
 
+   for( UInt_t uModuleId = 0; uModuleId < 2; ++uModuleId )
+   {
+   fHistPadDistr[uModuleId]->Write();
+   fRealHistPadDistr[uModuleId]->Write();
+   }
    fhRate->Write();
    fhRateAdcCut->Write();
    fhStsMessType->Write();
@@ -1887,6 +1932,12 @@ void CbmMcbm2018MonitorMuch::SaveAllHistos( TString sFileName )
 void CbmMcbm2018MonitorMuch::ResetAllHistos()
 {
    LOG(INFO) << "Reseting all STS histograms." << FairLogger::endl;
+
+   for( UInt_t uModuleId = 0; uModuleId < 2; ++uModuleId )
+   {
+   fHistPadDistr[uModuleId]->Reset();
+   fRealHistPadDistr[uModuleId]->Reset();
+   }
 
    fhRate->Reset();
    fhRateAdcCut->Reset();

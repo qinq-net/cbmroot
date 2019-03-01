@@ -64,12 +64,18 @@ class CbmMcbm2018MuchPar : public FairParGenericSet
    UInt_t GetNrOfFebs()       { return GetNrOfCrobs() * kuNbFebsPerCrob; }
    UInt_t GetNrOfAsics()      { return GetNrOfFebs()  * kuNbAsicsPerFeb; }
    //inline Int_t GetFebsIdsFromArray(Int_t i) { return fnFebsIdsArray[i]; }
-
+   UInt_t GetNrOfFebsInGemA() {return fuFebsInGemA; }
+   UInt_t GetNrOfFebsInGemB() {return fuFebsInGemB; }
    Int_t GetNrOfChannels() {return kuNbChanPerAsic;}
+
+   UInt_t GetFebId(Int_t); 
+   UInt_t GetModule(Int_t); 
+
 
    Short_t GetPadX(Short_t febid, Short_t channelid);
    Short_t GetPadY(Short_t febid, Short_t channelid);
-
+   Double_t GetRealX(Int_t );
+   Double_t GetRealPadSize(Int_t );
    Bool_t IsCrobActive( UInt_t uDpbIdx, UInt_t uCrobIdx );
    Bool_t IsFebActive( UInt_t uFebInSystIdx );
    Bool_t IsFebActive( UInt_t uDpbIdx, UInt_t uCrobIdx, UInt_t uFebIdx );
@@ -130,9 +136,14 @@ class CbmMcbm2018MuchPar : public FairParGenericSet
    UInt_t  fuNrOfDpbs;       // Total number of MUCH DPBs in system
    TArrayI fiDbpIdArray;     // Array to hold the unique IDs (equipment ID) for all MUCH DPBs
    TArrayI fiCrobActiveFlag; // Array to hold the active flag for all CROBs, [ NbDpb * kuNbCrobPerDpb ]
-   //TArrayI fnFebsIdsArray; // Array to hold FEB IDs connected to 1 nDPB
+   UInt_t  fuFebsInGemA;     // Number of FEBs connected in GEM Module A
+   UInt_t  fuFebsInGemB;     // Number of FEBs connected in GEM Module B
+   TArrayI fnFebsIdsArrayGemA; // Array to hold FEB IDs connected to GEM Module A 
+   TArrayI fnFebsIdsArrayGemB; // Array to hold FEB IDs connected to GEM Module B
    TArrayI fChannelsToPadX; // Array which stores the corresponding x position of PAD of entire module A 
    TArrayI fChannelsToPadY; // Array which stores the corresponding y position of PAD of entire module A
+   TArrayD fRealX;          // Array which stores the Real X (starting 18.733 cm) position of PAD
+   TArrayD fRealPadSize;    // Array which stores the Real Progressive size of each padX (starting .327 cm )
 
   ClassDef(CbmMcbm2018MuchPar,1);
 };
