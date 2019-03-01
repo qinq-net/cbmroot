@@ -3,35 +3,59 @@
 
 #include "TNamed.h"
 
+#include <vector>
+
 class TTrbHeader : public TNamed
 {
  public:
 
   TTrbHeader();
 
-  virtual ~TTrbHeader();
+  virtual ~TTrbHeader() {};
 
-  inline void SetTriggerPattern(UInt_t iVal) { fiTriggerPattern = iVal;}
-  inline void SetTriggerType(UInt_t iVal)    { fiTriggerType = iVal;}
-  inline void SetTimeInSpill(Double_t dVal)    { fdTimeInSpill = dVal;}
+  virtual void Clear(Option_t *option ="");
+
+  void SetTriggerPattern(UInt_t uVal) {fuTriggerPattern = uVal;}
+  void SetTriggerType(UInt_t uVal) {fuTriggerType = uVal;}
+  void SetTimeInSpill(Double_t dVal) {fdTimeInSpill = dVal;}
   void SetTimeInRun(Double_t dVal) {fdTimeInRun = dVal;}
   void SetSpillIndex(Int_t iVal) {fiSpillIndex = iVal;}
+  void SetEventDAQDate(UInt_t uVal) {fuEventDAQDate = uVal;}
+  void SetEventDAQTime(UInt_t uVal) {fuEventDAQTime = uVal;}
+  void SetTriggerIndex(Int_t iVal) {fiTriggerIndex = iVal;}
+  void SetCTSBusyTime(Double_t dVal) {fdCTSBusyTime = dVal;}
+  void SetCTSIdleTime(Double_t dVal) {fdCTSIdleTime = dVal;}
+  void SetSubeventSizes(const std::vector<UShort_t>& vuVal);
 
-  inline UInt_t GetTriggerPattern() { return fiTriggerPattern;}
-  inline UInt_t GetTriggerType()    { return fiTriggerType;}
-  inline Double_t GetTimeInSpill()    { return fdTimeInSpill;}
-  Double_t GetTimeInRun() {return fdTimeInRun;}
-  Int_t GetSpillIndex() {return fiSpillIndex;}
+  UInt_t GetTriggerPattern() const {return fuTriggerPattern;}
+  UInt_t GetTriggerType() const {return fuTriggerType;}
+  Double_t GetTimeInSpill() const {return fdTimeInSpill;}
+  Double_t GetTimeInRun() const {return fdTimeInRun;}
+  Int_t GetSpillIndex() const {return fiSpillIndex;}
+  UInt_t GetEventDAQDate() const {return fuEventDAQDate;}
+  UInt_t GetEventDAQTime() const {return fuEventDAQTime;}
+  Int_t GetTriggerIndex() const {return fiTriggerIndex;}
+  Double_t GetCTSBusyTime() const {return fdCTSBusyTime;}
+  Double_t GetCTSIdleTime() const {return fdCTSIdleTime;}
+  UShort_t GetSubeventSize(Int_t iSubevent) const;
+  Int_t GetNSubevents() const;
 
   Bool_t TriggerFired(Int_t iTrg);
 
  private:
-  UInt_t fiTriggerPattern; 
-  UInt_t fiTriggerType;
+  UInt_t fuTriggerPattern; 
+  UInt_t fuTriggerType;
   Double_t fdTimeInSpill; // in [s]
   Double_t fdTimeInRun; // in [s]
   Int_t fiSpillIndex;
+  UInt_t fuEventDAQDate;
+  UInt_t fuEventDAQTime;
+  Int_t fiTriggerIndex;
+  Double_t fdCTSBusyTime; // in [us]
+  Double_t fdCTSIdleTime; // in [us]
 
-  ClassDef(TTrbHeader, 2)
+  std::vector<UShort_t> fuSubeventSizes; // in bytes
+
+  ClassDef(TTrbHeader, 3)
 };
 #endif

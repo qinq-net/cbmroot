@@ -78,6 +78,7 @@ void apply_calib(Long64_t nEvents = 100000000, TString cFileId = "CbmTofSps_01De
   TMbsMappingTof* tofMapping = new TMbsMappingTof("Tof Mapping");
   tofMapping->SetSaveDigis(kTRUE);
   tofMapping->SetFillHistogramms(kFALSE);
+//  tofMapping->SetDuplicatePadDigis(kFALSE);
 
   CbmTofOnlineDisplay* display = new CbmTofOnlineDisplay();
   display->MonitorTdcOccupancy(kFALSE);
@@ -104,6 +105,11 @@ void apply_calib(Long64_t nEvents = 100000000, TString cFileId = "CbmTofSps_01De
 
   cout << "Starting run" << endl;
   run->Run(0, nEvents);
+
+  if(tofTrbDataUnpacker->IsGoodEventInBuffer())
+  {
+    FairRootManager::Instance()->SetLastFill(kTRUE);
+  }
 
   cout << "Finishing run" << endl;
   run->Finish();

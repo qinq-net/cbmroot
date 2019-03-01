@@ -98,6 +98,11 @@ void create_calib(Long64_t nEvents = 100000000, TString cFileId="CbmTofSps_01Dec
   cout << "Starting run" << endl;
   run->Run(0, nEvents);
 
+  if(tofTrbDataUnpacker->IsGoodEventInBuffer())
+  {
+    FairRootManager::Instance()->SetLastFill(kTRUE);
+  }
+
   cout << "Finishing run" << endl;
   run->Finish();
 

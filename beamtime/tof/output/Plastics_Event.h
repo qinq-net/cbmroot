@@ -41,7 +41,7 @@ class Plastics_Hit: public TObject {
         dTimeRight(src.dTimeRight), dTotRight(src.dTotRight) {}
         */
 
-     ClassDef(Plastics_Hit, 1)
+     ClassDef(Plastics_Hit, 2)
 };
 
 class Plastics_Event : public TObject {
@@ -64,7 +64,7 @@ class Plastics_Event : public TObject {
       UInt_t                     fuEventNumber;
       Bool_t                     fbMultiEdgesPresent;
 
-   ClassDef(Plastics_Event,1)
+   ClassDef(Plastics_Event,2)
 };
 
 #endif //PLASTICS_EVENT_H

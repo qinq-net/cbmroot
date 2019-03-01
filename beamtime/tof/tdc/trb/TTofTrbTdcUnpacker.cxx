@@ -130,6 +130,7 @@ Int_t TTofTrbTdcUnpacker::ProcessData( hadaq::RawSubevent* tSubevent, UInt_t uSt
   UInt_t uTdcAddress = uTdcData & 0xffff;
   UInt_t uNbTdcDataWords = (uTdcData >> 16) & 0xffff;
   Int_t iTdcBoardIndex = fParUnpack->GetActiveTrbTdcIndex( uTdcAddress );
+  Bool_t bUnpackData = fParUnpack->UnpackTrbTdcAddress(uTdcAddress);
 
   TTofTrbTdcBoard* tTrbTdcBoard = (TTofTrbTdcBoard*) fTrbTdcBoardCollection->ConstructedAt( iTdcBoardIndex );
   tTrbTdcBoard->SetInvalid();
@@ -157,11 +158,12 @@ Int_t TTofTrbTdcUnpacker::ProcessData( hadaq::RawSubevent* tSubevent, UInt_t uSt
     {
       if ( tTrbTdcMessage.isHeaderMsg() )
       {
-        if( tTrbTdcMessage.getHeaderErr() )
+        if( tTrbTdcMessage.getHeaderErr() & 0x1 )
         {
           tTrbTdcBoard->SetChannelBufferIssue();
           fmRingBufferOverflow[iTdcBoardIndex] = kTRUE;
 
+//          LOG(ERROR)<<Form("TDC 0x%.4x: At least one channel ring buffer has been overwritten.",uTdcAddress)<<FairLogger::endl;
 //          LOG(ERROR)<<Form("TDC 0x%.4x: At least one channel ring buffer has been overwritten. Skip this TDC subsubevent!",uTdcAddress)<<FairLogger::endl;
 //          return trbtdc::process_RingBufferOverwrite;
         }
@@ -303,8 +305,11 @@ Int_t TTofTrbTdcUnpacker::ProcessData( hadaq::RawSubevent* tSubevent, UInt_t uSt
             uFinalChNumber = 2*uFinalChNumber + ( trbtdc::edge_Rising == uChEdge ? 0 : 1 );
           }
 
-          TTofTrbTdcData tValidHit( uFinalChNumber, uChFineTime, uChCoarseTime, 0, uChEdge, uChEpoch, uChFullCoarseTime );
-          tTrbTdcBoard->AddData( tValidHit );
+          if(bUnpackData)
+          {
+            TTofTrbTdcData tValidHit( uFinalChNumber, uChFineTime, uChCoarseTime, 0, uChEdge, uChEpoch, uChFullCoarseTime );
+            tTrbTdcBoard->AddData( tValidHit );
+          }
           fiAcceptedHits++;
           continue;
        
@@ -403,8 +408,11 @@ Int_t TTofTrbTdcUnpacker::ProcessData( hadaq::RawSubevent* tSubevent, UInt_t uSt
             uFinalChNumber = 2*uFinalChNumber + ( trbtdc::edge_Rising == uChEdge ? 0 : 1 );
           }
 
-          TTofTrbTdcData tValidHit( uFinalChNumber, uChFineTime, uChCoarseTime, 0, uChEdge, uChEpoch, uChFullCoarseTime );
-          tTrbTdcBoard->AddData( tValidHit );
+          if(bUnpackData)
+          {
+            TTofTrbTdcData tValidHit( uFinalChNumber, uChFineTime, uChCoarseTime, 0, uChEdge, uChEpoch, uChFullCoarseTime );
+            tTrbTdcBoard->AddData( tValidHit );
+          }
           fiAcceptedHits++;
           continue;
 

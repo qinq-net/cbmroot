@@ -41,6 +41,7 @@ CbmTofOnlineDisplay::CbmTofOnlineDisplay()
    fbMonitorSebStatus(kFALSE),
    fSebSizeMonitor(NULL),
    fSebStatusMonitor(NULL),
+   fSebDataRateMonitor(NULL),
    fbMonitorTdcStatus(kFALSE),
    fTdcSizeMonitor(NULL),
    fTdcStatusMonitor(NULL),
@@ -559,6 +560,24 @@ InitStatus CbmTofOnlineDisplay::Init()
 	    LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
 	  }
     }
+
+	fSebDataRateMonitor = new TCanvas("tCanvasSebDataRate","TRB subevent data rate",1080,36,500,100);
+	fSebDataRateMonitor->Divide(8,(fNumberOfSEB % 8 ? fNumberOfSEB/8+1 : fNumberOfSEB/8));
+
+	for(Int_t iCh=0; iCh<fNumberOfSEB; iCh++){
+      fSebDataRateMonitor->cd(iCh+1);
+	  gROOT->cd();
+	  TString hname=Form("tof_trb_rate_subevent_%03d",iCh);
+	  h2=(TH2 *)gROOT->FindObjectAny(hname);
+	  if (h2!=NULL) {
+      TProfile* tProfile = h2->ProfileX();
+	    h2->Draw("");
+	    gPad->SetFillColor(0);
+	    gStyle->SetLabelSize(lsize);
+	  } else {
+	    LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+	  }
+    }
   }
 
   if( fbMonitorTdcStatus )
@@ -987,6 +1006,15 @@ void CbmTofOnlineDisplay::Exec(Option_t* /*option*/)
 
        fSebStatusMonitor->Modified();
        fSebStatusMonitor->Update();
+
+       for(Int_t iCh=0; iCh<fNumberOfSEB; iCh++){
+    	 fSebDataRateMonitor->cd(iCh+1);
+         gPad->Modified();
+         gPad->Update();
+       }
+
+       fSebDataRateMonitor->Modified();
+       fSebDataRateMonitor->Update();
      }
 
      if( fbMonitorTdcStatus )
@@ -1381,6 +1409,7 @@ void CbmTofOnlineDisplay::Finish()
   {
     fSebSizeMonitor->Update();
     fSebStatusMonitor->Update();
+    fSebDataRateMonitor->Update();
   }
   if( fbMonitorTdcStatus )
   {

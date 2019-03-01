@@ -95,6 +95,7 @@ class CbmTofOnlineDisplay : public FairTask
     Bool_t   fbMonitorSebStatus;
     TCanvas* fSebSizeMonitor; //!
     TCanvas* fSebStatusMonitor; //!
+    TCanvas* fSebDataRateMonitor; //!
 
     Bool_t   fbMonitorTdcStatus;
     TCanvas* fTdcSizeMonitor; //!

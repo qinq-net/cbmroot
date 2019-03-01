@@ -54,10 +54,12 @@ TMbsUnpackTofPar::TMbsUnpackTofPar() :
     fMapTrbSebIndexToTrbSebAddr(),
     fMapFpgaAddrToActiveTdcIndex(),
     fMapActiveTdcIndexToFpgaAddr(),
+    fActiveTrbTdcAddrToUnpackFlag(),
+    fActiveTrbTdcIndexToUnpackFlag(),
     fiTriggerRejection(0),
-	 fuNbCtsTrigChs(0),
+    fuNbCtsTrigChs(0),
     fiCtsTriggerMap(),
-	 fiTrbTdcBitMode(0)
+    fiTrbTdcBitMode(0)
 {
 }
 
@@ -96,10 +98,12 @@ TMbsUnpackTofPar::TMbsUnpackTofPar(const char* name,
     fMapTrbSebIndexToTrbSebAddr(),
     fMapFpgaAddrToActiveTdcIndex(),
     fMapActiveTdcIndexToFpgaAddr(),
+    fActiveTrbTdcAddrToUnpackFlag(),
+    fActiveTrbTdcIndexToUnpackFlag(),
     fiTriggerRejection(0),
-	 fuNbCtsTrigChs(0),
+    fuNbCtsTrigChs(0),
     fiCtsTriggerMap(),
-	 fiTrbTdcBitMode(0)
+    fiTrbTdcBitMode(0)
 {
 }
 
@@ -921,7 +925,7 @@ UInt_t TMbsUnpackTofPar::GetInDataFpgaNbPerTrbSeb( UInt_t uTrbNetAddress )
   }
 }
 
-UInt_t TMbsUnpackTofPar::GetActiveTdcNbPerTrbSep( UInt_t uTrbNetAddress )
+UInt_t TMbsUnpackTofPar::GetUnpackTdcNbPerTrbSeb( UInt_t uTrbNetAddress )
 {
   UInt_t uActiveTdcNb = 0;
 
@@ -1015,10 +1019,10 @@ void TMbsUnpackTofPar::FillTrbMaps()
 
        if( tofMbs::trb == iBoardType/10 )
        {
-         Bool_t bUnpackTdc = (Bool_t)fiNonVmeMapping[ uBoard*tofMbs::kuNbFieldsMapping + tofMbs::Active ];
+         Bool_t bFpgaInData = (Bool_t)fiNonVmeMapping[ uBoard*tofMbs::kuNbFieldsMapping + tofMbs::Active ];
          UInt_t uFpgaAddr = (UInt_t)fiNonVmeMapping[ uBoard*tofMbs::kuNbFieldsMapping + tofMbs::Address ];
          UInt_t uSebAddr = (UInt_t)fiNonVmeMapping[ uBoard*tofMbs::kuNbFieldsMapping + tofMbs::TokenA ];
-         Bool_t bFpgaInData = (Bool_t)fiNonVmeMapping[ uBoard*tofMbs::kuNbFieldsMapping + tofMbs::TokenB ];
+         Bool_t bUnpackTdc = (Bool_t)fiNonVmeMapping[ uBoard*tofMbs::kuNbFieldsMapping + tofMbs::TokenB ];
 
          if( 0 < fMapFpgaAddrToInDataFlag.count(uFpgaAddr) )
          {
@@ -1046,21 +1050,26 @@ void TMbsUnpackTofPar::FillTrbMaps()
              iTrbSebIndex++;
            }
 
-           if( ( tofMbs::trbtdc == iBoardType ) && bUnpackTdc )
+           if( tofMbs::trbtdc == iBoardType )
            {
+             if(bUnpackTdc)
+             {
+               if( 0 == fMapTrbSebAddrToUnpackTdcNb.count(uSebAddr) )
+               {
+                 fMapTrbSebAddrToUnpackTdcNb[uSebAddr] = 0;
+               }
+               if( 0 < fMapTrbSebAddrToUnpackTdcNb.count(uSebAddr) )
+               {
+                 fMapTrbSebAddrToUnpackTdcNb[uSebAddr]++;
+               }
+
+               fActiveTrbTdcAddrToUnpackFlag[uFpgaAddr] = bUnpackTdc;
+               fActiveTrbTdcIndexToUnpackFlag[iActiveTrbTdcIndex] = bUnpackTdc;
+             }
+
              fMapFpgaAddrToActiveTdcIndex[uFpgaAddr] = iActiveTrbTdcIndex;
              fMapActiveTdcIndexToFpgaAddr[iActiveTrbTdcIndex] = uFpgaAddr;
              iActiveTrbTdcIndex++;
-
-             if( 0 == fMapTrbSebAddrToUnpackTdcNb.count(uSebAddr) )
-             {
-               fMapTrbSebAddrToUnpackTdcNb[uSebAddr] = 0;
-             }
-             if( 0 < fMapTrbSebAddrToUnpackTdcNb.count(uSebAddr) )
-             {
-               fMapTrbSebAddrToUnpackTdcNb[uSebAddr]++;
-             }
-
            }
 
          }

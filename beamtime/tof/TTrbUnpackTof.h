@@ -56,6 +56,9 @@ class TTrbUnpackTof : public FairUnpack
       void SetInspection(Bool_t bInspection = kTRUE) {fbInspection = bInspection;}
 
       void   SetSaveRawData( Bool_t bSaveRaw=kTRUE );
+
+      Bool_t IsGoodEventInBuffer() {return fbGoodEventInBuffer;}
+
    protected:
       // FairUnpack pure virtual method
       // neither called by a FairSource daughter class nor by FairRunOnline
@@ -81,6 +84,8 @@ class TTrbUnpackTof : public FairUnpack
       Int_t fiNbEvents;
       Int_t fiCurrentEventNumber;
       Int_t fiPreviousEventNumber;
+      Int_t fiFirstEventNumber;
+      Int_t fiEventNumberOverflows;
 
       Bool_t fbFineSpillTiming;
       Bool_t fbInspection;
@@ -103,6 +108,9 @@ class TTrbUnpackTof : public FairUnpack
 
       void CreateHistograms();
 //      void DeleteHistograms();
+      void FillRunTimeHistograms();
+
+      void CheckEventBuffer();
 
       UInt_t fuInDataTrbSebNb;
       UInt_t fuActiveTrbTdcNb;
@@ -131,6 +139,8 @@ class TTrbUnpackTof : public FairUnpack
       std::vector<TH1*> fTrbTdcWords;
       std::vector<TH1*> fTrbTdcProcessStatus;
 
+      std::vector<TH2*> fTrbSubeventSizeRunTime;
+
       // CTS counters
       UInt_t* fuTrigChanEdgeCounter;
       UInt_t* fuTrigChanClockCounter;
@@ -152,6 +162,11 @@ class TTrbUnpackTof : public FairUnpack
       Long64_t fiCtsFirstEventTime;
       Bool_t fbNextSpillToStart;
       Bool_t fbHadaqBufferDelay;
+
+      Bool_t fbCtsAvailable;
+      Bool_t fbGoodEventInBuffer;
+
+      std::vector<UShort_t> fuSubeventSizes;
 
       ClassDef(TTrbUnpackTof,1)
 };

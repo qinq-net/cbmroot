@@ -5,10 +5,12 @@
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-void apply_calib(Int_t nEvents = 100000000, char *cFileId="CernSps05Mar0041")
+void apply_calib(Long64_t nEvents = 100000000, TString cFileId = "CernSps05Mar0041")
 {
   TStopwatch timer;
   timer.Start();
+
+  FairLogger::GetLogger();
 
 //  gLogger->SetLogScreenLevel("FATAL");
   gLogger->SetLogScreenLevel("ERROR");
@@ -23,17 +25,20 @@ void apply_calib(Int_t nEvents = 100000000, char *cFileId="CernSps05Mar0041")
   gLogger->SetLogVerbosityLevel("MEDIUM");
 //  gLogger->SetLogVerbosityLevel("HIGH");
 
-  TString workDir = gSystem->Getenv("VMCWORKDIR");
-  TString paramDir = workDir + "/macro/tof/beamtime/feb15";
+  TString srcDir = gSystem->Getenv("VMCWORKDIR");
+  TString paramDir = srcDir + "/macro/tof/beamtime/feb15";
 
-  TObjString unpParFile = paramDir + "/parUnpack_basic.txt";
-  TObjString calParFile = paramDir + "/parCalib_basic.txt";
-  TObjString mapParFile = paramDir + "/parMapCernFeb2015.txt";
+  TObjString unpParFile = (paramDir + "/parUnpack_basic.txt").Data();
+  TObjString calParFile = (paramDir + "/parCalib_basic.txt").Data();
+  TObjString mapParFile = (paramDir + "/parMapCernFeb2015.txt").Data();
 
   TList *parFileList = new TList();
   parFileList->Add(&unpParFile);
   parFileList->Add(&calParFile);
   parFileList->Add(&mapParFile);
+
+  FairRunOnline* run = new FairRunOnline();
+//  run->SetAutoFinish(kFALSE);
 
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   
@@ -41,15 +46,12 @@ void apply_calib(Int_t nEvents = 100000000, char *cFileId="CernSps05Mar0041")
   parIo1->open(parFileList, "in");
   rtdb->setFirstInput(parIo1);
 
-  TString cOutfileId = Form("%s",cFileId);
+  TString cOutfileId = Form("%s",cFileId.Data());
 
-  TString outFile = paramDir + "/unpack_" + cOutfileId + ".out.root";
+  TString outFile = "./unpack_" + cOutfileId + ".out.root";
 
   FairLmdSource* source = new FairLmdSource();
-  source->AddPath("/mnt/nas-herrmann2/cern-feb15/",Form("%s*.lmd",cFileId));
-//  source->AddFile("/mnt/nas-herrmann2/cern-feb15/CernSps05Mar0041_hdref_200_hdp2_220_thupad_170_thustrip_23c_bucref_160_buc2013_160_ustc_220_diam_000_nb_0002.lmd"); // 4 TDCs offset by 200 s AND reference epoch overflow!!!
-//  source->AddFile("/mnt/nas-herrmann2/cern-feb15/Mockup04Mar2002_hdref_200_hdp2_220_thupad_170_thustrip_23c_bucref_160_buc2013_160_ustc_220_diam_000_nb_0000.lmd");
-
+  source->AddPath("/lustre/nyx/cbm/prod/beamtime/2015/02/cern/data/",Form("%s*.lmd",cFileId.Data()));
 
   TTrbUnpackTof* tofTrbDataUnpacker = new TTrbUnpackTof(10,1,31,0,0);
   tofTrbDataUnpacker->SetInspection(kFALSE);

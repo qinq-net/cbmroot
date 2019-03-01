@@ -47,6 +47,8 @@ TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Sho
    fiNbEvents(0),
    fiCurrentEventNumber(0),
    fiPreviousEventNumber(0),
+   fiFirstEventNumber(0),
+   fiEventNumberOverflows(0),
    fbFineSpillTiming(kTRUE),
    fbInspection(kFALSE),
    fTrbIterator(NULL),
@@ -78,6 +80,7 @@ TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Sho
    fTrbSubeventStatus(),
    fTrbTdcWords(),
    fTrbTdcProcessStatus(),
+   fTrbSubeventSizeRunTime(),
    fuTrigChanEdgeCounter(new UInt_t[16]),
    fuTrigChanClockCounter(new UInt_t[16]),
    fuTrigInputEdgeCounter(new UInt_t[16]),
@@ -93,7 +96,10 @@ TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Sho
    fiCtsLastEventTime(0),
    fiCtsFirstEventTime(0),
    fbNextSpillToStart(kFALSE),
-   fbHadaqBufferDelay(kFALSE)
+   fbHadaqBufferDelay(kFALSE),
+   fbCtsAvailable(kFALSE),
+   fbGoodEventInBuffer(kFALSE),
+   fuSubeventSizes()
 {
    LOG(INFO)<<"**** TTrbUnpackTof: Call TTrbUnpackTof()..."<<FairLogger::endl;
 }
@@ -144,6 +150,8 @@ Bool_t TTrbUnpackTof::Init()
 
    CreateHistograms();
 
+   fuSubeventSizes.resize(fuInDataTrbSebNb);
+
    return kTRUE;
 }
 
@@ -173,6 +181,13 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
    LOG(DEBUG)<<"====================================="<<FairLogger::endl;
    LOG(DEBUG)<<FairLogger::endl;
 
+   FairRun::Instance()->MarkFill(kFALSE);
+   fbCtsAvailable = kFALSE;
+   fTdcUnpackMap.clear();
+   std::fill(fuSubeventSizes.begin(), fuSubeventSizes.end(), 0);
+
+
+
    fTrbIterator = new hadaq::TrbIterator(pData, uNb1ByteWords);
 
    LOG(DEBUG)<<"Getting single HADAQ raw event in MBS subevent..."<<FairLogger::endl;
@@ -199,6 +214,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
    if( 0 == tCurrentEvent )
    {
      LOG(ERROR)<<"Bad HADAQ raw event. Skip whole MBS subevent."<<FairLogger::endl;
+     CheckEventBuffer();
      return kFALSE;   
    }
 
@@ -206,6 +222,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
    {
      LOG(ERROR)<<"Empty HADAQ raw event. Skip it."<<FairLogger::endl;
      LOG(ERROR)<<"event number: "<<tCurrentEvent->GetSeqNr()<<FairLogger::endl;
+     CheckEventBuffer();
      return kFALSE;
    }
 
@@ -220,6 +237,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
    if( !fTrbTdcUnpacker )
    {
      LOG(ERROR)<<"TTrbUnpackTof not properly initialized! Cannot unpack any events."<<FairLogger::endl;
+     CheckEventBuffer();
      return kFALSE;
    }
    fTrbTdcUnpacker->SetCalibTrigger(uTriggerType);
@@ -277,9 +295,11 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
      if( bKnownSubevent )
      {
        uNbRegisteredFpgas = fMbsUnpackPar->GetInDataFpgaNbPerTrbSeb( uSubeventId );
-       uNbActiveFpgas = fMbsUnpackPar->GetActiveTdcNbPerTrbSep( uSubeventId );
+       uNbActiveFpgas = fMbsUnpackPar->GetUnpackTdcNbPerTrbSeb( uSubeventId );
 
        fTrbSubeventSize[ fMbsUnpackPar->GetTrbSebIndex( uSubeventId ) ]->Fill( tCurrentSubevent->GetSize()/1000 );
+
+       fuSubeventSizes.at(fMbsUnpackPar->GetTrbSebIndex( uSubeventId )) = tCurrentSubevent->GetSize();
      }
 
      DataErrorHandling(uSubeventId, tCurrentSubevent->GetErrBits());
@@ -287,6 +307,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
      if( tCurrentSubevent->GetDataError() || (tCurrentSubevent->GetErrBits() != 0x00000001) )
      {
        LOG(ERROR)<<Form("HADAQ raw subevent from source 0x%.4x contains broken data.", uSubeventId)<<FairLogger::endl;
+       CheckEventBuffer();
        return kFALSE;
      }
 
@@ -345,12 +366,10 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
        Bool_t bKnownSubsubevent = fMbsUnpackPar->IsTrbFpgaInData(uSubsubeventSource);
 
        UInt_t uMotherBoardId = 0xffff;
-       Bool_t bUnpack = kFALSE;
 
        if( bKnownSubsubevent )
        {
          uMotherBoardId = fMbsUnpackPar->GetTrbSebAddrForFpga(uSubsubeventSource);
-         bUnpack = ( -1 < fMbsUnpackPar->GetActiveTrbTdcIndex(uSubsubeventSource) );
        }
 
        LOG(DEBUG)<<FairLogger::endl;
@@ -387,14 +406,13 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
              LOG(FATAL)<<Form("Severe error in parameter file. FPGA 0x%.4x is the data transmitter of FPGA 0x%.4x, not FPGA 0x%.4x. Abort program execution!",
                               uSubeventId, uSubsubeventSource, uMotherBoardId)<<FairLogger::endl;
            }
-           if( bUnpack )
-           {
+
         	 Int_t iActiveTdcIndex = fMbsUnpackPar->GetActiveTrbTdcIndex( uSubsubeventSource );
         	 fTdcUnpackMap[iActiveTdcIndex] = std::pair<hadaq::RawSubevent*,UInt_t>(tCurrentSubevent, uSubsubeventDataIndex);
         	 fTrbTdcWords[iActiveTdcIndex]->Fill(uSubsubeventLength);
 
 //             fTrbTdcProcessStatus[ iActiveTdcIndex ]->Fill( fTrbTdcUnpacker->ProcessData( tCurrentSubevent, uSubsubeventDataIndex ) );
-           }
+
          }
          else
          {
@@ -459,7 +477,6 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
            if( bKnownHubSubevent && bKnownSubsubevent )
            {
              uMotherBoardId = fMbsUnpackPar->GetTrbSebAddrForFpga(uHubSubeventSource);
-             bUnpack = ( -1 < fMbsUnpackPar->GetActiveTrbTdcIndex(uHubSubeventSource) );
            }
 
            LOG(DEBUG)<<FairLogger::endl;
@@ -496,14 +513,13 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
                  LOG(FATAL)<<Form("Severe error in parameter file. FPGA 0x%.4x is the data transmitter of FPGA 0x%.4x, not FPGA 0x%.4x. Abort program execution!",
                                   uSubeventId, uHubSubeventSource, uMotherBoardId)<<FairLogger::endl;
                }
-               if( bUnpack )
-               {
-              	 Int_t iActiveTdcIndex = fMbsUnpackPar->GetActiveTrbTdcIndex( uHubSubeventSource );
-              	 fTdcUnpackMap[iActiveTdcIndex] = std::pair<hadaq::RawSubevent*,UInt_t>(tCurrentSubevent, uHubSubeventDataIndex);
-              	 fTrbTdcWords[iActiveTdcIndex]->Fill(uHubSubeventLength);
 
-//                 fTrbTdcProcessStatus[ iActiveTdcIndex ]->Fill( fTrbTdcUnpacker->ProcessData( tCurrentSubevent, uHubSubeventDataIndex ) );
-               }
+            	 Int_t iActiveTdcIndex = fMbsUnpackPar->GetActiveTrbTdcIndex( uHubSubeventSource );
+            	 fTdcUnpackMap[iActiveTdcIndex] = std::pair<hadaq::RawSubevent*,UInt_t>(tCurrentSubevent, uHubSubeventDataIndex);
+            	 fTrbTdcWords[iActiveTdcIndex]->Fill(uHubSubeventLength);
+
+//               fTrbTdcProcessStatus[ iActiveTdcIndex ]->Fill( fTrbTdcUnpacker->ProcessData( tCurrentSubevent, uHubSubeventDataIndex ) );
+
              }
              else
              {
@@ -601,6 +617,30 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
        {
          uNbSubsubevents++;
 
+         fbCtsAvailable = kTRUE;
+
+         UInt_t uNbInputCh = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 16) & 0xf;
+         UInt_t uNbTrigCh = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 20) & 0x1f;
+         Bool_t bIncludeLastIdle = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 25) & 0x1;
+         Bool_t bIncludeCounters = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 26) & 0x1;
+         Bool_t bIncludeTimestamp = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 27) & 0x1;
+         UInt_t uExtTrigFlag = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 28) & 0x3;
+
+         Bool_t bIncludeMbsSync = kFALSE;
+         UInt_t uMbsSync = 0xffffff;
+         Bool_t bMbsSyncError = kFALSE;
+
+         UInt_t uNbCtsWords = uNbInputCh*2
+                             +uNbTrigCh*2
+                             +bIncludeLastIdle*2
+                             +bIncludeCounters*3
+                             +bIncludeTimestamp*1;
+
+         UInt_t uBusyIdleOffset = uSubsubeventDataIndex + 2 + uNbInputCh*2 + uNbTrigCh*2;
+         UInt_t uStatsOffset = uBusyIdleOffset + bIncludeLastIdle*2;
+         UInt_t uTimeStampOffset = uStatsOffset + bIncludeCounters*3;
+
+
          // Moving all the HADAQ time calculations here to make sure that only
          // good events with a CTS subsubevent are considered.
          Int_t iHadaqCurrentEventTime = (tCurrentEvent->GetTime()&0xff)
@@ -630,53 +670,26 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
            fHadaqTimeInSpill->Reset("ICE");
          }
 
-         fTrbHeader->SetTimeInSpill(static_cast<Double_t>(iHadaqCurrentEventTime-fiHadaqCoarseSpillStartTime));
-
-         fHadaqTimeInSpill->Fill(fTrbHeader->GetTimeInSpill());
-
-         fiCurrentEventNumber = static_cast<Int_t>((tCurrentSubevent->GetTrigNr()) >> 8);
+         fiCurrentEventNumber = static_cast<Int_t>(((tCurrentSubevent->GetTrigNr()) >> 8) & 0xFFFF) - fiFirstEventNumber + fiEventNumberOverflows*65536;
          if( 0 < fiNbEvents )
          {
+           // FIXME: trigger number wrapping in Nov15
+           if( 0 > (fiCurrentEventNumber - fiPreviousEventNumber) )
+           {
+             LOG(ERROR)<<Form("previous: 0x%.6x",fiPreviousEventNumber)<<FairLogger::endl;
+             LOG(ERROR)<<Form("current : 0x%.6x",fiCurrentEventNumber)<<FairLogger::endl;
+
+             fiCurrentEventNumber += 65536;
+             fiEventNumberOverflows++;
+           }
+
            fTrbEventNumberJump->Fill(fiCurrentEventNumber - fiPreviousEventNumber);
          }
-
-
-         UInt_t uTrigStatus = tCurrentSubevent->Data(uSubsubeventDataIndex+1) & 0xffff;
-         uTriggerPattern = uTrigStatus;
-
-         for(UInt_t uChannel = 0; uChannel < 16; uChannel++)
+         else
          {
-           if( uTriggerPattern & (0x1 << uChannel) )
-           {
-             fTrbTriggerPattern->Fill(TMath::Log2( uTriggerPattern & (0x1 << uChannel) ));
-           }
+           fiFirstEventNumber = fiCurrentEventNumber;
+           fiCurrentEventNumber = 0;
          }
-
-         fTrbTriggerType->Fill(uTriggerType);
-
-	       fTrbHeader->SetTriggerPattern(uTriggerPattern);
-	       fTrbHeader->SetTriggerType(uTriggerType);
-
-         UInt_t uNbInputCh = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 16) & 0xf;
-         UInt_t uNbTrigCh = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 20) & 0x1f;
-         Bool_t bIncludeLastIdle = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 25) & 0x1;
-         Bool_t bIncludeCounters = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 26) & 0x1;
-         Bool_t bIncludeTimestamp = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 27) & 0x1;
-         UInt_t uExtTrigFlag = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 28) & 0x3;
-
-         Bool_t bIncludeMbsSync = kFALSE;
-         UInt_t uMbsSync = 0xffffff;
-         Bool_t bMbsSyncError = kFALSE;
-
-         UInt_t uNbCtsWords = uNbInputCh*2
-                             +uNbTrigCh*2
-                             +bIncludeLastIdle*2
-                             +bIncludeCounters*3
-                             +bIncludeTimestamp*1;
-
-         UInt_t uBusyIdleOffset = uSubsubeventDataIndex + 2 + uNbInputCh*2 + uNbTrigCh*2;
-         UInt_t uStatsOffset = uBusyIdleOffset + bIncludeLastIdle*2;
-         UInt_t uTimeStampOffset = uStatsOffset + bIncludeCounters*3;
 
 
          if( bIncludeLastIdle )
@@ -696,7 +709,42 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
            {
              fCtsTriggerDistance->Fill( (uBusyTime+uIdleTime)/100.);
            }
+
+           if(1 == (fiCurrentEventNumber - fiPreviousEventNumber))
+           {
+             fTrbHeader->SetCTSBusyTime(uBusyTime/100.);
+             fTrbHeader->SetCTSIdleTime(uIdleTime/100.);
+           }
          }
+
+         // fill previous event data into the output tree before TrbHeader information is overwritten
+         CheckEventBuffer();
+
+         fTrbHeader->SetEventDAQDate(tCurrentEvent->GetDate());
+         fTrbHeader->SetEventDAQTime(tCurrentEvent->GetTime());
+         fTrbHeader->SetTriggerIndex(fiCurrentEventNumber);
+
+         fTrbHeader->SetTimeInSpill(static_cast<Double_t>(iHadaqCurrentEventTime-fiHadaqCoarseSpillStartTime));
+
+         fHadaqTimeInSpill->Fill(fTrbHeader->GetTimeInSpill());
+
+
+         UInt_t uTrigStatus = tCurrentSubevent->Data(uSubsubeventDataIndex+1) & 0xffff;
+         uTriggerPattern = uTrigStatus;
+
+         for(UInt_t uChannel = 0; uChannel < 16; uChannel++)
+         {
+           if( uTriggerPattern & (0x1 << uChannel) )
+           {
+             fTrbTriggerPattern->Fill(TMath::Log2( uTriggerPattern & (0x1 << uChannel) ));
+           }
+         }
+
+         fTrbTriggerType->Fill(uTriggerType);
+
+	       fTrbHeader->SetTriggerPattern(uTriggerPattern);
+	       fTrbHeader->SetTriggerType(uTriggerType);
+
 
          Long64_t iAllTriggersDiff(0);
          Long64_t iAllEventsDiff(0);
@@ -1004,6 +1052,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
          if( !fMbsUnpackPar->IsTrbEventUnpacked(uTriggerPattern) )
          {
            LOG(INFO)<<"HADAQ raw event does not meet the trigger selection criteria. Skip it."<<FairLogger::endl;
+           CheckEventBuffer();
            return kFALSE;
          }
 
@@ -1055,6 +1104,13 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
    }
 
+   if( !fbCtsAvailable )
+   {
+     LOG(ERROR)<<"No CTS subsubevent available. Skip the full HADAQ raw event."<<FairLogger::endl;
+     CheckEventBuffer();
+     return kFALSE;
+   }
+
    Bool_t bSkipHadaqEvent = kFALSE;
 
    // TDC data unpacking only in case of a positive trigger pattern evaluation
@@ -1074,6 +1130,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
    if( bSkipHadaqEvent )
    {
      LOG(INFO)<<"TDC raw data integrity not guaranteed. Skip the full HADAQ raw event."<<FairLogger::endl;
+     CheckEventBuffer();
      return kFALSE;
    }
 
@@ -1086,6 +1143,16 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
    delete fTrbIterator;
 
+   fTrbHeader->SetSubeventSizes(fuSubeventSizes);
+
+   fbGoodEventInBuffer = kTRUE;
+   // The following method call does unexpectedly not trigger the output tree
+   // to be filled with good buffered event data once again in
+   // 'FairRunOnline::Finish' as calling 'FairRootManager::StoreAllWriteoutBufferData'
+   // at the end of 'FairRunOnline::Run' invalidates 'FairRootManager::fFillLastData'.
+   // Instead, this needs to be taken care of in the steering run macro.
+   FairRootManager::Instance()->SetLastFill(kTRUE);
+
    return kTRUE;
 }
 
@@ -1093,7 +1160,7 @@ void TTrbUnpackTof::Reset()
 {
    LOG(DEBUG)<<"**** TTrbUnpackTof: Call Reset()... "<<FairLogger::endl;
 
-   ClearOutput();
+//   ClearOutput();
 }
 
 void TTrbUnpackTof::Register()
@@ -1107,6 +1174,8 @@ Bool_t TTrbUnpackTof::InitParameters()
 
    FairRun * ana = FairRun::Instance();
    FairRuntimeDb * rtdb = ana->GetRuntimeDb();
+
+   ana->MarkFill(kFALSE);
 
    fMbsUnpackPar = (TMbsUnpackTofPar *) (rtdb->getContainer("TMbsUnpackTofPar"));
 
@@ -1155,6 +1224,7 @@ Bool_t TTrbUnpackTof::RegisterOutput()
    }
 
    FairRootManager * manager = FairRootManager::Instance();
+   manager->SetLastFill(kFALSE);
 
    fTrbTdcBoardCollection = new TClonesArray( "TTofTrbTdcBoard", fuActiveTrbTdcNb );
    manager->Register( "TofTrbTdc","TofUnpack", fTrbTdcBoardCollection, 
@@ -1177,10 +1247,12 @@ Bool_t TTrbUnpackTof::ClearOutput()
 {
    LOG(DEBUG)<<"**** TTrbUnpackTof: Call ClearOutput()..."<<FairLogger::endl;
 
+   fTrbHeader->Clear();
+
    if( 0 < fuActiveTrbTdcNb )
       fTrbTdcBoardCollection->Clear("C");
 
-   fTdcUnpackMap.clear();
+//   fTdcUnpackMap.clear();
 
    return kTRUE;
 }
@@ -1246,6 +1318,7 @@ void TTrbUnpackTof::CreateHistograms()
    fEventSkipsInSpill->GetYaxis()->SetTitle("CTS events skipped");
 
    TH1* hTemp = 0;
+   TH2* hTemp2 = 0;
 
    for( UInt_t uTrbSeb = 0; uTrbSeb < fuInDataTrbSebNb; uTrbSeb++ )
    {
@@ -1264,6 +1337,12 @@ void TTrbUnpackTof::CreateHistograms()
      hTemp->GetXaxis()->SetTitle("TrbNet status bits []");
 
      fTrbSubeventStatus.push_back( hTemp );
+
+     hTemp2 = new TH2F( Form("tof_trb_rate_subevent_%03u", uTrbSeb),
+                        Form("data rate from TRB-SEB 0x%04x", uTrbNetAddress),
+                        100, 0., 100., 65, 0, 65);
+
+     fTrbSubeventSizeRunTime.push_back( hTemp2 );
    }
 
    for( UInt_t uTrbTdc = 0; uTrbTdc < fuActiveTrbTdcNb; uTrbTdc++)
@@ -1272,8 +1351,8 @@ void TTrbUnpackTof::CreateHistograms()
 
      hTemp = new TH1I( Form("tof_trb_words_tdc_%03u", uTrbTdc),
                        Form("words sent by TRB-TDC 0x%04x", uTrbNetAddress),
-                       800, 0, 800);
-     hTemp->GetXaxis()->SetTitle("subsubevent words [4B]");
+                       4100, 0, 4100);
+     hTemp->GetXaxis()->SetTitle("subsubevent words [4 B]");
 
      fTrbTdcWords.push_back( hTemp );
 
@@ -1318,6 +1397,7 @@ void TTrbUnpackTof::WriteHistograms()
    {
      fTrbSubeventSize[uTrbSeb]->Write();
      fTrbSubeventStatus[uTrbSeb]->Write();
+     fTrbSubeventSizeRunTime[uTrbSeb]->Write();
    }
 
    for( UInt_t uTrbTdc = 0; uTrbTdc < fuActiveTrbTdcNb; uTrbTdc++)
@@ -1433,4 +1513,32 @@ void TTrbUnpackTof::DataErrorHandling(UInt_t uSubeventId, UInt_t uErrorPattern)
   }
 
   return;
+}
+
+void TTrbUnpackTof::CheckEventBuffer()
+{
+  // At all possible exit points of 'TTrbUnpackTof::DoUnpack' we need to check if a good event is available in
+  // the output tree buffers. If so, fill the event in the output tree. If not so, discard whatever data are in
+  // the buffers.
+  if(fbGoodEventInBuffer)
+  {
+    FillRunTimeHistograms();
+
+    FairRootManager::Instance()->Fill();
+    FairRootManager::Instance()->SetLastFill(kFALSE);
+
+    fbGoodEventInBuffer = kFALSE;
+  }
+
+  ClearOutput();
+
+  return;
+}
+
+void TTrbUnpackTof::FillRunTimeHistograms()
+{
+  for( UInt_t uTrbSeb = 0; uTrbSeb < fTrbHeader->GetNSubevents(); uTrbSeb++ )
+  {
+    fTrbSubeventSizeRunTime[uTrbSeb]->Fill(fTrbHeader->GetTimeInRun(), fTrbHeader->GetSubeventSize(uTrbSeb)/1000 );
+  }
 }

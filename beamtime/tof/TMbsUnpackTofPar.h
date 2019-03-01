@@ -86,13 +86,16 @@ class TMbsUnpackTofPar : public FairParGenericSet
 
       UInt_t GetFpgaNbPerTrbSeb( UInt_t uTrbNetAddress );
       UInt_t GetInDataFpgaNbPerTrbSeb( UInt_t uTrbNetAddress );
-      UInt_t GetActiveTdcNbPerTrbSep( UInt_t uTrbNetAddress );
+      UInt_t GetUnpackTdcNbPerTrbSeb( UInt_t uTrbNetAddress );
 
       Int_t  GetTrbSebIndex( UInt_t uTrbNetAddress );
       UInt_t GetTrbSebAddr( Int_t iTrbSebIndex );
 
       Int_t  GetActiveTrbTdcIndex( UInt_t uTrbNetAddress );
       UInt_t GetActiveTrbTdcAddr( Int_t iActiveTrbTdcIndex );
+
+      Bool_t UnpackTrbTdcAddress( UInt_t uTrbNetAddress ) { return fActiveTrbTdcAddrToUnpackFlag[ uTrbNetAddress ]; };
+      Bool_t UnpackTrbTdcIndex( Int_t iActiveTrbTdcIndex ) { return fActiveTrbTdcIndexToUnpackFlag[ iActiveTrbTdcIndex  ]; };
 
       Int_t  GetTriggerToReject() { return fiTriggerRejection; };
       Bool_t OnlyOneTriglog();
@@ -163,6 +166,9 @@ class TMbsUnpackTofPar : public FairParGenericSet
 
       std::map<UInt_t,Int_t>  fMapFpgaAddrToActiveTdcIndex;
       std::map<Int_t,UInt_t>  fMapActiveTdcIndexToFpgaAddr;
+
+      std::map<UInt_t, Bool_t> fActiveTrbTdcAddrToUnpackFlag;
+      std::map<Int_t, Bool_t>  fActiveTrbTdcIndexToUnpackFlag;
 
       // Trigger Rejection
       Int_t   fiTriggerRejection;

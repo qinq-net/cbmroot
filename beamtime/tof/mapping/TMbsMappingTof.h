@@ -43,6 +43,7 @@ class TMbsMappingTof : public FairTask {
       // Histograms
       void WriteHistogramms();
       void SetFillHistogramms( Bool_t bFillHistos = kTRUE ) { fbFillHistos = bFillHistos; }
+      void SetDuplicatePadDigis( Bool_t bDuplicate = kTRUE ) { fbDuplicatePadDigis = bDuplicate; }
 
       void SetSaveDigis( Bool_t bSaveDigis = kTRUE );
    private:
@@ -88,6 +89,7 @@ class TMbsMappingTof : public FairTask {
       // Output objects
       Bool_t                fbSaveMappedDigis;
       Bool_t                fbFillHistos;
+      Bool_t                fbDuplicatePadDigis;
       TClonesArray        * fCbmTofDigiCollection;
       
       // Mapping

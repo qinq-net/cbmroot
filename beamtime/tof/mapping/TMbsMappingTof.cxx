@@ -55,6 +55,7 @@ TMbsMappingTof::TMbsMappingTof() :
    fTriglogBoardCollection(NULL),
    fbSaveMappedDigis(kFALSE),
    fbFillHistos(kFALSE),
+   fbDuplicatePadDigis(kTRUE),
    fCbmTofDigiCollection(NULL)
 {
 }
@@ -75,6 +76,7 @@ TMbsMappingTof::TMbsMappingTof(const char* name, Int_t /*mode*/, Int_t verbose) 
    fTriglogBoardCollection(NULL),
    fbSaveMappedDigis(kFALSE),
    fbFillHistos(kFALSE),
+   fbDuplicatePadDigis(kTRUE),
    fCbmTofDigiCollection(NULL)
 {
 }
@@ -676,24 +678,27 @@ Bool_t  TMbsMappingTof::MapTdcDataToDet()
                else new((*fCbmTofDigiCollection)[ fCbmTofDigiCollection->GetEntriesFast() ]) 
                         CbmTofDigi( iChanUId, dTime, dTot );
 
-            if (  ((iChanUId & 0x0000F00F) == 0x00005006)     // duplicate diamond, pad  entry
-		||((iChanUId & 0x0000F00F) == 0x00002006)     // duplicate ceramics entry/interference wih Pla!?
-		||((iChanUId & 0x0000F00F) == 0x00008006)) {  // duplicate Pad entry  // FIXME
-	      iChanUId |= 0x00800000;
-	      Int_t Nent = fCbmTofDigiCollection->GetEntriesFast();
-              new((*fCbmTofDigiCollection)[ fCbmTofDigiCollection->GetEntriesFast() ]) 
+            if(fbDuplicatePadDigis)
+            {
+               if (  ((iChanUId & 0x0000F00F) == 0x00005006)     // duplicate diamond, pad  entry
+                   ||((iChanUId & 0x0000F00F) == 0x00002006)     // duplicate ceramics entry/interference wih Pla!?
+                   ||((iChanUId & 0x0000F00F) == 0x00008006)) {  // duplicate Pad entry  // FIXME
+                  iChanUId |= 0x00800000;
+                  Int_t Nent = fCbmTofDigiCollection->GetEntriesFast();
+                  new((*fCbmTofDigiCollection)[ fCbmTofDigiCollection->GetEntriesFast() ]) 
                   CbmTofDigiExp( iChanUId, dTime, dTot );
-	      LOG(DEBUG)<<Form("TMbsMappingTof: Pad entry duplicated 0x%08x at Nent",iChanUId)
-			<<FairLogger::endl;
-              CbmTofDigiExp *pDigi2=(CbmTofDigiExp*) fCbmTofDigiCollection->At(Nent);
-              CbmTofDigiExp *pDigi1=(CbmTofDigiExp*) fCbmTofDigiCollection->At(Nent-1);
-	      if(pDigi1->GetTime() !=pDigi2->GetTime()){
-		  LOG(ERROR) << "TMbsMappingTof: Digi duplication error " << FairLogger::endl;
-		  LOG(ERROR) << "   " <<pDigi1->ToString()<< FairLogger::endl;
-		  LOG(ERROR) << "   " <<pDigi2->ToString()<< FairLogger::endl;
-	      } 
-	    }
-         
+                  LOG(DEBUG)<<Form("TMbsMappingTof: Pad entry duplicated 0x%08x at Nent",iChanUId)
+                  <<FairLogger::endl;
+                  CbmTofDigiExp *pDigi2=(CbmTofDigiExp*) fCbmTofDigiCollection->At(Nent);
+                  CbmTofDigiExp *pDigi1=(CbmTofDigiExp*) fCbmTofDigiCollection->At(Nent-1);
+                  if(pDigi1->GetTime() !=pDigi2->GetTime()){
+                     LOG(ERROR) << "TMbsMappingTof: Digi duplication error " << FairLogger::endl;
+                     LOG(ERROR) << "   " <<pDigi1->ToString()<< FairLogger::endl;
+                     LOG(ERROR) << "   " <<pDigi2->ToString()<< FairLogger::endl;
+                  } 
+               }
+            }
+
          } //  if( 0xFFFFFFFF != fMbsMappingPar->GetMapping( iMappedTdcInd, uChan ) )
 	 else {
 	   LOG(DEBUG)<<Form("TMbsMappingTof:: <W> Digi in unmapped TDC %d channel %d", iMappedTdcInd, uChan)
