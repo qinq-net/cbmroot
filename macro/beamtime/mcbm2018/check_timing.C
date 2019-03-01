@@ -1,4 +1,4 @@
-void check_time_sorting(Int_t nEvents = 1, TString fileName="")
+void check_timing(Int_t nEvents = 1, TString fileName="")
 {
 
   // ========================================================================
@@ -27,7 +27,10 @@ void check_time_sorting(Int_t nEvents = 1, TString fileName="")
   FairMonitor::GetMonitor()->EnableMonitor(kFALSE);
   // ------------------------------------------------------------------------
 
-  FairTask* timeChecker = new CbmCheckTimesorting();
+  CbmCheckTiming* timeChecker = new CbmCheckTiming();
+  timeChecker->SetCheckInterSystemOffset(kTRUE);
+  timeChecker->SetCheckTimeOrder(kTRUE);
+  timeChecker->SetOffsetSearchRange(200000);
   fRun->AddTask(timeChecker);
 
   // -----  Parameter database   --------------------------------------------
