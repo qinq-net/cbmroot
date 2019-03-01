@@ -10,7 +10,7 @@
 // In order to call later Finish, we make this global
 FairRunOnline *run = NULL;
 
-void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0)
+void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0, UInt_t nrEvents=0)
 {
   TString srcDir = gSystem->Getenv("VMCWORKDIR");
 
@@ -18,8 +18,9 @@ void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0)
   // --- -1 means run until the end of the input file.
   Int_t nEvents=-1;
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/unp_mcbm.root";
-  TString parFile = "data/unp_mcbm_params.root";
+  TString runId = TString::Format("%u", uRunId);
+  TString outFile = "data/unp_mcbm_" + runId + ".root";
+  TString parFile = "data/unp_mcbm_params_" + runId + ".root";
 
   // --- Set log output levels
   FairLogger::GetLogger();
@@ -118,7 +119,7 @@ void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0)
   // --- RootFileSink
   // --- Open next outputfile after 4GB
   FairRootFileSink* sink = new FairRootFileSink(outFile);
-  sink->GetOutTree()->SetMaxTreeSize(4294967295LL);
+//  sink->GetOutTree()->SetMaxTreeSize(4294967295LL);
 
   // --- Run
   run = new FairRunOnline(source);
@@ -143,9 +144,11 @@ void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0)
   TStopwatch timer;
   timer.Start();
   std::cout << ">>> unpack_tsa_sts: Starting run..." << std::endl;
-  run->Run(nEvents, 0); // run until end of input file
-//  run->Run(0, 2000); // process  2000 Events
-
+  if ( 0 == nrEvents) {
+    run->Run(nEvents, 0); // run until end of input file
+  } else { 
+    run->Run(0, nrEvents); // process  2000 Events
+  }
   run->Finish();
 
   timer.Stop();
