@@ -35,4 +35,6 @@ void SetCuts()
   gMC->SetCut("PPCUTM",cut1);   /**direct pair production by muons (GeV)*/
   gMC->SetCut("TOFMAX",tofmax); /**time of flight cut in seconds*/
 
+  std::cout << "----  Execute macro SetCuts.C done  -----" << std::endl;
+
 }

@@ -86,7 +86,7 @@ CbmSetup.cxx
 set(LINKDEF CbmRunLinkDef.h)
 Set(LIBRARY_NAME CbmRun)
 Set(DEPENDENCIES CbmData CbmBase CbmField CbmGenerators CbmMvd CbmSts CbmRich 
-CbmMuch CbmTrd CbmTrdSim CbmTof CbmPsd geant321 geant4vmc)
+CbmMuch CbmTrd CbmTrdSim CbmTof CbmPsd geant321 geant4vmc EGPythia6)
 
 
 

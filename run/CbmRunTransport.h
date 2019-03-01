@@ -21,7 +21,6 @@ class TVirtualMC;
 class FairGenerator;
 class FairPrimaryGenerator;
 class FairRunSim;
-//class CbmSetup;
 class CbmTarget;
 
 
@@ -37,7 +36,7 @@ enum ECbmEngine {
 /** @class CbmRunTransport
  ** @brief User interface class for transport simulation
  ** @author Volker Friese <v.friese@gsi.de>
- ** @date 31 January 2019
+ ** @since 31 January 2019
  **/
 class CbmRunTransport : public TNamed
 {
@@ -143,17 +142,28 @@ class CbmRunTransport : public TNamed
      ** always at (x0, y0).
      ** Smearing of the event vertex in the transverse plane can be
      ** deactivated by the method SetBeamSmearXY.
-     ** Without using this method, the default beam is centred at the
-     ** origin.
+     ** Without using this method, the primary vertex is always
+     ** at x=0 and y=0.
      **/
     void SetBeamPosition(Double_t x0, Double_t y0,
                          Double_t sigmaX = 0.1, Double_t sigmaY = 0.1);
 
 
+    /** @brief Set a decay mode for a particle
+     ** @param pdg          PDG code of particle to decay
+     ** @param nDaughters   Number of daughters
+     ** @param daughterPdg  Array of daughter PDG codes
+     **
+     ** This method will force the specified particle to always decay
+     ** in the specified mode (branching ratio 100%).
+     **/
+    void SetDecayMode(Int_t pdg, UInt_t nDaughters, Int_t* daughterPdg);
+
+
     /** @brief Set transport engine
      ** @param engine  kGEANT3 or kGEANT4
      **
-     ** By default, GEANt3 is used.
+     ** By default, GEANT3 is used.
      **/
     void SetEngine(ECbmEngine engine) { fEngine = engine; }
 
@@ -271,6 +281,11 @@ class CbmRunTransport : public TNamed
     std::unique_ptr<CbmStackFilter> fStackFilter;
     Bool_t fGenerateRunInfo;
     std::function<void()> fSimSetup;
+    std::map<Int_t, std::vector<Int_t>> fDecayModes;
+
+
+    /** @brief Force use-defined single-mode decays **/
+    void ForceUserDecays();
 
 
     /** @brief Correct decay modes for pi0 and eta **/
@@ -283,6 +298,14 @@ class CbmRunTransport : public TNamed
 
     /** @brief Specific settings for GEANT4 **/
     void Geant4Settings(TGeant4* vmcg4);
+
+
+    /** @brief Register ions
+     **
+     ** Since the TDatabasePDG does not contain ions we use in the
+     ** transport, they are added manually by this method.
+     **/
+    void RegisterIons();
 
 
     /** @brief Create and register the setup modules **/

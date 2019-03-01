@@ -1,4 +1,6 @@
 void DecayConfig() {
+
+  LOG(FATAL) << "Do not use DecayConfig.C" << FairLogger::endl;
      
 	// This script uses the external decayer TPythia6Decayer in place of the
 	// concrete Monte Carlo native decay mechanisms only for the

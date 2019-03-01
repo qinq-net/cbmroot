@@ -1,5 +1,12 @@
 void UserDecayConfig() {
+
+   // Obviously, this macro is not in use any longer.
+   // Was last touched 18 July 2008.
+   // Should be removed. Do we need the functionality still? I mean, there must
+   // have been some intention to it.
+
    cout << "Loading User Decay Config from macro"<< endl;  
+   LOG(FATAL) << "Do not use UserDecay.C" << FairLogger::endl;
    TDatabasePDG *db= TDatabasePDG::Instance();
    TParticlePDG *p=0;
 

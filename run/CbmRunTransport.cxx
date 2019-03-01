@@ -8,7 +8,9 @@
 
 #include <cassert>
 #include <iostream>
+#include <sstream>
 #include <string>
+#include "TDatabasePDG.h"
 #include "TG4RunConfiguration.h"
 #include "TGeant3.h"
 #include "TGeant3TGeo.h"
@@ -36,26 +38,27 @@
 #include "CbmUnigenGenerator.h"
 
 
+using std::stringstream;
 
 
 // -----   Constructor   ----------------------------------------------------
 CbmRunTransport::CbmRunTransport() :
-TNamed("CbmRunTransport", "Transport Run"),
-fSetup(CbmSetup::Instance()),
-fTarget(nullptr),
-fEventGen(new FairPrimaryGenerator),
-fRun(new FairRunSim()),
-fOutFileName(),
-fParFileName(),
-fGeoFileName(),
-fGenerators(),
-fRealTimeInit(0.),
-fRealTimeRun(0.),
-fCpuTime(0.),
-fVertexSmearZ(kTRUE),
-fEngine(kGeant3),
-fStackFilter(new CbmStackFilter()),
-fGenerateRunInfo(kFALSE)
+  TNamed("CbmRunTransport", "Transport Run"),
+  fSetup(CbmSetup::Instance()),
+  fTarget(nullptr),
+  fEventGen(new FairPrimaryGenerator),
+  fRun(new FairRunSim()),
+  fOutFileName(),
+  fParFileName(),
+  fGeoFileName(),
+  fGenerators(),
+  fRealTimeInit(0.),
+  fRealTimeRun(0.),
+  fCpuTime(0.),
+  fVertexSmearZ(kTRUE),
+  fEngine(kGeant3),
+  fStackFilter(new CbmStackFilter()),
+  fGenerateRunInfo(kFALSE)
 {
   // TODO: I do not like instantiating FairRunSim from this constructor;
   // It should be done in Run(). However, the presence of a FairRunSim
@@ -158,6 +161,65 @@ void CbmRunTransport::ConfigureVMC() {
 
 
 
+// -----   Force user-defined single-mode decays   --------------------------
+void CbmRunTransport::ForceUserDecays() {
+
+  assert(gMC);
+  auto pdgdb = TDatabasePDG::Instance();
+
+  for (auto& decay : fDecayModes) {
+
+    Int_t pdg = decay.first;
+    UInt_t nDaughters = decay.second.size();
+    stringstream log;
+    log << GetName() << ": Force decay "
+        << pdgdb->GetParticle(pdg)->GetName() << " -> ";
+
+    // For up to three daughters, the native decayer is used
+    if ( nDaughters <= 3 ) {
+      Float_t branch[6];  // branching ratios
+      Int_t mode[6][3];   // decay modes
+      branch[0] = 100.;
+      for ( Int_t iDaughter = 0; iDaughter < nDaughters; iDaughter++ ) {
+        mode[0][iDaughter] = decay.second[iDaughter];
+        LOG(INFO) << iDaughter << FairLogger::endl;
+        log << pdgdb->GetParticle(decay.second[iDaughter])->GetName()
+            << " ";
+      }
+      for (Int_t iChannel = 1; iChannel < 6; iChannel++) {
+        branch[iChannel] = 0.;
+        mode[iChannel][0] = 0;
+        mode[iChannel][1] = 0;
+        mode[iChannel][2] = 0;
+      }
+      gMC->SetDecayMode(pdg, branch, mode);
+      log << ", using native decayer.";
+    } //? not more than three daughters
+
+    // For more than three daughters, we must use TPythia6 as external decayer
+    else {
+      auto p6decayer = TPythia6Decayer::Instance();
+      Int_t daughterPdg[nDaughters];
+      Int_t multiplicity[nDaughters];
+      for (Int_t iDaughter = 0; iDaughter < nDaughters; iDaughter++) {
+        daughterPdg[iDaughter] = decay.second[iDaughter];
+        multiplicity[iDaughter] = 1;
+        log << pdgdb->GetParticle(decay.second[iDaughter])->GetName() << " ";
+      } //# daughters
+      p6decayer->ForceParticleDecay(pdg, daughterPdg,
+                                    multiplicity, nDaughters);
+      // We have to tell the VMC to use the Pythia decayer for this particle
+      gMC->SetUserDecay(pdg);
+    } //? more than three daughters
+
+   LOG(INFO) << log.str() << FairLogger::endl;
+  } //# user-defined decay modes
+
+}
+// --------------------------------------------------------------------------
+
+
+
 // -----   Specific settings for GEANT3   -----------------------------------
 void CbmRunTransport::Geant3Settings(TGeant3* vmcg3) {
 
@@ -235,7 +297,68 @@ void CbmRunTransport::LoadSetup(const char* setupName) {
   gROOT->LoadMacro(setupFile);
   gROOT->ProcessLine(setupFunc);
 
-  //LOG(INFO) << fSetup->ToString() << FairLogger::endl;
+}
+// --------------------------------------------------------------------------
+
+
+
+// -----   Register ions to the TDatabsePDG   -------------------------------
+void CbmRunTransport::RegisterIons() {
+
+  // TODO: Better would be loading the additional particles from a text file.
+  // TDatabasePDG reads the particle definitions from pdg_table.txt
+  // (in $SIMPATH/share/root/etc). The method TDatabase::ReadPDGTable()
+  // is triggered on first call to TDatabasePDG::GetParticle(Int_t), if the
+  // database is still empty.
+  // We could call TDatabasePDG::ReadPDGTable(name_of_cbm_file) after the
+  // first initialisation of the database; the there defined particles would
+  // be added on top of the existing ones.
+
+  // Particle database
+  TDatabasePDG* pdgdb = TDatabasePDG::Instance();
+  assert(pdgdb);
+  pdgdb->ReadPDGTable();
+  const char* name = "";
+  Int_t code = 0;
+  Double_t mass = 0.;
+  Bool_t stable = kTRUE;
+  Double_t charge = 0.;
+
+  // --- deuteron and anti-deuteron
+  name   = "d+";
+  code   = 1000010020;
+  mass   = 1.876124;
+  stable = kTRUE;
+  charge = 1.;
+  pdgdb->AddParticle(name, name, mass, stable, 0., charge, "Ion", code);
+  pdgdb->AddAntiParticle("d-", -1 * code);
+
+  // --- tritium and anti-tritium
+  name   = "t+";
+  code   = 1000010030;
+  mass   = 2.809432;
+  stable = kTRUE;
+  charge = 1.;
+  pdgdb->AddParticle(name, name, mass, stable, 0., charge, "Ion", code);
+  pdgdb->AddAntiParticle("t-", -1 * code);
+
+  // --- Helium_3 and its anti-nucleus
+  name = "He3+";
+  code   = 1000020030;
+  mass   = 2.809413;
+  stable = kTRUE;
+  charge = 2.;
+  pdgdb->AddParticle(name, name, mass, stable, 0., charge, "Ion", code);
+  pdgdb->AddAntiParticle("He3-", -1 * code);
+
+  // --- Helium_4 and its anti-nucleus
+  name = "He4+";
+  code   = 1000020040;
+  mass   = 3.7284;
+  stable = kTRUE;
+  charge = 2.;
+  pdgdb->AddParticle(name, name, mass, stable, 0., charge, "Ion", code);
+  pdgdb->AddAntiParticle("He3-", -1 * code);
 
 }
 // --------------------------------------------------------------------------
@@ -255,6 +378,9 @@ void CbmRunTransport::RegisterRadLength(Bool_t choice) {
 
 // -----   Create and register the setup modules   --------------------------
 void CbmRunTransport::RegisterSetup() {
+
+  // TODO: Not implemented yet. For the registering of the setup modules,
+  // still the macro registerSetup.C is executed.
 
 }
 // --------------------------------------------------------------------------
@@ -348,9 +474,6 @@ void CbmRunTransport::Run(Int_t nEvents) {
 
   // --- Timer
   TStopwatch timer;
-
-  //LOG(INFO) << "geant321  " << gSystem->Load("libgeant321.so") << FairLogger::endl;;
-
 
   // --- Check presence of required requisites
   if ( fOutFileName.IsNull() ) {
@@ -449,6 +572,7 @@ void CbmRunTransport::Run(Int_t nEvents) {
 
 
   // --- Register the primary generator
+  fEventGen->SetEventPlane(0., 2.* TMath::Pi());
   fRun->SetGenerator(fEventGen);
 
 
@@ -456,14 +580,22 @@ void CbmRunTransport::Run(Int_t nEvents) {
   fRun->SetGenerateRunInfo(fGenerateRunInfo);
 
 
+  // --- Add some required particles to the TDatabasePDG
+  RegisterIons();
+
+
   // --- Set VMC configuration
-  // This will work only with FairRoot v18 and later
   std::function<void()> f = std::bind(&CbmRunTransport::ConfigureVMC, this);
   fRun->SetSimSetup(f);
 
 
   // --- Initialise run
   fRun->Init();
+
+
+  // --- Force user-defined decays. This has to happen after FairRunSim::Init()
+  // because otherwise there seem to be no particles in GEANT.
+  ForceUserDecays();
 
 
   // --- Set correct decay modes for pi0 and eta
@@ -548,6 +680,26 @@ void CbmRunTransport::SetBeamPosition(Double_t x0, Double_t y0,
                                       Double_t sigmaX, Double_t sigmaY) {
   assert(fEventGen);
   fEventGen->SetBeam(x0, y0, sigmaX, sigmaY);
+  fEventGen->SmearGausVertexXY(kTRUE);
+}
+// --------------------------------------------------------------------------
+
+
+
+// -----   Set a decay mode   -----------------------------------------------
+void CbmRunTransport::SetDecayMode(Int_t pdg, UInt_t nDaughters,
+                                   Int_t* daughterPdg) {
+
+  if ( fDecayModes.count(pdg) != 0 ) {
+    LOG(FATAL) << GetName() << ": User decay mode for PDG " << pdg
+        << " is already defined!" << FairLogger::endl;
+    return;
+  }
+
+  for (UInt_t iDaughter = 0; iDaughter < nDaughters; iDaughter++) {
+    fDecayModes[pdg].push_back(daughterPdg[iDaughter]);
+  }
+
 }
 // --------------------------------------------------------------------------
 
@@ -693,8 +845,6 @@ void CbmRunTransport::VMCSettings(TVirtualMC* vmc) {
   vmc->SetProcess("DCAY",1); // decay
   vmc->SetProcess("LOSS",1); // energy loss
   vmc->SetProcess("MULS",1); // multiple scattering
-  Double_t cut1=1.0E-3; //GeV
-  Double_t tofmax = 1.0; //seconds
 
   // Cuts
   Double_t energyCut = 1.e-3; // GeV

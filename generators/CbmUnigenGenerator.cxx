@@ -148,6 +148,12 @@ Bool_t CbmUnigenGenerator::ReadEvent(FairPrimaryGenerator *primGen) {
     event->SetNPrim(fEvent->GetNpa());
     event->MarkSet(kTRUE);
   }
+  LOG(INFO) << "CbmUnigenGenerator: event ID " << event->GetEventID()
+      << ", impact " << event->GetB()
+      << ", primaries " << event->GetNPrim()
+      << ", position " << event->GetX() << ", " << event->GetY() << ", " << event->GetZ()
+      << ", rotation " << event->GetRotX() << ", " << event->GetRotY() << ", " << event->GetRotZ()
+      << FairLogger::endl;
 
   // Loop over tracks in the current event
   for (Int_t itrack = 0; itrack < fEvent->GetNpa(); itrack++) {
