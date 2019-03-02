@@ -100,9 +100,9 @@ void make_geofile_noBfield(TString stofGeom = "tof_v16a_1e" )
   }
 
   if ( tofGeom != "" ) {
-    FairDetector* tof = new CbmTof("TOF", kTRUE);
-    tof->SetGeometryFileName(tofGeom);
-    fRun->AddModule(tof);
+    FairDetector* toff = new CbmTof("TOF", kTRUE);
+    toff->SetGeometryFileName(tofGeom);
+    fRun->AddModule(toff);
   }
   
   // ------------------------------------------------------------------------

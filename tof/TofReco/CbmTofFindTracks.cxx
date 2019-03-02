@@ -171,7 +171,8 @@ CbmTofFindTracks::CbmTofFindTracks(const char* name,
     fStop(),
     fdTrackingTime(0.),
     fdBeamMomentumLab(0.),
-    fbRemoveSignalPropagationTime(kFALSE)
+    fbRemoveSignalPropagationTime(kFALSE),
+    fiBeamMaxHMul(1000)
 {
     if ( !fInstance ) fInstance = this;
 }
@@ -801,6 +802,57 @@ Bool_t CbmTofFindTracks::WriteHistos()
 		   << FairLogger::endl;
      }
 
+     }
+     break;
+
+   case 7 : // extract residual widthes in T, X, Y, Z
+     {
+       for(Int_t iStation = 0; iStation < static_cast<Int_t>(fMapRpcIdParInd.size()); iStation++)
+       {
+         TH1D* hResidualT = fhPullT_Smt->ProjectionY("_py", iStation + 1, iStation + 1);
+         TH1D* hResidualX = fhPullX_Smt->ProjectionY("_py", iStation + 1, iStation + 1);
+         TH1D* hResidualY = fhPullY_Smt->ProjectionY("_py", iStation + 1, iStation + 1);
+         TH1D* hResidualZ = fhPullZ_Smt->ProjectionY("_py", iStation + 1, iStation + 1);
+
+         if(hResidualT->GetEntries() > 100.)
+         {
+           Double_t dRMS = TMath::Abs(hResidualT->GetRMS());
+
+           if(dRMS < RMSmin) dRMS = RMSmin;
+           if(dRMS > 3.*fSIGT) dRMS = 3.*fSIGT;
+
+           fhPullT_Smt_Width->SetBinContent(iStation + 1, dRMS);
+         }
+
+         if(hResidualX->GetEntries() > 100.)
+         {
+           Double_t dRMS = TMath::Abs(hResidualX->GetRMS());
+
+           if(dRMS < 0.5*fSIGX) dRMS = 0.5*fSIGX;
+           if(dRMS > 3.*fSIGX) dRMS = 3.*fSIGX;
+
+           fhPullX_Smt_Width->SetBinContent(iStation + 1, dRMS);
+         }
+
+         if(hResidualY->GetEntries() > 100.)
+         {
+           Double_t dRMS = TMath::Abs(hResidualY->GetRMS());
+
+           if(dRMS < 0.5*fSIGY) dRMS = 0.5*fSIGY;
+           if(dRMS > 3.*fSIGY) dRMS = 3.*fSIGY;
+
+           fhPullY_Smt_Width->SetBinContent(iStation + 1, dRMS);
+         }
+
+         if(hResidualZ->GetEntries() > 100.)
+         {
+           Double_t dRMS = TMath::Abs(hResidualZ->GetRMS());
+
+           if(dRMS < 1.5) dRMS = 1.5;
+
+           fhPullZ_Smt_Width->SetBinContent(iStation + 1, dRMS);
+         }
+       }
      }
      break;
 
@@ -1732,6 +1784,13 @@ void CbmTofFindTracks::CheckMaxHMul()
     if(fStationHMul[iSt] > fiStationMaxHMul)
     {
       fInspectEvent = kFALSE;
+    }
+    else
+    {
+      if(fMapStationRpcId[iSt] == fiBeamCounter && fStationHMul[iSt] > fiBeamMaxHMul)
+      {
+        fInspectEvent = kFALSE;
+      }
     }
   }
 }

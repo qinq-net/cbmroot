@@ -31,7 +31,8 @@ root -b -q ''${workdir}'/create_digipar.C("tof_'${cVersion}'")'
 mv -v ${workdir}/tof_${cVersion}.digi.par ${VMCWORKDIR}/parameters/tof/
 
 rm -v ${workdir}/auaumbias.tof_${cVersion}.mc.root
-rm -v ${workdir}/auaumbias.tof_${cVersion}.params.root
+#rm -v ${workdir}/auaumbias.tof_${cVersion}.params.root
+rm -v ${workdir}/tof_${cVersion}.par.root
 rm -v ${workdir}/geofile_tof_${cVersion}.root
 rm -v ${workdir}/gphysi.dat
 rm -v ${workdir}/test.esd.tof_${cVersion}.root

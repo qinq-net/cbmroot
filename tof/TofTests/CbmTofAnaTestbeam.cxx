@@ -61,6 +61,7 @@
 #include "TGeoPhysicalNode.h"
 #include "TMCProcess.h"
 #include "TEfficiency.h"
+#include "TFitResult.h"
 
 // C++ STL
 #include <boost/regex.hpp>
@@ -418,9 +419,15 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhAccRefTrackAcceptancePurity(NULL),
     fhAccRefTrackMulCentrality(NULL),
     fhAccRefTracksProcSpec(NULL),
+    fhSelMCTrackEfficiency(NULL),
+    fhSelMCTrackMatchEfficiency(NULL),
+    fhSelMCTrackMatchPurity(NULL),
+    fhSelMCTrackDutHitMatchNNMul(NULL),
+    fhSelMCTrackDutHitMatchAccNNMul(NULL),
     fhSelEfficiency(NULL),
     fhSelPurity(NULL),
     fhSelRefTrackShare(NULL),
+    fhSelRefTrackProcSpec(NULL),
     fhSelMatchEfficiency(NULL),
     fhSelMatchPurity(NULL),
     fhResX04HitExp(NULL),
@@ -438,7 +445,12 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhNTracksPerSelMRefHit(NULL),
     fhNTracksPerSelSel2Hit(NULL),
     fhNTracksPerSelDutHit(NULL),
-    fhDutEfficiency(NULL),
+    fhSelTrklEfficiency(NULL),
+    fhSelTrklPurity(NULL),
+    fhSelTrklRefTrackShare(NULL),
+    fhSelTrklRefTrackProcSpec(NULL),
+    fhSelTrklMatchEfficiency(NULL),
+    fhSelTrklMatchPurity(NULL),
     fhDutResX_Hit_Trk(NULL),
     fhDutResX_Trk_MC(NULL),
     fhDutResX_Hit_MC(NULL),
@@ -448,6 +460,18 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhDutResT_Hit_Trk(NULL),
     fhDutResT_Trk_MC(NULL),
     fhDutResT_Hit_MC(NULL),
+    fhSelHitTupleEfficiencyTIS(NULL),
+    fhSelTrklEfficiencyTIS(NULL),
+    fhSelMCTrackEfficiencyTIS(NULL),
+    fhSelHitTupleMatchEfficiencyTIS(NULL),
+    fhSelTrklMatchEfficiencyTIS(NULL),
+    fhSelMCTrackMatchEfficiencyTIS(NULL),
+    fhSelHitTupleResidualTTIS(NULL),
+    fhSelTrklResidualTTIS(NULL),
+    fhSelMCTrackResidualTTIS(NULL),
+    fhSelHitTupleDutCluSizeTIS(NULL),
+    fhSelTrklDutCluSizeTIS(NULL),
+    fhSelMCTrackDutCluSizeTIS(NULL),
     fhPVResTAll(NULL),
     fhPVResXAll(NULL),
     fhPVResYAll(NULL),
@@ -483,6 +507,21 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhCounterRefTrackLocalXY(),
     fhCounterRefTrackMulCell(),
     fhCounterHitMulCell(),
+    fhSelTrklFitRedChiSq(NULL),
+    fhSelTrklDutHitMatchNNMul(NULL),
+    fhSelTrklDutHitMatchAccNNMul(NULL),
+    fhSelHitTupleDutHitMatchMul(NULL),
+    fhSelHitTupleDutHitMatchAccMul(NULL),
+    fhSelTypeNNChiSq(NULL),
+    fhSelTypeNNResidualT(NULL),
+    fhSelTypeNNResidualX(NULL),
+    fhSelTypeNNResidualY(NULL),
+    fhSelTypeAccNNChiSq(NULL),
+    fhSelTypeAccNNResidualT(NULL),
+    fhSelTypeAccNNResidualX(NULL),
+    fhSelTypeAccNNResidualY(NULL),
+    fhGoodSelTypeNNPureChiSq(NULL),
+    fhGoodSelTypeNNAllChiSq(NULL),
     fhTrklNofHitsRate(NULL),
     fhTrklDetHitRate(NULL),
     fhTrklNofHitsRateInSpill(NULL),
@@ -500,6 +539,10 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhCluSize4DT04D4Off(NULL),
     fhTot0DT04D4Off(NULL),
     fhTot4DT04D4Off(NULL),
+    fhSelTypeNNResidualT_Width(NULL),
+    fhSelTypeNNResidualX_Width(NULL),
+    fhSelTypeNNResidualY_Width(NULL),
+    fhSelHitTupleResidualXYT_Width(NULL),
     fdMulDMax(0.),
     fdDTDia(0.),
     fdDTD4MAX(0.),
@@ -548,6 +591,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fiBeamRefRpc(0),
     fiDutNch(0),
     fiReqTrg(-1),
+    fChi2LimFit(100.),
     fSIGLIM(3.),
     fSIGT(100.),
     fSIGX(1.),
@@ -577,7 +621,16 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fCounterModuleNodes(),
     fiNAccRefTracks(0),
     fdGhostTrackHitQuota(0.7),
-    fbDelayMCPoints(kFALSE)
+    fbDelayMCPoints(kFALSE),
+    fbAttachDutHitToTracklet(kFALSE),
+    fbBestSelTrackletOnly(kFALSE),
+    fbUseSigCalib(kFALSE),
+    fdMCSIGLIM(3.),
+    fdMCSIGT(100.),
+    fdMCSIGX(1.),
+    fdMCSIGY(1.),
+    fiMinMCRefTrackPoints(3),
+    fiMaxMCRefTracks(1)
 
 {
 }
@@ -817,6 +870,27 @@ void CbmTofAnaTestbeam::Finish()
        fhAccRefTracksProcSpec->LabelsOption("<d", "X");
        fhAccRefTracksProcSpec->LabelsOption("<v", "Y");
        fhAccRefTracksProcSpec->Scale(1./fhAccRefTracksProcSpec->GetEntries());
+     }
+
+     if(fhSelRefTrackProcSpec->GetEntries())
+     {
+       fhSelRefTrackProcSpec->LabelsDeflate("X");
+       fhSelRefTrackProcSpec->LabelsDeflate("Y");
+       fhSelRefTrackProcSpec->LabelsOption("<d", "X");
+       fhSelRefTrackProcSpec->LabelsOption("<v", "Y");
+       fhSelRefTrackProcSpec->Scale(1./fhSelRefTrackProcSpec->GetEntries());
+     }
+
+     if(fbAttachDutHitToTracklet)
+     {
+       if(fhSelTrklRefTrackProcSpec->GetEntries())
+       {
+         fhSelTrklRefTrackProcSpec->LabelsDeflate("X");
+         fhSelTrklRefTrackProcSpec->LabelsDeflate("Y");
+         fhSelTrklRefTrackProcSpec->LabelsOption("<d", "X");
+         fhSelTrklRefTrackProcSpec->LabelsOption("<v", "Y");
+         fhSelTrklRefTrackProcSpec->Scale(1./fhSelTrklRefTrackProcSpec->GetEntries());
+       }
      }
 
      for(auto const & CounterModuleNode : fCounterModuleNodes)
@@ -1168,8 +1242,11 @@ Bool_t   CbmTofAnaTestbeam::LoadCalParameter()
 
     TProfile *fhtmp=(TProfile *) gDirectory->FindObjectAny( Form("hDTD4DT04D4best_pfx_px"));
     if (NULL == fhtmp) {
-      fdChi2Lim=fdChi2Lim*100.;
-      fdChi2Lim2=fdChi2Lim2*100.;
+      if(!fbUseSigCalib)
+      {
+        fdChi2Lim=fdChi2Lim*100.;
+        fdChi2Lim2=fdChi2Lim2*100.;
+      }
       LOG(INFO)<<"Histo hDTD4DT04D4best_pfx_px not found => Chi2Lim = " 
 	       << fdChi2Lim 
                <<FairLogger::endl;
@@ -1217,6 +1294,11 @@ Bool_t   CbmTofAnaTestbeam::LoadCalParameter()
              <<FairLogger::endl;
     }
 
+    TH1D* fhtmpstnnrt = (TH1D*)gDirectory->FindObjectAny(Form("hSelTypeNNResidualT_Width"));
+    TH1D* fhtmpstnnrx = (TH1D*)gDirectory->FindObjectAny(Form("hSelTypeNNResidualX_Width"));
+    TH1D* fhtmpstnnry = (TH1D*)gDirectory->FindObjectAny(Form("hSelTypeNNResidualY_Width"));
+    TH1D* fhtmphtrxyt = (TH1D*)gDirectory->FindObjectAny(Form("hSelHitTupleResidualXYT_Width"));
+
     TH2D * fh2tmp = (TH2D *) gDirectory->FindObjectAny( Form("hDistDT04D4best"));
     if (NULL != fh2tmp)  fdHitDistAv=fh2tmp->GetMean(1);
     if (fdHitDistAv<=0.) fdHitDistAv=1.;
@@ -1232,6 +1314,103 @@ Bool_t   CbmTofAnaTestbeam::LoadCalParameter()
     if(NULL != fhtmpcs4) fhCluSize4DT04D4Off=(TH1D *)fhtmpcs4->Clone();
     if(NULL != fhtmptot0) fhTot0DT04D4Off=(TH1D *)fhtmptot0->Clone();
     if(NULL != fhtmptot4) fhTot4DT04D4Off=(TH1D *)fhtmptot4->Clone();
+
+
+    if(NULL == fhtmpstnnrt)
+    {
+      LOG(INFO)<<" Histo " << Form("hSelTypeNNResidualT_Width") << " not found. "
+               <<FairLogger::endl;
+    }
+    else
+    {
+      if(fbUseSigCalib)
+      {
+        fhSelTypeNNResidualT_Width = (TH1D*)fhtmpstnnrt->Clone();
+      }
+    }
+
+    if(NULL == fhSelTypeNNResidualT_Width)
+    {
+      fhSelTypeNNResidualT_Width = new TH1F(Form("hSelTypeNNResidualT_Width"),
+                                            Form("Sel-DUT ResiT Width vs SelType ; SelType ; RMS(T) (ns)"),
+                                            3, 0, 3);
+
+      fhSelTypeNNResidualT_Width->SetBinContent(1, fdDTWidth);
+      fhSelTypeNNResidualT_Width->SetBinContent(2, fSIGT);
+      fhSelTypeNNResidualT_Width->SetBinContent(3, fdMCSIGT);
+    }
+
+    if(NULL == fhtmpstnnrx)
+    {
+      LOG(INFO)<<" Histo " << Form("hSelTypeNNResidualX_Width") << " not found. "
+               <<FairLogger::endl;
+    }
+    else
+    {
+      if(fbUseSigCalib)
+      {
+        fhSelTypeNNResidualX_Width = (TH1D*)fhtmpstnnrx->Clone();
+      }
+    }
+
+    if(NULL == fhSelTypeNNResidualX_Width)
+    {
+      fhSelTypeNNResidualX_Width = new TH1F(Form("hSelTypeNNResidualX_Width"),
+                                            Form("Sel-DUT ResiX Width vs SelType ; SelType ; RMS(X) (cm)"),
+                                            3, 0, 3);
+
+      fhSelTypeNNResidualX_Width->SetBinContent(1, fdDXWidth);
+      fhSelTypeNNResidualX_Width->SetBinContent(2, fSIGX);
+      fhSelTypeNNResidualX_Width->SetBinContent(3, fdMCSIGX);
+    }
+
+    if(NULL == fhtmpstnnry)
+    {
+      LOG(INFO)<<" Histo " << Form("hSelTypeNNResidualY_Width") << " not found. "
+               <<FairLogger::endl;
+    }
+    else
+    {
+      if(fbUseSigCalib)
+      {
+        fhSelTypeNNResidualY_Width = (TH1D*)fhtmpstnnry->Clone();
+      }
+    }
+
+    if(NULL == fhSelTypeNNResidualY_Width)
+    {
+      fhSelTypeNNResidualY_Width = new TH1F(Form("hSelTypeNNResidualY_Width"),
+                                            Form("Sel-DUT ResiY Width vs SelType ; SelType ; RMS(Y) (cm)"),
+                                            3, 0, 3);
+
+      fhSelTypeNNResidualY_Width->SetBinContent(1, fdDYWidth);
+      fhSelTypeNNResidualY_Width->SetBinContent(2, fSIGY);
+      fhSelTypeNNResidualY_Width->SetBinContent(3, fdMCSIGY);
+    }
+
+    if(NULL == fhtmphtrxyt)
+    {
+      LOG(INFO)<<" Histo " << Form("hSelHitTupleResidualXYT_Width") << " not found. "
+               <<FairLogger::endl;
+    }
+    else
+    {
+      if(fbUseSigCalib)
+      {
+        fhSelHitTupleResidualXYT_Width = (TH1D*)fhtmphtrxyt->Clone();
+      }
+    }
+
+    if(NULL == fhSelHitTupleResidualXYT_Width)
+    {
+      fhSelHitTupleResidualXYT_Width = new TH1F(Form("hSelHitTupleResidualXYT_Width"),
+                                                Form("Sel hit tuple Resi XYT Width; X/Y/T [] ; RMS(X/Y/T) (cm/cm/ns)"),
+                                                3, 0, 3);
+
+      fhSelHitTupleResidualXYT_Width->SetBinContent(1, fdDXWidth);
+      fhSelHitTupleResidualXYT_Width->SetBinContent(2, fdDYWidth);
+      fhSelHitTupleResidualXYT_Width->SetBinContent(3, fdDTWidth);
+    }
 
     fCalParFile->Close();
     //    fhDTD4DT04D4Off->Draw();
@@ -1754,6 +1933,57 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -DTSIZ, DTSIZ); 
 
 
+     fhSelTypeNNChiSq = new TH2F("hSelTypeNNChiSq",
+                                 "ST NN #chi^{2}; sel type ST []; #chi^{2}_{3} []; ",
+                                 3, 0, 3,
+                                 1000, 0., 100.);
+
+     fhSelTypeNNResidualT = new TH2F("hSelTypeNNResidualT",
+                                     "ST NN ResiT vs. ST; sel type ST [];  T_{DUT} - T_{ST} [ns]",
+                                     3, 0, 3,
+                                     3001, -1.5, 1.5);
+
+     fhSelTypeNNResidualX = new TH2F("hSelTypeNNResidualX",
+                                     "ST NN ResiX vs. ST; sel type ST [];  X_{DUT} - X_{ST} [cm]",
+                                     3, 0, 3,
+                                     801, -4., 4.);
+
+     fhSelTypeNNResidualY = new TH2F("hSelTypeNNResidualY",
+                                     "ST NN ResiY vs. ST; sel type ST [];  Y_{DUT} - Y_{ST} [cm]",
+                                     3, 0, 3,
+                                     3001, -15., 15.);
+
+     fhSelTypeAccNNChiSq = new TH2F("hSelTypeAccNNChiSq",
+                                    "ST acc NN #chi^{2}; sel type ST []; #chi^{2}_{3} []; ",
+                                    3, 0, 3,
+                                    1000, 0., 100.);
+
+     fhSelTypeAccNNResidualT = new TH2F("hSelTypeAccNNResidualT",
+                                        "ST acc NN ResiT vs. ST; sel type ST [];  T_{DUT} - T_{ST} [ns]",
+                                        3, 0, 3,
+                                        3001, -1.5, 1.5);
+
+     fhSelTypeAccNNResidualX = new TH2F("hSelTypeAccNNResidualX",
+                                        "ST acc NN ResiX vs. ST; sel type ST [];  X_{DUT} - X_{ST} [cm]",
+                                        3, 0, 3,
+                                        801, -4., 4.);
+
+     fhSelTypeAccNNResidualY = new TH2F("hSelTypeAccNNResidualY",
+                                        "ST acc NN ResiY vs. ST; sel type ST [];  Y_{DUT} - Y_{ST} [cm]",
+                                        3, 0, 3,
+                                        3001, -15., 15.);
+
+     fhGoodSelTypeNNPureChiSq = new TH2F("hGoodSelTypeNNPureChiSq",
+                                         "gST pure NN #chi^{2}; sel type ST []; #chi^{2}_{3} []; ",
+                                         3, 0, 3,
+                                         1000, 0., 100.);
+
+     fhGoodSelTypeNNAllChiSq = new TH2F("hGoodSelTypeNNAllChiSq",
+                                        "gST all NN #chi^{2}; sel type ST []; #chi^{2}_{3} []; ",
+                                        3, 0, 3,
+                                        1000, 0., 100.);
+
+
      if(fbMonteCarloComparison)
      {
        Int_t iNCounters(fCounterModuleNodes.size());
@@ -1806,6 +2036,23 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
        fhAccRefTracksProcSpec->SetStats(0);
 
 
+       fhSelMCTrackEfficiency = new TEfficiency("hSelMCTrackEfficiency",
+                                                "; acc ref MUL []; Sel efficiency []",
+                                                50, 0., 50.);
+
+       fhSelMCTrackMatchEfficiency = new TEfficiency("hSelMCTrackMatchEfficiency",
+                                                     "; acc ref MUL []; Sel match efficiency []",
+                                                     50, 0., 50.);
+
+       fhSelMCTrackMatchPurity = new TEfficiency("hSelMCTrackMatchPurity",
+                                                 "; acc ref MUL []; Sel match purity []",
+                                                 50, 0., 50.);
+
+       fhSelMCTrackDutHitMatchNNMul = new TH1F("hSelMCTrackDutHitMatchNNMul", "Sel track-hit match mul; MUL []; ", 30, 0.5, 30.5);
+
+       fhSelMCTrackDutHitMatchAccNNMul = new TH1F("hSelMCTrackDutHitMatchAccNNMul", "Sel track-hit match acc mul; MUL []; ", 30, 0.5, 30.5);
+
+
        fhSelEfficiency = new TEfficiency("hSelEfficiency",
                                          "; acc ref MUL []; Sel efficiency []",
                                          50, 0., 50.);
@@ -1817,6 +2064,12 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
        fhSelRefTrackShare = new TEfficiency("hSelRefTrackShare",
                                             "; acc ref MUL []; Sel ref track share []",
                                             50, 0.5, 50.5);
+
+       fhSelRefTrackProcSpec = new TH2F("hSelRefTrackProcSpec",
+                                         "ST 0 ref track proc/spec; ; ",
+                                         5, 0., 5., 5, 0., 5.);
+       fhSelRefTrackProcSpec->SetCanExtend(TH1::kAllAxes);
+       fhSelRefTrackProcSpec->SetStats(0);
 
        fhSelMatchEfficiency = new TEfficiency("hSelMatchEfficiency",
                                               "; acc ref MUL []; Sel match efficiency []",
@@ -1897,9 +2150,31 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
                                         20, -0.5, 19.5);
 
 
-       fhDutEfficiency = new TEfficiency("hDutEfficiency",
-                                         "; acc ref MUL []; DUT efficiency []",
+       fhSelTrklEfficiency = new TEfficiency("hSelTrklEfficiency",
+                                             "; acc ref MUL []; Sel efficiency []",
+                                             50, 0., 50.);
+
+       fhSelTrklPurity = new TEfficiency("hSelTrklPurity",
+                                         "; acc ref MUL []; Sel purity []",
                                          50, 0., 50.);
+
+       fhSelTrklRefTrackShare = new TEfficiency("hSelTrklRefTrackShare",
+                                                "; acc ref MUL []; Sel ref track share []",
+                                                50, 0.5, 50.5);
+
+       fhSelTrklRefTrackProcSpec = new TH2F("hSelTrklRefTrackProcSpec",
+                                            "ST 1 ref track proc/spec; ; ",
+                                            5, 0., 5., 5, 0., 5.);
+       fhSelTrklRefTrackProcSpec->SetCanExtend(TH1::kAllAxes);
+       fhSelTrklRefTrackProcSpec->SetStats(0);
+
+       fhSelTrklMatchEfficiency = new TEfficiency("hSelTrklMatchEfficiency",
+                                                  "; acc ref MUL []; Sel match efficiency []",
+                                                  50, 0., 50.);
+
+       fhSelTrklMatchPurity = new TEfficiency("hSelTrklMatchPurity",
+                                              "; acc ref MUL []; Sel match purity []",
+                                              50, 0., 50.);
 
        fhDutResX_Hit_Trk = new TH2F("hDutResX_Hit_Trk",
                                     "DUT hit-trklt residual X; acc ref MUL []; X_{hit} - X_{trklt} [cm]",
@@ -1947,6 +2222,61 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
                                    3001, -1.5, 1.5);
 
 
+       fhSelHitTupleEfficiencyTIS = new TEfficiency("hSelHitTupleEfficiencyTIS",
+                                                    "; time in spill [s]; Sel efficiency []",
+                                                    TISnbins, 0., TISmax);
+
+       fhSelTrklEfficiencyTIS = new TEfficiency("hSelTrklEfficiencyTIS",
+                                                "; time in spill [s]; Sel efficiency []",
+                                                TISnbins, 0., TISmax);
+
+       fhSelMCTrackEfficiencyTIS = new TEfficiency("hSelMCTrackEfficiencyTIS",
+                                                   "; time in spill [s]; Sel efficiency []",
+                                                   TISnbins, 0., TISmax);
+
+       fhSelHitTupleMatchEfficiencyTIS = new TEfficiency("hSelHitTupleMatchEfficiencyTIS",
+                                                         "; time in spill [s]; Sel match efficiency []",
+                                                         TISnbins, 0., TISmax);
+
+       fhSelTrklMatchEfficiencyTIS = new TEfficiency("hSelTrklMatchEfficiencyTIS",
+                                                     "; time in spill [s]; Sel match efficiency []",
+                                                     TISnbins, 0., TISmax);
+
+       fhSelMCTrackMatchEfficiencyTIS = new TEfficiency("hSelMCTrackMatchEfficiencyTIS",
+                                                        "; time in spill [s]; Sel match efficiency []",
+                                                        TISnbins, 0., TISmax);
+
+       fhSelHitTupleResidualTTIS = new TH2F("hSelHitTupleResidualTTIS",
+                                            "; time in spill [s]; T_{hit} - T_{sel} [ns]",
+                                            TISnbins, 0., TISmax,
+                                            301, -1.5, 1.5);
+
+       fhSelTrklResidualTTIS = new TH2F("hSelTrklResidualTTIS",
+                                        "; time in spill [s]; T_{hit} - T_{sel} [ns]",
+                                        TISnbins, 0., TISmax,
+                                        301, -1.5, 1.5);
+
+       fhSelMCTrackResidualTTIS = new TH2F("hSelMCTrackResidualTTIS",
+                                           "; time in spill [s]; T_{hit} - T_{sel} [ns]",
+                                           TISnbins, 0., TISmax,
+                                           301, -1.5, 1.5);
+
+       fhSelHitTupleDutCluSizeTIS = new TH2F("hSelHitTupleDutCluSizeTIS",
+                                             "; time in spill [s]; cluster size [cells]",
+                                             TISnbins, 0., TISmax,
+                                             20, 0.5, 20.5);
+
+       fhSelTrklDutCluSizeTIS = new TH2F("hSelTrklDutCluSizeTIS",
+                                         "; time in spill [s]; cluster size [cells]",
+                                         TISnbins, 0., TISmax,
+                                         20, 0.5, 20.5);
+
+       fhSelMCTrackDutCluSizeTIS = new TH2F("hSelMCTrackDutCluSizeTIS",
+                                            "; time in spill [s]; cluster size [cells]",
+                                            TISnbins, 0., TISmax,
+                                            20, 0.5, 20.5);
+
+
        fhPVResTAll = new TH2F("hPVResTAll",
                               "PV all reco-MC residual T; acc ref MUL []; T_{reco} - T_{MC} [ns]",
                               50, 0., 50.,
@@ -1979,37 +2309,37 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 
 
        fhAccRefTrackResT = new TH2F("hAccRefTrackResT",
-                                    "ref track-tracklet residual T; acc ref MUL []; T0_{trk} - T_{trklt} [ns]",
+                                    "ref track-tracklet residual T; acc ref MUL []; T0_{trklt} - T_{trk} [ns]",
                                     50, 0., 50.,
 	                                  3001, -1.5, 1.5);
 
        fhAccRefTrackResX = new TH2F("hAccRefTrackResX",
-                                    "ref track-tracklet residual X; acc ref MUL []; X0_{trk} - X_{trklt} [cm]",
+                                    "ref track-tracklet residual X; acc ref MUL []; X0_{trklt} - X_{trk} [cm]",
                                     50, 0., 50.,
 	                                  801, -4., 4.);
 
        fhAccRefTrackResY = new TH2F("hAccRefTrackResY",
-                                    "ref track-tracklet residual Y; acc ref MUL []; Y0_{trk} - Y_{trklt} [cm]",
+                                    "ref track-tracklet residual Y; acc ref MUL []; Y0_{trklt} - Y_{trk} [cm]",
                                     50, 0., 50.,
 	                                  2001, -10., 10.);
 
        fhAccRefTrackResTx = new TH2F("hAccRefTrackResTx",
-                                    "ref track-tracklet residual Tx; acc ref MUL []; Tx0_{trk} - Tx_{trklt} []",
+                                    "ref track-tracklet residual Tx; acc ref MUL []; Tx0_{trklt} - Tx_{trk} []",
                                     50, 0., 50.,
 	                                  201, -1., 1.);
 
        fhAccRefTrackResTy = new TH2F("hAccRefTrackResTy",
-                                    "ref track-tracklet residual Ty; acc ref MUL []; Ty0_{trk} - Ty_{trklt} []",
+                                    "ref track-tracklet residual Ty; acc ref MUL []; Ty0_{trklt} - Ty_{trk} []",
                                     50, 0., 50.,
 	                                  201, -1., 1.);
 
        fhAccRefTrackResV = new TH2F("hAccRefTrackResV",
-                                    "ref track-tracklet residual V; acc ref MUL []; V0_{trk} - V_{trklt} [cm/ns]",
+                                    "ref track-tracklet residual V; acc ref MUL []; V0_{trklt} - V_{trk} [cm/ns]",
                                     50, 0., 50.,
 	                                  101, -5., 5.);
 
        fhAccRefTrackResN = new TH2F("hAccRefTrackResN",
-                                    "ref track-tracklet residual N; acc ref MUL []; N0_{trk} - N_{trklt} []",
+                                    "ref track-tracklet residual N; acc ref MUL []; N0_{trklt} - N_{trk} []",
                                     50, 0., 50.,
 	                                  11, -5.5, 5.5);
 
@@ -2179,6 +2509,13 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      }
 
 
+     fhSelTrklFitRedChiSq = new TH1F("hSelTrklFitRedChiSq", "Sel trkl 3D fit #chi^{2}/4; #chi^{2}/4 []; ", 1000, 0., 10.);
+     fhSelTrklDutHitMatchNNMul = new TH1F("hSelTrklDutHitMatchNNMul", "Sel trkl-hit match mul; MUL []; ", 30, 0.5, 30.5);
+     fhSelTrklDutHitMatchAccNNMul = new TH1F("hSelTrklDutHitMatchAccNNMul", "Sel trkl-hit match acc mul; MUL []; ", 30, 0.5, 30.5);
+
+     fhSelHitTupleDutHitMatchMul = new TH1F("hSelHitTupleDutHitMatchMul", "Sel hit-hit match mul; MUL []; ", 30, 0.5, 30.5);
+     fhSelHitTupleDutHitMatchAccMul = new TH1F("hSelHitTupleDutHitMatchAccMul", "Sel hit-hit match acc mul; MUL []; ", 30, 0.5, 30.5);
+
      // rate histos
      Double_t TRange = 600.; //in seconds
      Double_t NStations=10.;
@@ -2221,6 +2558,20 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 // ------------------------------------------------------------------
 Bool_t CbmTofAnaTestbeam::FillHistos()
 {
+   std::set<Int_t> DutHitSet;
+
+   for(Int_t iHitInd = 0; iHitInd < fTofHitsColl->GetEntries(); iHitInd++)
+   {
+     CbmTofHit* pHit = (CbmTofHit*)fTofHitsColl->At(iHitInd);
+     Int_t iDetId = (pHit->GetAddress() & DetMask);
+
+     if(fiDutAddr == iDetId)
+     {
+       DutHitSet.emplace(iHitInd);
+     }
+   }
+
+
    if(fbMonteCarloComparison)
    {
      if(fbTracksInInputFile)
@@ -2238,8 +2589,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        // Determine the number of reference tracks in the reconstructed event
        // as a function of which several QA observables are studied. A reference
        // track must originate from the target (not necessarily from the primary
-       // vertex) and intersect the active planes of at least 3 different
-       // counters.
+       // vertex) and intersect the active planes of at least 'fiMinMCRefTrackPoints'
+       // different counters.
        Int_t iNAccPrimTracks(0);
 
        for(Int_t iTrack = 0; iTrack < fAccTracks->GetEntriesFast(); iTrack++)
@@ -2257,7 +2608,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
          {
            iNAccPrimTracks++;
 
-           if(3 <= tAccTrackPointMatch->GetNofLinks())
+           if(fiMinMCRefTrackPoints <= tAccTrackPointMatch->GetNofLinks())
            {
              fiNAccRefTracks++;
            }
@@ -2290,6 +2641,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    Int_t iBRefHitInd(-1);
    Int_t iMRefHitInd(-1);
    Int_t iSel2HitInd(-1);
+   CbmTrackMatchNew tSelHitTupleTrackMatch;
    Bool_t bGoodTrackSel(kFALSE);
 
    // Trb System 
@@ -2587,13 +2939,13 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     if(fhDTD4DT04D4Off != NULL) 
 	        dTcor=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(dTDia-tof2-fdTShift));
 
-             Double_t Chi2Match =TMath::Power((xPos1-xPos2-fdDXMean)/fdDXWidth,2.)
-	                        +TMath::Power((yPos1-yPos2-fdDYMean)/fdDYWidth,2.)
-	                        +TMath::Power((tof1-tof2-dTcor-fdDTMean)/fdDTWidth,2.);
+             Double_t Chi2Match =TMath::Power((xPos1-xPos2-fdDXMean)/GetSigX(0),2.)
+	                        +TMath::Power((yPos1-yPos2-fdDYMean)/GetSigY(0),2.)
+	                        +TMath::Power((tof1-tof2-dTcor-fdDTMean)/GetSigT(0),2.);
              if (Chi2Match > 1.E8) continue;
 	     Chi2Match /= 3;
 
-	     LOG(DEBUG2)<<" Chi2 "<<Form(" %f %f %f %f %f %f ",fdDXMean,fdDXWidth,fdDYMean,fdDYWidth,fdDTMean,fdDTWidth)
+	     LOG(DEBUG2)<<" Chi2 "<<Form(" %f %f %f %f %f %f ",fdDXMean,GetSigX(0),fdDYMean,GetSigY(0),fdDTMean,GetSigT(0))
 		        <<Form(" -> %f ", Chi2Match)
 		        <<FairLogger::endl;
 	     LOG(DEBUG2)<<" Chi2 "<<Form(" %f %f %f %f %f %f ",xPos1,xPos2,yPos1,yPos2,tof1,tof2)
@@ -2798,9 +3150,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 			       Double_t yPos3=dzscal*pHit3->GetY();
 			       Double_t tof3 =pHit3->GetTime();	
 	       
-			       Double_t Chi2Match=TMath::Power((xPos3-xPos2)/fdDXWidth,2.)
-	                                         +TMath::Power((yPos3-yPos2)/fdDYWidth,2.)
-	                                         +TMath::Power((tof3-tof2-dTcor-fdSel2TOff)/fdDTWidth,2.);
+			       Double_t Chi2Match=TMath::Power((xPos3-xPos2)/GetSHTSigX(),2.)
+	                                         +TMath::Power((yPos3-yPos2)/GetSHTSigY(),2.)
+	                                         +TMath::Power((tof3-tof2-dTcor-fdSel2TOff)/GetSHTSigT(),2.);
 
 			       Chi2Match /= 3;
 			       LOG(DEBUG1)<<Form("valid Sel2 0x%08x with Chi2 %7.1f, %7.1f, %7.1f, %7.1f, %7.1f, %7.1f",
@@ -2858,7 +3210,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		      dDTSpill/1.E9,fEvents,dMulD,(Int_t)fDetIdMap.size())<<FairLogger::endl;
    }
   
-   if(dMul4>dM4Max || dMulD>dMDMax || dMul0>dM0Max)
+//   if(dMul4>dM4Max || dMulD>dMDMax || dMul0>dM0Max)
+   if(dMul0 > dM0Max || dMul4 > dM4Max || dMulD > dMDMax || dMulS2 > dM4Max)
    {
        BSel[0]=kFALSE;
        LOG(DEBUG) << Form("<D> Muls %4.0f, %4.0f, %4.0f,  %4.0f, Matches %d",
@@ -2921,10 +3274,12 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      if(BSel[0])
      {
        fhSelEfficiency->Fill(kTRUE, fiNAccRefTracks);
+       fhSelHitTupleEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
      }
      else
      {
        fhSelEfficiency->Fill(kFALSE, fiNAccRefTracks);
+       fhSelHitTupleEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
      }
    }
 
@@ -3042,51 +3397,86 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
     {
       if(fbTracksInInputFile)
       {
-        const CbmLink& tMRefTrackLink = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iMRefHitInd))->GetMatchedLink();
+        Int_t iMatchedRealTrackLink(-1);
+        std::set<Int_t> RealTrackLinkSet;
 
-        if(-1 < tMRefTrackLink.GetFile() && -1 < tMRefTrackLink.GetEntry() && -1 < tMRefTrackLink.GetIndex())
+        // A Sel2 counter was defined. Assessing purity for a selector hit tuple
+        // does not make too much sense if the MRef counter is the only reference
+        // apart from a BRef (start) counter.
+        if(pHitSel2)
         {
-          // A Sel2 counter was defined.
-          if(pHitSel2)
-          {
-            const CbmLink& tSel2TrackLink = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iSel2HitInd))->GetMatchedLink();
+          Int_t iNSelHitTupleHits(3);
 
-            // Sel2 and MRef selector hits originate from different MC tracks.
-            if(!(tSel2TrackLink == tMRefTrackLink))
+          CbmMatch* tMRefHitTrackMatch = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iMRefHitInd));
+          CbmMatch* tSel2HitTrackMatch = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iSel2HitInd));
+          CbmMatch* tBRefHitTrackMatch = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iBRefHitInd));
+
+          for(Int_t iMRefHitTrackLink = 0; iMRefHitTrackLink < tMRefHitTrackMatch->GetNofLinks(); iMRefHitTrackLink++)
+          {
+            tSelHitTupleTrackMatch.AddLink(tMRefHitTrackMatch->GetLink(iMRefHitTrackLink));
+          }
+
+          for(Int_t iSel2HitTrackLink = 0; iSel2HitTrackLink < tSel2HitTrackMatch->GetNofLinks(); iSel2HitTrackLink++)
+          {
+            tSelHitTupleTrackMatch.AddLink(tSel2HitTrackMatch->GetLink(iSel2HitTrackLink));
+          }
+
+          for(Int_t iBRefHitTrackLink = 0; iBRefHitTrackLink < tBRefHitTrackMatch->GetNofLinks(); iBRefHitTrackLink++)
+          {
+            tSelHitTupleTrackMatch.AddLink(tBRefHitTrackMatch->GetLink(iBRefHitTrackLink));
+          }
+
+          const CbmLink& tSelHitTupleMatchedTrackLink = tSelHitTupleTrackMatch.GetMatchedLink();
+          Double_t dSelHitTupleMaxTrackLinkWeight = tSelHitTupleMatchedTrackLink.GetWeight();
+
+          for(Int_t iSelHitTupleTrackLink = 0; iSelHitTupleTrackLink < tSelHitTupleTrackMatch.GetNofLinks(); iSelHitTupleTrackLink++)
+          {
+            const CbmLink& tSelHitTupleTrackLink = tSelHitTupleTrackMatch.GetLink(iSelHitTupleTrackLink);
+
+            if(dSelHitTupleMaxTrackLinkWeight == tSelHitTupleTrackLink.GetWeight() && -1 < tSelHitTupleTrackLink.GetIndex())
             {
-              fhSelPurity->Fill(kFALSE, fiNAccRefTracks);
+              iMatchedRealTrackLink = tSelHitTupleTrackLink.GetIndex();
+              RealTrackLinkSet.emplace(tSelHitTupleTrackLink.GetIndex());
+            }
+          }
+
+          Int_t iNTrueTupleHits = static_cast<Int_t>(dSelHitTupleMaxTrackLinkWeight);
+
+          // The beam particle track link (-5, -5, -5) cannot add up to the
+          // weight of track links found in the MRef and Sel2 counters. For
+          // consistency, it should be counted as a true sel tuple hit, though.
+          if(5 == fiBeamRefSmType)
+          {
+            iNTrueTupleHits++;
+          }
+
+          tSelHitTupleTrackMatch.SetNofTrueHits(iNTrueTupleHits);
+          tSelHitTupleTrackMatch.SetNofWrongHits(iNSelHitTupleHits - iNTrueTupleHits);
+
+          // For a pure sel hit tuple, request a particle track match different
+          // from a beam or a dark point.
+          // The case that a noise link and a particle link have the same weight
+          // and the noise link is - by chance - the matched one is handled here:
+          // The noise link is ignored while assessing purity if and only if a
+          // particle link with the same weight exists.
+          if(-1 < iMatchedRealTrackLink)
+          {
+            if(1. == tSelHitTupleTrackMatch.GetTrueOverAllHitsRatio())
+            {
+              fhSelPurity->Fill(kTRUE, fiNAccRefTracks);
+              bGoodTrackSel = kTRUE;
             }
             else
             {
-              // The beam reference counter is NOT a diamond and thus qualifies for
-              // track match checking.
-              if(5 != fiBeamRefSmType)
-              {
-                const CbmLink& tBRefTrackLink = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iBRefHitInd))->GetMatchedLink();
-
-                // BRef and MRef selector hits originate from different MC tracks.
-                if(!(tBRefTrackLink == tMRefTrackLink))
-                {
-                  fhSelPurity->Fill(kFALSE, fiNAccRefTracks);
-                }
-                else
-                {
-                  fhSelPurity->Fill(kTRUE, fiNAccRefTracks);
-                  bGoodTrackSel = kTRUE;
-                }
-              }
-              else
-              {
-                fhSelPurity->Fill(kTRUE, fiNAccRefTracks);
-                bGoodTrackSel = kTRUE;
-              }
+              fhSelPurity->Fill(kFALSE, fiNAccRefTracks);
             }
           }
+          else
+          {
+            fhSelPurity->Fill(kFALSE, fiNAccRefTracks);
+          }
         }
-        else
-        {
-          fhSelPurity->Fill(kFALSE, fiNAccRefTracks);
-        }
+
 
         if(bGoodTrackSel)
         {
@@ -3096,20 +3486,35 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
           const char* cMaterialName;
 
-          Int_t iTrackSelInd = (dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iMRefHitInd))->GetMatchedLink()).GetIndex();
+          const char* cSelRefTrackPdgName;
+          const char* cSelRefTrackProcessName;
 
-          CbmMCTrack* tTrackSel = dynamic_cast<CbmMCTrack*>(fAccTracks->At(iTrackSelInd));
-          CbmMatch* tTrackSelPointMatch = dynamic_cast<CbmMatch*>(fTofAccTrackPointMatches->At(iTrackSelInd));
+          Bool_t bSelRefTrack(kFALSE);
 
-          tNode = gGeoManager->FindNode(tTrackSel->GetStartX(), tTrackSel->GetStartY(), tTrackSel->GetStartZ());
-          tMedium = tNode->GetMedium();
-          tMaterial = tMedium->GetMaterial();
+          for(auto const & iTrack : RealTrackLinkSet)
+          {
+            CbmMCTrack* tTrack = dynamic_cast<CbmMCTrack*>(fAccTracks->At(iTrack));
+            CbmMatch* tTrackPointMatch = dynamic_cast<CbmMatch*>(fTofAccTrackPointMatches->At(iTrack));
 
-          GetMaterialName(tMaterial->GetName(), cMaterialName);
+            tNode = gGeoManager->FindNode(tTrack->GetStartX(), tTrack->GetStartY(), tTrack->GetStartZ());
+            tMedium = tNode->GetMedium();
+            tMaterial = tMedium->GetMaterial();
 
-          if(0 == std::strcmp("target", cMaterialName) && 3 <= tTrackSelPointMatch->GetNofLinks())
+            GetMaterialName(tMaterial->GetName(), cMaterialName);
+
+            if(0 == std::strcmp("target", cMaterialName) && fiMinMCRefTrackPoints <= tTrackPointMatch->GetNofLinks())
+            {
+              bSelRefTrack = kTRUE;
+
+              GetPdgName(tTrack->GetPdgCode(), cSelRefTrackPdgName);
+              GetProcessName(TMCProcessName[tTrack->GetGeantProcessId()], cSelRefTrackProcessName);
+            }
+          }
+
+          if(bSelRefTrack)
           {
             fhSelRefTrackShare->Fill(kTRUE, fiNAccRefTracks);
+            fhSelRefTrackProcSpec->Fill(cSelRefTrackProcessName, cSelRefTrackPdgName, 1.);
           }
           else
           {
@@ -3157,31 +3562,161 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        }
      }
 
+     // 2019-01-02 chs
+     // Calibration code was moved here to make the corrected time difference
+     // 'dToD' between the DUT and MRef counters available also for the
+     // (else) case that the selected DUT-MRef hit pair does not meet the
+     // 'fdChi2Lim' criterion for an efficient match.
+     Int_t iDetId1 = (pHit1->GetAddress() & DetMask);
+     Int_t iChId1 = pHit1->GetAddress();
+     fChannelInfo1 = fDigiPar->GetCell( iChId1 );
+
+     Int_t iDetId2 = (pHit2->GetAddress() & DetMask);
+     Int_t iChId2 = pHit2->GetAddress();
+     fChannelInfo2 = fDigiPar->GetCell( iChId2 );
+
+     Double_t xPos1=pHit1->GetX();
+     Double_t yPos1=pHit1->GetY();
+     Double_t zPos1=pHit1->GetZ();
+     Double_t tof1 =pHit1->GetTime();
+     Double_t dzscal=1.;
+     if(fEnableMatchPosScaling) dzscal=zPos1/pHit2->GetZ();
+
+     Double_t xPos2=dzscal*pHit2->GetX();
+     Double_t yPos2=dzscal*pHit2->GetY();
+     Double_t tof2=pHit2->GetTime();
+
+     Double_t dDist=TMath::Sqrt(
+			  TMath::Power(pHit1->GetX()-pHit2->GetX(),2)
+			  +TMath::Power(pHit1->GetY()-pHit2->GetY(),2)
+			  +TMath::Power(pHit1->GetZ()-pHit2->GetZ(),2)
+			  );
+
+     CbmMatch* digiMatch1=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
+     Double_t dCluSize0 = digiMatch1->GetNofLinks()/2.;
+
+     CbmMatch* digiMatch2=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit2));
+     Double_t dCluSize4 = digiMatch2->GetNofLinks()/2.;
+
+     // check for dependence in counter reference frame 
+     /*TGeoNode *fNode=*/        // prepare global->local trafo
+     gGeoManager->FindNode(fChannelInfo2->GetX(),fChannelInfo2->GetY(),fChannelInfo2->GetZ());
+
+     hitpos2[0]=pHit2->GetX();
+     hitpos2[1]=pHit2->GetY();
+     hitpos2[2]=pHit2->GetZ();
+
+     /*     TGeoNode* cNode=*/ gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
+     // if(0) cNode->Print();
+     gGeoManager->MasterToLocal(hitpos2, hitpos2_local);
+
+     Double_t dTofD4  = fdTOffD4 + dDTD4Min;
+     Double_t dInvVel = dTofD4/pHitRef->GetR(); // in ns/cm
+     Double_t dDTexp  = dDist*dInvVel;
+     Double_t dTMin   = fdHitDistAv/30.; // in ns 
+     CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
+     Double_t dTot0   = 0.;
+     if(NULL != fTofDigisColl)
+       for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
+         CbmLink L0 = digiMatch0->GetLink(iLink);  
+         Int_t iDigInd0=L0.GetIndex();
+         if (iDigInd0 < fTofDigisColl->GetEntries()){
+           CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+           dTot0 += pDig0->GetTot();
+           LOG(DEBUG1)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot0)
+		      <<FairLogger::endl;
+         }
+       } 
+     dTot0 /= digiMatch0->GetNofLinks();  // average time over threshold
+
+     CbmMatch* digiMatch4=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit2));
+     Double_t dTot4   = 0.;
+     if(NULL != fTofDigisColl)
+       for (Int_t iLink=0; iLink<digiMatch4->GetNofLinks(); iLink++){  // loop over digis
+         CbmLink L0 = digiMatch4->GetLink(iLink);  
+         Int_t iDigInd0=L0.GetIndex();
+         if (iDigInd0 < fTofDigisColl->GetEntries()){
+           CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+           dTot4 += pDig0->GetTot();
+           LOG(DEBUG1)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot4)
+		      <<FairLogger::endl;
+         }
+       } 
+     dTot4 /= digiMatch4->GetNofLinks();  // average time over threshold
+     
+     Double_t dTcor=0.;
+     if(fhDTD4DT04D4Off != NULL) dTcor+=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(-dDTD4Min));
+     if(fhDTX4D4Off     != NULL) dTcor+=(Double_t)fhDTX4D4Off->GetBinContent(fhDTX4D4Off->FindBin(hitpos2_local[0]));
+     if(fhDTY4D4Off     != NULL) dTcor+=(Double_t)fhDTY4D4Off->GetBinContent(fhDTY4D4Off->FindBin(hitpos2_local[1]));
+     if(fhDTTexpD4Off   != NULL) dTcor+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp-dTMin));
+     if(fhCluSize0DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize0DT04D4Off->GetBinContent(fhCluSize0DT04D4Off->FindBin(dCluSize0));
+     if(fhCluSize4DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize4DT04D4Off->GetBinContent(fhCluSize4DT04D4Off->FindBin(dCluSize4));
+     if(fhTot0DT04D4Off != NULL) dTcor+=(Double_t)fhTot0DT04D4Off->GetBinContent(fhTot0DT04D4Off->FindBin(TMath::Log(dTot0)));
+     if(fhTot4DT04D4Off != NULL) dTcor+=(Double_t)fhTot4DT04D4Off->GetBinContent(fhTot4DT04D4Off->FindBin(TMath::Log(dTot4)));
+
+     //    dTcor *= dDist/fdHitDistAv;
+     Double_t dToD = (tof1-tof2-dTcor-fdDTMean); //*fdHitDistAv/dDist;
+     //     LOG(INFO) << "dTcor for "<<-dDTD4<<" from "<<fhDTD4DT04D4Off<<": "<<dTcor<<FairLogger::endl;
+
+
+     Bool_t bGoodSelDutMatch(kFALSE);
+
+     if(fbMonteCarloComparison)
+     {
+       Int_t iDutHitInd = fTofHitsColl->IndexOf(pHit1);
+
+       if(fbTracksInInputFile)
+       {
+         if(bGoodTrackSel)
+         {
+           CbmMatch* tDutHitTrackMatch = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iDutHitInd));
+
+           Double_t dSelHitTupleMaxTrackLinkWeight = (tSelHitTupleTrackMatch.GetMatchedLink()).GetWeight();
+
+
+           for(Int_t iSelHitTupleTrackLink = 0; iSelHitTupleTrackLink < tSelHitTupleTrackMatch.GetNofLinks(); iSelHitTupleTrackLink++)
+           {
+             const CbmLink& tSelHitTupleTrackLink = tSelHitTupleTrackMatch.GetLink(iSelHitTupleTrackLink);
+
+             if(dSelHitTupleMaxTrackLinkWeight == tSelHitTupleTrackLink.GetWeight())
+             {
+               for(Int_t iDutHitTrackLink = 0; iDutHitTrackLink < tDutHitTrackMatch->GetNofLinks(); iDutHitTrackLink++)
+               {
+                 const CbmLink& tDutHitTrackLink = tDutHitTrackMatch->GetLink(iDutHitTrackLink);
+
+                 if(tSelHitTupleTrackLink == tDutHitTrackLink)
+                 {
+                   bGoodSelDutMatch = kTRUE;
+                   break;
+                 }
+               }
+             }
+
+             if(bGoodSelDutMatch)
+             {
+               break;
+             }
+           }
+
+           if(bGoodSelDutMatch)
+           {
+             fhGoodSelTypeNNPureChiSq->Fill(0., 3.*Chi2List[iM0]);
+           }
+
+           fhGoodSelTypeNNAllChiSq->Fill(0., 3.*Chi2List[iM0]);
+         }
+       }
+     }
+
+
      if ( Chi2List[iM0] < fdChi2Lim) {
 
        if(fbMonteCarloComparison)
        {
          fhSelMatchEfficiency->Fill(kTRUE, fiNAccRefTracks);
+         fhSelHitTupleMatchEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
        }
 
-       Int_t iDetId1 = (pHit1->GetAddress() & DetMask);
-       Int_t iChId1 = pHit1->GetAddress();
-       fChannelInfo1 = fDigiPar->GetCell( iChId1 );
-
-       Int_t iDetId2 = (pHit2->GetAddress() & DetMask);
-       Int_t iChId2 = pHit2->GetAddress();
-       fChannelInfo2 = fDigiPar->GetCell( iChId2 );
-
-       Double_t xPos1=pHit1->GetX();
-       Double_t yPos1=pHit1->GetY();
-       Double_t zPos1=pHit1->GetZ();
-       Double_t tof1 =pHit1->GetTime();
-       Double_t dzscal=1.;
-       if(fEnableMatchPosScaling) dzscal=zPos1/pHit2->GetZ();
-
-       Double_t xPos2=dzscal*pHit2->GetX();
-       Double_t yPos2=dzscal*pHit2->GetY();
-       Double_t tof2=pHit2->GetTime();
 
        if(fTrbHeader != NULL) fhTIS_sel1->Fill(fTrbHeader->GetTimeInSpill());
        else                   fhTIS_sel1->Fill((dTAv-StartSpillTime)/1.E9);
@@ -3205,20 +3740,11 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        fhYX04->Fill(yPos1,xPos2);
        fhTT04->Fill(tof1,tof1-tof2);
 
-       Double_t dDist=TMath::Sqrt(
-				  TMath::Power(pHit1->GetX()-pHit2->GetX(),2)
-				  +TMath::Power(pHit1->GetY()-pHit2->GetY(),2)
-				  +TMath::Power(pHit1->GetZ()-pHit2->GetZ(),2)
-				  );
 
        fhChi04D4best->Fill(Chi2List[iM0]);
 
 
-       CbmMatch* digiMatch1=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
-       Double_t dCluSize0 = digiMatch1->GetNofLinks()/2.;
        fhDigiMul0D4best->Fill(dMul0,dCluSize0);
-       CbmMatch* digiMatch2=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit2));
-       Double_t dCluSize4 = digiMatch2->GetNofLinks()/2.;
        fhDigiMul4D4best->Fill(dMul4,dCluSize4);
 
        fhCluSize04D4best->Fill(dCluSize0,dCluSize4);
@@ -3235,65 +3761,6 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        fhCluSizeTrel0D4best->Fill(dCluSize0,pHit1->GetTime()-dDutTMean);
        fhCluSizeTrel4D4best->Fill(dCluSize4,pHit2->GetTime()-dRefTMean);
 
-       // check for dependence in counter reference frame 
-       /*TGeoNode *fNode=*/        // prepare global->local trafo
-       gGeoManager->FindNode(fChannelInfo2->GetX(),fChannelInfo2->GetY(),fChannelInfo2->GetZ());
-
-       hitpos2[0]=pHit2->GetX();
-       hitpos2[1]=pHit2->GetY();
-       hitpos2[2]=pHit2->GetZ();
-
-       /*     TGeoNode* cNode=*/ gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
-       // if(0) cNode->Print();
-       gGeoManager->MasterToLocal(hitpos2, hitpos2_local);
-
-       Double_t dTofD4  = fdTOffD4 + dDTD4Min;
-       Double_t dInvVel = dTofD4/pHitRef->GetR(); // in ns/cm
-       Double_t dDTexp  = dDist*dInvVel;
-       Double_t dTMin   = fdHitDistAv/30.; // in ns 
-       CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit1));
-       Double_t dTot0   = 0.;
-       if(NULL != fTofDigisColl)
-	 for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
-	   CbmLink L0 = digiMatch0->GetLink(iLink);  
-	   Int_t iDigInd0=L0.GetIndex();
-	   if (iDigInd0 < fTofDigisColl->GetEntries()){
-	     CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-	     dTot0 += pDig0->GetTot();
-	     LOG(DEBUG1)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot0)
-			<<FairLogger::endl;
-	   }
-	 } 
-       dTot0 /= digiMatch0->GetNofLinks();  // average time over threshold
-
-       CbmMatch* digiMatch4=(CbmMatch *)fTofDigiMatchColl->At(fTofHitsColl->IndexOf(pHit2));
-       Double_t dTot4   = 0.;
-       if(NULL != fTofDigisColl)
-	 for (Int_t iLink=0; iLink<digiMatch4->GetNofLinks(); iLink++){  // loop over digis
-	   CbmLink L0 = digiMatch4->GetLink(iLink);  
-	   Int_t iDigInd0=L0.GetIndex();
-	   if (iDigInd0 < fTofDigisColl->GetEntries()){
-	     CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-	     dTot4 += pDig0->GetTot();
-	     LOG(DEBUG1)<<Form(" dTot of hit 0x%08x: digind %d add %f -> sum %f",iDetId1,iDigInd0,pDig0->GetTot(),dTot4)
-			<<FairLogger::endl;
-	   }
-	 } 
-       dTot4 /= digiMatch4->GetNofLinks();  // average time over threshold
-       
-       Double_t dTcor=0.;
-       if(fhDTD4DT04D4Off != NULL) dTcor+=(Double_t)fhDTD4DT04D4Off->GetBinContent(fhDTD4DT04D4Off->FindBin(-dDTD4Min));
-       if(fhDTX4D4Off     != NULL) dTcor+=(Double_t)fhDTX4D4Off->GetBinContent(fhDTX4D4Off->FindBin(hitpos2_local[0]));
-       if(fhDTY4D4Off     != NULL) dTcor+=(Double_t)fhDTY4D4Off->GetBinContent(fhDTY4D4Off->FindBin(hitpos2_local[1]));
-       if(fhDTTexpD4Off   != NULL) dTcor+=(Double_t)fhDTTexpD4Off->GetBinContent(fhDTTexpD4Off->FindBin(dDTexp-dTMin));
-       if(fhCluSize0DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize0DT04D4Off->GetBinContent(fhCluSize0DT04D4Off->FindBin(dCluSize0));
-       if(fhCluSize4DT04D4Off != NULL) dTcor+=(Double_t)fhCluSize4DT04D4Off->GetBinContent(fhCluSize4DT04D4Off->FindBin(dCluSize4));
-       if(fhTot0DT04D4Off != NULL) dTcor+=(Double_t)fhTot0DT04D4Off->GetBinContent(fhTot0DT04D4Off->FindBin(TMath::Log(dTot0)));
-       if(fhTot4DT04D4Off != NULL) dTcor+=(Double_t)fhTot4DT04D4Off->GetBinContent(fhTot4DT04D4Off->FindBin(TMath::Log(dTot4)));
-
-       //    dTcor *= dDist/fdHitDistAv;
-       Double_t dToD = (tof1-tof2-dTcor-fdDTMean); //*fdHitDistAv/dDist;
-       //     LOG(INFO) << "dTcor for "<<-dDTD4<<" from "<<fhDTD4DT04D4Off<<": "<<dTcor<<FairLogger::endl;
 
        fhTofD4best->Fill(dTofD4);
        if(dInvVel>0.) fhVelD4best->Fill(1./dInvVel);
@@ -3389,19 +3856,22 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
          {
            if(bGoodTrackSel)
            {
-             const CbmLink& tMRefTrackLink = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iMRefHitInd))->GetMatchedLink();
-             const CbmLink& tDutTrackLink = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iDutHitInd))->GetMatchedLink();
-
-             if(!(tDutTrackLink == tMRefTrackLink))
-             {
-               fhSelMatchPurity->Fill(kFALSE, fiNAccRefTracks);
-             }
-             else
+             if(bGoodSelDutMatch)
              {
                fhSelMatchPurity->Fill(kTRUE, fiNAccRefTracks);
              }
+             else
+             {
+               fhSelMatchPurity->Fill(kFALSE, fiNAccRefTracks);
+             }
            }
-
+// uncomment to account for impure selectors in the matching purity calculation
+/*
+           else
+           {
+             fhSelMatchPurity->Fill(kFALSE, fiNAccRefTracks);
+           }
+*/
 
            fhNTracksPerSelMRefHit->Fill(dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iMRefHitInd))->GetNofLinks());
            if(pHitSel2)
@@ -3646,20 +4116,69 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   }
 	 }
        }
+
+       fhSelTypeAccNNChiSq->Fill(0., 3.*Chi2List[iM0]);
+       fhSelTypeAccNNResidualT->Fill(0., dToD);
+       fhSelTypeAccNNResidualX->Fill(0., xPos1 - xPos2 - fdDXMean);
+       fhSelTypeAccNNResidualY->Fill(0., yPos1 - yPos2 - fdDYMean);
+
+       fhSelTypeNNChiSq->Fill(0., 3.*Chi2List[iM0]);
+       fhSelTypeNNResidualT->Fill(0., dToD);
+       fhSelTypeNNResidualX->Fill(0., xPos1 - xPos2 - fdDXMean);
+       fhSelTypeNNResidualY->Fill(0., yPos1 - yPos2 - fdDYMean);
+
+       fhSelHitTupleResidualTTIS->Fill((dTAv - StartSpillTime)/1.E9, dToD);
+       fhSelHitTupleDutCluSizeTIS->Fill((dTAv - StartSpillTime)/1.E9, dCluSize0);
+
      }  // fdChi2Lim end 
      else
      {
        if(fbMonteCarloComparison)
        {
          fhSelMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+         fhSelHitTupleMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
+       }
+
+       fhSelTypeNNChiSq->Fill(0., 3.*Chi2List[iM0]);
+       fhSelTypeNNResidualT->Fill(0., dToD);
+       fhSelTypeNNResidualX->Fill(0., xPos1 - xPos2 - fdDXMean);
+       fhSelTypeNNResidualY->Fill(0., yPos1 - yPos2 - fdDYMean);
+     }
+
+
+     Int_t iSelHitTupleDutHitMatchMul(0);
+     Int_t iSelHitTupleDutHitMatchAccMul(0);
+
+     for(Int_t iMatch = 0; iMatch < iNbMatchedHits; iMatch++)
+     {
+       if(pHitRef == pChi2Hit2[iMatch])
+       {
+         iSelHitTupleDutHitMatchMul++;
+
+         if(fdChi2Lim > Chi2List[iMatch])
+         {
+           iSelHitTupleDutHitMatchAccMul++;
+         }
        }
      }
+
+     if(iSelHitTupleDutHitMatchMul)
+     {
+       fhSelHitTupleDutHitMatchMul->Fill(iSelHitTupleDutHitMatchMul);
+     }
+
+     if(iSelHitTupleDutHitMatchAccMul)
+     {
+       fhSelHitTupleDutHitMatchAccMul->Fill(iSelHitTupleDutHitMatchAccMul);
+     }
+
     }   // end of if(iNbMatchedHits>0)
     else
     {
       if(fbMonteCarloComparison)
       {
         fhSelMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+        fhSelHitTupleMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
       }
     }
    }    // BSel[0] condition end 
@@ -3695,13 +4214,18 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
    fhTIS_Nhit->Fill((dTAv-StartSpillTime)/1.E9,(Double_t)iNbTofHits);
    if(NULL!=fTofTrackColl && NULL != fFindTracks){
+     Bool_t bSelTrackletFound(kFALSE);
+     Int_t iBestTrklFitIndex(-1);
+     Double_t dBestTrklFitRedChiSq(1.E300);
+
      iNbTofTracks  = fTofTrackColl->GetEntries();
      fhTIS_Ntrk->Fill((dTAv-StartSpillTime)/1.E9,(Double_t)iNbTofTracks);
 
      Int_t NStations = fFindTracks->GetNStations();
      LOG(DEBUG)<<Form("Tracklet analysis of %d tracklets from %d stations",iNbTofTracks,NStations)<< FairLogger::endl;
 
-     if(dMul4<=dM4Max && dMulD<=dMDMax &&dMulS2<=dM4Max)
+//     if(dMul4<=dM4Max && dMulD<=dMDMax &&dMulS2<=dM4Max)
+     if(dMul0 <= dM0Max && dMul4 <= dM4Max && dMulD <= dMDMax && dMulS2 <= dM4Max)
      if(iNbTofTracks>0){   // Tracklet Analysis
                            // prepare Dut Hit List
 
@@ -3719,6 +4243,21 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
        vTrkMap.resize(vDutHit.size());
        vHitMap.resize(iNbTofTracks);
+
+       std::multimap<Double_t, std::pair<Int_t, Int_t>> RedChiSqTrackletDutHitPair;
+       std::map<Int_t, std::pair<Int_t, Double_t>> TrackletMatchedDutHitRedChiSq;
+
+       for(Int_t iTrk = 0; iTrk < iNbTofTracks; iTrk++)
+       {
+         CbmTofTracklet *pTrk = (CbmTofTracklet*)fTofTrackColl->At(iTrk);
+         if(NULL == pTrk) continue;
+
+         if(dBestTrklFitRedChiSq > pTrk->GetChiSq())
+         {
+           dBestTrklFitRedChiSq = pTrk->GetChiSq();
+           iBestTrklFitIndex = iTrk;
+         }
+       }
 
        for (Int_t iTrk=0; iTrk<iNbTofTracks;iTrk++) { // loop over all Tracklets
 	 CbmTofTracklet *pTrk = (CbmTofTracklet*)fTofTrackColl->At(iTrk);
@@ -3836,8 +4375,126 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
 	 }
        */
+
+         if(fChi2LimFit < pTrk->GetChiSq())
+         {
+           continue;
+         }
+
+         if(fbBestSelTrackletOnly)
+         {
+           if(iTrk != iBestTrklFitIndex)
+           {
+             continue;
+           }
+         }
+
+
+         if(NStations == pTrk->GetNofHits())
+         {
+           if(fbAttachDutHitToTracklet)
+           {
+             if(pTrk->ContainsAddr(fiDutAddr))
+             {
+               LOG(FATAL)<<"DUT hit found already attached to a tracklet in 'AttachDutHitToTracklet' mode!"<<FairLogger::endl;
+             }
+
+             Int_t iSelTrklDutHitMatchMul(0);
+             Int_t iSelTrklDutHitMatchAccMul(0);
+
+             Double_t dXex = pTrk->GetFitX(dDutzPos);
+             Double_t dYex = pTrk->GetFitY(dDutzPos);
+             Double_t dTex = pTrk->GetFitT(dDutzPos);
+
+             for(auto const & iHit : DutHitSet)
+             {
+               CbmTofHit* tHit = dynamic_cast<CbmTofHit*>(fTofHitsColl->At(iHit));
+
+               Double_t dRedChiSq = ( TMath::Power(TMath::Abs(dTex - tHit->GetTime())/GetSigT(1), 2)
+                                     +TMath::Power(TMath::Abs(dXex - tHit->GetX())/GetSigX(1), 2)
+                                     +TMath::Power(TMath::Abs(dYex - tHit->GetY())/GetSigY(1), 2)
+                                    )/3.;
+
+               RedChiSqTrackletDutHitPair.emplace(dRedChiSq, std::make_pair(iTrk, iHit));
+
+
+               iSelTrklDutHitMatchMul++;
+
+               if(dRedChiSq < fSIGLIM)
+               {
+                 iSelTrklDutHitMatchAccMul++;
+               }
+             }
+
+
+             if(iSelTrklDutHitMatchMul)
+             {
+               fhSelTrklDutHitMatchNNMul->Fill(iSelTrklDutHitMatchMul);
+             }
+
+             if(iSelTrklDutHitMatchAccMul)
+             {
+               fhSelTrklDutHitMatchAccNNMul->Fill(iSelTrklDutHitMatchAccMul);
+             }
+           }
+
+           // A selector tracklet is considered to be found in a given reconstructed
+           // event if the event satisfies the specified hit multiplicity criteria
+           // and at least one reconstructed tracklet comprises hits from
+           // 'CbmTofFindTracks::fNTofStations' counters.
+           bSelTrackletFound = kTRUE;
+         } 
        }
 
+
+       if(fbAttachDutHitToTracklet)
+       {
+         // DUT hits are (if at all) AMBIGUOUSLY matched with selector tracklets
+         // (possibly multiple tracklets -> one hit) according to a minimum reduced
+         // chi-square criterion. As the chi-square keys of the map looped over
+         // below are sorted in ascending order, all other map elements containing
+         // the corresponding tracklet index can be eliminated. The best match
+         // (i.e. the lowest chi-square value) has been identified for the tracklet
+         // by the current map element.
+         for(auto itChi2Map = RedChiSqTrackletDutHitPair.cbegin(); itChi2Map != RedChiSqTrackletDutHitPair.cend(); )
+         {
+           Double_t dRedChiSq = itChi2Map->first;
+           Int_t iUsedTracklet = itChi2Map->second.first;
+           Int_t iUsedHit = itChi2Map->second.second;
+
+           TrackletMatchedDutHitRedChiSq.emplace(iUsedTracklet, std::make_pair(iUsedHit, dRedChiSq));
+
+           Bool_t bFoundNextUniqueMatch(kFALSE);
+
+           for(auto itSubMap = ++itChi2Map; itSubMap != RedChiSqTrackletDutHitPair.cend(); )
+           {
+             Int_t iTracklet = itSubMap->second.first;
+             Int_t iHit = itSubMap->second.second;
+
+             // Uncomment the rear part of the following line of code to obtain
+             // UNIQUE hit-to-tracklet matching.
+             if(iUsedTracklet == iTracklet)// || iUsedHit == iHit)
+             {
+               itSubMap = RedChiSqTrackletDutHitPair.erase(itSubMap);
+             }
+             else
+             {
+               if(!bFoundNextUniqueMatch)
+               {
+                 itChi2Map = itSubMap;
+                 bFoundNextUniqueMatch = kTRUE;
+               }
+
+               ++itSubMap;
+             }
+           }
+
+           if(!bFoundNextUniqueMatch)
+           {
+             itChi2Map = RedChiSqTrackletDutHitPair.cend();
+           }
+         }
+       }
 
 
        // fill tracklet histos
@@ -3846,6 +4503,20 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 CbmTofTracklet *pTrk = (CbmTofTracklet*)fTofTrackColl->At(iTrk);
 	 if(NULL == pTrk) continue;
 	 if (pTrk->GetNofHits() < NStations-1) continue;  // pick only full & full - 1 tracklets 
+
+   if(fChi2LimFit < pTrk->GetChiSq())
+   {
+     continue;
+   }
+
+   if(fbBestSelTrackletOnly)
+   {
+     if(iTrk != iBestTrklFitIndex)
+     {
+       continue;
+     }
+   }
+
 	 pLHit=NULL;
 	 Double_t dDelTLH=11.;
 	 Double_t dTLH=0.;
@@ -3956,14 +4627,175 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 			   pTrk->GetNofHits(), pTrk->GetTime(), iNspills, dTLH, dDelTLH, iDet, iBinA, hitpos_local[0], hitpos_local[1])
 		    <<FairLogger::endl; 
 
-	 if(pTrk->ContainsAddr(fiDutAddr) && pTrk->GetNofHits() == NStations){  // matched hit found 
+
+   Bool_t bGoodSelTracklet(kFALSE);
+   Bool_t bGoodSelTrackletDutMatch(kFALSE);
+
+   auto itDutHitMatch = TrackletMatchedDutHitRedChiSq.find(iTrk);
+
+   if(NStations == pTrk->GetNofHits())
+   {
+     if(fbAttachDutHitToTracklet)
+     {
+       if(fbMonteCarloComparison)
+       {
+         if(fbTracksInInputFile)
+         {
+           Int_t iMatchedRealTrackLink(-1);
+           std::set<Int_t> RealTrackLinkSet;
+
+           CbmTrackMatchNew* tTrackletAccTrackMatch = dynamic_cast<CbmTrackMatchNew*>(fTofTrackletAccTrackMatches->At(iTrk));
+           const CbmLink& tLink = tTrackletAccTrackMatch->GetMatchedLink();
+           Double_t dSelTrackletMaxTrackLinkWeight = tLink.GetWeight();
+
+           for(Int_t iSelTrackletTrackLink = 0; iSelTrackletTrackLink < tTrackletAccTrackMatch->GetNofLinks(); iSelTrackletTrackLink++)
+           {
+             const CbmLink& tSelTrackletTrackLink = tTrackletAccTrackMatch->GetLink(iSelTrackletTrackLink);
+
+             if(dSelTrackletMaxTrackLinkWeight == tSelTrackletTrackLink.GetWeight() && -1 < tSelTrackletTrackLink.GetIndex())
+             {
+               iMatchedRealTrackLink = tSelTrackletTrackLink.GetIndex();
+               RealTrackLinkSet.emplace(tSelTrackletTrackLink.GetIndex());
+             }
+           }
+
+           // For a pure sel tracklet, request a particle track match different
+           // from a beam or a dark point.
+           // The case that a noise link and a particle link have the same weight
+           // and the noise link is - by chance - the matched one is handled here:
+           // The noise link is ignored while assessing purity if and only if a
+           // particle link with the same weight exists.
+           if(-1 < iMatchedRealTrackLink)
+           {
+             if(1. == tTrackletAccTrackMatch->GetTrueOverAllHitsRatio())
+             {
+               fhSelTrklPurity->Fill(kTRUE, fiNAccRefTracks);
+               bGoodSelTracklet = kTRUE;
+             }
+             else
+             {
+               fhSelTrklPurity->Fill(kFALSE, fiNAccRefTracks);
+             }
+           }
+           else
+           {
+             fhSelTrklPurity->Fill(kFALSE, fiNAccRefTracks);
+           }
+
+           if(bGoodSelTracklet)
+           {
+             TGeoNode* tNode(NULL);
+             TGeoMedium* tMedium(NULL);
+             TGeoMaterial* tMaterial(NULL);
+
+             const char* cMaterialName;
+
+             const char* cSelRefTrackPdgName;
+             const char* cSelRefTrackProcessName;
+
+             Bool_t bSelRefTrack(kFALSE);
+
+             for(auto const & iTrack : RealTrackLinkSet)
+             {
+               CbmMCTrack* tTrack = dynamic_cast<CbmMCTrack*>(fAccTracks->At(iTrack));
+               CbmMatch* tTrackPointMatch = dynamic_cast<CbmMatch*>(fTofAccTrackPointMatches->At(iTrack));
+
+               tNode = gGeoManager->FindNode(tTrack->GetStartX(), tTrack->GetStartY(), tTrack->GetStartZ());
+               tMedium = tNode->GetMedium();
+               tMaterial = tMedium->GetMaterial();
+
+               GetMaterialName(tMaterial->GetName(), cMaterialName);
+
+               if(0 == std::strcmp("target", cMaterialName) && fiMinMCRefTrackPoints <= tTrackPointMatch->GetNofLinks())
+               {
+                 bSelRefTrack = kTRUE;
+
+                 GetPdgName(tTrack->GetPdgCode(), cSelRefTrackPdgName);
+                 GetProcessName(TMCProcessName[tTrack->GetGeantProcessId()], cSelRefTrackProcessName);
+               }
+             }
+
+             if(bSelRefTrack)
+             {
+               fhSelTrklRefTrackShare->Fill(kTRUE, fiNAccRefTracks);
+               fhSelTrklRefTrackProcSpec->Fill(cSelRefTrackProcessName, cSelRefTrackPdgName, 1.);
+             }
+             else
+             {
+               fhSelTrklRefTrackShare->Fill(kFALSE, fiNAccRefTracks);
+             }
+
+
+             if(itDutHitMatch != TrackletMatchedDutHitRedChiSq.end())
+             {
+               Int_t iDutHitIndex = itDutHitMatch->second.first;
+
+               CbmMatch* tDutHitTrackMatch = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iDutHitIndex));
+
+
+               for(Int_t iSelTrackletTrackLink = 0; iSelTrackletTrackLink < tTrackletAccTrackMatch->GetNofLinks(); iSelTrackletTrackLink++)
+               {
+                 const CbmLink& tSelTrackletTrackLink = tTrackletAccTrackMatch->GetLink(iSelTrackletTrackLink);
+
+                 if(dSelTrackletMaxTrackLinkWeight == tSelTrackletTrackLink.GetWeight())
+                 {
+                   for(Int_t iDutHitTrackLink = 0; iDutHitTrackLink < tDutHitTrackMatch->GetNofLinks(); iDutHitTrackLink++)
+                   {
+                     const CbmLink& tDutHitTrackLink = tDutHitTrackMatch->GetLink(iDutHitTrackLink);
+
+                     if(tSelTrackletTrackLink == tDutHitTrackLink)
+                     {
+                       bGoodSelTrackletDutMatch = kTRUE;
+                       break;
+                     }
+                   }
+                 }
+
+                 if(bGoodSelTrackletDutMatch)
+                 {
+                   break;
+                 }
+               }
+
+               if(bGoodSelTrackletDutMatch)
+               {
+                 fhGoodSelTypeNNPureChiSq->Fill(1, 3.*itDutHitMatch->second.second);
+               }
+
+               fhGoodSelTypeNNAllChiSq->Fill(1, 3.*itDutHitMatch->second.second);
+             }
+
+           }
+         }
+       }
+     }
+   }
+
+
+   // matched hit found
+   if((!fbAttachDutHitToTracklet && pTrk->GetNofHits() == NStations && pTrk->ContainsAddr(fiDutAddr)) ||
+      (fbAttachDutHitToTracklet && pTrk->GetNofHits() == NStations && itDutHitMatch != TrackletMatchedDutHitRedChiSq.end() && itDutHitMatch->second.second < fSIGLIM))
+   {
 	   LOG(DEBUG)<<Form(" Event %d : process complete Trkl %d, HMul %d, iDet %d ",
 			     fEvents,iTrk,pTrk->GetNofHits(),
 			     fFindTracks->fMapRpcIdParInd[fiDutAddr])
 		     <<FairLogger::endl;
 
-	   //pHit = vDutHit[vHitMap[iTrk].begin()->second];
-	   pHit = pTrk->HitPointerOfAddr(fiDutAddr);
+     fhSelTrklFitRedChiSq->Fill(pTrk->GetChiSq());
+
+     Int_t iDutHitIndex(-1);
+     if(fbAttachDutHitToTracklet)
+     {
+       iDutHitIndex = itDutHitMatch->second.first;
+//       pHit = vDutHit[vHitMap[iTrk].begin()->second];
+       pHit = dynamic_cast<CbmTofHit*>(fTofHitsColl->At(iDutHitIndex));
+     }
+     else
+     {
+       iDutHitIndex = pTrk->GetTofHitIndex(pTrk->HitIndexOfAddr(fiDutAddr));
+       pHit = pTrk->HitPointerOfAddr(fiDutAddr);
+     }
+
 	   if(NULL == pHit) 
 	     LOG(WARNING) << "Dut not found in full length track" << FairLogger::endl;
 
@@ -3990,7 +4822,11 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   fhDutPullT->Fill(dDT);
 	   fhDutPullTB->Fill(dDTB);
 	   fhDutChi_Found->Fill(pTrk->GetChiSq());
-	   fhDutChi_Match->Fill(vHitMap[iTrk].begin()->first);
+     if(fbAttachDutHitToTracklet)
+     {
+//	   fhDutChi_Match->Fill(vHitMap[iTrk].begin()->first);
+       fhDutChi_Match->Fill(itDutHitMatch->second.second);
+     }
 	   fhDutXY_Found->Fill(hitpos_local[0],hitpos_local[1]);
 	   fhDutDTLH_Found->Fill(dDelTLH); 
 	   fhDutMul_Found->Fill( dMul4 );  
@@ -4001,17 +4837,47 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
      if(fbMonteCarloComparison)
      {
-       fhDutEfficiency->Fill(kTRUE, fiNAccRefTracks);
+       fhSelTrklMatchEfficiency->Fill(kTRUE, fiNAccRefTracks);
+       fhSelTrklMatchEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
 
-       Int_t iDutHitIndex = pTrk->GetTofHitIndex(pTrk->HitIndexOfAddr(fiDutAddr));
-       CbmTofHit* tDutHitPointer = dynamic_cast<CbmTofHit*>(fTofHitsColl->At(iDutHitIndex));
-       Double_t dDutHitChi = pTrk->GetMatChi2(fiDutAddr);
+       if(fbAttachDutHitToTracklet)
+       {
+         if(fbTracksInInputFile)
+         {
+           if(bGoodSelTracklet)
+           {
+             if(bGoodSelTrackletDutMatch)
+             {
+               fhSelTrklMatchPurity->Fill(kTRUE, fiNAccRefTracks);
+             }
+             else
+             {
+               fhSelTrklMatchPurity->Fill(kFALSE, fiNAccRefTracks);
+             }
 
-       pTrk->RemoveTofHitIndex(-1, fiDutAddr, NULL, 0.);
-       CbmTofTrackFinderNN::Line3Dfit(pTrk);
-       pTrk->SetTime(pTrk->UpdateT0());
-       pTrk->AddTofHitIndex(iDutHitIndex, fiDutAddr, tDutHitPointer, dDutHitChi);
-       pHit = pTrk->HitPointerOfAddr(fiDutAddr);
+           }
+// uncomment to account for impure selectors in the matching purity calculation
+/*
+           else
+           {
+             fhSelTrklMatchPurity->Fill(kFALSE, fiNAccRefTracks);
+           }
+*/
+         }
+       }
+
+
+       if(!fbAttachDutHitToTracklet)
+       {
+         CbmTofHit* tDutHitPointer = dynamic_cast<CbmTofHit*>(fTofHitsColl->At(iDutHitIndex));
+         Double_t dDutHitChi = pTrk->GetMatChi2(fiDutAddr);
+
+         pTrk->RemoveTofHitIndex(-1, fiDutAddr, NULL, 0.);
+         CbmTofTrackFinderNN::Line3Dfit(pTrk);
+         pTrk->SetTime(pTrk->UpdateT0());
+         pTrk->AddTofHitIndex(iDutHitIndex, fiDutAddr, tDutHitPointer, dDutHitChi);
+         pHit = pTrk->HitPointerOfAddr(fiDutAddr);
+       }
 
        CbmMatch* tDutHitPointMatch = dynamic_cast<CbmMatch*>(fTofHitPointMatches->At(iDutHitIndex));
        const CbmLink& tDutHitPointLink = tDutHitPointMatch->GetMatchedLink();
@@ -4036,26 +4902,50 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
            dMCEventStartTime = fMCEventList->GetEventTime(iEventIndex, iFileIndex);
          }
 
-         fhDutResX_Hit_Trk->Fill(fiNAccRefTracks, pTrk->GetXdif(fiDutAddr, pHit));
+//         fhDutResX_Hit_Trk->Fill(fiNAccRefTracks, pTrk->GetXdif(fiDutAddr, pHit));
+         fhDutResX_Hit_Trk->Fill(fiNAccRefTracks, pHit->GetX() - pTrk->GetFitX(pHit->GetZ()));
          fhDutResX_Trk_MC->Fill(fiNAccRefTracks, pTrk->GetFitX(pHit->GetZ()) - tDutHitMatchedPoint->GetX());
          fhDutResX_Hit_MC->Fill(fiNAccRefTracks, pHit->GetX() - tDutHitMatchedPoint->GetX());
 
-         fhDutResY_Hit_Trk->Fill(fiNAccRefTracks, pTrk->GetYdif(fiDutAddr, pHit));
+//         fhDutResY_Hit_Trk->Fill(fiNAccRefTracks, pTrk->GetYdif(fiDutAddr, pHit));
+         fhDutResY_Hit_Trk->Fill(fiNAccRefTracks, pHit->GetY() - pTrk->GetFitY(pHit->GetZ()));
          fhDutResY_Trk_MC->Fill(fiNAccRefTracks, pTrk->GetFitY(pHit->GetZ()) - tDutHitMatchedPoint->GetY());
          fhDutResY_Hit_MC->Fill(fiNAccRefTracks, pHit->GetY() - tDutHitMatchedPoint->GetY());
 
-         fhDutResT_Hit_Trk->Fill(fiNAccRefTracks, pTrk->GetTdif(fiDutAddr, pHit));
+//         fhDutResT_Hit_Trk->Fill(fiNAccRefTracks, pTrk->GetTdif(fiDutAddr, pHit));
+         fhDutResT_Hit_Trk->Fill(fiNAccRefTracks, pHit->GetTime() - pTrk->GetFitT(pHit->GetZ()));
          fhDutResT_Trk_MC->Fill(fiNAccRefTracks, pTrk->GetFitT(pHit->GetZ()) - tDutHitMatchedPoint->GetTime() - dMCEventStartTime);
          fhDutResT_Hit_MC->Fill(fiNAccRefTracks, pHit->GetTime() - tDutHitMatchedPoint->GetTime() - dMCEventStartTime);
        }
 
-       CbmTofTrackFinderNN::Line3Dfit(pTrk);
-       pTrk->SetTime(pTrk->UpdateT0());
+       if(!fbAttachDutHitToTracklet)
+       {
+         CbmTofTrackFinderNN::Line3Dfit(pTrk);
+         pTrk->SetTime(pTrk->UpdateT0());
+       }
+     }
+
+     if(fbAttachDutHitToTracklet)
+     {
+       fhSelTypeAccNNChiSq->Fill(1, 3.*itDutHitMatch->second.second);
+       fhSelTypeAccNNResidualT->Fill(1, pHit->GetTime() - pTrk->GetFitT(pHit->GetZ()));
+       fhSelTypeAccNNResidualX->Fill(1, pHit->GetX() - pTrk->GetFitX(pHit->GetZ()));
+       fhSelTypeAccNNResidualY->Fill(1, pHit->GetY() - pTrk->GetFitY(pHit->GetZ()));
+
+       fhSelTypeNNChiSq->Fill(1, 3.*itDutHitMatch->second.second);
+       fhSelTypeNNResidualT->Fill(1, pHit->GetTime() - pTrk->GetFitT(pHit->GetZ()));
+       fhSelTypeNNResidualX->Fill(1, pHit->GetX() - pTrk->GetFitX(pHit->GetZ()));
+       fhSelTypeNNResidualY->Fill(1, pHit->GetY() - pTrk->GetFitY(pHit->GetZ()));
+
+       CbmMatch* tDutHitDigiMatch = dynamic_cast<CbmMatch*>(fTofDigiMatchColl->At(iDutHitIndex));
+
+       fhSelTrklResidualTTIS->Fill((dTAv - StartSpillTime)/1.E9, pHit->GetTime() - pTrk->GetFitT(pHit->GetZ()));
+       fhSelTrklDutCluSizeTIS->Fill((dTAv - StartSpillTime)/1.E9, tDutHitDigiMatch->GetNofLinks()/2);
      }
 
 	   if(NULL != pLHit){
-	     Int_t iHit = pTrk->HitIndexOfAddr(fiDutAddr);
-	     CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At( iHit );
+
+	     CbmMatch* digiMatch0=(CbmMatch *)fTofDigiMatchColl->At( iDutHitIndex );
 	     Double_t dTot0   = 0.;
 	     if(NULL != fTofDigisColl && NULL != digiMatch0){
 	       for (Int_t iLink=0; iLink<digiMatch0->GetNofLinks(); iLink++){  // loop over digis
@@ -4092,12 +4982,34 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	       << FairLogger::endl;
 	     */
 	   }
-	 }else{                       // no match for this track
-	   if( !pTrk->ContainsAddr(fiDutAddr) && pTrk->GetNofHits() == NStations-1) {	  
+	 }
+
+   if(fbAttachDutHitToTracklet && pTrk->GetNofHits() == NStations && itDutHitMatch != TrackletMatchedDutHitRedChiSq.end() && !(itDutHitMatch->second.second < fSIGLIM))
+   {
+     pHit = dynamic_cast<CbmTofHit*>(fTofHitsColl->At(itDutHitMatch->second.first));
+
+     fhSelTypeNNChiSq->Fill(1, 3.*itDutHitMatch->second.second);
+     fhSelTypeNNResidualT->Fill(1, pHit->GetTime() - pTrk->GetFitT(pHit->GetZ()));
+     fhSelTypeNNResidualX->Fill(1, pHit->GetX() - pTrk->GetFitX(pHit->GetZ()));
+     fhSelTypeNNResidualY->Fill(1, pHit->GetY() - pTrk->GetFitY(pHit->GetZ()));
+
+     if(fbMonteCarloComparison)
+     {
+       fhSelTrklMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+       fhSelTrklMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
+     }
+   }
+
+     // no match for this track
+     if((!fbAttachDutHitToTracklet && pTrk->GetNofHits() == NStations - 1 && !pTrk->ContainsAddr(fiDutAddr)) ||
+        (fbAttachDutHitToTracklet && pTrk->GetNofHits() == NStations && itDutHitMatch == TrackletMatchedDutHitRedChiSq.end()))
+     {
 	     if(0)
 	       LOG(INFO)<<Form(" Missed hit at %f, TLH = %f, LogDelT %f for Det %d at x %6.2f, y %6.2f, bin %d from x %6.2f, y %6.2f",
 			       pTrk->GetTime(), dTLH, dDelTLH, iDet, hitpos_local[0], hitpos_local[1], iBinA, hitpos[0], hitpos[1])
 		      <<FairLogger::endl; 
+
+       fhSelTrklFitRedChiSq->Fill(pTrk->GetChiSq());
 
 	     fhDutChi_Missed->Fill(pTrk->GetChiSq());
 	     fhDutXY_Missed->Fill(hitpos_local[0],hitpos_local[1]);
@@ -4117,12 +5029,31 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
        if(fbMonteCarloComparison)
        {
-         fhDutEfficiency->Fill(kFALSE, fiNAccRefTracks);
-	     } 
-	 }                 
-       }
+         fhSelTrklMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+         fhSelTrklMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
+	     }
+	   }
 
      } // end of loop over all tracklets
+
+       if(fbAttachDutHitToTracklet)
+       {
+         // Eliminate all tracklet - DUT hit matches which do not meet the
+         // specified 'fSIGLIM' criterion. TODO: LEGACY code
+         for(auto itChi2Map = TrackletMatchedDutHitRedChiSq.cbegin(); itChi2Map != TrackletMatchedDutHitRedChiSq.cend(); )
+         {
+           Double_t dRedChiSq = itChi2Map->second.second;
+
+           if(dRedChiSq < fSIGLIM)
+           {
+             ++itChi2Map;
+           }
+           else
+           {
+             itChi2Map = TrackletMatchedDutHitRedChiSq.erase(itChi2Map);
+           }
+         }
+       }
 
      } //(iNbTofTracks>0) end
 
@@ -4180,6 +5111,21 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        }
      } //(fdMemoryTime > 0.) end
 
+
+     if(fbMonteCarloComparison)
+     {
+       if(bSelTrackletFound)
+       {
+         fhSelTrklEfficiency->Fill(kTRUE, fiNAccRefTracks);
+         fhSelTrklEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
+       }
+       else
+       {
+         fhSelTrklEfficiency->Fill(kFALSE, fiNAccRefTracks);
+         fhSelTrklEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
+       }
+     }
+
    }   // (NULL!=fTofTrackColl && NULL != fFindTracks) end
 
 
@@ -4214,6 +5160,325 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
          {
            fhNTracksPerDutHit->Fill(tHitTrackMatch->GetNofLinks());
          }
+       }
+     }
+   }
+
+
+   // MC track selector analysis
+   if(fbMonteCarloComparison)
+   {
+     if(fbTracksInInputFile)
+     {
+//       if(fiMaxMCRefTracks >= fiNAccRefTracks)
+       if(dMul0 <= dM0Max && dMul4 <= dM4Max && dMulD <= dMDMax && dMulS2 <= dM4Max)
+       {
+         std::vector<Int_t> RefTrackSet;
+
+         TGeoNode* tNode(NULL);
+         TGeoMedium* tMedium(NULL);
+         TGeoMaterial* tMaterial(NULL);
+
+         const char* cMaterialName;
+
+         std::multimap<Double_t, std::pair<Int_t, Int_t>> RedChiSqTrackDutHitPair;
+         std::map<Int_t, std::pair<Int_t, Double_t>> TrackMatchedDutHitRedChiSq;
+         Int_t iSelMCTrack(-1);
+         Int_t iSelMCTrackDutHitMatchMul(0);
+         Int_t iSelMCTrackDutHitMatchAccMul(0);
+
+         for(Int_t iTrack = 0; iTrack < fAccTracks->GetEntriesFast(); iTrack++)
+         {
+           CbmMCTrack* tAccTrack = dynamic_cast<CbmMCTrack*>(fAccTracks->At(iTrack));
+           CbmMatch* tAccTrackPointMatch = dynamic_cast<CbmMatch*>(fTofAccTrackPointMatches->At(iTrack));
+
+           tNode = gGeoManager->FindNode(tAccTrack->GetStartX(), tAccTrack->GetStartY(), tAccTrack->GetStartZ());
+           tMedium = tNode->GetMedium();
+           tMaterial = tMedium->GetMaterial();
+
+           GetMaterialName(tMaterial->GetName(), cMaterialName);
+
+           if(0 == std::strcmp("target", cMaterialName) && fiMinMCRefTrackPoints <= tAccTrackPointMatch->GetNofLinks())
+           {
+             // Scan for a MC track intersection with the DUT counter plane
+             for(Int_t iPoint = 0; iPoint < tAccTrackPointMatch->GetNofLinks(); iPoint++)
+             {
+               const CbmLink& tLink = tAccTrackPointMatch->GetLink(iPoint);
+
+               CbmTofPoint* tPoint(NULL);
+               Int_t iFileIndex  = tLink.GetFile();
+               Int_t iEventIndex = tLink.GetEntry();
+               Int_t iArrayIndex = tLink.GetIndex();
+
+               Double_t dMCEventStartTime(0.);
+
+               if(fbPointsInInputFile)
+               {
+                 tPoint = dynamic_cast<CbmTofPoint*>(fTofPointsTB->At(iArrayIndex));
+               }
+               else
+               {
+                 tPoint = dynamic_cast<CbmTofPoint*>(fTofPoints->Get(iFileIndex, iEventIndex, iArrayIndex));
+
+                 dMCEventStartTime = fMCEventList->GetEventTime(iEventIndex, iFileIndex);
+               }
+
+               Int_t iModuleType   = fGeoHandler->GetSMType(tPoint->GetDetectorID());
+               Int_t iModuleIndex  = fGeoHandler->GetSModule(tPoint->GetDetectorID());
+               Int_t iCounterIndex = fGeoHandler->GetCounter(tPoint->GetDetectorID());
+
+               if(fiDut == iModuleType && fiDutSm == iModuleIndex && fiDutRpc == iCounterIndex)
+               {
+                 for(auto const & iHit : DutHitSet)
+                 {
+                   CbmTofHit* tHit = dynamic_cast<CbmTofHit*>(fTofHitsColl->At(iHit));
+
+                   Double_t dRedChiSq = ( TMath::Power(TMath::Abs(tPoint->GetTime() + dMCEventStartTime - tHit->GetTime())/GetSigT(2), 2)
+                                         +TMath::Power(TMath::Abs(tPoint->GetX() - tHit->GetX())/GetSigX(2), 2)
+                                         +TMath::Power(TMath::Abs(tPoint->GetY() - tHit->GetY())/GetSigY(2), 2)
+                                        )/3.;
+
+                   RedChiSqTrackDutHitPair.emplace(dRedChiSq, std::make_pair(iTrack, iHit));
+                 }
+
+                 RefTrackSet.push_back(iTrack);
+
+                 break;
+               }
+             }
+           }
+         }
+
+
+         // Randomly choose a selector MC track from the set of available reference
+         // MC tracks in the event.
+         if(RefTrackSet.size())
+         {
+           iSelMCTrack = RefTrackSet.at(gRandom->Integer(RefTrackSet.size()));
+         }
+
+
+         for(auto const & Chi2MapElement : RedChiSqTrackDutHitPair)
+         {
+           Double_t dRedChiSq = Chi2MapElement.first;
+           Int_t iTrackIndex = Chi2MapElement.second.first;
+
+           if(iTrackIndex == iSelMCTrack)
+           {
+             iSelMCTrackDutHitMatchMul++;
+
+             if(dRedChiSq < fdMCSIGLIM)
+             {
+               iSelMCTrackDutHitMatchAccMul++;
+             }
+           }
+         }
+
+         if(iSelMCTrackDutHitMatchMul)
+         {
+           fhSelMCTrackDutHitMatchNNMul->Fill(iSelMCTrackDutHitMatchMul);
+         }
+
+         if(iSelMCTrackDutHitMatchAccMul)
+         {
+           fhSelMCTrackDutHitMatchAccNNMul->Fill(iSelMCTrackDutHitMatchAccMul);
+         }
+
+
+         // DUT hits are (if at all) AMBIGUOUSLY matched with selector MC tracks
+         // (possibly multiple tracks -> one hit) according to a minimum reduced
+         // chi-square criterion. As the chi-square keys of the map looped over
+         // below are sorted in ascending order, all other map elements containing
+         // the corresponding MC track index can be eliminated. The best match
+         // (i.e. the lowest chi-square value) has been identified for the track
+         // by the current map element.
+         for(auto itChi2Map = RedChiSqTrackDutHitPair.cbegin(); itChi2Map != RedChiSqTrackDutHitPair.cend(); )
+         {
+           Double_t dRedChiSq = itChi2Map->first;
+           Int_t iUsedTrack = itChi2Map->second.first;
+           Int_t iUsedHit = itChi2Map->second.second;
+
+           TrackMatchedDutHitRedChiSq.emplace(iUsedTrack, std::make_pair(iUsedHit, dRedChiSq));
+
+           Bool_t bFoundNextUniqueMatch(kFALSE);
+
+           for(auto itSubMap = ++itChi2Map; itSubMap != RedChiSqTrackDutHitPair.cend(); )
+           {
+             Int_t iTrack = itSubMap->second.first;
+             Int_t iHit = itSubMap->second.second;
+
+             // Uncomment the rear part of the following line of code to obtain
+             // UNIQUE hit-to-track matching.
+             if(iUsedTrack == iTrack)// || iUsedHit == iHit)
+             {
+               itSubMap = RedChiSqTrackDutHitPair.erase(itSubMap);
+             }
+             else
+             {
+               if(!bFoundNextUniqueMatch)
+               {
+                 itChi2Map = itSubMap;
+                 bFoundNextUniqueMatch = kTRUE;
+               }
+
+               ++itSubMap;
+             }
+           }
+
+           if(!bFoundNextUniqueMatch)
+           {
+             itChi2Map = RedChiSqTrackDutHitPair.cend();
+           }
+         }
+
+
+         if(-1 < iSelMCTrack)
+         {
+           auto itDutHitMatch = TrackMatchedDutHitRedChiSq.find(iSelMCTrack);
+
+           if(itDutHitMatch != TrackMatchedDutHitRedChiSq.end())
+           {
+             Double_t dRedChiSq = itDutHitMatch->second.second;
+             Int_t iDutHit = itDutHitMatch->second.first;
+
+             CbmMCTrack* tTrack = dynamic_cast<CbmMCTrack*>(fAccTracks->At(iSelMCTrack));
+             CbmMatch* tTrackPointMatch = dynamic_cast<CbmMatch*>(fTofAccTrackPointMatches->At(iSelMCTrack));
+             CbmTofHit* tHit = dynamic_cast<CbmTofHit*>(fTofHitsColl->At(iDutHit));
+             CbmTofPoint* tPoint(NULL);
+
+             Double_t dMCEventStartTime(0.);
+
+             // Scan for the MC track intersection with the DUT counter plane
+             for(Int_t iPoint = 0; iPoint < tTrackPointMatch->GetNofLinks(); iPoint++)
+             {
+               const CbmLink& tLink = tTrackPointMatch->GetLink(iPoint);
+
+               Int_t iFileIndex  = tLink.GetFile();
+               Int_t iEventIndex = tLink.GetEntry();
+               Int_t iArrayIndex = tLink.GetIndex();
+
+               if(fbPointsInInputFile)
+               {
+                 tPoint = dynamic_cast<CbmTofPoint*>(fTofPointsTB->At(iArrayIndex));
+               }
+               else
+               {
+                 tPoint = dynamic_cast<CbmTofPoint*>(fTofPoints->Get(iFileIndex, iEventIndex, iArrayIndex));
+
+                 dMCEventStartTime = fMCEventList->GetEventTime(iEventIndex, iFileIndex);
+               }
+
+               Int_t iModuleType   = fGeoHandler->GetSMType(tPoint->GetDetectorID());
+               Int_t iModuleIndex  = fGeoHandler->GetSModule(tPoint->GetDetectorID());
+               Int_t iCounterIndex = fGeoHandler->GetCounter(tPoint->GetDetectorID());
+
+               if(fiDut == iModuleType && fiDutSm == iModuleIndex && fiDutRpc == iCounterIndex)
+               {
+                 break;
+               }
+             }
+
+
+             Bool_t bGoodSelDutMatch(kFALSE);
+             CbmMatch* tDutHitTrackMatch = dynamic_cast<CbmMatch*>(fTofHitAccTrackMatches->At(iDutHit));
+
+             for(Int_t iDutHitTrackLink = 0; iDutHitTrackLink < tDutHitTrackMatch->GetNofLinks(); iDutHitTrackLink++)
+             {
+               const CbmLink& tDutHitTrackLink = tDutHitTrackMatch->GetLink(iDutHitTrackLink);
+
+               if(tDutHitTrackLink.GetIndex() == iSelMCTrack)
+               {
+                 bGoodSelDutMatch = kTRUE;
+                 break;
+               }
+             }
+
+             if(bGoodSelDutMatch)
+             {
+               fhGoodSelTypeNNPureChiSq->Fill(2, 3.*dRedChiSq);
+             }
+
+             fhGoodSelTypeNNAllChiSq->Fill(2, 3.*dRedChiSq);
+
+
+             if(dRedChiSq < fdMCSIGLIM)
+             {
+               fhSelTypeAccNNChiSq->Fill(2, 3.*dRedChiSq);
+               fhSelTypeAccNNResidualT->Fill(2, tHit->GetTime() - tPoint->GetTime() - dMCEventStartTime);
+               fhSelTypeAccNNResidualX->Fill(2, tHit->GetX() - tPoint->GetX());
+               fhSelTypeAccNNResidualY->Fill(2, tHit->GetY() - tPoint->GetY());
+
+               fhSelTypeNNChiSq->Fill(2, 3.*dRedChiSq);
+               fhSelTypeNNResidualT->Fill(2, tHit->GetTime() - tPoint->GetTime() - dMCEventStartTime);
+               fhSelTypeNNResidualX->Fill(2, tHit->GetX() - tPoint->GetX());
+               fhSelTypeNNResidualY->Fill(2, tHit->GetY() - tPoint->GetY());
+
+               fhSelMCTrackMatchEfficiency->Fill(kTRUE, fiNAccRefTracks);
+               fhSelMCTrackMatchEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
+
+               if(bGoodSelDutMatch)
+               {
+                 fhSelMCTrackMatchPurity->Fill(kTRUE, fiNAccRefTracks);
+               }
+               else
+               {
+                 fhSelMCTrackMatchPurity->Fill(kFALSE, fiNAccRefTracks);
+               }
+
+               CbmMatch* tDutHitDigiMatch = dynamic_cast<CbmMatch*>(fTofDigiMatchColl->At(iDutHit));
+
+               fhSelMCTrackResidualTTIS->Fill((dTAv - StartSpillTime)/1.E9, tHit->GetTime() - tPoint->GetTime() - dMCEventStartTime);
+               fhSelMCTrackDutCluSizeTIS->Fill((dTAv - StartSpillTime)/1.E9, tDutHitDigiMatch->GetNofLinks()/2);
+             }
+             else
+             {
+               fhSelTypeNNChiSq->Fill(2, 3.*dRedChiSq);
+               fhSelTypeNNResidualT->Fill(2, tHit->GetTime() - tPoint->GetTime() - dMCEventStartTime);
+               fhSelTypeNNResidualX->Fill(2, tHit->GetX() - tPoint->GetX());
+               fhSelTypeNNResidualY->Fill(2, tHit->GetY() - tPoint->GetY());
+
+               fhSelMCTrackMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+               fhSelMCTrackMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
+             }
+           }
+           else
+           {
+             fhSelMCTrackMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+             fhSelMCTrackMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
+           }
+
+
+           // Eliminate all MC track - DUT hit matches which do not meet the
+           // specified 'fdMCSIGLIM' criterion. TODO: LEGACY code
+           for(auto itChi2Map = TrackMatchedDutHitRedChiSq.cbegin(); itChi2Map != TrackMatchedDutHitRedChiSq.cend(); )
+           {
+             Double_t dRedChiSq = itChi2Map->second.second;
+
+             if(dRedChiSq < fdMCSIGLIM)
+             {
+               ++itChi2Map;
+             }
+             else
+             {
+               itChi2Map = TrackMatchedDutHitRedChiSq.erase(itChi2Map);
+             }
+           }
+
+
+           fhSelMCTrackEfficiency->Fill(kTRUE, fiNAccRefTracks);
+           fhSelMCTrackEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
+         }
+         else
+         {
+           fhSelMCTrackEfficiency->Fill(kFALSE, fiNAccRefTracks);
+           fhSelMCTrackEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
+         }
+
+       }
+       else
+       {
+         fhSelMCTrackEfficiency->Fill(kFALSE, fiNAccRefTracks);
+         fhSelMCTrackEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
        }
      }
    }
@@ -4306,7 +5571,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
          fhAccTrackPointMul->Fill(tAccTrackPointMatch->GetNofLinks());
          // XXX: tAccTrack->GetNPoints(kTof)
 
-         if(0 == std::strcmp("target", cMaterialName) && 3 <= tAccTrackPointMatch->GetNofLinks())
+         if(0 == std::strcmp("target", cMaterialName) && fiMinMCRefTrackPoints <= tAccTrackPointMatch->GetNofLinks())
          {
            bIsAccRefTrack = kTRUE;
 
@@ -4492,12 +5757,16 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
                    // Although the counter detected a hit that is attributed
                    // to the tracklet matching the MC reference track best it
-                   // is not granted that this hit actually is the true one
-                   // which in turn matches the MC reference track best. If yes,
-                   // the counter "purely" detected the track.
-                   if(iTrack == tHitTrackMatch->GetMatchedLink().GetIndex())
+                   // is not granted that this hit actually is the true one, i.e.
+                   // contains a link to the MC reference track. If it contains
+                   // a corresponding link, the counter "purely" detected the
+                   // track.
+                   for(Int_t iHitTrackLink = 0; iHitTrackLink < tHitTrackMatch->GetNofLinks(); iHitTrackLink++)
                    {
-                     CounterNPureRefTracks[CounterID]++;
+                     if(iTrack == tHitTrackMatch->GetLink(iHitTrackLink).GetIndex())
+                     {
+                       CounterNPureRefTracks[CounterID]++;
+                     }
                    }
                  }
                }
@@ -4570,7 +5839,12 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
              GetMaterialName(tMaterial->GetName(), cMaterialName);
 
-             if(0 == std::strcmp("target", cMaterialName) && 3 <= tAccTrackPointMatch->GetNofLinks())
+             // TODO: There could be another tracklet-to-track link with the same weight
+             //       as the matched one that hypothetically - in contrast to the
+             //       matched link - originated from the target. This case is
+             //       not covered here (cf. the filling of the "SelRefTrackShare"
+             //       efficiency histograms above).
+             if(0 == std::strcmp("target", cMaterialName) && fiMinMCRefTrackPoints <= tAccTrackPointMatch->GetNofLinks())
              {
                if(fdGhostTrackHitQuota > tTrackletAccTrackMatch->GetTrueOverAllHitsRatio())
                {
@@ -4920,11 +6194,102 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
      }
      break;
 
+   case 9:
+     {
+       for(Int_t iSelType = 0; iSelType < 3; iSelType++)
+       {
+         TH1D* hResidualT = fhSelTypeNNResidualT->ProjectionY("_py", iSelType + 1, iSelType + 1);
+         TH1D* hResidualX = fhSelTypeNNResidualX->ProjectionY("_py", iSelType + 1, iSelType + 1);
+         TH1D* hResidualY = fhSelTypeNNResidualY->ProjectionY("_py", iSelType + 1, iSelType + 1);
+
+         if(hResidualT->GetEntries() > 100.)
+         {
+           Double_t dRMS = TMath::Abs(hResidualT->GetRMS());
+/*
+	         TFitResultPtr tFitResult = hResidualT->Fit("gaus", "QS");
+	         dRMS = tFitResult->Parameter(2);
+*/
+           fhSelTypeNNResidualT_Width->SetBinContent(iSelType + 1, dRMS);
+         }
+
+         if(hResidualX->GetEntries() > 100.)
+         {
+           Double_t dRMS = TMath::Abs(hResidualX->GetRMS());
+/*
+	         TFitResultPtr tFitResult = hResidualX->Fit("gaus", "QS");
+	         dRMS = tFitResult->Parameter(2);
+*/
+           fhSelTypeNNResidualX_Width->SetBinContent(iSelType + 1, dRMS);
+         }
+
+         if(hResidualY->GetEntries() > 100.)
+         {
+           Double_t dRMS = TMath::Abs(hResidualY->GetRMS());
+/*
+	         TFitResultPtr tFitResult = hResidualY->Fit("gaus", "QS");
+	         dRMS = tFitResult->Parameter(2);
+*/
+           fhSelTypeNNResidualY_Width->SetBinContent(iSelType + 1, dRMS);
+         }
+       }
+
+
+       if(fhDTD4DT04D4Off     != NULL)     fhDTD4DT04D4Off->Write();
+       if(fhDTX4D4Off         != NULL)         fhDTX4D4Off->Write();
+       if(fhDTY4D4Off         != NULL)         fhDTY4D4Off->Write();
+       if(fhDTTexpD4Off       != NULL)       fhDTTexpD4Off->Write();
+       if(fhCluSize0DT04D4Off != NULL) fhCluSize0DT04D4Off->Write();
+       if(fhCluSize4DT04D4Off != NULL) fhCluSize4DT04D4Off->Write();
+       if(fhTot0DT04D4Off     != NULL)     fhTot0DT04D4Off->Write();
+       if(fhTot4DT04D4Off     != NULL)     fhTot4DT04D4Off->Write();
+     }
+     break;
+
+   case 10:
+     {
+       if(fhDXSel24->GetEntries() > 100.)
+       {
+         Double_t dRMS = TMath::Abs(fhDXSel24->GetRMS());
+
+         fhSelHitTupleResidualXYT_Width->SetBinContent(1, dRMS);
+       }
+
+       if(fhDYSel24->GetEntries() > 100.)
+       {
+         Double_t dRMS = TMath::Abs(fhDYSel24->GetRMS());
+
+         fhSelHitTupleResidualXYT_Width->SetBinContent(2, dRMS);
+       }
+
+       if(fhDTSel24->GetEntries() > 100.)
+       {
+         Double_t dRMS = TMath::Abs(fhDTSel24->GetRMS());
+
+         fhSelHitTupleResidualXYT_Width->SetBinContent(3, dRMS);
+       }
+
+
+       if(fhDTD4DT04D4Off     != NULL)     fhDTD4DT04D4Off->Write();
+       if(fhDTX4D4Off         != NULL)         fhDTX4D4Off->Write();
+       if(fhDTY4D4Off         != NULL)         fhDTY4D4Off->Write();
+       if(fhDTTexpD4Off       != NULL)       fhDTTexpD4Off->Write();
+       if(fhCluSize0DT04D4Off != NULL) fhCluSize0DT04D4Off->Write();
+       if(fhCluSize4DT04D4Off != NULL) fhCluSize4DT04D4Off->Write();
+       if(fhTot0DT04D4Off     != NULL)     fhTot0DT04D4Off->Write();
+       if(fhTot4DT04D4Off     != NULL)     fhTot4DT04D4Off->Write();
+     }
+     break;
+
    default:
      ;
    }
 
    fhDistDT04D4best->Write();
+
+   if(fhSelHitTupleResidualXYT_Width != NULL) fhSelHitTupleResidualXYT_Width->Write();
+   if(fhSelTypeNNResidualT_Width != NULL) fhSelTypeNNResidualT_Width->Write();
+   if(fhSelTypeNNResidualX_Width != NULL) fhSelTypeNNResidualX_Width->Write();
+   if(fhSelTypeNNResidualY_Width != NULL) fhSelTypeNNResidualY_Width->Write();
 
    //   fHist->Write();
    if(0) {
@@ -4954,6 +6319,42 @@ Bool_t   CbmTofAnaTestbeam::DeleteHistos()
    // Mapping
 
    return kTRUE;
+}
+
+
+Double_t CbmTofAnaTestbeam::GetSigT(Int_t iSelType)
+{
+  return (Double_t)fhSelTypeNNResidualT_Width->GetBinContent(iSelType + 1);
+}
+
+
+Double_t CbmTofAnaTestbeam::GetSigX(Int_t iSelType)
+{
+  return (Double_t)fhSelTypeNNResidualX_Width->GetBinContent(iSelType + 1);
+}
+
+
+Double_t CbmTofAnaTestbeam::GetSigY(Int_t iSelType)
+{
+  return (Double_t)fhSelTypeNNResidualY_Width->GetBinContent(iSelType + 1);
+}
+
+
+Double_t CbmTofAnaTestbeam::GetSHTSigX()
+{
+  return (Double_t)fhSelHitTupleResidualXYT_Width->GetBinContent(1);
+}
+
+
+Double_t CbmTofAnaTestbeam::GetSHTSigY()
+{
+  return (Double_t)fhSelHitTupleResidualXYT_Width->GetBinContent(2);
+}
+
+
+Double_t CbmTofAnaTestbeam::GetSHTSigT()
+{
+  return (Double_t)fhSelHitTupleResidualXYT_Width->GetBinContent(3);
 }
 
 

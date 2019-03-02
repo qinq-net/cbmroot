@@ -153,6 +153,7 @@ class CbmTofFindTracks : public FairTask
 
   inline void SetBeamMomentumLab (Double_t dval) { fdBeamMomentumLab = dval; }
   inline void SetRemoveSignalPropagationTime (Bool_t bval) { fbRemoveSignalPropagationTime = bval; }
+  inline void SetBeamMaxHMul (Int_t ival) { fiBeamMaxHMul = ival; }
 
   inline Double_t GetVertexT() const { return fVTX_T; }
   inline Double_t GetVertexX() const { return fVTX_X; }
@@ -287,6 +288,7 @@ class CbmTofFindTracks : public FairTask
 
   Double_t   fdBeamMomentumLab;        // beam momentum in lab frame [AGeV/c]
   Bool_t     fbRemoveSignalPropagationTime;
+  Int_t      fiBeamMaxHMul;
 
   ClassDef(CbmTofFindTracks,1);
 

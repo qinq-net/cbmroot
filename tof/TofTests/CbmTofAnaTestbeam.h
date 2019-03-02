@@ -171,6 +171,7 @@ class CbmTofAnaTestbeam : public FairTask {
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
       inline void SetCalOutFileName(TString CalOutFileName) { fCalOutFileName = CalOutFileName; }
 
+      inline void SetChi2LimFit ( Double_t val ) { fChi2LimFit = val; }
       inline void SetSIGLIM ( Double_t val ) { fSIGLIM = val; }
       inline void SetSIGT   ( Double_t val ) { fSIGT = val; }
       inline void SetSIGX   ( Double_t val ) { fSIGX = val; }
@@ -178,6 +179,7 @@ class CbmTofAnaTestbeam : public FairTask {
 
       inline void SetEnableMatchPosScaling(Bool_t bval) { fEnableMatchPosScaling = bval; }
 
+      inline Double_t GetChi2LimFit () { return fChi2LimFit; }
       inline Double_t GetSIGLIM () { return fSIGLIM; }
       inline Double_t GetSIGT () { return fSIGT; }
       inline Double_t GetSIGX () { return fSIGX; }
@@ -191,6 +193,30 @@ class CbmTofAnaTestbeam : public FairTask {
       inline void SetMonteCarloComparison(Bool_t bval) { fbMonteCarloComparison = bval; }
       inline void SetGhostTrackHitQuota(Double_t val) { fdGhostTrackHitQuota = val; }
       inline void SetDelayMCPoints(Bool_t bval) { fbDelayMCPoints = bval; }
+      inline void SetAttachDutHitToTracklet(Bool_t bval) { fbAttachDutHitToTracklet = bval; }
+      inline void SetBestSelTrackletOnly(Bool_t bval) { fbBestSelTrackletOnly = bval; }
+      inline void SetUseSigCalib(Bool_t bval) { fbUseSigCalib = bval; }
+
+      inline void SetMCSIGLIM ( Double_t val ) { fdMCSIGLIM = val; }
+      inline void SetMCSIGT   ( Double_t val ) { fdMCSIGT = val; }
+      inline void SetMCSIGX   ( Double_t val ) { fdMCSIGX = val; }
+      inline void SetMCSIGY   ( Double_t val ) { fdMCSIGY = val; }
+
+      inline Double_t GetMCSIGLIM () { return fdMCSIGLIM; }
+      inline Double_t GetMCSIGT () { return fdMCSIGT; }
+      inline Double_t GetMCSIGX () { return fdMCSIGX; }
+      inline Double_t GetMCSIGY () { return fdMCSIGY; }
+
+      Double_t GetSigT(Int_t iSelType);
+      Double_t GetSigX(Int_t iSelType);
+      Double_t GetSigY(Int_t iSelType);
+
+      Double_t GetSHTSigX();
+      Double_t GetSHTSigY();
+      Double_t GetSHTSigT();
+
+      inline void SetMinMCRefTrackPoints ( Int_t val ) { fiMinMCRefTrackPoints = val; }
+      inline void SetMaxMCRefTracks ( Int_t val ) { fiMaxMCRefTracks = val; }
 
    private:
       Bool_t   LoadGeometry();
@@ -470,9 +496,16 @@ class CbmTofAnaTestbeam : public FairTask {
       TH2 * fhAccRefTrackMulCentrality;
       TH2 * fhAccRefTracksProcSpec;
 
+      TEfficiency * fhSelMCTrackEfficiency;
+      TEfficiency * fhSelMCTrackMatchEfficiency;
+      TEfficiency * fhSelMCTrackMatchPurity;
+      TH1 * fhSelMCTrackDutHitMatchNNMul;
+      TH1 * fhSelMCTrackDutHitMatchAccNNMul;
+
       TEfficiency * fhSelEfficiency;
       TEfficiency * fhSelPurity;
       TEfficiency * fhSelRefTrackShare;
+      TH2 * fhSelRefTrackProcSpec;
       TEfficiency * fhSelMatchEfficiency;
       TEfficiency * fhSelMatchPurity;
       TH2 * fhResX04HitExp;
@@ -491,7 +524,12 @@ class CbmTofAnaTestbeam : public FairTask {
       TH1 * fhNTracksPerSelSel2Hit;
       TH1 * fhNTracksPerSelDutHit;
 
-      TEfficiency * fhDutEfficiency;
+      TEfficiency * fhSelTrklEfficiency;
+      TEfficiency * fhSelTrklPurity;
+      TEfficiency * fhSelTrklRefTrackShare;
+      TH2 * fhSelTrklRefTrackProcSpec;
+      TEfficiency * fhSelTrklMatchEfficiency;
+      TEfficiency * fhSelTrklMatchPurity;
       TH2 * fhDutResX_Hit_Trk;
       TH2 * fhDutResX_Trk_MC;
       TH2 * fhDutResX_Hit_MC;
@@ -501,6 +539,22 @@ class CbmTofAnaTestbeam : public FairTask {
       TH2 * fhDutResT_Hit_Trk;
       TH2 * fhDutResT_Trk_MC;
       TH2 * fhDutResT_Hit_MC;
+
+      TEfficiency * fhSelHitTupleEfficiencyTIS;
+      TEfficiency * fhSelTrklEfficiencyTIS;
+      TEfficiency * fhSelMCTrackEfficiencyTIS;
+
+      TEfficiency * fhSelHitTupleMatchEfficiencyTIS;
+      TEfficiency * fhSelTrklMatchEfficiencyTIS;
+      TEfficiency * fhSelMCTrackMatchEfficiencyTIS;
+
+      TH2 * fhSelHitTupleResidualTTIS;
+      TH2 * fhSelTrklResidualTTIS;
+      TH2 * fhSelMCTrackResidualTTIS;
+        
+      TH2 * fhSelHitTupleDutCluSizeTIS;
+      TH2 * fhSelTrklDutCluSizeTIS;
+      TH2 * fhSelMCTrackDutCluSizeTIS;
 
       TH2 * fhPVResTAll;
       TH2 * fhPVResXAll;
@@ -544,6 +598,26 @@ class CbmTofAnaTestbeam : public FairTask {
       std::map<std::tuple<Int_t, Int_t, Int_t>, TH2 *> fhCounterRefTrackMulCell;
       std::map<std::tuple<Int_t, Int_t, Int_t>, TH2 *> fhCounterHitMulCell;
 
+      TH1 * fhSelTrklFitRedChiSq;
+      TH1 * fhSelTrklDutHitMatchNNMul;
+      TH1 * fhSelTrklDutHitMatchAccNNMul;
+
+      TH1 * fhSelHitTupleDutHitMatchMul;
+      TH1 * fhSelHitTupleDutHitMatchAccMul;
+
+      TH2 * fhSelTypeNNChiSq;
+      TH2 * fhSelTypeNNResidualT;
+      TH2 * fhSelTypeNNResidualX;
+      TH2 * fhSelTypeNNResidualY;
+
+      TH2 * fhSelTypeAccNNChiSq;
+      TH2 * fhSelTypeAccNNResidualT;
+      TH2 * fhSelTypeAccNNResidualX;
+      TH2 * fhSelTypeAccNNResidualY;
+
+      TH2 * fhGoodSelTypeNNPureChiSq;
+      TH2 * fhGoodSelTypeNNAllChiSq;
+
       // Test class performance
  
       // Rates and data rates
@@ -570,6 +644,10 @@ class CbmTofAnaTestbeam : public FairTask {
       TH1  *fhCluSize4DT04D4Off;          // 'calibration' histo
       TH1      *fhTot0DT04D4Off;          // 'calibration' histo
       TH1      *fhTot4DT04D4Off;          // 'calibration' histo
+      TH1  *fhSelTypeNNResidualT_Width;   // 'calibration' histo
+      TH1  *fhSelTypeNNResidualX_Width;   // 'calibration' histo
+      TH1  *fhSelTypeNNResidualY_Width;   // 'calibration' histo
+      TH1 *fhSelHitTupleResidualXYT_Width;// 'calibration' histo
       Double_t        fdMulDMax;          // max multiplicity in Diamond counter
       Double_t        fdDTDia;            // max time difference between diamonds
       Double_t        fdDTD4MAX;          // max time difference between reference & diamond
@@ -622,6 +700,7 @@ class CbmTofAnaTestbeam : public FairTask {
       Int_t         fiDutNch; // Number of cells in Device under test
       Int_t         fiReqTrg; // Requested Trigger Pattern 
 
+      Double_t fChi2LimFit;
       Double_t fSIGLIM;
       Double_t fSIGT;
       Double_t fSIGX;
@@ -657,7 +736,17 @@ class CbmTofAnaTestbeam : public FairTask {
       Int_t fiNAccRefTracks;
       Double_t fdGhostTrackHitQuota;
       Bool_t fbDelayMCPoints;
+      Bool_t fbAttachDutHitToTracklet;
+      Bool_t fbBestSelTrackletOnly;
+      Bool_t fbUseSigCalib;
 
+      Double_t fdMCSIGLIM;
+      Double_t fdMCSIGT;
+      Double_t fdMCSIGX;
+      Double_t fdMCSIGY;
+
+      Int_t fiMinMCRefTrackPoints;
+      Int_t fiMaxMCRefTracks;
 
       ClassDef(CbmTofAnaTestbeam, 1);
 };
