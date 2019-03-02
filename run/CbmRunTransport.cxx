@@ -64,6 +64,19 @@ CbmRunTransport::CbmRunTransport() :
   // It should be done in Run(). However, the presence of a FairRunSim
   // is required by CbmUnigenGenerator. Not a good construction; should
   // be done better.
+
+  // Initialisation of the TDatabasePDG. This is done here because in the
+  // course of the run, new particles may be added. The method
+  // ReadPDGTable, however, is not executed from the constructor, but only
+  // from GetParticle(), if the particle list is not empty.
+  // So, if one adds particles before the first call to GetParticle(),
+  // the particle table is never loaded.
+  // TDatabasePDG is a singleton, but there is no way to check whether
+  // it has already read the particle table file, nor to see if there are
+  // any contents, nor to clean the particle list. A truly remarkable
+  // implementation.
+  auto pdgdb = TDatabasePDG::Instance();
+  pdgdb->ReadPDGTable();
 }
 // --------------------------------------------------------------------------
 
@@ -175,24 +188,37 @@ void CbmRunTransport::ForceUserDecays() {
     log << GetName() << ": Force decay "
         << pdgdb->GetParticle(pdg)->GetName() << " -> ";
 
+    // First check whether VMC knows the particle. Not all particles
+    // in TDatabasePDG are necessarily defined in VMC.
+    // This check is there because the call to TVirtualMC::SetUserDecay
+    // has no return value signifying success. If the particle is not
+    // found, just an error message is printed, which most likely
+    // goes unnoticed by the user.
+    // The access to ParticleMCTpye seems to me the only way to check.
+    // No method like Bool_t CheckParticle(Int_t) is there, which any
+    // sensible programmer would have put.
+    if (gMC->ParticleMCType(pdg) == kPTUndefined) { // At least TGeant3 delivers that
+      LOG(INFO) << log.str() << FairLogger::endl;
+      LOG(FATAL) << GetName() << ": PDG " << pdg << " not in VMC!"
+          << FairLogger::endl;
+      continue;
+    }
+
     // For up to three daughters, the native decayer is used
     if ( nDaughters <= 3 ) {
-      Float_t branch[6];  // branching ratios
-      Int_t mode[6][3];   // decay modes
-      branch[0] = 100.;
+      Float_t branch[6] = { 100., 0., 0., 0., 0., 0. };  // branching ratios
+      Int_t mode[6][3] = { {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
+                           {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};   // decay modes
       for ( Int_t iDaughter = 0; iDaughter < nDaughters; iDaughter++ ) {
         mode[0][iDaughter] = decay.second[iDaughter];
-        LOG(INFO) << iDaughter << FairLogger::endl;
         log << pdgdb->GetParticle(decay.second[iDaughter])->GetName()
             << " ";
       }
-      for (Int_t iChannel = 1; iChannel < 6; iChannel++) {
-        branch[iChannel] = 0.;
-        mode[iChannel][0] = 0;
-        mode[iChannel][1] = 0;
-        mode[iChannel][2] = 0;
+      Bool_t success = gMC->SetDecayMode(pdg, branch, mode);
+      if ( ! success ) {
+        LOG(INFO) << log.str() << FairLogger::endl;
+        LOG(FATAL) << GetName() << ": Setting decay mode failed!" << FairLogger::endl;
       }
-      gMC->SetDecayMode(pdg, branch, mode);
       log << ", using native decayer.";
     } //? not more than three daughters
 
@@ -314,10 +340,8 @@ void CbmRunTransport::RegisterIons() {
   // first initialisation of the database; the there defined particles would
   // be added on top of the existing ones.
 
-  // Particle database
+  // Particle database and variables
   TDatabasePDG* pdgdb = TDatabasePDG::Instance();
-  assert(pdgdb);
-  pdgdb->ReadPDGTable();
   const char* name = "";
   Int_t code = 0;
   Double_t mass = 0.;
@@ -435,7 +459,9 @@ void CbmRunTransport::PiAndEtaDecay(TVirtualMC* vmc) {
   brEta[5] = 2.56e-2;
 
   // --- Set the eta decays
-  vmc->SetDecayMode(221, brEta, modeEta);
+  Bool_t success = vmc->SetDecayMode(221, brEta, modeEta);
+  if ( ! success ) LOG(FATAL) << GetName()
+      << ": Setting decay mode for eta failed!" << FairLogger::endl;
 
   // --- Decay modes for pi0
   Int_t modePi[6][3];    // decay modes
@@ -462,8 +488,9 @@ void CbmRunTransport::PiAndEtaDecay(TVirtualMC* vmc) {
   }
 
   // --- Set the pi0 decays
-  vmc->SetDecayMode(111, brPi, modePi);
-
+  success = vmc->SetDecayMode(111, brPi, modePi);
+  if ( ! success ) LOG(FATAL) << GetName()
+      << ": Setting decay mode for eta failed!" << FairLogger::endl;
 }
 // --------------------------------------------------------------------------
 
@@ -485,6 +512,10 @@ void CbmRunTransport::Run(Int_t nEvents) {
         << FairLogger::endl;
   }
   std::cout << std::endl << std::endl;
+
+
+  // --- Add some required particles to the TDatabasePDG
+  RegisterIons();
 
 
   // --- Set transport engine
@@ -578,10 +609,6 @@ void CbmRunTransport::Run(Int_t nEvents) {
 
   // --- Trigger generation of run info
   fRun->SetGenerateRunInfo(fGenerateRunInfo);
-
-
-  // --- Add some required particles to the TDatabasePDG
-  RegisterIons();
 
 
   // --- Set VMC configuration
