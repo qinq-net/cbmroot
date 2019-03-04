@@ -5,19 +5,19 @@
 [CbmMcbm2018MuchPar]
 //----------------------------------------------------------------------------
 // Total number of STS DPBs in system
-NrOfDpbs: Int_t 1
+NrOfDpbs: Int_t 4
 // Array to hold the unique IDs (equipment ID) for all MUCH DPBs, Array size has to match NrOfDpbs
 DbpIdArray: Int_t \
-  0x4f19
+  0x18e3 0x4f19 0x1931 0x6601
 // Array to hold the active flag for all CROBs, [ NbDpb * kuNbCrobPerDpb ] = [ NbDpb * 2 ]
 CrobActiveFlag: Int_t \
   1  0
-NrOfFebsInGemA: Int_t 3
+NrOfFebsInGemA: Int_t 6
 nFebsIdsArrayA: Int_t \
-  13  15  17  11  13  14  12  10  5    #Id for the connected FEB Position in GEM Module A
-NrOfFebsInGemB: Int_t 3
+  10  11  12  13  15  17    #Id for the connected FEB Position in GEM Module A
+NrOfFebsInGemB: Int_t 6
 nFebsIdsArrayB: Int_t \
-  13  15  17  9  11  13  14  12  10    #Id for the connected FEB Position in GEM Module B
+  10  11  12  13  15  17    #Id for the connected FEB Position in GEM Module B
 ChannelsToPadX: Int_t \
  -3  6  8  6  8  6  8  5  7  5  7  5  7  5  7  5 \
   7  4  6  4  6  4  8  4  9  4  9  3  9  3  9  3 \
