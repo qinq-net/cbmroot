@@ -1,0 +1,2990 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+<define>
+<position name="central" x="0" y="0" z="0" unit="mm"/>
+<rotation name="identity" x="0" y="0" z="0" unit="degree"/>
+<variable name="DEGtoRAD" value="1.74532925199433E-02"/>
+<variable name="StsZ" value="0"/>
+<variable name="StsZ.bck" value="696.8"/>
+</define>
+<materials>
+<material name="STSBoxCarbonFibre" Z="1.0">
+<D value="1"/>
+<atom value="1"/>
+</material>
+<material name="STSBoxCarbonFoam" Z="1.0">
+<D value="1"/>
+<atom value="1"/>
+</material>
+<material name="air" Z="1.0">
+<D value="1"/>
+<atom value="1"/>
+</material>
+<material name="STSFEBMaterial" Z="1.0">
+<D value="1"/>
+<atom value="1"/>
+</material>
+<material name="STSPOBMaterial" Z="1.0">
+<D value="1"/>
+<atom value="1"/>
+</material>
+<material name="aluminium" Z="1.0">
+<D value="1"/>
+<atom value="1"/>
+</material>
+</materials>
+<solids>
+<box name="passive_Box_Wall_Vertical_CF_PartBody" x="(1.000000)*2" y="(712.500000)*2" z="(519.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Vertical_PartBody" x="(10.000000)*2" y="(712.500000)*2" z="(519.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Bottom_CF_PartBody" x="(1150.000000)*2" y="(1.000000)*2" z="(477.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Bottom_PartBody" x="(1150.000000)*2" y="(20.000000)*2" z="(477.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Back_CF_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(1.000000)*2" lunit="mm"/>
+<tube name="passive_Box_Wall_Back_CF_PartBody_op1" rmin="0.000000" rmax="34.250000" z="(1.000001)*2" startphi="0.000000" deltaphi="360.000000" aunit="deg" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Back_CF_PartBody">
+<first ref="passive_Box_Wall_Back_CF_PartBody_op0"/>
+<second ref="passive_Box_Wall_Back_CF_PartBody_op1"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_Box_Wall_Back_Light_CF_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(1.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Back_Light_CF_PartBody_op1" x="(1000.000000)*2" y="(600.000000)*2" z="(1.000001)*2" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Back_Light_CF_PartBody">
+<first ref="passive_Box_Wall_Back_Light_CF_PartBody_op0"/>
+<second ref="passive_Box_Wall_Back_Light_CF_PartBody_op1"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_Box_Wall_Back_Light_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(12.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Back_Light_PartBody_op1" x="(1000.000000)*2" y="(600.000000)*2" z="(12.000001)*2" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Back_Light_PartBody">
+<first ref="passive_Box_Wall_Back_Light_PartBody_op0"/>
+<second ref="passive_Box_Wall_Back_Light_PartBody_op1"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_Box_Wall_Back_Window_CF_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(1.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Back_Window_CF_PartBody_op1" x="(1000.000000)*2" y="(600.000000)*2" z="(1.000001)*2" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Back_Window_CF_PartBody">
+<first ref="passive_Box_Wall_Back_Window_CF_PartBody_op0"/>
+<second ref="passive_Box_Wall_Back_Window_CF_PartBody_op1"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_Box_Wall_Back_Window_Material_PartBody_op0" x="(1000.000000)*2" y="(600.000000)*2" z="(1.000000)*2" lunit="mm"/>
+<tube name="passive_Box_Wall_Back_Window_Material_PartBody_op1" rmin="0.000000" rmax="34.250000" z="(5.000000)*2" startphi="0.000000" deltaphi="360.000000" aunit="deg" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Back_Window_Material_PartBody">
+<first ref="passive_Box_Wall_Back_Window_Material_PartBody_op0"/>
+<second ref="passive_Box_Wall_Back_Window_Material_PartBody_op1"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_Box_Wall_Back_Window_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(12.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Back_Window_PartBody_op1" x="(1000.000000)*2" y="(600.000000)*2" z="(12.000001)*2" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Back_Window_PartBody">
+<first ref="passive_Box_Wall_Back_Window_PartBody_op0"/>
+<second ref="passive_Box_Wall_Back_Window_PartBody_op1"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_Box_Wall_Back_PartBody" x="(1150.000000)*2" y="(712.500000)*2" z="(12.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Front_CF_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(1.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Front_CF_PartBody_op1" x="(325.000000)*2" y="(270.000000)*2" z="(1.000001)*2" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Front_CF_PartBody">
+<first ref="passive_Box_Wall_Front_CF_PartBody_op0"/>
+<second ref="passive_Box_Wall_Front_CF_PartBody_op1"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_Box_Wall_Front_CF2_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(1.000000)*2" lunit="mm"/>
+<tube name="passive_Box_Wall_Front_CF2_PartBody_op1" rmin="0.000000" rmax="160.000000" z="(1.000001)*2" startphi="0.000000" deltaphi="360.000000" aunit="deg" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Front_CF2_PartBody">
+<first ref="passive_Box_Wall_Front_CF2_PartBody_op0"/>
+<second ref="passive_Box_Wall_Front_CF2_PartBody_op1"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_Box_Wall_Front_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(30.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Front_PartBody_op1" x="(325.000000)*2" y="(270.000000)*2" z="(117.500000)*2" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Front_PartBody_op01">
+<first ref="passive_Box_Wall_Front_PartBody_op0"/>
+<second ref="passive_Box_Wall_Front_PartBody_op1"/>
+<position name="passive_Box_Wall_Front_PartBody__1_pos_0" x="0" y="0" z="-110.5" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<tube name="passive_Box_Wall_Front_PartBody_op2" rmin="0.000000" rmax="160.000000" z="(110.500000)*2" startphi="0.000000" deltaphi="360.000000" aunit="deg" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Front_PartBody">
+<first ref="passive_Box_Wall_Front_PartBody_op01"/>
+<second ref="passive_Box_Wall_Front_PartBody_op2"/>
+<position name="passive_Box_Wall_Front_PartBody__2_pos_01" x="0" y="0" z="117.5" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_Box_Wall_Top_CF_PartBody" x="(1150.000000)*2" y="(1.000000)*2" z="(477.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Top_PartBody" x="(1150.000000)*2" y="(20.000000)*2" z="(477.000000)*2" lunit="mm"/>
+<box name="passive_FEB_PartBody" x="(50.750000)*2" y="(65.000000)*2" z="(20.300000)*2" lunit="mm"/>
+<box name="passive_POB_PartBody" x="(125.000000)*2" y="(205.000000)*2" z="(19.000000)*2" lunit="mm"/>
+<box name="passive_unit0A_half_Top_Part1_PartBody" x="(263.000000)*2" y="(15.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit0A_half_Top_Part2_PartBody" x="(10.000000)*2" y="(33.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit0A_half_Top_Part3_PartBody" x="(7.500000)*2" y="(33.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit0A_half_Top_PartBody" x="(263.000000)*2" y="(48.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit0A_half_POB_PartBody_op0" x="(175.000000)*2" y="(250.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit0A_half_POB_PartBody_op1" x="(157.500000)*2" y="(12.500000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit0A_half_POB_PartBody_op01">
+<first ref="passive_unit0A_half_POB_PartBody_op0"/>
+<second ref="passive_unit0A_half_POB_PartBody_op1"/>
+<position name="passive_unit0A_half_POB_PartBody__1_pos_0" x="2.5" y="207.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit0A_half_POB_PartBody_op2" x="(25.000000)*2" y="(202.500000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit0A_half_POB_PartBody">
+<first ref="passive_unit0A_half_POB_PartBody_op01"/>
+<second ref="passive_unit0A_half_POB_PartBody_op2"/>
+<position name="passive_unit0A_half_POB_PartBody__2_pos_01" x="135" y="-27.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit0A_half_Center_PartBody_op0" x="(263.000000)*2" y="(202.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<xtru name="passive_unit0A_half_Center_PartBody_op1" lunit="mm">
+<twoDimVertex x="0.000000" y="250.000000"/>
+<twoDimVertex x="96.000000" y="100.000000"/>
+<twoDimVertex x="96.000000" y="-6.660000"/>
+<twoDimVertex x="-386.660000" y="-6.660000"/>
+<twoDimVertex x="-386.660000" y="250.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit0A_half_Center_PartBody_op01">
+<first ref="passive_unit0A_half_Center_PartBody_op0"/>
+<second ref="passive_unit0A_half_Center_PartBody_op1"/>
+<position name="passive_unit0A_half_Center_PartBody__1_pos_0" x="117" y="-202" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit0A_half_Center_PartBody_op2" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="0.000000" y="84.389041"/>
+<twoDimVertex x="-120.000000" y="271.889040"/>
+<twoDimVertex x="-120.000000" y="364.000000"/>
+<twoDimVertex x="35.000000" y="364.000000"/>
+<twoDimVertex x="35.000000" y="0.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit0A_half_Center_PartBody">
+<first ref="passive_unit0A_half_Center_PartBody_op01"/>
+<second ref="passive_unit0A_half_Center_PartBody_op2"/>
+<position name="passive_unit0A_half_Center_PartBody__2_pos_01" x="228" y="-182" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit2A_half_POB_PartBody_op0" x="(150.000000)*2" y="(250.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit2A_half_POB_PartBody_op1" x="(125.000000)*2" y="(17.500000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit2A_half_POB_PartBody">
+<first ref="passive_unit2A_half_POB_PartBody_op0"/>
+<second ref="passive_unit2A_half_POB_PartBody_op1"/>
+<position name="passive_unit2A_half_POB_PartBody__1_pos_0" x="-5" y="214.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit2A_half_Center_PartBody_op0" x="(288.000000)*2" y="(250.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit2A_half_Center_PartBody_op1" x="(102.500000)*2" y="(17.500000)*2" z="(7.600001)*2" lunit="mm"/>
+<subtraction name="passive_unit2A_half_Center_PartBody_op01">
+<first ref="passive_unit2A_half_Center_PartBody_op0"/>
+<second ref="passive_unit2A_half_Center_PartBody_op1"/>
+<position name="passive_unit2A_half_Center_PartBody__1_pos_0" x="185.5" y="214.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit2A_half_Center_PartBody_op2" lunit="mm">
+<twoDimVertex x="0.000000" y="238.000000"/>
+<twoDimVertex x="96.000000" y="88.000000"/>
+<twoDimVertex x="96.000000" y="-6.660000"/>
+<twoDimVertex x="-386.660000" y="-6.660000"/>
+<twoDimVertex x="-386.660000" y="238.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit2A_half_Center_PartBody_op012">
+<first ref="passive_unit2A_half_Center_PartBody_op01"/>
+<second ref="passive_unit2A_half_Center_PartBody_op2"/>
+<position name="passive_unit2A_half_Center_PartBody__2_pos_01" x="92" y="-250" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit2A_half_Center_PartBody_op3" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="0.000000" y="71.778083"/>
+<twoDimVertex x="-135.000000" y="282.715581"/>
+<twoDimVertex x="-135.000000" y="407.000000"/>
+<twoDimVertex x="70.000000" y="407.000000"/>
+<twoDimVertex x="70.000000" y="0.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit2A_half_Center_PartBody">
+<first ref="passive_unit2A_half_Center_PartBody_op012"/>
+<second ref="passive_unit2A_half_Center_PartBody_op3"/>
+<position name="passive_unit2A_half_Center_PartBody__3_pos_012" x="218" y="-225" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit3A_half_POB_PartBody_op0" x="(157.000000)*2" y="(287.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit3A_half_POB_PartBody_op1" x="(125.000000)*2" y="(30.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit3A_half_POB_PartBody">
+<first ref="passive_unit3A_half_POB_PartBody_op0"/>
+<second ref="passive_unit3A_half_POB_PartBody_op1"/>
+<position name="passive_unit3A_half_POB_PartBody__1_pos_0" x="2" y="227.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit3A_half_Top_Part1_PartBody" x="(281.000000)*2" y="(15.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit3A_half_Top_Part2_PartBody" x="(10.000000)*2" y="(30.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit3A_half_Top_Part3_PartBody" x="(15.000000)*2" y="(30.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit3A_half_Top_PartBody" x="(281.000000)*2" y="(45.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit3A_half_Center_PartBody_op0" x="(281.000000)*2" y="(242.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<xtru name="passive_unit3A_half_Center_PartBody_op1" lunit="mm">
+<twoDimVertex x="0.000000" y="335.000000"/>
+<twoDimVertex x="96.000000" y="185.000000"/>
+<twoDimVertex x="96.000000" y="-6.660000"/>
+<twoDimVertex x="-473.992000" y="-6.660000"/>
+<twoDimVertex x="-473.992000" y="335.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit3A_half_Center_PartBody_op01">
+<first ref="passive_unit3A_half_Center_PartBody_op0"/>
+<second ref="passive_unit3A_half_Center_PartBody_op1"/>
+<position name="passive_unit3A_half_Center_PartBody__1_pos_0" x="185" y="-242.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit3A_half_Center_PartBody_op2" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="-90.000000" y="140.625000"/>
+<twoDimVertex x="-90.000000" y="220.346916"/>
+<twoDimVertex x="0.000000" y="220.346916"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit3A_half_Center_PartBody">
+<first ref="passive_unit3A_half_Center_PartBody_op01"/>
+<second ref="passive_unit3A_half_Center_PartBody_op2"/>
+<position name="passive_unit3A_half_Center_PartBody__2_pos_01" x="281" y="-1.8469171194" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit3B_half_POB_PartBody_op0" x="(150.000000)*2" y="(287.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit3B_half_POB_PartBody_op1" x="(125.000000)*2" y="(30.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit3B_half_POB_PartBody">
+<first ref="passive_unit3B_half_POB_PartBody_op0"/>
+<second ref="passive_unit3B_half_POB_PartBody_op1"/>
+<position name="passive_unit3B_half_POB_PartBody__1_pos_0" x="5" y="227.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit3B_half_Top_Part1_PartBody" x="(288.000000)*2" y="(15.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit3B_half_Top_Part2_PartBody" x="(10.000000)*2" y="(31.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit3B_half_Top_Part3_PartBody" x="(15.000000)*2" y="(31.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit3B_half_Top_PartBody" x="(288.000000)*2" y="(46.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit3B_half_Center_PartBody_op0" x="(288.000000)*2" y="(241.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<xtru name="passive_unit3B_half_Center_PartBody_op1" lunit="mm">
+<twoDimVertex x="0.000000" y="335.000000"/>
+<twoDimVertex x="372.660000" y="335.000000"/>
+<twoDimVertex x="372.660000" y="-6.660000"/>
+<twoDimVertex x="-116.000000" y="-6.660000"/>
+<twoDimVertex x="-116.000000" y="185.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit3B_half_Center_PartBody_op01">
+<first ref="passive_unit3B_half_Center_PartBody_op0"/>
+<second ref="passive_unit3B_half_Center_PartBody_op1"/>
+<position name="passive_unit3B_half_Center_PartBody__1_pos_0" x="-78" y="-241.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit3B_half_Center_PartBody_op2" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="-64.000000" y="0.000000"/>
+<twoDimVertex x="-64.000000" y="437.000000"/>
+<twoDimVertex x="146.000000" y="437.000000"/>
+<twoDimVertex x="146.000000" y="358.039829"/>
+<twoDimVertex x="0.000000" y="169.246726"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit3B_half_Center_PartBody">
+<first ref="passive_unit3B_half_Center_PartBody_op01"/>
+<second ref="passive_unit3B_half_Center_PartBody_op2"/>
+<position name="passive_unit3B_half_Center_PartBody__2_pos_01" x="-224" y="-215.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit4A_half_POB_PartBody_op0" x="(150.000000)*2" y="(287.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit4A_half_POB_PartBody_op1" x="(125.000000)*2" y="(9.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit4A_half_POB_PartBody_op01">
+<first ref="passive_unit4A_half_POB_PartBody_op0"/>
+<second ref="passive_unit4A_half_POB_PartBody_op1"/>
+<position name="passive_unit4A_half_POB_PartBody__1_pos_0" x="-5" y="248.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit4A_half_POB_PartBody_op2" x="(60.000000)*2" y="(38.500000)*2" z="(7.600001)*2" lunit="mm"/>
+<subtraction name="passive_unit4A_half_POB_PartBody_op012">
+<first ref="passive_unit4A_half_POB_PartBody_op01"/>
+<second ref="passive_unit4A_half_POB_PartBody_op2"/>
+<position name="passive_unit4A_half_POB_PartBody__2_pos_01" x="70" y="-251" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit4A_half_POB_PartBody_op3" x="(60.000000)*2" y="(38.500000)*2" z="(7.600001)*2" lunit="mm"/>
+<subtraction name="passive_unit4A_half_POB_PartBody">
+<first ref="passive_unit4A_half_POB_PartBody_op012"/>
+<second ref="passive_unit4A_half_POB_PartBody_op3"/>
+<position name="passive_unit4A_half_POB_PartBody__3_pos_012" x="-70" y="-251" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit4A_half_Center_PartBody_op0" x="(288.000000)*2" y="(287.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit4A_half_Center_PartBody_op1" x="(40.666000)*2" y="(38.166000)*2" z="(7.600001)*2" lunit="mm"/>
+<subtraction name="passive_unit4A_half_Center_PartBody_op01">
+<first ref="passive_unit4A_half_Center_PartBody_op0"/>
+<second ref="passive_unit4A_half_Center_PartBody_op1"/>
+<position name="passive_unit4A_half_Center_PartBody__1_pos_0" x="248.666" y="-250.666" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit4A_half_Center_PartBody_op2" x="(100.000000)*2" y="(9.000000)*2" z="(7.600001)*2" lunit="mm"/>
+<subtraction name="passive_unit4A_half_Center_PartBody_op012">
+<first ref="passive_unit4A_half_Center_PartBody_op01"/>
+<second ref="passive_unit4A_half_Center_PartBody_op2"/>
+<position name="passive_unit4A_half_Center_PartBody__2_pos_01" x="188" y="248.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit4A_half_Center_PartBody_op3" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="0.000000" y="88.778083"/>
+<twoDimVertex x="-130.000000" y="291.903081"/>
+<twoDimVertex x="-130.000000" y="402.000000"/>
+<twoDimVertex x="70.000000" y="402.000000"/>
+<twoDimVertex x="70.000000" y="0.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit4A_half_Center_PartBody_op0123">
+<first ref="passive_unit4A_half_Center_PartBody_op012"/>
+<second ref="passive_unit4A_half_Center_PartBody_op3"/>
+<position name="passive_unit4A_half_Center_PartBody__3_pos_012" x="218" y="-182.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit4A_half_Center_PartBody_op4" lunit="mm">
+<twoDimVertex x="0.000000" y="335.000000"/>
+<twoDimVertex x="96.000000" y="185.000000"/>
+<twoDimVertex x="96.000000" y="-6.660000"/>
+<twoDimVertex x="-386.660000" y="-6.660000"/>
+<twoDimVertex x="-386.660000" y="335.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit4A_half_Center_PartBody">
+<first ref="passive_unit4A_half_Center_PartBody_op0123"/>
+<second ref="passive_unit4A_half_Center_PartBody_op4"/>
+<position name="passive_unit4A_half_Center_PartBody__4_pos_0123" x="92" y="-287.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit4B_half_POB_PartBody_op0" x="(150.000000)*2" y="(287.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit4B_half_POB_PartBody_op1" x="(125.000000)*2" y="(9.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit4B_half_POB_PartBody_op01">
+<first ref="passive_unit4B_half_POB_PartBody_op0"/>
+<second ref="passive_unit4B_half_POB_PartBody_op1"/>
+<position name="passive_unit4B_half_POB_PartBody__1_pos_0" x="5" y="248.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit4B_half_POB_PartBody_op2" x="(60.000000)*2" y="(30.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit4B_half_POB_PartBody_op012">
+<first ref="passive_unit4B_half_POB_PartBody_op01"/>
+<second ref="passive_unit4B_half_POB_PartBody_op2"/>
+<position name="passive_unit4B_half_POB_PartBody__2_pos_01" x="70" y="-242.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit4B_half_POB_PartBody_op3" x="(60.000000)*2" y="(30.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit4B_half_POB_PartBody">
+<first ref="passive_unit4B_half_POB_PartBody_op012"/>
+<second ref="passive_unit4B_half_POB_PartBody_op3"/>
+<position name="passive_unit4B_half_POB_PartBody__3_pos_012" x="-70" y="-242.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit4B_half_Center_PartBody_op0" x="(288.000000)*2" y="(287.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit4B_half_Center_PartBody_op1" x="(50.000000)*2" y="(9.000000)*2" z="(7.600001)*2" lunit="mm"/>
+<subtraction name="passive_unit4B_half_Center_PartBody_op01">
+<first ref="passive_unit4B_half_Center_PartBody_op0"/>
+<second ref="passive_unit4B_half_Center_PartBody_op1"/>
+<position name="passive_unit4B_half_Center_PartBody__1_pos_0" x="-238" y="248.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit4B_half_Center_PartBody_op2" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="0.000000" y="298.822240"/>
+<twoDimVertex x="100.000000" y="298.822240"/>
+<twoDimVertex x="100.000000" y="129.310345"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit4B_half_Center_PartBody_op012">
+<first ref="passive_unit4B_half_Center_PartBody_op01"/>
+<second ref="passive_unit4B_half_Center_PartBody_op2"/>
+<position name="passive_unit4B_half_Center_PartBody__2_pos_01" x="-288" y="-79.3222389248" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit4B_half_Center_PartBody_op3" lunit="mm">
+<twoDimVertex x="0.000000" y="335.000000"/>
+<twoDimVertex x="446.660000" y="335.000000"/>
+<twoDimVertex x="446.660000" y="-6.660000"/>
+<twoDimVertex x="-116.000000" y="-6.660000"/>
+<twoDimVertex x="-116.000000" y="185.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit4B_half_Center_PartBody">
+<first ref="passive_unit4B_half_Center_PartBody_op012"/>
+<second ref="passive_unit4B_half_Center_PartBody_op3"/>
+<position name="passive_unit4B_half_Center_PartBody__3_pos_012" x="-152" y="-287.5000002836" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit5A_half_POB_PartBody_op0" x="(150.000000)*2" y="(287.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit5A_half_POB_PartBody_op1" x="(125.000000)*2" y="(12.500000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit5A_half_POB_PartBody_op01">
+<first ref="passive_unit5A_half_POB_PartBody_op0"/>
+<second ref="passive_unit5A_half_POB_PartBody_op1"/>
+<position name="passive_unit5A_half_POB_PartBody__1_pos_0" x="-5" y="260" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit5A_half_POB_PartBody_op2" x="(60.000000)*2" y="(30.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit5A_half_POB_PartBody_op012">
+<first ref="passive_unit5A_half_POB_PartBody_op01"/>
+<second ref="passive_unit5A_half_POB_PartBody_op2"/>
+<position name="passive_unit5A_half_POB_PartBody__2_pos_01" x="70" y="-242.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit5A_half_POB_PartBody_op3" x="(60.000000)*2" y="(30.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit5A_half_POB_PartBody">
+<first ref="passive_unit5A_half_POB_PartBody_op012"/>
+<second ref="passive_unit5A_half_POB_PartBody_op3"/>
+<position name="passive_unit5A_half_POB_PartBody__3_pos_012" x="-70" y="-242.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit5A_half_Center_PartBody_op0" x="(288.000000)*2" y="(287.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit5A_half_Center_PartBody_op1" x="(52.500000)*2" y="(12.500000)*2" z="(7.600001)*2" lunit="mm"/>
+<subtraction name="passive_unit5A_half_Center_PartBody_op01">
+<first ref="passive_unit5A_half_Center_PartBody_op0"/>
+<second ref="passive_unit5A_half_Center_PartBody_op1"/>
+<position name="passive_unit5A_half_Center_PartBody__1_pos_0" x="235.5" y="260" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit5A_half_Center_PartBody_op2" lunit="mm">
+<twoDimVertex x="0.000000" y="395.000000"/>
+<twoDimVertex x="116.000000" y="245.000000"/>
+<twoDimVertex x="116.000000" y="-6.660000"/>
+<twoDimVertex x="-446.660000" y="-6.660000"/>
+<twoDimVertex x="-446.660000" y="395.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit5A_half_Center_PartBody_op012">
+<first ref="passive_unit5A_half_Center_PartBody_op01"/>
+<second ref="passive_unit5A_half_Center_PartBody_op2"/>
+<position name="passive_unit5A_half_Center_PartBody__2_pos_01" x="152" y="-287.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit5A_half_Center_PartBody_op3" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="-105.000000" y="135.775862"/>
+<twoDimVertex x="-105.000000" y="246.822239"/>
+<twoDimVertex x="0.000000" y="246.822239"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit5A_half_Center_PartBody">
+<first ref="passive_unit5A_half_Center_PartBody_op012"/>
+<second ref="passive_unit5A_half_Center_PartBody_op3"/>
+<position name="passive_unit5A_half_Center_PartBody__3_pos_012" x="288" y="-19.322239" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit5B_half_POB_PartBody_op0" x="(150.000000)*2" y="(287.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit5B_half_POB_PartBody_op1" x="(125.000000)*2" y="(12.500000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit5B_half_POB_PartBody_op01">
+<first ref="passive_unit5B_half_POB_PartBody_op0"/>
+<second ref="passive_unit5B_half_POB_PartBody_op1"/>
+<position name="passive_unit5B_half_POB_PartBody__1_pos_0" x="5" y="260" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit5B_half_POB_PartBody_op2" x="(60.000000)*2" y="(30.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit5B_half_POB_PartBody_op012">
+<first ref="passive_unit5B_half_POB_PartBody_op01"/>
+<second ref="passive_unit5B_half_POB_PartBody_op2"/>
+<position name="passive_unit5B_half_POB_PartBody__2_pos_01" x="70" y="-242.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit5B_half_POB_PartBody_op3" x="(60.000000)*2" y="(30.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit5B_half_POB_PartBody">
+<first ref="passive_unit5B_half_POB_PartBody_op012"/>
+<second ref="passive_unit5B_half_POB_PartBody_op3"/>
+<position name="passive_unit5B_half_POB_PartBody__3_pos_012" x="-70" y="-242.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit5B_half_Center_PartBody_op0" x="(288.000000)*2" y="(287.500000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit5B_half_Center_PartBody_op1" x="(107.500000)*2" y="(12.500000)*2" z="(7.600001)*2" lunit="mm"/>
+<subtraction name="passive_unit5B_half_Center_PartBody_op01">
+<first ref="passive_unit5B_half_Center_PartBody_op0"/>
+<second ref="passive_unit5B_half_Center_PartBody_op1"/>
+<position name="passive_unit5B_half_Center_PartBody__1_pos_0" x="-180.5" y="260" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit5B_half_Center_PartBody_op2" x="(40.000000)*2" y="(30.000000)*2" z="(7.600001)*2" lunit="mm"/>
+<subtraction name="passive_unit5B_half_Center_PartBody_op012">
+<first ref="passive_unit5B_half_Center_PartBody_op01"/>
+<second ref="passive_unit5B_half_Center_PartBody_op2"/>
+<position name="passive_unit5B_half_Center_PartBody__2_pos_01" x="-248" y="-242.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit5B_half_Center_PartBody_op3" lunit="mm">
+<twoDimVertex x="0.000000" y="411.000000"/>
+<twoDimVertex x="386.660000" y="411.000000"/>
+<twoDimVertex x="386.660000" y="-6.660000"/>
+<twoDimVertex x="-96.000000" y="-6.660000"/>
+<twoDimVertex x="-96.000000" y="261.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit5B_half_Center_PartBody_op0123">
+<first ref="passive_unit5B_half_Center_PartBody_op012"/>
+<second ref="passive_unit5B_half_Center_PartBody_op3"/>
+<position name="passive_unit5B_half_Center_PartBody__3_pos_012" x="-92" y="-287.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit5B_half_Center_PartBody_op4" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="-70.000000" y="0.000000"/>
+<twoDimVertex x="-70.000000" y="410.000000"/>
+<twoDimVertex x="156.942027" y="410.000000"/>
+<twoDimVertex x="0.000000" y="164.778083"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit5B_half_Center_PartBody">
+<first ref="passive_unit5B_half_Center_PartBody_op0123"/>
+<second ref="passive_unit5B_half_Center_PartBody_op4"/>
+<position name="passive_unit5B_half_Center_PartBody__4_pos_0123" x="-218" y="-182.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit6A_half_POB_PartBody_op0" x="(155.000000)*2" y="(325.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit6A_half_POB_PartBody_op1" x="(60.000000)*2" y="(72.500000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit6A_half_POB_PartBody_op01">
+<first ref="passive_unit6A_half_POB_PartBody_op0"/>
+<second ref="passive_unit6A_half_POB_PartBody_op1"/>
+<position name="passive_unit6A_half_POB_PartBody__1_pos_0" x="75" y="-237.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit6A_half_POB_PartBody_op2" x="(60.000000)*2" y="(72.500000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit6A_half_POB_PartBody">
+<first ref="passive_unit6A_half_POB_PartBody_op01"/>
+<second ref="passive_unit6A_half_POB_PartBody_op2"/>
+<position name="passive_unit6A_half_POB_PartBody__2_pos_01" x="-65" y="-237.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit6A_half_Center_PartBody_op0" x="(283.000000)*2" y="(325.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<xtru name="passive_unit6A_half_Center_PartBody_op1" lunit="mm">
+<twoDimVertex x="0.000000" y="414.000000"/>
+<twoDimVertex x="146.000000" y="264.000000"/>
+<twoDimVertex x="146.000000" y="-6.660000"/>
+<twoDimVertex x="-426.660000" y="-6.660000"/>
+<twoDimVertex x="-426.660000" y="414.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit6A_half_Center_PartBody_op01">
+<first ref="passive_unit6A_half_Center_PartBody_op0"/>
+<second ref="passive_unit6A_half_Center_PartBody_op1"/>
+<position name="passive_unit6A_half_Center_PartBody__1_pos_0" x="137" y="-325" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit6A_half_Center_PartBody_op2" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="-90.000000" y="92.465754"/>
+<twoDimVertex x="-90.000000" y="292.988483"/>
+<twoDimVertex x="0.000000" y="292.988483"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit6A_half_Center_PartBody">
+<first ref="passive_unit6A_half_Center_PartBody_op01"/>
+<second ref="passive_unit6A_half_Center_PartBody_op2"/>
+<position name="passive_unit6A_half_Center_PartBody__2_pos_01" x="283" y="-17.9884825176" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit7A_half_POB_PartBody_op0" x="(155.000000)*2" y="(325.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit7A_half_POB_PartBody_op1" x="(60.000000)*2" y="(69.500000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit7A_half_POB_PartBody_op01">
+<first ref="passive_unit7A_half_POB_PartBody_op0"/>
+<second ref="passive_unit7A_half_POB_PartBody_op1"/>
+<position name="passive_unit7A_half_POB_PartBody__1_pos_0" x="75" y="-240.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit7A_half_POB_PartBody_op2" x="(60.000000)*2" y="(69.500000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit7A_half_POB_PartBody">
+<first ref="passive_unit7A_half_POB_PartBody_op01"/>
+<second ref="passive_unit7A_half_POB_PartBody_op2"/>
+<position name="passive_unit7A_half_POB_PartBody__2_pos_01" x="-65" y="-240.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit7A_half_Center_PartBody_op0" x="(283.000000)*2" y="(325.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<xtru name="passive_unit7A_half_Center_PartBody_op1" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="-78.000000" y="86.547945"/>
+<twoDimVertex x="-78.000000" y="251.688516"/>
+<twoDimVertex x="0.000000" y="251.688516"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit7A_half_Center_PartBody_op01">
+<first ref="passive_unit7A_half_Center_PartBody_op0"/>
+<second ref="passive_unit7A_half_Center_PartBody_op1"/>
+<position name="passive_unit7A_half_Center_PartBody__1_pos_0" x="283" y="17.3114837026" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit7A_half_Center_PartBody_op2" lunit="mm">
+<twoDimVertex x="0.000000" y="454.500000"/>
+<twoDimVertex x="141.493827" y="297.500000"/>
+<twoDimVertex x="141.493827" y="-6.660000"/>
+<twoDimVertex x="-431.166170" y="-6.660000"/>
+<twoDimVertex x="-431.166170" y="454.500000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit7A_half_Center_PartBody">
+<first ref="passive_unit7A_half_Center_PartBody_op01"/>
+<second ref="passive_unit7A_half_Center_PartBody_op2"/>
+<position name="passive_unit7A_half_Center_PartBody__2_pos_01" x="141.506173" y="-325" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit7B_half_POB_PartBody_op0" x="(155.000000)*2" y="(325.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit7B_half_POB_PartBody_op1" x="(60.000000)*2" y="(69.500000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit7B_half_POB_PartBody_op01">
+<first ref="passive_unit7B_half_POB_PartBody_op0"/>
+<second ref="passive_unit7B_half_POB_PartBody_op1"/>
+<position name="passive_unit7B_half_POB_PartBody__1_pos_0" x="-75" y="-240.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit7B_half_POB_PartBody_op2" x="(60.000000)*2" y="(69.500000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit7B_half_POB_PartBody">
+<first ref="passive_unit7B_half_POB_PartBody_op01"/>
+<second ref="passive_unit7B_half_POB_PartBody_op2"/>
+<position name="passive_unit7B_half_POB_PartBody__2_pos_01" x="65" y="-240.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit7B_half_Center_PartBody_op0" x="(283.000000)*2" y="(325.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<xtru name="passive_unit7B_half_Center_PartBody_op1" lunit="mm">
+<twoDimVertex x="0.000000" y="459.500000"/>
+<twoDimVertex x="426.660000" y="459.500000"/>
+<twoDimVertex x="426.660000" y="-6.660000"/>
+<twoDimVertex x="-146.000000" y="-6.660000"/>
+<twoDimVertex x="-146.000000" y="297.500000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit7B_half_Center_PartBody_op01">
+<first ref="passive_unit7B_half_Center_PartBody_op0"/>
+<second ref="passive_unit7B_half_Center_PartBody_op1"/>
+<position name="passive_unit7B_half_Center_PartBody__1_pos_0" x="-137" y="-325" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit7B_half_Center_PartBody_op2" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="0.000000" y="251.688516"/>
+<twoDimVertex x="78.000000" y="251.688516"/>
+<twoDimVertex x="78.000000" y="86.547945"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit7B_half_Center_PartBody">
+<first ref="passive_unit7B_half_Center_PartBody_op01"/>
+<second ref="passive_unit7B_half_Center_PartBody_op2"/>
+<position name="passive_unit7B_half_Center_PartBody__2_pos_01" x="-283" y="17.3114837026" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit8A_half_POB_PartBody_op0" x="(155.000000)*2" y="(325.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<box name="passive_unit8A_half_POB_PartBody_op1" x="(55.000000)*2" y="(35.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit8A_half_POB_PartBody_op01">
+<first ref="passive_unit8A_half_POB_PartBody_op0"/>
+<second ref="passive_unit8A_half_POB_PartBody_op1"/>
+<position name="passive_unit8A_half_POB_PartBody__1_pos_0" x="70" y="-260" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit8A_half_POB_PartBody_op2" x="(55.000000)*2" y="(35.000000)*2" z="(7.500001)*2" lunit="mm"/>
+<subtraction name="passive_unit8A_half_POB_PartBody">
+<first ref="passive_unit8A_half_POB_PartBody_op01"/>
+<second ref="passive_unit8A_half_POB_PartBody_op2"/>
+<position name="passive_unit8A_half_POB_PartBody__2_pos_01" x="-85" y="-260" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_unit8A_half_Center_PartBody_op0" x="(290.500000)*2" y="(325.000000)*2" z="(7.500000)*2" lunit="mm"/>
+<xtru name="passive_unit8A_half_Center_PartBody_op1" lunit="mm">
+<twoDimVertex x="0.000000" y="0.000000"/>
+<twoDimVertex x="-89.000000" y="91.438357"/>
+<twoDimVertex x="-89.000000" y="194.399442"/>
+<twoDimVertex x="0.000000" y="194.399442"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit8A_half_Center_PartBody_op01">
+<first ref="passive_unit8A_half_Center_PartBody_op0"/>
+<second ref="passive_unit8A_half_Center_PartBody_op1"/>
+<position name="passive_unit8A_half_Center_PartBody__1_pos_0" x="290.5" y="47.6005583438" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<xtru name="passive_unit8A_half_Center_PartBody_op2" lunit="mm">
+<twoDimVertex x="0.000000" y="495.000000"/>
+<twoDimVertex x="146.000000" y="345.000000"/>
+<twoDimVertex x="146.000000" y="-6.660000"/>
+<twoDimVertex x="-426.660000" y="-6.660000"/>
+<twoDimVertex x="-426.660000" y="495.000000"/>
+<section zOrder="0" zPosition="-7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+<section zOrder="1" zPosition="7.600000" xOffset="0.000000" yOffset="0.000000" scalingFactor="1"/>
+</xtru>
+<subtraction name="passive_unit8A_half_Center_PartBody">
+<first ref="passive_unit8A_half_Center_PartBody_op01"/>
+<second ref="passive_unit8A_half_Center_PartBody_op2"/>
+<position name="passive_unit8A_half_Center_PartBody__2_pos_01" x="129.5" y="-325" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+</solids>
+<structure>
+<volume name="passive_Box_Wall_Vertical_CF">
+<materialref ref="STSBoxCarbonFibre"/>
+<solidref ref="passive_Box_Wall_Vertical_CF_PartBody"/>
+</volume>
+<volume name="passive_Box_Wall_Vertical">
+<materialref ref="STSBoxCarbonFoam"/>
+<solidref ref="passive_Box_Wall_Vertical_PartBody"/>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Vertical_CF"/>
+<position name="passive_Box_Wall_Vertical_CF_pos_passive_Box_Wall_Vertical" x="-9" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_Box_Wall_Vertical_CF"/>
+<position name="passive_Box_Wall_Vertical_CF_pos_passive_Box_Wall_Vertical" x="9" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+<volume name="passive_Box_Wall_Bottom_CF">
+<materialref ref="STSBoxCarbonFibre"/>
+<solidref ref="passive_Box_Wall_Bottom_CF_PartBody"/>
+</volume>
+<volume name="passive_Box_Wall_Bottom">
+<materialref ref="STSBoxCarbonFoam"/>
+<solidref ref="passive_Box_Wall_Bottom_PartBody"/>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Bottom_CF"/>
+<position name="passive_Box_Wall_Bottom_CF_pos_passive_Box_Wall_Bottom" x="0" y="19" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_Box_Wall_Bottom_CF"/>
+<position name="passive_Box_Wall_Bottom_CF_pos_passive_Box_Wall_Bottom" x="0" y="-19" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+<volume name="passive_Box_Wall_Back_CF">
+<materialref ref="STSBoxCarbonFibre"/>
+<solidref ref="passive_Box_Wall_Back_CF_PartBody"/>
+</volume>
+<volume name="passive_Box_Wall_Back_Light_CF">
+<materialref ref="STSBoxCarbonFibre"/>
+<solidref ref="passive_Box_Wall_Back_Light_CF_PartBody"/>
+</volume>
+<volume name="passive_Box_Wall_Back_Light">
+<materialref ref="STSBoxCarbonFoam"/>
+<solidref ref="passive_Box_Wall_Back_Light_PartBody"/>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Back_Light_CF"/>
+<position name="passive_Box_Wall_Back_Light_CF_pos_passive_Box_Wall_Back_Light" x="0" y="0" z="-11" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Back_CF"/>
+<position name="passive_Box_Wall_Back_CF_pos_passive_Box_Wall_Back_Light" x="0" y="0" z="11" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+<volume name="passive_Box_Wall_Back_Window_CF">
+<materialref ref="STSBoxCarbonFibre"/>
+<solidref ref="passive_Box_Wall_Back_Window_CF_PartBody"/>
+</volume>
+<volume name="passive_Box_Wall_Back_Window_Material">
+<materialref ref="STSBoxCarbonFibre"/>
+<solidref ref="passive_Box_Wall_Back_Window_Material_PartBody"/>
+</volume>
+<volume name="passive_Box_Wall_Back_Window">
+<materialref ref="STSBoxCarbonFoam"/>
+<solidref ref="passive_Box_Wall_Back_Window_PartBody"/>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Back_Window_CF"/>
+<position name="passive_Box_Wall_Back_Window_CF_pos_passive_Box_Wall_Back_Window" x="0" y="0" z="-11" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_Box_Wall_Back_Window_CF"/>
+<position name="passive_Box_Wall_Back_Window_CF_pos_passive_Box_Wall_Back_Window" x="0" y="0" z="11" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+<volume name="passive_Box_Wall_Back">
+<materialref ref="air"/>
+<solidref ref="passive_Box_Wall_Back_PartBody"/>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Back_Window"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Back_Window_Material"/>
+<position name="passive_Box_Wall_Back_Window_Material_pos_passive_Box_Wall_Back" x="0" y="0" z="11" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+<volume name="passive_Box_Wall_Front_CF">
+<materialref ref="STSBoxCarbonFibre"/>
+<solidref ref="passive_Box_Wall_Front_CF_PartBody"/>
+</volume>
+<volume name="passive_Box_Wall_Front_CF2">
+<materialref ref="STSBoxCarbonFibre"/>
+<solidref ref="passive_Box_Wall_Front_CF2_PartBody"/>
+</volume>
+<volume name="passive_Box_Wall_Front">
+<materialref ref="STSBoxCarbonFoam"/>
+<solidref ref="passive_Box_Wall_Front_PartBody"/>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Front_CF"/>
+<position name="passive_Box_Wall_Front_CF_pos_passive_Box_Wall_Front" x="0" y="0" z="-29" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Front_CF2"/>
+<position name="passive_Box_Wall_Front_CF2_pos_passive_Box_Wall_Front" x="0" y="0" z="29" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+<volume name="passive_Box_Wall_Top_CF">
+<materialref ref="STSBoxCarbonFibre"/>
+<solidref ref="passive_Box_Wall_Top_CF_PartBody"/>
+</volume>
+<volume name="passive_Box_Wall_Top">
+<materialref ref="STSBoxCarbonFoam"/>
+<solidref ref="passive_Box_Wall_Top_PartBody"/>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Top_CF"/>
+<position name="passive_Box_Wall_Top_CF_pos_passive_Box_Wall_Top" x="0" y="19" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_Box_Wall_Top_CF"/>
+<position name="passive_Box_Wall_Top_CF_pos_passive_Box_Wall_Top" x="0" y="-19" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+<volume name="passive_FEB">
+<materialref ref="STSFEBMaterial"/>
+<solidref ref="passive_FEB_PartBody"/>
+</volume>
+<volume name="passive_POB">
+<materialref ref="STSPOBMaterial"/>
+<solidref ref="passive_POB_PartBody"/>
+</volume>
+<volume name="passive_unit0A_half_Top_Part1">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit0A_half_Top_Part1_PartBody"/>
+</volume>
+<volume name="passive_unit0A_half_Top_Part2">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit0A_half_Top_Part2_PartBody"/>
+</volume>
+<volume name="passive_unit0A_half_Top_Part3">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit0A_half_Top_Part3_PartBody"/>
+</volume>
+<volume name="passive_unit0A_half_Top">
+<materialref ref="air"/>
+<solidref ref="passive_unit0A_half_Top_PartBody"/>
+<physvol copynumber="1">
+<volumeref ref="passive_unit0A_half_Top_Part1"/>
+<position name="passive_unit0A_half_Top_Part1_pos_passive_unit0A_half_Top" x="0" y="33" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_unit0A_half_Top_Part2"/>
+<position name="passive_unit0A_half_Top_Part2_pos_passive_unit0A_half_Top" x="-10" y="-15" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_unit0A_half_Top_Part3"/>
+<position name="passive_unit0A_half_Top_Part3_pos_passive_unit0A_half_Top" x="-255.5" y="-15" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+<volume name="passive_unit0A_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit0A_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit0A_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit0A_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit0A_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit0A_half_POB"/>
+<position name="passive_unit0A_half_POB_pos_passive_unit0A_half" x="263" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit0A_half_Center"/>
+<position name="passive_unit0A_half_Center_pos_passive_unit0A_half" x="-175" y="-48" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit0A_half_Top"/>
+<position name="passive_unit0A_half_Top_pos_passive_unit0A_half" x="-175" y="202" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit0A">
+<physvol copynumber="3">
+<volumeref ref="passive_unit0A_half"/>
+<position name="passive_unit0A_half_pos_passive_unit0A" x="0" y="250" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit0A_half"/>
+<position name="passive_unit0A_half_pos_passive_unit0A" x="0" y="-250" z="0" unit="mm"/>
+<rotation name="passive_unit0A_half_rot_passive_unit0A" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit0B">
+<physvol copynumber="2">
+<volumeref ref="passive_unit0A"/>
+<positionref ref="central"/>
+<rotation name="passive_unit0A_rot_passive_unit0B" x="-(0)" y="-(180.000000000259)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit0">
+<physvol copynumber="1">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit0" x="682.5" y="-225" z="6.20000000000001" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit0" x="682.5" y="225" z="6.20000000000001" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit0" x="77.25" y="341.25" z="7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit0" x="196.25" y="341.25" z="7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit0" x="77.25" y="-341.25" z="7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit0" x="196.25" y="-341.25" z="7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit0" x="-682.5" y="-225" z="6.20000000000001" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit0" x="-682.5" y="225" z="6.20000000000001" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit0" x="-196.25" y="341.25" z="7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit0" x="-77.25" y="341.25" z="7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit0" x="-196.25" y="-341.25" z="7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit0" x="-77.25" y="-341.25" z="7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit0A"/>
+<position name="passive_unit0A_pos_passive_unit0" x="449.5" y="0" z="-20.3" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit0B"/>
+<position name="passive_unit0B_pos_passive_unit0" x="-449.5" y="0" z="-20.3" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit1">
+<physvol copynumber="1">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit1" x="682.5" y="-225" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit1" x="682.5" y="225" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="77.25" y="341.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="196.25" y="341.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="77.25" y="-341.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="196.25" y="-341.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit1" x="-682.5" y="-225" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit1" x="-682.5" y="225" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="-196.25" y="341.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="-77.25" y="341.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="-196.25" y="-341.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="-77.25" y="-341.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="77.25" y="341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="196.25" y="341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="315.25" y="341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="77.25" y="-341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="196.25" y="-341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="315.25" y="-341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="-315.25" y="341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="-196.25" y="341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="-77.2500000000001" y="341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="-315.25" y="-341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="-196.25" y="-341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="10">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit1" x="-77.2500000000001" y="-341.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit1" x="682.5" y="-225" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit1" x="682.5" y="225" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit1" x="-682.5" y="-225" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit1" x="-682.5" y="225" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit0A"/>
+<position name="passive_unit0A_pos_passive_unit1" x="449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit0B"/>
+<position name="passive_unit0B_pos_passive_unit1" x="-449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<volume name="passive_unit2A_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit2A_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit2A_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit2A_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit2A_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit2A_half_Center"/>
+<position name="passive_unit2A_half_Center_pos_passive_unit2A_half" x="-150" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit2A_half_POB"/>
+<position name="passive_unit2A_half_POB_pos_passive_unit2A_half" x="288" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit2A">
+<physvol copynumber="3">
+<volumeref ref="passive_unit2A_half"/>
+<position name="passive_unit2A_half_pos_passive_unit2A" x="0" y="250" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit2A_half"/>
+<position name="passive_unit2A_half_pos_passive_unit2A" x="0" y="-250" z="0" unit="mm"/>
+<rotation name="passive_unit2A_half_rot_passive_unit2A" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit2B">
+<physvol copynumber="2">
+<volumeref ref="passive_unit2A"/>
+<positionref ref="central"/>
+<rotation name="passive_unit2A_rot_passive_unit2B" x="-(0)" y="-(180.000000000259)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit2">
+<physvol copynumber="1">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit2" x="732.5" y="-230" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit2" x="732.5" y="230" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="77.25" y="329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="196.25" y="329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="315.25" y="329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="77.25" y="-329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="196.25" y="-329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="315.25" y="-329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit2" x="-732.5" y="-230" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit2" x="-732.5" y="230" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-315.25" y="329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-196.25" y="329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-77.2500000000001" y="329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-315.25" y="-329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-196.25" y="-329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-77.2500000000001" y="-329.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit2" x="732.5" y="-230" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit2" x="732.5" y="230" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="77.25" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="196.25" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="315.25" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="77.25" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="196.25" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="315.25" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit2" x="-732.5" y="-230" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit2" x="-732.5" y="230" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-315.25" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-196.25" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-77.2500000000001" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-315.25" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-196.25" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="10">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit2" x="-77.2500000000001" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit2A"/>
+<position name="passive_unit2A_pos_passive_unit2" x="449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit2B"/>
+<position name="passive_unit2B_pos_passive_unit2" x="-449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<volume name="passive_unit3A_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit3A_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit3A_half_Top_Part1">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit3A_half_Top_Part1_PartBody"/>
+</volume>
+<volume name="passive_unit3A_half_Top_Part2">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit3A_half_Top_Part2_PartBody"/>
+</volume>
+<volume name="passive_unit3A_half_Top_Part3">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit3A_half_Top_Part3_PartBody"/>
+</volume>
+<volume name="passive_unit3A_half_Top">
+<materialref ref="air"/>
+<solidref ref="passive_unit3A_half_Top_PartBody"/>
+<physvol copynumber="1">
+<volumeref ref="passive_unit3A_half_Top_Part1"/>
+<position name="passive_unit3A_half_Top_Part1_pos_passive_unit3A_half_Top" x="0" y="30" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_unit3A_half_Top_Part2"/>
+<position name="passive_unit3A_half_Top_Part2_pos_passive_unit3A_half_Top" x="8" y="-15" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_unit3A_half_Top_Part3"/>
+<position name="passive_unit3A_half_Top_Part3_pos_passive_unit3A_half_Top" x="-266" y="-15" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+<volume name="passive_unit3A_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit3A_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit3A_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit3A_half_POB"/>
+<position name="passive_unit3A_half_POB_pos_passive_unit3A_half" x="281" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit3A_half_Top"/>
+<position name="passive_unit3A_half_Top_pos_passive_unit3A_half" x="-157" y="242.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit3A_half_Center"/>
+<position name="passive_unit3A_half_Center_pos_passive_unit3A_half" x="-157" y="-45" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit3A">
+<physvol copynumber="3">
+<volumeref ref="passive_unit3A_half"/>
+<position name="passive_unit3A_half_pos_passive_unit3A" x="0" y="287.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit3A_half"/>
+<position name="passive_unit3A_half_pos_passive_unit3A" x="0" y="-287.5" z="0" unit="mm"/>
+<rotation name="passive_unit3A_half_rot_passive_unit3A" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<volume name="passive_unit3B_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit3B_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit3B_half_Top_Part1">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit3B_half_Top_Part1_PartBody"/>
+</volume>
+<volume name="passive_unit3B_half_Top_Part2">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit3B_half_Top_Part2_PartBody"/>
+</volume>
+<volume name="passive_unit3B_half_Top_Part3">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit3B_half_Top_Part3_PartBody"/>
+</volume>
+<volume name="passive_unit3B_half_Top">
+<materialref ref="air"/>
+<solidref ref="passive_unit3B_half_Top_PartBody"/>
+<physvol copynumber="1">
+<volumeref ref="passive_unit3B_half_Top_Part1"/>
+<position name="passive_unit3B_half_Top_Part1_pos_passive_unit3B_half_Top" x="0" y="31" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_unit3B_half_Top_Part2"/>
+<position name="passive_unit3B_half_Top_Part2_pos_passive_unit3B_half_Top" x="-15" y="-15" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_unit3B_half_Top_Part3"/>
+<position name="passive_unit3B_half_Top_Part3_pos_passive_unit3B_half_Top" x="273" y="-15" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+<volume name="passive_unit3B_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit3B_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit3B_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit3B_half_POB"/>
+<position name="passive_unit3B_half_POB_pos_passive_unit3B_half" x="-288" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit3B_half_Top"/>
+<position name="passive_unit3B_half_Top_pos_passive_unit3B_half" x="150" y="241.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit3B_half_Center"/>
+<position name="passive_unit3B_half_Center_pos_passive_unit3B_half" x="150" y="-46" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit3B">
+<physvol copynumber="2">
+<volumeref ref="passive_unit3B_half"/>
+<position name="passive_unit3B_half_pos_passive_unit3B" x="0" y="-287.5" z="0" unit="mm"/>
+<rotation name="passive_unit3B_half_rot_passive_unit3B" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_unit3B_half"/>
+<position name="passive_unit3B_half_pos_passive_unit3B" x="0" y="287.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit3B_half"/>
+<position name="passive_unit3B_half_pos_passive_unit3B" x="0" y="-287.5" z="0" unit="mm"/>
+<rotation name="passive_unit3B_half_rot_passive_unit3B" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit3">
+<physvol copynumber="1">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit3" x="732.5" y="-231" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit3" x="732.5" y="231" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="77.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="196.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="315.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="77.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="196.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="315.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit3" x="-732.5" y="-231" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit3" x="-732.5" y="231" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-315.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-196.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-77.2500000000001" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-315.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-196.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-77.2500000000001" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit3" x="732.5" y="-231" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit3" x="732.5" y="231" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="77.25" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="196.25" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="315.25" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="434.25" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="77.25" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="196.25" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="315.25" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="434.25" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit3" x="-732.5" y="-231" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit3" x="-732.5" y="231" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-315.25" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-196.25" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-77.2500000000001" y="426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-315.25" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-196.25" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="10">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit3" x="-77.2500000000001" y="-426.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit3A"/>
+<position name="passive_unit3A_pos_passive_unit3" x="449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit3B"/>
+<position name="passive_unit3B_pos_passive_unit3" x="-449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<volume name="passive_unit4A_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit4A_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit4A_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit4A_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit4A_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit4A_half_POB"/>
+<position name="passive_unit4A_half_POB_pos_passive_unit4A_half" x="288" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit4A_half_Center"/>
+<position name="passive_unit4A_half_Center_pos_passive_unit4A_half" x="-150" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit4A">
+<physvol copynumber="3">
+<volumeref ref="passive_unit4A_half"/>
+<position name="passive_unit4A_half_pos_passive_unit4A" x="0" y="287.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit4A_half"/>
+<position name="passive_unit4A_half_pos_passive_unit4A" x="0" y="-287.5" z="0" unit="mm"/>
+<rotation name="passive_unit4A_half_rot_passive_unit4A" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<volume name="passive_unit4B_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit4B_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit4B_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit4B_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit4B_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit4B_half_POB"/>
+<position name="passive_unit4B_half_POB_pos_passive_unit4B_half" x="0" y="-288" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit4B_half_Center"/>
+<position name="passive_unit4B_half_Center_pos_passive_unit4B_half" x="150" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit4B">
+<physvol copynumber="3">
+<volumeref ref="passive_unit4B_half"/>
+<position name="passive_unit4B_half_pos_passive_unit4B" x="0" y="287.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit4B_half"/>
+<position name="passive_unit4B_half_pos_passive_unit4B" x="0" y="-287.5" z="0" unit="mm"/>
+<rotation name="passive_unit4B_half_rot_passive_unit4B" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit4">
+<physvol copynumber="1">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit4" x="732.5" y="-310" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit4" x="732.5" y="310" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="77.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="196.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="315.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="77.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="196.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="315.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit4" x="-732.5" y="-310" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit4" x="-732.5" y="310" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-434.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-315.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-196.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-77.25" y="426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-434.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-315.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-196.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-77.25" y="-426.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit4" x="732.5" y="-310" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit4" x="732.5" y="310" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="77.25" y="506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="196.25" y="506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="315.25" y="506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="77.25" y="-506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="196.25" y="-506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="315.25" y="-506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit4" x="-732.5" y="-310" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit4" x="-732.5" y="310" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-434.25" y="506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-315.25" y="506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-196.25" y="506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="10">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-77.25" y="506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-434.25" y="-506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-315.25" y="-506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="10">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-196.25" y="-506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="11">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit4" x="-77.25" y="-506.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit4A"/>
+<position name="passive_unit4A_pos_passive_unit4" x="449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit4B"/>
+<position name="passive_unit4B_pos_passive_unit4" x="-449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<volume name="passive_unit5A_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit5A_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit5A_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit5A_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit5A_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit5A_half_POB"/>
+<position name="passive_unit5A_half_POB_pos_passive_unit5A_half" x="288" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit5A_half_Center"/>
+<position name="passive_unit5A_half_Center_pos_passive_unit5A_half" x="-150" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit5A">
+<physvol copynumber="1">
+<volumeref ref="passive_unit5A_half"/>
+<position name="passive_unit5A_half_pos_passive_unit5A" x="0" y="287.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit5A_half"/>
+<position name="passive_unit5A_half_pos_passive_unit5A" x="0" y="-287.5" z="0" unit="mm"/>
+<rotation name="passive_unit5A_half_rot_passive_unit5A" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_unit5A_half"/>
+<position name="passive_unit5A_half_pos_passive_unit5A" x="0" y="287.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit5A_half"/>
+<position name="passive_unit5A_half_pos_passive_unit5A" x="0" y="-287.5" z="0" unit="mm"/>
+<rotation name="passive_unit5A_half_rot_passive_unit5A" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<volume name="passive_unit5B_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit5B_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit5B_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit5B_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit5B_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit5B_half_POB"/>
+<position name="passive_unit5B_half_POB_pos_passive_unit5B_half" x="-288" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit5B_half_Center"/>
+<position name="passive_unit5B_half_Center_pos_passive_unit5B_half" x="150" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit5B">
+<physvol copynumber="3">
+<volumeref ref="passive_unit5B_half"/>
+<position name="passive_unit5B_half_pos_passive_unit5B" x="0" y="287.5" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit5B_half"/>
+<position name="passive_unit5B_half_pos_passive_unit5B" x="0" y="-287.5" z="0" unit="mm"/>
+<rotation name="passive_unit5B_half_rot_passive_unit5B" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit5">
+<physvol copynumber="1">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit5" x="732.5" y="-310" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit5" x="732.5" y="310" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="77.25" y="486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="196.25" y="486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="315.25" y="486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="434.25" y="486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="77.25" y="-486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="196.25" y="-486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="315.25" y="-486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="434.25" y="-486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit5" x="-732.5" y="-310" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit5" x="-732.5" y="310" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-315.25" y="486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-196.25" y="486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-77.2500000000001" y="486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-315.25" y="-486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-196.25" y="-486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-77.2500000000001" y="-486.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit5" x="732.5" y="-310" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit5" x="732.5" y="310" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="77.25" y="486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="196.25" y="486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="315.25" y="486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="434.25" y="486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="77.25" y="-486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="196.25" y="-486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="315.25" y="-486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="434.25" y="-486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit5" x="-732.5" y="-310" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit5" x="-732.5" y="310" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-315.25" y="486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-196.25" y="486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-77.2500000000001" y="486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-315.25" y="-486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-196.25" y="-486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="10">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit5" x="-77.2500000000001" y="-486.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit5A"/>
+<position name="passive_unit5A_pos_passive_unit5" x="449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit5B"/>
+<position name="passive_unit5B_pos_passive_unit5" x="-449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<volume name="passive_unit6A_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit6A_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit6A_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit6A_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit6A_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit6A_half_POB"/>
+<position name="passive_unit6A_half_POB_pos_passive_unit6A_half" x="283" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit6A_half_Center"/>
+<position name="passive_unit6A_half_Center_pos_passive_unit6A_half" x="-155" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit6A">
+<physvol copynumber="3">
+<volumeref ref="passive_unit6A_half"/>
+<position name="passive_unit6A_half_pos_passive_unit6A" x="0" y="325" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit6A_half"/>
+<position name="passive_unit6A_half_pos_passive_unit6A" x="0" y="-325" z="0" unit="mm"/>
+<rotation name="passive_unit6A_half_rot_passive_unit6A" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit6B">
+<physvol copynumber="2">
+<volumeref ref="passive_unit6A"/>
+<positionref ref="central"/>
+<rotation name="passive_unit6A_rot_passive_unit6B" x="-(0)" y="-(180.000000000259)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit6">
+<physvol copynumber="1">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit6" x="732.5" y="-395" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit6" x="732.5" y="395" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="77.25" y="505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="196.25" y="505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="315.25" y="505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="77.25" y="-505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="196.25" y="-505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="315.25" y="-505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit6" x="-732.5" y="-395" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit6" x="-732.5" y="395" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-434.25" y="505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-315.25" y="505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-196.25" y="505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-77.25" y="505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-434.25" y="-505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-315.25" y="-505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-196.25" y="-505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-77.25" y="-505.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit6" x="732.5" y="-395" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit6" x="732.5" y="395" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="77.25" y="546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="196.25" y="546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="315.25" y="546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="434.25" y="546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="77.25" y="-546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="196.25" y="-546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="315.25" y="-546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="434.25" y="-546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit6" x="-732.5" y="-395" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit6" x="-732.5" y="395" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-434.25" y="546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-315.25" y="546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-196.25" y="546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="10">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-77.25" y="546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-434.25" y="-546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-315.25" y="-546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="10">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-196.25" y="-546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="11">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit6" x="-77.25" y="-546.25" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit6A"/>
+<position name="passive_unit6A_pos_passive_unit6" x="449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit6B"/>
+<position name="passive_unit6B_pos_passive_unit6" x="-449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<volume name="passive_unit7A_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit7A_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit7A_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit7A_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit7A_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit7A_half_POB"/>
+<position name="passive_unit7A_half_POB_pos_passive_unit7A_half" x="283" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit7A_half_Center"/>
+<position name="passive_unit7A_half_Center_pos_passive_unit7A_half" x="-155" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit7A">
+<physvol copynumber="3">
+<volumeref ref="passive_unit7A_half"/>
+<position name="passive_unit7A_half_pos_passive_unit7A" x="0" y="325" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit7A_half"/>
+<position name="passive_unit7A_half_pos_passive_unit7A" x="0" y="-325" z="0" unit="mm"/>
+<rotation name="passive_unit7A_half_rot_passive_unit7A" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<volume name="passive_unit7B_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit7B_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit7B_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit7B_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit7B_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit7B_half_POB"/>
+<position name="passive_unit7B_half_POB_pos_passive_unit7B_half" x="-283" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit7B_half_Center"/>
+<position name="passive_unit7B_half_Center_pos_passive_unit7B_half" x="155" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit7B">
+<physvol copynumber="3">
+<volumeref ref="passive_unit7B_half"/>
+<position name="passive_unit7B_half_pos_passive_unit7B" x="0" y="325" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit7B_half"/>
+<position name="passive_unit7B_half_pos_passive_unit7B" x="0" y="325" z="0" unit="mm"/>
+<rotation name="passive_unit7B_half_rot_passive_unit7B" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit7">
+<physvol copynumber="1">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit7" x="732.5" y="-395" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit7" x="732.5" y="395" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="77.25" y="551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="196.25" y="551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="315.25" y="551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="434.25" y="551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="77.25" y="-551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="196.25" y="-551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="315.25" y="-551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="434.25" y="-551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit7" x="-732.5" y="-389" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit7" x="-732.5" y="401" z="-26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-434.25" y="551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-315.25" y="551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-196.25" y="551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-77.25" y="551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-434.25" y="-551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-315.25" y="-551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-196.25" y="-551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-77.25" y="-551.25" z="-27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit7" x="732.5" y="-395" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit7" x="732.5" y="395" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="77.25" y="582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="196.25" y="582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="315.25" y="582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="434.25" y="582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="77.25" y="-582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="196.25" y="-582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="315.25" y="-582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="434.25" y="-582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit7" x="-732.5" y="-389" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit7" x="-732.5" y="401" z="26.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-434.25" y="582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-315.25" y="582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-196.25" y="582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="10">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-77.25" y="582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="8">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-434.25" y="-582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="9">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-315.25" y="-582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="10">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-196.25" y="-582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="11">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit7" x="-77.25" y="-582.75" z="27.8" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit7A"/>
+<position name="passive_unit7A_pos_passive_unit7" x="449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit7B"/>
+<position name="passive_unit7B_pos_passive_unit7" x="-449.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<volume name="passive_unit8A_half_POB">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit8A_half_POB_PartBody"/>
+</volume>
+<volume name="passive_unit8A_half_Center">
+<materialref ref="aluminium"/>
+<solidref ref="passive_unit8A_half_Center_PartBody"/>
+</volume>
+<assembly name="passive_unit8A_half">
+<physvol copynumber="2">
+<volumeref ref="passive_unit8A_half_POB"/>
+<position name="passive_unit8A_half_POB_pos_passive_unit8A_half" x="290.5" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit8A_half_Center"/>
+<position name="passive_unit8A_half_Center_pos_passive_unit8A_half" x="-155" y="0" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit8A">
+<physvol copynumber="3">
+<volumeref ref="passive_unit8A_half"/>
+<position name="passive_unit8A_half_pos_passive_unit8A" x="0" y="325" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_unit8A_half"/>
+<position name="passive_unit8A_half_pos_passive_unit8A" x="0" y="325" z="0" unit="mm"/>
+<rotation name="passive_unit8A_half_rot_passive_unit8A" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit8B">
+<physvol copynumber="2">
+<volumeref ref="passive_unit8A"/>
+<positionref ref="central"/>
+<rotation name="passive_unit8A_rot_passive_unit8B" x="-(0)" y="-(180.000000000259)" z="-(0)" unit="deg"/>
+</physvol>
+</assembly>
+<assembly name="passive_unit8">
+<physvol copynumber="1">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit8" x="732.592" y="-395" z="-6.2" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit8" x="732.592" y="395" z="-6.2" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="68.188" y="560.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="187.188" y="560.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="306.188" y="560.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="425.188" y="560.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="66.592" y="-576.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="185.592" y="-576.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="304.592" y="-576.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="423.592" y="-576.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit8" x="-740.092" y="-352" z="-6.2" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_POB"/>
+<position name="passive_POB_pos_passive_unit8" x="-740.092" y="369" z="-6.2" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="-423.592" y="571.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="-304.592" y="571.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="-185.592" y="571.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="-66.592" y="571.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="-423.592" y="-576.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="5">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="-304.592" y="-576.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="6">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="-185.592" y="-576.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="7">
+<volumeref ref="passive_FEB"/>
+<position name="passive_FEB_pos_passive_unit8" x="-66.592" y="-576.5" z="-7.5" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit8A"/>
+<position name="passive_unit8A_pos_passive_unit8" x="449.592" y="0" z="20.3" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit8B"/>
+<position name="passive_unit8B_pos_passive_unit8" x="-449.592" y="0" z="20.3" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+<assembly name="sts_passive">
+<physvol copynumber="2">
+<volumeref ref="passive_unit0"/>
+<position name="passive_unit0_pos_sts_passive" x="29.75" y="0" z="-446.8+StsZ+20.3" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit1"/>
+<position name="passive_unit1_pos_sts_passive" x="-29.75" y="0" z="-446.8+100+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit2"/>
+<position name="passive_unit2_pos_sts_passive" x="29.75" y="0" z="-446.8+200.0+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit3"/>
+<position name="passive_unit3_pos_sts_passive" x="-29.75" y="0" z="-446.8+300.0+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit4"/>
+<position name="passive_unit4_pos_sts_passive" x="29.75" y="0" z="-446.8+400.0+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit5"/>
+<position name="passive_unit5_pos_sts_passive" x="-29.75" y="0" z="-446.8+500.0+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit6"/>
+<position name="passive_unit6_pos_sts_passive" x="29.75" y="0" z="-446.8+600.0+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit7"/>
+<position name="passive_unit7_pos_sts_passive" x="-29.75" y="0" z="-446.8+700.0+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_unit8"/>
+<position name="passive_unit8_pos_sts_passive" x="22.158" y="0" z="-446.8+800.0+StsZ-20.3" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="3">
+<volumeref ref="passive_Box_Wall_Vertical"/>
+<position name="passive_Box_Wall_Vertical_pos_sts_passive" x="-1160" y="0" z="StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="4">
+<volumeref ref="passive_Box_Wall_Vertical"/>
+<position name="passive_Box_Wall_Vertical_pos_sts_passive" x="1160" y="0" z="StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_Box_Wall_Bottom"/>
+<position name="passive_Box_Wall_Bottom_pos_sts_passive" x="0" y="-692.5" z="18.0000+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_Box_Wall_Front"/>
+<position name="passive_Box_Wall_Front_pos_sts_passive" x="0" y="0" z="-489.0000+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
+<volumeref ref="passive_Box_Wall_Top"/>
+<position name="passive_Box_Wall_Top_pos_sts_passive" x="0" y="692.5" z="18.0000+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Back_Light"/>
+<position name="passive_Box_Wall_Back_Light_pos_sts_passive" x="0" y="0" z="507.00000+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</assembly>
+</structure>
+<setup name="FAIRgeom" version="1.0">
+<world ref="sts_passive"/>
+</setup>
+</gdml>
