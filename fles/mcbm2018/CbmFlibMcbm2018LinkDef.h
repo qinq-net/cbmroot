@@ -8,7 +8,8 @@
 #pragma link C++ class CbmMcbm2018Source;
 #pragma link C++ class CbmMcbm2018MsCrcCheck;
 
-#pragma link C++ class gdpb::Message;
+#pragma link C++ class gdpbv100::Message;
+#pragma link C++ class gdpbv100::FullMessage;
 
 #pragma link C++ class CbmMcbm2018StsPar;
 #pragma link C++ class CbmMcbm2018MuchPar;
@@ -26,6 +27,8 @@
 //#pragma link C++ class CbmMcbm2018UnpackerTrd;
 #pragma link C++ class CbmMcbm2018TofUnpacker;
 
+#pragma link C++ class CbmMcbm2018MonitorAlgoT0;
+#pragma link C++ class CbmMcbm2018MonitorTaskT0;
 #pragma link C++ class CbmMcbm2018MonitorMcbmRate;
 #pragma link C++ class CbmMcbm2018MonitorMcbmSync;
 #pragma link C++ class CbmMcbm2018MonitorStsSync;
