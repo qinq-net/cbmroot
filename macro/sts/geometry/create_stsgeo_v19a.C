@@ -173,11 +173,34 @@ TGeoVolume* ConstructUnit(Int_t iSide,
 void ImportPassive(TGeoVolume* stsVolume, TString geoTag, fstream& infoFile);
 void PostProcessGdml(TGeoVolume* gdmlTop);
 void CheckVolume(TGeoVolume* volume);
-void CheckVolume(TGeoVolume* volume, fstream& file);
+void CheckVolume(TGeoVolume* volume, fstream& file, Bool_t listChildren = kTRUE);
 Double_t BeamPipeRadius(Double_t z);
 TGeoVolume* ConstructFrameElement(const TString& name, TGeoVolume* frameBoxVol, Double_t x);
 TGeoVolume* ConstructSmallCone(Double_t coneDz);
 TGeoVolume* ConstructBigCone(Double_t coneDz);
+
+// -------------   Version highlight        -----------------------------------
+
+const std::string gVersionHighlight = R"(
+Summary:
+  This version adds passive materials imported from GDML model to the STS geometry:
+    * Taken from and largely correspond to mechanical CAD drawings of the detector
+    * Thermal insulation box:
+      - made out of carbon sandwitch panel (2mm carbon fiber sheet + layer of carbon foam + 2mm carbon fiber sheet)
+      - front window of complex shape with interface to MVD / target chamber
+      - back window with large aperture (2000 x 1200 mm) square cut into carbon foam
+    * Structural units:
+      - made of 2 complex shape aluminum C-Frames, 15mm thick
+      - placed at 25, 35, ... ,105 cm absolute Z
+      - contain front-end and power distribution boxes with equivalent X_0 values
+
+  Scripted geometry tweaks:
+    * Ladders and cables are extended towards the read-out planes having same lengths in respective rows
+    * Adjusted form and shape of carbon ladder structures from L-type to X-type
+    * Reduced verbosity of this file
+
+  Sensor arrangement is the same as in version v16g
+)";
 
 // -------------   Steering variables       -----------------------------------
 
@@ -318,7 +341,8 @@ void create_stsgeo_v19a(const char* geoTag="v19a")
   infoFileName.ReplaceAll("root", "info");
   fstream infoFile;
   infoFile.open(infoFileName.Data(), fstream::out);
-  infoFile << "STS geometry created with create_stsgeo_v19a.C" << endl << endl;
+  infoFile << "STS geometry created with create_stsgeo_v19a.C" << endl;
+  infoFile << gVersionHighlight << endl;
   infoFile << "Global variables: " << endl;
   infoFile << "Sensor thickness = " << gkSensorThickness << " cm" << endl;
   infoFile << "Vertical gap in sensor chain = " 
@@ -475,14 +499,14 @@ void create_stsgeo_v19a(const char* geoTag="v19a")
   // ----------------   Create sectors   --------------------------------------
   cout << endl << endl;
   cout << "===> Creating sectors...." << endl;
-  infoFile << endl << "Sectors: " << endl;
+  // infoFile << endl << "Sectors: " << endl;
   Int_t nSectors = CreateSectors();
   for (Int_t iSector = 1; iSector <= nSectors; iSector++) {
-    cout << endl;
+    // cout << endl;
     TString name = Form("Sector%02d", iSector);
     TGeoVolume* sector = gGeoMan->GetVolume(name);
     CheckVolume(sector);
-    CheckVolume(sector, infoFile);
+    // CheckVolume(sector, infoFile);
   }
   // --------------------------------------------------------------------------
 
@@ -497,8 +521,8 @@ void create_stsgeo_v19a(const char* geoTag="v19a")
     TString name = Form("LadderType%02d", iLadder);
     TGeoVolume* ladder = gGeoMan->GetVolume(name);
     CheckVolume(ladder);
-    CheckVolume(ladder, infoFile);
-    CheckVolume(ladder->GetNode(0)->GetVolume(), infoFile);
+    CheckVolume(ladder, infoFile, kFALSE);
+    // CheckVolume(ladder->GetNode(0)->GetVolume(), infoFile, kFALSE);
   }
   // --------------------------------------------------------------------------
 
@@ -515,7 +539,7 @@ void create_stsgeo_v19a(const char* geoTag="v19a")
   // ----------------   Create stations   -------------------------------------
   cout << endl << endl;
   cout << "===> Creating stations...." << endl;
-  infoFile << endl << "Stations: ";
+  infoFile << endl << "Stations: " << endl;
   Int_t angle = 0;
   nLadders = 0;
   Int_t ladderTypes[16];
@@ -1881,17 +1905,26 @@ void ImportPassive(TGeoVolume* stsVolume, TString geoTag, fstream& infoFile)
   TString basePath = gSystem->Getenv("VMCWORKDIR");
   TString relPath = "/geometry/sts/passive/" + passiveName + ".gdml";
   TString passiveFileName = basePath + relPath;
-  infoFile  << "Importing STS passive materials from GDML file '" << relPath << "'." << std::endl;
+  infoFile << std::endl << std::endl;
+  infoFile << "Importing STS passive materials from GDML file '" << relPath << "'." << std::endl;
 
   TGDMLParse parser;
   TGeoVolume* gdmlVolume = parser.GDMLReadFile(passiveFileName);
   PostProcessGdml(gdmlVolume);
   gdmlVolume->SetName(passiveName);
 
-  // PosZ = 4.68
   TGeoTranslation* passiveTrans = new TGeoTranslation(0., 0., 4.68);
+  infoFile << "Passive assembly is translated for Z=4.68 cm downstream with respect to parent volume" << std::endl << std::endl;
 
-  stsVolume->AddNode(gdmlVolume, 19, passiveTrans, "");
+  gdmlVolume->GetShape()->ComputeBBox();
+  CheckVolume(gdmlVolume, infoFile);
+
+  infoFile << std::endl;
+  for (Int_t iNode = 0; iNode < gdmlVolume->GetNdaughters(); iNode++) {
+    CheckVolume(gdmlVolume->GetNode(iNode)->GetVolume(), infoFile, kFALSE);
+  }
+
+  stsVolume->AddNode(gdmlVolume, stsVolume->GetNdaughters(), passiveTrans, "");
 }
 
 /** ===========================================================================
@@ -1977,8 +2010,7 @@ void CheckVolume(TGeoVolume* volume) {
 /** ===========================================================================
  ** Volume information for output to file
  **/
-void CheckVolume(TGeoVolume* volume, fstream& file) {
-
+void CheckVolume(TGeoVolume* volume, fstream& file, Bool_t listChildren) {
   if ( ! file ) return;
 
   TGeoBBox* shape = (TGeoBBox*) volume->GetShape();
@@ -1993,7 +2025,7 @@ void CheckVolume(TGeoVolume* volume, fstream& file) {
     else file << ", " << "\033[31m" << " no medium" << "\033[0m";
   }
   file << endl;
-  if ( volume->GetNdaughters() ) {
+  if ( volume->GetNdaughters() && listChildren) {
     file << "Contains: ";
     for (Int_t iNode = 0; iNode < volume->GetNdaughters(); iNode++) 
       file << volume->GetNode(iNode)->GetVolume()->GetName() << " ";
