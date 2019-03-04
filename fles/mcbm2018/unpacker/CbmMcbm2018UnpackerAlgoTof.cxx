@@ -234,7 +234,7 @@ Bool_t CbmMcbm2018UnpackerAlgoTof::InitParameters()
    for(Int_t iGbtx= 0; iGbtx < fuNrOfGbtx; ++iGbtx )
    {
       /// Special Treatment for the T0 diamond
-      if( 6 == fviModuleId[iGbtx] )
+      if( 5 == fviRpcType[iGbtx] )
       {
          for( UInt_t uFee = 0; uFee < fUnpackPar->GetNrOfFeePerGbtx(); ++uFee )
          {
@@ -251,7 +251,7 @@ Bool_t CbmMcbm2018UnpackerAlgoTof::InitParameters()
             } // for( UInt_t uCh = 0; uCh < fUnpackPar->GetNrOfChannelsPerFee(); ++uCh )
          } // for( UInt_t uFee = 0; uFee < fUnpackPar->GetNrOfFeePerGbtx(); ++uFee )
          continue;
-      } // if( 6 == fviModuleId[iGbtx] )
+      } // if( 5 == fviRpcType[iGbtx] )
 
       for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; ++iRpc )
       {
@@ -884,7 +884,7 @@ void CbmMcbm2018UnpackerAlgoTof::ProcessHit( gdpbv100::FullMessage mess )
 
    UInt_t uChanUId =  fviRpcChUId[ uRemappedChannelNrInSys ];
 /*
-   if( 6 == fviModuleId[uGbtxNrInSys] )
+   if( 5 == fviRpcType[uGbtxNrInSys] )
       LOG(INFO) << "T0 mapping index " << uRemappedChannelNrInSys
                  << " UID " << std::hex << std::setw(8) << uChanUId << std::dec
                  << ", from GdpbNr " << fuCurrDpbIdx

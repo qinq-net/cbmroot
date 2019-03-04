@@ -38,6 +38,8 @@ CbmMcbm2018UnpackerTaskTof::CbmMcbm2018UnpackerTaskTof( UInt_t uNbGdpb )
     fbDebugMonitorMode( kFALSE ),
     fbSeparateArrayT0( kFALSE ),
     fUseDaqBuffer( kTRUE ),
+    fuDigiMaskedIdT0( 0x00005006 ),
+    fuDigiMaskId( 0x0001FFFF ),
     fParCList( nullptr ),
     fulTsCounter( 0 ),
     fBuffer( CbmTbDaqBuffer::Instance() ),
@@ -212,14 +214,13 @@ Bool_t CbmMcbm2018UnpackerTaskTof::DoUnpack(const fles::Timeslice& ts, size_t co
         fBuffer->InsertData( new CbmTofDigiExp( vDigi[ uDigi ] ) );
      }
    } else {
-     sort(vDigi.begin(), vDigi.end(), 
+     sort(vDigi.begin(), vDigi.end(),
         [](const CbmTofDigiExp & a, const CbmTofDigiExp & b) -> bool
-        { 
-          return a.GetTime() < b.GetTime(); 
+        {
+          return a.GetTime() < b.GetTime();
         });
      for( auto digi: vDigi) {
-       /// FIXME: remove T0 address hardcoding!!!
-       if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi.GetAddress() & 0x00000FFF ) )
+       if( kTRUE == fbSeparateArrayT0 && fuDigiMaskedIdT0 == ( digi.GetAddress() & fuDigiMaskId ) )
        {
          /// Insert data in TOF output container
          LOG(DEBUG) << "Fill digi TClonesarray with "
@@ -229,9 +230,9 @@ Bool_t CbmMcbm2018UnpackerTaskTof::DoUnpack(const fles::Timeslice& ts, size_t co
 
          new( (*fT0DigiCloneArray)[ fT0DigiCloneArray->GetEntriesFast() ] )
             CbmTofDigiExp( digi ) ;
-       } // if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi.GetAddress() & 0x00000FFF ) )
+       } // if( kTRUE == fbSeparateArrayT0 && fuDigiMaskedIdT0 == ( digi.GetAddress() & fuDigiMaskId ) )
        else
-       {    
+       {
          /// Insert data in TOF output container
          LOG(DEBUG) << "Fill digi TClonesarray with "
                     << Form("0x%08x", digi.GetAddress())
@@ -240,8 +241,8 @@ Bool_t CbmMcbm2018UnpackerTaskTof::DoUnpack(const fles::Timeslice& ts, size_t co
 
          new( (*fTofDigiCloneArray)[ fTofDigiCloneArray->GetEntriesFast() ] )
             CbmTofDigiExp( digi ) ;
-       } // else of if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi->GetAddress() & 0x00000FFF ) )
-     }      
+       } // else of if( kTRUE == fbSeparateArrayT0 && fuDigiMaskedIdT0 == ( digi.GetAddress() & fuDigiMaskId ) )
+     }
      vDigi.clear();
    }
    fUnpackerAlgo->ClearVector();
@@ -266,8 +267,7 @@ void CbmMcbm2018UnpackerTaskTof::Reset()
 
 void CbmMcbm2018UnpackerTaskTof::FillOutput(CbmDigi* digi)
 {
-   /// FIXME: remove T0 address hardcoding!!!
-   if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi->GetAddress() & 0x00000FFF ) )
+   if( kTRUE == fbSeparateArrayT0 && fuDigiMaskedIdT0 == ( digi->GetAddress() & fuDigiMaskId ) )
    {
       /// Insert data in TOF output container
       LOG(DEBUG) << "Fill digi TClonesarray with "
@@ -277,7 +277,7 @@ void CbmMcbm2018UnpackerTaskTof::FillOutput(CbmDigi* digi)
 
       new( (*fT0DigiCloneArray)[ fT0DigiCloneArray->GetEntriesFast() ] )
          CbmTofDigiExp( *( dynamic_cast<CbmTofDigiExp*>(digi) ) );
-   } // if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi->GetAddress() & 0x00000FFF ) )
+   } // if( kTRUE == fbSeparateArrayT0 && fuDigiMaskedIdT0 == ( digi.GetAddress() & fuDigiMaskId ) )
       else
       {
          /// Insert data in TOF output container
@@ -288,7 +288,7 @@ void CbmMcbm2018UnpackerTaskTof::FillOutput(CbmDigi* digi)
 
          new( (*fTofDigiCloneArray)[ fTofDigiCloneArray->GetEntriesFast() ] )
             CbmTofDigiExp( *( dynamic_cast<CbmTofDigiExp*>(digi) ) );
-      } // else of if( kTRUE == fbSeparateArrayT0 && 0x00000066 == ( digi->GetAddress() & 0x00000FFF ) )
+      } // else of if( kTRUE == fbSeparateArrayT0 && fuDigiMaskedIdT0 == ( digi.GetAddress() & fuDigiMaskId ) )
 
 /*
    if( 1 == fTofDigiCloneArray->GetEntriesFast())
