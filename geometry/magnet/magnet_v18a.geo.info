@@ -1,0 +1,11 @@
+ROOT geometry of the CBM magnet
+
+Based on the CAD design of BINP Novosibirsk, November 2018.
+MC model by Egor Ovcharenko (evovch@gmail.com).
+
+A GDML geometry was created from the original CATIA design files. The GDML geometry was converted into ROOT TGeo format by A. Senger, using the macro macro/geometry/gdml2root.C.
+
+The most substantial difference to the previous geometry (v12b) is the increase in the vertical aperture to 1,440 mm. The field clamps are 190 mm thick.
+
+Geometry is originally stored in CATIA format, then I obtain a GDML file, so I attach it. It can be converted to ROOT using standard Import_GDML_Export_ROOT.C macro, also in the attachment. There are some figures in the archive which describe the geometry. Most important - the vertical gap is 1440mm, the field clamps are 190mm thick, without any cut-outs.
+
