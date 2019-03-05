@@ -1,6 +1,7 @@
 /** @file CbmStackFilter.h
  ** @author Volker Friese <v.friese@gsi.de>
- ** @date 12.02.2019
+ ** @since 16.02.2019
+ ** @date 16.03.2019
  **/
 
 #ifndef CBMSTACKFILTER_H
@@ -13,7 +14,6 @@
 
 class TClonesArray;
 class TParticle;
-
 
 
 /** @class CbmStackFilter
@@ -38,20 +38,36 @@ class TParticle;
  ** in some detector or kinetic energy.
  **
  ** The default behaviour is:
- ** - Particles with at least one point in any detector are stored.
- ** - Primary particles are stored.
+ ** - Primary particles are store in any case
+ ** - Particles with at least one point in any detector are stored
+ **   (except for PSD, where the minimum required is 5).
  ** - All mother particles of particles to be stored are also stored.
- ** This default behaviour can be modified by the appropriate methods.
  **
+ ** This default behaviour can be modified by the appropriate methods:
+ ** - SetMinNofPoints: set the minimum number of points for a particular
+ ** detector. Note that when the value 0 is chosen, all tracks will be stored
+ ** irrespectively of the points in any detector. To exclude tracks which
+ ** have points only in one particular detector, select a large cut value
+ ** for this detector, i.e. SetMinNofPoints(kPsd, 999999).
+ ** - SetMinEkin: set the minimum kinetic energy. This cut is additive to
+ ** the number of points cut, i.e. both have to be fulfilled.
+ ** - SetStoreAllPrimaries, SetStoreAllMothers, SetStoreAllPrimaryDecays.
+ **
+ ** If a cut logic is desired which cannot be achieved with the above scheme,
+ ** it can be implemented in a derived class re-implementing the method Select.
+ ** The user stack filter class has to be registered by
+ ** CbmRunTransport::SetStackFilter.
  **/
-
-#include <map>
-
 class CbmStackFilter
 {
 
   public:
 
+    /** @brief Map holding the number of points for each detector.
+     ** The key is a pair of (track index, detector ID),
+     ** the value is the number of points of the track in the
+     ** detector.
+     **/
     typedef std::map<std::pair<Int_t, Int_t>, Int_t> PointMap;
 
 
@@ -66,12 +82,13 @@ class CbmStackFilter
     /** @brief Check the stack particles for fulfilling the storage criteria
      ** @param particles TClonesArray of TParticles
      ** @param points    Map holding the number of points in each detector
-     ** @value Storage decision for each index in the TClonesArray.
+     ** @return Storage decision for each index in the TClonesArray
      **
-     ** The nPoints map gives access to the number of points of a
-     ** particle in a detector. The key is pair<index, detector>,
-     ** with the index of the particle in its array detector
-     ** the detector identifier (EcbmModuleId).
+     ** The implemented behaviour is described in the class documentation.
+     ** When re-implementing in a derived class:  The nPoints map gives
+     ** access to the number of points of a particle in each detector.
+     ** The key is pair<index, detector>, with the index of the particle
+     ** in its array and the detector identifier (EcbmModuleId).
      ** The return vector must have the same size as the TClonesArray.
      **/
     virtual const std::vector<Bool_t>& Select(const TClonesArray& particles,
@@ -81,27 +98,13 @@ class CbmStackFilter
     /** @brief Set the minimum kinetic energy
      ** @param minimum  Minimum kinetic energy [GeV]
      **
-     ** Tracks kinetic energy less than the minimum will not be stored,
-     ** irrespective of their points in the detectors.
+     ** Tracks with kinetic energy less than the minimum will not be stored,
+     ** irrespectively of their number of points in the detectors.
      **
      ** The default value is 0., meaning no energy cut.
      **/
     void SetMinEkin(Double_t minimum) {
       fMinEkin = minimum;
-    }
-
-
-    /** @brief Set the minimum number of total MCPoints
-     ** @param minimum  Minimum number of points in detector
-     **
-     ** Tracks with a number of points in all detectors not less than
-     ** the minimum will be stored.
-     **
-     ** The default value is 1, meaning that tracks with at least one
-     ** point in any detector are stored.
-     **/
-    void SetMinNofPoints(UInt_t minimum) {
-      fMinNofPointsGlobal = minimum;
     }
 
 
@@ -111,12 +114,21 @@ class CbmStackFilter
      **
      ** Tracks with a number of points in the detector not less than
      ** the minimum will be stored. In case this cut is defined for
-     ** several detector systems, the cuts are connected by logical AND,
-     ** i.e., all cuts have to be satisfied.
+     ** several detector systems, the cuts are connected by logical OR,
+     ** i.e., at least one cut has to be satisfied.
      **
-     ** By default, no detector-specific cut is active.
+     ** Note that selecting MinNofPoints = 0 for any detectors means
+     ** storing all tracks, which is not advisable.
+     **
+     ** Excluding tracks which have points only in one detector can
+     ** be achieved by setting MinOfPoints to a large number for
+     ** this detector.
+     **
+     ** By default, the cut values are 1 for all detectors except for
+     ** the PSD, where the cut value is 5.
      **/
     void SetMinNofPoints(ECbmModuleId detector, UInt_t minimum) {
+      if ( detector >= kNofSystems ) return;
       fMinNofPoints[detector] = minimum;
     }
 
@@ -164,13 +176,12 @@ class CbmStackFilter
 
   private:
 
-    Bool_t fStoreAllPrimaries;   /// Flag for storage of primaries
-    Bool_t fStoreAllMothers;     /// Flag for storage of mothers
-    Bool_t fStoreAllDecays;      /// Flag for storage of all primary decay daughters
-    UInt_t fMinNofPointsGlobal;  /// Cut on global number of points
-    std::map<ECbmModuleId, UInt_t> fMinNofPoints; /// Cuts on local number of points
-    Double_t fMinEkin;           /// Cut on kinetic energy
-    std::vector<Bool_t> fStore;  /// Vector with storage decision
+    Bool_t fStoreAllPrimaries;   ///< Flag for storage of primaries
+    Bool_t fStoreAllMothers;     ///< Flag for storage of mothers
+    Bool_t fStoreAllDecays;      ///< Flag for storage of all primary decay daughters
+    std::vector<UInt_t> fMinNofPoints;  ///< Cut values for the number of points
+    Double_t fMinEkin;           ///< Cut value for kinetic energy
+    std::vector<Bool_t> fStore;  ///< Vector with storage decision
 
     ClassDef(CbmStackFilter,1);
 

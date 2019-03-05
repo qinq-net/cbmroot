@@ -1,6 +1,8 @@
 /** @file CbmStackFilter.cxx
  ** @author Volker Friese <v.friese@gsi.de>
- ** @date 12.02.2019
+ ** @since 16.02.2019
+ ** @date 05.03.2019
+ **
  **/
 
 
@@ -22,10 +24,14 @@ CbmStackFilter::CbmStackFilter() :
    fStoreAllPrimaries(kTRUE),
    fStoreAllMothers(kTRUE),
    fStoreAllDecays(kFALSE),
-   fMinNofPointsGlobal(1),
-   fMinNofPoints(),
+   fMinNofPoints(kNofSystems),
    fMinEkin(0.),
    fStore() {
+
+  // Initialise NofPoints cuts
+  for (Int_t iDet = 0; iDet < kNofSystems; iDet++) fMinNofPoints[iDet] = 1;
+  fMinNofPoints[kPsd] = 5;  // A hard-coded number. I'll rot in hell for that.
+
 }
 // --------------------------------------------------------------------------
 
@@ -57,7 +63,7 @@ const vector<Bool_t>& CbmStackFilter::Select(const TClonesArray& particles,
     // Check for being a primary
     if ( fStoreAllPrimaries ) {
       Int_t iMother = particle->GetMother(0);
-      if (iMother < 0 || particle->GetUniqueID()==kPPrimary) {
+      if (particle->GetUniqueID()==kPPrimary) {
         fStore[index] = kTRUE;
         nSelected++;
         continue;
@@ -65,44 +71,23 @@ const vector<Bool_t>& CbmStackFilter::Select(const TClonesArray& particles,
     } //? store all primaries
 
     // Check cuts on number of points in detectors
-    Bool_t store = kTRUE;
-    for (auto& cut : fMinNofPoints) {
-      ECbmModuleId detector = cut.first;
-      UInt_t minimum = cut.second;
-      auto it = points.find(make_pair(index, detector));
+    fStore[index] = kFALSE;
+    for (Int_t system = 0; system < kNofSystems; system++) {
+      auto it = points.find(make_pair(index, system));
       UInt_t nPoints = ( it == points.end() ? 0 : it->second);
-      if ( nPoints < minimum ) store = kFALSE;
-    } //# cuts on number of points in detectors
-    if ( ! store ) {
-      fStore[index] = kFALSE;
-      continue;
-    } //? not passed the nPoints cuts
-
-    // Check cut on total number of points
-    Int_t nPoints = 0;
-    for (Int_t detector=kMvd; detector<kNofSystems; detector++) {
-      auto it = points.find(make_pair(index, detector));
-      if ( it != points.end() ) nPoints += it->second;
-    } //# detectors
-    if ( nPoints < fMinNofPointsGlobal ) {
-      fStore[index] = kFALSE;
-      continue;
-    } //? not passed cut on global number of points
+      if ( nPoints >= fMinNofPoints[system] ) {
+        fStore[index] = kTRUE;
+        continue;
+      } //? Number cut satisfied
+    } //# detector systems
 
     // Check cut on kinetic energy
-    if ( particle->Ek() < fMinEkin ) {
-      fStore[index] = kFALSE;
-      continue;
-    } //? not passed cut on kinetic energy
-
-    // Arriving here after all cuts, the particle is flagged for storage
-    fStore[index] = kTRUE;
-    nSelected++;
+    if ( particle->Ek() < fMinEkin ) fStore[index] = kFALSE;
 
   } //# particles
 
 
-  // Mark all decay daughters of primaries for storage
+  // Mark all decay daughters of primaries for storage (if chosen such)
   TParticle* particle = nullptr;
   if ( fStoreAllDecays) {
     for (UInt_t index = 0; index < particles.GetEntriesFast(); index++) {
@@ -141,6 +126,7 @@ const vector<Bool_t>& CbmStackFilter::Select(const TClonesArray& particles,
       } //? not a primary
     } //# particles
   } //? store all mothers
+
 
   return fStore;
 }
