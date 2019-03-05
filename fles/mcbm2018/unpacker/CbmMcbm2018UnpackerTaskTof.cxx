@@ -330,8 +330,10 @@ void CbmMcbm2018UnpackerTaskTof::Finish()
       for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
       {
          /// Make sure we end up in chosen folder
-         gDirectory->mkdir( vHistos[ uHisto ].second.data() );
-         gDirectory->cd( vHistos[ uHisto ].second.data() );
+         TString sFolder = vHistos[ uHisto ].second.data();
+         if( nullptr == gDirectory->Get( sFolder ) )
+            gDirectory->mkdir( sFolder );
+         gDirectory->cd( sFolder );
 
          /// Write plot
          vHistos[ uHisto ].first->Write();

@@ -197,7 +197,7 @@ Bool_t CbmMcbm2018UnpackerTaskSts::DoUnpack(const fles::Timeslice& ts, size_t co
                   << Form("0x%08x", digi.GetAddress())
                   << " at " << static_cast<Int_t>( fStsDigiCloneArray->GetEntriesFast() )
                   << FairLogger::endl;
- 
+
        new( (*fStsDigiCloneArray)[ fStsDigiCloneArray->GetEntriesFast() ] )
          CbmStsDigi( digi) ;
      }
@@ -269,8 +269,10 @@ void CbmMcbm2018UnpackerTaskSts::Finish()
       for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
       {
          /// Make sure we end up in chosen folder
-         gDirectory->mkdir( vHistos[ uHisto ].second.data() );
-         gDirectory->cd( vHistos[ uHisto ].second.data() );
+         TString sFolder = vHistos[ uHisto ].second.data();
+         if( nullptr == gDirectory->Get( sFolder ) )
+            gDirectory->mkdir( sFolder );
+         gDirectory->cd( sFolder );
 
          /// Write plot
          vHistos[ uHisto ].first->Write();

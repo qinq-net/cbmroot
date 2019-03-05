@@ -192,10 +192,10 @@ Bool_t CbmMcbm2018UnpackerTaskMuch::DoUnpack(const fles::Timeslice& ts, size_t c
      for( UInt_t uDigi = 0; uDigi < vDigi.size(); ++uDigi )
         fBuffer->InsertData( new CbmMuchBeamTimeDigi( vDigi[ uDigi ] ) );
    } else {
-     for( auto digi: vDigi) {    
+     for( auto digi: vDigi) {
        /// Insert data in output container
        LOG(DEBUG) << "Fill digi TClonesarray with "
-                  << Form("0x%08x", digi.GetAddress()) 
+                  << Form("0x%08x", digi.GetAddress())
                   << " at " << static_cast<Int_t>( fMuchDigiCloneArray->GetEntriesFast() )
                   << FairLogger::endl;
        new( (*fMuchDigiCloneArray)[ fMuchDigiCloneArray->GetEntriesFast() ] )
@@ -269,8 +269,10 @@ void CbmMcbm2018UnpackerTaskMuch::Finish()
       for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
       {
          /// Make sure we end up in chosen folder
-         gDirectory->mkdir( vHistos[ uHisto ].second.data() );
-         gDirectory->cd( vHistos[ uHisto ].second.data() );
+         TString sFolder = vHistos[ uHisto ].second.data();
+         if( nullptr == gDirectory->Get( sFolder ) )
+            gDirectory->mkdir( sFolder );
+         gDirectory->cd( sFolder );
 
          /// Write plot
          vHistos[ uHisto ].first->Write();
