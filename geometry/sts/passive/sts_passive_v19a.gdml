@@ -46,19 +46,19 @@
 <positionref ref="central"/>
 <rotationref ref="identity"/>
 </subtraction>
+<box name="passive_Box_Wall_Back_Light_Foam_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(10.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Back_Light_Foam_PartBody_op1" x="(1000.000000)*2" y="(600.000000)*2" z="(10.000001)*2" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Back_Light_Foam_PartBody">
+<first ref="passive_Box_Wall_Back_Light_Foam_PartBody_op0"/>
+<second ref="passive_Box_Wall_Back_Light_Foam_PartBody_op1"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</subtraction>
 <box name="passive_Box_Wall_Back_Light_CF_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(1.000000)*2" lunit="mm"/>
 <box name="passive_Box_Wall_Back_Light_CF_PartBody_op1" x="(1000.000000)*2" y="(600.000000)*2" z="(1.000001)*2" lunit="mm"/>
 <subtraction name="passive_Box_Wall_Back_Light_CF_PartBody">
 <first ref="passive_Box_Wall_Back_Light_CF_PartBody_op0"/>
 <second ref="passive_Box_Wall_Back_Light_CF_PartBody_op1"/>
-<positionref ref="central"/>
-<rotationref ref="identity"/>
-</subtraction>
-<box name="passive_Box_Wall_Back_Light_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(12.000000)*2" lunit="mm"/>
-<box name="passive_Box_Wall_Back_Light_PartBody_op1" x="(1000.000000)*2" y="(600.000000)*2" z="(12.000001)*2" lunit="mm"/>
-<subtraction name="passive_Box_Wall_Back_Light_PartBody">
-<first ref="passive_Box_Wall_Back_Light_PartBody_op0"/>
-<second ref="passive_Box_Wall_Back_Light_PartBody_op1"/>
 <positionref ref="central"/>
 <rotationref ref="identity"/>
 </subtraction>
@@ -781,24 +781,31 @@
 <materialref ref="STSBoxCarbonFibre"/>
 <solidref ref="passive_Box_Wall_Back_CF_PartBody"/>
 </volume>
+<volume name="passive_Box_Wall_Back_Light_Foam">
+<materialref ref="STSBoxCarbonFoam"/>
+<solidref ref="passive_Box_Wall_Back_Light_Foam_PartBody"/>
+</volume>
 <volume name="passive_Box_Wall_Back_Light_CF">
 <materialref ref="STSBoxCarbonFibre"/>
 <solidref ref="passive_Box_Wall_Back_Light_CF_PartBody"/>
 </volume>
-<volume name="passive_Box_Wall_Back_Light">
-<materialref ref="STSBoxCarbonFoam"/>
-<solidref ref="passive_Box_Wall_Back_Light_PartBody"/>
+<assembly name="passive_Box_Wall_Back_Light">
 <physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Back_Light_Foam"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="2">
 <volumeref ref="passive_Box_Wall_Back_Light_CF"/>
 <position name="passive_Box_Wall_Back_Light_CF_pos_passive_Box_Wall_Back_Light" x="0" y="0" z="-11" unit="mm"/>
 <rotationref ref="identity"/>
 </physvol>
-<physvol copynumber="1">
+<physvol copynumber="2">
 <volumeref ref="passive_Box_Wall_Back_CF"/>
 <position name="passive_Box_Wall_Back_CF_pos_passive_Box_Wall_Back_Light" x="0" y="0" z="11" unit="mm"/>
 <rotationref ref="identity"/>
 </physvol>
-</volume>
+</assembly>
 <volume name="passive_Box_Wall_Back_Window_CF">
 <materialref ref="STSBoxCarbonFibre"/>
 <solidref ref="passive_Box_Wall_Back_Window_CF_PartBody"/>
@@ -1518,11 +1525,6 @@
 </physvol>
 </assembly>
 <assembly name="passive_unit3B">
-<physvol copynumber="2">
-<volumeref ref="passive_unit3B_half"/>
-<position name="passive_unit3B_half_pos_passive_unit3B" x="0" y="-287.5" z="0" unit="mm"/>
-<rotation name="passive_unit3B_half_rot_passive_unit3B" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
-</physvol>
 <physvol copynumber="3">
 <volumeref ref="passive_unit3B_half"/>
 <position name="passive_unit3B_half_pos_passive_unit3B" x="0" y="287.5" z="0" unit="mm"/>
@@ -1759,7 +1761,7 @@
 <assembly name="passive_unit4B_half">
 <physvol copynumber="2">
 <volumeref ref="passive_unit4B_half_POB"/>
-<position name="passive_unit4B_half_POB_pos_passive_unit4B_half" x="0" y="-288" z="0" unit="mm"/>
+<position name="passive_unit4B_half_POB_pos_passive_unit4B_half" x="-288" y="0" z="0" unit="mm"/>
 <rotationref ref="identity"/>
 </physvol>
 <physvol copynumber="2">
@@ -1993,16 +1995,6 @@
 </physvol>
 </assembly>
 <assembly name="passive_unit5A">
-<physvol copynumber="1">
-<volumeref ref="passive_unit5A_half"/>
-<position name="passive_unit5A_half_pos_passive_unit5A" x="0" y="287.5" z="0" unit="mm"/>
-<rotationref ref="identity"/>
-</physvol>
-<physvol copynumber="2">
-<volumeref ref="passive_unit5A_half"/>
-<position name="passive_unit5A_half_pos_passive_unit5A" x="0" y="-287.5" z="0" unit="mm"/>
-<rotation name="passive_unit5A_half_rot_passive_unit5A" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
-</physvol>
 <physvol copynumber="3">
 <volumeref ref="passive_unit5A_half"/>
 <position name="passive_unit5A_half_pos_passive_unit5A" x="0" y="287.5" z="0" unit="mm"/>
@@ -2539,7 +2531,7 @@
 </physvol>
 <physvol copynumber="4">
 <volumeref ref="passive_unit7B_half"/>
-<position name="passive_unit7B_half_pos_passive_unit7B" x="0" y="325" z="0" unit="mm"/>
+<position name="passive_unit7B_half_pos_passive_unit7B" x="0" y="-325" z="0" unit="mm"/>
 <rotation name="passive_unit7B_half_rot_passive_unit7B" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
 </physvol>
 </assembly>
@@ -2783,7 +2775,7 @@
 </physvol>
 <physvol copynumber="4">
 <volumeref ref="passive_unit8A_half"/>
-<position name="passive_unit8A_half_pos_passive_unit8A" x="0" y="325" z="0" unit="mm"/>
+<position name="passive_unit8A_half_pos_passive_unit8A" x="0" y="-325" z="0" unit="mm"/>
 <rotation name="passive_unit8A_half_rot_passive_unit8A" x="-(180.000000000259)" y="-(0)" z="-(0)" unit="deg"/>
 </physvol>
 </assembly>

@@ -135,14 +135,14 @@ passive_unit0: size 177.5000 x 100.0000 x  5.5600, assembly
 passive_unit1: size 177.5000 x 100.0000 x  9.6200, assembly
 passive_unit2: size 177.5000 x 100.0000 x  9.6200, assembly
 passive_unit3: size 177.5000 x 115.0000 x  9.6200, assembly
-passive_unit4: size 174.5000 x 115.0000 x  9.6200, assembly
+passive_unit4: size 177.5000 x 115.0000 x  9.6200, assembly
 passive_unit5: size 177.5000 x 115.0000 x  9.6200, assembly
 passive_unit6: size 177.5000 x 130.0000 x  9.6200, assembly
 passive_unit7: size 177.5000 x 130.0000 x  9.6200, assembly
-passive_unit8: size 179.0184 x 129.1500 x  5.5600, assembly
+passive_unit8: size 179.0184 x 130.0000 x  5.5600, assembly
 passive_Box_Wall_Vertical: size  2.0000 x 142.5000 x 103.8000, medium STSBoxCarbonFoam
 passive_Box_Wall_Vertical: size  2.0000 x 142.5000 x 103.8000, medium STSBoxCarbonFoam
 passive_Box_Wall_Bottom: size 230.0000 x  4.0000 x 95.4000, medium STSBoxCarbonFoam
 passive_Box_Wall_Front: size 230.0000 x 142.5000 x  6.0000, medium STSBoxCarbonFoam
 passive_Box_Wall_Top: size 230.0000 x  4.0000 x 95.4000, medium STSBoxCarbonFoam
-passive_Box_Wall_Back_Light: size 230.0000 x 142.5000 x  2.4000, medium STSBoxCarbonFoam
+passive_Box_Wall_Back_Light: size 230.0000 x 142.5000 x  2.4000, assembly

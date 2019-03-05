@@ -890,6 +890,8 @@ void create_stsgeo_v19a(const char* geoTag="v19a")
   gGeoMan->CloseGeometry();
   gGeoMan->CheckOverlaps(0.0001);
   gGeoMan->PrintOverlaps();
+  gGeoMan->CheckOverlaps(0.0001, "s");
+  gGeoMan->PrintOverlaps();
   gGeoMan->Test();
 
   TFile* geoFile = new TFile(geoFileName, "RECREATE");
