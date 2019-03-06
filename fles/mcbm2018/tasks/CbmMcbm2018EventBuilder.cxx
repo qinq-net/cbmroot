@@ -86,6 +86,8 @@ InitStatus CbmMcbm2018EventBuilder::Init()
     fLinkArray[kTof] = fTofDigis;
   }
 
+  fDiffTime = new TH1F("fDiffTime","Time difference between two consecutive digis;time diff [ns];Counts", 420, -100.5, 1999.5);
+  
   // Fill the first entry of each TClonesarray to the std::set
   // the sorting should be done using the time of the digi which
   // can be received using the GetTime() function of CbmDigi
@@ -102,17 +104,19 @@ InitStatus CbmMcbm2018EventBuilder::ReInit()
 void CbmMcbm2018EventBuilder::Exec(Option_t* /*option*/)
 {
 
+  fPrevEntry = -1;
+  fPrevTime = 0.;
   fNrTs++;
-  LOG(info) <<"Begin";
+  LOG_IF(info, fNrTs%1000 == 0) <<"Begin of TS " << fNrTs;
   Int_t nrT0Digis=fT0Digis->GetEntriesFast();
   Int_t nrStsDigis=fStsDigis->GetEntriesFast();
   Int_t nrMuchDigis=fMuchDigis->GetEntriesFast();
   Int_t nrTofDigis=fTofDigis->GetEntriesFast();
 
-  LOG(info) << "T0Digis: " << nrT0Digis;
-  LOG(info) << "StsDigis: " << nrStsDigis;
-  LOG(info) << "MuchDigis: " << nrMuchDigis;
-  LOG(info) << "TofDigis: " << nrTofDigis;
+  LOG(debug) << "T0Digis: " << nrT0Digis;
+  LOG(debug) << "StsDigis: " << nrStsDigis;
+  LOG(debug) << "MuchDigis: " << nrMuchDigis;
+  LOG(debug) << "TofDigis: " << nrTofDigis;
 
    //Fill the std::set with the first entires of all TClonesArrays
    CbmDigi* digi = nullptr;
@@ -133,10 +137,9 @@ void CbmMcbm2018EventBuilder::Exec(Option_t* /*option*/)
   for ( const auto& _tuple: fSet) { 
     LOG(debug) << "Array, Entry(" << std::get<1>(_tuple) << ", " 
               << std::get<2>(_tuple) << "): " << fixed 
-              << setprecision(15) << std::get<0>(_tuple)->GetTime() << "ns";
+              << setprecision(15) << std::get<0>(_tuple)->GetTime() << " ns";
   }
 
-  Bool_t endOfInput = kFALSE;
   while (fSet.size() > 0) {
     LOG(debug) << "Length: " << fSet.size();
     digituple _tuple = *(fSet.begin());
@@ -147,16 +150,31 @@ void CbmMcbm2018EventBuilder::Exec(Option_t* /*option*/)
     // Here must be the event condition 
     fVect.emplace_back(std::make_pair(_system,_entry));
     fSet.erase(fSet.begin());
-    AddDigi(_system, ++_entry);
+    _entry++;
+    AddDigi(_system, _entry);
     LOG(debug) << "Length: " << fSet.size();
-    endOfInput = kTRUE;
   }
 
-  if ( fNrTs > 5) {
-    exit(1);
+  //  LOG(info) << "Size of Vector: " << fVect.size();
+  for ( const auto& _pair: fVect) {
+    ECbmModuleId _system = _pair.first;
+    Int_t _entry = _pair.second;
+    digi = static_cast<CbmDigi*>(fLinkArray[_system]->At(_entry));
+    Double_t difftime = digi->GetTime() - fPrevTime;
+    if (fFillHistos) fDiffTime->Fill(difftime);
+    if (difftime < 0.) fErrors++;
+    LOG_IF(info, difftime < 0.) << fixed << setprecision(15)
+                                << "DiffTime: " << difftime *1.e-9
+				<< "  Previous digi(" << fPrevSystem << ", "
+                                << fPrevEntry << "): "
+                                << fPrevTime * 1.e-9 << ", Current digi(" 
+                                << _system << ", " <<_entry  << "): "    
+                                << digi->GetTime() * 1.e-9;
+    fPrevTime = digi->GetTime();
+    fPrevSystem = _system;
+    fPrevEntry = _entry;
   }
 
-  LOG(info) << "Size of Vector: " << fVect.size();
   fVect.clear();
   fSet.erase (fSet.begin(), fSet.end());
 
@@ -167,19 +185,43 @@ void CbmMcbm2018EventBuilder::AddDigi(ECbmModuleId _system, Int_t _entry)
   LOG(debug) << "Entry: " << _entry;
   if (_entry < fLinkArray[_system]->GetEntriesFast()) {
     CbmDigi* digi = static_cast<CbmDigi*>(fLinkArray[_system]->At(_entry));
-    Double_t difftime = digi->GetTime() - fPrevTime;
-    LOG_IF(info, difftime < 0.) << "Previous digi time larger than current "
-                                << digi->GetTime() << ", "
-                                << fPrevTime;
+    //    Double_t difftime = digi->GetTime() - fPrevTime;
+    /*
+    if (fFillHistos) fDiffTime->Fill(difftime);
+    if (difftime < 0.) fErrors++;
+    LOG_IF(info, difftime < 0.) << fixed << setprecision(15)
+                                << "DiffTime: " << difftime *1.e-9
+				<< "  Previous digi(" << fPrevSystem << ", "
+                                << fPrevEntry << "): "
+                                << fPrevTime * 1.e-9 << ", Current digi(" 
+                                << _system << ", " <<_entry  << "): "    
+                                << digi->GetTime() * 1.e-9;
     LOG(debug) << "Tof: " << fixed << setprecision(15) << digi->GetTime();
+    */
     fSet.emplace(std::make_tuple(digi, _system, _entry));
+    /*
+    fPrevTime = digi->GetTime();
+    fPrevSystem = _system;
+    fPrevEntry = _entry;
+    */
   }
 }
 
 // ---- Finish --------------------------------------------------------
 void CbmMcbm2018EventBuilder::Finish()
 {
-
+  if (fFillHistos) {
+    TFile* old = gFile;
+    TFile* outfile = TFile::Open(fOutFileName,"RECREATE");
+    
+    fDiffTime->Write();
+    
+    outfile->Close();
+    delete outfile;
+    
+    gFile = old;
+  }
+  LOG(info) << "Total errors: " << fErrors;
 }
 
 

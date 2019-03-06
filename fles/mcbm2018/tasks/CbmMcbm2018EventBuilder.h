@@ -18,6 +18,7 @@
 #include <tuple>
 
 class TClonesArray;
+class TH1;
 
  typedef std::tuple<CbmDigi*, ECbmModuleId, Int_t> digituple;
 
@@ -66,12 +67,16 @@ class CbmMcbm2018EventBuilder : public FairTask
     /** Finish task called at the end of the run **/
     virtual void Finish();
 
+    void SetFillHistos(Bool_t var) {fFillHistos = var;} 
   private:
 
     void AddDigi(ECbmModuleId,Int_t);
 
+    Int_t fErrors = 0;
     Int_t fNrTs = 0;
-    Double_t fPrevTime = 0;
+    Double_t fPrevTime = 0.;
+    ECbmModuleId fPrevSystem = kNofSystems;
+    Int_t fPrevEntry = -1;
 
     /** Input array from previous already existing data level **/
     TClonesArray* fT0Digis = nullptr;
@@ -88,6 +93,11 @@ class CbmMcbm2018EventBuilder : public FairTask
     std::vector<std::pair<ECbmModuleId, Int_t>> fVect;
 //  std::set<std::tuple<CbmDigi*, Int_t, Int_t>> fSet;
 //  std::set<std::tuple<Double_t, Int_t, Int_t>> fSet; // time, system(->TClonesarray), entry in TClonesarray
+
+    TH1* fDiffTime{nullptr};
+    Bool_t fFillHistos{kTRUE};
+
+    TString fOutFileName{"test1.root"};
     ClassDef(CbmMcbm2018EventBuilder,1);
 };
 
