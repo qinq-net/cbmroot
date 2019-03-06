@@ -58,12 +58,9 @@ void run_reco_tb_track(TString dataSet = "test", Int_t nSlices = -1)
   run->SetOutputFile(outFile);
   run->SetGenerateRunInfo(kTRUE);
 
-  // Define output file for FairMonitor histograms
-  /*
   TString monitorFile{outFile};
   monitorFile.ReplaceAll("rec","rec.monitor");
   FairMonitor::GetMonitor()->EnableMonitor(kTRUE, monitorFile);
-  */
   // ------------------------------------------------------------------------
 
 
@@ -134,6 +131,7 @@ void run_reco_tb_track(TString dataSet = "test", Int_t nSlices = -1)
 
   // -----   Finish   -------------------------------------------------------
   timer.Stop();
+  FairMonitor::GetMonitor()->Print();
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
   cout << endl << endl;

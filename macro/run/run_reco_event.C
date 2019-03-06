@@ -118,12 +118,9 @@ void run_reco_event(
   run->SetOutputFile(outFile);
   run->SetGenerateRunInfo(kTRUE);
   
-  // Define output file for FairMonitor histograms
-  /* Taken out for malfunctioning of FairRoot
   TString monitorFile{outFile};
   monitorFile.ReplaceAll("rec","rec.monitor");
   FairMonitor::GetMonitor()->EnableMonitor(kTRUE, monitorFile);
-  */
   // ------------------------------------------------------------------------
 
 
@@ -205,8 +202,8 @@ void run_reco_event(
 
 
   // -----   Finish   -------------------------------------------------------
-  //FairMonitor::GetMonitor()->Print();
   timer.Stop();
+  FairMonitor::GetMonitor()->Print();
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
   std::cout << std::endl << std::endl;

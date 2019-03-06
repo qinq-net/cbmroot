@@ -82,13 +82,8 @@ class CbmDigitization : public TNamed
     /** @brief Enable resource monitoring (default is kTRUE)
      ** @param choice If kTRUE, resources will be monitored
      **/
-    // TODO: With FairRoot 18.0.5, usage of FairMonitor will lead
-    // to a segmentation fault. It is thus disabled until this issue
-    // is fixed in FairRoot.
     void EnableMonitor(Bool_t choice = kTRUE) {
-      LOG(WARNING) << GetName() << ": Usage of FairMonitor is disabled "
-          << " because of malfunctioning in FairRoot." << FairLogger::endl;
-      //fMonitor = choice;
+      fMonitor = choice;
     }
 
 

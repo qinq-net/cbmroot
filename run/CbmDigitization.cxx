@@ -41,7 +41,7 @@ CbmDigitization::CbmDigitization() :
   fParAsciiFiles(),
   fOverwriteOutput(kFALSE),
   fGenerateRunInfo(kTRUE),
-  fMonitor(kFALSE),
+  fMonitor(kTRUE),
   fRun(0)
 {
   SetDefaultBranches();
@@ -316,9 +316,11 @@ void CbmDigitization::Run(Int_t event1, Int_t event2) {
 
   TString monitorFile{fOutFile};
   monitorFile.ReplaceAll("raw","raw.monitor");
+  if ( fMonitor ) {
   FairMonitor::GetMonitor()->EnableMonitor(fMonitor, monitorFile);
-  if ( fMonitor ) LOG(INFO) << fName << ": Monitor is enabled."
+  LOG(INFO) << fName << ": Monitor is enabled."
       << " OutputFile is " <<  monitorFile << FairLogger::endl;
+  }
 
 
   // --- Register source
