@@ -78,6 +78,7 @@ public:
    inline void SetUseBestPair( Bool_t bInFLag = kTRUE ) { fbUseBestPair = bInFLag; }
    inline void SetTsLevelAna( Bool_t bInFLag = kTRUE ) { fbTsLevelAna = bInFLag; }
 
+   void UseDaqBuffer(Bool_t) {};
 private:
    /// Parameters
       /// FLES containers
