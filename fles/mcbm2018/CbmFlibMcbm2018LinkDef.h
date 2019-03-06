@@ -31,6 +31,7 @@
 #pragma link C++ class CbmMcbm2018MonitorTaskT0;
 #pragma link C++ class CbmMcbm2018MonitorMcbmRate;
 #pragma link C++ class CbmMcbm2018MonitorMcbmSync;
+#pragma link C++ class CbmMcbm2018MonitorMcbmPulser;
 #pragma link C++ class CbmMcbm2018MonitorStsSync;
 //#pragma link C++ class CbmMcbm2018MonitorStsPulser;
 #pragma link C++ class CbmMcbm2018MonitorSts;
