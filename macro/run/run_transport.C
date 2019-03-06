@@ -70,7 +70,7 @@ void run_transport(Int_t nEvents = 2,
 
 
   // --- Transport run   ----------------------------------------------------
-  CbmRunTransport run;
+  CbmTransport run;
   run.AddInput(inFile);
   run.SetOutFileName(outFile);
   run.SetParFileName(parFile);

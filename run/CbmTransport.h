@@ -2,8 +2,8 @@
  ** @date 31.01.2019
  **/
 
-#ifndef CBMRUNTRANSPORT_H
-#define CBMRUNTRANSPORT_H 1
+#ifndef CBMTRANSPORT_H
+#define CBMTRANSPORT_H 1
 
 
 #include <functional>
@@ -33,22 +33,22 @@ enum ECbmEngine {
 };
 
 
-/** @class CbmRunTransport
+/** @class CbmTransport
  ** @brief User interface class for transport simulation
  ** @author Volker Friese <v.friese@gsi.de>
  ** @since 31 January 2019
  **/
-class CbmRunTransport : public TNamed
+class CbmTransport : public TNamed
 {
 
   public:
 
     /** @brief Constructor **/
-    CbmRunTransport();
+    CbmTransport();
 
 
     /** @brief Destructor  **/
-    virtual ~CbmRunTransport();
+    virtual ~CbmTransport();
 
 
     /** @brief Add an input by file name and generator type
@@ -316,8 +316,8 @@ class CbmRunTransport : public TNamed
     void VMCSettings(TVirtualMC* vmc);
 
 
-    ClassDef(CbmRunTransport, 1);
+    ClassDef(CbmTransport, 1);
 };
 
-#endif /* CBMRUNTRANSPORT_H */
+#endif /* CBMTRANSPORT_H */
 

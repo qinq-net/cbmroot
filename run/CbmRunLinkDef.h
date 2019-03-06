@@ -19,8 +19,8 @@
 #pragma link C++ class CbmMCStreamerQa+;
 #pragma link C++ class CbmMCTimeSim+;
 #pragma link C++ class CbmRunAna+;
-#pragma link C++ class CbmRunTransport+;
 #pragma link C++ class CbmSetup+;
+#pragma link C++ class CbmTransport+;
 
 // --- Enumerators
 #pragma link C++ enum ECbmEngine;

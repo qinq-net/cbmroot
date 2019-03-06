@@ -73,8 +73,8 @@ CbmMCStreamer.cxx
 CbmMCStreamerQa.cxx
 CbmMCTimeSim.cxx
 CbmRunAna.cxx
-CbmRunTransport.cxx
 CbmSetup.cxx
+CbmTransport.cxx
 
 # De-activated
 #CbmDaqQa.cxx
