@@ -48,7 +48,8 @@ enum ECbmDataType {
   kTrdDigi, kTrdHit, kTrdTrack,                          // TRD
   kTofPoint, kTofDigi, kTofCalDigi, kTofHit, kTofTrack,  // TOF
   kPsdPoint, kPsdDigi,                                   // PSD
-  kGlobalTrack                                           // Global
+  kGlobalTrack,                                          // Global
+  kT0Point, kT0Digi, kT0CalDigi, kT0Hit                  // T0
 };
 
 
