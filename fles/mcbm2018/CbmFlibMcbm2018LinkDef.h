@@ -41,4 +41,5 @@
 #pragma link C++ class CbmMcbm2018MonitorTofPulser;
 
 #pragma link C++ class CbmCheckTiming;
+#pragma link C++ class CbmMcbm2018EventBuilder;
 #endif

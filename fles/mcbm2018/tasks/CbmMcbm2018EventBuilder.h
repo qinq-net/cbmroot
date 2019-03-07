@@ -21,7 +21,10 @@
 class TClonesArray;
 class TH1;
 
- typedef std::tuple<CbmDigi*, ECbmModuleId, Int_t> digituple;
+
+enum class EventBuilderAlgo { FixedTimeWindow, MaximumTimeGap };
+
+typedef std::tuple<CbmDigi*, ECbmModuleId, Int_t> digituple;
 
 struct classcomp {
   bool operator() (const digituple& lhs, const digituple& rhs) const
@@ -69,6 +72,16 @@ class CbmMcbm2018EventBuilder : public FairTask
     virtual void Finish();
 
     void SetFillHistos(Bool_t var) {fFillHistos = var;} 
+    void SetEventBuilderAlgo(EventBuilderAlgo algo = EventBuilderAlgo::FixedTimeWindow)
+        {fEventBuilderAlgo = algo;}
+    void SetFixedTimeWindow(Double_t val) {fFixedTimeWindow = val;}
+    void SetMaximumTimeGap(Double_t val) {fMaximumTimeGap = val;}
+
+    void SetTriggerMinNumberT0(Int_t val)   {fTriggerMinT0Digis = val;}
+    void SetTriggerMinNumberSts(Int_t val)  {fTriggerMinStsDigis = val;}
+    void SetTriggerMinNumberMuch(Int_t val) {fTriggerMinMuchDigis = val;}
+    void SetTriggerMinNumberTof(Int_t val)  {fTriggerMinTofDigis = val;}
+
   private:
 
     void InitSorter();
@@ -76,31 +89,56 @@ class CbmMcbm2018EventBuilder : public FairTask
     void FillHisto();
     void DefineGoodEvents();
     void FillOutput();
-    void AddDigi(ECbmModuleId,Int_t);
+    void AddDigiToSorter(ECbmModuleId,Int_t);
+    void AddDigiToEvent(ECbmModuleId,Int_t);
 
-    Int_t fErrors = 0;
-    Int_t fNrTs = 0;
-    Double_t fPrevTime = 0.;
-    ECbmModuleId fPrevSystem = kNofSystems;
-    Int_t fPrevEntry = -1;
+    Bool_t IsDigiInEvent(Double_t);
+    Bool_t HasTrigger(CbmEvent*);
 
-    /** Input array from previous already existing data level **/
-    TClonesArray* fT0Digis = nullptr;
-    TClonesArray* fStsDigis = nullptr;
-    TClonesArray* fMuchDigis = nullptr;
-    TClonesArray* fTofDigis = nullptr;
-
-    std::array<TClonesArray*, ECbmModuleId::kNofSystems> fLinkArray;
-        
-    std::multiset<digituple, classcomp> fSet;
-
-    std::vector<std::pair<ECbmModuleId, Int_t>> fVect;
-    std::vector<CbmEvent*> fEventVector;
     
-    TH1* fDiffTime{nullptr};
-    Bool_t fFillHistos{kTRUE};
+    Int_t fCurEv{0};        //! Event Counter
+    Int_t fErrors{0};       //! Error Counter
+    Int_t fNrTs{0};         //! Timeslice Counter 
+    Double_t fPrevTime{0.}; //! Save previous time information 
 
+    TClonesArray* fT0Digis = nullptr;   //! input container of TO digis
+    TClonesArray* fStsDigis = nullptr;  //! input container of Sts digis
+    TClonesArray* fMuchDigis = nullptr; //! input container of Much digis
+    TClonesArray* fTofDigis = nullptr;  //! input container of Tof digis
+
+    std::array<TClonesArray*, ECbmModuleId::kNofSystems> fLinkArray; //! array with pointers to input containers
+        
+    std::multiset<digituple, classcomp> fSorter; //! std::set to sort the digis time wise
+
+    std::vector<std::pair<ECbmModuleId, Int_t>> fVect; //! 
+
+    CbmEvent* fCurrentEvent{nullptr};       //! pointer to the event which is currently build 
+    std::vector<CbmEvent*> fEventVector;    //! vector with all created events
+    
+    TH1* fDiffTime{nullptr};                //! histogram with the time difference between two consecutive digis
+    Bool_t fFillHistos{kTRUE};              //! Switch ON/OFF filling of histograms
+
+    /** Used event building algorithm **/
+    EventBuilderAlgo fEventBuilderAlgo{EventBuilderAlgo::FixedTimeWindow};  
+    /** Size of the time window used for the FixedTimeWindow event building algorithm **/
+    Double_t fFixedTimeWindow{100.};                                       
+    /** Start time of the event, needed for the FixedTimeWindow event building algorithm **/
+    Double_t fStartTimeEvent{0.};
+    /** Maximum gap allowed between two consecutive digis  used for the MaximumTimeGap event building algorithm **/
+    Double_t fMaximumTimeGap{100.}; 
+
+    /** Minimum number of T0 digis needed to generate a trigger, 0 means don't use T0 for trigger generation **/
+    Int_t fTriggerMinT0Digis{0}; 
+    /** Minimum number of Sts digis needed to generate a trigger, 0 means don't use Sts for trigger generation **/
+    Int_t fTriggerMinStsDigis{0}; 
+    /** Minimum number of Much digis needed to generate a trigger, 0 means don't use Much for trigger generation **/
+    Int_t fTriggerMinMuchDigis{0}; 
+    /** Minimum number of Tof digis needed to generate a trigger, 0 means don't use Tof for trigger generation **/
+    Int_t fTriggerMinTofDigis{0}; 
+
+    /** Name of the histogram output file **/
     TString fOutFileName{"test1.root"};
+    
     ClassDef(CbmMcbm2018EventBuilder,1);
 };
 

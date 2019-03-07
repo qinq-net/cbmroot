@@ -11,6 +11,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/data/raw
   ${CBMROOT_SOURCE_DIR}/data/sts
   ${CBMROOT_SOURCE_DIR}/data/much
+  ${CBMROOT_SOURCE_DIR}/data/global
 
   ${CBMROOT_SOURCE_DIR}/beamtime/base
 
@@ -91,6 +92,7 @@ Set(SRCS
    monitor/CbmMcbm2018MonitorTofPulser.cxx
 
    tasks/CbmCheckTiming.cxx
+   tasks/CbmMcbm2018EventBuilder.cxx
 )
 
 If(_UINT8_T_EXIST)
