@@ -12,6 +12,7 @@
 
 #include "CbmDefs.h"
 #include "CbmDigi.h"
+#include "CbmEvent.h"
 
 #include <array>
 #include <set>
@@ -70,6 +71,11 @@ class CbmMcbm2018EventBuilder : public FairTask
     void SetFillHistos(Bool_t var) {fFillHistos = var;} 
   private:
 
+    void InitSorter();
+    void BuildEvents();
+    void FillHisto();
+    void DefineGoodEvents();
+    void FillOutput();
     void AddDigi(ECbmModuleId,Int_t);
 
     Int_t fErrors = 0;
@@ -88,12 +94,9 @@ class CbmMcbm2018EventBuilder : public FairTask
         
     std::multiset<digituple, classcomp> fSet;
 
-//    std::set<std::pair<ECbmModuleId, Int_t>> fSet;
-//    std::vector<digituple> fVect;
     std::vector<std::pair<ECbmModuleId, Int_t>> fVect;
-//  std::set<std::tuple<CbmDigi*, Int_t, Int_t>> fSet;
-//  std::set<std::tuple<Double_t, Int_t, Int_t>> fSet; // time, system(->TClonesarray), entry in TClonesarray
-
+    std::vector<CbmEvent*> fEventVector;
+    
     TH1* fDiffTime{nullptr};
     Bool_t fFillHistos{kTRUE};
 

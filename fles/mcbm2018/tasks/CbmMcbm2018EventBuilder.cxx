@@ -87,11 +87,7 @@ InitStatus CbmMcbm2018EventBuilder::Init()
   }
 
   fDiffTime = new TH1F("fDiffTime","Time difference between two consecutive digis;time diff [ns];Counts", 420, -100.5, 1999.5);
-  
-  // Fill the first entry of each TClonesarray to the std::set
-  // the sorting should be done using the time of the digi which
-  // can be received using the GetTime() function of CbmDigi
-  
+    
 }
 
 // ---- ReInit  -------------------------------------------------------
@@ -104,49 +100,83 @@ InitStatus CbmMcbm2018EventBuilder::ReInit()
 void CbmMcbm2018EventBuilder::Exec(Option_t* /*option*/)
 {
 
-  fPrevEntry = -1;
-  fPrevTime = 0.;
-  fNrTs++;
   LOG_IF(info, fNrTs%1000 == 0) <<"Begin of TS " << fNrTs;
-  Int_t nrT0Digis=fT0Digis->GetEntriesFast();
-  Int_t nrStsDigis=fStsDigis->GetEntriesFast();
-  Int_t nrMuchDigis=fMuchDigis->GetEntriesFast();
-  Int_t nrTofDigis=fTofDigis->GetEntriesFast();
+  fNrTs++;
+ 
+  InitSorter();
+
+  BuildEvents();
+
+  FillHisto();
+  
+  DefineGoodEvents();
+
+  FillOutput();
+  // Cleanup of local data structures
+  fVect.clear();
+  fSet.erase (fSet.begin(), fSet.end());
+
+}
+
+void CbmMcbm2018EventBuilder::InitSorter()
+{
+  // Fill the first entry of each TClonesarray to the std::set
+  // The sorting should be done using the time of the digi which
+  // can be received using the GetTime() function of CbmDigi
+  
+  Int_t nrT0Digis{0};
+  if (fT0Digis) nrT0Digis = fT0Digis->GetEntriesFast();
+  Int_t nrStsDigis{0};
+  if (fStsDigis) nrStsDigis = fStsDigis->GetEntriesFast();
+  Int_t nrMuchDigis{0};
+  if (fMuchDigis) nrMuchDigis = fMuchDigis->GetEntriesFast();
+  Int_t nrTofDigis{0};
+  if (fTofDigis) nrTofDigis = fTofDigis->GetEntriesFast();
 
   LOG(debug) << "T0Digis: " << nrT0Digis;
   LOG(debug) << "StsDigis: " << nrStsDigis;
   LOG(debug) << "MuchDigis: " << nrMuchDigis;
   LOG(debug) << "TofDigis: " << nrTofDigis;
 
-   //Fill the std::set with the first entires of all TClonesArrays
-   CbmDigi* digi = nullptr;
-   if (nrT0Digis>0) {
-     AddDigi(kHodo, 0);
-   }
-   if (nrStsDigis>0) {
-     AddDigi(kSts, 0);
-   }
-   if (nrMuchDigis>0) {
-     AddDigi(kMuch, 0);
-   }
-   if (nrTofDigis>0) {
-     AddDigi(kTof, 0);
-   }
-
+  CbmDigi* digi = nullptr;
+  
+  if (nrT0Digis>0) {
+    AddDigi(kHodo, 0);
+  }
+  if (nrStsDigis>0) {
+    AddDigi(kSts, 0);
+  }
+  if (nrMuchDigis>0) {
+    AddDigi(kMuch, 0);
+  }
+  if (nrTofDigis>0) {
+    AddDigi(kTof, 0);
+  }
 
   for ( const auto& _tuple: fSet) { 
     LOG(debug) << "Array, Entry(" << std::get<1>(_tuple) << ", " 
-              << std::get<2>(_tuple) << "): " << fixed 
-              << setprecision(15) << std::get<0>(_tuple)->GetTime() << " ns";
+	       << std::get<2>(_tuple) << "): " << fixed 
+	       << setprecision(15) << std::get<0>(_tuple)->GetTime() << " ns";
   }
 
+  // Reset variables which are only valid inside one TS
+  fPrevEntry = -1;
+  // Get the first element of the set from which one gets the first
+  // element of the tuple (digi) from which one gets the smallest time
+  // of all digis of the new TS
+  fPrevTime = std::get<0>(*(fSet.begin()))->GetTime();
+
+}
+
+void CbmMcbm2018EventBuilder::BuildEvents()
+{
   while (fSet.size() > 0) {
     LOG(debug) << "Length: " << fSet.size();
     digituple _tuple = *(fSet.begin());
     ECbmModuleId _system = std::get<1>(_tuple);        
     Int_t _entry = std::get<2>(_tuple); 
     LOG(debug) << "System, Entry: " << _system << ", "
-              << _entry;
+	       << _entry;
     // Here must be the event condition 
     fVect.emplace_back(std::make_pair(_system,_entry));
     fSet.erase(fSet.begin());
@@ -154,12 +184,15 @@ void CbmMcbm2018EventBuilder::Exec(Option_t* /*option*/)
     AddDigi(_system, _entry);
     LOG(debug) << "Length: " << fSet.size();
   }
+}
 
+void CbmMcbm2018EventBuilder::FillHisto()
+{
   //  LOG(info) << "Size of Vector: " << fVect.size();
   for ( const auto& _pair: fVect) {
     ECbmModuleId _system = _pair.first;
     Int_t _entry = _pair.second;
-    digi = static_cast<CbmDigi*>(fLinkArray[_system]->At(_entry));
+    CbmDigi* digi = static_cast<CbmDigi*>(fLinkArray[_system]->At(_entry));
     Double_t difftime = digi->GetTime() - fPrevTime;
     if (fFillHistos) fDiffTime->Fill(difftime);
     if (difftime < 0.) fErrors++;
@@ -174,10 +207,13 @@ void CbmMcbm2018EventBuilder::Exec(Option_t* /*option*/)
     fPrevSystem = _system;
     fPrevEntry = _entry;
   }
+}
+void CbmMcbm2018EventBuilder::DefineGoodEvents()
+{
+}
 
-  fVect.clear();
-  fSet.erase (fSet.begin(), fSet.end());
-
+void CbmMcbm2018EventBuilder::FillOutput()
+{
 }
 
 void CbmMcbm2018EventBuilder::AddDigi(ECbmModuleId _system, Int_t _entry)
