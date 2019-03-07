@@ -230,6 +230,8 @@ namespace gdpbv100 {
          inline uint16_t getGdpbSysErrData()     const { return getField(  4,  7); }
          // ---------- Get4 gDPB unknown msg type access methods -------------------
          inline uint32_t getGdpbSysUnkwData()    const { return getField(  4, 32); }
+         // ---------- FW error msg type access methods ----------------------------
+         inline uint32_t getGdpbSysFwErrResync() const { return getBit(   36    ); }
          // ---------- ASIC Pattern messages access methods ------------------------
          inline uint16_t getGdpbSysPattType()    const { return getField( 46,  2 ); }
          inline uint16_t getGdpbSysPattIndex()   const { return getField( 40,  4 ); }

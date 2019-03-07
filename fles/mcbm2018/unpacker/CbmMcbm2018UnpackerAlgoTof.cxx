@@ -938,8 +938,11 @@ void CbmMcbm2018UnpackerAlgoTof::ProcessSysMess( gdpbv100::FullMessage mess )
       } // case gdpbv100::SYS_GDPB_UNKWN:
       case gdpbv100::SYS_GET4_SYNC_MISS:
       {
-         LOG(INFO) << "GET4 synchronization pulse missing in gDPB " << fuCurrDpbIdx
-                    << FairLogger::endl;
+         if( mess.getGdpbSysFwErrResync() )
+            LOG(INFO) << Form( "GET4 Resynchronization: Get4:0x%04x ", mess.getGdpbGenChipId() ) << fuCurrDpbIdx
+                       << FairLogger::endl;
+            else LOG(INFO) << "GET4 synchronization pulse missing in gDPB " << fuCurrDpbIdx
+                            << FairLogger::endl;
          break;
       } // case gdpbv100::SYS_GET4_SYNC_MISS:
       case gdpbv100::SYS_PATTERN:

@@ -309,7 +309,9 @@ void gdpbv100::Message::printData(unsigned outType, unsigned kind, uint32_t epoc
                   snprintf(sysbuf, sizeof(sysbuf), "Unknown GET4 message, data: 0x%08x", getGdpbSysUnkwData());
                   break;
                case SYS_GET4_SYNC_MISS:
-                  snprintf(sysbuf, sizeof(sysbuf), "GET4 SYNC synchronization error");
+                  if( getGdpbSysFwErrResync() )
+                     snprintf(sysbuf, sizeof(sysbuf), "GET4 Resynchronization: Get4:0x%04x", getGdpbGenChipId() );
+                     else snprintf(sysbuf, sizeof(sysbuf), "GET4 SYNC synchronization error");
                   break;
                case SYS_PATTERN:
                   snprintf(sysbuf, sizeof(sysbuf), "Pattern message => Type %d, Index %2d, Pattern 0x%08X",

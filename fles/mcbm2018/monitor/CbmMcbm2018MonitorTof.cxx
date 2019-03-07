@@ -2598,7 +2598,13 @@ void CbmMcbm2018MonitorTof::PrintSysInfo(gdpbv100::Message mess)
       } // case gdpbv100::SYS_GDPB_UNKWN:
       case gdpbv100::SYS_GET4_SYNC_MISS:
       {
-         LOG(DEBUG) << "GET4 synchronization pulse missing" << FairLogger::endl;
+         if( mess.getGdpbSysFwErrResync() )
+            LOG(INFO) << Form( "GET4 Resynchronization: Get4:0x%04x ", mess.getGdpbGenChipId() )
+                      << std::hex << std::setw(4) << fuGdpbId << std::dec
+                      << FairLogger::endl;
+            else LOG(INFO) << "GET4 synchronization pulse missing in gDPB "
+                           << std::hex << std::setw(4) << fuGdpbId << std::dec
+                           << FairLogger::endl;
          break;
       } // case gdpbv100::SYS_GET4_SYNC_MISS:
       case gdpbv100::SYS_PATTERN:
