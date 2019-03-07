@@ -38,7 +38,7 @@ void setup_sis300_electron()
 {
 
   // -----  Geometry Tags  --------------------------------------------------
-  TString magnetGeoTag    = "v15a";
+  TString magnetGeoTag    = "v18a";
   TString pipeGeoTag      = "v14n";
   TString mvdGeoTag       = "v17a_tr";
   TString stsGeoTag       = "v16g";
@@ -51,7 +51,7 @@ void setup_sis300_electron()
 
 
   // -----  Magnetic field  -------------------------------------------------
-  TString fieldTag      = "v12b";
+  TString fieldTag      = "v18a";
   Double_t fieldZ       = 40.;            // field centre z position
   Double_t fieldScale   =  1.;            // field scaling factor
   // ------------------------------------------------------------------------

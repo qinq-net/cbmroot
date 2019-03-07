@@ -32,7 +32,7 @@ void setup_sis300_muon()
 {
 
   // -----  Geometry Tags  --------------------------------------------------
-  TString magnetGeoTag    = "v15a";
+  TString magnetGeoTag    = "v18a";
   TString pipeGeoTag      = "v13c";
   TString stsGeoTag       = "v16g";
   TString muchGeoTag      = "v13f";
@@ -44,7 +44,7 @@ void setup_sis300_muon()
 
 
   // -----  Magnetic field  -------------------------------------------------
-  TString fieldTag      = "v12b";
+  TString fieldTag      = "v18a";
   Double_t fieldZ       = 40.;            // field centre z position
   Double_t fieldScale   =  1.;            // field scaling factor
   // ------------------------------------------------------------------------

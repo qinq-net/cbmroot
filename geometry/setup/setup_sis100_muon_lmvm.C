@@ -37,7 +37,7 @@ void setup_sis100_muon_lmvm()
 {
 
   // -----  Geometry Tags  --------------------------------------------------
-  TString magnetGeoTag    = "v15b_much";
+  TString magnetGeoTag    = "v18a";
   TString pipeGeoTag      = "v16b_1m";
   TString stsGeoTag       = "v16g";
   TString muchGeoTag      = "v17b_sis100_1m_lmvm";
@@ -48,7 +48,7 @@ void setup_sis100_muon_lmvm()
 
 
   // -----  Magnetic field  -------------------------------------------------
-  TString fieldTag      = "v12b";
+  TString fieldTag      = "v18a";
   Double_t fieldZ       = 40.;            // field centre z position
   Double_t fieldScale   =  1.;            // field scaling factor
   // ------------------------------------------------------------------------
