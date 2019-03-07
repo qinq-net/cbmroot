@@ -59,6 +59,10 @@ CbmMcbm2018UnpackerAlgoMuch::CbmMcbm2018UnpackerAlgoMuch() :
    fdStartTimeMsSz( 0.0 ),
    ftStartTimeUnix( std::chrono::steady_clock::now() ),
    fvmHitsInMs(),
+   fvvusLastTsChan(),
+   fvvusLastAdcChan(),
+   fvvusLastTsMsbChan(),
+   fvvusLastTsMsbCycleChan(),
    fhDigisTimeInRun( nullptr )
 /*
    fvhHitsTimeToTriggerRaw(),
@@ -208,6 +212,18 @@ Bool_t CbmMcbm2018UnpackerAlgoMuch::InitParameters()
       fvulCurrentTsMsb[uDpb]     = 0;
       fvuCurrentTsMsbCycle[uDpb] = 0;
    } // for( UInt_t uDpb = 0; uDpb < fuNrOfDpbs; ++uDpb )
+
+   fvvusLastTsChan.resize( fuNbStsXyters );
+   fvvusLastAdcChan.resize( fuNbStsXyters );
+   fvvusLastTsMsbChan.resize( fuNbStsXyters );
+   fvvusLastTsMsbCycleChan.resize( fuNbStsXyters );
+   for( UInt_t uAsicIdx = 0; uAsicIdx < fuNbStsXyters; ++ uAsicIdx )
+   {
+      fvvusLastTsChan[ uAsicIdx ].resize( fUnpackPar->GetNbChanPerAsic(), 0 );
+      fvvusLastAdcChan[ uAsicIdx ].resize( fUnpackPar->GetNbChanPerAsic(), 0 );
+      fvvusLastTsMsbChan[ uAsicIdx ].resize( fUnpackPar->GetNbChanPerAsic(), 0 );
+      fvvusLastTsMsbCycleChan[ uAsicIdx ].resize( fUnpackPar->GetNbChanPerAsic(), 0 );
+   } // for( UInt_t uAsicIdx = 0; uAsicIdx < fuNbStsXyters; ++ uAsicIdx )
 
 	return kTRUE;
 }
@@ -548,6 +564,17 @@ void CbmMcbm2018UnpackerAlgoMuch::ProcessHitInfo( stsxyter::Message mess, const 
    UInt_t uFebIdx    = uAsicIdx / fUnpackPar->GetNbAsicsPerFeb();
    UInt_t uAsicInFeb = uAsicIdx % fUnpackPar->GetNbAsicsPerFeb();
    UInt_t uChanInFeb = usChan + fUnpackPar->GetNbChanPerAsic() * (uAsicIdx % fUnpackPar->GetNbAsicsPerFeb());
+
+   /// Duplicate hits rejection
+   if( usRawTs                            == fvvusLastTsChan[ uAsicIdx ][ usChan ] &&
+       usRawAdc                           == fvvusLastAdcChan[ uAsicIdx ][ usChan ] &&
+       fvulCurrentTsMsb[fuCurrDpbIdx] - fvvusLastTsMsbChan[ uAsicIdx ][ usChan ] < kuMaxTsMsbDiffDuplicates &&
+       fvuCurrentTsMsbCycle[fuCurrDpbIdx] == fvvusLastTsMsbCycleChan[ uAsicIdx ][ usChan ] )
+   {
+      /// FIXME: add plots to check what is done in this rejection
+      return;
+   } // if same TS, ADC, TS MSB, TS MSB cycle!
+
 /*
    Double_t dCalAdc = fvdFebAdcOffs[ fuCurrDpbIdx ][ uCrobIdx ][ uFebIdx ]
                      + (usRawAdc - 1)* fvdFebAdcGain[ fuCurrDpbIdx ][ uCrobIdx ][ uFebIdx ];

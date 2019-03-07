@@ -110,6 +110,13 @@ class CbmMcbm2018UnpackerAlgoMuch : public CbmStar2019Algo<CbmMuchBeamTimeDigi>
       /// Hits time-sorting
       std::vector< stsxyter::FinalHit > fvmHitsInMs; //! All hits (time in bins, ADC in bins, asic, channel) in last MS, sorted with "<" operator
 
+      /// Duplicate hits suppression
+      static const UInt_t kuMaxTsMsbDiffDuplicates = 8;
+      std::vector< std::vector< UShort_t > > fvvusLastTsChan; //! TS of last hit message for each channel, [ AsicIdx ][ Chan ]
+      std::vector< std::vector< UShort_t > > fvvusLastAdcChan; //! ADC of last hit message for each channel, [ AsicIdx ][ Chan ]
+      std::vector< std::vector< UShort_t > > fvvusLastTsMsbChan; //! TS MSB of last hit message for each channel, [ AsicIdx ][ Chan ]
+      std::vector< std::vector< UShort_t > > fvvusLastTsMsbCycleChan; //! TS MSB cycle of last hit message for each channel, [ AsicIdx ][ Chan ]
+
       /// Histograms
       TH1 *               fhDigisTimeInRun;                //!
 /*
