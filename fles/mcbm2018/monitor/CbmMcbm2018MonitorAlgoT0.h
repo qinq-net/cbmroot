@@ -83,7 +83,7 @@ class CbmMcbm2018MonitorAlgoT0 : public CbmStar2019Algo<CbmTofDigiExp>
       /// Constants
       static const Int_t    kiMaxNbFlibLinks  = 32;
       static const UInt_t   kuBytesPerMessage =  8;
-      const UInt_t kuNbChanDiamond = 8;
+      static const UInt_t   kuNbChanDiamond = 8;
 
       /// Running indices
          /// TS/MS info

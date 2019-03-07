@@ -383,8 +383,8 @@ Bool_t CbmMcbm2018MonitorAlgoT0::ProcessMs( const fles::Timeslice& ts, size_t uM
       else fuCurrDpbIdx = fGdpbIdIndexMap[ fuCurrDpbId ];
 
    /// Save start time of first valid MS )
-   if( -1.0 == fdStartTime )
-      fdStartTime == fdMsTime;
+   if( fdStartTime < 0 )
+      fdStartTime = fdMsTime;
 
    // If not integer number of message in input buffer, print warning/error
    if( 0 != ( uSize % kuBytesPerMessage ) )
@@ -417,7 +417,8 @@ Bool_t CbmMcbm2018MonitorAlgoT0::ProcessMs( const fles::Timeslice& ts, size_t uM
 
       fuGet4Id = mess.getGdpbGenChipId();;
       fuGet4Nr = (fuCurrDpbIdx * fuNrOfGet4PerGdpb) + fuGet4Id;
-      UInt_t uChannelT0 = ( fuGet4Id < 32 ) ? ( fuGet4Id / 8 ) : (fuGet4Id / 8 - 1);
+//      UInt_t uChannelT0 = ( fuGet4Id < 32 ) ? ( fuGet4Id / 8 ) : (fuGet4Id / 8 - 1); /// December 2018 mapping
+      UInt_t uChannelT0 = fuGet4Id / 2 + 4 * fuCurrDpbIdx; /// 2019 mapping with 320/640 Mb/s FW
 
       if( fuNrOfGet4PerGdpb <= fuGet4Id &&
           !mess.isStarTrigger()  &&
@@ -697,8 +698,11 @@ void CbmMcbm2018MonitorAlgoT0::ProcessSysMess( gdpbv100::FullMessage mess )
       } // case gdpbv100::SYS_GDPB_UNKWN:
       case gdpbv100::SYS_GET4_SYNC_MISS:
       {
-         LOG(INFO) << "GET4 synchronization pulse missing in gDPB " << fuCurrDpbIdx
-                    << FairLogger::endl;
+         if( mess.getGdpbSysFwErrResync() )
+            LOG(INFO) << Form( "GET4 Resynchronization: Get4:0x%04x ", mess.getGdpbGenChipId() ) << fuCurrDpbIdx
+                       << FairLogger::endl;
+            else LOG(INFO) << "GET4 synchronization pulse missing in gDPB " << fuCurrDpbIdx
+                            << FairLogger::endl;
          break;
       } // case gdpbv100::SYS_GET4_SYNC_MISS:
       case gdpbv100::SYS_PATTERN:
