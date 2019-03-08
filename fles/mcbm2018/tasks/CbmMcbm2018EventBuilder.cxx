@@ -73,7 +73,17 @@ InitStatus CbmMcbm2018EventBuilder::Init()
   
   fMuchDigis = static_cast<TClonesArray*>(ioman->GetObject("CbmMuchBeamTimeDigi"));
   if ( ! fMuchDigis ) {
-    LOG(info) << "No TClonesArray with MUCH digis found.";
+    fMuchDigis = static_cast<TClonesArray*>(ioman->GetObject("CbmMuchDigi"));
+    if ( ! fMuchDigis ) {
+      fMuchDigis = static_cast<TClonesArray*>(ioman->GetObject("MuchDigi"));
+      if ( ! fMuchDigis ) {
+        LOG(info) << "No TClonesArray with MUCH digis found.";
+      } else {
+       fLinkArray[kMuch] = fMuchDigis;
+      }
+    } else {
+     fLinkArray[kMuch] = fMuchDigis;
+    }
   } else {
     fLinkArray[kMuch] = fMuchDigis;
   }
@@ -173,8 +183,10 @@ void CbmMcbm2018EventBuilder::InitSorter()
   // Get the first element of the set from which one gets the first
   // element of the tuple (digi) from which one gets the smallest time
   // of all digis of the new TS
-  fPrevTime = std::get<0>(*(fSorter.begin()))->GetTime();
-  fStartTimeEvent = fPrevTime;
+  if (fSorter.size() > 0) {
+    fPrevTime = std::get<0>(*(fSorter.begin()))->GetTime();
+    fStartTimeEvent = fPrevTime;
+  }
 }
 
 void CbmMcbm2018EventBuilder::BuildEvents()
