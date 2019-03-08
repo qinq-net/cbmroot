@@ -19,6 +19,9 @@ Summary:
 
   Sensor arrangement is the same as in version v16g
 
+  !! Important for this version is the discrepancy from the mechanical CAD w.r.t. front wall.
+  The square window was replaced by a round one to avoid overlaps with present beam pipe designs, e.g. pipe_v16b_1e
+
 Global variables: 
 Sensor thickness = 0.03 cm
 Vertical gap in sensor chain = 0 cm
@@ -129,7 +132,7 @@ Importing STS passive materials from GDML file '/geometry/sts/passive/sts_passiv
 Passive assembly is translated for Z=4.68 cm downstream with respect to parent volume
 
 sts_passive_v19a: size 234.0000 x 142.5000 x 103.8000, assembly
-Contains: passive_unit0 passive_unit1 passive_unit2 passive_unit3 passive_unit4 passive_unit5 passive_unit6 passive_unit7 passive_unit8 passive_Box_Wall_Vertical passive_Box_Wall_Vertical passive_Box_Wall_Bottom passive_Box_Wall_Front passive_Box_Wall_Top passive_Box_Wall_Back_Light 
+Contains: passive_unit0 passive_unit1 passive_unit2 passive_unit3 passive_unit4 passive_unit5 passive_unit6 passive_unit7 passive_unit8 passive_Box_Wall_Vertical passive_Box_Wall_Vertical passive_Box_Wall_Bottom passive_Box_Wall_Top passive_Box_Wall_Back_Light passive_Box_Wall_Front_Wrong 
 
 passive_unit0: size 177.5000 x 100.0000 x  5.5600, assembly
 passive_unit1: size 177.5000 x 100.0000 x  9.6200, assembly
@@ -143,6 +146,6 @@ passive_unit8: size 179.0184 x 130.0000 x  5.5600, assembly
 passive_Box_Wall_Vertical: size  2.0000 x 142.5000 x 103.8000, medium STSBoxCarbonFoam
 passive_Box_Wall_Vertical: size  2.0000 x 142.5000 x 103.8000, medium STSBoxCarbonFoam
 passive_Box_Wall_Bottom: size 230.0000 x  4.0000 x 95.4000, medium STSBoxCarbonFoam
-passive_Box_Wall_Front: size 230.0000 x 142.5000 x  6.0000, medium STSBoxCarbonFoam
 passive_Box_Wall_Top: size 230.0000 x  4.0000 x 95.4000, medium STSBoxCarbonFoam
 passive_Box_Wall_Back_Light: size 230.0000 x 142.5000 x  2.4000, assembly
+passive_Box_Wall_Front_Wrong: size 230.0000 x 142.5000 x  6.0000, medium STSBoxCarbonFoam

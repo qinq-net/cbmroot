@@ -120,6 +120,29 @@
 </subtraction>
 <box name="passive_Box_Wall_Top_CF_PartBody" x="(1150.000000)*2" y="(1.000000)*2" z="(477.000000)*2" lunit="mm"/>
 <box name="passive_Box_Wall_Top_PartBody" x="(1150.000000)*2" y="(20.000000)*2" z="(477.000000)*2" lunit="mm"/>
+<box name="passive_Box_Wall_Front_Wrong_CF_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(1.000000)*2" lunit="mm"/>
+<tube name="passive_Box_Wall_Front_Wrong_CF_PartBody_op1" rmin="0.000000" rmax="400.800000" z="(2.000001)*2" startphi="0.000000" deltaphi="360.000000" aunit="deg" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Front_Wrong_CF_PartBody">
+<first ref="passive_Box_Wall_Front_Wrong_CF_PartBody_op0"/>
+<second ref="passive_Box_Wall_Front_Wrong_CF_PartBody_op1"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</subtraction>
+<box name="passive_Box_Wall_Front_Wrong_PartBody_op0" x="(1150.000000)*2" y="(712.500000)*2" z="(30.000000)*2" lunit="mm"/>
+<tube name="passive_Box_Wall_Front_Wrong_PartBody_op1" rmin="0.000000" rmax="400.800000" z="(30.000000)*2" startphi="0.000000" deltaphi="360.000000" aunit="deg" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Front_Wrong_PartBody_op01">
+<first ref="passive_Box_Wall_Front_Wrong_PartBody_op0"/>
+<second ref="passive_Box_Wall_Front_Wrong_PartBody_op1"/>
+<position name="passive_Box_Wall_Front_Wrong_PartBody__1_pos_0" x="0" y="0" z="-7.6" unit="mm"/>
+<rotationref ref="identity"/>
+</subtraction>
+<tube name="passive_Box_Wall_Front_Wrong_PartBody_op2" rmin="0.000000" rmax="160.000000" z="(30.000001)*2" startphi="0.000000" deltaphi="360.000000" aunit="deg" lunit="mm"/>
+<subtraction name="passive_Box_Wall_Front_Wrong_PartBody">
+<first ref="passive_Box_Wall_Front_Wrong_PartBody_op01"/>
+<second ref="passive_Box_Wall_Front_Wrong_PartBody_op2"/>
+<positionref ref="central"/>
+<rotationref ref="identity"/>
+</subtraction>
 <box name="passive_FEB_PartBody" x="(50.750000)*2" y="(65.000000)*2" z="(20.300000)*2" lunit="mm"/>
 <box name="passive_POB_PartBody" x="(125.000000)*2" y="(205.000000)*2" z="(19.000000)*2" lunit="mm"/>
 <box name="passive_unit0A_half_Top_Part1_PartBody" x="(263.000000)*2" y="(15.000000)*2" z="(7.500000)*2" lunit="mm"/>
@@ -879,6 +902,24 @@
 <physvol copynumber="2">
 <volumeref ref="passive_Box_Wall_Top_CF"/>
 <position name="passive_Box_Wall_Top_CF_pos_passive_Box_Wall_Top" x="0" y="-19" z="0" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+<volume name="passive_Box_Wall_Front_Wrong_CF">
+<materialref ref="STSBoxCarbonFibre"/>
+<solidref ref="passive_Box_Wall_Front_Wrong_CF_PartBody"/>
+</volume>
+<volume name="passive_Box_Wall_Front_Wrong">
+<materialref ref="STSBoxCarbonFoam"/>
+<solidref ref="passive_Box_Wall_Front_Wrong_PartBody"/>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Front_Wrong_CF"/>
+<position name="passive_Box_Wall_Front_Wrong_CF_pos_passive_Box_Wall_Front_Wrong" x="0" y="0" z="-29" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Front_CF2"/>
+<position name="passive_Box_Wall_Front_CF2_pos_passive_Box_Wall_Front_Wrong" x="0" y="0" z="29" unit="mm"/>
 <rotationref ref="identity"/>
 </physvol>
 </volume>
@@ -2960,11 +3001,6 @@
 <rotationref ref="identity"/>
 </physvol>
 <physvol copynumber="2">
-<volumeref ref="passive_Box_Wall_Front"/>
-<position name="passive_Box_Wall_Front_pos_sts_passive" x="0" y="0" z="-489.0000+StsZ" unit="mm"/>
-<rotationref ref="identity"/>
-</physvol>
-<physvol copynumber="2">
 <volumeref ref="passive_Box_Wall_Top"/>
 <position name="passive_Box_Wall_Top_pos_sts_passive" x="0" y="692.5" z="18.0000+StsZ" unit="mm"/>
 <rotationref ref="identity"/>
@@ -2972,6 +3008,11 @@
 <physvol copynumber="1">
 <volumeref ref="passive_Box_Wall_Back_Light"/>
 <position name="passive_Box_Wall_Back_Light_pos_sts_passive" x="0" y="0" z="507.00000+StsZ" unit="mm"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol copynumber="1">
+<volumeref ref="passive_Box_Wall_Front_Wrong"/>
+<position name="passive_Box_Wall_Front_Wrong_pos_sts_passive" x="0" y="0" z="-489.0000+StsZ" unit="mm"/>
 <rotationref ref="identity"/>
 </physvol>
 </assembly>

@@ -200,6 +200,9 @@ Summary:
     * Reduced verbosity of this file
 
   Sensor arrangement is the same as in version v16g
+
+  !! Important for this version is the discrepancy from the mechanical CAD w.r.t. front wall.
+  The square window was replaced by a round one to avoid overlaps with present beam pipe designs, e.g. pipe_v16b_1e
 )";
 
 // -------------   Steering variables       -----------------------------------
