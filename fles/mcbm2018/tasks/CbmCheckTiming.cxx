@@ -90,7 +90,7 @@ InitStatus CbmCheckTiming::Init()
 void CbmCheckTiming::CreateHistos()
 {
   if (fOffsetRange < 1001) {
-    fBinWidth = 1;
+    fBinWidth = 5;
   } else if (fOffsetRange < 10001) {
     fBinWidth = 10;
   } else if (fOffsetRange < 100001) {
@@ -112,16 +112,16 @@ void CbmCheckTiming::CreateHistos()
 
   // T0 vs. T0
   fT0T0Diff = new TH1F("fT0T0Diff","T0-T0_prev;time diff [ns];Counts",
-		       2100, -100.5, 1999.5);
+		       420, -100.5, 1999.5);
   // sts vs. Sts
   fStsStsDiff = new TH1F("fStsStsDiff","Sts-Sts_prev;time diff [ns];Counts",
-		       2100, -100.5, 1999.5);
+		       420, -100.5, 1999.5);
   // Much vs. Much
   fMuchMuchDiff = new TH1F("fMuchMuchDiff","Much-Much_prev;time diff [ns];Counts",
-		       2100, -100.5, 1999.5);
+		       420, -100.5, 1999.5);
   // Tof vs. Tof
   fTofTofDiff = new TH1F("fTofTofDiff","Tof-Tof_prev;time diff [ns];Counts",
-		       2100, -100.5, 1999.5);
+		       420, -100.5, 1999.5);
 	
   /// Register the histos in the HTTP server
   FairRunOnline* run = FairRunOnline::Instance();
