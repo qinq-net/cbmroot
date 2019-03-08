@@ -84,26 +84,16 @@ void MonitorMuch(TString inFile = "", TString sHostname = "en02",
   //source->AddUnpacker(monitorMuch,  0x10, 6); // stsXyter DPBs
   source->AddUnpacker(monitorMuch,  0x10, kMuch); // stsXyter DPBs
 
-  // --- Event header
-  FairEventHeader* event = new CbmTbEvent();
-  event->SetRunId(1);
-
   // --- Run
   run = new FairRunOnline(source);
-  run->SetOutputFile(outFile);
-  run->SetEventHeader(event);
   run->ActivateHttpServer( iServerRefreshRate, iServerHttpPort ); // refresh each 100 events
   run->SetAutoFinish(kFALSE);
 
   // -----   Runtime database   ---------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
-  Bool_t kParameterMerged = kTRUE;
-  FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
   FairParAsciiFileIo* parIn = new FairParAsciiFileIo();
-  parOut->open(parFile.Data());
   parIn->open(parFileList, "in");
   rtdb->setFirstInput(parIn);
-  rtdb->setOutput(parOut);
 
   run->Init();
 

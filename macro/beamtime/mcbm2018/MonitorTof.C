@@ -106,26 +106,16 @@ void MonitorTof(TString inFile = "", TString sHostname = "localhost",
 //   source->AddUnpacker(dummy_unpacker, 0x10, 4);//gDPB A & B
 //   source->AddUnpacker(dummy_unpacker, 0x60, 6);//gDPB A & B
 
-  // --- Event header
-  FairEventHeader* event = new CbmTbEvent();
-  event->SetRunId(1);
-
   // --- Run
   run = new FairRunOnline(source);
-  run->SetOutputFile(outFile);
-  run->SetEventHeader(event);
   run->ActivateHttpServer( iServerRefreshRate, iServerHttpPort ); // refresh each 100 events
   run->SetAutoFinish(kFALSE);
 
   // -----   Runtime database   ---------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
-  Bool_t kParameterMerged = kTRUE;
-  FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
   FairParAsciiFileIo* parIn = new FairParAsciiFileIo();
-  parOut->open(parFile.Data());
   parIn->open(parFileList, "in");
   rtdb->setFirstInput(parIn);
-  rtdb->setOutput(parOut);
 
   run->Init();
 
