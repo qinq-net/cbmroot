@@ -40,6 +40,8 @@ class CbmEvent: public TObject {
 			fNofData(0), fVertex(), fMatch(NULL), fIndexMap() {
 		}
 
+                CbmEvent(CbmEvent&&) = default;
+                
 		/** Destructor **/
 		virtual ~CbmEvent() {
 			if ( fMatch ) delete fMatch;
