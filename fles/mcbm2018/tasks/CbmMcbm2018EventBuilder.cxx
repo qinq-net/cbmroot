@@ -86,6 +86,14 @@ InitStatus CbmMcbm2018EventBuilder::Init()
     fLinkArray[kTof] = fTofDigis;
   }
 
+  // Register output array (CbmEvent)
+  fEvents = new TClonesArray("CbmEvent",100);
+  ioman->Register("Event", "CbmEvent", fEvents,
+                                        IsOutputBranchPersistent("Event"));
+
+  if ( ! fEvents ) LOG(FATAL) << "Output branch was not created" << FairLogger::endl;
+
+
   fDiffTime = new TH1F("fDiffTime","Time difference between two consecutive digis;time diff [ns];Counts", 420, -100.5, 1999.5);
     
   return kSUCCESS;
@@ -108,24 +116,16 @@ void CbmMcbm2018EventBuilder::Exec(Option_t* /*option*/)
 
   BuildEvents();
 
-  LOG(info) << "Found " << fEventVector.size() << " events";
+  LOG(debug) << "Found " << fEventVector.size() << " events";
 
   FillHisto();
   
   DefineGoodEvents();
 
-  LOG(info) << "Found " << fEventVector.size() << " triggered events";
+  LOG(debug) << "Found " << fEventVector.size() << " triggered events";
 
   FillOutput();
 
-  int counter = 0;
-  for (auto event:  fEventVector) {
-     LOG(debug) << "Event " << counter << " has " << event->GetNofData() << " digis"; 
-     delete event;
-     counter++;
-  }
-
-  fEventVector.clear();
 
 }
 
@@ -290,6 +290,28 @@ void CbmMcbm2018EventBuilder::DefineGoodEvents()
 
 void CbmMcbm2018EventBuilder::FillOutput()
 {
+  // Clear TClonesArray before usage.
+  fEvents->Delete();
+
+  // Move CbmEvent from temporary vector to TClonesArray
+  for (auto event: fEventVector) {
+    LOG(debug) << "Vector: " << event->ToString();
+    new ( (*fEvents)[fEvents->GetEntriesFast()] ) CbmEvent(std::move(*event));
+     LOG(debug) << "TClonesArray: " 
+               << static_cast<CbmEvent*>(fEvents->At(fEvents->GetEntriesFast()-1))->ToString();
+  }
+
+  // Clear event vector after usage
+  // Need to delete the object the pointer points to first
+  int counter = 0;
+  for (auto event:  fEventVector) {
+     LOG(debug) << "Event " << counter << " has " << event->GetNofData() << " digis"; 
+     delete event;
+     counter++;
+  }
+
+  fEventVector.clear();
+
 }
 
 void CbmMcbm2018EventBuilder::AddDigiToEvent(ECbmModuleId _system, Int_t _entry)

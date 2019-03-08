@@ -23,19 +23,15 @@ void build_events(Int_t nEvents = 1, TString fileName="")
   FairFileSource* inputSource = new FairFileSource(fileName);
   fRun->SetSource(inputSource);
 
+  FairRootFileSink* outputSink = new FairRootFileSink("data/events.root");
+  fRun->SetSink(outputSink);
+
   // Define output file for FairMonitor histograms
 //  TString monitorFile{outFile};
 //  monitorFile.ReplaceAll("qa","qa.monitor");
   FairMonitor::GetMonitor()->EnableMonitor(kFALSE);
   // ------------------------------------------------------------------------
 
-/*
-  CbmCheckTiming* timeChecker = new CbmCheckTiming();
-  timeChecker->SetCheckInterSystemOffset(kTRUE);
-  timeChecker->SetCheckTimeOrder(kTRUE);
-  timeChecker->SetOffsetSearchRange(200000);
-  fRun->AddTask(timeChecker);
-*/
   CbmMcbm2018EventBuilder* eventBuilder = new CbmMcbm2018EventBuilder();
   eventBuilder->SetEventBuilderAlgo(EventBuilderAlgo::MaximumTimeGap);
   eventBuilder->SetMaximumTimeGap(100.);

@@ -105,6 +105,7 @@ class CbmMcbm2018EventBuilder : public FairTask
     TClonesArray* fStsDigis = nullptr;  //! input container of Sts digis
     TClonesArray* fMuchDigis = nullptr; //! input container of Much digis
     TClonesArray* fTofDigis = nullptr;  //! input container of Tof digis
+    TClonesArray* fEvents = nullptr;    //! output container of CbmEvents
 
     std::array<TClonesArray*, ECbmModuleId::kNofSystems> fLinkArray; //! array with pointers to input containers
         
