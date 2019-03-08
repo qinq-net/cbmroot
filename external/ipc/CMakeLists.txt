@@ -14,6 +14,8 @@ download_project_if_needed(PROJECT         fles_ipc
 file(COPY Timeslice.hpp DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/ipc/lib/fles_ipc)
 file(COPY TimesliceMultiInputArchive.hpp DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/ipc/lib/fles_ipc)
 file(COPY TimesliceMultiInputArchive.cpp DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/ipc/lib/fles_ipc)
+file(COPY TimesliceMultiSubscriber.hpp DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/ipc/lib/fles_ipc)
+file(COPY TimesliceMultiSubscriber.cpp DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/ipc/lib/fles_ipc)
 
 # Create the logging library
 add_library(fles_logging SHARED ipc/lib/logging/log.cpp ipc/lib/logging/log.hpp)
@@ -63,6 +65,7 @@ ipc/lib/fles_ipc/TimesliceReceiver.cpp
 ipc/lib/fles_ipc/TimesliceSubscriber.cpp
 ipc/lib/fles_ipc/TimesliceView.cpp
 ipc/lib/fles_ipc/TimesliceMultiInputArchive.cpp
+ipc/lib/fles_ipc/TimesliceMultiSubscriber.cpp
 )
 
 
