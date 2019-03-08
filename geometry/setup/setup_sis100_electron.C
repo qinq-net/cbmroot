@@ -43,7 +43,7 @@ void setup_sis100_electron()
   TString magnetGeoTag    = "v18a";
   TString pipeGeoTag      = "v16b_1e";
   TString mvdGeoTag       = "v17a_tr";
-  TString stsGeoTag       = "v16g";
+  TString stsGeoTag       = "v19a";
   TString richGeoTag      = "v17a_1e";
   TString trdGeoTag       = "v17n_1e";
   TString tofGeoTag       = "v16c_1e";

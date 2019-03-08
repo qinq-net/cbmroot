@@ -728,7 +728,7 @@ Double_t sideDz = fSupportLz[iStation]/2. + fActiveLzSector/2.;
     Double_t Dy = GetModuleH1(modulePath);
     Double_t Dx1 = GetModuleBl1(modulePath);
     Dx2 = GetModuleTl1(modulePath);
-    cout<<" positions  "<<pos[0]<<"  "<<pos[1]<<"  "<<pos[2]<<" phi "<<Phi<<endl;
+    //cout<<" positions  "<<pos[0]<<"  "<<pos[1]<<"  "<<pos[2]<<" phi "<<Phi<<endl;
 
     // Is this formula correct? Check Omveer (PPB 16.11.2017)
 //    Double_t yMin = (pos[1]/TMath::Cos(Phi))-Dy;

@@ -40,8 +40,17 @@ void CbmMagnet::ConstructGeometry()
 	TString fileName=GetGeometryFileName();
 	if (fileName.EndsWith(".root"))	{
 	  LOG(INFO) << "Constructing MAGNET        from ROOT  file " << fileName.Data() << FairLogger::endl;
-	  ConstructRootGeometry();
-        } else if (fileName.EndsWith(".geo")) {
+	  // Quick fix: The top magnet volume of magnet_v18a is centred at the origin of the GCS.
+	  // It has to be shifted by 40 cm downstream (centre coordinates (0, 0, 40) cm).
+	  // TODO: We have to urgently find a convention, such that this is not arbitrary.
+	  if ( fileName.Contains("magnet_v18a.geo.root") ) {
+	    LOG(INFO) << "Constructing magnet with shift 40 cm" << FairLogger::endl;
+	    TGeoTranslation* trans = new TGeoTranslation();
+	    trans->SetTranslation(0., 0., 40.);
+	    ConstructRootGeometry(trans);
+	  } //? v18a
+	  else ConstructRootGeometry();  //? not v18a
+       } else if (fileName.EndsWith(".geo")) {
           LOG(INFO) << "Constructing MAGNET        from ASCII file " << fileName.Data() << FairLogger::endl;
           ConstructASCIIGeometry();
         } else if (fileName.EndsWith(".gdml")) {

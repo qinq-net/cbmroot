@@ -41,7 +41,7 @@ void setup_sis300_electron()
   TString magnetGeoTag    = "v18a";
   TString pipeGeoTag      = "v14n";
   TString mvdGeoTag       = "v17a_tr";
-  TString stsGeoTag       = "v16g";
+  TString stsGeoTag       = "v19a";
   TString richGeoTag      = "v17a_3e";
   TString trdGeoTag       = "v17c_3e";
   TString tofGeoTag       = "v16c_3e";

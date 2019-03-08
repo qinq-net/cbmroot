@@ -488,7 +488,7 @@ Bool_t CbmMuch::CheckIfSensitive(
   
   if (tsname.Contains("active")){
     // cout<<tsname<<endl;
-      LOG(INFO) << "CbmMuch::CheckIfSensitive: Register active volume: " << tsname << FairLogger::endl;
+      LOG(DEBUG1) << "CbmMuch::CheckIfSensitive: Register active volume: " << tsname << FairLogger::endl;
       return kTRUE;
   }
   return kFALSE;
