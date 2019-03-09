@@ -83,9 +83,9 @@ class CbmMcbm2018MuchPar : public FairParGenericSet
  private:
 
    /// Constants
-   static const UInt_t  kuNbCrobsPerDpb   =   2; // Number of CROBs possible per DPB
+   static const UInt_t  kuNbCrobsPerDpb   =   1; // Number of CROBs possible per DPB
    static const UInt_t  kuNbElinksPerCrob =  42; // Number of elinks in each CROB ?
-   static const UInt_t  kuNbFebsPerCrob   =   6; // Number of FEBs  connected to each CROB for mMuch 2019
+   static const UInt_t  kuNbFebsPerCrob   =   3; // Number of FEBs  connected to each CROB for mMuch 2019
    static const UInt_t  kuNbAsicsPerFeb   =   1; // Number of ASICs connected in each FEB for MUCH
    static const UInt_t  kuNbChanPerAsic   = 128; // Number of channels in each ASIC
 //   static constexpr UInt_t  kuCrobMapElinkFebA[ kuNbElinksPerCrob ] = {

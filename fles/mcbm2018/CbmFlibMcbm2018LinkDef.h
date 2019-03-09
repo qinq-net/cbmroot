@@ -36,6 +36,7 @@
 //#pragma link C++ class CbmMcbm2018MonitorStsPulser;
 #pragma link C++ class CbmMcbm2018MonitorSts;
 #pragma link C++ class CbmMcbm2018MonitorMuch;
+#pragma link C++ class CbmMcbm2018MonitorMuchLite;
 //#pragma link C++ class CbmMcbm2018MonitorTrd;
 #pragma link C++ class CbmMcbm2018MonitorTof;
 #pragma link C++ class CbmMcbm2018MonitorTofPulser;

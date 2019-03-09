@@ -257,14 +257,14 @@ Short_t CbmMcbm2018MuchPar::GetPadY(Short_t febid, Short_t channelid)
 UInt_t CbmMcbm2018MuchPar::GetFebId(Int_t uAsicIdx)
 {
 //LOG(INFO)<<" fnFebsIdsArrayGemA.GetSize() "<<fnFebsIdsArrayGemA.GetSize()<<" fnFebsIdsArrayGemB.GetSize()"<<fnFebsIdsArrayGemB.GetSize()<<FairLogger::endl; 
-   if(uAsicIdx >= fnFebsIdsArrayGemA.GetSize())
-   {return fnFebsIdsArrayGemB[uAsicIdx%fnFebsIdsArrayGemA.GetSize()];}
+   if(uAsicIdx >= GetNrOfFebsInGemA())
+   {return fnFebsIdsArrayGemB[uAsicIdx%GetNrOfFebsInGemA()];}
    else return fnFebsIdsArrayGemA[uAsicIdx];
 }
 
 UInt_t CbmMcbm2018MuchPar::GetModule(Int_t uAsicIdx)
 {
-   if(uAsicIdx >= fnFebsIdsArrayGemA.GetSize())
+   if(uAsicIdx >= GetNrOfFebsInGemA())
    {return 1;}
    else return 0;
 }
@@ -273,7 +273,7 @@ Double_t CbmMcbm2018MuchPar::GetRealX(Int_t SectorIndex)
 {
 	
   //LOG(INFO)<<" fChannelsToPadX.GetSize() "<<fChannelsToPadX.GetSize()<< FairLogger::endl; 
-  if( SectorIndex <= 97 )
+  if( SectorIndex < 0 || SectorIndex <= 97 )
   {
       LOG(DEBUG) << "CbmMcbm2018MuchPar::GetRealX => Index out of bounds: " 
                  << FairLogger::endl;
@@ -287,7 +287,7 @@ Double_t CbmMcbm2018MuchPar::GetRealPadSize(Int_t SectorIndex)
 {
 	
   //LOG(INFO)<<" fChannelsToPadX.GetSize() "<<fChannelsToPadX.GetSize()<< FairLogger::endl; 
-  if( SectorIndex <= 97 )
+  if( SectorIndex < 0 || SectorIndex <= 97 )
   {
       LOG(DEBUG) << "CbmMcbm2018MuchPar::GetRealX => Index out of bounds: " 
                  << FairLogger::endl;
