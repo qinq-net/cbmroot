@@ -1973,15 +1973,59 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
                                         3, 0, 3,
                                         3001, -15., 15.);
 
-     fhGoodSelTypeNNPureChiSq = new TH2F("hGoodSelTypeNNPureChiSq",
-                                         "gST pure NN #chi^{2}; sel type ST []; #chi^{2}_{3} []; ",
-                                         3, 0, 3,
-                                         1000, 0., 100.);
 
-     fhGoodSelTypeNNAllChiSq = new TH2F("hGoodSelTypeNNAllChiSq",
-                                        "gST all NN #chi^{2}; sel type ST []; #chi^{2}_{3} []; ",
-                                        3, 0, 3,
-                                        1000, 0., 100.);
+     fhSelEfficiency = new TEfficiency("hSelEfficiency",
+                                       "; acc ref MUL []; Sel efficiency []",
+                                       50, 0., 50.);
+
+     fhSelHitTupleEfficiencyTIS = new TEfficiency("hSelHitTupleEfficiencyTIS",
+                                                  "; time in spill [s]; Sel efficiency []",
+                                                  TISnbins, 0., TISmax);
+
+     fhSelMatchEfficiency = new TEfficiency("hSelMatchEfficiency",
+                                            "; acc ref MUL []; Sel match efficiency []",
+                                            50, 0., 50.);
+
+     fhSelHitTupleMatchEfficiencyTIS = new TEfficiency("hSelHitTupleMatchEfficiencyTIS",
+                                                       "; time in spill [s]; Sel match efficiency []",
+                                                       TISnbins, 0., TISmax);
+
+     fhSelHitTupleResidualTTIS = new TH2F("hSelHitTupleResidualTTIS",
+                                          "; time in spill [s]; T_{hit} - T_{sel} [ns]",
+                                          TISnbins, 0., TISmax,
+                                          301, -1.5, 1.5);
+
+     fhSelHitTupleDutCluSizeTIS = new TH2F("hSelHitTupleDutCluSizeTIS",
+                                           "; time in spill [s]; cluster size [cells]",
+                                           TISnbins, 0., TISmax,
+                                           20, 0.5, 20.5);
+
+
+     fhSelTrklEfficiency = new TEfficiency("hSelTrklEfficiency",
+                                           "; acc ref MUL []; Sel efficiency []",
+                                           50, 0., 50.);
+
+     fhSelTrklEfficiencyTIS = new TEfficiency("hSelTrklEfficiencyTIS",
+                                              "; time in spill [s]; Sel efficiency []",
+                                              TISnbins, 0., TISmax);
+
+     fhSelTrklMatchEfficiency = new TEfficiency("hSelTrklMatchEfficiency",
+                                                "; acc ref MUL []; Sel match efficiency []",
+                                                50, 0., 50.);
+
+     fhSelTrklMatchEfficiencyTIS = new TEfficiency("hSelTrklMatchEfficiencyTIS",
+                                                   "; time in spill [s]; Sel match efficiency []",
+                                                   TISnbins, 0., TISmax);
+
+     fhSelTrklResidualTTIS = new TH2F("hSelTrklResidualTTIS",
+                                      "; time in spill [s]; T_{hit} - T_{sel} [ns]",
+                                      TISnbins, 0., TISmax,
+                                      301, -1.5, 1.5);
+
+     fhSelTrklDutCluSizeTIS = new TH2F("hSelTrklDutCluSizeTIS",
+                                       "; time in spill [s]; cluster size [cells]",
+                                       TISnbins, 0., TISmax,
+                                       20, 0.5, 20.5);
 
 
      if(fbMonteCarloComparison)
@@ -2053,10 +2097,6 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
        fhSelMCTrackDutHitMatchAccNNMul = new TH1F("hSelMCTrackDutHitMatchAccNNMul", "Sel track-hit match acc mul; MUL []; ", 30, 0.5, 30.5);
 
 
-       fhSelEfficiency = new TEfficiency("hSelEfficiency",
-                                         "; acc ref MUL []; Sel efficiency []",
-                                         50, 0., 50.);
-
        fhSelPurity = new TEfficiency("hSelPurity",
                                      "; acc ref MUL []; Sel purity []",
                                      50, 0., 50.);
@@ -2070,10 +2110,6 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
                                          5, 0., 5., 5, 0., 5.);
        fhSelRefTrackProcSpec->SetCanExtend(TH1::kAllAxes);
        fhSelRefTrackProcSpec->SetStats(0);
-
-       fhSelMatchEfficiency = new TEfficiency("hSelMatchEfficiency",
-                                              "; acc ref MUL []; Sel match efficiency []",
-                                              50, 0., 50.);
 
        fhSelMatchPurity = new TEfficiency("hSelMatchPurity",
                                           "; acc ref MUL []; Sel match purity []",
@@ -2150,10 +2186,6 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
                                         20, -0.5, 19.5);
 
 
-       fhSelTrklEfficiency = new TEfficiency("hSelTrklEfficiency",
-                                             "; acc ref MUL []; Sel efficiency []",
-                                             50, 0., 50.);
-
        fhSelTrklPurity = new TEfficiency("hSelTrklPurity",
                                          "; acc ref MUL []; Sel purity []",
                                          50, 0., 50.);
@@ -2168,9 +2200,6 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
        fhSelTrklRefTrackProcSpec->SetCanExtend(TH1::kAllAxes);
        fhSelTrklRefTrackProcSpec->SetStats(0);
 
-       fhSelTrklMatchEfficiency = new TEfficiency("hSelTrklMatchEfficiency",
-                                                  "; acc ref MUL []; Sel match efficiency []",
-                                                  50, 0., 50.);
 
        fhSelTrklMatchPurity = new TEfficiency("hSelTrklMatchPurity",
                                               "; acc ref MUL []; Sel match purity []",
@@ -2222,54 +2251,18 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
                                    3001, -1.5, 1.5);
 
 
-       fhSelHitTupleEfficiencyTIS = new TEfficiency("hSelHitTupleEfficiencyTIS",
-                                                    "; time in spill [s]; Sel efficiency []",
-                                                    TISnbins, 0., TISmax);
-
-       fhSelTrklEfficiencyTIS = new TEfficiency("hSelTrklEfficiencyTIS",
-                                                "; time in spill [s]; Sel efficiency []",
-                                                TISnbins, 0., TISmax);
-
        fhSelMCTrackEfficiencyTIS = new TEfficiency("hSelMCTrackEfficiencyTIS",
                                                    "; time in spill [s]; Sel efficiency []",
                                                    TISnbins, 0., TISmax);
-
-       fhSelHitTupleMatchEfficiencyTIS = new TEfficiency("hSelHitTupleMatchEfficiencyTIS",
-                                                         "; time in spill [s]; Sel match efficiency []",
-                                                         TISnbins, 0., TISmax);
-
-       fhSelTrklMatchEfficiencyTIS = new TEfficiency("hSelTrklMatchEfficiencyTIS",
-                                                     "; time in spill [s]; Sel match efficiency []",
-                                                     TISnbins, 0., TISmax);
 
        fhSelMCTrackMatchEfficiencyTIS = new TEfficiency("hSelMCTrackMatchEfficiencyTIS",
                                                         "; time in spill [s]; Sel match efficiency []",
                                                         TISnbins, 0., TISmax);
 
-       fhSelHitTupleResidualTTIS = new TH2F("hSelHitTupleResidualTTIS",
-                                            "; time in spill [s]; T_{hit} - T_{sel} [ns]",
-                                            TISnbins, 0., TISmax,
-                                            301, -1.5, 1.5);
-
-       fhSelTrklResidualTTIS = new TH2F("hSelTrklResidualTTIS",
-                                        "; time in spill [s]; T_{hit} - T_{sel} [ns]",
-                                        TISnbins, 0., TISmax,
-                                        301, -1.5, 1.5);
-
        fhSelMCTrackResidualTTIS = new TH2F("hSelMCTrackResidualTTIS",
                                            "; time in spill [s]; T_{hit} - T_{sel} [ns]",
                                            TISnbins, 0., TISmax,
                                            301, -1.5, 1.5);
-
-       fhSelHitTupleDutCluSizeTIS = new TH2F("hSelHitTupleDutCluSizeTIS",
-                                             "; time in spill [s]; cluster size [cells]",
-                                             TISnbins, 0., TISmax,
-                                             20, 0.5, 20.5);
-
-       fhSelTrklDutCluSizeTIS = new TH2F("hSelTrklDutCluSizeTIS",
-                                         "; time in spill [s]; cluster size [cells]",
-                                         TISnbins, 0., TISmax,
-                                         20, 0.5, 20.5);
 
        fhSelMCTrackDutCluSizeTIS = new TH2F("hSelMCTrackDutCluSizeTIS",
                                             "; time in spill [s]; cluster size [cells]",
@@ -2489,6 +2482,17 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 
          fhCounterRefTrackMulCell.insert(std::make_pair(CounterID, dynamic_cast<TH2*>(tCurrentHistogram)));
        }
+
+
+       fhGoodSelTypeNNPureChiSq = new TH2F("hGoodSelTypeNNPureChiSq",
+                                           "gST pure NN #chi^{2}; sel type ST []; #chi^{2}_{3} []; ",
+                                           3, 0, 3,
+                                           1000, 0., 100.);
+
+       fhGoodSelTypeNNAllChiSq = new TH2F("hGoodSelTypeNNAllChiSq",
+                                          "gST all NN #chi^{2}; sel type ST []; #chi^{2}_{3} []; ",
+                                          3, 0, 3,
+                                          1000, 0., 100.);
      }
 
 
@@ -3269,18 +3273,16 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     <<Form(", Muls %4.0f, %4.0f, %4.0f",dMulD, dMul0, dMul4)
  	     <<FairLogger::endl;
 
-   if(fbMonteCarloComparison)
+
+   if(BSel[0])
    {
-     if(BSel[0])
-     {
-       fhSelEfficiency->Fill(kTRUE, fiNAccRefTracks);
-       fhSelHitTupleEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
-     }
-     else
-     {
-       fhSelEfficiency->Fill(kFALSE, fiNAccRefTracks);
-       fhSelHitTupleEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
-     }
+     fhSelEfficiency->Fill(kTRUE, fiNAccRefTracks);
+     fhSelHitTupleEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
+   }
+   else
+   {
+     fhSelEfficiency->Fill(kFALSE, fiNAccRefTracks);
+     fhSelHitTupleEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
    }
 
 
@@ -3711,11 +3713,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
      if ( Chi2List[iM0] < fdChi2Lim) {
 
-       if(fbMonteCarloComparison)
-       {
-         fhSelMatchEfficiency->Fill(kTRUE, fiNAccRefTracks);
-         fhSelHitTupleMatchEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
-       }
+       fhSelMatchEfficiency->Fill(kTRUE, fiNAccRefTracks);
+       fhSelHitTupleMatchEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
 
 
        if(fTrbHeader != NULL) fhTIS_sel1->Fill(fTrbHeader->GetTimeInSpill());
@@ -4133,11 +4132,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      }  // fdChi2Lim end 
      else
      {
-       if(fbMonteCarloComparison)
-       {
-         fhSelMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
-         fhSelHitTupleMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
-       }
+       fhSelMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+       fhSelHitTupleMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
 
        fhSelTypeNNChiSq->Fill(0., 3.*Chi2List[iM0]);
        fhSelTypeNNResidualT->Fill(0., dToD);
@@ -4175,11 +4171,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
     }   // end of if(iNbMatchedHits>0)
     else
     {
-      if(fbMonteCarloComparison)
-      {
-        fhSelMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
-        fhSelHitTupleMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
-      }
+      fhSelMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+      fhSelHitTupleMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
     }
    }    // BSel[0] condition end 
 
@@ -4835,11 +4828,11 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   fhDutXYDY->Fill(hitpos_local[0],hitpos_local[1],dDY);
 	   fhDutXYDT->Fill(hitpos_local[0],hitpos_local[1],dDTB);
 
+     fhSelTrklMatchEfficiency->Fill(kTRUE, fiNAccRefTracks);
+     fhSelTrklMatchEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
+
      if(fbMonteCarloComparison)
      {
-       fhSelTrklMatchEfficiency->Fill(kTRUE, fiNAccRefTracks);
-       fhSelTrklMatchEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
-
        if(fbAttachDutHitToTracklet)
        {
          if(fbTracksInInputFile)
@@ -4993,11 +4986,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhSelTypeNNResidualX->Fill(1, pHit->GetX() - pTrk->GetFitX(pHit->GetZ()));
      fhSelTypeNNResidualY->Fill(1, pHit->GetY() - pTrk->GetFitY(pHit->GetZ()));
 
-     if(fbMonteCarloComparison)
-     {
-       fhSelTrklMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
-       fhSelTrklMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
-     }
+     fhSelTrklMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+     fhSelTrklMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
    }
 
      // no match for this track
@@ -5027,11 +5017,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	       fhDutDTLH_DD_Missed->Fill( dDelTLH, dDD ); 
 	     }
 
-       if(fbMonteCarloComparison)
-       {
-         fhSelTrklMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
-         fhSelTrklMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
-	     }
+       fhSelTrklMatchEfficiency->Fill(kFALSE, fiNAccRefTracks);
+       fhSelTrklMatchEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
 	   }
 
      } // end of loop over all tracklets
@@ -5112,18 +5099,15 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      } //(fdMemoryTime > 0.) end
 
 
-     if(fbMonteCarloComparison)
+     if(bSelTrackletFound)
      {
-       if(bSelTrackletFound)
-       {
-         fhSelTrklEfficiency->Fill(kTRUE, fiNAccRefTracks);
-         fhSelTrklEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
-       }
-       else
-       {
-         fhSelTrklEfficiency->Fill(kFALSE, fiNAccRefTracks);
-         fhSelTrklEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
-       }
+       fhSelTrklEfficiency->Fill(kTRUE, fiNAccRefTracks);
+       fhSelTrklEfficiencyTIS->Fill(kTRUE, (dTAv - StartSpillTime)/1.E9);
+     }
+     else
+     {
+       fhSelTrklEfficiency->Fill(kFALSE, fiNAccRefTracks);
+       fhSelTrklEfficiencyTIS->Fill(kFALSE, (dTAv - StartSpillTime)/1.E9);
      }
 
    }   // (NULL!=fTofTrackColl && NULL != fFindTracks) end

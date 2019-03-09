@@ -1709,7 +1709,10 @@ Bool_t   CbmTofEventClusterizer::FillHistos()
      if ( dTimeAna10s > 10.) {
        fdStartAna10s=pHit->GetTime();
        for(Int_t iDet=0; iDet<fDigiBdfPar->GetNbDet(); iDet++)
-	     fhRpcCluRate10s[iDet]->Reset();
+       {
+         if(NULL != fhRpcCluRate10s[iDet])
+         fhRpcCluRate10s[iDet]->Reset();
+       }
        dTimeAna10s=0.;
      }
      fhRpcCluRate10s[iDetIndx]->Fill(dTimeAna10s,1./fhRpcCluRate10s[iDetIndx]->GetBinWidth(1));       
