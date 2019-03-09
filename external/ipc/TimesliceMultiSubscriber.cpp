@@ -44,11 +44,12 @@ void TimesliceMultiSubscriber::CreateHostPortFileList(std::string inputString)
   // if not port is defined, add the default port
   // The hostname cannot contain the wildcard "*"
   for (auto& string: inputStreams) {
+
     if( 0 == string.size() )
       L_(error) << " Empty hostname string, ignoring it";
 
     std::vector<std::string> stringsHostnamePort;
-    boost::split(inputStreams, string, [](char c){return c == ':';});
+    boost::split(stringsHostnamePort, string, [](char c){return c == ':';});
 
     switch( stringsHostnamePort.size() ) {
       case 1:
@@ -61,7 +62,9 @@ void TimesliceMultiSubscriber::CreateHostPortFileList(std::string inputString)
         L_(error) << " Bad hostname string: " << string;
         continue;
     }
-    InputHostPortList.push_back(string);
+    std::string fullpath = "tcp://";
+    fullpath += string;
+    InputHostPortList.push_back(fullpath);
   }
 
   // some dubug output
