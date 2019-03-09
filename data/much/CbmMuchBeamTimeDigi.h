@@ -1,11 +1,16 @@
 // TODO comment to be changed
-/** CbmMuchDigi.h
+/** CbmMuchBeamTimeDigi.h
  **@author M.Ryzhinskiy <m.ryzhinskiy@gsi.de>
  **@since 19.03.07
  **@version 1.0
  **
- ** Data class for digital MUCH information
- ** Data level: RA
+ **@author Vikas Singhal <vikas@vecc.gov.in>
+ **@since 06.03.19
+ **@version 2.0
+ **
+ ** Data class for digital MUCH information collected during BeamTime
+ ** Data level: RAW
+ ** To use reconstruction classes for CbmMuchBeamTimeDigi deriving it from CbmMuchDigi. VS
  **
  **
  **/
@@ -14,15 +19,15 @@
 #ifndef CBMMUCHBEAMTIMEDIGI_H
 #define CBMMUCHBEAMTIMEDIGI_H 1
 
-#include "CbmDigi.h"
+#include "CbmMuchDigi.h"
 #include "CbmDefs.h"
 #include "CbmMuchDigiMatch.h"
 #include "CbmMuchAddress.h"
 
-class CbmMuchBeamTimeDigi : public CbmDigi{
+class CbmMuchBeamTimeDigi : public CbmMuchDigi{
  public:
   CbmMuchBeamTimeDigi();
-  CbmMuchBeamTimeDigi(Int_t address, Int_t charge=0, ULong_t time=0);
+  CbmMuchBeamTimeDigi(Int_t address, Int_t charge=0, ULong64_t time=0);
   CbmMuchBeamTimeDigi(CbmMuchBeamTimeDigi* digi);
   CbmMuchBeamTimeDigi(CbmMuchBeamTimeDigi* digi,CbmMuchDigiMatch* match);
   CbmMuchBeamTimeDigi(const CbmMuchBeamTimeDigi&);
@@ -38,10 +43,10 @@ class CbmMuchBeamTimeDigi : public CbmDigi{
   
   void AddAdc(Int_t adc);
   void SetAdc(Int_t adc);
-  void SetTime(ULong_t time);
-  
-  void SetMatch(CbmMuchDigiMatch* match) { fMatch = match; }
-  CbmMuchDigiMatch* GetMatch() const { return fMatch; }
+  void SetTime(ULong64_t time);
+  // Deriving from CbmMuchDigi so not needed. VS (060319)
+  //void SetMatch(CbmMuchDigiMatch* match) { fMatch = match; }
+  //CbmMuchDigiMatch* GetMatch() const { return fMatch; }
  
   // Specially for littrack
   // TODO remove after littrack fix
@@ -67,7 +72,7 @@ class CbmMuchBeamTimeDigi : public CbmDigi{
  
  private:
   Long64_t fData;
-  ULong_t fTime;
+  ULong64_t fTime;
   CbmMuchDigiMatch* fMatch;  ///< matches to MC points (to be replaced with Fair links)
   Int_t fPadX;
   Int_t fPadY;
@@ -85,6 +90,6 @@ class CbmMuchBeamTimeDigi : public CbmDigi{
   static const Long64_t fgkCharMask;
   static const Long64_t fgkTimeMask;
 
-  ClassDef(CbmMuchBeamTimeDigi,1);
+  ClassDef(CbmMuchBeamTimeDigi,2);
 };
 #endif

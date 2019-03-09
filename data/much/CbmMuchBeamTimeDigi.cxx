@@ -3,10 +3,13 @@
  **@author M.Ryzhinskiy <m.ryzhinskiy@gsi.de>
  **@since 19.03.07
  **@version 1.0
+ **@author Vikas Singhal <vikas@vecc.gov.in>
+ **@since 06.03.19
+ **@version 2.0
  **
- ** Data class for digital MUCH information
+ ** Data class for digital MUCH information collected during BeamTime
  ** Data level: RAW
- **
+ ** To use reconstruction classes for CbmMuchBeamTimeDigi deriving it from CbmMuchDigi. VS
  **
  **/
 #include "CbmMuchBeamTimeDigi.h"
@@ -36,7 +39,7 @@ const Long64_t CbmMuchBeamTimeDigi::fgkTimeMask = (1LL << CbmMuchBeamTimeDigi::f
 
 // -------------------------------------------------------------------------
 CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi() 
-  : CbmDigi(),
+  : CbmMuchDigi(),
     fData(0),
     fTime(0),
     fMatch(0),
@@ -47,8 +50,8 @@ CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi()
 
 
 // -------------------------------------------------------------------------
-CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi(Int_t address, Int_t charge, ULong_t time)
-  : CbmDigi(),
+CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi(Int_t address, Int_t charge, ULong64_t time)
+  : CbmMuchDigi(),
     fData(0),
     fTime(time),
     fMatch(0),
@@ -61,7 +64,7 @@ CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi(Int_t address, Int_t charge, ULong_t ti
 // -------------------------------------------------------------------------
 
 CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi(CbmMuchBeamTimeDigi* digi)
-  : CbmDigi(*digi),
+  : CbmMuchDigi(*digi),
     fData(digi->fData),
     fTime(digi->fTime),
     fMatch(0),
@@ -74,40 +77,42 @@ CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi(CbmMuchBeamTimeDigi* digi)
 }
 
 CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi(CbmMuchBeamTimeDigi* digi,CbmMuchDigiMatch* match)
-  : CbmDigi(*digi),
+  : CbmMuchDigi(*digi),
     fData(digi->fData),
     fTime(digi->fTime),
-    fMatch(new CbmMuchDigiMatch(match)),
+    //fMatch(new CbmMuchDigiMatch(match)),
 		fPadX(digi->GetPadX()),
 		fPadY(digi->GetPadY()),
 		fRocId(digi->GetRocId()),
 		fNxId(digi->GetNxId()),
 		fNxCh(digi->GetNxCh())
 {  
+		SetMatch(match);
 }
 
 
 CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi(const CbmMuchBeamTimeDigi& rhs)
- : CbmDigi(rhs),
+ : CbmMuchDigi(rhs),
    fData(rhs.fData),
    fTime(rhs.fTime),
-   fMatch(NULL),
+   //fMatch(NULL),
+   fMatch(rhs.fMatch),
    fPadX(rhs.fPadX),
    fPadY(rhs.fPadY),
    fRocId(rhs.fRocId),
    fNxId(rhs.fNxId),
-fNxCh(rhs.fNxCh)
+   fNxCh(rhs.fNxCh)
 {
-  if (NULL != rhs.fMatch) {
-     fMatch = new CbmMuchDigiMatch(*(rhs.fMatch));
-   }
+//  if (NULL != rhs.fMatch) {
+//     fMatch = new CbmMuchDigiMatch(*(rhs.fMatch));
+//   }
 }
 
 CbmMuchBeamTimeDigi& CbmMuchBeamTimeDigi::operator=(const CbmMuchBeamTimeDigi& rhs)
 {
 
   if (this != &rhs) {
-    CbmDigi::operator=(rhs);
+    CbmMuchDigi::operator=(rhs);
     fData = rhs.fData;
     fTime = rhs.fTime;
     if (NULL != rhs.fMatch) {
@@ -115,6 +120,7 @@ CbmMuchBeamTimeDigi& CbmMuchBeamTimeDigi::operator=(const CbmMuchBeamTimeDigi& r
       delete fMatch;
       fMatch = tmp.release();
     } else {
+
       fMatch = NULL;
     }
     fPadX = rhs.fPadX;
@@ -122,7 +128,6 @@ CbmMuchBeamTimeDigi& CbmMuchBeamTimeDigi::operator=(const CbmMuchBeamTimeDigi& r
     fRocId = rhs.fRocId;
     fNxId = rhs.fNxId;
     fNxCh = rhs.fNxCh;
-
   }
   return *this;
 }
@@ -148,7 +153,7 @@ void CbmMuchBeamTimeDigi::SetAdc(Int_t adc) {
 
 
 // -------------------------------------------------------------------------
-void CbmMuchBeamTimeDigi::SetTime(ULong_t time) {
+void CbmMuchBeamTimeDigi::SetTime(ULong64_t time) {
   // reset to 0
   fData &= ~(fgkTimeMask << fgkTimeShift);
   // set new value
