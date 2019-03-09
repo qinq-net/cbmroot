@@ -26,7 +26,7 @@ void MonitorMuch(TString inFile = "", TString sHostname = "en02",
   // --- Set log output levels
   FairLogger::GetLogger();
   gLogger->SetLogScreenLevel("INFO");
-//  gLogger->SetLogScreenLevel("DEBUG");
+  //gLogger->SetLogScreenLevel("DEBUG");
   gLogger->SetLogVerbosityLevel("LOW");
 
   // --- Define parameter files
@@ -50,7 +50,8 @@ void MonitorMuch(TString inFile = "", TString sHostname = "en02",
   std::cout << ">>> Cern2017Monitor: Initialising..." << std::endl;
 
   // MUCH Gem Monitor
-  CbmMcbm2018MonitorMuch* monitorMuch = new CbmMcbm2018MonitorMuch();
+  CbmMcbm2018MonitorMuchLite* monitorMuch = new CbmMcbm2018MonitorMuchLite();
+  //CbmMcbm2018MonitorMuchLite* monitorMuch = new CbmMcbm2018MonitorMuchLite();
   monitorMuch->SetHistoFileName( "data/MuchHistos.root" );
 //  monitorSts->SetPrintMessage();
   monitorMuch->SetMsOverlap( 1 );
