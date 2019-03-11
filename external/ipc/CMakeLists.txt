@@ -5,7 +5,7 @@
 
 download_project_if_needed(PROJECT         fles_ipc
                            GIT_REPOSITORY  "https://github.com/cbm-fles/flesnet"
-                           GIT_TAG         "e04f05269a459bd3a72eb4e32451b82d97f6e37b"
+                           GIT_TAG         "e2d20813a74561cf58661b077c046c0da1f28288"
                            GIT_STASH       TRUE
                            SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/ipc
                            TEST_FILE       CMakeLists.txt

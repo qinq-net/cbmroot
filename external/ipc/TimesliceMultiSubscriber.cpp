@@ -14,7 +14,8 @@ namespace filesys = boost::filesystem;
 
 namespace fles {
 
-TimesliceMultiSubscriber::TimesliceMultiSubscriber(const std::string& inputString)
+TimesliceMultiSubscriber::TimesliceMultiSubscriber(const std::string& inputString,
+                                                   uint32_t hwm)
 {
   if (!inputString.empty()) {
     CreateHostPortFileList(inputString);
@@ -22,8 +23,8 @@ TimesliceMultiSubscriber::TimesliceMultiSubscriber(const std::string& inputStrin
       std::string server = stream;
       source_.push_back(
         std::unique_ptr<TimesliceSubscriber>(
-          new TimesliceSubscriber(server)));
-      L_(info) << " Open server: " << server;
+          new TimesliceSubscriber(server, hwm)));
+      L_(info) << " Open server: " << server << " with ZMQ HW mark " << hwm;
     }
   } else {
     L_(fatal) << "No server defined";

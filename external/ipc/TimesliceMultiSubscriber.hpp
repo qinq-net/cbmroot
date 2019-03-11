@@ -22,7 +22,7 @@ namespace fles {
   class TimesliceMultiSubscriber : public TimesliceSource {
 public:
   /// Construct timeslice subscriber receiving from given ZMQ address.
-  explicit TimesliceMultiSubscriber(const std::string&);
+  explicit TimesliceMultiSubscriber(const std::string&, uint32_t hwm = 1);
 
   /// Delete copy constructor (non-copyable).
   TimesliceMultiSubscriber(const TimesliceMultiSubscriber&) = delete;
