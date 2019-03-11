@@ -1,8 +1,8 @@
 [CbmMcbm2018TofPar]
 //----------------------------------------------------------------------------
-NrOfGdpbs: Int_t 1
+NrOfGdpbs: Int_t 2
 GdpbIdArray: Int_t \
-0x18c5
+0x18c5 0x1925
 NrOfFeesPerGdpb: Int_t 30
 NrOfGet4PerFee: Int_t 8
 NrOfChannelsPerGet4: Int_t 4

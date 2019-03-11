@@ -102,13 +102,14 @@ void MonitorTof(TString inFile = "", TString sHostname = "localhost",
       }
 
   source->AddUnpacker(test_monitor_tof,  0x60, 6); //gDPBs
-//  source->AddUnpacker(test_monitor_much, 0x10, 4); //nDPBs
-//   source->AddUnpacker(dummy_unpacker, 0x10, 4);//gDPB A & B
-//   source->AddUnpacker(dummy_unpacker, 0x60, 6);//gDPB A & B
+  source->AddUnpacker(test_monitor_tof,  0x90, 6); //gDPBs T0
 
   // --- Run
   run = new FairRunOnline(source);
   run->ActivateHttpServer( iServerRefreshRate, iServerHttpPort ); // refresh each 100 events
+  /// To avoid the server sucking all Histos from gROOT when no output file is used
+  /// ===> Need to explicitely add the canvases to the server in the task!
+  run->GetHttpServer()->GetSniffer()->SetScanGlobalDir(kFALSE);
   run->SetAutoFinish(kFALSE);
 
   // -----   Runtime database   ---------------------------------------------

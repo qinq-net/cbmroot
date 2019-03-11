@@ -66,35 +66,25 @@ void MonitorT0( TString inFile = "", TString sHostname = "localhost",
          source->SetPortNumber( 5556 );
       } // else of if( "" != inFile )
 
-  source->AddUnpacker(monitor_t0,  0x60, 9  );//gDPB TOF
+//  source->AddUnpacker(monitor_t0,  0x60, 9  );//gDPB TOF
   source->AddUnpacker(monitor_t0,  0x90, 9  );//gDPB T0
 
-  // --- Event header
-  FairEventHeader* event = new CbmTbEvent();
-  event->SetRunId(uRunId);
-
-  // --- RootFileSink
-  // --- Open next outputfile after 4GB
-  FairRootFileSink* sink = new FairRootFileSink(outFile);
-//  sink->GetOutTree()->SetMaxTreeSize(4294967295LL);
+  source->SetSubscriberHwm( 3000 );
 
   // --- Run
   run = new FairRunOnline(source);
-  run->SetSink(sink);
-  run->SetEventHeader(event);
   run->ActivateHttpServer( iServerRefreshRate, iServerHttpPort ); // refresh each 100 events
+  /// To avoid the server sucking all Histos from gROOT when no output file is used
+  /// ===> Need to explicitely add the canvases to the server in the task!
+  run->GetHttpServer()->GetSniffer()->SetScanGlobalDir(kFALSE);
   run->SetAutoFinish(kFALSE);
 
 
   // -----   Runtime database   ---------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
-  Bool_t kParameterMerged = kTRUE;
-  FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
   FairParAsciiFileIo* parIn = new FairParAsciiFileIo();
-  parOut->open(parFile.Data());
   parIn->open(parFileList, "in");
   rtdb->setFirstInput(parIn);
-  rtdb->setOutput(parOut);
 
   run->Init();
 
