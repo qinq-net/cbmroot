@@ -133,6 +133,7 @@ class CbmMcbm2018MonitorTof: public CbmMcbmUnpack {
       /** Running indices **/
       uint64_t fulCurrentTsIndex;  // Idx of the current TS
       size_t   fuCurrentMs; // Idx of the current MS in TS (0 to fuTotalMsNb)
+      size_t   fuCurrentMsSysId; // SysId of the current MS in TS (0 to fuTotalMsNb)
       Double_t fdMsIndex;   // Time in ns of current MS from its index
       UInt_t   fuGdpbId;    // Id (hex number) of the GDPB for current message
       UInt_t   fuGdpbNr;    // running number (0 to fuNrOfGdpbs) of the GDPB for current message

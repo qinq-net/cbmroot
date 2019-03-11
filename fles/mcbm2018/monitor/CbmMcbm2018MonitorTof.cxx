@@ -79,6 +79,7 @@ CbmMcbm2018MonitorTof::CbmMcbm2018MonitorTof() :
     fuDiamondDpbIdx(10000), // Crazy default value => should never make troubles given the price
     fulCurrentTsIndex(0),
     fuCurrentMs(0),
+    fuCurrentMsSysId(0),
     fdMsIndex(0),
     fuGdpbId(0),
     fuGdpbNr(0),
@@ -1189,6 +1190,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
 
    cSummary->cd(6);
    fhGet4ChanScm->Draw("colz");
+
+   server->Register("/canvases", cSummary );
    /*****************************/
 
    /** Create summary Canvases with plots VS Gdpb **/
@@ -1213,6 +1216,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
    cSummaryGdpb->cd(6);
    gPad->SetLogz();
    fhGdpbEpochMissEvo->Draw("colz");
+
+   server->Register("/canvases", cSummaryGdpb );
    /*****************************/
 
    /** Create summary Canvases with plots VS GET4 or channel per gDPB **/
@@ -1234,6 +1239,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       cSumGdpbGet4->cd(3);
       gPad->SetLogz();
       fvhGdpbGet4ChanErrors[uGdpb]->Draw( "colz" );
+
+      server->Register("/canvases", cSumGdpbGet4 );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    /*****************************/
 
@@ -1253,6 +1260,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
          fvhFeeErrorRate_gDPB[uGdpb * fuNrOfFeePerGdpb + uFee]->Draw("same hist");
       } // for (UInt_t uFee = 0; uFee < fuNrOfFeePerGdpb; ++uFee )
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   server->Register("/canvases", cFeeRates );
    /*****************************/
 
    /** Create FEE error ratio Canvas for STAR 2018 **/
@@ -1268,6 +1277,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
          fvhFeeErrorRatio_gDPB[uGdpb * fuNrOfFeePerGdpb + uFee]->Draw( "hist le0");
       } // for (UInt_t uFee = 0; uFee < fuNrOfFeePerGdpb; ++uFee )
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   server->Register("/canvases", cFeeErrRatio );
    /*****************************/
 
 
@@ -1287,6 +1298,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
          fvhFeeErrorRateLong_gDPB[uGdpb * fuNrOfFeePerGdpb + uFee]->Draw("same hist");
       } // for (UInt_t uFee = 0; uFee < fuNrOfFeePerGdpb; ++uFee )
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   server->Register("/canvases", cFeeRatesLong );
    /*****************************/
 
    /** Create FEE error ratio long Canvas for STAR 2018 **/
@@ -1302,6 +1315,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
          fvhFeeErrorRatioLong_gDPB[uGdpb * fuNrOfFeePerGdpb + uFee]->Draw( "hist le0");
       } // for (UInt_t uFee = 0; uFee < fuNrOfFeePerGdpb; ++uFee )
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   server->Register("/canvases", cFeeErrRatioLong );
    /*****************************/
 
    /** Create channel count Canvas for STAR 2018 **/
@@ -1315,6 +1330,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       gPad->SetLogy();
       fvhChCount_gDPB[ uGdpb ]->Draw();
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   server->Register("/canvases", cGdpbChannelCount );
    /*****************************/
 
    /** Create remapped channel count Canvas for STAR 2018 **/
@@ -1328,6 +1345,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       gPad->SetLogy();
       fvhRemapChCount_gDPB[ uGdpb ]->Draw();
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   server->Register("/canvases", cGdpbRemapChCount );
    /*****************************/
 
    /** Create channel rate Canvas for STAR 2018 **/
@@ -1341,6 +1360,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       gPad->SetLogz();
       fvhChannelRate_gDPB[ uGdpb ]->Draw( "colz" );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   server->Register("/canvases", cGdpbChannelRate );
    /*****************************/
 
    /** Create remapped rate count Canvas for STAR 2018 **/
@@ -1354,6 +1375,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       gPad->SetLogz();
       fvhRemapChRate_gDPB[ uGdpb ]->Draw( "colz" );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
+   server->Register("/canvases", cGdpbRemapChRate );
    /*****************************/
 
    /** Create TOT Canvas(es) for STAR 2018 **/
@@ -1370,7 +1393,10 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       gPad->SetLogz();
 
       fvhRawTot_gDPB[ uGdpb ]->Draw( "colz" );
+
+      server->Register("/canvases", cTotPnt );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
+
    cTotPnt  = new TCanvas( "cTot_all", "TOT distributions", w, h);
    cTotPnt->Divide( fuNrOfGdpbs );
    for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
@@ -1383,6 +1409,7 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       fvhRawTot_gDPB[ uGdpb]->Draw( "colz" );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
+   server->Register("/canvases", cTotPnt );
    /**************************************************/
 
    /** Create PADI TOT Canvas(es) for STAR 2018 **/
@@ -1399,6 +1426,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       gPad->SetLogz();
 
       fvhRemapTot_gDPB[ uGdpb ]->Draw( "colz" );
+
+      server->Register("/canvases", cTotPnt );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
    cTotPnt  = new TCanvas( "cTotRemap_all", "TOT distributions", w, h);
    cTotPnt->Divide( fuNrOfGdpbs );
@@ -1412,6 +1441,7 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       fvhRemapTot_gDPB[ uGdpb ]->Draw( "colz" );
    } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; ++uGdpb )
 
+   server->Register("/canvases", cTotPnt );
    /**************************************************/
 
    /** Create Side TOT Canvas(es) for STAR 2018 **/
@@ -1435,6 +1465,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       gPad->SetGridy();
       gPad->SetLogz();
       fvhRemapTotSideB_mod[ uMod ]->Draw( "colz" );
+
+      server->Register("/canvases", cTotPnt );
    } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
 
    /**************************************************/
@@ -1488,6 +1520,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       gPad->SetGridx();
       gPad->SetGridy();
       fhTimeResFitPuls->Draw( "colz" );
+
+      server->Register("/canvases", cPulser );
       /*****************************/
 
       /** Create Pulser evo Canvas for gDPB to gDPB **/
@@ -1502,6 +1536,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
             fvvhPulserTimeDiffEvoGdpbGdpb[uGdpb ][ uGdpb + 1]->Draw( );
 
       } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs - 1; uGdpb ++)
+
+      server->Register("/canvases", cPulserEvo );
       /*****************************/
       /** Create Pulser evo Canvas within gDPB **/
       for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
@@ -1520,6 +1556,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
             if( NULL != fvhPulserTimeDiffEvoGbtxGbtx[ uGdpb * (kuNbGbtxPerGdpb - 1)  + uGbtx ] )
                fvhPulserTimeDiffEvoGbtxGbtx[ uGdpb * (kuNbGbtxPerGdpb - 1)  + uGbtx ]->Draw( );
          } // for( UInt_t uGbtx = 0; uGbtx < kuNbGbtxPerGdpb - 1; ++uGbtx )
+
+         server->Register("/canvases", cPulserEvoGbtx );
       } // for( UInt_t uGdpb = 0; uGdpb < fuNrOfGdpbs; uGdpb ++)
       /*****************************/
    } // if( kTRUE == fbPulserModeEnable )
@@ -1536,6 +1574,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
 
       fvhModErrorRate[ uMod ]->SetLineColor( kRed );
       fvhModErrorRate[ uMod ]->Draw("same hist");
+
+      server->Register("/canvases", cModRates );
    } // for( UInt_t uMod = 0; uMod < fuNrOfModules; uMod ++ )
    /*****************************/
 
@@ -1550,6 +1590,8 @@ void CbmMcbm2018MonitorTof::CreateHistograms()
       LOG(INFO) << "Created MS size canvas in TOF monitor" << FairLogger::endl;
    } // if( NULL == fcMsSizeAll )
       else LOG(INFO) << "Recovered MS size canvas in TOF monitor" << FairLogger::endl;
+
+   server->Register("/canvases", fcMsSizeAll );
 
   LOG(INFO) << "Leaving CreateHistograms" << FairLogger::endl;
 }
@@ -1663,6 +1705,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
          auto msDescriptor = ts.descriptor( uMsComp, uMsIdx );
          fiEquipmentId = msDescriptor.eq_id;
          fdMsIndex = static_cast<double>(msDescriptor.idx);
+         fuCurrentMsSysId = static_cast<unsigned int>(msDescriptor.sys_id);
          const uint8_t* msContent = reinterpret_cast<const uint8_t*>( ts.content( uMsComp, uMsIdx ) );
 
          uint32_t size = msDescriptor.size;
@@ -1762,7 +1805,7 @@ Bool_t CbmMcbm2018MonitorTof::DoUnpack(const fles::Timeslice& ts,
    ///         fuGet4Id = mess.getGdpbGenChipId();
             fuGet4Id = ConvertElinkToGet4( mess.getGdpbGenChipId() );
                /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
-            if( fuGdpbNr == fuDiamondDpbIdx )
+            if( fuGdpbNr == fuDiamondDpbIdx || 0x90 == fuCurrentMsSysId )
                fuGet4Id = mess.getGdpbGenChipId();
             fuGet4Nr = (fuGdpbNr * fuNrOfGet4PerGdpb) + fuGet4Id;
 
@@ -2188,7 +2231,7 @@ void CbmMcbm2018MonitorTof::FillHitInfo(gdpbv100::Message mess)
    UInt_t uFeeNrInSys = fuGdpbNr * fuNrOfFeePerGdpb + uFeeNr;
    UInt_t uRemappedChannelNr = uFeeNr * fuNrOfChannelsPerFee + fvuGet4ToPadi[ uChannelNrInFee ];
       /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
-   if( fuGdpbNr == fuDiamondDpbIdx )
+   if( fuGdpbNr == fuDiamondDpbIdx || 0x90 == fuCurrentMsSysId )
       uRemappedChannelNr = uChannelNr;
    UInt_t uGbtxNr      = (uFeeNr / kuNbFeePerGbtx);
    UInt_t uFeeInGbtx  = (uFeeNr % kuNbFeePerGbtx);
@@ -2335,7 +2378,7 @@ void CbmMcbm2018MonitorTof::FillHitInfo(gdpbv100::Message mess)
 */
       } // if( gdpbv100::kuFeePulserChannel == uChannelNrInFee )
       /// Diamond FEE have pulser on channel 0!
-         else if( fuGdpbNr == fuDiamondDpbIdx && 0 == uChannelNrInFee )
+         else if( (fuGdpbNr == fuDiamondDpbIdx|| 0x90 == fuCurrentMsSysId) && 0 == uChannelNrInFee )
          {
             fdTsLastPulserHit[ uFeeNrInSys ] = dHitTime;
             fvuFeeNbHitsLastMs[ uFeeNrInSys ]++;
@@ -2638,7 +2681,7 @@ void CbmMcbm2018MonitorTof::FillPattInfo(gdpbv100::Message mess)
             {
                UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
                   /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
-               if( fuGdpbNr == fuDiamondDpbIdx )
+               if( fuGdpbNr == fuDiamondDpbIdx || 0x90 == fuCurrentMsSysId )
                   uBadAsic = 32 * usIndex + uBit;
                fhPatternMissmatch->Fill( uBadAsic, fuGdpbNr );
                fvhGdpbPatternMissmatchEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
@@ -2653,7 +2696,7 @@ void CbmMcbm2018MonitorTof::FillPattInfo(gdpbv100::Message mess)
             {
                UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
                   /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
-               if( fuGdpbNr == fuDiamondDpbIdx )
+               if( fuGdpbNr == fuDiamondDpbIdx || 0x90 == fuCurrentMsSysId )
                   uBadAsic = 32 * usIndex + uBit;
                fhPatternEnable->Fill( uBadAsic, fuGdpbNr );
                fvhGdpbPatternEnableEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
@@ -2671,7 +2714,7 @@ void CbmMcbm2018MonitorTof::FillPattInfo(gdpbv100::Message mess)
             {
                UInt_t uBadAsic = ConvertElinkToGet4( 32 * usIndex + uBit );
                   /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
-               if( fuGdpbNr == fuDiamondDpbIdx )
+               if( fuGdpbNr == fuDiamondDpbIdx || 0x90 == fuCurrentMsSysId )
                   uBadAsic = 32 * usIndex + uBit;
                fhPatternResync->Fill( uBadAsic, fuGdpbNr );
                fvhGdpbPatternResyncEvo[ fuGdpbNr ]->Fill( fulCurrentTsIndex, uBadAsic );
@@ -2889,7 +2932,7 @@ void CbmMcbm2018MonitorTof::Finish()
       UpdateZoomedFit();
    } // if( kTRUE == fbPulserModeEnable )
 
-   SaveAllHistos();
+//   SaveAllHistos();
 }
 
 void CbmMcbm2018MonitorTof::FillOutput(CbmDigi* /*digi*/)

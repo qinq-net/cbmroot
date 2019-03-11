@@ -21,6 +21,7 @@
 #include "TROOT.h"
 #include "TString.h"
 #include "TClonesArray.h"
+#include "TCanvas.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -109,12 +110,18 @@ Bool_t CbmMcbm2018MonitorTaskT0::InitContainers()
 */
    Bool_t initOK = fMonitorAlgo->InitContainers();
 
+   /// Transfer parameter values set from calling macro
+   fMonitorAlgo->SetMonitorMode( fbMonitorMode );
+   fMonitorAlgo->SetHistoryHistoSize( fuHistoryHistoSize );
+
    /// Histos creation, obtain pointer on them and add them to the HTTP server
       /// Trigger histo creation on all associated algos
    initOK &= fMonitorAlgo->CreateHistograms();
 
       /// Obtain vector of pointers on each histo from the algo (+ optionally desired folder)
    std::vector< std::pair< TNamed *, std::string > > vHistos = fMonitorAlgo->GetHistoVector();
+      /// Obtain vector of pointers on each canvas from the algo (+ optionally desired folder)
+   std::vector< std::pair< TCanvas *, std::string > > vCanvases = fMonitorAlgo->GetCanvasVector();
 
       /// Register the histos in the HTTP server
    THttpServer* server = FairRunOnline::Instance()->GetHttpServer();
@@ -122,15 +129,24 @@ Bool_t CbmMcbm2018MonitorTaskT0::InitContainers()
    {
       for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
       {
+//         LOG(INFO) << "Registering  " << vHistos[ uHisto ].first->GetName()
+//                   << " in " << vHistos[ uHisto ].second.data()
+//                   << FairLogger::endl;
          server->Register( Form( "/%s", vHistos[ uHisto ].second.data() ), vHistos[ uHisto ].first );
       } // for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
 
-   server->RegisterCommand("/Reset_MoniT0_Hist", "bMcbm2018MonitorTaskT0ResetHistos=kTRUE");
-   server->Restrict("/Reset_MoniT0_Hist", "allow=admin");
-   } // if( nullptr != server )
+      for( UInt_t uCanv = 0; uCanv < vCanvases.size(); ++uCanv )
+      {
+//         LOG(INFO) << "Registering  " << vCanvases[ uCanv ].first->GetName()
+//                   << " in " << vCanvases[ uCanv ].second.data()
+//                   << FairLogger::endl;
+         server->Register( Form( "/%s", vCanvases[ uCanv ].second.data() ),
+                                        gROOT->FindObject( (vCanvases[ uCanv ].first)->GetName() ) );
+      } //  for( UInt_t uCanv = 0; uCanv < vCanvases.size(); ++uCanv )
 
-   fMonitorAlgo->SetMonitorMode( fbMonitorMode );
-   fMonitorAlgo->SetHistoryHistoSize( fuHistoryHistoSize );
+      server->RegisterCommand("/Reset_MoniT0_Hist", "bMcbm2018MonitorTaskT0ResetHistos=kTRUE");
+      server->Restrict("/Reset_MoniT0_Hist", "allow=admin");
+   } // if( nullptr != server )
 
    return initOK;
 }
@@ -200,7 +216,7 @@ void CbmMcbm2018MonitorTaskT0::Finish()
    histoFile = new TFile( "data/HistosMonitorT0.root" , "RECREATE");
    histoFile->cd();
 
-   /// Register the histos in the HTTP server
+   /// Save the histograms in a file
    for( UInt_t uHisto = 0; uHisto < vHistos.size(); ++uHisto )
    {
       /// Make sure we end up in chosen folder
