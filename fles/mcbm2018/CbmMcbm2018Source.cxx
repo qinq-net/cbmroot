@@ -12,6 +12,7 @@
 #include "TimesliceMultiInputArchive.hpp"
 #include "TimesliceInputArchive.hpp"
 #include "Timeslice.hpp"
+#include "TimesliceMultiSubscriber.hpp"
 #include "TimesliceSubscriber.hpp"
 #include "MicrosliceContents.hpp"
 
@@ -47,7 +48,8 @@ CbmMcbm2018Source::CbmMcbm2018Source()
     fNofTSSinceLastTS(0),
     fuTsReduction(1),
     fSource(nullptr),
-    fUseDaqBuffer( kTRUE )
+    fUseDaqBuffer( kTRUE ),
+    fuSubscriberHwm( 1 )
 {
 }
 
@@ -58,19 +60,26 @@ CbmMcbm2018Source::~CbmMcbm2018Source()
 Bool_t CbmMcbm2018Source::Init()
 {
   if ( 0 == fFileName.Length() && 0 == fInputFileList.GetSize()) {
-    TString connector = Form("tcp://%s:%i", fHost.Data(), fPort);
-    LOG(INFO) << "Open TSPublisher at " << connector << FairLogger::endl;
-    fInputFileList.Add(new TObjString(connector));
-    fSource.reset(new fles::TimesliceSubscriber(connector.Data()));
+    // Create a ";" separated string with all file names
+    fInputFileList.Add(new TObjString(fHost));
+    std::string fileList{""};
+    for(const auto&& obj: fInputFileList) {
+      std::string fileName = dynamic_cast<TObjString*>(obj)->GetString().Data();
+      fileList += fileName;
+      fileList += ";";
+    }
+    fileList.pop_back(); // Remove the last ;
+    fSource.reset(new fles::TimesliceMultiSubscriber(fileList, fuSubscriberHwm));
+
     if ( !fSource) {
       LOG(FATAL) << "Could not connect to publisher." << FairLogger::endl;
     }
   } else {
-    // Create a ";" separated string with all file names 
+    // Create a ";" separated string with all file names
     std::string fileList{""};
     for(const auto&& obj: fInputFileList) {
       std::string fileName = dynamic_cast<TObjString*>(obj)->GetString().Data();
-      fileList += fileName; 
+      fileList += fileName;
       fileList += ";";
     }
     fileList.pop_back(); // Remove the last ;
@@ -100,8 +109,8 @@ Bool_t CbmMcbm2018Source::Init()
 
   if (server)
   {
-    server->Register("/TofRaw", fHistoMissedTS);
-    server->Register("/TofRaw", fHistoMissedTSEvo);
+    server->Register("/Fles", fHistoMissedTS);
+    server->Register("/Fles", fHistoMissedTSEvo);
   } // if (server)
 
 
@@ -151,7 +160,7 @@ Int_t CbmMcbm2018Source::ReadEvent(UInt_t)
   }
 //  LOG(INFO) << "After FillBuffer" << FairLogger::endl;
 
-  if (fUseDaqBuffer) {  
+  if (fUseDaqBuffer) {
     retVal = GetNextEvent();
   } else {
     retVal = 0;
@@ -229,7 +238,7 @@ Int_t CbmMcbm2018Source::FillBuffer()
     if ( 0 == fTSCounter%10000 ) {
       LOG(INFO) << "Analyse Event " << fTSCounter << FairLogger::endl;
     }
-    
+
     const fles::Timeslice& ts = *timeslice;
     auto tsIndex = ts.index();
     if( (tsIndex != (fTSNumber+1)) &&( fTSNumber != 0) ) {
@@ -244,15 +253,15 @@ Int_t CbmMcbm2018Source::FillBuffer()
       fNofTSSinceLastTS=1;
     }
     fTSNumber=tsIndex;
-    
+
     if ( 0 ==fTSNumber%1000 ) {
       LOG(INFO) << "Reading Timeslice " << fTSNumber
 		<< FairLogger::endl;
     }
-    
+
     if( 1 == fTSCounter ) {
       for (size_t c {0}; c < ts.num_components(); c++) {
-	auto systemID = static_cast<int>(ts.descriptor(c, 0).sys_id);	
+	auto systemID = static_cast<int>(ts.descriptor(c, 0).sys_id);
 	LOG(DEBUG) << "Found systemID: " << std::hex
 		   << systemID << std::dec << FairLogger::endl;
 	/*
@@ -285,7 +294,7 @@ Int_t CbmMcbm2018Source::FillBuffer()
         } // else of if( it == fUnpackers.end() )
       } // for (size_t c {0}; c < ts.num_components(); c++)
     } // if( 1 == fTSCounter )
-    
+
     /// Apply TS throttling as set by user (default = 1 => no throttling)
     if ( 0 == tsIndex % fuTsReduction ) {
       for ( auto itUnp = fUnpackersToRun.begin(); itUnp != fUnpackersToRun.end(); ++ itUnp ) {
@@ -295,10 +304,10 @@ Int_t CbmMcbm2018Source::FillBuffer()
     /*
       for (size_t c {0}; c < ts.num_components(); c++) {
       auto systemID = static_cast<int>(ts.descriptor(c, 0).sys_id);
-      
+
       LOG(DEBUG) << "Found systemID: " << std::hex
       << systemID << std::dec << FairLogger::endl;
-      
+
       auto it=fUnpackers.find(systemID);
       if (it == fUnpackers.end()) {
       LOG(DEBUG) << "Could not find unpacker for system id 0x"

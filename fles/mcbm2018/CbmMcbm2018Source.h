@@ -76,6 +76,8 @@ class CbmMcbm2018Source : public FairSource
 
     void UseDaqBuffer(Bool_t val) {fUseDaqBuffer = val;}
 
+    void SetSubscriberHwm( UInt_t val = 1 ) { fuSubscriberHwm = val; }
+
   private:
 
     TString fFileName;
@@ -104,8 +106,10 @@ class CbmMcbm2018Source : public FairSource
     UInt_t fuTsReduction;
 
     std::unique_ptr<fles::TimesliceSource> fSource; //!
-   
+
     Bool_t fUseDaqBuffer;
+
+    UInt_t fuSubscriberHwm;
 
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
