@@ -28,6 +28,8 @@ private:
 
     string fTiffFileNameV;
     string fTiffFileNameH;
+    int fLineDistance;
+    //int fImageSize;
     
     vector<vector<int> > ReadTiffFile(const string& fileName);
 
@@ -43,15 +45,23 @@ private:
     
     vector<vector<int> > DoSuperpose(const vector<vector<int> >& dataH, const vector<vector<int> >& dataV);
     
-    vector<pair<int,int> > DoIntersection(const vector<vector<int> >& dataH, const vector<vector<int> >& dataV);
+    vector<pair<int,int> > DoIntersection(vector<vector<int> >& dataH, const vector<vector<int> >& dataV);
     
     void DoIntersectionFinder(vector<vector<int> >& dataSup);
     
-    vector<vector<int>> DoFindBasePoint(const vector<vector<int> >& dataH, const vector<vector<int>>& dataV, const vector<pair<int,int>>& intersectionXY);
+    vector<vector<int> > DoFindBasePoint(const vector<vector<int> >& dataH, const vector<vector<int> >& dataV, const vector<pair<int,int> >& intersectionXY);
     
-    int DoSearchNextLine(const vector<vector<int> >& dataH, const vector<vector<int> >& dataV, vector<vector<int>>& intNumberXY);
+    //int DoSearchNextLine(const vector<vector<int> >& dataH, const vector<vector<int> >& dataV, vector<vector<int>>& intNumberXY);
     
-    void DoScanLine(const vector<vector<int>>& dataH, const vector<vector<int>>& dataV, vector<vector<int>>& intNumberXY, int values[]);
+    //void DoScanLine(const vector<vector<int>>& dataH, const vector<vector<int>>& dataV, vector<vector<int>>& intNumberXY, int values[]);      // OLD VERSION
+    
+    vector<vector<int> > DoNumberIntersections(vector<pair<int,int> >& intersectionXY);
+    
+    void DoScanLine(vector<pair<int,int> >& intersectionXY, vector<vector<int> >& matrix);      // NEW VERSION
+    
+    void DoSearchNextLine(vector<vector<int> >& matrix);
+    
+    int DoIdentifyL(vector<vector<int> >& matrix, vector<pair<int,int> >& intersectionXY);
     
    
     /**

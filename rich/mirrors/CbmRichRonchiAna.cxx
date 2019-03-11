@@ -18,9 +18,11 @@ using namespace std;
 // For Ubuntu one needs dev version of libtiff
 // sudo apt-get install libtiff-dev
 
-CbmRichRonchiAna::CbmRichRonchiAna()
+CbmRichRonchiAna::CbmRichRonchiAna():       // constructor
+fLineDistance(20)
+//fImageSize(1024)
 {
-
+    
 }
 
 CbmRichRonchiAna::~CbmRichRonchiAna()
@@ -86,9 +88,13 @@ void CbmRichRonchiAna::Run()
     FillH2WithVector(hSuperpose, dataSup);
     
     // numbering the intersections
-    vector<vector<int>> intNumberXY = DoFindBasePoint(dataH, dataV, intersectionXY);
-    int values = DoSearchNextLine(dataH, dataV, intNumberXY);
-    //DoScanLine(dataH, dataV, intNumberXY, values);
+    vector<vector<int> > matrix = DoNumberIntersections(intersectionXY);    
+    //vector<vector<int> > matrix = DoScanLine(intersectionXY);   // NEW VERSION    both this and next line will be called in between function 'number intersections'
+    //DoSearchNextLine(matrix);   // NEW VERSION
+    
+    //vector<vector<int>> intNumberXY = DoFindBasePoint(dataH, dataV, intersectionXY);
+    //int values = DoSearchNextLine(dataH, dataV, intNumberXY);  // OLD VERSION
+    //DoScanLine(dataH, dataV, intNumberXY, values);    // OLD VERSION
  
     {
         TCanvas* c = new TCanvas("ronchi_2d_horizontal", "ronchi_2d_horizontal", 2000, 500);
@@ -159,48 +165,235 @@ void CbmRichRonchiAna::Run()
             center->Draw();
         }
     }
+
+  
     
-    {
+   {
         TCanvas* c = new TCanvas("ronchi_2d_Number_intersection", "ronchi_2d_Number_intersection", 1000, 1000);
         DrawH2(hSuperpose);
         
-        for (int i = 0; i < intNumberXY.size(); i++) {
+        for (int i = 0; i < intersectionXY.size(); i++) {
             pair<int,int> xy;
-            xy.first = intNumberXY[i][0];
-            xy.second = intNumberXY[i][1];
+            xy.first = matrix[i][0];
+            xy.second = matrix[i][1];
             TEllipse* center = new TEllipse(xy.first, xy.second, 3);
             center->Draw();
         }
-    }
+    } 
 }
 
-// finding base intersection
+int CbmRichRonchiAna::DoIdentifyL(vector<vector<int> >& matrix, vector<pair<int,int> >& intersectionXY)
+{
+    int nI = intersectionXY.size();
+    int l  = 0;
+    
+    for (int m = 1; m < nI; m++) {     // to identify current 'l' (filled lines of 'matrix')
+       if (matrix[m][0] == 0) {
+            l = m-1;
+            cout << "Current l = " << l << endl;
+            break;
+        }
+    }
+    return l;
+}
+
+
+
+// NUMBERING INTERSECTIONS 
+vector<vector<int>> CbmRichRonchiAna::DoNumberIntersections(vector<pair<int,int>>& intersectionXY)    // includes Searching and Scanning Lines
+{
+    int fImageSize = 1024; // should be a global variable
+    const int a    = 250; // can be deleted after program is running and replaced by ZERO
+    const int nI   = intersectionXY.size(); 
+    
+    vector<vector<int> > matrix;
+    
+    matrix.resize(nI);
+    matrix[0].resize(8);
+        
+    // initializing 'matrix'
+    for (int init = 0; init < nI; init++) { 
+        matrix[init].push_back(0);
+        matrix[init].push_back(0);
+        matrix[init].push_back(0);
+        matrix[init].push_back(0);
+        matrix[init].push_back(0);
+        matrix[init].push_back(0); 
+        matrix[init].push_back(-1);     // '-1' indicates that this line had not yet been filled with data 
+        matrix[init].push_back(-1);       
+    }
+    
+    const int originX = intersectionXY[a].first;
+    const int originY = intersectionXY[a].second;
+    
+    int currentX = originX;     // this and next line to enable including first line into search function as well (and not run it seperately in the beginning)
+    int currentY = originY - fLineDistance/2;
+           
+    int i = 0;  // column
+    int j = -1;  // line
+    int l = -1;  // l_th argument of 'matrix'
+    
+    int xInit = originX;
+    int yInit = originY;
+    int iInit = 0;
+    int jInit = -1;
+    
+    int counter = 0;
+    while (counter < nI) {     // search function
+        for (int l1 = 0; l1 < nI; l1++) {  
+            counter++;    
+            if (counter == nI) cout << "counter = nI" << endl;  
+            if ( (intersectionXY[l1].first - currentX > -fLineDistance/2) && (intersectionXY[l1].first - currentX < fLineDistance/2) && (intersectionXY[l1].second - currentY < 1.5*fLineDistance/2) && (intersectionXY[l1].second - currentY > 0) ) {
+            currentX = intersectionXY[l1].first;
+            currentY = intersectionXY[l1].second;
+            i = iInit;
+            j++;
+            l++;
+            xInit = intersectionXY[l1].first;
+            yInit = intersectionXY[l1].second;
+            jInit++;
+            matrix[l][0] = currentX;
+            matrix[l][1] = currentY;
+            matrix[l][2] = i;
+            matrix[l][3] = j;
+            matrix[l][4] = xInit;
+            matrix[l][5] = yInit;
+            matrix[l][6] = iInit;
+            matrix[l][7] = jInit;
+            cout << "matrix[" << l << "] = [" << matrix[l][0] << "," << matrix[l][1] << "," << matrix[l][2] << "," << matrix[l][3] << "][" << matrix[l][4] << "," << matrix[l][5] << "," << matrix[l][6] << "," << matrix[l][7] << "]" << endl;
+            DoScanLine(intersectionXY, matrix);
+            l = DoIdentifyL(matrix, intersectionXY);
+            currentX = matrix[l][4];
+            currentY = matrix[l][5]+fLineDistance/2;
+            counter = 0;
+            }
+        }
+    }
+    /*
+    //numbering remaining intersections
+    counter = 0;
+    while (counter < nI) {
+        for (int l1 = 0; l1 < nI; l1++) {
+            counter++;
+            if (intersectionXY[l1][2] == 0) {
+                
+            }
+        }
+    }*/
+    
+    return matrix;
+}
+
+/*
+void CbmRichRonchiAna::DoSearchAbove(vector<vector<int>>& intersectionXY)
+{
+    int l = DoIdentifyL(matrix, intersectionXY);
+}*/
+
+
+void CbmRichRonchiAna::DoScanLine(vector<pair<int,int>>& intersectionXY, vector<vector<int> >& matrix)
+{
+    int nI = intersectionXY.size(); 
+    int a  = 250; // can be deleted after program is running
+    int l  = DoIdentifyL(matrix, intersectionXY);
+    
+    int currentX = matrix[l][4];
+    int currentY = matrix[l][5];    
+    int i        = matrix[l][6];   // column
+    int j        = matrix[l][7];   // line
+    int xInit    = matrix[l][4];   // position of initial point
+    int yInit    = matrix[l][5];
+    int iInit    = matrix[l][6];  
+    int jInit    = matrix[l][7];     
+       
+    // searching for the intersections on the left side
+    int counter = 0;
+    while (counter < nI) {
+        counter = 0;
+        for (int l1 = 0; l1 < nI; l1++) {
+            counter++;
+            if ( (intersectionXY[l1].first - currentX > -1.3*fLineDistance) && (intersectionXY[l1].first - currentX < 0) && (intersectionXY[l1].second - currentY < fLineDistance/2) && (intersectionXY[l1].second - currentY > -fLineDistance/2) ) {
+                i--;
+                l++;
+                currentX = intersectionXY[l1].first;
+                currentY = intersectionXY[l1].second;
+                matrix[l][0] = currentX;
+                matrix[l][1] = currentY;
+                matrix[l][2] = i;
+                matrix[l][3] = j;
+                matrix[l][4] = xInit;
+                matrix[l][5] = yInit;
+                matrix[l][6] = iInit;
+                matrix[l][7] = jInit;
+                counter = 0;
+                
+                cout << "matrix[" << l << "] = [" << matrix[l][0] << "," << matrix[l][1] << "," << matrix[l][2] << "," << matrix[l][3] << "][" << matrix[l][4] << "," << matrix[l][5] << "," << matrix[l][6] << "," << matrix[l][7] << "]" << endl;
+            } 
+        }
+    }
+    
+    // searching for the intersections on the right side
+    i = iInit;
+    currentX = xInit;
+    currentY = yInit;
+    
+    counter = 0;
+    while (counter < nI) {
+        for (int l1 = 0; l1 < nI; l1++) {
+            counter++;
+            if ( (intersectionXY[l1].first - currentX < 1.3*fLineDistance) && (intersectionXY[l1].first - currentX > 0) && (intersectionXY[l1].second - currentY < fLineDistance/1.5) && (intersectionXY[l1].second - currentY > -fLineDistance/1.5) ) {
+                i++;
+                l++;
+                currentX = intersectionXY[l1].first;
+                currentY = intersectionXY[l1].second;
+                matrix[l][0] = currentX;
+                matrix[l][1] = currentY;
+                matrix[l][2] = i;
+                matrix[l][3] = j;
+                matrix[l][4] = xInit;
+                matrix[l][5] = yInit;
+                matrix[l][6] = iInit;
+                matrix[l][7] = jInit;
+                counter = 0;
+               
+                cout << "matrix[" << l << "] = [" << matrix[l][0] << "," << matrix[l][1] << "," << matrix[l][2] << "," << matrix[l][3] << "][" << matrix[l][4] << "," << matrix[l][5] << "," << matrix[l][6] << "," << matrix[l][7] << "]" << endl;
+            }       
+        }
+    }
+}    
+   
+
+
+/*
+// FINDING BASE INTERSECTION
 vector<vector<int>> CbmRichRonchiAna::DoFindBasePoint(const vector<vector<int>>& dataH, const vector<vector<int>>& dataV, const vector<pair<int,int>>& intersectionXY)
 {
     vector<vector<int>> intNumberXY; 
+    pair<int,int> basePointXY;
 
    
     int nX = dataH[0].size();
     int nY = dataH.size();
     int nI = intersectionXY.size();
     int l = 0;
-    int lineDistance = 20; // approx. distance of lines
+    
     int currentY = 0;
     int startx = 0;
     
-    bool line = false;
-    bool intersection = false;
+    //bool line = false;
+    //bool intersection = false;
     
     
     // if first continuous line is considered as base line   
-    for (int y0 = lineDistance; y0 < nY; y0++) {    // finding base line
+    /*
+    for (int y0 = fLineDistance; y0 < nY; y0++) {    // finding base line
         if (dataH[511][y0] > 0) {
             currentY = y0;
             break;
         }
     }
             
-    for (int x = 510; x > lineDistance; x--) {  // finding beginning of base line
+    for (int x = 510; x > fLineDistance; x--) {  // finding beginning of base line
         line = false;
         for (int ySearch = currentY-1; ySearch <= currentY+1; ySearch++) {
             if (dataH[x][ySearch] > 0) {
@@ -217,10 +410,14 @@ vector<vector<int>> CbmRichRonchiAna::DoFindBasePoint(const vector<vector<int>>&
     
     intNumberXY.resize(nI);
     for (int x = startx; x < nX; x++) {  // finding first intersection on base line
-        intNumberXY[l].resize(4);
+        intNumberXY[0].resize(4);
         for (int ySearch = currentY-1; ySearch <= currentY+1; ySearch++) {
             if (dataH[x][ySearch] > 0 && dataV[x][ySearch] > 0) {
                 intersection = true;
+                //intNumberXY[0].push_back(x);
+                //intNumberXY[0].push_back(ySearch);
+                //intNumberXY[0].push_back(0);
+                //intNumberXY[0].push_back(0);
                 intNumberXY[0][0] = x;
                 intNumberXY[0][1] = ySearch;
                 intNumberXY[0][2] = 0;
@@ -230,31 +427,37 @@ vector<vector<int>> CbmRichRonchiAna::DoFindBasePoint(const vector<vector<int>>&
         if (intersection == true) break;
     }
     
-    /*
+    
     
     // if first line bottom left is considered as base line
     bool foundLine = false;
-    for (int x = 1.5*lineDistance; x < nX; x++) {       
-        for (int y = lineDistance; y < 3*lineDistance; y++) {
+    
+    intNumberXY.resize(nI);
+    for (int x = 1.5*fLineDistance; x < nX; x++) {       
+        for (int y = fLineDistance; y < 3*fLineDistance; y++) {
             if (dataH[x][y] > 0) {
-                basePointXY.first = x;
-                basePointXY.second = y;
+                intNumberXY[0].push_back(x);
+                intNumberXY[0].push_back(y);
+                intNumberXY[0].push_back(0);
+                intNumberXY[0].push_back(0);
+                //intNumberXY[0][0] = x;
+                //intNumberXY[0][1] = y;
                 foundLine = true;
                 break;
             }
         }
         if (foundLine == true) break;
-    } */
+    }
+    cout << "Base Point at [x,y;i,j] = [" << intNumberXY[0][0] << "," << intNumberXY[0][1] << ";" << intNumberXY[0][2] << "," << intNumberXY[0][3] << "]" << endl; 
     return intNumberXY;  
-}
+}*/
 
-
+/*
 // searching for next line
 int CbmRichRonchiAna::DoSearchNextLine(const vector<vector<int>>& dataH, const vector<vector<int>>& dataV, vector<vector<int>>& intNumberXY)
 {
     int nX = dataH[0].size();
     int nY = dataH.size();
-    int lineDistance = 20; // approx. distance of lines
     
     int i = 0;  // line index of intersection
     int j = 0;  // column index of intersection
@@ -273,7 +476,7 @@ int CbmRichRonchiAna::DoSearchNextLine(const vector<vector<int>>& dataH, const v
     int counterX = 0;
     int counterY = 0;
     
-    for (int y = yInit+1; y <= nY-2*lineDistance; y++) {  // search next intersection above
+    for (int y = yInit+1; y <= nY-2*fLineDistance; y++) {  // search next intersection above
         counterY++;
         //if (values[5] == 1) break;
         if (y > 0.9*nY) break;          // can be deleted if bool 'lastLine' in 'DoScanLine' is active 
@@ -301,14 +504,14 @@ int CbmRichRonchiAna::DoSearchNextLine(const vector<vector<int>>& dataH, const v
                 currentX = x;
                 break;
             }
-            if (counterY > 2*lineDistance) {  // if no intersection in range of 2*lineDistance, go to next intersection on the right and search from there
+            if (counterY > 2*fLineDistance) {  // if no intersection in range of 2*fLineDistance, go to next intersection on the right and search from there
                cout << "Skipping" << endl;
                 xInit = values[3];
                 yInit = values[4];
                cout << "xInit before = " << xInit << "    yInit before = " << yInit << endl;
                 currentY = yInit;
                 bool foundNext = false;
-                for (int x2 = xInit+1; x2 < nX-2*lineDistance; x2++) {
+                for (int x2 = xInit+1; x2 < nX-2*fLineDistance; x2++) {
                     counterX++;
                     for (int y2 = currentY-1; y2 <= currentY+1; y2++) {
                         if (dataV[x2][y2] > 0 && dataH[x2][y2] > 0) {
@@ -329,7 +532,7 @@ int CbmRichRonchiAna::DoSearchNextLine(const vector<vector<int>>& dataH, const v
                             currentY = y2;
                             break;
                         }
-                        if (counterX > 2*lineDistance) {
+                        if (counterX > 2*fLineDistance) {
                            cout << "Gap or end of line!" << endl;
                             counterX = 0;
                             break;
@@ -348,7 +551,6 @@ int CbmRichRonchiAna::DoSearchNextLine(const vector<vector<int>>& dataH, const v
 void CbmRichRonchiAna::DoScanLine(const vector<vector<int>>& dataH, const vector<vector<int>>& dataV, vector<vector<int>>& intNumberXY, int values[])     // marks intersections on current line and puts data into vector intNumberXY
 {
     int nX = intNumberXY.size();
-    int lineDistance = 20;
     int initialI = values[0];
     int currentY = values[4];
         
@@ -393,7 +595,7 @@ void CbmRichRonchiAna::DoScanLine(const vector<vector<int>>& dataH, const vector
         line = false;        
         if (x == 511) {     // looking, if this is the last continuous line
             lineAbove = false;
-            for (int y2 = currentY; y2 <= currentY+2*lineDistance; y2++) {
+            for (int y2 = currentY; y2 <= currentY+2*fLineDistance; y2++) {
                 if (dataH[x][y2] > 0) {
                     lineAbove = true;
                 }
@@ -413,7 +615,7 @@ void CbmRichRonchiAna::DoScanLine(const vector<vector<int>>& dataH, const vector
                 intNumberXY[l].push_back(i);
                 intNumberXY[l].push_back(j);
                 line = true;
-                cout << "IntersectionRight " << l << ": [" << intNumberXY[l][0] << "," << intNumberXY[l][1] << "," << intNumberXY[l][2] << "," << intNumberXY[l][3] << "]" << endl;
+                //cout << "IntersectionRight " << l << ": [" << intNumberXY[l][0] << "," << intNumberXY[l][1] << "," << intNumberXY[l][2] << "," << intNumberXY[l][3] << "]" << endl;
                 break;
             }
             else if (dataH[x][ySearch] > 0) {
@@ -428,7 +630,7 @@ void CbmRichRonchiAna::DoScanLine(const vector<vector<int>>& dataH, const vector
     values[2] = l;
     
     cout << "values (i="<< i << ", j=" << j << ", l=" << l << ", xInit=" << xInit << ", yInit=" << yInit << ")"  << endl;
-}
+} */
 
 
 // calculating mean position in Y
@@ -541,29 +743,39 @@ void CbmRichRonchiAna::FillH2WithVector(TH2* hist, const vector<vector<int> >& d
     }
 }
 
-vector<pair<int,int> > CbmRichRonchiAna::DoIntersection(const vector<vector<int> >& dataH, const vector<vector<int> >& dataV)
+vector<pair<int,int> > CbmRichRonchiAna::DoIntersection(vector<vector<int> >& dataH, const vector<vector<int> >& dataV)
 {
     int nX = dataV.size();
     int nY = dataV[0].size();
     
+    int i = 0;  // i_th argument of 'intersectionXY' (just to know, not necessary for function)
+    
     vector<pair<int,int> > intersectionXY;
     
-    for (int y = 0; y < nY; y++) {
-        for (int x = 0; x < nX; x++) {
+    for (int y = fLineDistance; y < nY-fLineDistance; y++) {
+        for (int x = fLineDistance; x < nX-fLineDistance; x++) {
             if (dataH[x][y] > 0 && dataV[x][y] > 0) {
+                for (int x1 = x-1; x1<=x+1; x1++) {       // to prevent double counting intersection points
+                    for (int y1 = y-1; y1<=y+1; y1++) {
+                        if (x1==x && y1==y) continue;
+                        if (dataH[x1][y1] > 0 && dataV[x1][y1] > 0) dataH[x1][y1] = 0;
+                    }
+                }
                 intersectionXY.push_back(make_pair(x,y));
+                //cout << "i = " << i << ": [" << x << "," << y << "]" << endl;
+                i++;
             }
         }
+        
     }
-    cout << "Number of intersections: " << intersectionXY.size() << endl;
-    //for (int i = 0; i < intersectionXY.size(); i++) {
-    //    cout << "[" << intersectionXY[i].first << "," << intersectionXY[i].second << "]" << endl;
-    //}    
+    int nI = intersectionXY.size();
+    
+    cout << "Number of intersections: nI = " << intersectionXY.size() << endl << endl;
     return intersectionXY;
 }
 
 
-vector<vector<int> > CbmRichRonchiAna::DoSuperpose(const vector<vector<int> >& dataH, const vector<vector<int> >& dataV)
+vector<vector<int>> CbmRichRonchiAna::DoSuperpose(const vector<vector<int> >& dataH, const vector<vector<int> >& dataV)
 {
     int nX = dataV.size();
     int nY = dataV[0].size();
