@@ -135,8 +135,17 @@ class CbmMcbm2018MonitorAlgoT0 : public CbmStar2019Algo<CbmTofDigiExp>
       std::vector< TProfile * > fvhEvtLostFractEvoChan;
       std::vector< TH2      * > fvhEvtLostFractPerMsEvoChan;
          /// Channels map
+      Bool_t   fbSpillOn;
+      UInt_t   fuCurrentSpill;
+      Double_t fdStartTimeSpill;
+      Double_t fdLastSecondTime;
+      UInt_t   fuCountsLastSecond;
+      static const UInt_t kuNbSpillPlots = 5;
+      static const UInt_t kuOffSpillCountLimit = 200;
+      const UInt_t  kuDiamChanMap[ kuNbChanDiamond ] = { 2, 3, 4, 5, 0, 1, 6, 7 }; //! Map from electronics channel to Diamond strip
       TH1      * fhChannelMap;
       TH2      * fhHitMapEvo;
+      std::vector< TH1      * > fvhChannelMapSpill;
          /// Global Rate
       TH1      * fhMsgCntEvo;
       TH1      * fhHitCntEvo;
@@ -156,6 +165,7 @@ class CbmMcbm2018MonitorAlgoT0 : public CbmStar2019Algo<CbmTofDigiExp>
       TCanvas * fcSummary;
       TCanvas * fcHitMaps;
       TCanvas * fcGenCntsPerMs;
+      TCanvas * fcSpillCounts;
 
 /*
       void ProcessEpochCycle( uint64_t ulCycleData );
