@@ -1075,6 +1075,7 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
    //      gPad->SetLogy();
          fhStsFebChanAdcCalProf[ uFebIdx ]->Draw();
 
+         server->Register("/canvases", cStsSumm );
 
          TCanvas* cStsSmxErr = new TCanvas( Form("cStsSmxErr_%03u", uFebIdx ),
                                           Form("SMX logic error plots for FEB %03u", uFebIdx ),
@@ -1116,6 +1117,8 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
          gPad->SetGridy();
          gPad->SetLogz();
          fhStsFebSmxErrRatioCopySameAdcEvoAsic[ uFebIdx ]->Draw( "colz" );
+
+         server->Register("/canvases", cStsSmxErr );
       } // if( kTRUE == fUnpackParSts->IsFebActive( uFebIdx ) )
    } // for( UInt_t uFebIdx = 0; uFebIdx < fuNbFebs; ++uFebIdx )
 
@@ -1133,6 +1136,7 @@ void CbmMcbm2018MonitorSts::CreateHistograms()
       LOG(INFO) << "Created MS size canvas in STS monitor" << FairLogger::endl;
   } // if( NULL == fcMsSizeAll )
       else LOG(INFO) << "Recovered MS size canvas in STS monitor" << FairLogger::endl;
+   server->Register("/canvases", fcMsSizeAll );
 //====================================================================//
 
   /*****************************/
