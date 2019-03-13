@@ -71,7 +71,7 @@ void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0, UInt_t nrEvents=0)
   unpacker_much->SetIgnoreOverlapMs();
   unpacker_tof ->SetIgnoreOverlapMs();
 
-  unpacker_tof ->SetDiamondDpbIdx( 2 );
+//  unpacker_tof ->SetDiamondDpbIdx( 2 ); /// Only for Dec 2018 data
   unpacker_tof ->SetSeparateArrayT0();
 
   switch( uRunId )
@@ -103,7 +103,7 @@ void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0, UInt_t nrEvents=0)
   // --- Source task
   CbmMcbm2018Source* source = new CbmMcbm2018Source();
 
-  Bool_t _usedaqbuffer = kFALSE; 
+  Bool_t _usedaqbuffer = kFALSE;
   source->UseDaqBuffer(_usedaqbuffer);
 
   source->SetFileName(inFile);
@@ -123,7 +123,7 @@ void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0, UInt_t nrEvents=0)
 
   // --- Run
   run = new FairRunOnline(source);
-  run->SetSink(sink);            
+  run->SetSink(sink);
   run->SetEventHeader(event);
   run->SetAutoFinish(kFALSE);
 
@@ -146,7 +146,7 @@ void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0, UInt_t nrEvents=0)
   std::cout << ">>> unpack_tsa_sts: Starting run..." << std::endl;
   if ( 0 == nrEvents) {
     run->Run(nEvents, 0); // run until end of input file
-  } else { 
+  } else {
     run->Run(0, nrEvents); // process  2000 Events
   }
   run->Finish();
