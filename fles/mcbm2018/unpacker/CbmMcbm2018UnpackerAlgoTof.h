@@ -102,8 +102,9 @@ class CbmMcbm2018UnpackerAlgoTof : public CbmStar2019Algo<CbmTofDigiExp>
 
       /// Running indices
          /// TS/MS info
-      ULong64_t             fulCurrentTsIdx;
-      ULong64_t             fulCurrentMsIdx;
+      ULong64_t             fulCurrentTsIdx;       //! Idx of the current TS
+      ULong64_t             fulCurrentMsIdx;       //! Idx of the current MS in TS (0 to fuTotalMsNb)
+      size_t                fuCurrentMsSysId;      //! SysId of the current MS in TS (0 to fuTotalMsNb)
       Double_t              fdTsStartTime;         //! Time in ns of current TS from the index of the first MS first component
       Double_t              fdTsStopTimeCore;      //! End Time in ns of current TS Core from the index of the first MS first component
       Double_t              fdMsTime;              //! Start Time in ns of current MS from its index field in header

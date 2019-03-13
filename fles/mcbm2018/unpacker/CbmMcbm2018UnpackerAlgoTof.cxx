@@ -56,9 +56,10 @@ CbmMcbm2018UnpackerAlgoTof::CbmMcbm2018UnpackerAlgoTof() :
    fviRpcChUId(),
    fdTimeOffsetNs( 0.0 ),
    fdTShiftRef( 0.0 ),
-   fuDiamondDpbIdx( 2 ),
+   fuDiamondDpbIdx( 99 ),
    fulCurrentTsIdx( 0 ),
    fulCurrentMsIdx( 0 ),
+   fuCurrentMsSysId( 0 ),
    fdTsStartTime( -1.0 ),
    fdTsStopTimeCore( -1.0 ),
    fdMsTime( -1.0 ),
@@ -483,6 +484,8 @@ Bool_t CbmMcbm2018UnpackerAlgoTof::ProcessMs( const fles::Timeslice& ts, size_t 
    } // if( it == fGdpbIdIndexMap.end() )
       else fuCurrDpbIdx = fGdpbIdIndexMap[ fuCurrDpbId ];
 
+   fuCurrentMsSysId = static_cast<unsigned int>(msDescriptor.sys_id);
+
    // If not integer number of message in input buffer, print warning/error
    if( 0 != ( uSize % kuBytesPerMessage ) )
       LOG(ERROR) << "The input microslice buffer does NOT "
@@ -771,7 +774,7 @@ void CbmMcbm2018UnpackerAlgoTof::ProcessEpSupprBuffer()
       messageType = fvvmEpSupprBuffer[ fuCurrDpbIdx ][ iMsgIdx ].getMessageType();
 
       fuGet4Id = fUnpackPar->ElinkIdxToGet4Idx( fvvmEpSupprBuffer[ fuCurrDpbIdx ][ iMsgIdx ].getGdpbGenChipId() );
-      if( fuDiamondDpbIdx == fuCurrDpbIdx )
+      if( fuDiamondDpbIdx == fuCurrDpbIdx || 0x90 == fuCurrentMsSysId )
          fuGet4Id = fvvmEpSupprBuffer[ fuCurrDpbIdx ][ iMsgIdx ].getGdpbGenChipId();
       fuGet4Nr = (fuCurrDpbIdx * fuNrOfGet4PerGdpb) + fuGet4Id;
 
@@ -838,11 +841,11 @@ void CbmMcbm2018UnpackerAlgoTof::ProcessHit( gdpbv100::FullMessage mess )
                                    + uFeeNr * fuNrOfChannelsPerFee
                                    + fUnpackPar->Get4ChanToPadiChan( uChannelNrInFee );
    /// Diamond FEE have straight connection from Get4 to eLink and from PADI to GET4
-   if( fuDiamondDpbIdx == fuCurrDpbIdx )
+   if( fuDiamondDpbIdx == fuCurrDpbIdx || 0x90 == fuCurrentMsSysId )
    {
       uRemappedChannelNr      = uChannelNr;
       uRemappedChannelNrInSys = fuCurrDpbIdx * fUnpackPar->GetNrOfChannelsPerGdpb() + uChannelNr;
-   } // if( fuDiamondDpbIdx == fuCurrDpbIdx )
+   } // if( fuDiamondDpbIdx == fuCurrDpbIdx || 0x90 == fuCurrentMsSysId )
 
    ULong_t  ulHitTime = mess.getMsgFullTime(  mess.getExtendedEpoch() );
    Double_t dHitTime  = mess.GetFullTimeNs();
