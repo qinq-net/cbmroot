@@ -55,6 +55,7 @@ public:
    virtual void SetNbMsInTs( size_t uCoreMsNb, size_t uOverlapMsNb );
    void SetMsOverlap(size_t uOverlapMsNb = 1) { fuNbOverMsPerTs = uOverlapMsNb; }
    size_t GetMsOverlap()                      { return fuNbOverMsPerTs; }
+   void SetIgnoreOverlapMs( Bool_t bFlagIn = kTRUE ) { fbIgnoreOverlapMs = bFlagIn; }
 
    void FillOutput(CbmDigi* digi);
 
@@ -75,13 +76,10 @@ public:
    void SetFebChanCoincidenceLimitNs( Double_t dLimitIn ) { fdFebChanCoincidenceLimit = dLimitIn; }
    void UseNoiseLimitsSmx2LogicError( Bool_t bUseNoise = kTRUE ) { fbSmx2ErrorUseNoiseLevels = bUseNoise; }
 
-   void SetMuchMode( Bool_t bMuchMode = kTRUE ) { fbMuchMode = bMuchMode; }
-
    void UseDaqBuffer(Bool_t) {};
 private:
    // Parameters
       // Control flags
-   Bool_t fbMuchMode;
    std::vector< Bool_t >    fvbMaskedComponents;
       // FLES containers
    std::vector< size_t >    fvMsComponentsList; //!
@@ -175,8 +173,8 @@ private:
    TH1* fhStsSysMessType;
    TH2* fhStsMessTypePerDpb;
    TH2* fhStsSysMessTypePerDpb;
-   TH2* fhPulserStatusMessType;
-   TH2* fhPulserMsStatusFieldType;
+   TH2* fhStsStatusMessType;
+   TH2* fhStsMsStatusFieldType;
    TH2* fhStsMessTypePerElink;
    TH2* fhStsHitsElinkPerDpb;
 
@@ -187,8 +185,8 @@ private:
    std::vector<TH1 *>     fhStsFebChanCntRawGood;
    std::vector<TH2 *>     fhStsFebChanAdcRaw;
    std::vector<TProfile*> fhStsFebChanAdcRawProf;
-   std::vector<TH2 *>     fhStsFebChanAdcCal;
-   std::vector<TProfile*> fhStsFebChanAdcCalProf;
+//   std::vector<TH2 *>     fhStsFebChanAdcCal;
+//   std::vector<TProfile*> fhStsFebChanAdcCalProf;
    std::vector<TH2*>      fhStsFebChanRawTs;
    std::vector<TH2*>      fhStsFebChanMissEvt;
    std::vector<TH2*>      fhStsFebChanMissEvtEvo;
@@ -256,6 +254,9 @@ private:
    std::vector< TProfile *>   fhStsFebSmxErrRatioCopySameAdcEvo;
    std::vector< TProfile2D *> fhStsFebSmxErrRatioCopySameAdcEvoAsic;
 
+      /// Canvases
+   std::vector< TCanvas * > fvcStsSumm;
+   std::vector< TCanvas * > fvcStsSmxErr;
 
    TCanvas*  fcMsSizeAll;
    TH1*      fhMsSz[kiMaxNbFlibLinks];
