@@ -11,7 +11,6 @@
 FairRunOnline *run = NULL;
 
 void McbmPulserMonitor(TString inFile = "", TString sHostname = "pn05",
-                 Int_t iStartFile = -1, Int_t iStopFile = -1,
                  Int_t iServerRefreshRate = 100, Int_t iServerHttpPort = 8080,
                  UInt_t uRunId = 0, Bool_t bWithOffset = kFALSE,
                  Bool_t bWithTs = kTRUE )
@@ -105,25 +104,16 @@ void McbmPulserMonitor(TString inFile = "", TString sHostname = "pn05",
   CbmMcbm2018Source* source = new CbmMcbm2018Source();
   if( "" != inFile )
   {
-      if( 0 <= iStartFile && iStartFile < iStopFile )
-      {
-         for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
-         {
-            TString sFilePath = Form( "%s_%04u.tsa", inFile.Data(), iFileIdx );
-            source->AddFile( sFilePath  );
-            std::cout << "Added " << sFilePath <<std::endl;
-         } // for( Int_t iFileIdx = iStartFile; iFileIdx < iStopFile; ++iFileIdx )
-      } // if( 0 < iStartFile && 0 < iStopFile )
-         else source->SetFileName(inFile);
+    source->SetFileName(inFile);
   } // if( "" != inFile )
       else
       {
          source->SetHostName( sHostname );
-         source->SetPortNumber( 5556 );
-      }
+      } // else of if( "" != inFile )
 
   source->AddUnpacker(monitorPulser,  0x10, 6); // sDPBs
   source->AddUnpacker(monitorPulser,  0x60, 6); // gDPB
+  source->AddUnpacker(monitorPulser,  0x90, 6); // gDPB
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();

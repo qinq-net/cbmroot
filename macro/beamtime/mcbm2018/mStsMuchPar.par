@@ -19,10 +19,10 @@ ModCenterPosX: Double_t \
 ModCenterPosY: Double_t \
          0.0         0.0
 // Total number of STS DPBs in system
-NrOfDpbs: Int_t 2
+NrOfDpbs: Int_t 6
 // Array to hold the unique IDs (equipment ID) for all STS DPBs, Array size has to match NrOfDpbs
 DbpIdArray: Int_t \
-  0x193d  0x1931
+  0x193d 0x5c0b 0x18e3 0x4f19 0x1931 0x6601
 // Array to hold the active flag for all CROBs, [ NbDpb * kuNbCrobPerDpb ] = [ NbDpb * 2 ]
 CrobActiveFlag: Int_t \
   1  0
