@@ -85,6 +85,9 @@ void MonitorSts(TString inFile = "", TString sHostname = "en02",
   // --- Run
   run = new FairRunOnline(source);
   run->ActivateHttpServer( iServerRefreshRate, iServerHttpPort ); // refresh each 100 events
+  /// To avoid the server sucking all Histos from gROOT when no output file is used
+  /// ===> Need to explicitely add the canvases to the server in the task!
+  run->GetHttpServer()->GetSniffer()->SetScanGlobalDir(kFALSE);
   run->SetAutoFinish(kFALSE);
 
   // -----   Runtime database   ---------------------------------------------
