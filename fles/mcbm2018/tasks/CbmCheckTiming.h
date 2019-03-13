@@ -1,8 +1,8 @@
 /********************************************************************************
  *    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    *
  *                                                                              *
- *              This software is distributed under the terms of the             * 
- *              GNU Lesser General Public Licence (LGPL) version 3,             *  
+ *              This software is distributed under the terms of the             *
+ *              GNU Lesser General Public Licence (LGPL) version 3,             *
  *                  copied verbatim in the file "LICENSE"                       *
  ********************************************************************************/
 #ifndef CBMCHECKTIMING_H
@@ -14,6 +14,7 @@
 
 class TClonesArray;
 class TH1;
+class TH2;
 
 class CbmCheckTiming : public FairTask
 {
@@ -58,17 +59,17 @@ class CbmCheckTiming : public FairTask
 
     void SetOffsetSearchRange(Int_t val = 1000)
        { fOffsetRange = val; }
-    
+
   private:
 
     void CheckTimeOrder();
     Int_t CheckIfSorted(TClonesArray*, TH1*, Double_t&, TString);
 
     void CheckInterSystemOffset();
-    void FillSystemOffsetHistos(TClonesArray*, TH1*, const Double_t);
+    void FillSystemOffsetHistos(TClonesArray*, TH1*, TH2*, const Double_t);
     void CreateHistos();
     void WriteHistos();
-    
+
 
     /** Input array from previous already existing data level **/
     TClonesArray* fT0Digis = nullptr;
@@ -82,7 +83,7 @@ class CbmCheckTiming : public FairTask
     Double_t fPrevTimeMuch = 0.;
     Double_t fPrevTimeTof = 0.;
 
-    // 
+    //
     Int_t fNrTs = 0;
 
     Int_t fNrOfT0Errors = 0;
@@ -93,7 +94,7 @@ class CbmCheckTiming : public FairTask
     Int_t fNrOfMuchDigis = 0;
     Int_t fNrOfTofErrors = 0;
     Int_t fNrOfTofDigis = 0;
-    
+
     Bool_t fCheckTimeOrdering = kTRUE;
     Bool_t fCheckInterSystemOffset = kTRUE;
 
@@ -104,13 +105,17 @@ class CbmCheckTiming : public FairTask
     TH1* fT0MuchDiff = nullptr;
     TH1* fT0TofDiff = nullptr;
 
+    TH2* fT0StsDiffEvo = nullptr;
+    TH2* fT0MuchDiffEvo = nullptr;
+    TH2* fT0TofDiffEvo = nullptr;
+
     TH1* fT0T0Diff = nullptr;
     TH1* fStsStsDiff = nullptr;
     TH1* fMuchMuchDiff = nullptr;
     TH1* fTofTofDiff = nullptr;
 
     TString fOutFileName{"test.root"};
-    
+
     ClassDef(CbmCheckTiming,1);
 };
 

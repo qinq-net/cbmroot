@@ -1,8 +1,8 @@
 /********************************************************************************
  *    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    *
  *                                                                              *
- *              This software is distributed under the terms of the             * 
- *              GNU Lesser General Public Licence (LGPL) version 3,             *  
+ *              This software is distributed under the terms of the             *
+ *              GNU Lesser General Public Licence (LGPL) version 3,             *
  *                  copied verbatim in the file "LICENSE"                       *
  ********************************************************************************/
 #include "CbmCheckTiming.h"
@@ -15,9 +15,10 @@
 
 #include "TClonesArray.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "THttpServer.h"
 
-#include <iomanip> 
+#include <iomanip>
 using std::fixed;
 using std::setprecision;
 
@@ -60,31 +61,31 @@ InitStatus CbmCheckTiming::Init()
   FairRootManager* ioman = FairRootManager::Instance();
 
   // Get a pointer to the previous already existing data level
-  
+
   fT0Digis = static_cast<TClonesArray*>(ioman->GetObject("CbmT0Digi"));
   if ( ! fT0Digis ) {
     LOG(info) << "No TClonesArray with T0 digis found.";
   }
-  
+
   fStsDigis = static_cast<TClonesArray*>(ioman->GetObject("CbmStsDigi"));
   if ( ! fStsDigis ) {
     LOG(info) << "No TClonesArray with STS digis found.";
   }
-  
+
   fMuchDigis = static_cast<TClonesArray*>(ioman->GetObject("CbmMuchBeamTimeDigi"));
   if ( ! fMuchDigis ) {
     LOG(info) << "No TClonesArray with MUCH digis found.";
   }
-  
+
   fTofDigis = static_cast<TClonesArray*>(ioman->GetObject("CbmTofDigi"));
   if ( ! fTofDigis ) {
     LOG(info) << "No TClonesArray with TOF digis found.";
   }
 
   if (fCheckInterSystemOffset) CreateHistos();
-  
+
   return kSUCCESS;
-  
+
 }
 
 void CbmCheckTiming::CreateHistos()
@@ -98,7 +99,7 @@ void CbmCheckTiming::CreateHistos()
   } else {
     fBinWidth = 100;
   }
-  
+
   Int_t nrOfBins = fOffsetRange/fBinWidth *2;
   // T0 vs. Sts
   fT0StsDiff = new TH1F("fT0StsDiff","T0-Sts;time diff [ns];Counts",
@@ -108,6 +109,19 @@ void CbmCheckTiming::CreateHistos()
 			 nrOfBins, -fOffsetRange, fOffsetRange);
   // To vs. Tof
   fT0TofDiff = new TH1F("fT0TofDiff","T0-Tof;time diff [ns];Counts",
+			nrOfBins, -fOffsetRange, fOffsetRange);
+
+  // T0 vs. Sts
+  fT0StsDiffEvo = new TH2F("fT0StsDiffEvo","T0-Sts;TS; time diff [ns];Counts",
+       1000, 0, 2000,
+			nrOfBins, -fOffsetRange, fOffsetRange);
+  // T0 vs. Much
+  fT0MuchDiffEvo = new TH2F("fT0MuchDiffEvo","T0-Much;TS; time diff [ns];Counts",
+       1000, 0, 2000,
+			 nrOfBins, -fOffsetRange, fOffsetRange);
+  // To vs. Tof
+  fT0TofDiffEvo = new TH2F("fT0TofDiffEvo","T0-Tof;TS; time diff [ns];Counts",
+       1000, 0, 2000,
 			nrOfBins, -fOffsetRange, fOffsetRange);
 
   // T0 vs. T0
@@ -122,7 +136,7 @@ void CbmCheckTiming::CreateHistos()
   // Tof vs. Tof
   fTofTofDiff = new TH1F("fTofTofDiff","Tof-Tof_prev;time diff [ns];Counts",
 		       420, -100.5, 1999.5);
-	
+
   /// Register the histos in the HTTP server
   FairRunOnline* run = FairRunOnline::Instance();
   if (run) {
@@ -131,13 +145,16 @@ void CbmCheckTiming::CreateHistos()
       server->Register("CheckTiming", fT0StsDiff);
       server->Register("CheckTiming", fT0MuchDiff);
       server->Register("CheckTiming", fT0TofDiff);
+      server->Register("CheckTiming", fT0StsDiffEvo);
+      server->Register("CheckTiming", fT0MuchDiffEvo);
+      server->Register("CheckTiming", fT0TofDiffEvo);
       server->Register("CheckTiming", fT0T0Diff);
       server->Register("CheckTiming", fStsStsDiff);
       server->Register("CheckTiming", fMuchMuchDiff);
       server->Register("CheckTiming", fTofTofDiff);
     }
   }
-}  
+}
 // ---- ReInit  -------------------------------------------------------
 InitStatus CbmCheckTiming::ReInit()
 {
@@ -149,91 +166,92 @@ void CbmCheckTiming::Exec(Option_t* /*option*/)
 {
 
   fNrTs++;
-  LOG(info) << "executing TS " << fNrTs;
-  
+  LOG(debug) << "executing TS " << fNrTs;
+
   if (fCheckTimeOrdering) CheckTimeOrder();
   if (fCheckInterSystemOffset) CheckInterSystemOffset();
 
 }
 
-void CbmCheckTiming::CheckInterSystemOffset() 
+void CbmCheckTiming::CheckInterSystemOffset()
 {
-  LOG(info) <<"Begin";
+  LOG(debug) <<"Begin";
   Int_t nrT0Digis=fT0Digis->GetEntriesFast();
   Int_t nrStsDigis=fStsDigis->GetEntriesFast();
   Int_t nrMuchDigis=fMuchDigis->GetEntriesFast();
   Int_t nrTofDigis=fTofDigis->GetEntriesFast();
 
-  LOG(info) << "T0Digis: " << nrT0Digis;
-  LOG(info) << "StsDigis: " << nrStsDigis;
-  LOG(info) << "MuchDigis: " << nrMuchDigis;
-  LOG(info) << "TofDigis: " << nrTofDigis;
+  LOG(debug) << "T0Digis: " << nrT0Digis;
+  LOG(debug) << "StsDigis: " << nrStsDigis;
+  LOG(debug) << "MuchDigis: " << nrMuchDigis;
+  LOG(debug) << "TofDigis: " << nrTofDigis;
 
-  if (nrT0Digis < 100000) { 
-  
+  if (nrT0Digis < 100000) {
+
     for (Int_t iT0 = 0; iT0 < nrT0Digis; ++iT0) {
 
-      if (iT0%1000 == 0) LOG(info) << "Executing entry " << iT0;
+      if (iT0%1000 == 0) LOG(debug) << "Executing entry " << iT0;
 
       CbmDigi* T0Digi = static_cast<CbmDigi*>(fT0Digis->At(iT0));
-      
-      Double_t T0Time = T0Digi->GetTime();  
-      
-      if (nrStsDigis < 300000) FillSystemOffsetHistos(fStsDigis, fT0StsDiff, T0Time);
-      if (nrMuchDigis < 300000) FillSystemOffsetHistos(fMuchDigis, fT0MuchDiff, T0Time);
-      if (nrTofDigis < 300000) FillSystemOffsetHistos(fTofDigis, fT0TofDiff, T0Time);
+
+      Double_t T0Time = T0Digi->GetTime();
+
+      if (nrStsDigis < 300000) FillSystemOffsetHistos(fStsDigis, fT0StsDiff, fT0StsDiffEvo, T0Time);
+      if (nrMuchDigis < 300000) FillSystemOffsetHistos(fMuchDigis, fT0MuchDiff, fT0MuchDiffEvo, T0Time);
+      if (nrTofDigis < 300000) FillSystemOffsetHistos(fTofDigis, fT0TofDiff, fT0TofDiffEvo, T0Time);
     }
   }
 }
 
 void CbmCheckTiming::FillSystemOffsetHistos(TClonesArray* array,
-						 TH1* histo,
+						 TH1* histo, TH2* histoEvo,
 						 const Double_t T0Time)
 {
   Int_t nrDigis=array->GetEntriesFast();
 
   for (Int_t i = 0; i < nrDigis; ++i) {
-							 
+
     CbmDigi* Digi = static_cast<CbmDigi*>(array->At(i));
     Double_t diffTime = T0Time - Digi->GetTime();
 
     if (diffTime > fOffsetRange) continue; // not yes in interesting range
     if (diffTime < -fOffsetRange) break;     // already past interesting range
     histo->Fill(diffTime);
-  }  
+    histoEvo->Fill(fNrTs, diffTime);
+  }
 }
 
-void CbmCheckTiming::CheckTimeOrder() 
+void CbmCheckTiming::CheckTimeOrder()
 {
   if (fT0Digis) {
     Int_t nrT0Digis = fT0Digis->GetEntriesFast();
-    fNrOfT0Digis += nrT0Digis; 
+    fNrOfT0Digis += nrT0Digis;
     fNrOfT0Errors += CheckIfSorted(fT0Digis, fT0T0Diff, fPrevTimeT0, "T0");
   }
   if (fStsDigis) {
     Int_t nrStsDigis = fStsDigis->GetEntriesFast();
-    fNrOfStsDigis += nrStsDigis; 
+    fNrOfStsDigis += nrStsDigis;
     fNrOfStsErrors += CheckIfSorted(fStsDigis, fStsStsDiff, fPrevTimeSts, "Sts");
   }
   if (fMuchDigis) {
     Int_t nrMuchDigis = fMuchDigis->GetEntriesFast();
-    fNrOfMuchDigis += nrMuchDigis; 
+    fNrOfMuchDigis += nrMuchDigis;
     fNrOfMuchErrors += CheckIfSorted(fMuchDigis, fMuchMuchDiff, fPrevTimeMuch, "Much");
   }
   if (fTofDigis) {
     Int_t nrTofDigis = fTofDigis->GetEntriesFast();
-    fNrOfTofDigis += nrTofDigis; 
+    fNrOfTofDigis += nrTofDigis;
     fNrOfTofErrors += CheckIfSorted(fTofDigis, fTofTofDiff, fPrevTimeTof, "Tof");
   }
 }
 
-Int_t CbmCheckTiming::CheckIfSorted(TClonesArray* array, TH1* histo, Double_t& prevTime, TString detector) 
+Int_t CbmCheckTiming::CheckIfSorted(TClonesArray* array, TH1* histo, Double_t& prevTime, TString detector)
 {
   Int_t nrOfErrors=0;
   Int_t nrDigis=array->GetEntriesFast();
 
   for (Int_t i = 0; i < nrDigis; ++i) {
- 
+
      CbmDigi* digi = static_cast<CbmDigi*>(array->At(i));
 
      Double_t diffTime = digi->GetTime() - prevTime;
@@ -241,17 +259,17 @@ Int_t CbmCheckTiming::CheckIfSorted(TClonesArray* array, TH1* histo, Double_t& p
 
      if (diffTime < 0.) {
        LOG(info)  << fixed << setprecision(15) << diffTime << "ns";
-       LOG(info) << "Previous " << detector << " digi (" << fixed << setprecision(15) 
-                  << prevTime * 1.e-9 
+       LOG(info) << "Previous " << detector << " digi (" << fixed << setprecision(15)
+                  << prevTime * 1.e-9
                   << ") has a larger time than the current one ("
-                  << digi->GetTime() * 1.e-9 << ") for digi " 
-                  << i << " of ts " << fNrTs; 
+                  << digi->GetTime() * 1.e-9 << ") for digi "
+                  << i << " of ts " << fNrTs;
        nrOfErrors++;
      }
-     
+
      prevTime = digi->GetTime();
 
-  } 
+  }
 
   return nrOfErrors;
 }
@@ -277,12 +295,16 @@ void CbmCheckTiming::WriteHistos()
 {
   TFile* old = gFile;
   TFile* outfile = TFile::Open(fOutFileName,"RECREATE");
-  
+
   fT0StsDiff->Write();
   fT0MuchDiff->Write();
   fT0TofDiff->Write();
 
-  fT0T0Diff->Write();  
+  fT0StsDiffEvo->Write();
+  fT0MuchDiffEvo->Write();
+  fT0TofDiffEvo->Write();
+
+  fT0T0Diff->Write();
   fStsStsDiff->Write();
   fMuchMuchDiff->Write();
   fTofTofDiff->Write();
