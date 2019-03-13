@@ -136,7 +136,8 @@ class CbmMcbm2018MonitorAlgoT0 : public CbmStar2019Algo<CbmTofDigiExp>
       std::vector< TH2      * > fvhEvtLostFractPerMsEvoChan;
          /// Channels map
       Bool_t   fbSpillOn;
-      UInt_t   fuCurrentSpill;
+      UInt_t   fuCurrentSpillIdx;
+      UInt_t   fuCurrentSpillPlot;
       Double_t fdStartTimeSpill;
       Double_t fdLastSecondTime;
       UInt_t   fuCountsLastSecond;
@@ -146,6 +147,7 @@ class CbmMcbm2018MonitorAlgoT0 : public CbmStar2019Algo<CbmTofDigiExp>
       TH1      * fhChannelMap;
       TH2      * fhHitMapEvo;
       std::vector< TH1      * > fvhChannelMapSpill;
+      TH1      * fhHitsPerSpill;
          /// Global Rate
       TH1      * fhMsgCntEvo;
       TH1      * fhHitCntEvo;
@@ -166,6 +168,7 @@ class CbmMcbm2018MonitorAlgoT0 : public CbmStar2019Algo<CbmTofDigiExp>
       TCanvas * fcHitMaps;
       TCanvas * fcGenCntsPerMs;
       TCanvas * fcSpillCounts;
+      TCanvas * fcSpillCountsHori;
 
 /*
       void ProcessEpochCycle( uint64_t ulCycleData );

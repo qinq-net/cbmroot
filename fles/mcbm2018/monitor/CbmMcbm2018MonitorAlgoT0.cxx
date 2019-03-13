@@ -24,6 +24,7 @@
 #include "TProfile.h"
 #include "TH1.h"
 #include "TCanvas.h"
+#include "TPaveStats.h"
 
 #include <iostream>
 #include <stdint.h>
@@ -83,14 +84,16 @@ CbmMcbm2018MonitorAlgoT0::CbmMcbm2018MonitorAlgoT0() :
    fvhErrorFractPerMsEvoChan( kuNbChanDiamond, nullptr ),
    fvhEvtLostFractEvoChan( kuNbChanDiamond, nullptr ),
    fvhEvtLostFractPerMsEvoChan( kuNbChanDiamond, nullptr ),
-   fbSpillOn( kFALSE ),
-   fuCurrentSpill( 0 ),
+   fbSpillOn( kTRUE ),
+   fuCurrentSpillIdx( 0 ),
+   fuCurrentSpillPlot( 0 ),
    fdStartTimeSpill( -1.0 ),
    fdLastSecondTime( -1.0 ),
    fuCountsLastSecond( 0 ),
    fhChannelMap( nullptr ),
    fhHitMapEvo( nullptr ),
    fvhChannelMapSpill(),
+   fhHitsPerSpill( nullptr ),
    fhMsgCntEvo( nullptr ),
    fhHitCntEvo( nullptr ),
    fhErrorCntEvo( nullptr ),
@@ -105,7 +108,9 @@ CbmMcbm2018MonitorAlgoT0::CbmMcbm2018MonitorAlgoT0() :
    fhLostEvtFractPerMsEvo( nullptr ),
    fcSummary( nullptr ),
    fcHitMaps( nullptr ),
-   fcGenCntsPerMs( nullptr )
+   fcGenCntsPerMs( nullptr ),
+   fcSpillCounts( nullptr ),
+   fcSpillCountsHori( nullptr )
 {
 }
 CbmMcbm2018MonitorAlgoT0::~CbmMcbm2018MonitorAlgoT0()
@@ -347,7 +352,7 @@ Bool_t CbmMcbm2018MonitorAlgoT0::ProcessMs( const fles::Timeslice& ts, size_t uM
               << " has size: " << uSize << FairLogger::endl;
 
    /// Spill Detection
-   if( 0 == uMsCompIdx )
+   if( 0 == uMsCompIdx || 8 == uMsCompIdx )
    {
       /// Check only every second
       if( 1.0 < fdMsTime - fdLastSecondTime )
@@ -356,10 +361,13 @@ Bool_t CbmMcbm2018MonitorAlgoT0::ProcessMs( const fles::Timeslice& ts, size_t uM
          if( fbSpillOn && fuCountsLastSecond < kuOffSpillCountLimit )
          {
             fbSpillOn = kFALSE;
-            fuCurrentSpill++;
+            fuCurrentSpillIdx++;
+            fuCurrentSpillPlot = ( fuCurrentSpillPlot + 1 ) % kuNbSpillPlots;
             fdStartTimeSpill = fdMsTime;
-            fvhChannelMapSpill[ fdStartTimeSpill ]->Reset();
+            fvhChannelMapSpill[ fuCurrentSpillPlot ]->Reset();
          } // if( fbSpillOn && fuCountsLastSecond < kuOffSpillCountLimit )
+         else if( kuOffSpillCountLimit < fuCountsLastSecond  )
+            fbSpillOn = kTRUE;
 
          fuCountsLastSecond = 0;
          fdLastSecondTime = fdMsTime;
@@ -488,7 +496,9 @@ Bool_t CbmMcbm2018MonitorAlgoT0::ProcessMs( const fles::Timeslice& ts, size_t uM
                   if( uTot < 90 || 100 < uTot )
                   {
                      fhChannelMap->Fill( uChannelT0 );
-                     fvhChannelMapSpill[ fdStartTimeSpill ]->Fill( kuDiamChanMap[ uChannelT0 ] );
+
+                     fvhChannelMapSpill[ fuCurrentSpillPlot ]->Fill( kuDiamChanMap[ uChannelT0 ] );
+                     fhHitsPerSpill->Fill( fuCurrentSpillIdx );
                   } // if( uTot < 90 || 100 < uTot )
                   fhHitMapEvo->Fill( uChannelT0, fdMsTime - fdStartTime );
 //                  fvvmEpSupprBuffer[fuCurrDpbIdx].push_back( mess );
@@ -860,6 +870,9 @@ Bool_t CbmMcbm2018MonitorAlgoT0::CreateHistograms()
                                      Form("Map of hits on T0 detector in current spill %02u; Strip; Hits Count []", uSpill),
                               kuNbChanDiamond, 0., kuNbChanDiamond) );
    } // for( UInt_t uSpill = 0; uSpill < kuNbSpillPlots; uSpill ++)
+   fhHitsPerSpill = new TH1I( "hHitsPerSpill", "Hit count per spill; Spill; Hits Count []",
+                           2000, 0., 2000);
+
    fhMsgCntEvo = new TH1I( "hMsgCntEvo", "Evolution of Hit & error msgs counts vs time in run; Time in run [s]; Msgs Count []",
                         fuHistoryHistoSize, 0, fuHistoryHistoSize );
    fhHitCntEvo = new TH1I( "hHitCntEvo", "Evolution of Hit counts vs time in run; Time in run [s]; Hits Count []",
@@ -909,6 +922,7 @@ Bool_t CbmMcbm2018MonitorAlgoT0::CreateHistograms()
    AddHistoToVector( fhHitMapEvo, sFolder );
    for( UInt_t uSpill = 0; uSpill < kuNbSpillPlots; uSpill ++)
       AddHistoToVector( fvhChannelMapSpill[ uSpill ], sFolder );
+   AddHistoToVector( fhHitsPerSpill, sFolder );
 
    AddHistoToVector( fhMsgCntEvo, sFolder );
    AddHistoToVector( fhHitCntEvo, sFolder );
@@ -1093,11 +1107,42 @@ Bool_t CbmMcbm2018MonitorAlgoT0::CreateHistograms()
       fcSpillCounts->cd( 1 + uSpill );
       gPad->SetGridx();
       gPad->SetGridy();
-      gPad->SetLogy();
-      fvhChannelMapSpill[ uSpill ]->Draw( "hist" );
+//      gPad->SetLogy();
+//      fvhChannelMapSpill[ uSpill ]->SetStats( kTRUE );
+      fvhChannelMapSpill[ uSpill ]->Draw();
+      gPad->Update();
+      TPaveStats* st = (TPaveStats *)fvhChannelMapSpill[ uSpill ]->FindObject( "stats" );
+      st->SetOptStat( 10 );
+      st->SetX1NDC( 0.25 );
+      st->SetX2NDC( 0.95 );
+      st->SetY1NDC( 0.90 );
+      st->SetY2NDC( 0.95 );
    } // for( UInt_t uSpill = 0; uSpill < kuNbSpillPlots; uSpill ++)
 
    AddCanvasToVector( fcSpillCounts, "canvases" );
+   /*******************************************************************/
+
+   /*******************************************************************/
+   /// General summary: Hit maps, Hit rate vs time in run, error fraction vs time un run
+   fcSpillCountsHori = new TCanvas( "cSpillCountsHori", "Counts per spill, last 5 spills including current one", w, h);
+   fcSpillCountsHori->Divide( kuNbSpillPlots );
+
+   for( UInt_t uSpill = 0; uSpill < kuNbSpillPlots; uSpill ++)
+   {
+      fcSpillCountsHori->cd( 1 + uSpill );
+      gPad->SetGridx();
+      gPad->SetGridy();
+      fvhChannelMapSpill[ uSpill ]->Draw();
+      gPad->Update();
+      TPaveStats* st = (TPaveStats *)fvhChannelMapSpill[ uSpill ]->FindObject( "stats" );
+      st->SetOptStat( 10 );
+      st->SetX1NDC( 0.25 );
+      st->SetX2NDC( 0.95 );
+      st->SetY1NDC( 0.90 );
+      st->SetY2NDC( 0.95 );
+   } // for( UInt_t uSpill = 0; uSpill < kuNbSpillPlots; uSpill ++)
+
+   AddCanvasToVector( fcSpillCountsHori, "canvases" );
    /*******************************************************************/
 
    return kTRUE;
@@ -1165,10 +1210,13 @@ Bool_t CbmMcbm2018MonitorAlgoT0::ResetHistograms()
       fvhEvtLostFractPerMsEvoChan[ uChan ]->Reset();
    } // for( UInt_t uChan = 0; uChan < kuNbChanDiamond; ++uChan )
 
+   fuCurrentSpillIdx = 0;
+   fuCurrentSpillPlot = 0;
    fhChannelMap->Reset();
    fhHitMapEvo->Reset();
    for( UInt_t uSpill = 0; uSpill < kuNbSpillPlots; uSpill ++)
       fvhChannelMapSpill[ uSpill ]->Reset();
+   fhHitsPerSpill->Reset();
 
    fhMsgCntEvo->Reset();
    fhHitCntEvo->Reset();
