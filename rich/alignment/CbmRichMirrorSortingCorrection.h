@@ -73,7 +73,11 @@ public:
 
     void DrawRingTrackDistanceCorr();
 
+    void DrawDistanceComp();
+
     void setOutputDir(TString s) { fOutputDir = s; }
+
+    void setCorrectionTableDir(TString s) { fCorrectionTableDir = s; }
 
     void setStudyName(TString s) { fStudyName = s; }
 
@@ -91,6 +95,7 @@ private:
     CbmRichRingFitterCOP* fCopFit;
     CbmRichRingFitterEllipseTau* fTauFit;
     TString fOutputDir;
+    TString fCorrectionTableDir;
     TString fStudyName;
     CbmHistManager* fHM, *fHM2;
     std::map<string,TH1D*> fDiffHistoMap;

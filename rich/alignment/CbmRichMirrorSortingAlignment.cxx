@@ -434,7 +434,13 @@ void CbmRichMirrorSortingAlignment::CreateHistoMap(std::map<string, vector<CbmRi
 		cout << "curMirrorId: '" << curMirrorId << "' and vector size: " << it->second.size() << endl;
 		vector<CbmRichMirror*> mirror = it->second;
 		if (curMirrorId != "" && it->second.size() > fThreshold) {
-			histoMap[it->first] = new TH2D(string("CherenkovHitsDistribReduced_" + it->first).c_str(), "CherenkovHitsDistribReduced;Phi_Ch [rad];Th_Ch-Th_0 [cm];Entries", 200, -3.4, 3.4, 500, -8., 8.);
+			histoMap[it->first] = new TH2D(string("CherenkovHitsDistribReduced_" + it->first).c_str(), "CherenkovHitsDistribReduced;#Phi_{Ch} [rad];#theta_{Ch}-#theta_{0} [cm];Entries", 200, -3.4, 3.4, 500, -6., 6.);
+			histoMap[it->first]->GetXaxis()->SetTitleSize(0.05);
+			histoMap[it->first]->GetXaxis()->SetTitleOffset(0.75);
+			histoMap[it->first]->GetYaxis()->SetTitleSize(0.04);
+			histoMap[it->first]->GetYaxis()->SetTitleOffset(1.2);
+			histoMap[it->first]->GetZaxis()->SetTitleSize(0.03);
+			histoMap[it->first]->GetZaxis()->SetTitleOffset(0.6);
 			for (int i = 0; i < it->second.size(); i++) {
 				CbmRichMirror* mirr = mirror.at(i);
 				string str = mirr->getMirrorId();
@@ -464,11 +470,12 @@ void CbmRichMirrorSortingAlignment::CreateHistoMap(std::map<string, vector<CbmRi
 		}
 	}
 	cout << endl;
-	for (std::map<string, TH2D*>::iterator it=histoMap.begin(); it!=histoMap.end(); ++it) {
-		cout << "Key str: " << it->first << " and nb of entries: " << it->second->GetEntries() << endl << endl;
-		TCanvas* can = new TCanvas();
-		it->second->Draw("colz");
-	}
+	// For loop to draw all histograms collected for all misaligned mirror tiles
+//	for (std::map<string, TH2D*>::iterator it=histoMap.begin(); it!=histoMap.end(); ++it) {
+//		cout << "Key str: " << it->first << " and nb of entries: " << it->second->GetEntries() << endl << endl;
+//		TCanvas* can = new TCanvas();
+//		it->second->Draw("colz");
+//	}
 }
 
 void CbmRichMirrorSortingAlignment::DrawFitAndExtractAngles(std::map<string, vector<Double_t>> &anglesMap, std::map<string, TH2D*> histoMap)
@@ -480,8 +487,10 @@ void CbmRichMirrorSortingAlignment::DrawFitAndExtractAngles(std::map<string, vec
 
 	for (std::map<string, TH2D*>::iterator it=histoMap.begin(); it!=histoMap.end(); ++it) {
 		if (it->first != "") {
-		TCanvas* can = new TCanvas();
-		can->Divide(3,1);
+		TCanvas* can = new TCanvas("can");
+//		can->Divide(3,1);
+		can->Divide(2,1);
+		can->SetGrid();
 		gStyle->SetOptStat(0);
 		can->cd(1);
 		TH2D* histo = it->second;
@@ -500,17 +509,23 @@ void CbmRichMirrorSortingAlignment::DrawFitAndExtractAngles(std::map<string, vec
 		string histoName = "CherenkovHitsDistribReduced_" + it->first + "_1";
 		//cout << "HistoName: " << histoName << endl;
 		TH1D *histo_1 = (TH1D*)gDirectory->Get((histoName).c_str());
-		histo_1->Draw();
+		histo_1->GetXaxis()->SetTitle("#Phi_{Ch} [rad]");
+		histo_1->GetYaxis()->SetTitle("#theta_{Ch}-#theta_{0} [cm]");
+		histo_1->GetXaxis()->SetTitleSize(0.05);
+		histo_1->GetXaxis()->SetTitleOffset(0.75);
+		histo_1->GetYaxis()->SetTitleSize(0.04);
+		histo_1->GetYaxis()->SetTitleOffset(1.2);
+		histo_1->Draw("HIST");
 		histo_1->Write();
-
-		if ( histo_1->GetSumOfWeights() == 0 || histo_1->Integral() == 0 ) {
-			cout << "For mirror tile: " << it->first << ":" << endl;
-			cout << "Sum of weights: " << histo_1->GetSumOfWeights() << endl;
-			cout << "Integral: " << histo_1->Integral() << endl;
-			continue;
-		}
-
-		can->cd(3);
+//
+//		if ( histo_1->GetSumOfWeights() == 0 || histo_1->Integral() == 0 ) {
+//			cout << "For mirror tile: " << it->first << ":" << endl;
+//			cout << "Sum of weights: " << histo_1->GetSumOfWeights() << endl;
+//			cout << "Integral: " << histo_1->Integral() << endl;
+//			continue;
+//		}
+//
+//		can->cd(3);
 		TF1 *f1 = new TF1("f1", "[2]+[0]*cos(x)+[1]*sin(x)", -3.5, 3.5);
 		f1->SetParameters(0,0,0);
 		f1->SetParNames("Delta_phi", "Delta_lambda", "Offset");
@@ -520,7 +535,7 @@ void CbmRichMirrorSortingAlignment::DrawFitAndExtractAngles(std::map<string, vec
 		f1->SetParameters(fit->GetParameter(0), fit->GetParameter(1));
 		char leg[128];
 		f1->SetLineColor(2);
-		f1->Draw();
+		f1->Draw("same");
 		f1->Write();
 		// ------------------------------ CALCULATION OF MISALIGNMENT ANGLE ------------------------------ //
 		cout << setprecision(6) << endl;
@@ -530,22 +545,22 @@ void CbmRichMirrorSortingAlignment::DrawFitAndExtractAngles(std::map<string, vec
 		A = fit->GetParameter(1)/TMath::Cos(q);
 		//cout << "Parameter a = " << A << endl;
 		alpha = TMath::ATan(A/1.5)*0.5*TMath::Power(10,3);														// *0.5, because a mirror rotation of alpha implies a rotation in the particle trajectory of 2*alpha ; 1.5 meters = Focal length = Radius_of_curvature/2
-		//cout << setprecision(6) << "Total angle of misalignment alpha = " << alpha << endl;					// setprecision(#) gives the number of digits in the cout.
+		//cout << setprecision(6) << "Total angle of misalignment alpha = " << alpha << endl;
 		mis_x = TMath::ATan(fit->GetParameter(1)/focalLength)*0.5*TMath::Power(10,3);
 		mis_y = TMath::ATan(fit->GetParameter(0)/focalLength)*0.5*TMath::Power(10,3);
 		cout << "Horizontal displacement = " << mis_x << " [mrad] and vertical displacement = " << mis_y << " [mrad]." << endl << endl;
-		TLegend* LEG= new TLegend(0.27,0.7,0.85,0.87); // Set legend position
+		TLegend* LEG = new TLegend(0.15,0.25,0.84,0.4);
 		LEG->SetBorderSize(1);
 		LEG->SetFillColor(0);
 		LEG->SetMargin(0.2);
 		LEG->SetTextSize(0.04);
 		sprintf(leg, "Fitted sinusoid");
 		LEG->AddEntry(f1, leg, "l");
-		sprintf(leg, "Rotation angle around X = %f", mis_x);
+		sprintf(leg, "Rotation angle around X = %.3f", -1*mis_x);
 		LEG->AddEntry("", leg, "l");
-		sprintf(leg, "Rotation angle around Y = %f", mis_y);
+		sprintf(leg, "Rotation angle around Y = %.3f", mis_y);
 		LEG->AddEntry("", leg, "l");
-		sprintf(leg, "Offset = %f", fit->GetParameter(2));
+		sprintf(leg, "Offset = %.3f", fit->GetParameter(2));
 		LEG->AddEntry("", leg, "l");
 		LEG->Draw();
 		Cbm::SaveCanvasAsImage(can, string(fOutputDir.Data()+fStudyName), "png");

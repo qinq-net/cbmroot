@@ -59,7 +59,10 @@ CbmRichMirrorSortingCorrection::CbmRichMirrorSortingCorrection()
   fTrackCenterDistanceCorrected(0),
   fTrackCenterDistanceUncorrected(0),
   fCorrectionMatching(""),
-  fThreshold(0)
+  fThreshold(0),
+  fOutputDir(""),
+  fCorrectionTableDir(""),
+  fStudyName("")
 {
 }
 
@@ -189,7 +192,7 @@ void CbmRichMirrorSortingCorrection::InitHistoMap()
 		}
 	}
 
-	fHM = new CbmHistManager();
+	//fHM = new CbmHistManager();
 	Double_t xMin = -120., xMax = 120., nBinsX1 = 60, yMax = 200., range = 3.;
 	stringstream ss;
 
@@ -200,7 +203,11 @@ void CbmRichMirrorSortingCorrection::InitHistoMap()
 		fHM->Create2<TH2D>("fhRingTrackDistVsYTruematch"+ss.str(), "fhRingTrackDistVsYTruematch"+ss.str()+";Abs(Y) [cm];Ring-track distance [cm]", 34, 110., yMax, 100, 0., 5.);
 		fHM->Create3<TH3D>("fhRingTrackDistDiffXRingVsXYTruematch"+ss.str(), "fhRingTrackDistDiffXRingVsXYTruematch"+ss.str()+";X [cm];Y [cm];X Ring-track distance [cm]", 60, xMin, xMax, 104, 110, 200, 200, -range, range);
 		fHM->Create3<TH3D>("fhRingTrackDistDiffYRingVsXYTruematch"+ss.str(), "fhRingTrackDistDiffYRingVsXYTruematch"+ss.str()+";X [cm];Y [cm];Y Ring-track distance [cm]", 60, xMin, xMax, 104, 110, 200, 200, -range, range);
+		ss.str("");
 	}
+
+	fHM->Create1<TH1D>("fDistUncorr", "fDistUncorr;Uncorrected Distance;Number of entries", 600, -10., 10);
+	fHM->Create1<TH1D>("fDistCorr", "fDistCorr;Corrected Distance;Number of entries", 600, -10., 10);
 
 /*
 //	Double_t upperScaleLimit = 6., bin = 400.;
@@ -409,7 +416,6 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 
 						cout << "pTrack [X,Y]: " << pTrack->GetX() << ", " << pTrack->GetY() << endl;
 						FillRingTrackDistanceCorr(ring, pTrack, mcTrack2);
-						DrawRingTrackDistance(2);
 					}
 				}
 				else { cout << "No mirror points registered." << endl; }
@@ -421,7 +427,6 @@ void CbmRichMirrorSortingCorrection::Exec(Option_t* Option)
 	else { cout << "CbmRichMirrorSortingCorrection::Exec No rings in event were found." << endl; }
 
 	FillRingTrackDistance();
-	DrawRingTrackDistance(1);
 }
 
 void CbmRichMirrorSortingCorrection::GetPmtNormal(Int_t NofPMTPoints, vector<Double_t> &normalPMT, Double_t &normalCste)
@@ -509,7 +514,7 @@ void CbmRichMirrorSortingCorrection::ComputeR2(vector<Double_t> &ptR2Center, vec
 		// Reading misalignment information from correction_param.txt text file.
 		Int_t lineCounter=1, lineIndex=0;
 		//TString str = fOutputDir + "correction_param_array_" + fStudyName + ".txt";
-		TString str = fOutputDir + "/correction_table/correction_param_array.txt";
+		TString str = fCorrectionTableDir + "/correction_table/correction_param_array.txt";
 		string fileLine = "", strMisX = "", strMisY = "";
 		Double_t misX=0., misY=0.;
 		ifstream corrFile;
@@ -559,7 +564,7 @@ void CbmRichMirrorSortingCorrection::ComputeR2(vector<Double_t> &ptR2Center, vec
 		else {
 			cout << "Error in CbmRichCorrection: unable to open parameter file!" << endl;
 			cout << "Parameter file path: " << str << endl << endl;
-			sleep(5);
+			//sleep(5);
 		}
 		//cout << "Misalignment parameters read from file = [" << outputFit.at(0) << " ; " << outputFit.at(1) << " ; " << outputFit.at(2) << " ; " << outputFit.at(3) << "]" << endl;
 
@@ -676,10 +681,10 @@ void CbmRichMirrorSortingCorrection::FillHistProjection(TVector3 outPosIdeal, TV
 
 	distToExtrapTrackHit = TMath::Sqrt(TMath::Power(r.at(0) - p.at(0),2) + TMath::Power(r.at(1) - p.at(1),2) + TMath::Power(r.at(2) - p.at(2),2));
 	distToExtrapTrackHitInPlane = TMath::Sqrt(TMath::Power(r.at(0) - p.at(0),2) + TMath::Power(r.at(1) - p.at(1),2));
+	cout << "Distance between fitted ring center and extrapolated track hit = " << distToExtrapTrackHit << endl;
+	cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlane << endl;
 	fHM->H1("fhDistanceCenterToExtrapolatedTrack")->Fill(distToExtrapTrackHit);
 	fHM->H1("fhDistanceCorrected")->Fill(distToExtrapTrackHitInPlane);
-	//cout << "Distance between fitted ring center and extrapolated track hit = " << distToExtrapTrackHit << endl;
-	cout << "Distance between fitted ring center and extrapolated track hit in plane = " << distToExtrapTrackHitInPlane << endl;
 
 	// Calculation using the uncorrected mirror hit/position
 	vector<Double_t> pUncorr(3); // Absolute coordinates of fitted ring Center r and PMT extrapolated point p
@@ -1024,6 +1029,8 @@ void CbmRichMirrorSortingCorrection::FillRingTrackDistance()
 			fHM->H2("fhRingTrackDistVsYTruematch"+ss.str())->Fill(abs(yc), rtDistance);
 			fHM->H3("fhRingTrackDistDiffXRingVsXYTruematch"+ss.str())->Fill(xc, yc, rtDistanceX);
 			fHM->H3("fhRingTrackDistDiffYRingVsXYTruematch"+ss.str())->Fill(xc, yc, rtDistanceY);
+			if (rtDistance >= -10 && rtDistance <= 10) {fHM->H1("fDistUncorr")->Fill(rtDistance);}
+			ss.str("");
 		}
 	}
 }
@@ -1042,11 +1049,15 @@ void CbmRichMirrorSortingCorrection::FillRingTrackDistanceCorr(
 	bool isEl = IsMcPrimaryElectron(mcTrack);
 	if (isEl) {
 		Int_t k = 2;
-		fHM->H3("fhRingTrackDistVsXYTruematch"+k)->Fill(xRing, yRing, dist);
-		fHM->H2("fhRingTrackDistVsXTruematch"+k)->Fill(xRing, dist);
-		fHM->H2("fhRingTrackDistVsYTruematch"+k)->Fill(abs(yRing), dist);
-		fHM->H3("fhRingTrackDistDiffXRingVsXYTruematch"+k)->Fill(xRing, yRing, dist);
-		fHM->H3("fhRingTrackDistDiffYRingVsXYTruematch"+k)->Fill(xRing, yRing, dist);
+		stringstream ss;
+		ss << k;
+		fHM->H3("fhRingTrackDistVsXYTruematch"+ss.str())->Fill(xRing, yRing, dist);
+		fHM->H2("fhRingTrackDistVsXTruematch"+ss.str())->Fill(xRing, dist);
+		fHM->H2("fhRingTrackDistVsYTruematch"+ss.str())->Fill(abs(yRing), dist);
+		fHM->H3("fhRingTrackDistDiffXRingVsXYTruematch"+ss.str())->Fill(xRing, yRing, dist);
+		fHM->H3("fhRingTrackDistDiffYRingVsXYTruematch"+ss.str())->Fill(xRing, yRing, dist);
+		if (dist >= -10 && dist <= 10) {fHM->H1("fDistCorr")->Fill(dist);}
+		ss.str("");
 	}
 }
 
@@ -1088,9 +1099,31 @@ void CbmRichMirrorSortingCorrection::DrawRingTrackDistance(
     }
 }
 
+void CbmRichMirrorSortingCorrection::DrawDistanceComp()
+{
+	TCanvas* c1 = fHM->CreateCanvas("fh_distance_distribution_corr", "fh_distance_distribution_corr", 600, 900);
+	DrawH1andFitGauss(fHM->H1("fDistCorr"), true, false, -2., 4.);
+}
+
 void CbmRichMirrorSortingCorrection::Finish()
 {
-	DrawHistProjection();
+	//DrawHistProjection();
+	DrawRingTrackDistance(1);
+	DrawRingTrackDistance(2);
+	DrawDistanceComp();
+
+	TDirectory * oldir = gDirectory;
+	TFile* outFile = FairRootManager::Instance()->GetOutFile();
+	if (outFile != NULL) {
+		fHM->WriteToFile();
+	}
+	gDirectory->cd( oldir->GetPath() );
+
+	string str1 = fOutputDir.Data();
+	string str2 = fStudyName.Data();
+	string str = str1 + "/" + str2;
+	cout << endl << endl << "output string: " << str << endl << endl;
+	fHM->SaveCanvasToImage(str);
 
 //	TString s = fOutputDir + "track_ring_distances_" + fStudyName + ".txt";
 	TString s = fOutputDir + "/correction_table/track_ring_distances.txt";

@@ -739,8 +739,16 @@ bool CbmRichRecoQa::IsMcPion(
 void CbmRichRecoQa::Finish()
 {
     DrawHist();
+
+    TDirectory * oldir = gDirectory;
+    TFile* outFile = FairRootManager::Instance()->GetOutFile();
+    if (outFile != NULL) {
+        fHM->WriteToFile();
+//        fHM->WriteToFileNew(fOutputDir + "/histos.root");
+    }
+    gDirectory->cd( oldir->GetPath() );
+
     fHM->SaveCanvasToImage(fOutputDir + "/" + fCorrection);
-    fHM->WriteToFileNew(fOutputDir + "/histos.root");
     //fHM->H3("fhRingTrackDistVsXYTruematchPrimel")->Write();
 }
 
