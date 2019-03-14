@@ -1,11 +1,8 @@
 #!/bin/bash
 
-NEVTS=200
-INPUT=3		# 1: 10e- & 10e+ ; 2: AuAu@10 & 5e- & 5e+ ; 3: AuAu@8 & 5e- & 5e+
-#GEOM=4		# 0: aligned ; 1: 1mrad ; 2: 2mrad ; 3: 3mrad ; 4: 5mrad
+NEVTS=50000
+macro_dir=/data/ROOT6/trunk/macro/rich/alignment/misalignment_correction/Sim_Thesis
 
-for GEOM in 0 1 2 3 4
-do
-	root -l -b -q "run_sim.C(${NEVTS}, ${INPUT}, ${GEOM})"
-	root -l -b -q "run_reco.C(${NEVTS}, ${INPUT}, ${GEOM})"
-done
+root -l -b -q "${macro_dir}/run_sim_5.C(${NEVTS})"
+root -l -b -q "${macro_dir}/run_reco_5_alignment.C(${NEVTS})"
+root -l -b -q "${macro_dir}/run_reco_5_correction.C(${NEVTS})"

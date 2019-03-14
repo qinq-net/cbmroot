@@ -6,11 +6,9 @@
 
 void run_rich_event_display()
 {
-//  TString outDir = "/data/Sim_Outputs/Event_Display/minusY/";
-//  TString name = "setup_v17a_1e_3mrad_minusY_";
-
-  TString outDir = "/data/Sim_Outputs/Event_Display/minusX/";
-  TString name = "setup_v17a_1e_3mrad_minusX_";
+//  TString outDir = "/data/Sim_Outputs/Event_Display/plusY/";
+  TString outDir = "/data/Sim_Outputs/Position/plusY/";
+  TString name = "setup_v17a_1e_3mrad_plusY_";
 
   TString paramFile =  outDir + name + "param.root";
   TString mcFile = outDir + name + "mc.root";

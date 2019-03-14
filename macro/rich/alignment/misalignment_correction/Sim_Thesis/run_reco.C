@@ -136,56 +136,6 @@ void run_reco(Int_t nEvents = 200, Int_t input = 2, Int_t geom = 0)
     std::cout << "-I-" << myName << ": " << macroName << " excuted successfully" << std::endl;
 
 
-    CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
-    run->AddTask(matchRecoToMc);
-
-    // RICH reco QA
-    CbmRichRecoQa* richRecoQa = new CbmRichRecoQa();
-    richRecoQa->SetOutputDir(std::string(resultDir));
-    run->AddTask(richRecoQa);
-
-//    // Reconstruction Qa
-    CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
-    trackingQa->SetMinNofPointsSts(4);
-    trackingQa->SetUseConsecutivePointsInSts(true);
-   // trackingQa->SetMinNofPointsTrd(minNofPointsTrd);
-    trackingQa->SetMinNofPointsMuch(10);
-    trackingQa->SetMinNofPointsTof(1);
-    trackingQa->SetQuota(0.7);
-   // trackingQa->SetMinNofHitsTrd(minNofPointsTrd);
-    trackingQa->SetMinNofHitsMuch(10);
-    trackingQa->SetVerbose(0);
-    trackingQa->SetMinNofHitsRich(7);
-    trackingQa->SetQuotaRich(0.6);
-    trackingQa->SetOutputDir(std::string(resultDir));
-    trackingQa->SetPRange(12, 0., 6.);
-   // trackingQa->SetTrdAnnCut(trdAnnCut);
-    std::vector<std::string> trackCat, richCat;
-    trackCat.push_back("All");
-    trackCat.push_back("Electron");
-    richCat.push_back("Electron");
-    richCat.push_back("ElectronReference");
-    trackingQa->SetTrackCategories(trackCat);
-    trackingQa->SetRingCategories(richCat);
-    run->AddTask(trackingQa);
-//
-//    CbmLitFitQa* fitQa = new CbmLitFitQa();
-//    fitQa->SetMvdMinNofHits(0);
-//    fitQa->SetStsMinNofHits(6);
-//    fitQa->SetMuchMinNofHits(10);
-//   // fitQa->SetTrdMinNofHits(minNofPointsTrd);
-//    fitQa->SetOutputDir(resultDir);
-//    //run->AddTask(fitQa);
-//
-//    CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
-//    clusteringQa->SetOutputDir(resultDir);
-//    //run->AddTask(clusteringQa);
-
-    //CbmLitTofQa* tofQa = new CbmLitTofQa();
-    //tofQa->SetOutputDir(std::string(resultDir));
-    //run->AddTask(tofQa);
-
-
     std::cout << std::endl << std::endl << "-I- " << myName << ": Set runtime DB" << std::endl;
     FairRuntimeDb* rtdb = run->GetRuntimeDb();
     FairParRootFileIo* parIo1 = new FairParRootFileIo();

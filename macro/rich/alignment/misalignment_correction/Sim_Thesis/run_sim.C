@@ -92,7 +92,7 @@ void run_sim(Int_t nEvents = 200, Int_t input = 1, Int_t geom = 0)
 
         NELECTRONS = TString(gSystem->Getenv("NELECTRONS")).Atoi();
         NPOSITRONS = TString(gSystem->Getenv("NPOSITRONS")).Atoi();
-        electrons = TString(gSystem->Getenv("ELECTRONS"));
+        boxGen = TString(gSystem->Getenv("ELECTRONS"));
         urqmd = TString(gSystem->Getenv("URQMD"));
 //        pluto = TString(gSystem->Getenv("PLUTO"));
 //        plutoFile = TString(gSystem->Getenv("PLUTO_FILE"));
