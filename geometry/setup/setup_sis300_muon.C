@@ -32,7 +32,7 @@ void setup_sis300_muon()
 {
 
   // -----  Geometry Tags  --------------------------------------------------
-  TString magnetGeoTag    = "v18a";
+  TString magnetGeoTag    = "v18b";
   TString pipeGeoTag      = "v13c";
   TString stsGeoTag       = "v19a";
   TString muchGeoTag      = "v13f";

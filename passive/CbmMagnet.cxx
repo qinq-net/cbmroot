@@ -37,29 +37,47 @@ CbmMagnet::~CbmMagnet()
 
 void CbmMagnet::ConstructGeometry()
 {
-	TString fileName=GetGeometryFileName();
-	if (fileName.EndsWith(".root"))	{
-	  LOG(INFO) << "Constructing MAGNET        from ROOT  file " << fileName.Data() << FairLogger::endl;
-	  // Quick fix: The top magnet volume of magnet_v18a is centred at the origin of the GCS.
-	  // It has to be shifted by 40 cm downstream (centre coordinates (0, 0, 40) cm).
-	  // TODO: We have to urgently find a convention, such that this is not arbitrary.
-	  if ( fileName.Contains("magnet_v18a.geo.root") ) {
-	    LOG(INFO) << "Constructing magnet with shift 40 cm" << FairLogger::endl;
-	    TGeoTranslation* trans = new TGeoTranslation();
-	    trans->SetTranslation(0., 0., 40.);
-	    ConstructRootGeometry(trans);
-	  } //? v18a
-	  else ConstructRootGeometry();  //? not v18a
-       } else if (fileName.EndsWith(".geo")) {
-          LOG(INFO) << "Constructing MAGNET        from ASCII file " << fileName.Data() << FairLogger::endl;
-          ConstructASCIIGeometry();
-        } else if (fileName.EndsWith(".gdml")) {
-	  LOG(INFO) << "Constructing MAGNET        from GDML  file " << fileName.Data() << FairLogger::endl;
-	  ConstructGDMLGeometry(fposrot);
-        } else {
-	  LOG(FATAL) << "Geometry format of MAGNET file " << fileName.Data()
-		     << " not supported." << FairLogger::endl;
-	}
+  TString fileName=GetGeometryFileName();
+
+  if (fileName.EndsWith(".root"))	{
+
+    LOG(INFO) << "Constructing MAGNET        from ROOT  file "
+        << fileName.Data() << FairLogger::endl;
+
+    // Quick and dirty fix: The top magnet volume of magnet_v18a is centred
+    // at the origin of the GCS. It has to be shifted by 40 cm downstream
+    // (centre coordinates (0, 0, 40) cm) in order to be at the proper place.
+    // TODO: We have to urgently find a convention, such that this is not arbitrary.
+    if ( fileName.Contains("magnet_v18a.geo.root") ) {
+      LOG(INFO) << "Magnet with shift 40 cm" << FairLogger::endl;
+      TGeoTranslation* trans = new TGeoTranslation();
+      trans->SetTranslation(0., 0., 40.);
+      ConstructRootGeometry(trans);
+    } //? v18a
+
+    // Similar fix for v18b (for muon setup, without field clamps). This
+    // geometry is internally shifted by 80 cm downstream (along z). It has
+    // thus to be shifted by -40 cm in z to be in the proper position.
+    else if ( fileName.Contains("magnet_v18b.geo.root") ) {
+      LOG(INFO) << "Constructing magnet with shift -40 cm" << FairLogger::endl;
+      TGeoTranslation* trans = new TGeoTranslation();
+      trans->SetTranslation(0., 0., -40.);
+      ConstructRootGeometry(trans);
+    } //? v18b
+
+    else ConstructRootGeometry();  //? not v18a or v18b; no explicite shift
+
+
+  } else if (fileName.EndsWith(".geo")) {
+    LOG(INFO) << "Constructing MAGNET        from ASCII file " << fileName.Data() << FairLogger::endl;
+    ConstructASCIIGeometry();
+  } else if (fileName.EndsWith(".gdml")) {
+    LOG(INFO) << "Constructing MAGNET        from GDML  file " << fileName.Data() << FairLogger::endl;
+    ConstructGDMLGeometry(fposrot);
+  } else {
+    LOG(FATAL) << "Geometry format of MAGNET file " << fileName.Data()
+		         << " not supported." << FairLogger::endl;
+  }
 }
 
 void CbmMagnet::ConstructASCIIGeometry()

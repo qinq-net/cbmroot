@@ -3,10 +3,10 @@ ROOT geometry of the CBM magnet
 Based on the CAD design of BINP Novosibirsk, November 2018.
 MC model by Egor Ovcharenko (evovch@gmail.com).
 
-Version with field clamps, meant for being used with the RICH system (electron setups).
+Version v18b is the same as v18a, but without field clamps. It is meant for being used with the MUCH system (muon setup).
 
 A GDML geometry was created from the original CATIA design files. The GDML geometry was converted into ROOT TGeo format by A. Senger, using the macro macro/geometry/gdml2root.C.
 
-The most substantial difference to the previous geometry (v15a) is the increase in the vertical aperture to 1,440 mm. The field clamps are 190 mm thick.
+The most substantial difference to the previous geometry (v15b_much) is the increase in the vertical aperture to 1,440 mm.
 
 

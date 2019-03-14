@@ -37,7 +37,7 @@ void setup_sis100_muon_lmvm()
 {
 
   // -----  Geometry Tags  --------------------------------------------------
-  TString magnetGeoTag    = "v18a";
+  TString magnetGeoTag    = "v18b";
   TString pipeGeoTag      = "v16b_1m";
   TString stsGeoTag       = "v19a";
   TString muchGeoTag      = "v17b_sis100_1m_lmvm";
