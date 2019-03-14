@@ -1,0 +1,31 @@
+#0  0x00007fc26842b07a in __GI___waitpid (pid=9898, stat_loc=stat_loc
+entry=0x7fff55ecaab0, options=options
+entry=0) at ../sysdeps/unix/sysv/linux/waitpid.c:29
+#1  0x00007fc2683a3fbb in do_system (line=<optimized out>) at ../sysdeps/posix/system.c:148
+#2  0x00007fc268f906e4 in TUnixSystem::StackTrace() () from /data/ROOT6/FairSoft/install_may16/lib/root/libCore.so.6
+#3  0x00007fc25d00521b in FairLogger::LogFatalMessage (this=<optimized out>, strm=...) at /data/ROOT6/FairRoot/v-16.06b/fairtools/FairLogger.cxx:576
+#4  0x00007fc25d005374 in FairLogger::endl (strm=...) at /data/ROOT6/FairRoot/v-16.06b/fairtools/FairLogger.cxx:503
+#5  0x00007fc25d00278e in std::ostream::operator<< (__pf=0x7fc25d005320 <FairLogger::endl(std::ostream&)>, this=<optimized out>) at /usr/include/c++/5/ostream:113
+#6  FairLogger::operator<< (this=this
+entry=0x3cc29b0, manip=0x7fc25d005320 <FairLogger::endl(std::ostream&)>) at /data/ROOT6/FairRoot/v-16.06b/fairtools/FairLogger.cxx:470
+#7  0x00007fc25d7a612a in FairFileSource::AddFriendsToChain (this=this
+entry=0x65d7f50) at /data/ROOT6/FairRoot/v-16.06b/base/source/FairFileSource.cxx:415
+#8  0x00007fc25d7a73da in FairFileSource::Init (this=0x65d7f50) at /data/ROOT6/FairRoot/v-16.06b/base/source/FairFileSource.cxx:302
+#9  0x00007fc25d75de11 in FairRootManager::InitSource (this=0x7ea4840) at /data/ROOT6/FairRoot/v-16.06b/base/steer/FairRootManager.cxx:149
+#10 0x00007fc25d76a80c in FairRunAna::Init (this=0x75cbdd0) at /data/ROOT6/FairRoot/v-16.06b/base/steer/FairRunAna.cxx:154
+#11 0x00007fc26970246a in run_rich_event_display() ()
+#12 0x00007fc269702042 in __cling_Un1Qu30(void*) ()
+#13 0x00007fc26548f4e4 in cling::Interpreter::RunFunction(clang::FunctionDecl const*, cling::Value*) () from /data/ROOT6/FairSoft/install_may16/lib/root/libCling.so
+#14 0x00007fc2654951ee in cling::Interpreter::EvaluateInternal(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, cling::CompilationOptions, cling::Value*, cling::Transaction**) () from /data/ROOT6/FairSoft/install_may16/lib/root/libCling.so
+#15 0x00007fc26549539f in cling::Interpreter::echo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, cling::Value*) () from /data/ROOT6/FairSoft/install_may16/lib/root/libCling.so
+#16 0x00007fc265526092 in cling::MetaSema::actOnxCommand(llvm::StringRef, llvm::StringRef, cling::Value*) () from /data/ROOT6/FairSoft/install_may16/lib/root/libCling.so
+#17 0x00007fc2655349a6 in cling::MetaParser::isXCommand(cling::MetaSema::ActionResult&, cling::Value*) () from /data/ROOT6/FairSoft/install_may16/lib/root/libCling.so
+#18 0x00007fc265534aae in cling::MetaParser::isCommand(cling::MetaSema::ActionResult&, cling::Value*) () from /data/ROOT6/FairSoft/install_may16/lib/root/libCling.so
+#19 0x00007fc26551ff79 in cling::MetaProcessor::process(char const*, cling::Interpreter::CompilationResult&, cling::Value*) () from /data/ROOT6/FairSoft/install_may16/lib/root/libCling.so
+#20 0x00007fc265414435 in TCling::ProcessLine(char const*, TInterpreter::EErrorCode*) () from /data/ROOT6/FairSoft/install_may16/lib/root/libCling.so
+#21 0x00007fc265405aa7 in TCling::ProcessLineSynch(char const*, TInterpreter::EErrorCode*) () from /data/ROOT6/FairSoft/install_may16/lib/root/libCling.so
+#22 0x00007fc268eecbb7 in TApplication::ExecuteFile(char const*, int*, bool) () from /data/ROOT6/FairSoft/install_may16/lib/root/libCore.so.6
+#23 0x00007fc268eedb0f in TApplication::ProcessLine(char const*, bool, int*) () from /data/ROOT6/FairSoft/install_may16/lib/root/libCore.so.6
+#24 0x00007fc2692ed465 in TRint::ProcessLineNr(char const*, char const*, int*) () from /data/ROOT6/FairSoft/install_may16/lib/root/libRint.so.6
+#25 0x00007fc2692ee97f in TRint::Run(bool) () from /data/ROOT6/FairSoft/install_may16/lib/root/libRint.so.6
+#26 0x000000000040109c in main ()
