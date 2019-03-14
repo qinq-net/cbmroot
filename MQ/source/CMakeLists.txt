@@ -64,6 +64,16 @@ set(DEPENDENCIES
 )
 GENERATE_EXECUTABLE()
 
+set(EXE_NAME MultiTsaSampler)
+set(SRCS CbmMQTsaMultiSampler.cxx runTsaMultiSampler.cxx)
+set(DEPENDENCIES
+  ${DEPENDENCIES}
+  ${FAIR_LIBS}
+  ${BOOST_LIBS}
+  fles_ipc
+)
+GENERATE_EXECUTABLE()
+
 
 set(EXE_NAME TsaSamplerTof)
 set(SRCS CbmMQTsaSamplerTof.cxx runTsaSamplerTof.cxx)
