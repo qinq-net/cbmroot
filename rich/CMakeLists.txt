@@ -128,9 +128,9 @@ qa/CbmRichGeoTest.cxx
 qa/CbmRichUrqmdTest.cxx
 qa/CbmRichGeoTestStudyReport.cxx
 qa/CbmRichRecoQa.cxx
-alignment/CbmRichMirror.cxx
-alignment/CbmRichMirrorSortingAlignment.cxx
-alignment/CbmRichMirrorSortingCorrection.cxx
+#alignment/CbmRichMirror.cxx
+#alignment/CbmRichMirrorSortingAlignment.cxx
+#alignment/CbmRichMirrorSortingCorrection.cxx
 prototype/beamtime/CbmRichTrbUnpack.cxx
 prototype/beamtime/CbmRichTrbUnpack2.cxx
 prototype/beamtime/CbmTrbEdgeMatcher.cxx
@@ -181,10 +181,10 @@ qa/CbmRichUrqmdTest.h
 qa/CbmRichGeoOpt.h
 qa/CbmRichRecoQa.h
 qa/CbmRichRecoTbQa.h
-alignment/CbmRichMirror.h
-alignment/CbmRichMirrorSortingAlignment.h
-alignment/CbmRichMirrorSortingCorrection.h
-alignment/CbmRichMirrorMisalignmentCorrectionUtils.h
+#alignment/CbmRichMirror.h
+#alignment/CbmRichMirrorSortingAlignment.h
+#alignment/CbmRichMirrorSortingCorrection.h
+#alignment/CbmRichMirrorMisalignmentCorrectionUtils.h
 prototype/beamtime/CbmRichTrbUnpack.h
 prototype/beamtime/CbmRichTrbUnpack2.h
 prototype/beamtime/CbmTrbEdgeMatcher.h
