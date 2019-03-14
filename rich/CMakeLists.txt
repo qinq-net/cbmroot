@@ -14,7 +14,7 @@ ${CBMROOT_SOURCE_DIR}/rich/utils
 # needed by rootcling
 ${CBMROOT_SOURCE_DIR}/rich/prototype/beamtime
 
-${CBMROOT_SOURCE_DIR}/base 
+${CBMROOT_SOURCE_DIR}/base
 ${CBMROOT_SOURCE_DIR}/base/report
 ${CBMROOT_SOURCE_DIR}/base/draw
 ${CBMROOT_SOURCE_DIR}/base/utils
@@ -43,12 +43,12 @@ ${CBMROOT_SOURCE_DIR}/run
 Include_Directories( ${INCLUDE_DIRECTORIES})
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
-  ${BASE_INCLUDE_DIRECTORIES} 
+  ${BASE_INCLUDE_DIRECTORIES}
   ${Boost_INCLUDE_DIR}
 )
 
 If(TBB_FOUND)
-  Set(SYSTEM_INCLUDE_DIRECTORIES 
+  Set(SYSTEM_INCLUDE_DIRECTORIES
       ${SYSTEM_INCLUDE_DIRECTORIES}
       ${TBB_INCLUDE_DIRS}
      )
@@ -67,7 +67,7 @@ ${KFParticle_LIB_DIR}
 
 If(TBB_FOUND)
   Set(LINK_DIRECTORIES
-      ${LINK_DIRECTORIES} 
+      ${LINK_DIRECTORIES}
       ${TBB_LIBRARY_DIRS}
      )
 EndIf(TBB_FOUND)
@@ -75,44 +75,44 @@ EndIf(TBB_FOUND)
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
-CbmGeoRich.cxx 
-CbmRich.cxx 
-CbmRichEventDisplay.cxx   
-CbmGeoRichPar.cxx 
+CbmGeoRich.cxx
+CbmRich.cxx
+CbmRichEventDisplay.cxx
+CbmGeoRichPar.cxx
 CbmRichContFact.cxx
 CbmRichElectronIdAnn.cxx
 CbmRichTrainAnnSelect.cxx
 CbmRichTrainAnnElectrons.cxx
 CbmRichReconstruction.cxx
 CbmRichConverter.cxx
-detector/CbmRichHitProducer.cxx   
+detector/CbmRichHitProducer.cxx
 detector/CbmRichDigitizer.cxx
 detector/CbmRichDigiMapManager.cxx
 detector/CbmRichPmt.cxx
 detector/CbmRichGeoManager.cxx
-finder/CbmRichRingFinderIdeal.cxx 
+finder/CbmRichRingFinderIdeal.cxx
 #finder/CbmRichRingFinderHough.cxx
 finder/CbmRichRingFinderHoughImpl.cxx
-fitter/CbmRichRingFitterCircle.cxx  
-fitter/CbmRichRingFitterCOP.cxx  
-fitter/CbmRichRingFitterRobustCOP.cxx 
-fitter/CbmRichRingFitterTAU.cxx 
+fitter/CbmRichRingFitterCircle.cxx
+fitter/CbmRichRingFitterCOP.cxx
+fitter/CbmRichRingFitterRobustCOP.cxx
+fitter/CbmRichRingFitterTAU.cxx
 fitter/CbmRichRingFitterEllipseMinuit.cxx
 fitter/CbmRichRingFitterEllipseTau.cxx
 tracks/CbmRichProjectionProducerAnalytical.cxx
 tracks/CbmRichProjectionProducerTGeo.cxx
 tracks/CbmRichRingTrackAssignClosestD.cxx
-tracks/CbmRichRingTrackAssignIdeal.cxx  
+tracks/CbmRichRingTrackAssignIdeal.cxx
 tracks/CbmRichTrackExtrapolationIdeal.cxx
 tracks/CbmRichTrackExtrapolationKF.cxx
 tracks/CbmRichTrackExtrapolationLittrack.cxx
 tracks/CbmRichTrackExtrapolationMirrorIdeal.cxx
-qa/CbmRichTestSim.cxx  
-qa/CbmRichTestHits.cxx 
+qa/CbmRichTestSim.cxx
+qa/CbmRichTestHits.cxx
 qa/CbmRichRingFitterQa.cxx
 qa/CbmRichGeoOpt.cxx
 qa/CbmRichRecoTbQa.cxx
-#qa/CbmRichParallelQa.cxx 
+#qa/CbmRichParallelQa.cxx
 selection/CbmRichRingSelectAnn.cxx
 prototype/CbmRichProt.cxx
 prototype/CbmRichProtHitProducer.cxx
@@ -124,7 +124,7 @@ prototype/CbmRichPrototypeQa.cxx
 prototype/smallprototype/CbmRichSmallPrototypeQa.cxx
 prototype/smallprototype/CbmRichSmallPrototypeStudyReport.cxx
 mcbm/CbmRichMCbmQa.cxx
-qa/CbmRichGeoTest.cxx 
+qa/CbmRichGeoTest.cxx
 qa/CbmRichUrqmdTest.cxx
 qa/CbmRichGeoTestStudyReport.cxx
 qa/CbmRichRecoQa.cxx
@@ -147,7 +147,7 @@ prototype/beamtime/CbmRichTrbRecoQaStudyReport.cxx
 )
 
 If(TBB_FOUND)
-  Set(SRCS 
+  Set(SRCS
       ${SRCS}
       finder/CbmRichRingFinderHoughParallel.cxx
      )
@@ -234,7 +234,7 @@ Set(DEPENDENCIES
 If(TBB_FOUND)
   Set(DEPENDENCIES
       ${DEPENDENCIES} ${TBB_LIBRARIES}
-  )    
+  )
 EndIf(TBB_FOUND)
 
 GENERATE_LIBRARY()
