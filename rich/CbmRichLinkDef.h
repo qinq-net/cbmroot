@@ -60,6 +60,10 @@
 #pragma link C++ class CbmRichTrbRecoQaStudyReport+;
 
 //mirrors
+//#pragma link C++ class CbmRichMirror+;
+//#pragma link C++ class CbmRichMirrorSortingAlignment+;
+//#pragma link C++ class CbmRichMirrorSortingCorrection+;
+//#pragma link C++ class CbmRichMirrorMisalignmentCorrectionUtils+;
 //#pragma link C++ class CbmRichRonchiAna+;
 
 
