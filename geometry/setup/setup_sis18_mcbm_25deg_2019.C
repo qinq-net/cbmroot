@@ -46,7 +46,7 @@ void setup_sis18_mcbm_25deg_2019()
   //  TString trdGeoTag       = "v18n_mcbm";    // 2018 // 4 TRD modules 
   TString trdGeoTag       = "v18q_mcbm";    // 2018 // 2 TRD modules 
   TString tofGeoTag       = "v18l_mcbm";    // at z = 300 cm
-  TString richGeoTag      = "v18d_mcbm";    // long distance
+  TString richGeoTag      = "v18h_mcbm";    // long distance
   TString psdGeoTag       = "v18d_mcbm";    // at 25 degree, below the beampipe
   // ------------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ void setup_sis18_mcbm_25deg_2019()
   setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd,  trdGeoTag);
   setup->SetModule(kTof,  tofGeoTag);
-  // 2019  setup->SetModule(kRich, richGeoTag);
+  setup->SetModule(kRich, richGeoTag);
   // 2019  setup->SetModule(kPsd,  psdGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
