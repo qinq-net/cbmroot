@@ -241,12 +241,43 @@ Bool_t CbmMcbm2018UnpackerAlgoTof::InitParameters()
          {
             for( UInt_t uCh = 0; uCh < fUnpackPar->GetNrOfChannelsPerFee(); ++uCh )
             {
+/*
+ * ********* December 2018 beamtime **********
                if( uFee < 4 && 0 == uCh )
                   fviRpcChUId[ iCh ] = CbmTofAddress::GetUniqueAddress(
                                              fviModuleId[iGbtx],
                                              0, uFee + 4 * fviRpcSide[iGbtx],
                                              0, fviRpcType[iGbtx] );
                   else fviRpcChUId[ iCh ] = 0;
+*/
+               /// Mapping for the 2019 beamtime
+               if( 0 == uFee && 1 == fviNrOfRpc[iGbtx] )
+               {
+                  switch( uCh % 8 )
+                  {
+                     case 0:
+                     case 4:
+                     {
+                        /// 2019 mapping with 320/640 Mb/s FW
+                        /// => 4 GET4 per GBTx
+                        /// => 1 T0 channel per GET4
+                        /// => 1-2 eLinks per GET4 => GET4 ID = GET4 * 2 (+ 1)
+                        UInt_t uChannelT0 = uCh / 8 + 4 * fviRpcSide[iGbtx];
+                        fviRpcChUId[ iCh ] = CbmTofAddress::GetUniqueAddress(
+                                                fviModuleId[iGbtx],
+                                                0, uChannelT0,
+                                                0, fviRpcType[iGbtx] );
+                        LOG(INFO) << Form( "T0 channel: %u from GBTx %2u Fee %2u Channel %2u address %08x",
+                                             uChannelT0, iGbtx, uFee, uCh, fviRpcChUId[ iCh ] )
+                                  << FairLogger::endl;
+                        break;
+                     } // Valid T0 channel
+                     default:
+                     {
+                        fviRpcChUId[ iCh ] = 0;
+                     } // Invalid T0 channel
+                  } // switch( uCh % 4 )
+               } // if( 0 == uFee )
 
                iCh++;
             } // for( UInt_t uCh = 0; uCh < fUnpackPar->GetNrOfChannelsPerFee(); ++uCh )
@@ -276,13 +307,14 @@ Bool_t CbmMcbm2018UnpackerAlgoTof::InitParameters()
       } // for(Int_t iRpc= 0; iRpc < fviNrOfRpc[iGbtx]; ++iRpc )
    } // for(Int_t iGbtx= 0; iGbtx < fuNrOfGbtx; ++iGbtx )
 
+   TString sPrintout = "";
    for( UInt_t uCh = 0; uCh < uNrOfChannels; ++uCh )
    {
       if( 0 == uCh % 8 )
-         LOG(INFO) << FairLogger::endl;
-      LOG(INFO) << Form(" 0x%08x", fviRpcChUId[ uCh ] );
+         sPrintout += "\n";
+      sPrintout += Form(" 0x%08x", fviRpcChUId[ uCh ] );
    } // for( UInt_t i = 0; i < uNrOfChannels; ++i)
-   LOG(INFO) << FairLogger::endl;
+   LOG(INFO) << sPrintout << FairLogger::endl;
 
    /// Internal status initialization
    fvulCurrentEpoch.resize( fuNrOfGdpbs, 0 );
