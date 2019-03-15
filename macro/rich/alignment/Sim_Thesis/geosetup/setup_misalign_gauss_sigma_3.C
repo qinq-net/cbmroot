@@ -37,10 +37,10 @@ void setup_misalign_gauss_sigma_3()
 {
 
   // -----  Geometry Tags  --------------------------------------------------
-  TString magnetGeoTag    = "v15a";
-  TString pipeGeoTag      = "v16c_1e";
+  TString magnetGeoTag    = "v18a";
+  TString pipeGeoTag      = "v16b_1e";
   TString mvdGeoTag       = "v15a";
-  TString stsGeoTag       = "v16x";
+  TString stsGeoTag       = "v19a";
 //  TString richGeoTag      = "v16a_1e";		//"v16a_3e"
   TString richGeoTag	  = "v17a_gauss_distrib_sigma_3";
   TString trdGeoTag       = "v15a_3e";
@@ -51,7 +51,7 @@ void setup_misalign_gauss_sigma_3()
 
 
   // -----  Magnetic field  -------------------------------------------------
-  TString fieldTag      = "v12b";
+  TString fieldTag      = "v18a";
   Double_t fieldZ       = 40.;            // field centre z position
   Double_t fieldScale   =  1.;            // field scaling factor
   // ------------------------------------------------------------------------
