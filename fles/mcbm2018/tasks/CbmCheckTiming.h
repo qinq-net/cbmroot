@@ -66,7 +66,7 @@ class CbmCheckTiming : public FairTask
     Int_t CheckIfSorted(TClonesArray*, TH1*, Double_t&, TString);
 
     void CheckInterSystemOffset();
-    void FillSystemOffsetHistos(TClonesArray*, TH1*, TH2*, const Double_t);
+    void FillSystemOffsetHistos(TClonesArray*, TH1*, TH2*, TH2*, const Double_t, Bool_t bTof = kFALSE );
     void CreateHistos();
     void WriteHistos();
 
@@ -104,6 +104,10 @@ class CbmCheckTiming : public FairTask
     TH1* fT0StsDiff = nullptr;
     TH1* fT0MuchDiff = nullptr;
     TH1* fT0TofDiff = nullptr;
+
+    TH2* fT0StsDiffCharge = nullptr;
+    TH2* fT0MuchDiffCharge = nullptr;
+    TH2* fT0TofDiffCharge = nullptr;
 
     TH2* fT0StsDiffEvo = nullptr;
     TH2* fT0MuchDiffEvo = nullptr;
