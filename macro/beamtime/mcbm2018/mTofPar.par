@@ -1,21 +1,37 @@
 [CbmMcbm2018TofPar]
 //----------------------------------------------------------------------------
-NrOfGdpbs: Int_t 4
+NrOfGdpbs: Int_t 5
 GdpbIdArray: Int_t \
-0x1980 0x1922 0x18c5 0x1925
+0x1980 0x1922 0x4ef6 0x18c5 0x1925
 NrOfFeesPerGdpb: Int_t 30
 NrOfGet4PerFee: Int_t 8
 NrOfChannelsPerGet4: Int_t 4
-NrOfGbtx: Int_t 24
+NrOfGbtx: Int_t 30
 NrOfModule: Int_t 6
 NrOfRpc: Int_t \
-  5  5  5  5  5  5  5  5  5  5  5  5  5  5  0  0  0  0  5  5  0  0  0  0
+  5  5  5  5  5  5 \
+  5  5  5  5  5  5 \
+  5  5  5  5  5  5 \
+  1  0  0  0  0  0 \
+  1  0  0  0  0  0
 RpcType: Int_t \
-  0  0  0  0  0  0  0  0  0  0  0  0  5  5  5  5  5  5  5  5  5  5  5  5
+  0  0  0  0  0  0 \
+  0  0  0  0  0  0 \
+  0  0  0  0  0  0 \
+  5  5  5  5  5  5 \
+  5  5  5  5  5  5
 RpcSide: Int_t \
-  0  1  0  1  0  1  0  1  0  1  0  1  0  1  2  3  4  5  2  3  2  3  4  5
+  0  1  0  1  0  1 \
+  0  1  0  1  0  1 \
+  0  1  0  1  0  1 \
+  0  0  0  0  0  0 \
+  1  0  0  0  0  0
 ModuleId: Int_t \
-  3  3  4  4 -1 -1  0  0  1  1  2  2  0  0  0  0  0  0  0  0  0  0  0  0
+  3  3  4  4  5  5 \
+  0  0  1  1  2  2 \
+  6  6  7  7  8  8 \
+  0  0  0  0  0  0 \
+  0  0  0  0  0  0
 NbMsTot: Int_t 100
 NbMsOverlap: Int_t 1
 SizeMsInNs: Double_t 102400.0
