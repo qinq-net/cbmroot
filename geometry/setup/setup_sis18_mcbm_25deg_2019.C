@@ -7,9 +7,8 @@
  **
  **/
 
-// 2019-02-19 - DE - add mTOF v18k with 2- and 3-stack configuration as well as T0
-// 2019-02-11 - DE - used vertial mRICH v18h with 6x 3x2 PMT array as new default
-// 2018-11-22 - DE - set mRICH v18g with 6x 3x2 PMT array as new default
+// 2019-03-15 - DE - this is supposed to be the start version of mCBM in March 2019
+// 2018-08-24 - DE - this is supposed to be the start version of mCBM in 2018
 // 2018-06-27 - DE - set flipped mTOF v18j geometry as new default
 // 2018-05-24 - DE - place 20deg_long setup back at 25 degrees, see issue #1078
 // 2018-02-27 - DE - use mTRD v18o to fix redmine issue #1046 with tracking
@@ -33,20 +32,21 @@
 
 
 
-void setup_sis18_mcbm_25deg_long()
+void setup_sis18_mcbm_25deg_2019()
 {
   
   // -----  Geometry Tags  --------------------------------------------------
 //  TString platGeoTag      = "v18a_mcbm";    // concrete wall
-  TString platGeoTag      = "v18c_mcbm";    // support table
-  TString pipeGeoTag      = "v18g_mcbm";    // 25 degree beampipe
+  TString platGeoTag      = "v18d_mcbm";    // 2018 // support table
+  TString pipeGeoTag      = "v18g_mcbm";    // 2018 // 25 degree beampipe
   TString mvdGeoTag       = "v18b_mcbm";    // "v18a_mcbm";
-  TString stsGeoTag       = "v18g_mcbm";    // 1-1-1-2 ladder configuration 
-  TString muchGeoTag      = "v18g_mcbm";    // 11 o'clock, Mv2 size
-  TString trdGeoTag       = "v18o_mcbm";    // long, with mBUCH
-  //  TString trdGeoTag       = "v18n_mcbm";    // long, without mBUCH
+  TString stsGeoTag       = "v18n_mcbm";    // 2019 // 1-0-0-1 ladder configuration 
+  //  TString muchGeoTag      = "v18g_mcbm";    // 11 o'clock, Mv2 size
+  TString muchGeoTag      = "v18i_mcbm";    // 2018 // only 2 layers
+  //  TString trdGeoTag       = "v18n_mcbm";    // 2018 // 4 TRD modules 
+  TString trdGeoTag       = "v18q_mcbm";    // 2018 // 2 TRD modules 
   TString tofGeoTag       = "v18l_mcbm";    // at z = 300 cm
-  TString richGeoTag      = "v18h_mcbm";    // long distance
+  TString richGeoTag      = "v18d_mcbm";    // long distance
   TString psdGeoTag       = "v18d_mcbm";    // at 25 degree, below the beampipe
   // ------------------------------------------------------------------------
 
@@ -73,8 +73,8 @@ void setup_sis18_mcbm_25deg_long()
   setup->SetModule(kMuch, muchGeoTag);
   setup->SetModule(kTrd,  trdGeoTag);
   setup->SetModule(kTof,  tofGeoTag);
-  setup->SetModule(kRich, richGeoTag);
-  setup->SetModule(kPsd,  psdGeoTag);
+  // 2019  setup->SetModule(kRich, richGeoTag);
+  // 2019  setup->SetModule(kPsd,  psdGeoTag);
   setup->SetField(fieldTag, fieldScale, 0., 0., fieldZ);
   // ------------------------------------------------------------------------
 
