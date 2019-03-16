@@ -32,7 +32,9 @@ void check_timing(Int_t nEvents = 1, TString fileName="")
   CbmCheckTiming* timeChecker = new CbmCheckTiming();
   timeChecker->SetCheckInterSystemOffset(kTRUE);
   timeChecker->SetCheckTimeOrder(kTRUE);
-  timeChecker->SetOffsetSearchRange(200000);
+  timeChecker->SetStsOffsetSearchRange(200000);
+  timeChecker->SetMuchOffsetSearchRange(50000);
+  timeChecker->SetTofOffsetSearchRange(10000);
   fRun->AddTask(timeChecker);
 
   // -----  Parameter database   --------------------------------------------
