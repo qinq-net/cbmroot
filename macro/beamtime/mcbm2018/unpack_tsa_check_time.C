@@ -30,7 +30,7 @@ void unpack_tsa_check_time(TString inFile = "", TString sHostname = "", UInt_t u
 
   // --- Define parameter files
   TList *parFileList = new TList();
-  TString paramDir = "./";
+  TString paramDir = srcDir + "/macro/beamtime/mcbm2018/";
 
   TString paramFileSts = paramDir + "mStsPar.par";
   TObjString* parStsFileName = new TObjString(paramFileSts);
@@ -135,8 +135,10 @@ void unpack_tsa_check_time(TString inFile = "", TString sHostname = "", UInt_t u
   CbmCheckTiming* timeChecker = new CbmCheckTiming();
   timeChecker->SetCheckInterSystemOffset(kTRUE);
   timeChecker->SetCheckTimeOrder(kTRUE);
-  timeChecker->SetOffsetSearchRange(100000);
-  run->AddTask(timeChecker);
+  timeChecker->SetStsOffsetSearchRange(200000);
+  timeChecker->SetMuchOffsetSearchRange(50000);
+  timeChecker->SetTofOffsetSearchRange(10000);
+  fRun->AddTask(timeChecker);
 
   // -----   Runtime database   ---------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
