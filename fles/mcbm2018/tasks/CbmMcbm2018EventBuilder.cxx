@@ -98,8 +98,8 @@ InitStatus CbmMcbm2018EventBuilder::Init()
 
   // Register output array (CbmEvent)
   fEvents = new TClonesArray("CbmEvent",100);
-  ioman->Register("Event", "CbmEvent", fEvents,
-                                        IsOutputBranchPersistent("Event"));
+  ioman->Register("CbmEvent", "Cbm Event", fEvents,
+                                        IsOutputBranchPersistent("CbmEvent"));
 
   if ( ! fEvents ) LOG(FATAL) << "Output branch was not created" << FairLogger::endl;
 
