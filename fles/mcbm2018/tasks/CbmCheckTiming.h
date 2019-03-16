@@ -60,13 +60,25 @@ class CbmCheckTiming : public FairTask
     void SetOffsetSearchRange(Int_t val = 1000)
        { fOffsetRange = val; }
 
+    void SetStsOffsetSearchRange(Int_t val = 1000)
+       { fStsOffsetRange = val; }
+
+    void SetMuchOffsetSearchRange(Int_t val = 1000)
+       { fMuchOffsetRange = val; }
+
+    void SetTofOffsetSearchRange(Int_t val = 1000)
+       { fTofOffsetRange = val; }
+
   private:
 
     void CheckTimeOrder();
     Int_t CheckIfSorted(TClonesArray*, TH1*, Double_t&, TString);
 
     void CheckInterSystemOffset();
-    void FillSystemOffsetHistos(TClonesArray*, TH1*, TH2*, TH2*, const Double_t, Bool_t bTof = kFALSE );
+
+    void FillSystemOffsetHistos(TClonesArray*, TH1*, TH2*, TH2*, TH2*, const Double_t, const Int_t);
+
+    Int_t CalcNrBins(Int_t);
     void CreateHistos();
     void WriteHistos();
 
@@ -99,6 +111,9 @@ class CbmCheckTiming : public FairTask
     Bool_t fCheckInterSystemOffset = kTRUE;
 
     Int_t fOffsetRange = 1000;
+    Int_t fStsOffsetRange = 1000;
+    Int_t fMuchOffsetRange = 1000;
+    Int_t fTofOffsetRange = 1000;
     Int_t fBinWidth = 1;
 
     TH1* fT0StsDiff = nullptr;
@@ -117,6 +132,11 @@ class CbmCheckTiming : public FairTask
     TH1* fStsStsDiff = nullptr;
     TH1* fMuchMuchDiff = nullptr;
     TH1* fTofTofDiff = nullptr;
+
+    TH1* fT0Address = nullptr;
+    TH1* fT0Channel = nullptr;
+
+    TH2* fT0MuchRocDiff = nullptr;
 
     TString fOutFileName{"test.root"};
 

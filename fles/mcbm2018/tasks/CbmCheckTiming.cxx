@@ -8,6 +8,7 @@
 #include "CbmCheckTiming.h"
 
 #include "CbmTofDigiExp.h"
+#include "CbmMuchBeamTimeDigi.h"
 
 #include "FairLogger.h"
 #include "FairRootManager.h"
@@ -85,60 +86,75 @@ InitStatus CbmCheckTiming::Init()
   if (fCheckInterSystemOffset) CreateHistos();
 
   return kSUCCESS;
-
 }
 
-void CbmCheckTiming::CreateHistos()
-{
-  if (fOffsetRange < 1001) {
+Int_t CbmCheckTiming::CalcNrBins(Int_t offsetRange) {
+
+  if (offsetRange < 1001) {
     fBinWidth = 5;
-  } else if (fOffsetRange < 10001) {
+  } else if (offsetRange < 10001) {
     fBinWidth = 10;
-  } else if (fOffsetRange < 100001) {
+  } else if (offsetRange < 100001) {
     fBinWidth = 100;
   } else {
     fBinWidth = 100;
   }
 
-  Int_t nrOfBins = fOffsetRange/fBinWidth *2;
+  return (offsetRange/fBinWidth *2); 
+}
+
+void CbmCheckTiming::CreateHistos()
+{
+
+  Int_t nrOfBins =  CalcNrBins(fStsOffsetRange);
   // T0 vs. Sts
   fT0StsDiff = new TH1F("fT0StsDiff","T0-Sts;time diff [ns];Counts",
-			nrOfBins, -fOffsetRange, fOffsetRange);
-  // T0 vs. Much
-  fT0MuchDiff = new TH1F("fT0MuchDiff","T0-Much;time diff [ns];Counts",
-			 nrOfBins, -fOffsetRange, fOffsetRange);
-  // To vs. Tof
-  fT0TofDiff = new TH1F("fT0TofDiff","T0-Tof;time diff [ns];Counts",
-			nrOfBins, -fOffsetRange, fOffsetRange);
+			nrOfBins, -fStsOffsetRange, fStsOffsetRange);
 
-  // T0 vs. Sts
   fT0StsDiffCharge = new TH2F("fT0StsDiffCharge","T0-Sts;time diff [ns]; Charge [a.u]; Counts",
-			nrOfBins, -fOffsetRange, fOffsetRange,
-      256, 0, 256
-      );
-  // T0 vs. Much
-  fT0MuchDiffCharge = new TH2F("fT0MuchDiffCharge","T0-Much;time diff [ns]; Charge [a.u]; ;Counts",
-			 nrOfBins, -fOffsetRange, fOffsetRange,
-      256, 0, 256
-       );
-  // To vs. Tof
-  fT0TofDiffCharge = new TH2F("fT0TofDiffCharge","T0-Tof;time diff [ns]; Charge [a.u]; ;Counts",
-			nrOfBins, -fOffsetRange, fOffsetRange,
+			nrOfBins, -fStsOffsetRange, fStsOffsetRange,
       256, 0, 256
       );
 
-  // T0 vs. Sts
   fT0StsDiffEvo = new TH2F("fT0StsDiffEvo","T0-Sts;TS; time diff [ns];Counts",
        1000, 0, 10000,
-			nrOfBins, -fOffsetRange, fOffsetRange);
+			nrOfBins, -fStsOffsetRange, fStsOffsetRange);
+
+
+
+  nrOfBins =  CalcNrBins(fMuchOffsetRange);
   // T0 vs. Much
+  fT0MuchDiff = new TH1F("fT0MuchDiff","T0-Much;time diff [ns];Counts",
+			 nrOfBins, -fMuchOffsetRange, fMuchOffsetRange);
+
+  fT0MuchDiffCharge = new TH2F("fT0MuchDiffCharge","T0-Much;time diff [ns]; Charge [a.u]; ;Counts",
+			 nrOfBins, -fMuchOffsetRange, fMuchOffsetRange,
+      256, 0, 256
+       );
+
   fT0MuchDiffEvo = new TH2F("fT0MuchDiffEvo","T0-Much;TS; time diff [ns];Counts",
        1000, 0, 10000,
-			 nrOfBins, -fOffsetRange, fOffsetRange);
+			 nrOfBins, -fMuchOffsetRange, fMuchOffsetRange);
+
+
+  nrOfBins =  CalcNrBins(fTofOffsetRange);
   // To vs. Tof
+  fT0TofDiff = new TH1F("fT0TofDiff","T0-Tof;time diff [ns];Counts",
+			nrOfBins, -fTofOffsetRange, fTofOffsetRange);
+
+  fT0TofDiffCharge = new TH2F("fT0TofDiffCharge","T0-Tof;time diff [ns]; Charge [a.u]; ;Counts",
+			nrOfBins, -fTofOffsetRange, fTofOffsetRange,
+      256, 0, 256
+      );
+
   fT0TofDiffEvo = new TH2F("fT0TofDiffEvo","T0-Tof;TS; time diff [ns];Counts",
        1000, 0, 10000,
-			nrOfBins, -fOffsetRange, fOffsetRange);
+			nrOfBins, -fTofOffsetRange, fTofOffsetRange);
+
+
+  // T0 vs. Much for the different Roc/AFCK
+  fT0MuchRocDiff = new TH2F("fT0MuchRocDiff","T0-Much;AFCK; time diff [ns];Counts",
+       20, -0.5, 19.5, nrOfBins, -fMuchOffsetRange, fMuchOffsetRange);
 
   // T0 vs. T0
   fT0T0Diff = new TH1F("fT0T0Diff","T0-T0_prev;time diff [ns];Counts",
@@ -152,6 +168,12 @@ void CbmCheckTiming::CreateHistos()
   // Tof vs. Tof
   fTofTofDiff = new TH1F("fTofTofDiff","Tof-Tof_prev;time diff [ns];Counts",
 		       420, -100.5, 1999.5);
+
+  fT0Address = new TH1F("fT0Address","T0 address;address;Counts",
+                        1000000, 0, 1000000.);
+
+  fT0Channel = new TH1F("fT0Channel","T0 channel;channel nr;Counts",
+                        100, -0.5, 99.5);
 
   /// Register the histos in the HTTP server
   FairRunOnline* run = FairRunOnline::Instance();
@@ -217,17 +239,26 @@ void CbmCheckTiming::CheckInterSystemOffset()
         continue;
 
       Double_t T0Time = T0Digi->GetTime();
+      Int_t T0Address = T0Digi->GetAddress();
+      fT0Address->Fill(T0Address);
 
-      if (nrStsDigis < 300000) FillSystemOffsetHistos(fStsDigis, fT0StsDiff, fT0StsDiffCharge, fT0StsDiffEvo, T0Time);
-      if (nrMuchDigis < 300000) FillSystemOffsetHistos(fMuchDigis, fT0MuchDiff, fT0MuchDiffCharge, fT0MuchDiffEvo, T0Time);
-      if (nrTofDigis < 300000) FillSystemOffsetHistos(fTofDigis, fT0TofDiff, fT0TofDiffCharge, fT0TofDiffEvo, T0Time);
+      // Skip pulser events. They are the only ones with charge larger than 90 
+      if (static_cast<CbmTofDigiExp*>(T0Digi)->GetCharge() > 90) continue; 
+
+      fT0Channel->Fill(static_cast<CbmTofDigiExp*>(T0Digi)->GetCharge());     
+
+      if (nrStsDigis < 300000) FillSystemOffsetHistos(fStsDigis, fT0StsDiff, fT0StsDiffCharge, fT0StsDiffEvo, nullptr, T0Time, fStsOffsetRange);
+      if (nrMuchDigis < 300000) FillSystemOffsetHistos(fMuchDigis, fT0MuchDiff, fT0MuchDiffCharge, fT0MuchDiffEvo, fT0MuchRocDiff, T0Time, fMuchOffsetRange);
+      if (nrTofDigis < 300000) FillSystemOffsetHistos(fTofDigis, fT0TofDiff, fT0TofDiffCharge,fT0TofDiffEvo, nullptr, T0Time, fTofOffsetRange);
     }
   }
 }
 
 void CbmCheckTiming::FillSystemOffsetHistos(TClonesArray* array,
-						 TH1* histo, TH2* histoCharge, TH2* histoEvo,
-						 const Double_t T0Time, Bool_t bTof )
+						 TH1* histo, TH2* histoCharge,
+                                                 TH2* histoEvo, TH2* histoAFCK,
+						 const Double_t T0Time,
+                                                 const Int_t offsetRange)
 {
   Int_t nrDigis=array->GetEntriesFast();
 
@@ -235,17 +266,18 @@ void CbmCheckTiming::FillSystemOffsetHistos(TClonesArray* array,
 
     CbmDigi* Digi = static_cast<CbmDigi*>(array->At(i));
 
-    if( kTRUE == bTof )
-      if( 90 < Digi->GetCharge() && Digi->GetCharge() < 100 )
-        continue;
-
     Double_t diffTime = T0Time - Digi->GetTime();
 
-    if (diffTime > fOffsetRange) continue; // not yes in interesting range
-    if (diffTime < -fOffsetRange) break;     // already past interesting range
+    if (diffTime > offsetRange) continue; // not yes in interesting range
+    if (diffTime < -offsetRange) break;     // already past interesting range
     histo->Fill(diffTime);
     histoCharge->Fill( diffTime, Digi->GetCharge() );
     histoEvo->Fill(fNrTs, diffTime);
+    if (histoAFCK) {
+//      Int_t afck = static_cast<CbmMuchBeamTimeDigi*>(Digi)->GetRocId();
+      Int_t afck = static_cast<CbmMuchBeamTimeDigi*>(Digi)->GetNxId();
+      histoAFCK->Fill(afck, diffTime);
+    }
   }
 }
 
@@ -340,6 +372,11 @@ void CbmCheckTiming::WriteHistos()
   fStsStsDiff->Write();
   fMuchMuchDiff->Write();
   fTofTofDiff->Write();
+
+  fT0Address->Write();
+  fT0Channel->Write();
+
+  fT0MuchRocDiff->Write();
 
   outfile->Close();
   delete outfile;
