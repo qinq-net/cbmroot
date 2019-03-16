@@ -30,7 +30,8 @@ void unpack_tsa_mcbm(TString inFile = "", UInt_t uRunId = 0, UInt_t nrEvents=0)
 
   // --- Define parameter files
   TList *parFileList = new TList();
-  TString paramDir = "./";
+ TString paramDir = srcDir + "/macro/beamtime/mcbm2018/";
+
   /*
   TString paramFile = paramDir + "FHodoUnpackPar.par";
   TObjString* tutDetDigiFile = new TObjString(paramFile);
