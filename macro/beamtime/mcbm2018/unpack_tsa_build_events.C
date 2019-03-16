@@ -30,7 +30,7 @@ void unpack_tsa_build_events(TString inFile = "", UInt_t uRunId = 0, UInt_t nrEv
 
   // --- Define parameter files
   TList *parFileList = new TList();
-  TString paramDir = "./";
+  TString paramDir = srcDir + "/macro/beamtime/mcbm2018/";
 
   TString paramFileSts = paramDir + "mStsPar.par";
   TObjString* parStsFileName = new TObjString(paramFileSts);
@@ -67,7 +67,7 @@ void unpack_tsa_build_events(TString inFile = "", UInt_t uRunId = 0, UInt_t nrEv
   unpacker_much->SetIgnoreOverlapMs();
   unpacker_tof ->SetIgnoreOverlapMs();
 
-  unpacker_tof ->SetDiamondDpbIdx( 2 );
+//  unpacker_tof ->SetDiamondDpbIdx( 2 ); /// Only for Dec 2018 data
   unpacker_tof ->SetSeparateArrayT0();
 
   switch( uRunId )
@@ -106,6 +106,7 @@ void unpack_tsa_build_events(TString inFile = "", UInt_t uRunId = 0, UInt_t nrEv
   source->AddUnpacker(unpacker_sts,  0x10, kSts  );//STS xyter
   source->AddUnpacker(unpacker_much, 0x10, kMuch );//MUCH xyter
   source->AddUnpacker(unpacker_tof,  0x60, kTof  );//gDPB A & B & C
+  source->AddUnpacker(unpacker_tof,  0x90, kTof  );//gDPB T0 A & B
   source->EnableDataOutput();
 
   // --- Event header
@@ -129,10 +130,10 @@ void unpack_tsa_build_events(TString inFile = "", UInt_t uRunId = 0, UInt_t nrEv
 //  eventBuilder->SetEventBuilderAlgo(EventBuilderAlgo::FixedTimeWindow);
 //  eventBuilder->SetFixedTimeWindow(60.);
   eventBuilder->SetTriggerMinNumberT0(1);
-  eventBuilder->SetTriggerMinNumberSts(1);
-  eventBuilder->SetTriggerMinNumberMuch(1);
+  eventBuilder->SetTriggerMinNumberSts(0);
+  eventBuilder->SetTriggerMinNumberMuch(0);
   eventBuilder->SetTriggerMinNumberTof(1);
- run->AddTask(eventBuilder);
+  run->AddTask(eventBuilder);
 
   // -----   Runtime database   ---------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
