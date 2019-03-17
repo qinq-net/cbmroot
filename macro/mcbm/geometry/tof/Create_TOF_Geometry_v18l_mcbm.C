@@ -94,7 +94,7 @@ const Float_t Module_Thick_Alu_Y       = 0.1;
 const Float_t Module_Thick_Alu_Z       = 0.1;
 
 // Distance to the center of the TOF wall [cm];
-const Float_t Wall_Z_Position = 300.;   // move closer to the beam table for March 2019
+const Float_t Wall_Z_Position = 280.;   // move closer to the beam table for March 2019
   //const Float_t Wall_Z_Position = TOF_Z_Front + 0.5 * Module_Size_Z[0] + 3.5 * Module_Size_Z[1] + 4.5 * Module_Size_Z[2];
 //const Float_t Wall_Z_Position = TOF_Z_Front + 98.5;  // corresponds to center of front module in the inner tower
 //const Float_t Wall_Z_Position = 1050;  // corresponds to center of front module in the inner tower

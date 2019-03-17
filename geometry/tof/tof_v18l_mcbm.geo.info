@@ -2,14 +2,14 @@
 ##   tof_v18l_mcbm information file
 #
 
-# created 20190315
+# created 20190317
 
 # TOF setup
 
 # envelope
  203.00 cm   start of TOF (z)
- 316.50 cm   end   of TOF (z)
+ 296.50 cm   end   of TOF (z)
 
 # central tower position
- 300.00 cm   center of staggered, front RPC cell at x=0
+ 280.00 cm   center of staggered, front RPC cell at x=0
 
