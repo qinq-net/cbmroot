@@ -196,7 +196,7 @@ Float_t CbmTrdTestBeamTools::GetIntegratedCharge(CbmSpadicRawMessage* raw,Double
   //std::cout << std::endl;
   Double_t Integral=GetIntegratedCharge(ProcessedSamples,NrSamples);
   delete ProcessedSamples;
-  return Integral;
+  return Integral/1.E4;
 }
 
 Float_t CbmTrdTestBeamTools::GetIntegratedCharge(const Float_t* Samples,Int_t NrSamples)
@@ -227,9 +227,10 @@ CbmTrdTestBeamTools::GetModuleID (CbmTrdCluster* Clust)
 {
   //Returns ModuleID of the first Digi in the cluster.
   //This is identical to the ModuleID of the cluster.
+  ClearNullptr(Clust);
   CbmTrdDigi*digi = static_cast<CbmTrdDigi*> (fDigis->At (
       *Clust->GetDigis ().begin ()));
-  return CbmTrdAddress::GetModuleId (digi->GetAddress ());
+  return CbmTrdAddress::GetModuleId (GetAddress(digi));
 }
 
 // ----              -------------------------------------------------------
@@ -239,9 +240,10 @@ CbmTrdTestBeamTools::GetLayerID (CbmTrdCluster* Clust)
 {
   //Returns LayerID of the first Digi in the cluster.
   //This is identical to the LayerID of the cluster.
+  ClearNullptr(Clust);
   CbmTrdDigi*digi = static_cast<CbmTrdDigi*> (fDigis->At (
       *(Clust->GetDigis ().begin ())));
-  return CbmTrdAddress::GetLayerId (digi->GetAddress ());
+  return CbmTrdAddress::GetLayerId (GetAddress(digi));
 }
 ;
 
@@ -256,9 +258,10 @@ CbmTrdTestBeamTools::GetCentralRowID (CbmTrdCluster* Clust)
   /*if (Clust->GetNRows () != 1)
     //TODO: Find self triggered Digi.
     return -1;*/
+    ClearNullptr(Clust);
   CbmTrdDigi*digi = static_cast<CbmTrdDigi*> (fDigis->At (
       *(Clust->GetDigis ().begin ())));
-  return CbmTrdAddress::GetRowId (digi->GetAddress ());
+  return CbmTrdAddress::GetRowId (GetAddress(digi));
 }
 ;
 
@@ -269,6 +272,7 @@ CbmTrdTestBeamTools::GetCentralColumnID (CbmTrdCluster* Clust)
    *For clusters of odd size, this is the central column.
    *For clusters of even size, this is the column to the left of the clusters center.
    */
+  ClearNullptr(Clust);
   std::vector<Int_t> Digis (Clust->GetDigis ());
   std::vector<Int_t> columns;
   //  std::vector<CbmTrdDigi*> selfTriggeredDigis;
@@ -276,13 +280,13 @@ CbmTrdTestBeamTools::GetCentralColumnID (CbmTrdCluster* Clust)
     {
       CbmTrdDigi*digi = static_cast<CbmTrdDigi*> (fDigis->At (*it));
       if (digi->GetTriggerType () == 1 || digi->GetTriggerType () == 3)
-        columns.push_back (CbmTrdAddress::GetColumnId (digi->GetAddress ()));
+        columns.push_back (CbmTrdAddress::GetColumnId (GetAddress(digi)));
     }
   if (!columns.size ())
     for (auto it = Digis.begin (); it != Digis.end (); it++)
       {
         CbmTrdDigi*digi = static_cast<CbmTrdDigi*> (fDigis->At (*it));
-        columns.push_back (CbmTrdAddress::GetColumnId (digi->GetAddress ()));
+        columns.push_back (CbmTrdAddress::GetColumnId (GetAddress(digi)));
       }
   Float_t col = 0;
   for (auto it = columns.begin (); it != columns.end (); it++)
@@ -300,11 +304,12 @@ CbmTrdTestBeamTools::GetRowWidth (CbmTrdCluster* Clust)
   /*
    * Return width of the Cluster in terms of rows.
    */
+  ClearNullptr(Clust);
   std::vector<Int_t> Rows, Digis = Clust->GetDigis ();
   for (auto it = Digis.begin (); it != Digis.end (); it++)
     {
       CbmTrdDigi*Digi = static_cast<CbmTrdDigi*> (fDigis->At (*it));
-      Int_t Row = CbmTrdAddress::GetColumnId (Digi->GetAddress ());
+      Int_t Row = CbmTrdAddress::GetColumnId (GetAddress(Digi));
       Rows.push_back (Row);
     }
   Int_t MinRow = *std::min_element (Rows.begin (), Rows.end ());
@@ -320,12 +325,13 @@ CbmTrdTestBeamTools::GetColumnWidth (CbmTrdCluster* Clust)
    * Return width of the Cluster in terms of Columns.
    */
   //TODO: Implement this for 2D Clusters
+    ClearNullptr(Clust);
   std::vector<Int_t> Columns;
   for (auto it = Clust->GetDigis ().begin (); it != Clust->GetDigis ().end ();
       it++)
     {
       CbmTrdDigi*Digi = static_cast<CbmTrdDigi*> (fDigis->At (*it));
-      Int_t Col = CbmTrdAddress::GetColumnId (Digi->GetAddress ());
+      Int_t Col = CbmTrdAddress::GetColumnId (GetAddress (Digi));
       Columns.push_back (Col);
     }
   Int_t MinCol = *std::min_element (Columns.begin (), Columns.end ());
@@ -336,6 +342,7 @@ CbmTrdTestBeamTools::GetColumnWidth (CbmTrdCluster* Clust)
 Float_t
 CbmTrdTestBeamTools::GetCharge (CbmTrdCluster* Clust)
 {
+  ClearNullptr(Clust);
   const std::vector<Int_t> Digis = Clust->GetDigis ();
   Float_t Charge = 0.0;
   for (auto it = Digis.begin (); it != Digis.end (); it++)
@@ -343,13 +350,13 @@ CbmTrdTestBeamTools::GetCharge (CbmTrdCluster* Clust)
       CbmTrdDigi*digi = static_cast<CbmTrdDigi*> (fDigis->At (*it));
       Charge += digi->GetCharge () + digi->GetChargeTR ();
     }
-  return Charge;
+  return Charge/1.E4;
 }
 ;
 
 Float_t
 CbmTrdTestBeamTools::GetRowDisplacement (CbmTrdCluster* Clust)
-{
+{  ClearNullptr(Clust);
   //TODO: To be implemented for 2 Row Clusters or Bucharest Data.
   return 0;
 }
@@ -357,22 +364,27 @@ CbmTrdTestBeamTools::GetRowDisplacement (CbmTrdCluster* Clust)
 Float_t
 CbmTrdTestBeamTools::GetColumnDisplacement (CbmTrdCluster* Clust)
 {
+  ClearNullptr(Clust);
   /**Calculate Displacement according to charge Distribution along main row.
-   * Experimental:: Give more weight to the outer edges of the Clusters.
    */
   std::vector<Int_t> Digis (Clust->GetDigis ());
-  //  const std::vector<Int_t> Digis=Clust->GetDigis();
-  auto sortDigis =
+  //Define lamda function for sorting the Digis.
+  //TODO: Update Sort function for new Digis
+  /*  auto sortDigis =
       [&,this](Int_t a,Int_t b)
 	{
 	  return static_cast<Bool_t>((static_cast<CbmTrdDigi*>(this->fDigis->At(a))->Compare(this->fDigis->At(b)))+1);
-	};
-  std::sort (Digis.begin (), Digis.end (), sortDigis);
+	  };
+  */
+  //std::sort (Digis.begin (), Digis.end (), sortDigis);
+  //For now only consider the main row for Displacement.
   Int_t mainRow = GetCentralRowID (Clust);
+  //Discard all Digis not on main row
+  //TODO: Refactor this.
   for (auto it = Digis.begin (); it != Digis.end ();)
     {
       CbmTrdDigi*digi = static_cast<CbmTrdDigi*> (fDigis->At (*it));
-      if (CbmTrdAddress::GetRowId (digi->GetAddress ()) != mainRow)
+      if (CbmTrdAddress::GetRowId (GetAddress(digi)) != mainRow)
 	{
 	  Digis.erase (it);
 	  it = Digis.begin ();
@@ -382,29 +394,46 @@ CbmTrdTestBeamTools::GetColumnDisplacement (CbmTrdCluster* Clust)
 	  it++;
 	}
     }
+  //Cannot calculate an offset for Clusters of size =1
   if (Digis.size()<=1)
     return 0.;
+  //Define Variables for  Center of Gravity
+  //Should be moved inside corresponding code block
   Float_t WeightedColumns = 0;
   Float_t TotalRowCharge = 0;
+  //Define Array for SECHS
+  //Should be moved inside corresponding code block
   std::vector<Float_t> Charges {{}};
+  //Find Reference point for Center of Gravity
+  //Should be moved inside corresponding code block
   Float_t Offset = GetCentralColumnID(Clust);
+  //Define Return value variable.
   Float_t Displacement = 0;
+  //For all Clusters not suitable for SECHS, use COG
+  //Also for all Cluster of Size > 4
+  //SECHS gives weird results on large Clusters.
   if (ClassifyCluster (Clust) != CbmTrdClusterClassification::kNormal
       ||GetColumnWidth(Clust)>4)
     {
+      //Calculate Center of Gravity via the average pad number
+      //Might need to be reworked
       for (UInt_t i = 0; i < Digis.size (); i++)
 	{
 	  CbmTrdDigi*digi = static_cast<CbmTrdDigi*> (fDigis->At (Digis.at (i)));
-	  Float_t Charge (digi->GetCharge () + digi->GetChargeTR ());
+	  Float_t Charge = (digi->GetCharge () + digi->GetChargeTR ())/1.e4;
 	  TotalRowCharge += Charge;
 	  WeightedColumns += (Charge
-	      * CbmTrdAddress::GetColumnId (digi->GetAddress ()));
+	      * CbmTrdAddress::GetColumnId (GetAddress(digi)));
 	}
+      //Should be 1, prevents Divide by 0.
       if (TotalRowCharge <= 0)
     	TotalRowCharge = 1;
+      //Calculate Average
       Displacement  = WeightedColumns / TotalRowCharge;
+      //subtract Reference
       Displacement -= Offset;
     }
+  //
   else
     {
       for (auto p : Digis)
@@ -412,7 +441,7 @@ CbmTrdTestBeamTools::GetColumnDisplacement (CbmTrdCluster* Clust)
 	  CbmTrdDigi*digi = static_cast<CbmTrdDigi*> (fDigis->At (p));
 	  if (digi==nullptr)
 	    continue;
-	  Charges.push_back (digi->GetCharge ());
+	  Charges.push_back (digi->GetCharge ()/1.e4);
 	}
       for (Int_t i = 0; i+2 < Charges.size (); i++)
 	{
@@ -427,7 +456,7 @@ CbmTrdTestBeamTools::GetColumnDisplacement (CbmTrdCluster* Clust)
 	    TempOffset+=0.5;
 	  Offset += TempOffset;
 	}
-      Displacement=Offset*0.5;
+      Displacement=Offset/(GetColumnWidth(Clust)-2.);
     }
   return Displacement;
 }
@@ -461,20 +490,20 @@ CbmTrdTestBeamTools::CalculateSECHS (Float_t a, Float_t b, Float_t c)
 
 CbmTrdTestBeamTools::CbmTrdClusterClassification
 CbmTrdTestBeamTools::ClassifyCluster (CbmTrdCluster*Clust)
-{
+{  ClearNullptr(Clust);
   std::vector<Int_t> Digis (Clust->GetDigis ());
   if (Digis.size () == 0)
     return kEmpty;
   //TODO: Fragmentationtest
-//std::cout << "Cluster debug " <<GetCharge (Clust) << " " <<std::endl;
-  if (GetCharge (Clust) <= 0)
-    return kInvalidCharge;
+  //std::cout << "Cluster debug " <<GetCharge (Clust) << " " <<std::endl;
+  /*  if (GetCharge (Clust) <= 0)
+      return kInvalidCharge;*/
   auto sortDigis = [&,this](Int_t a,Int_t b)
     {
       //std::cout << a<<" "<< b<< std::endl;
       return static_cast<Bool_t>(-1==(static_cast<CbmTrdDigi*>(this->fDigis->At(a))->Compare(this->fDigis->At(b))));
     };
-  std::sort (Digis.begin (), Digis.end (), sortDigis);
+  //std::sort (Digis.begin (), Digis.end (), sortDigis);
   //Check Triggerpatterns
   std::vector<Int_t> TriggerTypes, Columns;
   //Int_t MainRow = GetCentralRowID (Clust);
@@ -485,20 +514,23 @@ CbmTrdTestBeamTools::ClassifyCluster (CbmTrdCluster*Clust)
         continue;*/
       TriggerTypes.push_back (digi->GetTriggerType ());
       //std::cout << digi->GetTriggerType()<< " ";
-      Columns.push_back (CbmTrdAddress::GetColumnId (digi->GetAddress ()));
+      Columns.push_back (CbmTrdAddress::GetColumnId (GetAddress(digi)));
+      if (digi->GetCharge()<=0.)
+	return kInvalidCharge;
     }
   //std::cout << std::endl;
   //Check for expected Neighbour Trigger Pattern.
   //Only default FNR Pattern implemented
-  if (std::find (TriggerTypes.begin (), TriggerTypes.end (), 2)
+  /*if (std::find (TriggerTypes.begin (), TriggerTypes.end (), 2)
       != TriggerTypes.begin ()
       || std::find (TriggerTypes.rbegin (), TriggerTypes.rend (), 2)
           != TriggerTypes.rbegin ())
+  */
+  if(TriggerTypes[0]!=2||TriggerTypes.back()!=2)
     return kMissingFNR;
-  if (std::find (TriggerTypes.begin (), TriggerTypes.end (), 1)
-      == TriggerTypes.end ()
-      && std::find (TriggerTypes.begin (), TriggerTypes.end (), 3)
-          == TriggerTypes.end ())
+  if(Digis.size()<3)
+    return kMissingSTR;
+  if (TriggerTypes[1]!=1&&TriggerTypes[1]!=3)
     return kMissingSTR;
   //Check for Gaps
   /*

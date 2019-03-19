@@ -3,14 +3,18 @@
 
 
 #include "CbmTrdQABase.h"
-
+#include <utility>
 class CbmTrdSimpleClusterizer : public CbmTrdQABase
 {
  protected:
   TClonesArray* fDigis;
   TClonesArray* fClusters;
+  void FillAndSortProxyArray();
+  void BubbleSort();
+
 
  public:
+  std::vector<UInt_t>fProxyArray;
   CbmTrdSimpleClusterizer();
   CbmTrdSimpleClusterizer(const CbmTrdSimpleClusterizer&) = delete;
   CbmTrdSimpleClusterizer& operator=(const CbmTrdSimpleClusterizer&) = delete;

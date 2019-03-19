@@ -38,7 +38,20 @@ CbmTrdSimpleClusterAnalysis::CreateHistograms ()
 	      (fBT->GetNrRows (layer) - 0.5) * fBT->GetPadHeight (layer)));
       fHm->H2 (HistName.Data ())->GetXaxis ()->SetTitle ("X/cm");
       fHm->H2 (HistName.Data ())->GetYaxis ()->SetTitle ("Y/cm");
+    }    
+  for (int layer = 0; layer < fBT->GetNrLayers (); layer++)
+    {
+      TString HistName = "PRF_Layer_" + std::to_string (layer);
+      fHm->Add (
+	  HistName.Data (),
+	  new TH2I (
+	      HistName.Data (), HistName.Data (),
+	      51,-2.55,2.55,
+	      101,-0.5,100.5));
+      fHm->H2 (HistName.Data ())->GetXaxis ()->SetTitle ("d/PW");
+      fHm->H2 (HistName.Data ())->GetYaxis ()->SetTitle ("Frac Chg");
     }
+
   for (Int_t Layer = 0; Layer < fBT->GetNrLayers(); Layer++)
     {
 	{
@@ -76,6 +89,20 @@ for (Int_t layer = 0; layer < fBT->GetNrLayers(); layer++)
 	      FirstIndex));
 	  Int_t Layer = CbmTrdAddress::GetLayerId (firstDigi->GetAddress ());
 	  double displacement = fBT->GetColumnDisplacement (CurrentCluster);
+	  if (fBT->GetColumnWidth(CurrentCluster)==4)
+	    {
+	    TString HistName = "PRF_Layer_"
+	      + std::to_string (fBT->GetLayerID (CurrentCluster));
+	    auto Hist=fHm->H2 (HistName.Data ());
+	    auto Digis=CurrentCluster->GetDigis();
+	    Float_t Displacement=fBT->GetColumnDisplacement(CurrentCluster);
+	    Float_t Chg=fBT->GetCharge(CurrentCluster)/100.;
+	    for (int i=0;i<Digis.size();i++)
+	      {
+		CbmTrdDigi*Digi = static_cast<CbmTrdDigi*> (fDigis->At (Digis[i]));
+		Hist->Fill(i-Displacement,Digi->GetCharge()/1e4/Chg);
+	      }
+	  }
 	  if (std::abs (displacement) > 1)
 	    continue;
 	  Double_t xPos = fBT->GetPadWidth (Layer)

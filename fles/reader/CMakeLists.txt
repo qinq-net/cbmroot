@@ -12,7 +12,6 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/reader
   ${CBMROOT_SOURCE_DIR}/fles/reader/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/reader/tasks
-  ${CBMROOT_SOURCE_DIR}/fles/reader/tasks/tools
   ${CBMROOT_SOURCE_DIR}/fles/reader/get4
 )
 
@@ -79,35 +78,12 @@ Set(SRCS
   get4/CbmGet4EventBuilder.cxx
   get4/CbmGet4EventBuffer.cxx
 
-  tasks/tools/CbmTrdTestBeamTools.cxx
-  tasks/tools/CbmTrdTestBeamTools2017DESY.cxx
-  tasks/tools/CbmTrdTestBeamTools2017GIF.cxx
-  tasks/tools/CbmTrdTestBeamTools2018GIF.cxx
-  tasks/tools/CbmTrdTestBeamToolsBuch2016.cxx
-  tasks/tools/CbmTrdLabTools.cxx
-
-  tasks/CbmSpadicTriggerComp.cxx
-  tasks/CbmTrdQABase.cxx
-  tasks/CbmTrdQAHit.cxx
-  tasks/CbmTrdQACosmics.cxx
-  tasks/CbmTrdQAEfficiency.cxx
-  tasks/CbmTrdDESYAlignment.cxx
-#  tasks/CbmTrdQABaseline.cxx
-  tasks/CbmTrdSimpleDigitizer.cxx
-  tasks/CbmTrdAdvDigitizer.cxx
-  tasks/CbmTrdDigiAnalysis.cxx
-  tasks/CbmTrdSimpleClusterizer.cxx
-  tasks/CbmTrdSimpleClusterAnalysis.cxx
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdRawBuchData.cxx
   tasks/CbmTrdRawPulseMonitor.cxx
   tasks/CbmTrdOnlineDisplay.cxx
   tasks/CbmTrdEveOnlineDisplay.cxx
   tasks/CbmTrdDaqBuffer.cxx
-  tasks/CbmTrdClusterAnalysis.cxx
-  tasks/CbmTrdTestBeamAnalysis.cxx
-  tasks/CbmTrdTimeCorrel.cxx
-  tasks/CbmTrdTestBeamAnalysis2015SPS.cxx
 
   tasks/CbmTestMiniRichPairBuilder.cxx
 

@@ -24,6 +24,7 @@ CbmTrdDigiAnalysis::~CbmTrdDigiAnalysis ()
 void
 CbmTrdDigiAnalysis::CreateHistograms ()
 {
+  if(false)
   for (Int_t Layer = 0; Layer <fBT->GetNrLayers (); ++Layer)
     {
       for (Int_t Row = 0; Row < fBT->GetNrRows(Layer) ; ++Row)
@@ -40,27 +41,36 @@ CbmTrdDigiAnalysis::CreateHistograms ()
             }
         }
     }
+  
+  for (Int_t Layer = 0; Layer <fBT->GetNrLayers (); ++Layer)
+    {
+      TString HistName = "Hitmap_Layer" + std::to_string(Layer);
+      fHm->Create2<TH2I> (HistName.Data (), HistName.Data (),fBT->GetNrColumns(Layer) , -0.5, fBT->GetNrColumns(Layer)-0.5, fBT->GetNrRows(Layer), -0.5, fBT->GetNrRows(Layer)-0.5);
+      fHm->H2 (HistName.Data ())->GetXaxis ()->SetTitle ("Columns");
+      fHm->H2 (HistName.Data ())->GetYaxis ()->SetTitle ("Rows");
+    }
+  
 }
 
 void
 CbmTrdDigiAnalysis::Exec (Option_t*)
 {
   const Int_t NrDigis = fDigis->GetEntriesFast ();
-  LOG(INFO) << this->GetName () << ": Analyzing Signalshape of " << NrDigis
-               << " Digis " << FairLogger::endl;
+  //  LOG(INFO) << this->GetName () << ": Analyzing Signalshape of " << NrDigis
+  //           << " Digis " << FairLogger::endl;
   for (UInt_t Index = 0; Index < NrDigis; Index++)
     {
       CbmTrdDigi* Digi = static_cast<CbmTrdDigi*> (fDigis->At (Index));
-      Int_t Address=Digi->GetAddress();
+      Int_t Address=fBT->GetAddress(Digi);
       Int_t Layer=CbmTrdAddress::GetLayerId(Address);
       Int_t Row=CbmTrdAddress::GetRowId(Address);
       Int_t Col=CbmTrdAddress::GetColumnId(Address);
-      TString HistName = "Signalshape_Layer" + std::to_string(Layer) + "Row"+std::to_string(Row)+"Collumn"
-          + std::to_string (Col);
-
+      TString HistName = "Hitmap_Layer" + std::to_string(Layer);
+      
       TH2* Hist=fHm->H2(HistName.Data());
-      for(Int_t Sample=0;Sample<32;Sample++)
-        Hist->Fill(Sample,Digi->GetSamples()[Sample]);
+      //for(Int_t Sample=0;Sample<32;Sample++)
+      Hist->Fill(Col,Row);
+      
     }
   LOG(DEBUG) << this->GetName () << ": Done Analyzing Signalshape of " << NrDigis
                << " Digis " << FairLogger::endl;

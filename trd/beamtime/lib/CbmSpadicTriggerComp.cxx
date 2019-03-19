@@ -4,7 +4,6 @@
 #include "CbmTrdDigi.h"
 #include "CbmBeamDefaults.h"
 #include "CbmTrdAddress.h"
-#include "CbmTrdDaqBuffer.h"
 
 #include "FairLogger.h"
 

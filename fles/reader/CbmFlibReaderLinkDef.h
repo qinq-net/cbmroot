@@ -40,33 +40,11 @@
 #endif // NOT BUILD_BEAMTIME_LIB
 
 #pragma link C++ class CbmFiberHodoMapping;
-#pragma link C++ class CbmSpadicTriggerComp;
-#pragma link C++ class CbmTrdTestBeamTools;
-#pragma link C++ class CbmTrdTestBeamTools2017DESY;
-#pragma link C++ class CbmTrdTestBeamTools2017GIF;
-#pragma link C++ class CbmTrdTestBeamTools2018GIF;
-#pragma link C++ class CbmTrdTestBeamToolsBuch2016;
-#pragma link C++ class CbmTrdLabTools;
-#pragma link C++ class CbmTrdQABase;
-#pragma link C++ class CbmTrdQACosmics;
-#pragma link C++ class CbmTrdQAHit;
-#pragma link C++ class CbmTrdQAEfficiency;
-//#pragma link C++ class CbmTrdQABaseline;
-#pragma link C++ class CbmTrdSimpleDigitizer;
-#pragma link C++ class CbmTrdAdvDigitizer;
-#pragma link C++ class CbmTrdDigiAnalysis;
-#pragma link C++ class CbmTrdSimpleClusterizer;
-#pragma link C++ class CbmTrdSimpleClusterAnalysis;
-#pragma link C++ class CbmTrdDESYAlignment;
 #pragma link C++ class CbmTrdRawBeamProfile;
 #pragma link C++ class CbmTrdRawBuchData;
 #pragma link C++ class CbmTrdRawPulseMonitor;
 #pragma link C++ class CbmTrdOnlineDisplay;
 #pragma link C++ class CbmTrdEveOnlineDisplay;
-#pragma link C++ class CbmTrdClusterAnalysis;
 //#pragma link C++ class CbmTrdDaqBuffer;
-#pragma link C++ class CbmTrdTestBeamAnalysis;
-#pragma link C++ class CbmTrdTimeCorrel;
-#pragma link C++ class CbmTrdTestBeamAnalysis2015SPS;
 
 #endif

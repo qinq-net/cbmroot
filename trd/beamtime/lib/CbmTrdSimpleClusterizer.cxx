@@ -2,9 +2,11 @@
 #include "CbmTrdDigi.h"
 #include "CbmTrdCluster.h"
 #include "CbmTrdAddress.h"
+#include <mutex>
+#include <iterator>
 
 CbmTrdSimpleClusterizer::CbmTrdSimpleClusterizer ()
-    : fDigis (nullptr), fClusters (nullptr),
+  : fDigis (nullptr), fClusters (nullptr),fProxyArray(),
         CbmTrdQABase ("CbmTrdSimpleClusterizer")
 {
 }
@@ -88,9 +90,101 @@ CbmTrdSimpleClusterizer::CreateHistograms ()
 }
 ;
 
+void CbmTrdSimpleClusterizer::BubbleSort(){
+  bool isNotSorted=true;
+  auto CompareDigis=
+    [this](const UInt_t a,const UInt_t b){
+      std::mutex mtx;
+      mtx.lock();
+      CbmTrdDigi*aD=static_cast<CbmTrdDigi*> (fDigis->At (a)),
+	*bD=static_cast<CbmTrdDigi*> (fDigis->At (b));
+      UInt_t AddressA=this->fBT->GetAddress(aD),
+	AddressB=this->fBT->GetAddress(bD);
+      Int_t LayerA=CbmTrdAddress::GetLayerId(AddressA),
+	LayerB=CbmTrdAddress::GetLayerId(AddressB);
+      Int_t RowA=CbmTrdAddress::GetRowId(AddressA),
+	RowB=CbmTrdAddress::GetRowId(AddressB);
+      //std::cout << RowA<<" "<<RowB<<std::endl;
+      Int_t ColumnA=CbmTrdAddress::GetColumnId(AddressA),
+	ColumnB=CbmTrdAddress::GetColumnId(AddressB);
+      if(aD->GetTime()>bD->GetTime())
+	if(LayerA>LayerB)
+	  if(RowA>RowB)
+	    if(ColumnA>ColumnB)
+	      return true;
+      return false;
+    };
+  //  int i=0;
+  //  std::cout << fProxyArray.size()<<std::endl;
+  while(isNotSorted){
+    isNotSorted=false;
+    for (int i=0; i<fProxyArray.size()-1;i++)
+      {
+	int a=fProxyArray[i],b=fProxyArray[i+1];
+	if(CompareDigis(a,b))
+	  {
+	    fProxyArray[i]=b,fProxyArray[i+1]=a;
+	    isNotSorted=true;
+	    //LOG(FATAL) << a << " "<< b<< " " <<CompareDigis(a,b) << CompareDigis(b,a) <<static_cast<CbmTrdDigi*> (fDigis->At (a))->ToString()<<" "<< static_cast<CbmTrdDigi*> (fDigis->At (b))->ToString() << FairLogger::endl;
+	  }
+      }
+    /*for (auto x:fProxyArray)
+      std::cout <<x << " ";
+      std::cout <<std::endl;*/
+  }
+}
+;
+void CbmTrdSimpleClusterizer::FillAndSortProxyArray(){
+  fProxyArray.clear();
+  UInt_t nSpadicDigis = fDigis->GetEntriesFast (); //SPADIC messages per TimeSlic
+  for (UInt_t iSpadicDigi = 0; iSpadicDigi < nSpadicDigis; iSpadicDigi+=1){
+    CbmTrdDigi* CurrentDigi = static_cast<CbmTrdDigi*> (fDigis->At (iSpadicDigi));
+    if (CurrentDigi == nullptr || CurrentDigi==0x0)
+      continue;
+    fProxyArray.emplace_back(iSpadicDigi);
+  }
+  auto CompareDigis=
+    [this,&nSpadicDigis](const UInt_t a,const UInt_t b){
+        std::mutex mtx;
+	mtx.lock();
+	CbmTrdDigi*aD=static_cast<CbmTrdDigi*> (fDigis->At (a)),
+	  *bD=static_cast<CbmTrdDigi*> (fDigis->At (b));
+	UInt_t TimeA=std::round(aD->GetTime()/fBT->GetSamplingTime()),
+	  TimeB=std::round(bD->GetTime()/fBT->GetSamplingTime());
+	if(TimeA<TimeB)
+	  return true;
+	else if (TimeA>TimeB)
+	  return false;
+	UInt_t AddressA=this->fBT->GetAddress(aD),
+	  AddressB=this->fBT->GetAddress(bD);
+	Int_t LayerA=CbmTrdAddress::GetLayerId(AddressA),
+	  LayerB=CbmTrdAddress::GetLayerId(AddressB);
+	Int_t ModuleA=CbmTrdAddress::GetModuleId(AddressA),
+	  ModuleB=CbmTrdAddress::GetModuleId(AddressB);
+	Int_t RowA=CbmTrdAddress::GetRowId(AddressA),
+	  RowB=CbmTrdAddress::GetRowId(AddressB);
+	Int_t ColumnA=CbmTrdAddress::GetColumnId(AddressA),
+	  ColumnB=CbmTrdAddress::GetColumnId(AddressB);
+	UInt_t CompareAddressA=LayerA<<(8+4+8),
+	  CompareAddressB=LayerB<<(8+4+8);
+	CompareAddressA|=(ModuleA&0xFF)<<(8+4),
+	  CompareAddressB|=(ModuleB&0xFF)<<(8+4);	
+	CompareAddressA|=(RowA&0xF)<<(8),
+	  CompareAddressB|=(RowB&0xF)<<(8);
+	CompareAddressA|=(ColumnA&0xFF),
+	  CompareAddressB|=(ColumnB&0xFF);
+	if(CompareAddressA<CompareAddressB)
+	  return true;
+	return false;
+    };
+  std::sort(fProxyArray.begin(),fProxyArray.end(),CompareDigis);
+};
+
 void
 CbmTrdSimpleClusterizer::Exec (Option_t*)
 {
+  FillAndSortProxyArray();
+  typedef std::pair<CbmTrdDigi*,Int_t> DataPair;
   static Int_t NrTimeslice = 0;
   LOG(INFO) << this->GetName () << ": Clearing  Clusters" << FairLogger::endl;
   fClusters->Clear ("C");
@@ -102,13 +196,16 @@ CbmTrdSimpleClusterizer::Exec (Option_t*)
   CbmTrdCluster*CurrentCluster = nullptr;
   Bool_t newCluster = true;
   Bool_t SplitCluster=false;
-  CbmTrdDigi *CurrentDigi = nullptr;
+  UInt_t CurrentProxy = 0;
   std::vector<int>TriggerCounter;
-  for (UInt_t iSpadicDigi = 0; iSpadicDigi < nSpadicDigis; ++iSpadicDigi)
+  //Digis are n longer sortable. Operate on proxy.
+  for (UInt_t iSpadicDigi = 0; iSpadicDigi < fProxyArray.size(); ++iSpadicDigi)
     {
-      CbmTrdDigi *previousDigi = CurrentDigi;
-      CurrentDigi = static_cast<CbmTrdDigi*> (fDigis->At (iSpadicDigi));
-      if (!CurrentDigi)
+      UInt_t previousProxy = CurrentProxy;
+      CurrentProxy = (fProxyArray.at(iSpadicDigi));
+      CbmTrdDigi* CurrentDigi=static_cast<CbmTrdDigi*> (fDigis->At (CurrentProxy)),
+	*previousDigi=static_cast<CbmTrdDigi*> (fDigis->At (previousProxy));
+      if (!CurrentDigi||previousProxy==CurrentProxy)
         continue;
       //Fist check for Abort Conditions, done explicitly due to the high amount of state in this loop.
       //If newCluster is true, skip checks.
@@ -122,70 +219,73 @@ CbmTrdSimpleClusterizer::Exec (Option_t*)
           if (previousTime != CurrentTime)
             {
               //Time window is finished, create new Cluster.
-              newCluster++;
+              newCluster=true;
             }
+	  UInt_t previousAddress=fBT->GetAddress(previousDigi),
+	    currentAddress=fBT->GetAddress(CurrentDigi);
           Int_t PreviousLayer = CbmTrdAddress::GetLayerId (
-              previousDigi->GetAddress ());
+	      previousAddress);
           Int_t CurrentLayer = CbmTrdAddress::GetLayerId (
-              CurrentDigi->GetAddress ());
+              currentAddress);
           Int_t PreviousModule = CbmTrdAddress::GetSectorId (
-              previousDigi->GetAddress ());
+              previousAddress);
           Int_t CurrentModule = CbmTrdAddress::GetSectorId (
-              CurrentDigi->GetAddress ());
+              currentAddress);
           Int_t PreviousRow = CbmTrdAddress::GetRowId (
-              previousDigi->GetAddress ());
+              previousAddress);
           Int_t CurrentRow = CbmTrdAddress::GetRowId (
-              CurrentDigi->GetAddress ());
+              currentAddress);
           if ((PreviousRow != CurrentRow) || (PreviousModule != CurrentModule)
           //||(PreviousSector!=CurrentSector)
               || (PreviousLayer != CurrentLayer))
             {
               //Layer, sector,module or Row is finished, create new Cluster.
-              newCluster++;
+              newCluster=true;
             }
           Int_t PreviousCol = CbmTrdAddress::GetColumnId (
-              previousDigi->GetAddress ());
+              previousAddress);
           Int_t CurrentCol = CbmTrdAddress::GetColumnId (
-              CurrentDigi->GetAddress ());
+              currentAddress);
           if (CurrentCol - PreviousCol > 1)
             {
               //Large Gap between Clusters found, create new Cluster.
-              newCluster++;
+              newCluster=true;
             }
           if (CurrentDigi->GetTriggerType()==2)
             {
               if(!TriggerCounter.empty())
         	if(TriggerCounter.back()==2)
-        	  newCluster++;
+        	  newCluster=true;
              }
           if (!newCluster&&!TriggerCounter.empty()&&CurrentDigi->GetTriggerType()%2!=0)
             {
-              if(TriggerCounter.back()%2!=0
-        	  && *(TriggerCounter.rbegin()--)%2!=0)
+              if(TriggerCounter.back()%2!=0)
         	{
-        	  newCluster++;
-        	  SplitCluster++;
+        	  newCluster=true;
+        	  SplitCluster=true;
         	}
              }
         }
       //Done Checking for abort conditions, create new Cluster if necessary.
       if (newCluster)
         {
+	  //std::cout <<previousDigi->ToString() <<CurrentDigi->ToString()<<std::endl<<std::endl;
           if (CurrentCluster)
             {
               //	LOG(INFO)<<CurrentCluster->GetDigis().size() << " "/*<<CurrentCluster->GetDigi(0)*/<< FairLogger::endl;
               //TODO: Accurately set number of Columns.
               CurrentCluster->SetNCols (fBT->GetColumnWidth(CurrentCluster));
               CurrentCluster->SetNRows (fBT->GetRowWidth(CurrentCluster));
-              if(fBT->GetColumnWidth(CurrentCluster)==1)
+              /*if(fBT->GetColumnWidth(CurrentCluster)==1)
                 if(previousDigi&&CurrentDigi)
                 std::cout << previousDigi->ToString()<<CurrentDigi->ToString()<<std::endl;
+	      */
             }
           CurrentCluster = static_cast<CbmTrdCluster*>(fClusters->ConstructedAt(NrClusters++));
           CurrentCluster->SetDigis(std::vector<int>());
-          if(SplitCluster)
+          if(SplitCluster&&previousDigi!=nullptr)
             {
-              CurrentCluster->AddDigi(fDigis->IndexOf(previousDigi));
+              CurrentCluster->AddDigi(previousProxy);
 	      SplitCluster=false;
             }
           newCluster = false;
@@ -194,7 +294,7 @@ CbmTrdSimpleClusterizer::Exec (Option_t*)
       //We can now add the Current Digi to the current Cluster.
       //TODO: Filter for Hit Type Pattern. Currently planned for V2, the advanced Clusterizer.
       TriggerCounter.push_back(CurrentDigi->GetTriggerType());
-      CurrentCluster->AddDigi (iSpadicDigi);
+      CurrentCluster->AddDigi (CurrentProxy);
       //Done with loop.
       //TODO: IMPORTANT: cluster tools for charge, displacement and so on.
     }
@@ -219,7 +319,7 @@ CbmTrdSimpleClusterizer::Exec (Option_t*)
         {
           CbmTrdDigi*firstDigi = static_cast<CbmTrdDigi*> (fDigis->At (
               *(CurrentCluster->GetDigis ().begin ())));
-          Int_t Layer = CbmTrdAddress::GetLayerId (firstDigi->GetAddress ());
+          Int_t Layer = CbmTrdAddress::GetLayerId (fBT->GetAddress(firstDigi));
           /*Int_t Col = CbmTrdAddress::GetColumnId (firstDigi->GetAddress ());*/
           Sizemaps.at (Layer)->Fill (0.0, CurrentCluster->GetNofDigis ());
         }
@@ -239,7 +339,7 @@ CbmTrdSimpleClusterizer::Exec (Option_t*)
           Int_t FirstIndex=
               (CurrentCluster->GetDigis().at(0));
           CbmTrdDigi*firstDigi = static_cast<CbmTrdDigi*> (fDigis->At (FirstIndex));
-          Int_t Layer = CbmTrdAddress::GetLayerId (firstDigi->GetAddress ());
+          Int_t Layer = CbmTrdAddress::GetLayerId (fBT->GetAddress(firstDigi));
           Sizemaps.at(Layer)->Fill (fBT->GetColumnWidth(CurrentCluster),fBT->ClassifyCluster(CurrentCluster));
         }
     }

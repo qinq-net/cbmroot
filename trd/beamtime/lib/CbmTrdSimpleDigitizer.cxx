@@ -109,7 +109,7 @@ CbmTrdSimpleDigitizer::Exec (Option_t*)
       if (CurrentBuffer == BaselineMap.end ())
         {
           auto& TempBuffer = BaselineMap[fBT->GetAddress (raw)];
-          TempBuffer.set_capacity (10);
+          TempBuffer.set_capacity (20);
           CurrentBuffer = BaselineMap.find (fBT->GetAddress (raw));
         }
       if (CurrentBuffer->second.full ())
@@ -161,13 +161,16 @@ CbmTrdSimpleDigitizer::Exec (Option_t*)
 	  else
 	    Samples[i] = 0.0;
 	}
-      new ((*fDigis)[NrDigis]) CbmTrdDigi (
-	  static_cast<Int_t> (fBT->GetAddress (raw)),
-	  raw->GetFullTime () * 1E3 / 16, //65 ns per timestamp
-	  raw->GetTriggerType (), raw->GetInfoType (), raw->GetStopType (),
-	  raw->GetNrSamples (), Samples/*&Samples[32]*/);
-      static_cast<CbmTrdDigi*> (fDigis->At (NrDigis++))->SetCharge (
-	  fBT->GetMaximumAdc (raw,BaselineEstimate));
+      UInt_t Address=fBT->GetAddress (raw);
+      UInt_t RowID=CbmTrdAddress::GetRowId(Address),
+	ColumnID=CbmTrdAddress::GetColumnId(Address);
+      UInt_t PadID=RowID*fBT->GetNrColumns(fBT->GetLayerID(raw))+ColumnID;
+      new ((*fDigis)[NrDigis]) CbmTrdDigi (static_cast<Int_t> (PadID),
+					   fBT->GetMaximumAdc (raw,BaselineEstimate)*1.e4,
+					   raw->GetFullTime () * fBT->GetSamplingTime(), //65 ns per timestamp
+					   raw->GetTriggerType (),
+					   1);
+      static_cast<CbmTrdDigi*> (fDigis->At (NrDigis++))->SetAddress(Address);
       //std::cout<< fBT->GetMaximumAdc (raw,BaselineEstimate)<< std::endl;
       if(fBT->GetMaximumAdc (raw,BaselineEstimate)>512)
 	{
@@ -185,7 +188,7 @@ CbmTrdSimpleDigitizer::Exec (Option_t*)
   delete Samples;
   fHm->G1 (GraphName.Data ())->SetPoint (fHm->G1 (GraphName.Data ())->GetN (),
                                          NrTimeslice++, NrDigis);
-  fDigis->Sort ();
+  //  fDigis->Sort ();
   LOG(INFO) << this->GetName () << ": Finished creating Digis with "
                << Statefullness << " Digitizer" << FairLogger::endl;
 }

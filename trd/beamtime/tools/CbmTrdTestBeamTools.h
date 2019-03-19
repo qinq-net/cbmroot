@@ -9,10 +9,11 @@
 #include <TClonesArray.h>
 
 #include <vector>
+#include <mutex>
 #include "TString.h"
 #include "TObject.h"
 #include "TMath.h"
-
+#include <iostream>
 class CbmTrdTestBeamTools: public TObject
 {
   protected:
@@ -39,10 +40,29 @@ class CbmTrdTestBeamTools: public TObject
    */
   virtual UInt_t GetAddress(CbmSpadicRawMessage* raw);
   /**
+   * GetAddress: Get a CbmTrdAddress-compatible Address for this CbmTrdDigi.
+   * @param raw Pointer to the CbmTrdDigi, for which an Address should be returned.
+   * @return: A CbmTrdAddress-compatible Address for the active Channel.
+   */
+  UInt_t GetAddress(CbmTrdDigi* raw){
+    std::mutex mtx;
+    mtx.lock();
+    unsigned int BaseAddress=raw->GetAddress();
+    unsigned int PadID=raw->GetAddressChannel();
+    Int_t LayerID=CbmTrdAddress::GetLayerId(BaseAddress);
+    Int_t ModID=CbmTrdAddress::GetModuleId(BaseAddress);
+    Int_t NrCols=GetNrColumns(LayerID);
+    Int_t ColID=PadID%NrCols;
+    Int_t SectID=CbmTrdAddress::GetSectorId(BaseAddress);
+    Int_t RowID=PadID/NrCols;
+    //    std::cout << std::hex<< BaseAddress<< " " << PadID<< " " << ColID << " " << RowID<<" BBBBBBB " << CbmTrdAddress::GetAddress(LayerID,ModID,SectID,RowID,ColID)<<std::dec<<std::endl;
+    return CbmTrdAddress::GetAddress(LayerID,ModID,SectID,RowID,ColID);
+  };
+  /**
    * GetModuleID: Get a CbmTrdAddress-compatible ModuleID for this CbmSpadicRawMessage.
    * @param raw Pointer to the CbmSpadicRawMessage, for which an ModuleID should be returned.
    * @return: A CbmTrdAddress-compatible ModuleID for the active Channel.
-   */
+   */  
   virtual Int_t GetModuleID(CbmSpadicRawMessage* raw);
   /**
    * GetLayerID: Get a CbmTrdAddress-compatible LayerID for this CbmSpadicRawMessage.
@@ -330,6 +350,16 @@ class CbmTrdTestBeamTools: public TObject
       this->fDigis = Digis;
   }
   ;
+  void ClearNullptr(CbmTrdCluster*test){
+    auto data=test->GetDigis();
+    for (auto x=data.begin();x!=data.end();x++)
+      {
+	TObject*ptr=fDigis->At(*x);
+	if (ptr==nullptr)
+	  data.erase(x),x=data.begin();
+      }
+    test->SetDigis(data);
+  };
   /**
    * GetLayerID: Get a CbmTrdAddress-compatible ModuleID for this CbmTrdCluster.
    * @param Clust Pointer to the CbmTrdCluster, for which a Module ID should be returned.
@@ -355,7 +385,7 @@ class CbmTrdTestBeamTools: public TObject
   {
     //returns sectorID of the Cluster. Only defined for compatibility.
     auto Digi = static_cast<CbmTrdDigi*> (fDigis->At (clust->GetDigi (0)));
-    return CbmTrdAddress::GetSectorId (Digi->GetAddress ());
+    return CbmTrdAddress::GetSectorId (GetAddress(Digi));
   }
   ;
   /**
