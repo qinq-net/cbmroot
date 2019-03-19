@@ -17,7 +17,6 @@
 #include <map>
 
 #include "TClonesArray.h"
-#include "CbmTrdQABase.h"
 
 #include "CbmHistManager.h"
 
